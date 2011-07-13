@@ -54,7 +54,9 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -62,7 +64,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -81,7 +82,9 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            GitVCS.class});
         System.setProperty("versioning.git.handleExternalEvents", "false");
         System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);

@@ -73,6 +73,14 @@ public abstract class TabControlButton extends JButton {
     public static final int ID_DROP_DOWN_BUTTON = 8;
     public static final int ID_SCROLL_LEFT_BUTTON = 9;
     public static final int ID_SCROLL_RIGHT_BUTTON = 10;
+    /**
+     * @since 1.27
+     */
+    public static final int ID_RESTORE_GROUP_BUTTON = 11;
+    /**
+     * @since 1.27
+     */
+    public static final int ID_SLIDE_GROUP_BUTTON = 12;
     
     public static final int STATE_DEFAULT = 0;
     public static final int STATE_PRESSED = 1;

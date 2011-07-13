@@ -304,7 +304,7 @@ public class SftpClient implements RemoteClient {
             Collection<ChannelSftp.LsEntry> files = sftpClient.ls(pwd);
             result = new ArrayList<RemoteFile>(files.size());
             for (ChannelSftp.LsEntry entry : files) {
-                result.add(new RemoteFileImpl(entry));
+                result.add(new RemoteFileImpl(entry, pwd));
             }
 
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
@@ -484,15 +484,23 @@ public class SftpClient implements RemoteClient {
 
     private static final class RemoteFileImpl implements RemoteFile {
         private final ChannelSftp.LsEntry entry;
+        private final String parentDirectory;
 
-        public RemoteFileImpl(ChannelSftp.LsEntry entry) {
+        public RemoteFileImpl(ChannelSftp.LsEntry entry, String parentDirectory) {
             assert entry != null;
+            assert parentDirectory != null;
             this.entry = entry;
+            this.parentDirectory = parentDirectory;
         }
 
         @Override
         public String getName() {
             return entry.getFilename();
+        }
+
+        @Override
+        public String getParentDirectory() {
+            return parentDirectory;
         }
 
         @Override

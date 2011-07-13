@@ -339,14 +339,29 @@ public class Utilities {
     private static String firstToLower(String name) {
         if (name.length() == 0)
             return null;
-        
-        String cand = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-        
-        if (SourceVersion.isKeyword(cand)) {
-            cand = "a" + name;
+
+        StringBuilder result = new StringBuilder();
+        boolean toLower = true;
+        char last = Character.toLowerCase(name.charAt(0));
+
+        for (int i = 1; i < name.length(); i++) {
+            if (toLower && Character.isUpperCase(name.charAt(i))) {
+                result.append(Character.toLowerCase(last));
+            } else {
+                result.append(last);
+                toLower = false;
+            }
+            last = name.charAt(i);
+
         }
+
+        result.append(last);
         
-        return cand;
+        if (SourceVersion.isKeyword(result)) {
+            return "a" + name;
+        } else {
+            return result.toString();
+        }
     }
     
     private static final class VariablesFilter implements ElementAcceptor {
@@ -818,7 +833,8 @@ public class Utilities {
         Set<String>      usedArgumentNames = new HashSet<String>();
 
         for (ExpressionTree arg : realArguments) {
-            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
+            TreePath argPath = new TreePath(invocation, arg);
+            TypeMirror tm = info.getTrees().getTypeMirror(argPath);
 
             //anonymous class?
             tm = Utilities.convertIfAnonymous(tm);
@@ -839,7 +855,16 @@ public class Utilities {
 
             argumentTypes.add(tm);
 
-            String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+            String proposedName = null;
+            Element elem = info.getTrees().getElement(argPath);
+
+            if (elem != null && elem.getKind() == ElementKind.ENUM_CONSTANT) {
+                proposedName = firstToLower(elem.getEnclosingElement().getSimpleName().toString());
+            }
+
+            if (proposedName == null) {
+                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+            }
 
             if (proposedName == null) {
                 proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);

@@ -64,12 +64,14 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
@@ -80,7 +82,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -95,7 +96,9 @@ public class StatusTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            GitVCS.class});
         Git.STATUS_LOG.setLevel(Level.ALL);
         setAutomaticRefreshEnabled(true);
     }

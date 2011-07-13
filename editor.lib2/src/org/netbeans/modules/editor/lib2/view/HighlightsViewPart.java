@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,6 +73,7 @@ public final class HighlightsViewPart extends EditorView {
     /** Shift of start of this view relative to HighlightsView. */
     private int shift;
 
+    /** Number of characters that this view covers. */
     private int length;
 
     /**
@@ -110,12 +112,12 @@ public final class HighlightsViewPart extends EditorView {
     }
 
     @Override
-    public int getRawOffset() {
-        return 0;
+    public int getRawEndOffset() {
+        return getLength();
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
+    public void setRawEndOffset(int rawOffset) {
         throw new IllegalStateException();
     }
 
@@ -181,13 +183,20 @@ public final class HighlightsViewPart extends EditorView {
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        HighlightsViewUtils.paint(g, alloc, clipBounds, fullView, getTextLayout(), shift, getLength());
+        int fullViewStartOffset = fullView.getStartOffset();
+        DocumentView docView = getDocumentView();
+        // Use original view for obtaining highlights and paint highlights.
+        // Do not create sub-compound-attributes since the original highlight-items
+        // could not be reused (due to different start offset) etc.
+        HighlightsViewUtils.paintHiglighted(g, alloc, clipBounds,
+                docView, fullView, fullViewStartOffset,
+                false, getTextLayout(), fullViewStartOffset + shift, 0, getLength());
     }
 
     @Override
     public View breakView(int axis, int offset, float x, float len) {
         View part = HighlightsViewUtils.breakView(axis, offset, x, len, fullView,
-                shift, getLength(), getTextLayout(), 0);
+                shift, getLength(), getTextLayout());
         return (part != null) ? part : this;
     }
 

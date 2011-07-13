@@ -1096,7 +1096,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -1107,7 +1107,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="queryHeaderPanel" alignment="0" max="32767" attributes="2"/>
           <Component id="searchPanel" alignment="0" max="32767" attributes="1"/>
-          <Component id="noContentPanel" alignment="0" pref="786" max="32767" attributes="0"/>
+          <Component id="noContentPanel" alignment="0" pref="875" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="tableFieldsPanel" max="32767" attributes="2"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -1143,7 +1143,7 @@
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
-                      <Component id="tablePanel" alignment="0" pref="726" max="32767" attributes="2"/>
+                      <Component id="tablePanel" alignment="0" pref="839" max="32767" attributes="2"/>
                       <Component id="tableHeaderPanel" alignment="0" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -1194,7 +1194,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="tableSummaryLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="544" max="32767" attributes="0"/>
+                      <EmptySpace pref="660" max="32767" attributes="0"/>
                       <Component id="filterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="filterComboBox" min="-2" max="-2" attributes="0"/>
@@ -1261,7 +1261,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="gotoPanel" alignment="0" pref="786" max="32767" attributes="2"/>
+              <Component id="gotoPanel" alignment="0" pref="875" max="32767" attributes="2"/>
               <Group type="102" alignment="1" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
@@ -1365,18 +1365,18 @@
                       <Component id="byOtherLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byTextContainer" alignment="0" pref="744" max="32767" attributes="2"/>
-                  <Component id="byOtherContainer" alignment="0" pref="744" max="32767" attributes="1"/>
+                  <Component id="byTextContainer" alignment="0" pref="849" max="32767" attributes="2"/>
+                  <Component id="byOtherContainer" alignment="0" pref="849" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byDetailsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byDetailsContainer" alignment="0" pref="744" max="32767" attributes="1"/>
+                  <Component id="byDetailsContainer" alignment="0" pref="849" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="byPeopleLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="byPeopleContainer" alignment="0" pref="744" max="32767" attributes="1"/>
+                  <Component id="byPeopleContainer" alignment="0" pref="849" max="32767" attributes="1"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -1676,7 +1676,7 @@
                           <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="jiraFilterLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="309" max="32767" attributes="0"/>
+                          <EmptySpace pref="366" max="32767" attributes="0"/>
                           <Component id="refreshCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="lastRefreshLabel" min="-2" max="-2" attributes="0"/>

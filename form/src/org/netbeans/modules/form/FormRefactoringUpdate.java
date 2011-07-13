@@ -618,7 +618,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             if (fe != null) { // use the current FormEditor (might change due to reload after undo)
                 formEditor = fe;
             } else if (formEditor == null) { // create a disconnected form editor
-                formEditor = new FormEditor(formDataObject);
+                formEditor = new FormEditor(formDataObject, formDataObject.getFormEditorSupport());
             }
         }
         if (formEditor != null) {

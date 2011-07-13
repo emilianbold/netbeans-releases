@@ -83,5 +83,9 @@ public class OutOfTheBoxStartup extends MeasureStartupTimeTestCase {
                 reportPerformance(performanceDataName, measuredTime, "ms", i>1?2:1);
             }
         }
+        PerformanceData[] pData = this.getPerformanceData();
+        for (int i = 0; i < pData.length; i++) {
+            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), pData[i]);
+        }
     }
 }

@@ -48,6 +48,7 @@ package org.openide.loaders;
 
 import java.io.IOException;
 
+import org.netbeans.modules.openide.loaders.Unmodify;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -71,12 +72,7 @@ final class DefaultES extends DataEditorSupport
 implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, SaveAsCapable {
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
-    private final SaveCookie saveCookie = new SaveCookie() {
-        /** Implements <code>SaveCookie</code> interface. */
-        public void save() throws IOException {
-            DefaultES.this.saveDocument();
-        }
-    };
+    private final SaveCookie saveCookie = new SaveCookieImpl();
     
     private CookieSet set;
     
@@ -109,8 +105,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
-
-        removeSaveCookie();
+        removeSaveCookie(true);
     }
     
     @Override
@@ -130,7 +125,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     }
 
     /** Helper method. Removes save cookie from the data object. */
-    private void removeSaveCookie() {
+    private void removeSaveCookie(boolean setModified) {
         DataObject obj = getDataObject();
         
         // Remove save cookie from the data object.
@@ -138,7 +133,9 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
 
         if(cookie != null && cookie.equals(saveCookie)) {
             set.remove(saveCookie);
-            obj.setModified(false);
+            if (setModified) {
+                obj.setModified(false);
+            }
         }
     }
 
@@ -190,5 +187,21 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             return ret;
         }
     } // End of nested Environment class.
+
+    private class SaveCookieImpl implements SaveCookie, Unmodify {
+
+        public SaveCookieImpl() {
+        }
+
+        /** Implements <code>SaveCookie</code> interface. */
+        public void save() throws IOException {
+            DefaultES.this.saveDocument();
+        }
+
+        @Override
+        public void unmodify() {
+            removeSaveCookie(false);
+        }
+    }
 
 }

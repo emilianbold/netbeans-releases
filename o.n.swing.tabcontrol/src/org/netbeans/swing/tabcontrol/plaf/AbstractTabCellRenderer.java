@@ -506,8 +506,21 @@ public abstract class AbstractTabCellRenderer extends JLabel
         if (isClipLeft()) {
             //fiddle with the string to get "...blah"
             String s = preTruncateString(getText(), g, txtW - 4); //subtract 4 so it's not flush w/ tab edge
+            Graphics2D g2d = null;
+            Shape clip = null;
+            if( g instanceof Graphics2D ) {
+                g2d = ( Graphics2D ) g;
+                clip = g2d.getClip();
+                g2d.clipRect( ins.left, ins.top, getWidth()-ins.left-ins.right, getHeight()-ins.top-ins.bottom);
+            }
+            txtW = (int)HtmlRenderer.renderString(s, g, txtX, txtY, Integer.MAX_VALUE, Integer.MAX_VALUE, getFont(),
+                              getForeground(), HtmlRenderer.STYLE_CLIP, false);
+            txtX = getWidth()-ins.right-txtW;
             txtW = (int)HtmlRenderer.renderString(s, g, txtX, txtY, txtW, txtH, getFont(),
                               getForeground(), HtmlRenderer.STYLE_CLIP, true);
+            if( null != g2d ) {
+                g2d.setClip( clip );
+            }
         } else {
             String s;
             if (isClipRight()) {

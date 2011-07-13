@@ -47,11 +47,15 @@ package org.netbeans.modules.csl.core;
 import java.io.IOException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
@@ -64,11 +68,11 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 
 
@@ -94,12 +98,13 @@ public class GsfDataObject extends MultiDataObject {
             language = templateLanguage;
         }
         this.language = language;
-        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
-            public void saveAs( FileObject folder, String fileName ) throws IOException {
-                createEditorSupport().saveAs( folder, fileName );
-            }
-        });
-        getCookieSet().add(createEditorSupport());
+        getCookieSet().add(new Class[]{
+                GenericEditorSupport.class, // NOI18N
+                SaveAsCapable.class, Openable.class, EditorCookie.Observable.class, 
+                PrintCookie.class, CloseCookie.class, Editable.class, LineCookie.class,
+                DataEditorSupport.class, CloneableEditorSupport.class,
+                CloneableOpenSupport.class
+            }, createEditorSupport());
     }
     
     public @Override Node createNodeDelegate() {
@@ -107,8 +112,8 @@ public class GsfDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     public @Override <T extends Cookie> T getCookie(Class<T> type) {
@@ -162,7 +167,27 @@ public class GsfDataObject extends MultiDataObject {
         return jes;
     }            
     
-    public static final class GenericEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
+    public static final class GenericEditorSupport extends DataEditorSupport 
+    implements OpenCookie, EditCookie, EditorCookie, PrintCookie, 
+               EditorCookie.Observable, SaveAsCapable, LineCookie,
+               CloseCookie, CookieSet.Factory {
+        
+        @Override
+        public <T extends Cookie> T createCookie(Class<T> klass) {
+                if (
+                klass.isAssignableFrom(DataEditorSupport.class) || 
+                DataEditorSupport.class.isAssignableFrom(klass) || 
+                klass.isAssignableFrom(Openable.class) || 
+                klass.isAssignableFrom(Editable.class) || 
+                klass.isAssignableFrom(EditorCookie.Observable.class) || 
+                klass.isAssignableFrom(PrintCookie.class) || 
+                klass.isAssignableFrom(CloseCookie.class) || 
+                klass.isAssignableFrom(LineCookie.class)
+            ) {
+                return klass.cast(this);
+            }
+            return null;
+        }
         
         private static class Environment extends DataEditorSupport.Env {
             
@@ -216,7 +241,7 @@ public class GsfDataObject extends MultiDataObject {
         private Language language;
 
         public GenericEditorSupport(GsfDataObject dataObject, Language language) {
-            super(dataObject, new Environment(dataObject));
+            super(dataObject, null, new Environment(dataObject));
             setMIMEType(language.getMimeType());
             this.language = language;
         }

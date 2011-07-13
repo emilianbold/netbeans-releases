@@ -59,6 +59,7 @@ public class HudsonXmlApiConstants {
     // Hudson Instance Element
     public static final String XML_API_VIEW_ELEMENT = "view"; // NOI18N
     public static final String XML_API_JOB_ELEMENT = "job"; // NOI18N
+    public static final String XML_API_SECURED_JOB_ELEMENT = "securedJob"; // NOI18N
     public static final String XML_API_NAME_ELEMENT = "name"; // NOI18N
     public static final String XML_API_URL_ELEMENT = "url"; // NOI18N
     public static final String XML_API_COLOR_ELEMENT = "color"; // NOI18N

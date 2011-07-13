@@ -65,7 +65,7 @@ public class TestHighlightsView extends EditorView {
     private static final Logger LOG = Logger.getLogger(HighlightsView.class.getName());
 
     /** Offset of start offset of this view. */
-    private int rawOffset; // 24-super + 4 = 28 bytes
+    private int rawEndOffset; // 24-super + 4 = 28 bytes
 
     /** Length of text occupied by this view. */
     private int length; // 28 + 4 = 32 bytes
@@ -76,7 +76,7 @@ public class TestHighlightsView extends EditorView {
     public TestHighlightsView(int offset, int length, AttributeSet attributes) {
         super(null);
         assert (length > 0) : "length=" + length + " <= 0"; // NOI18N
-        this.rawOffset = offset;
+        this.rawEndOffset = offset + length;
         this.length = length;
         this.attributes = attributes;
     }
@@ -87,13 +87,13 @@ public class TestHighlightsView extends EditorView {
     }
     
     @Override
-    public int getRawOffset() {
-        return rawOffset;
+    public int getRawEndOffset() {
+        return rawEndOffset;
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
-        this.rawOffset = rawOffset;
+    public void setRawEndOffset(int rawOffset) {
+        this.rawEndOffset = rawOffset;
     }
 
     @Override
@@ -103,13 +103,13 @@ public class TestHighlightsView extends EditorView {
 
     @Override
     public int getStartOffset() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
+        return getEndOffset() - getLength();
     }
 
     @Override
     public int getEndOffset() {
-        return getStartOffset() + getLength();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getViewEndOffset(rawEndOffset) : rawEndOffset;
     }
 
     @Override

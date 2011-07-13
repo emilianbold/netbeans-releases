@@ -147,8 +147,13 @@ public class CommitAction extends ContextAction {
         commit(contentTitle, context);
     }
 
-    public static void commit(String contentTitle, final VCSContext ctx) {
+    public static void commit (String contentTitle, final VCSContext ctx) {
+        commit(contentTitle, ctx, null);
+    }
+    
+    private static void commit (String contentTitle, final VCSContext ctx, final String branchName) {
         final File repository = HgUtils.getRootFile(ctx);
+        final boolean closingBranch = branchName != null;
         if (repository == null) {
             return;
         }
@@ -162,11 +167,22 @@ public class CommitAction extends ContextAction {
 
         panel.setCommitTable(data);
         data.setCommitPanel(panel);
+        panel.cbAllFiles.setVisible(closingBranch);
+        if (closingBranch) {
+            panel.cbAllFiles.setSelected(false);
+            panel.cbAllFiles.doClick();
+            panel.cbAllFiles.setEnabled(false);
+        }
 
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit"));
+        if (closingBranch) {
+            commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_CloseBranch"));
+            commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_CloseBranch"));
+        } else {
+            commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
+            commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit"));
+        }
         final JButton cancelButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel"));
@@ -213,13 +229,13 @@ public class CommitAction extends ContextAction {
         panel.addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
-                refreshCommitDialog(panel, data, commitButton);
+                refreshCommitDialog(panel, data, commitButton, branchName);
             }
         });
         data.getTableModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                refreshCommitDialog(panel, data, commitButton);
+                refreshCommitDialog(panel, data, commitButton, branchName);
             }
         });
         commitButton.setEnabled(containsCommitable(data));
@@ -241,6 +257,7 @@ public class CommitAction extends ContextAction {
         } else if (dd.getValue() == commitButton) {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
+            final boolean commitAllFiles = panel.cbAllFiles.isSelected();
             HgModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
@@ -248,11 +265,15 @@ public class CommitAction extends ContextAction {
                 @Override
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    performCommit(message, commitFiles, rootFiles, this, logger, hooks);
+                    performCommit(message, commitFiles, rootFiles, this, logger, hooks, commitAllFiles, closingBranch);
                 }
             };
             support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
         }
+    }
+    
+    public void closeBranch (String branchName, VCSContext ctx, String contentTitle) {
+        commit(contentTitle, ctx, branchName);
     }
 
     private static void computeNodes(final CommitTable table, final CommitPanel panel, final VCSContext ctx, final File repository, JButton cancel) {
@@ -312,6 +333,9 @@ public class CommitAction extends ContextAction {
                         @Override
                         public void run() {
                             table.setNodes(nodes);
+                            if (nodes.length > 0 && ctx.getRootFiles().size() == 1 && ctx.getRootFiles().iterator().next().equals(repository)) {
+                                panel.cbAllFiles.setEnabled(true);
+                            }
                         }
                     });
                 } finally {
@@ -340,11 +364,10 @@ public class CommitAction extends ContextAction {
      * @param panel
      * @param commit
      */
-    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit) {
+    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit, String branchToClose) {
         assert EventQueue.isDispatchThread();
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<HgFileNode, CommitOptions> files = table.getCommitFiles();
-        Set<String> stickyTags = new HashSet<String>();
         boolean conflicts = false;
 
         boolean enabled = commit.isEnabled();
@@ -369,75 +392,70 @@ public class CommitAction extends ContextAction {
 
         }
 
-        if (stickyTags.size() > 1) {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_BRANCH, CommitTableModel.COLUMN_NAME_STATUS,
-                                                CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
-        } else {
-            table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
-                                                CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
-        }
+        table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
+                                            CommitTableModel.COLUMN_NAME_ACTION, CommitTableModel.COLUMN_NAME_PATH });
 
         String contentTitle = (String) panel.getClientProperty("contentTitle"); // NOI18N
-
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
-        String errorLabel;
-        if (stickyTags.size() <= 1) {
-            String stickyTag = stickyTags.isEmpty() ? null : (String) stickyTags.iterator().next();
-            if (stickyTag == null) {
-                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
-                errorLabel = ""; // NOI18N
-            } else {
-                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag })); // NOI18N
-                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag }); // NOI18N
-                errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
-            }
-        } else {
-            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle })); // NOI18N
-            String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches"); // NOI18N
-            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
-        }
+        dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
         if (!conflicts) {
-            panel.setErrorLabel(errorLabel);
+            if (panel.cbAllFiles.isSelected()) {
+                panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.closingBranch.allFiles", branchToClose)); //NOI18N
+            } else {
+                panel.setErrorLabel(""); //NOI18N
+            }
             enabled = true;
         }
-        commit.setEnabled(enabled && containsCommitable(table));
+        commit.setEnabled(enabled && (panel.cbAllFiles.isSelected() || containsCommitable(table)));
     }
 
-    public static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
+    public static void performCommit (String message, Map<HgFileNode, CommitOptions> commitFiles,
             Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks) {
+        performCommit(message, commitFiles, rootFiles, support, logger, hooks, false, false);
+    }
+
+    private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
+            Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks, boolean commitAllFiles, boolean closeBranch) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Map<File, List<File>> addCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> deleteCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> commitCandidates = new HashMap<File, List<File>>();
         Map<File, Set<File>> filesToRefresh = new HashMap<File, Set<File>>();
-        Iterator<HgFileNode> it = commitFiles.keySet().iterator();
 
         List<String> excPaths = new ArrayList<String>();
         Map<File, Boolean> locallyModifiedExcluded = new HashMap<File, Boolean>();
         List<String> incPaths = new ArrayList<String>();
-        while (it.hasNext()) {
-             if (support.isCanceled()) {
-                 return;
-             }
-             HgFileNode node = it.next();
-             CommitOptions option = commitFiles.get(node);
-             File repository = Mercurial.getInstance().getRepositoryRoot(node.getFile());
-             if (option != CommitOptions.EXCLUDE) {
-                 int  status = cache.getStatus(node.getFile()).getStatus();
-                 if ((status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                     putCandidate(addCandidates, repository, node.getFile());
-                 } else  if ((status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
-                     putCandidate(deleteCandidates, repository, node.getFile());
+        assert !commitAllFiles || closeBranch;
+        if (commitAllFiles && closeBranch) {
+            assert rootFiles.size() == 1;
+            for (File root : rootFiles.keySet()) {
+                commitCandidates.put(root, Collections.<File>emptyList());
+            }
+        } else {
+            for (Map.Entry<HgFileNode, CommitOptions> e : commitFiles.entrySet()) {
+                 if (support.isCanceled()) {
+                     return;
                  }
-                 putCandidate(commitCandidates, repository, node.getFile());
-                 incPaths.add(node.getFile().getAbsolutePath());
-             }else{
-                 excPaths.add(node.getFile().getAbsolutePath());
-                 if (!Boolean.TRUE.equals(locallyModifiedExcluded.get(repository))) {
-                     int status = cache.getCachedStatus(node.getFile()).getStatus();
-                     locallyModifiedExcluded.put(repository, (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0); // not interested in excluded locally new files
+                 HgFileNode node = e.getKey();
+                 CommitOptions option = e.getValue();
+                 File repository = Mercurial.getInstance().getRepositoryRoot(node.getFile());
+                 if (option != CommitOptions.EXCLUDE) {
+                     int  status = cache.getStatus(node.getFile()).getStatus();
+                     if ((status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
+                         putCandidate(addCandidates, repository, node.getFile());
+                     } else  if ((status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) {
+                         putCandidate(deleteCandidates, repository, node.getFile());
+                     }
+                     putCandidate(commitCandidates, repository, node.getFile());
+                     incPaths.add(node.getFile().getAbsolutePath());
+                 }else{
+                     excPaths.add(node.getFile().getAbsolutePath());
+                     if (!Boolean.TRUE.equals(locallyModifiedExcluded.get(repository))) {
+                         int status = cache.getCachedStatus(node.getFile()).getStatus();
+                         locallyModifiedExcluded.put(repository, (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) == 0); // not interested in excluded locally new files
+                     }
                  }
-             }
+            }
         }
         if (support.isCanceled()) {
             return;
@@ -482,7 +500,7 @@ public class CommitAction extends ContextAction {
                     // XXX handle veto
                 }
             }
-            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles, locallyModifiedExcluded, filesToRefresh);
+            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles, locallyModifiedExcluded, filesToRefresh, closeBranch);
             commitCmd.setCommitHooks(context, hooks, hookFiles);
             commitCmd.handle();
         } catch (HgException.HgCommandCanceledException ex) {
@@ -582,14 +600,16 @@ public class CommitAction extends ContextAction {
             private final Map<File, Set<File>> rootFilesPerRepository;
             private final Map<File, Set<File>> refreshFilesPerRepository;
             private final Map<File, Boolean> locallyModifiedExcluded;
+            private final boolean closingBranch;
 
             public CommitCmd(Map<File, List<File>> m, OutputLogger logger, String commitMessage, HgProgressSupport support,
-                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded, Map<File, Set<File>> filesToRefresh) {
+                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded, Map<File, Set<File>> filesToRefresh, boolean closingBranch) {
                 super(m, logger, commitMessage, null);
                 this.support = support;
                 this.rootFilesPerRepository = rootFilesPerRepository;
                 this.locallyModifiedExcluded = locallyModifiedExcluded;
                 this.refreshFilesPerRepository = filesToRefresh;
+                this.closingBranch = closingBranch;
             }
 
             public void setCommitHooks (HgHookContext context, Collection<HgHook> hooks, File[] hookFiles) {
@@ -611,7 +631,7 @@ public class CommitAction extends ContextAction {
                 boolean commitAfterMerge = false;
                 Set<File> refreshFiles = new HashSet<File>(candidates);
                 try {                    
-                    HgCommand.doCommit(repository, candidates, msg, logger);
+                    HgCommand.doCommit(repository, candidates, msg, closingBranch, logger);
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
                     List<File> reducedCommitCandidates;
@@ -638,7 +658,7 @@ public class CommitAction extends ContextAction {
                         return;
                     }
                     Mercurial.LOG.log(Level.INFO, "CommitAction: committing with a reduced set of files: {0}", reducedCommitCandidates.toString()); //NOI18N
-                    HgCommand.doCommit(repository, reducedCommitCandidates, msg, logger);
+                    HgCommand.doCommit(repository, reducedCommitCandidates, msg, closingBranch, logger);
                 } catch (HgException ex) {
                     if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
                         // committing after a merge, all modified files have to be committed, even excluded files
@@ -648,7 +668,7 @@ public class CommitAction extends ContextAction {
                         } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
                             return;
                         } else {
-                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
+                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, closingBranch, logger);
                             refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
                             commitAfterMerge = true;
                         }
@@ -679,7 +699,7 @@ public class CommitAction extends ContextAction {
                         logger.output(
                                 NbBundle.getMessage(CommitAction.class,
                                 "MSG_COMMIT_INIT_SEP_ONE", candidates.size())); //NOI18N
-                    } else {
+                    } else if (!candidates.isEmpty()) {
                         logger.output(
                                 NbBundle.getMessage(CommitAction.class,
                                 "MSG_COMMIT_INIT_SEP", candidates.size())); //NOI18N
@@ -689,6 +709,15 @@ public class CommitAction extends ContextAction {
                     }
                 }
                 HgUtils.logHgLog(tip, logger);
+                if (closingBranch) {
+                    String branchName;
+                    try {
+                        branchName = HgCommand.getBranch(repository);
+                    } catch (HgException ex) {
+                        branchName = ""; //NOI18N
+                    }
+                    logger.output(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_BRANCH_CLOSED", branchName)); //NOI18N
+                }
             }
         }
     }

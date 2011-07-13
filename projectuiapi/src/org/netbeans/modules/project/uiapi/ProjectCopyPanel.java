@@ -45,16 +45,15 @@ package org.netbeans.modules.project.uiapi;
 
 import java.awt.CardLayout;
 import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.support.ProjectOperations;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -341,13 +340,19 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private void setProject() {
         FileObject parent = project.getProjectDirectory().getParent();
         File parentFile = FileUtil.toFile(parent);
+        String parentPath;
+        if (parentFile != null) {
+            parentPath = parentFile.getAbsolutePath();
+        } else { // #199706
+            parentPath = System.getProperty("java.io.tmpdir");
+        }
         
-        projectLocation.setText(parentFile.getAbsolutePath());
+        projectLocation.setText(parentPath);
         
         if (isMove) {
             projectName.setText(ProjectUtils.getInformation(project).getName());
         } else {
-            projectName.setText(computeValidProjectName(parentFile.getAbsolutePath(), ProjectUtils.getInformation(project).getName()));
+            projectName.setText(computeValidProjectName(parentPath, ProjectUtils.getInformation(project).getName()));
         }
         
         updateProjectFolder();

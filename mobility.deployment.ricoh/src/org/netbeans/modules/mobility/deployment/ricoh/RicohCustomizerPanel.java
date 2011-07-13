@@ -187,105 +187,105 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(jLabel31)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(deployMethodComboBox, 0, 385, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(jLabel26)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(devKeyPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 179, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel27)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(devKeyAliasTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel28)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(jLabel25)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(devKeyPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
-                                    .add(devKeyManifestTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(jLabel29)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 444, Short.MAX_VALUE)))
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(browseSigningKeyButton)
-                            .add(browseManifestButton))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .addComponent(mainConfigPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 576, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel31)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(deployMethodComboBox, 0, 304, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel26)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(devKeyPasswordField, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel27)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(devKeyAliasTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
+                            .addComponent(jLabel28, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel25)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(devKeyPathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                                    .addComponent(devKeyManifestTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jLabel29)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 396, Short.MAX_VALUE)))
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(browseSigningKeyButton)
+                            .addComponent(browseManifestButton))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel28)
-                .add(7, 7, 7)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel25)
-                    .add(browseSigningKeyButton)
-                    .add(devKeyPathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel29)
-                    .add(devKeyManifestTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(browseManifestButton))
-                .add(6, 6, 6)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel26)
-                    .add(devKeyPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel27)
-                    .add(devKeyAliasTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(12, 12, 12)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel31)
-                    .add(deployMethodComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                .addComponent(jLabel28)
+                .addGap(7, 7, 7)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel25)
+                    .addComponent(browseSigningKeyButton)
+                    .addComponent(devKeyPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(devKeyManifestTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseManifestButton))
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel26)
+                    .addComponent(devKeyPasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel27)
+                    .addComponent(devKeyAliasTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel31)
+                    .addComponent(deployMethodComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mainConfigPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {devKeyAliasTextField, devKeyManifestTextField, devKeyPasswordField, devKeyPathTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {devKeyAliasTextField, devKeyManifestTextField, devKeyPasswordField, devKeyPathTextField});
 
-        jLabel28.getAccessibleContext().setAccessibleName("null");
-        jLabel28.getAccessibleContext().setAccessibleDescription("null");
-        jLabel25.getAccessibleContext().setAccessibleName("null");
-        jLabel25.getAccessibleContext().setAccessibleDescription("null");
+        jLabel28.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_SecurityCertification")); // NOI18N
+        jLabel28.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_SecurityCertification")); // NOI18N
+        jLabel25.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_SignatureKey")); // NOI18N
+        jLabel25.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_SignatureKey")); // NOI18N
         devKeyPathTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_Signature")); // NOI18N
         devKeyPathTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_devKeyPathTextField")); // NOI18N
         browseSigningKeyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_BrowseSignature")); // NOI18N
         browseSigningKeyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_BrowseSignature")); // NOI18N
-        jLabel29.getAccessibleContext().setAccessibleName("null");
-        jLabel29.getAccessibleContext().setAccessibleDescription("null");
+        jLabel29.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_Manifest")); // NOI18N
+        jLabel29.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_Manifest")); // NOI18N
         devKeyManifestTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_Manifest")); // NOI18N
         devKeyManifestTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_devKeyManifestTextField")); // NOI18N
-        browseManifestButton.getAccessibleContext().setAccessibleName("null");
-        browseManifestButton.getAccessibleContext().setAccessibleDescription("null");
-        jLabel26.getAccessibleContext().setAccessibleName("null");
-        jLabel26.getAccessibleContext().setAccessibleDescription("null");
+        browseManifestButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_BrowseManifest")); // NOI18N
+        browseManifestButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_BrowseManifest")); // NOI18N
+        jLabel26.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_KeyPassword")); // NOI18N
+        jLabel26.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_KeyPassword")); // NOI18N
         devKeyPasswordField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_KeyPassword")); // NOI18N
         devKeyPasswordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_devKeyPasswordField")); // NOI18N
-        jLabel27.getAccessibleContext().setAccessibleName("null");
-        jLabel27.getAccessibleContext().setAccessibleDescription("null");
+        jLabel27.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_KeyAlias")); // NOI18N
+        jLabel27.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_KeyAlias")); // NOI18N
         devKeyAliasTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_KeyAlias")); // NOI18N
         devKeyAliasTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_devKeyAliasTextField")); // NOI18N
         deployMethodComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSN_Deployment")); // NOI18N
         deployMethodComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_Deployment")); // NOI18N
 
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "ACSD_ProjectAdvancedCustomizerPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void deployMethodComboBoxActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_deployMethodComboBoxActionPerformed

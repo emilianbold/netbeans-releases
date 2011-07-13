@@ -86,10 +86,6 @@ public class RootViewRandomTesting {
         return rootView;
     }
     
-    public static void setDirectViewRebuild(boolean directViewRebuild) {
-        ViewUpdates.setDirectViewRebuild(directViewRebuild);
-    }
-
     public static void initRandomText(RandomTestContainer container) throws Exception {
 //        container.addOp(new Op());
         container.addCheck(new RootViewCheck());
@@ -125,7 +121,7 @@ public class RootViewRandomTesting {
             String err = rootView.documentView().findTreeIntegrityError();
             if (err != null) {
                 throw new IllegalStateException("VH(" + rootView.id() + ") integrity ERROR:\n" +
-                        err + rootView.documentView().toStringDetail());
+                        err + rootView.documentView().toStringDetailUnlocked());
             }
         }
     }

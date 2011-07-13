@@ -56,18 +56,11 @@ import java.awt.geom.Rectangle2D;
  * @author Miloslav Metelka
  */
 final class TextLayoutUtils {
-
+    
     private TextLayoutUtils() {
         // NO instances
     }
 
-    public static float getHeight(Object layout) {
-        TextLayout textLayout = (layout instanceof TextLayoutPart)
-                ? ((TextLayoutPart)layout).textLayout()
-                : (TextLayout) layout;
-        return getHeight(textLayout);
-    }
-    
     public static float getHeight(TextLayout textLayout) {
         float height = textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
         // Ceil to whole points since when doing a compound TextLayout and then
@@ -78,18 +71,6 @@ final class TextLayoutUtils {
         return (float) Math.ceil(height);
     }
     
-    public static float getWidth(Object layout, int textLength) {
-        if (layout instanceof TextLayoutPart) {
-            TextLayoutPart part = (TextLayoutPart) layout;
-            TextLayout textLayout = part.textLayout();
-            float x0 = index2X(textLayout, part.offsetShift());
-            float x1 = index2X(textLayout, part.offsetShift() + textLength);
-            return x1 - x0;
-        } else {
-            return getWidth((TextLayout) layout);
-        }
-    }
-    
     public static float getWidth(TextLayout textLayout) {
         // Since textLayout.getAdvance() includes some extra blank space for italic fonts
         // we instead use getCaretInfo() which seems to produce more appropriate result.
@@ -98,7 +79,7 @@ final class TextLayoutUtils {
         // However textLayout.isLeftToRight() returns true in case of mixture of LTR and RTL text
         // in a single textLayout so it can't be used easily.
         // Therefore both indices for zero and character-count are computed
-        // and compared and their difference returned.
+        // and compared and their absolute difference returned.
         float x0 = index2X(textLayout, 0);
         float x1 = index2X(textLayout, textLayout.getCharacterCount());
         float width = Math.abs(x1 - x0); // Could be negative for RTL text => abs()
@@ -114,57 +95,33 @@ final class TextLayoutUtils {
     }
 
     /**
-     * Get real allocation (possibly not rectangular) of this layout part.
+     * Get real allocation (possibly not rectangular) of a part of layout.
+     * <br/>
+     * It's used when rendering the text layout for filling background highlights of the view.
      *
      * @param length Total number of characters for which the allocation is computed.
      * @param alloc Allocation given by a parent view.
      * @return
      */
-    public static Shape getRealAlloc(TextLayout textLayout, Rectangle2D textLayoutBounds,
+    public static Shape getRealAlloc(TextLayout textLayout, Rectangle2D textLayoutRect,
             TextHitInfo startHit, TextHitInfo endHit)
     {
-        Shape ret;
-        if (true && textLayoutBounds.getX() != 0d || textLayoutBounds.getY() != 0d) {
-            Rectangle2D.Double zeroBasedBounds = ViewUtils.shape2Bounds(textLayoutBounds);
-            zeroBasedBounds.x = 0;
-            zeroBasedBounds.y = 0;
-            ret = textLayout.getVisualHighlightShape(startHit, endHit, zeroBasedBounds);
-            AffineTransform transform = AffineTransform.getTranslateInstance(
-                    textLayoutBounds.getX(),
-                    textLayoutBounds.getY()
-            );
-            ret = transform.createTransformedShape(ret);
-
-        } else {
-            ret = textLayout.getVisualHighlightShape(startHit, endHit, textLayoutBounds);
-        }
+        Rectangle2D.Double zeroBasedRect = ViewUtils.shape2Bounds(textLayoutRect);
+        zeroBasedRect.x = 0;
+        zeroBasedRect.y = 0;
+        Shape ret = textLayout.getVisualHighlightShape(startHit, endHit, zeroBasedRect);
+        AffineTransform transform = AffineTransform.getTranslateInstance(
+                textLayoutRect.getX(),
+                textLayoutRect.getY()
+        );
+        ret = transform.createTransformedShape(ret);
+        // The following gives bad result for some reason (works for layout but not for caret modelToView())
+//        Shape ret2 = textLayout.getVisualHighlightShape(startHit.getCharIndex(), endHit.getCharIndex(), textLayoutRect);
         return ret;
     }
     
-    public static TextLayoutPart textLayoutPart(EditorBoxView boxView, int index) {
-        return (TextLayoutPart) ((HighlightsView)boxView.getEditorView(index)).layout();
-    }
-
-    /**
-     * @param boxView
-     * @param anyPart
-     * @param layoutStartViewIndex
-     * @param endPartRelIndex
-     * @return hit at shift-offset of a part corresponding to relEndIndex
-     *  or textLayout.getCharacterCount() if it points right at TextLayoutWrapper.viewCount().
-     */
-    public static TextHitInfo endHit(EditorBoxView boxView, TextLayoutPart anyPart,
-            int layoutStartViewIndex, int endPartRelIndex)
-    {
-        assert (endPartRelIndex <= anyPart.viewCount());
-        int endCharIndex = (endPartRelIndex == anyPart.viewCount())
-            ? anyPart.textLayout().getCharacterCount()
-            : textLayoutPart(boxView, layoutStartViewIndex + endPartRelIndex).offsetShift();
-        return TextHitInfo.leading(endCharIndex);
-    }
-    
     public static String toStringShort(TextLayout textLayout) {
-        return "c[]:" + textLayout.getCharacterCount() + ";W=" + getWidth(textLayout); // NOI18N
+        return "[" + textLayout.getCharacterCount() + "]W=" + getWidth(textLayout); // NOI18N
     }
 
     public static String toString(TextLayout textLayout) {

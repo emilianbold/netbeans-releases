@@ -213,7 +213,8 @@ public final class CompletionSupport implements DocumentListener {
         }
         if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos) && 
                 !CndTokenUtilities.isInProCDirective(getDocument(), pos)) {
-            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
+            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos && 
+                    !CndTokenUtilities.isInProCDirective(getDocument(), lastSeparatorOffset)) {
                 return lastSeparatorOffset;
             }
             lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
