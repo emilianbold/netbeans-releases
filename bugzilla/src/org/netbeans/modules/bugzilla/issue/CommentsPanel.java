@@ -214,13 +214,13 @@ public class CommentsPanel extends JPanel {
         // left label
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
         String leftTxt = "";
+        String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
-            String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
-            leftTxt = MessageFormat.format(leftFormat, summary) + " ";
+            leftTxt = MessageFormat.format(leftFormat, authorTxt);
+        } else {
+            leftTxt = authorTxt;
         } 
-        String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
-        leftTxt += authorTxt;
         leftLabel.setText(leftTxt);
         leftLabel.setLabelFor(textPane);
         leftLabel.setForeground(GREY_FOREGROUND);
