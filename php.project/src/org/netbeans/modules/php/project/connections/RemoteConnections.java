@@ -64,6 +64,7 @@ import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
 import org.netbeans.modules.php.project.connections.sftp.SftpConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,28 +74,37 @@ public final class RemoteConnections {
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
-    private static final RemoteConnections INSTANCE = new RemoteConnections();
     // Do not change arbitrary - consult with layer's folder OptionsExport
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
+    private static final List<RemoteConnectionProvider> CONNECTION_PROVIDERS =
+            Arrays.<RemoteConnectionProvider>asList(FtpConnectionProvider.get(), SftpConnectionProvider.get());
+    private static final RemoteConnections INSTANCE = new RemoteConnections();
+
     private final ConfigManager configManager;
     private final DefaultConfigProvider configProvider = new DefaultConfigProvider();
-    RemoteConnectionsPanel panel = null;
+    private final ChangeSupport changeSupport;
 
+    /**
+     * Get remote connections.
+     * <p>
+     * <b>Always return the same instance of {@link RemoteConnections}.</b>
+     * @return singleton instance of {@link RemoteConnections}
+     */
     public static RemoteConnections get() {
         return INSTANCE;
     }
 
     private RemoteConnections() {
         configManager = new ConfigManager(configProvider);
+        changeSupport = new ChangeSupport(this);
     }
 
-    private void initPanel() {
-        if (panel == null) {
-            panel = new RemoteConnectionsPanel(this, configManager);
-        }
+    private RemoteConnectionsPanel createPanel() {
+        RemoteConnectionsPanel panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
+        return panel;
     }
 
     private static Preferences getPreferences() {
@@ -117,11 +127,11 @@ public final class RemoteConnections {
      * @return <code>true</code> if there are changes in remote configurations.
      */
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
-        initPanel();
+        RemoteConnectionsPanel panel = createPanel();
         // original remote configurations
         List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
 
-        boolean changed = panel.open(remoteConfiguration);
+        final boolean changed = panel.open(remoteConfiguration);
         if (changed) {
             saveRemoteConnections(remoteConfigurations);
         }
@@ -129,19 +139,23 @@ public final class RemoteConnections {
         configProvider.resetConfigs();
         configManager.reset();
 
+        if (changed) {
+            changeSupport.fireChange();
+        }
+
         return changed;
     }
 
     public void addChangeListener(ChangeListener listener) {
-        configManager.addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        configManager.removeChangeListener(listener);
+        changeSupport.removeChangeListener(listener);
     }
 
     List<RemoteConnectionProvider> getConnectionProviders() {
-        return Arrays.<RemoteConnectionProvider>asList(FtpConnectionProvider.get(), SftpConnectionProvider.get());
+        return CONNECTION_PROVIDERS;
     }
 
     public List<String> getRemoteConnectionTypes() {
@@ -200,7 +214,7 @@ public final class RemoteConnections {
         for (Configuration cfg : configs) {
             RemoteConfiguration configuration = getRemoteConfiguration(cfg);
             if (configuration == null) {
-                // unknown configuration type => create config of unknown type
+                // unknown configuration type => get config of unknown type
                 configuration = UNKNOWN_REMOTE_CONFIGURATION;
             }
             remoteConfigs.add(configuration);
