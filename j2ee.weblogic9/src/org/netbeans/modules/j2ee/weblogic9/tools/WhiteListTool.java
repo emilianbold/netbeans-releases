@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.tools;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -53,15 +56,12 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -69,6 +69,8 @@ import org.openide.windows.OutputWriter;
  */
 public class WhiteListTool {
 
+    private static final String WHITELIST_TOOL_DIR = "JavaEE/WebLogic"; // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(WhiteListTool.class.getName());
 
     private static final ExecutionDescriptor TOOL_DESCRIPTOR =
@@ -88,12 +90,24 @@ public class WhiteListTool {
             return true;
         }
 
-        File propertiesFo = InstalledFileLocator.getDefault().locate(
-                "modules/ext/cloud9.logging.properties", "org.netbeans.modules.libs.cloud9", false); // NOI18N
+        File propertiesFile = null;
+        try {
+            FileObject configRoot = FileUtil.getConfigRoot();
+            FileObject loggingDir = FileUtil.createFolder(
+                    configRoot, WHITELIST_TOOL_DIR);
+            File logging = FileUtil.toFile(loggingDir);
+            if (logging != null) {
+                propertiesFile = new File(logging, "whitelist.logging.properties"); // NOI18N
+                prepareLoggingPropeties(propertiesFile);
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            propertiesFile = null;
+        }
 
         ExternalProcessBuilder builder = new ExternalProcessBuilder(getJavaBinary());
-        if (propertiesFo != null) {
-            builder = builder.addArgument("-Djava.util.logging.config.file=" + propertiesFo.getAbsolutePath()); // NOI18N
+        if (propertiesFile != null) {
+            builder = builder.addArgument("-Djava.util.logging.config.file=" + propertiesFile.getAbsolutePath()); // NOI18N
         }
         builder = builder.addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
                 .addArgument(file.getAbsolutePath())
@@ -130,5 +144,23 @@ public class WhiteListTool {
             }
         }
         return javaBinary;
+    }
+    
+    private static void prepareLoggingPropeties(File dest) throws IOException {
+        if (dest.exists()) {
+            return;
+        }
+        
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(dest));
+        try {
+            InputStream is = WLDeploymentFactory.class.getResourceAsStream("resources/whitelist.logging.properties"); // NOI18N
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                is.close();
+            }
+        } finally {
+            os.close();
+        }
     }
 }
