@@ -181,8 +181,6 @@ public class Queries {
      * @param cls the fully qualified name of the class to look up methods in
      * @param methodName name of the method
      * @param useRawTypes if true the erasure is done before comparison
-     * @param includeComments if true the length of the preceding and trailing
-     * comments is added to method span
      * @param returnType the return type of the method specified by
      * the class canonical name, @see Class#getCanonicalName. If useRawTypes is
      * false parameterized type is allowed.
@@ -198,7 +196,6 @@ public class Queries {
             @NonNull final String cls,
             @NonNull final String methodName,
             final boolean useRawTypes,
-            final boolean includeComments,
             @NonNull final String returnType,
             @NonNull final String... parameterTypes) throws QueryException {
         Parameters.notNull("cls", cls); //NOI18N
@@ -209,7 +206,6 @@ public class Queries {
                 cls,
                 methodName,
                 useRawTypes,
-                includeComments,
                 returnType,
                 parameterTypes);
     }

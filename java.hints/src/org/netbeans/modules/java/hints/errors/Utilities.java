@@ -146,23 +146,18 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
-        if (tp.getLeaf().getKind() == Kind.VARIABLE) {
-            return ((VariableTree) tp.getLeaf()).getName().toString();
-        }
-        
-        ExpressionTree et = (ExpressionTree) tp.getLeaf();
-        String name = getName(et);
+        String name = getName(tp.getLeaf());
         
         if (name == null) {
-            if(et instanceof LiteralTree) {
-                Object guess = ((LiteralTree) et).getValue();
-                if (guess != null && guess instanceof String)
-                    return guessLiteralName((String) guess);
-            } 
             return DEFAULT_NAME;
         }
         
         Scope s = info.getTrees().getScope(tp);
+        
+        return makeNameUnique(info, s, name);
+    }
+
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name) {
         int counter = 0;
         boolean cont = true;
         String proposedName = name;
@@ -187,7 +182,7 @@ public class Utilities {
     private static String guessLiteralName(String str) {
         StringBuffer sb = new StringBuffer();
         if(str.length() == 0)
-            return DEFAULT_NAME;
+            return null;
         char first = str.charAt(0);
         if(Character.isJavaIdentifierStart(str.charAt(0)))
             sb.append(first);
@@ -204,7 +199,7 @@ public class Utilities {
                 break;
         }
         if (sb.length() == 0)
-            return DEFAULT_NAME;
+            return null;
         else
             return sb.toString();
     }
@@ -306,6 +301,15 @@ public class Utilities {
             return firstToLower(getName(((NewClassTree) et).getIdentifier()));
         case PARAMETERIZED_TYPE:
             return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
+        case STRING_LITERAL:
+            String name = guessLiteralName((String) ((LiteralTree) et).getValue());
+            if(name == null) {
+                return firstToLower(String.class.getSimpleName());
+            } else {
+                return firstToLower(name);
+            }
+        case VARIABLE:
+            return ((VariableTree) et).getName().toString();
         default:
             return null;
         }
@@ -364,7 +368,7 @@ public class Utilities {
         }
     }
     
-    private static final class VariablesFilter implements ElementAcceptor {
+    public static final class VariablesFilter implements ElementAcceptor {
         
         private static final Set<ElementKind> ACCEPTABLE_KINDS = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
         

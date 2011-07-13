@@ -233,7 +233,7 @@ public final class FormJavaSource {
             @Override
             public int[] apply(Queries queries) throws QueryException {
                 String[] paramTypes = eventType != null ? new String[] { eventType } : new String[0];
-                return queries.getMethodSpan(cls, evenHandlerName, true, true, "void", paramTypes); // NOI18N
+                return queries.getMethodSpan(cls, evenHandlerName, true, "void", paramTypes); // NOI18N
             }
         });
     }
@@ -245,7 +245,7 @@ public final class FormJavaSource {
         return query(new Function<Queries, int[]>() {
             @Override
             public int[] apply(Queries queries) throws QueryException {
-                return queries.getMethodSpan(cls, methodName, true, true, "void", paramTypes); // NOI18N
+                return queries.getMethodSpan(cls, methodName, true, "void", paramTypes); // NOI18N
             }
         });
     }

@@ -113,7 +113,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             Exceptions.printStackTrace(ex);
         } catch (InvocationException ex) {
             final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, ((JPDAThreadImpl) thread).getDebugger());
+            iextr.setPreferredThread((JPDAThreadImpl) thread);
             iextr.getMessage();
+            iextr.getLocalizedMessage();
             iextr.getCause();
             iextr.getStackTrace();
             Exceptions.printStackTrace(iextr);
@@ -134,6 +136,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            cor.enableCollection(); // While AWTAccessLoop is running, it should not be collected.
         }
         logger.fine("The RemoteServiceClass is there: "+RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
     }
@@ -141,6 +145,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     @Override
     public void engineRemoved(DebuggerEngine engine) {
         // TODO: Stop the remote service.
+        // TODO: Remove the screenhots components.
     }
     
 }
