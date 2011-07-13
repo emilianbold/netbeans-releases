@@ -56,11 +56,7 @@ import org.w3c.dom.Element;
  * @author Jiri Sedlacek
  */
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.AntProjectSupportProvider.class, 
-                        projectTypes={
-                            @ProjectType(id="org-netbeans-modules-apisupport-project"), //NOI18N
-                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite") //NOI18N
-                        }
-)
+                        projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1210)}) // NOI18N
 public final class FreeFormAntProjectSupportProvider extends AbstractAntProjectSupportProvider {    
 
     @Override
