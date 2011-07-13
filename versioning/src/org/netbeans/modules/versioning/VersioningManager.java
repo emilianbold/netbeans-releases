@@ -411,9 +411,17 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 File topmost = system.getTopmostManagedAncestor(folder);
                 LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
                 if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
-                    LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
-                    owner = system;
-                    closestParent = topmost;
+                    // calls getDelegate, but in this phase the delegate is already ready and loaded (topmost != null), no need to worry about waking it up
+                    system = system instanceof DelegatingVCS ? ((DelegatingVCS) system).getDelegate() : system;
+                    if (VersioningConfig.getDefault().isDisconnected(system, topmost)) {
+                        // repository root is disconnected from this vcs
+                        LOG.log(Level.FINE, " skipping disconnected owner = {0} for {1}", new Object[] { 
+                            system.getClass().getName(), topmost }) ;
+                    } else {
+                        LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
+                        owner = system;
+                        closestParent = topmost;
+                    }
                 }
             }
         }

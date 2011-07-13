@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.indexer;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import org.apache.maven.artifact.installer.ArtifactInstaller;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -55,6 +56,8 @@ import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery.ClassUsageResult;
+import org.openide.util.test.JarBuilder;
 import org.openide.util.test.TestFileUtils;
 
 public class NexusRepositoryIndexerImplTest extends NbTestCase {
@@ -83,7 +86,7 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
     }
 
     @Override protected Level logLevel() {
-        return Level.FINE;
+        return Level.FINER;
     }
 
     @Override protected String logRoot() {
@@ -94,19 +97,21 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
         artifactInstaller.install(f, embedder.createArtifact(groupId, artifactId, version, packaging), defaultArtifactRepository);
     }
 
+    private void installPOM(String groupId, String artifactId, String version, String packaging) throws Exception {
+        install(TestFileUtils.writeFile(new File(getWorkDir(), artifactId + ".pom"),
+                "<project><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>" + groupId + "</groupId><artifactId>" + artifactId + "</artifactId>" +
+                "<version>" + version + "</version><packaging>" + packaging + "</packaging></project>"), groupId, artifactId, version, "pom");
+    }
+
     public void testFilterGroupIds() throws Exception {
         install(File.createTempFile("whatever", ".txt", getWorkDir()), "test", "spin", "1.1", "txt");
         assertEquals(Collections.singleton("test"), nrii.filterGroupIds("", Collections.singletonList(info)));
     }
 
     public void testFind() throws Exception {
-        install(TestFileUtils.writeFile(new File(getWorkDir(), "plugin.pom"),
-                "<project><modelVersion>4.0.0</modelVersion>" +
-                "<groupId>test</groupId><artifactId>plugin</artifactId>" +
-                "<version>0</version><packaging>maven-plugin</packaging></project>"), "test", "plugin", "0", "pom");
-        File jar = new File(getWorkDir(), "plugin.jar");
-        TestFileUtils.writeZipFile(jar, "META-INF/maven/plugin.xml:<plugin><goalPrefix>stuff</goalPrefix></plugin>");
-        install(jar, "test", "plugin", "0", "maven-plugin");
+        installPOM("test", "plugin", "0", "maven-plugin");
+        install(TestFileUtils.writeZipFile(new File(getWorkDir(), "plugin.jar"), "META-INF/maven/plugin.xml:<plugin><goalPrefix>stuff</goalPrefix></plugin>"), "test", "plugin", "0", "maven-plugin");
         QueryField qf = new QueryField();
         qf.setField(ArtifactInfo.PLUGIN_PREFIX);
         qf.setValue("stuff");
@@ -114,5 +119,59 @@ public class NexusRepositoryIndexerImplTest extends NbTestCase {
         qf.setMatch(QueryField.MATCH_EXACT);
         assertEquals("[test:plugin:0:test]", nrii.find(Collections.singletonList(qf), Collections.singletonList(info)).toString());
     }
-    
+
+    public void testFindClassUsages() throws Exception {
+        installPOM("test", "mod1", "0", "jar");
+        File mod1 = new JarBuilder(getWorkDir()).
+                source("mod1.API", "public class API {}").
+                source("mod1.Util", "public class Util {}").
+                source("mod1.Stuff", "public class Stuff implements Outer {}").
+                source("mod1.Outer", "public interface Outer {interface Inner {} interface Unused {}}").
+                build();
+        install(mod1, "test", "mod1", "0", "jar");
+        installPOM("test", "mod2", "0", "jar");
+        install(new JarBuilder(getWorkDir()).
+                source("mod2.Client", "class Client extends mod1.API {}").
+                source("mod2.OtherClient", "class OtherClient extends mod1.API {}").
+                source("mod2.Outer", "class Outer implements mod1.Outer, mod1.Outer.Inner {static class Inner implements mod1.Outer.Inner {}}").
+                classpath(mod1).build(), "test", "mod2", "0", "jar");
+        installPOM("test", "mod3", "0", "jar");
+        install(new JarBuilder(getWorkDir()).
+                source("mod3.Client", "class Client extends mod1.API {}").
+                classpath(mod1).build(), "test", "mod3", "0", "jar");
+        // This is what nbm:populate-repository currently produces:
+        install(TestFileUtils.writeFile(new File(getWorkDir(), "mod4.pom"),
+                "<project><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>test</groupId><artifactId>mod4</artifactId>" +
+                "<version>0</version></project>"), "test", "mod4", "0", "pom");
+        install(new JarBuilder(getWorkDir()).
+                source("mod4.Install", "class Install extends mod1.Util {}").
+                classpath(mod1).build(), "test", "mod4", "0", "jar");
+        install(TestFileUtils.writeZipFile(new File(getWorkDir(), "mod4.nbm"), "Info/info.xml:<whatever/>"), "test", "mod4", "0", "nbm");
+        // And as produced by a Maven source build of a module:
+        installPOM("test", "mod5", "0", "nbm");
+        install(new JarBuilder(getWorkDir()).
+                source("mod5.Install", "class Install extends mod1.Stuff {}").
+                classpath(mod1).build(), "test", "mod5", "0", "jar");
+        install(TestFileUtils.writeZipFile(new File(getWorkDir(), "mod5.nbm"), "Info/info.xml:<whatever/>"), "test", "mod5", "0", "nbm");
+        // repo set up, now index and query:
+        assertEquals("[test:mod2:0:test[mod2.Client, mod2.OtherClient], test:mod3:0:test[mod3.Client]]", nrii.findClassUsages("mod1.API", Collections.singletonList(info)).toString());
+        List<ClassUsageResult> r = nrii.findClassUsages("mod1.Util", Collections.singletonList(info));
+        assertEquals("[test:mod4:0:test[mod4.Install]]", r.toString());
+        assertEquals("jar", r.get(0).getArtifact().getType());
+        r = nrii.findClassUsages("mod1.Stuff", Collections.singletonList(info));
+        assertEquals("[test:mod5:0:test[mod5.Install]]", r.toString());
+        assertEquals("jar", r.get(0).getArtifact().getType());
+        assertEquals("[]", nrii.findClassUsages("java.lang.Object", Collections.singletonList(info)).toString());
+        assertEquals("[test:mod2:0:test[mod2.Outer]]", nrii.findClassUsages("mod1.Outer", Collections.singletonList(info)).toString());
+        assertEquals("[test:mod2:0:test[mod2.Outer]]", nrii.findClassUsages("mod1.Outer$Inner", Collections.singletonList(info)).toString());
+        assertEquals("[]", nrii.findClassUsages("mod1.Outer$Unused", Collections.singletonList(info)).toString());
+        // XXX InnerClass attribute will produce spurious references to outer classes even when just an inner is used
+    }
+
+    public void testCrc32base64() throws Exception {
+        assertEquals("ThFDsw", NexusRepositoryIndexerImpl.crc32base64("whatever"));
+        assertEquals("tqQ_oA", NexusRepositoryIndexerImpl.crc32base64("mod1/Stuff"));
+    }
+
 }

@@ -102,8 +102,9 @@ public final class RepositoryUtil {
      * @param info a version of an artifact
      * @return the file in the local repository (might not exist if download failed)
      * @throws AbstractArtifactResolutionException currently never?
+     * @since 1.17
      */
-    static File downloadArtifact(NBVersionInfo info) throws AbstractArtifactResolutionException {
+    public static File downloadArtifact(NBVersionInfo info) throws Exception {
         Artifact a = createArtifact(info);
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
         List<ArtifactRepository> remotes;
