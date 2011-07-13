@@ -45,20 +45,13 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import org.netbeans.api.actions.Editable;
-import org.netbeans.api.actions.Openable;
-import org.openide.cookies.CloseCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.PrintCookie;
+import org.netbeans.modules.openide.loaders.SimpleES;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.windows.CloneableOpenSupport;
 
 /**
  *
@@ -107,16 +100,7 @@ final class MultiDOEditor implements Callable<Pane>, CookieSet.Factory {
 
     @Override
     public <T extends Cookie> T createCookie(Class<T> klass) {
-        if (
-            klass.isAssignableFrom(DataEditorSupport.class) || 
-            DataEditorSupport.class.isAssignableFrom(klass) || 
-            klass.isAssignableFrom(Openable.class) || 
-            klass.isAssignableFrom(Editable.class) || 
-            klass.isAssignableFrom(EditorCookie.Observable.class) || 
-            klass.isAssignableFrom(PrintCookie.class) || 
-            klass.isAssignableFrom(CloseCookie.class) || 
-            klass.isAssignableFrom(LineCookie.class)
-        ) {
+        if (klass.isAssignableFrom(SimpleES.class)) {
             synchronized (this) {
                 if (support == null) {
                     support = DataEditorSupport.create(
@@ -132,16 +116,6 @@ final class MultiDOEditor implements Callable<Pane>, CookieSet.Factory {
 
     public static void registerEditor(MultiDataObject multi, String mime, boolean useMultiview) {
         MultiDOEditor ed = new MultiDOEditor(multi, mime, useMultiview);
-        try {
-            multi.getCookieSet().add(new Class[]{
-                Class.forName("org.openide.text.SimpleES"), // NOI18N
-                SaveAsCapable.class, Openable.class, EditorCookie.Observable.class, 
-                PrintCookie.class, CloseCookie.class, Editable.class,
-                DataEditorSupport.class, CloneableEditorSupport.class,
-                CloneableOpenSupport.class
-            }, ed);
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
+        multi.getCookieSet().add(SimpleES.class, ed);
     }
 }
