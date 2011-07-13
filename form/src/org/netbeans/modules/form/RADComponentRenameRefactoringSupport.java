@@ -62,19 +62,74 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.form.codestructure.CodeVariable;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Class used to hook form component/variables renaming into refactoring.
  * @author Wade Chandler
  * @version 1.0
  */
-public class RADComponentRenameRefactoringSupport {
+@ServiceProvider(service=RenameSupport.Refactoring.class)
+public class RADComponentRenameRefactoringSupport implements RenameSupport.Refactoring {
+
+    @Override
+    public void renameComponent(FormModel formModel, String currentName, String newName) {
+        FormDataObject formDO = FormEditor.getFormDataObject(formModel);
+        JavaSource js = JavaSource.forFileObject(formDO.getPrimaryFile());
+        MemberVisitor scanner = new MemberVisitor(currentName, true); //privateField);
+        try {
+            js.runUserActionTask(scanner, true);
+            doRenameRefactoring(formDO, newName, scanner.getHandle());
+        } catch (IOException e) {
+            Logger.getLogger(RADComponentRenameRefactoringSupport.class.getName()).log(Level.SEVERE, e.getMessage(), e);
+        }
+    }
+
+    private static void doRenameRefactoring(FormDataObject dao, String newName, TreePathHandle handle) throws IOException {
+        if(handle==null){
+            //this would only happen if setName were called without the correct component being
+            //selected some how...
+            return;
+        }
+        FormEditorSupport fes = dao.getFormEditorSupport();
+        if (fes.isModified()) {
+            fes.saveDocument();
+        }
+        //ok, so we are now ready to actually setup our RenameRefactoring...we need the element TreePathHandle
+        Lookup rnl = Lookups.singleton(handle);
+        RefactoringSession renameSession = RefactoringSession.create("Change variable name");//NOI18N
+        RenameRefactoring refactoring = new RenameRefactoring(rnl);
+        Problem pre = refactoring.preCheck();
+        if(pre!=null&&pre.isFatal()){
+            Logger.getLogger("global").log(Level.WARNING, "There were problems trying to perform the refactoring.");
+        }
+
+        Problem p = null;
+
+        if( (!(pre!=null&&pre.isFatal())) && !emptyOrWhite(newName) ){
+            refactoring.setNewName(newName);
+            p = refactoring.prepare(renameSession);
+        }
+
+        if( (!(p!=null&&p.isFatal())) && !emptyOrWhite(newName) ){
+            renameSession.doRefactoring(true);
+        }
+    }
+
+    private static boolean emptyOrWhite(String s){
+        if(s==null){
+            return true;
+        }
+        if(s.trim().length()<0){
+            return true;
+        }
+        return false;
+    }
 
     private static class MemberVisitor
             extends TreePathScanner<Void, Void>
@@ -155,77 +210,4 @@ public class RADComponentRenameRefactoringSupport {
             this.scan(parameter.getCompilationUnit(), null);
         }
     }
-
-    static void renameComponent(RADComponent component, String newName) {
-        int varType = component.getCodeExpression().getVariable().getType();
-        if ((varType & CodeVariable.SCOPE_MASK) == CodeVariable.LOCAL) {
-            // local variable - no refactoring needed, no renaming out of generated (guarded) code
-            FormRefactoringUpdate.renameComponentInCustomCode(component, newName);
-            component.setName(newName);
-        } else if (((varType & CodeVariable.ACCESS_MODIF_MASK) == CodeVariable.PRIVATE)) {
-            // private field variable
-            renameFieldInClass(component, newName);
-        } else {
-            // field visible outside the form class - invoke full rename refactoring
-            // TODO separate refactoring to IDE specific part, if not available do at least renameFieldInClass
-            FormDataObject formDO = FormEditor.getFormDataObject(component.getFormModel());
-            JavaSource js = JavaSource.forFileObject(formDO.getPrimaryFile());
-            MemberVisitor scanner = new MemberVisitor(component.getName(), true); //privateField);
-            try {
-                js.runUserActionTask(scanner, true);
-                doRenameRefactoring(formDO, newName, scanner.getHandle());
-            } catch (IOException e) {
-                Logger.getLogger(RADComponentRenameRefactoringSupport.class.getName()).log(Level.SEVERE, e.getMessage(), e);
-            }
-        }
-    }
-
-    private static void renameFieldInClass(RADComponent component, final String newName) {
-        FormRefactoringUpdate.renameComponentInCustomCode(component, newName);
-        FormEditor.getFormJavaSource(component.getFormModel())
-                .renameField(component.getName(), newName); // will also change guarded code, no need to regenerate
-        component.setName(newName);
-    }
-
-    private static void doRenameRefactoring(FormDataObject dao, String newName, TreePathHandle handle) throws IOException {
-        if(handle==null){
-            //this would only happen if setName were called without the correct component being
-            //selected some how...
-            return;
-        }
-        FormEditorSupport fes = dao.getFormEditorSupport();
-        if (fes.isModified()) {
-            fes.saveDocument();
-        }
-        //ok, so we are now ready to actually setup our RenameRefactoring...we need the element TreePathHandle
-        Lookup rnl = Lookups.singleton(handle);
-        RefactoringSession renameSession = RefactoringSession.create("Change variable name");//NOI18N
-        RenameRefactoring refactoring = new RenameRefactoring(rnl);
-        Problem pre = refactoring.preCheck();
-        if(pre!=null&&pre.isFatal()){
-            Logger.getLogger("global").log(Level.WARNING, "There were problems trying to perform the refactoring.");
-        }
-
-        Problem p = null;
-
-        if( (!(pre!=null&&pre.isFatal())) && !emptyOrWhite(newName) ){
-            refactoring.setNewName(newName);
-            p = refactoring.prepare(renameSession);
-        }
-
-        if( (!(p!=null&&p.isFatal())) && !emptyOrWhite(newName) ){
-            renameSession.doRefactoring(true);
-        }
-    }
-
-    private static boolean emptyOrWhite(String s){
-        if(s==null){
-            return true;
-        }
-        if(s.trim().length()<0){
-            return true;
-        }
-        return false;
-    }
-    
 }
