@@ -191,7 +191,7 @@ public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider
             }
             
             // get settings folder used for resolving filesystem for atomic action
-            FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, false);
+            FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, true);
             if (settingsStorage == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "Cannot create project settings folder for " // NOI18N
                                               + project + ", settings cannot be saved."); // NOI18N
