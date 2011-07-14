@@ -154,7 +154,11 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
         if (gotMakeConfigurationDescriptor()) {
             MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+            if (confProvider != null){
+                confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+            }
+            
+            
         }
 
     }
