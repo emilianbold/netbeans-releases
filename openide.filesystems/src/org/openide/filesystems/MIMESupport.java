@@ -103,12 +103,13 @@ final class MIMESupport extends Object {
     }
 
     static void freeCaches() {
+        CachedFileObject cfo;
         synchronized (lock) {
-            CachedFileObject cfo = lastCfo.get();
-            if (cfo != null) {
-                cfo.clear();
-            }
+            cfo = lastCfo.get();
             lastCfo = CLEARED;
+        }
+        if (cfo != null) {
+            cfo.clear();
         }
     }
 
