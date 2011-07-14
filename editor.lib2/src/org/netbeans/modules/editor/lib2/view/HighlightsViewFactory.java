@@ -272,8 +272,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 HighlightsChangeEvent layerEvent = (highlightsContainer instanceof DirectMergeContainer)
                         ? ((DirectMergeContainer) highlightsContainer).layerEvent()
                         : null;
-                String layerInfo = (layerEvent != null) ? " Layer:" + layerEvent.getSource() : null; // NOI18N
-                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "HIGHLIGHT-CHANGE: <" + // NOI18N
+                String layerInfo = (layerEvent != null)
+                        ? " " + highlightingManager.findLayer((HighlightsContainer)layerEvent.getSource()) // NOI18N
+                        : ""; // NOI18N
+                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
                         startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             }
             if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
@@ -285,8 +287,10 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
                     ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
                     : null;
-            String layerInfo = (layerEvent != null) ? " Layer:" + layerEvent.getSource() : null; // NOI18N
-            ViewUtils.log(ViewHierarchy.CHANGE_LOG, "HIGHLIGHT-REPAINT-CHANGE: <" + // NOI18N
+            String layerInfo = (layerEvent != null)
+                    ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
+                    : ""; // NOI18N
+            ViewUtils.log(ViewHierarchy.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
                     startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             offsetRepaint(startOffset, endOffset);
         }

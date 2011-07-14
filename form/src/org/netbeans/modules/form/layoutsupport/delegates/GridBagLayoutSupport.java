@@ -1411,7 +1411,6 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             javaInitStrings = initStringList.toArray(new String[initStringList.size()]);
 
             otherValuesAllowed = false;
-            property.setCurrentEditor(this);
         }
 
         @Override
