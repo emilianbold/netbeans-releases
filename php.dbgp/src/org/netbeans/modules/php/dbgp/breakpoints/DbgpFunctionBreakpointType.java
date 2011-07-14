@@ -44,6 +44,9 @@
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import javax.swing.JComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.php.api.util.FileUtils;
 
 import org.netbeans.modules.php.dbgp.ui.DbgpMethodBreakpointPanel;
 import org.netbeans.spi.debugger.ui.BreakpointType;
@@ -92,7 +95,7 @@ public class DbgpFunctionBreakpointType extends BreakpointType {
      */
     @Override
     public boolean isDefault() {
-        return false;
+        return FileUtils.isPhpFile(NbEditorUtilities.getFileObject(EditorRegistry.lastFocusedComponent().getDocument()));
     }
 
 }
