@@ -364,6 +364,9 @@ public class CommentsPanel extends JPanel {
         GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
             .addComponent(iconLabel)
             .addComponent(leftLabel);
+        if (stateLabel != null) {
+            vGroup.addComponent(stateLabel);
+        }
         vGroup.addComponent(commentLabel)
               .addComponent(rightLabel)
               .addComponent(replyButton);

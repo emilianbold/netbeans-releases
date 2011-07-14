@@ -466,7 +466,7 @@ public class NbJiraIssueTest extends NbTestCase {
                 attachment = att;
             }
         }
-        assertEquals(config.getUser(author).getFullName(), attachment.getAuthor());
+        assertEquals(config.getUser(author).getFullName(), attachment.getEmail());
         assertEquals(size, Integer.parseInt(attachment.getSize()));
         assertNotNull(attachment.getDate());
         assertEquals(fo.getNameExt(), attachment.getFilename());
