@@ -426,10 +426,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
             builder.append("\n"); // NOI18N
         }
-        boolean hasReturn = true;
-        if (returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
-            if (((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
-                hasReturn = false;
+        boolean hasReturn = false;
+        if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+            if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                hasReturn = true;
             }
         }
         if(hasReturn) {

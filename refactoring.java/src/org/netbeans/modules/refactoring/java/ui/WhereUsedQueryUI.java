@@ -57,7 +57,6 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -134,11 +133,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     }
     
     private void setForMethod() {
-        if (panel.isMethodFromBaseClass()) {
-            query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
-        } else {
-            query.setRefactoringSource(Lookups.singleton(element));
-        }
+        query.setRefactoringSource(Lookups.singleton(element));
         query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS,panel.isMethodFromBaseClass());
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
