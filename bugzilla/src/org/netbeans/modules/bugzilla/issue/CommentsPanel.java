@@ -88,7 +88,6 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -208,31 +207,40 @@ public class CommentsPanel extends JPanel {
         JPanel placeholder = createTextPanelPlaceholder();      
         JLabel commentLabel = new JLabel();
         JLabel rightLabel = new JLabel();
-        JLabel iconLabel = new ExpandLabel(placeholder, textPane, headerPanel, commentLabel, number);
+        ExpandLabel iconLabel = new ExpandLabel(placeholder, textPane, headerPanel, commentLabel, number);
         JLabel leftLabel = new JLabel();
+        
+        headerPanel.addMouseListener(iconLabel);
+        headerPanel.setComponentPopupMenu(expandPopup);
         
         // left label
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
         String leftTxt = "";
+        String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
-            String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
-            leftTxt = MessageFormat.format(leftFormat, summary) + " ";
-        } 
-        String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
-        leftTxt += authorTxt;
+            leftTxt = MessageFormat.format(leftFormat, authorTxt);
+        } else {
+            leftTxt = authorTxt;
+        }
         leftLabel.setText(leftTxt);
         leftLabel.setLabelFor(textPane);
         leftLabel.setForeground(GREY_FOREGROUND);
         leftLabel.setOpaque(false);
+        leftLabel.addMouseListener(iconLabel);
+        leftLabel.setComponentPopupMenu(expandPopup);
         
         // comment label
         commentLabel.setOpaque(false);
+        commentLabel.addMouseListener(iconLabel);
+        commentLabel.setComponentPopupMenu(expandPopup);
         
         // right label
         rightLabel.setText(dateTimeString);
         rightLabel.setForeground(GREY_FOREGROUND);
         rightLabel.setOpaque(false);
+        rightLabel.addMouseListener(iconLabel);
+        rightLabel.setComponentPopupMenu(expandPopup);
         
         // state label
         JLabel stateLabel = null;
@@ -250,7 +258,16 @@ public class CommentsPanel extends JPanel {
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
         replyButton.setOpaque(false);
-
+        
+        // mailto button
+        LinkButton.MailtoButton mailtoButton = null;
+        if(author.indexOf("@") > -1) {
+            mailtoButton = new LinkButton.MailtoButton(
+                    NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.mailtoButton.text"),                                        // NOI18N
+                    NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.mailtoButton.AccessibleContext.accessibleDescription"),     // NOI18N
+                    author); 
+            replyButton.setOpaque(false);
+        }
         // Issue 172653 - JTextPane too big
         JComponent pane = textPane;
         if (textPane.getPreferredSize().height>Short.MAX_VALUE) {
@@ -261,7 +278,7 @@ public class CommentsPanel extends JPanel {
         }
 
         // Layout
-        layoutHeaderPanel(headerPanel, iconLabel, leftLabel, commentLabel, rightLabel, replyButton, stateLabel);
+        layoutHeaderPanel(headerPanel, iconLabel, leftLabel, commentLabel, rightLabel, replyButton, mailtoButton, stateLabel);
         
         iconLabel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
         placeholder.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
@@ -322,7 +339,7 @@ public class CommentsPanel extends JPanel {
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
-    private void layoutHeaderPanel(JPanel headerPanel, JLabel iconLabel, JLabel leftLabel, JLabel commentLabel, JLabel rightLabel, LinkButton replyButton, JLabel stateLabel) {
+    private void layoutHeaderPanel(JPanel headerPanel, JLabel iconLabel, JLabel leftLabel, JLabel commentLabel, JLabel rightLabel, LinkButton replyButton, LinkButton mailtoButton, JLabel stateLabel) {
         GroupLayout layout = new GroupLayout(headerPanel);
         headerPanel.setLayout(layout);
         GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
@@ -338,17 +355,21 @@ public class CommentsPanel extends JPanel {
               .addComponent(rightLabel)
               .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
               .addComponent(replyButton);
+        if (mailtoButton != null) {
+            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                  .addComponent(mailtoButton);
+        }
         layout.setHorizontalGroup(hGroup);
         
         GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
             .addComponent(iconLabel)
             .addComponent(leftLabel);
-        if (stateLabel != null) {
-            vGroup.addComponent(stateLabel);
-        }
         vGroup.addComponent(commentLabel)
               .addComponent(rightLabel)
               .addComponent(replyButton);
+        if (mailtoButton != null) {
+            vGroup.addComponent(mailtoButton);
+        }
         layout.setVerticalGroup(vGroup);
     }
 
