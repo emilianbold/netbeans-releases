@@ -292,7 +292,11 @@ public class TabControlButtonFactory {
          */
         @Override
         public void updateUI () {
-            ButtonUI ui = (ButtonUI)UIManager.getUI(this);
+            ButtonUI ui = null;
+            Class uiClass = UIManager.getDefaults().getUIClass( getUIClassID() );
+            if( null != uiClass ) {
+                ui = (ButtonUI)UIManager.getUI(this);
+            }
             if (ui == null) {
                 // create default UI class if not found in UIManager
                 ui = (ButtonUI)UIManager.getUI( new JButton() );
