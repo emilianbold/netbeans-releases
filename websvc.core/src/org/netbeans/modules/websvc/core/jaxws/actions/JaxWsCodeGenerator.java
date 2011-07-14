@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import java.io.IOException;
@@ -71,7 +70,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
@@ -79,7 +77,6 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 
@@ -113,9 +110,9 @@ import org.openide.util.NbBundle;
  *
  * @author mkuchtiak
  */
-public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
+public class JaxWsCodeGenerator  {
     
-    public static final String WSDL_URL = "wsdlUrl";        // NOI18N
+    private static final String POLICY_MANAGER = "policyManager";   // NOI18N
     
     private static final JaxWsCodeGenerator INSTANCE = new JaxWsCodeGenerator();
 
@@ -347,23 +344,6 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
             "    %>\n" + //NOI18N
             "    <%-- end web service invocation --%><hr/>\n"; //NOI18N
 
-    protected JaxWsCodeGenerator(){
-    }
-    
-    @Override
-    public boolean isApplicable( Client client, Project project,
-            FileObject wsdlFileObject, String wsdlUrl , Map<String,Object> context )
-    {
-        /*
-         *  No matter what value is returned here because JaxWsCodeGenerator 
-         *  is default strategy which is used in case of absence other 
-         *  applicable strategy. So its method isApplicable() is never called.   
-         */
-        return true;
-    }
-    public static JaxWsCodeGenerator getInstance(){
-        return INSTANCE;
-    }
 
     public static void insertMethodCall(InvokeOperationCookie.TargetSourceType targetSourceType,
             DataObject dataObj, Lookup sourceNodeLookup) {
@@ -592,37 +572,21 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
         String wsdlUrl = findWsdlLocation(client, documentFileObject);
         
         Project targetProject = FileOwnerQuery.getOwner(documentFileObject);
-        
-        Collection<? extends JaxWsClientMethodGeneratorStrategy> strategies = 
-                Lookup.getDefault().lookupAll( JaxWsClientMethodGeneratorStrategy.class );
-        boolean foundStrategy = false;
+
         Map<String,Object> context = (Map<String,Object>)wsClientNode.getValue(
                 JaxWsClientNode.CONTEXT);
         if ( context == null ){
             context = new HashMap<String, Object>();
+            wsClientNode.setValue(JaxWsClientNode.CONTEXT, context);
         }
-        for (JaxWsClientMethodGeneratorStrategy strategy : strategies){
-            if ( strategy.isApplicable(client, targetProject, wsdlFileObject, wsdlUrl, context)){
-                insertMethod(strategy, client , document, 
-                        pos, service, port, operation, wsdlFileObject, wsdlUrl, context);
-                foundStrategy = true;
-                wsClientNode.setValue(JaxWsClientNode.CONTEXT, context);
-                break;
-            }
-        }
-        if ( !foundStrategy ){
-            insertMethod(getInstance(), client , document, 
-                    pos, service, port, operation, wsdlFileObject, wsdlUrl, context);
-        }
+
+        insertMethod(client , document, pos, service, port, operation, 
+                wsdlFileObject, wsdlUrl, context, targetProject );
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.websvc.core.jaxws.actions.JaxWsClientMethodGeneratorStrategy#insertMethod(javax.swing.text.Document, int, org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService, org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort, org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation, org.openide.filesystems.FileObject, java.lang.String, java.util.Map)
-     */
-    @Override
-    public void insertMethod(final Document document, final int pos,
+    private static void insertMethod(final Document document, final int pos,
             WsdlService service, WsdlPort port, WsdlOperation operation, 
-            FileObject wsdlFileObject, String wsdlUrl, Map<String,Object> context) 
+            FileObject wsdlFileObject, String wsdlUrl, PolicyManager manager) 
     {
 
         boolean inJsp = "text/x-jsp".equals(document.getProperty("mimeType")); //NOI18N
@@ -644,7 +608,7 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
             portJavaName = port.getJavaName();
             portGetterMethod = port.getPortGetter();
             serviceJavaName = service.getJavaName();
-            List arguments = operation.getParameters();
+            List<WsdlParameter> arguments = operation.getParameters();
             returnTypeName = operation.getReturnTypeName();
             Iterator<String> it = operation.getExceptions();
             List<String> exceptionList = new ArrayList<String>();
@@ -669,7 +633,8 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
                 if (inJsp && IMPLICIT_JSP_OBJECTS.contains(argumentName)) {
                     argumentName = argumentName + "_1"; //NOI18N
                 }
-                argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName + " = " + resolveInitValue(argumentTypeName,
+                argumentBuffer1.append("\t" + argumentTypeName + " " + argumentName +
+                        " = " + resolveInitValue(argumentTypeName,
                         NbEditorUtilities.getFileObject(document)) + "\n"); //NOI18N
                 argumentBuffer2.append(i > 0 ? ", " + argumentName : argumentName); //NOI18N
                 paramTypesList.add(argumentTypeName);
@@ -682,60 +647,47 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
             exceptionTypes = new String[exceptionList.size()];
             exceptionList.toArray(exceptionTypes);
 
-            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
+            argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + 
+                    HINT_INIT_ARGUMENTS + argumentBuffer1.toString() : "");
             argumentDeclarationPart = argumentBuffer2.toString();
 
         } catch (NullPointerException npe) {
             // !PW notify failure to extract service information.
             npe.printStackTrace();
-            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
-            NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
+            String message = NbBundle.getMessage(JaxWsCodeGenerator.class, 
+                    "ERR_FailedUnexpectedWebServiceDescriptionPattern"); // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(message, 
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             return;
         }
 
+        manager.chosePolicy();
         // including code to JSP
         if (inJsp) {
-            // invocation
-            Object[] args = new Object[]{
-                serviceJavaName,
-                portJavaName,
-                portGetterMethod,
-                argumentInitializationPart,
-                returnTypeName,
-                operationJavaName,
-                argumentDeclarationPart
-            };
-            final String invocationBody = getJSPInvocationBody(operation, args);
-            try {
-                if (WsdlOperation.TYPE_ASYNC_CALLBACK == operation.getOperationType()) {
-                    Object[] args1 = new Object[]{
-                        callbackHandlerName,
-                        responseType
-                    };
-                    final String methodBody = MessageFormat.format(JSP_CALLBACK_HANDLER, args1);
-                    // insert 2 parts in one atomic action
-                    NbDocument.runAtomic((StyledDocument) document, new Runnable() {
-
-                        public void run() {
-                            try {
-                                document.insertString(document.getLength(), methodBody, null);
-                                document.insertString(pos, invocationBody, null);
-                            } catch (javax.swing.text.BadLocationException ex) {
-                            }
-                        }
-                    });
-                } else {
-                    document.insertString(pos, invocationBody, null);
-                }
-
-
-            } catch (javax.swing.text.BadLocationException ex) {
-            }
-
-            return;
+            insertJspMethod(document, pos, operation, serviceJavaName,
+                    portJavaName, portGetterMethod, operationJavaName,
+                    returnTypeName, responseType, callbackHandlerName,
+                    argumentInitializationPart, argumentDeclarationPart);
         }
+        else {
+            insertJavaMethod(document, pos, operation, wsdlUrl, manager,
+                serviceJavaName, serviceFieldName, portJavaName,
+                portGetterMethod, operationJavaName, returnTypeName,
+                responseType, argumentInitializationPart,
+                argumentDeclarationPart, paramNames, paramTypes, exceptionTypes);
+        }
+    }
 
+    private static void insertJavaMethod( final Document document,
+            final int pos, WsdlOperation operation, String wsdlUrl,
+            PolicyManager manager, final String serviceJavaName,
+            String serviceFieldName, String portJavaName,
+            String portGetterMethod, String operationJavaName,
+            String returnTypeName, String responseType,
+            String argumentInitializationPart, String argumentDeclarationPart,
+            String[] paramNames, String[] paramTypes, String[] exceptionTypes )
+    {
         // including code to java class
         final FileObject targetFo = NbEditorUtilities.getFileObject(document);
 
@@ -747,13 +699,15 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
 
         try {
             CompilerTask task = getCompilerTask(serviceJavaName, serviceFName,
-                    argumentDeclPart, paramNames, argumentInitPart, context);
+                    argumentDeclPart, paramNames, argumentInitPart, manager);
             targetSource.runUserActionTask(task, true);
             
             if (WsdlOperation.TYPE_NORMAL == operation.getOperationType()) {
-                String body = task.getMethodBody(portJavaName, portGetterMethod, returnTypeName, operationJavaName);
+                String body = task.getMethodBody(portJavaName, 
+                        portGetterMethod, returnTypeName, operationJavaName);
                 // generate static method when @WebServiceRef injection is missing, or for J2ee Client application
-                boolean isStatic = !task.isWsRefInjection() || (Car.getCar(targetFo) != null);
+                boolean isStatic = !task.isWsRefInjection() || 
+                    (Car.getCar(targetFo) != null);
                 JaxWsClientMethodGenerator clientMethodGenerator =
                     new JaxWsClientMethodGenerator (
                             isStatic,
@@ -791,32 +745,80 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
                         document.insertString(pos + 1, textToInsert, null);
                     }
                 } catch (BadLocationException badLoc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+                            badLoc);
                 }
             }
 
             // modify Class f.e. @insert WebServiceRef injection
-            context.put(InsertTask.WEB_SERVICE_REF, task.containsWsRefInjection());
             InsertTask modificationTask = getClassModificationTask(serviceJavaName, 
-                    serviceFName, wsdlUrl, context);
+                    serviceFName, wsdlUrl, manager , task.containsWsRefInjection());
             targetSource.runModificationTask(modificationTask).commit();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
     }
-    
-    protected InsertTask getClassModificationTask(String serviceJavaName, 
-            String[] serviceFName, String wsdlUrl , Map<String,Object> context )
+
+    private static void insertJspMethod( final Document document,
+            final int pos, WsdlOperation operation,
+            final String serviceJavaName, String portJavaName,
+            String portGetterMethod, String operationJavaName,
+            String returnTypeName, String responseType,
+            String callbackHandlerName, String argumentInitializationPart,
+            String argumentDeclarationPart )
     {
-        return new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl, context);
+        // invocation
+        Object[] args = new Object[]{
+            serviceJavaName,
+            portJavaName,
+            portGetterMethod,
+            argumentInitializationPart,
+            returnTypeName,
+            operationJavaName,
+            argumentDeclarationPart
+        };
+        final String invocationBody = getJSPInvocationBody(operation, args);
+        try {
+            if (WsdlOperation.TYPE_ASYNC_CALLBACK == operation.getOperationType()) {
+                Object[] args1 = new Object[]{
+                    callbackHandlerName,
+                    responseType
+                };
+                final String methodBody = MessageFormat.format(JSP_CALLBACK_HANDLER, args1);
+                // insert 2 parts in one atomic action
+                NbDocument.runAtomic((StyledDocument) document, new Runnable() {
+
+                    public void run() {
+                        try {
+                            document.insertString(document.getLength(), methodBody, null);
+                            document.insertString(pos, invocationBody, null);
+                        } catch (javax.swing.text.BadLocationException ex) {
+                        }
+                    }
+                });
+            } else {
+                document.insertString(pos, invocationBody, null);
+            }
+
+
+        } catch (javax.swing.text.BadLocationException ex) {
+        }
     }
     
-    protected CompilerTask getCompilerTask(String serviceJavaName, 
+    private static InsertTask getClassModificationTask(String serviceJavaName, 
+            String[] serviceFName, String wsdlUrl , PolicyManager manager , 
+            boolean  containsWsRefInjection )
+    {
+        return new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl, 
+                manager, containsWsRefInjection );
+    }
+    
+    private static CompilerTask getCompilerTask(String serviceJavaName, 
             String[] serviceFName, String[] argumentDeclPart, String[] paramNames, 
-            String[] argumentInitPart, Map<String,Object> context )
+            String[] argumentInitPart, PolicyManager manager )
     {
         return new CompilerTask(serviceJavaName, serviceFName,argumentDeclPart, 
-                paramNames, argumentInitPart);
+                paramNames, argumentInitPart, manager );
     }
 
     private static String findWsdlLocation(Client client, FileObject targetFo) {
@@ -829,19 +831,24 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
         }
     }
     
-    private static void insertMethod(JaxWsClientMethodGeneratorStrategy strategy, 
-            Client client, Document document, int pos, WsdlService service,
-            WsdlPort port, WsdlOperation operation, FileObject wsdlFileObject, 
-            String wsdlUrl, Map<String, Object> context )
+    private static void insertMethod(Client client, Document document, int pos, 
+            WsdlService service, WsdlPort port, WsdlOperation operation, 
+            FileObject wsdlFileObject, String wsdlUrl, 
+            Map<String, Object> context ,  Project project )
     {
-        context.put(WSDL_URL, client.getWsdlUrl());
-        context.put( JaxWsClientMethodGeneratorStrategy.STRATEGY, strategy);
+        PolicyManager manager  = (PolicyManager)context.get( POLICY_MANAGER );
+        if ( manager == null || !client.getWsdlUrl().equals( manager.getWsdlUrl())){
+            manager = new PolicyManager(client.getWsdlUrl(), wsdlFileObject , 
+                    project );
+            context.put(POLICY_MANAGER, manager);
+        }
+        manager.init( client );
         if (client.getUseDispatch()) {
-            strategy.insertDispatchMethod(document, pos, service, port, operation, 
-                    wsdlFileObject , wsdlUrl, context);
+            insertDispatchMethod(document, pos, service, port, operation, 
+                    wsdlFileObject , wsdlUrl, manager);
         } else {
-            strategy.insertMethod(document, pos, service, port, operation,
-                    wsdlFileObject , wsdlUrl,context);
+            insertMethod(document, pos, service, port, operation,
+                    wsdlFileObject , wsdlUrl, manager);
         }
     }
 
@@ -876,54 +883,6 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
             }
         }
         return false;
-    }
-
-    static final class DispatchCompilerTask implements CancellableTask<WorkingCopy> {
-
-        public void run(WorkingCopy workingCopy) throws Exception {
-            boolean changed = false;
-            workingCopy.toPhase(Phase.RESOLVED);
-            ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
-            TreeMaker make = workingCopy.getTreeMaker();
-            CompilationUnitTree cut = workingCopy.getCompilationUnit();
-            CompilationUnitTree copy = cut;
-            if (!foundImport("javax.xml.namespace.QName", copy)) {
-                copy = make.addCompUnitImport(copy,
-                        make.Import(make.Identifier("javax.xml.namespace.QName"), false));
-                changed = true;
-            }
-            if (!foundImport("javax.xml.transform.Source", copy)) {
-                copy = make.addCompUnitImport(copy,
-                        make.Import(make.Identifier("javax.xml.transform.Source"), false));
-                changed = true;
-            }
-            if (!foundImport("javax.xml.ws.Dispatch", copy)) {
-                copy = make.addCompUnitImport(copy,
-                        make.Import(make.Identifier("javax.xml.ws.Dispatch"), false));
-                changed = true;
-            }
-            if (!foundImport("javax.xml.transform.stream.StreamSource", copy)) {
-                copy = make.addCompUnitImport(copy,
-                        make.Import(make.Identifier("javax.xml.transform.stream.StreamSource"), false));
-                changed = true;
-            }
-            if (!foundImport("javax.xml.ws.Service", copy)) {
-                copy = make.addCompUnitImport(copy,
-                        make.Import(make.Identifier("javax.xml.ws.Service"), false));
-                changed = true;
-            }
-            if (!foundImport("java.io.StringReader", copy)) {
-                copy = make.addCompUnitImport(copy,
-                        make.Import(make.Identifier("java.io.StringReader"), false));
-                changed = true;
-            }
-            if (changed) {
-                workingCopy.rewrite(cut, copy);
-            }
-        }
-
-        public void cancel() {
-        }
     }
 
     public static String generateXMLMessage(WsdlPort port, WsdlOperation operation) {
@@ -1098,17 +1057,14 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
         //}
     }*/
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.websvc.core.jaxws.actions.JaxWsClientMethodGeneratorStrategy#insertDispatchMethod(javax.swing.text.Document, int, org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService, org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort, org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation, org.openide.filesystems.FileObject, java.lang.String, java.util.Map)
-     */
-    @Override
-    public void insertDispatchMethod(final Document document, final int pos,
+    private static void insertDispatchMethod(final Document document, final int pos,
             WsdlService service, WsdlPort port, WsdlOperation operation, 
-            FileObject wsdlFileObject, String wsdlUrl, Map<String,Object> context) 
+            FileObject wsdlFileObject, String wsdlUrl, PolicyManager manager ) 
     {
         boolean inJsp = "text/x-jsp".equals(document.getProperty("mimeType")); //NOI18N
         if (inJsp) {
-            Object[] args = new Object[]{service.getJavaName(), port.getNamespaceURI(), port.getJavaName(), generateXMLMessage(port, operation)};
+            Object[] args = new Object[]{service.getJavaName(), 
+                    port.getNamespaceURI(), port.getJavaName(), generateXMLMessage(port, operation)};
             final String invocationBody = getJSPDispatchBody(args);
             try {
                 document.insertString(pos, invocationBody, null);
@@ -1118,57 +1074,63 @@ public class JaxWsCodeGenerator implements JaxWsClientMethodGeneratorStrategy {
             return;
         }
         try {
-
-            final FileObject targetFo = NbEditorUtilities.getFileObject(document);
-            JavaSource targetSource = JavaSource.forFileObject(targetFo);
-
-            String serviceJavaName = service.getJavaName();
-            String[] serviceFName = new String[]{"service"};
-            String[] argumentDeclPart = new String[]{""};
-            String[] argumentInitPart = new String[]{""};
-            CompilerTask compilerTask = new CompilerTask(serviceJavaName, serviceFName, argumentDeclPart, argumentInitPart);
-            targetSource.runUserActionTask(compilerTask, true);
-
-
-            IndentEngine eng = IndentEngine.find(document);
-            StringWriter textWriter = new StringWriter();
-            Writer indentWriter = eng.createWriter(document, pos, textWriter);
-
-            if (compilerTask.containsWsRefInjection()) { //if in J2SE
-                Object[] args = new Object[]{service.getJavaName(), null, null, null, null, null, null, "service"}; //TODO: compute proper var name
-                String serviceDeclForJava = MessageFormat.format(JAVA_SERVICE_DEF, args);
-                indentWriter.write(serviceDeclForJava);
-            }
-            // create the inserted text
-            String invocationBody = getDispatchInvocationMethod(port, operation);
-            indentWriter.write(invocationBody);
-            indentWriter.close();
-            String textToInsert = textWriter.toString();
-
-            try {
-                document.insertString(pos, textToInsert, null);
-            } catch (BadLocationException badLoc) {
-                try {
-                    document.insertString(pos + 1, textToInsert, null);
-                } catch (BadLocationException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
-            }
-
-            // @insert WebServiceRef injection
-            if (!compilerTask.containsWsRefInjection()) {
-                InsertTask modificationTask = new InsertTask(serviceJavaName, 
-                        serviceFName[0], wsdlUrl, context );
-                targetSource.runModificationTask(modificationTask).commit();
-            }
-
-            DispatchCompilerTask task = new DispatchCompilerTask();
-            targetSource.runModificationTask(task).commit();
-
+            insertDispatchJavaMethod(document, pos, service, port, operation,
+                    wsdlUrl, manager);
 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static void insertDispatchJavaMethod( final Document document,
+            final int pos, WsdlService service, WsdlPort port,
+            WsdlOperation operation, String wsdlUrl, PolicyManager manager )
+            throws IOException
+    {
+        final FileObject targetFo = NbEditorUtilities.getFileObject(document);
+        JavaSource targetSource = JavaSource.forFileObject(targetFo);
+
+        String serviceJavaName = service.getJavaName();
+        String[] serviceFName = new String[]{"service"};
+        String[] argumentDeclPart = new String[]{""};
+        String[] argumentInitPart = new String[]{""};
+        CompilerTask compilerTask = getCompilerTask(serviceJavaName, serviceFName, 
+                argumentDeclPart, new String[0], argumentInitPart, manager);
+        targetSource.runUserActionTask(compilerTask, true);
+
+        IndentEngine eng = IndentEngine.find(document);
+        StringWriter textWriter = new StringWriter();
+        Writer indentWriter = eng.createWriter(document, pos, textWriter);
+
+        if (compilerTask.containsWsRefInjection()) { //if in J2SE
+            Object[] args = new Object[]{service.getJavaName(), null, null, 
+                    null, null, null, null, "service"}; //TODO: compute proper var name
+            String serviceDeclForJava = MessageFormat.format(JAVA_SERVICE_DEF, args);
+            indentWriter.write(serviceDeclForJava);
+        }
+        // create the inserted text
+        String invocationBody = getDispatchInvocationMethod(port, operation);
+        indentWriter.write(invocationBody);
+        indentWriter.close();
+        String textToInsert = textWriter.toString();
+
+        try {
+            document.insertString(pos, textToInsert, null);
+        } catch (BadLocationException badLoc) {
+            try {
+                document.insertString(pos + 1, textToInsert, null);
+            } catch (BadLocationException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+
+        // modify Class f.e. @insert WebServiceRef injection
+        InsertTask modificationTask = getClassModificationTask(serviceJavaName, 
+                serviceFName, wsdlUrl, manager, compilerTask.containsWsRefInjection());
+        targetSource.runModificationTask(modificationTask).commit();
+
+        DispatchCompilerTask task = new DispatchCompilerTask();
+        targetSource.runModificationTask(task).commit();
     }
 
 }

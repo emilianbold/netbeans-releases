@@ -54,22 +54,15 @@ import javax.swing.ListModel;
 
 /**
  *
- * @author den
+ * @author ads
  */
-public class OWSMPolicies extends javax.swing.JPanel {
+public class PoliciesVisualPanel extends javax.swing.JPanel {
 
-    private static final String ORACLE = "oracle/";         // NOI18N
     
-    /** Creates new form OWSMPolicies */
-    public OWSMPolicies(List<String> ids ) {
+    public PoliciesVisualPanel(List<String> ids ) {
         initComponents();
         
-        String policies[] = new String[ ids.size() ];
-        int i=0;
-        for( String id : ids ){
-            policies[i] = ORACLE+id;
-            i++;
-        }
+        String policies[] = ids.toArray( new String[ ids.size()]);
         ListModel model = new DefaultComboBoxModel( policies);
         list.setModel( model );
     }
@@ -89,11 +82,11 @@ public class OWSMPolicies extends javax.swing.JPanel {
 
         list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         scrollPane.setViewportView(list);
-        list.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OWSMPolicies.class, "ACSN_SelectPolicy")); // NOI18N
-        list.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OWSMPolicies.class, "ACSD_SelectPolicy")); // NOI18N
+        list.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PoliciesVisualPanel.class, "ACSN_SelectPolicy")); // NOI18N
+        list.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PoliciesVisualPanel.class, "ACSD_SelectPolicy")); // NOI18N
 
         label.setLabelFor(list);
-        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(OWSMPolicies.class, "LBL_ChoosePolicyLbl")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(PoliciesVisualPanel.class, "LBL_ChoosePolicyLbl")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -115,6 +108,9 @@ public class OWSMPolicies extends javax.swing.JPanel {
                 .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        label.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PoliciesVisualPanel.class, "ACSN_SelectPolicy")); // NOI18N
+        label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PoliciesVisualPanel.class, "ACSD_SelectPolicy")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

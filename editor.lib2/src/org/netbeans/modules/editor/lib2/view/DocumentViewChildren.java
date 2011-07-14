@@ -420,7 +420,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 // Ensure valid children
                 // Possibly build extra 5 lines in each direction to speed up possible scrolling
                 // If there was any update then recompute indices since rebuilding might change vertical spans
-            } while (docView.ensureChildrenValid(startIndex, endIndex, 5, 5));
+            } while (docView.ensureChildrenValid(startIndex, endIndex, 10, 10));
 
             // Ensure that the (inited) children are all measured
             // Text layout cache must be able to contain TLs for all painted views.
@@ -450,6 +450,12 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 }
             }
 
+            // Paint children in <startIndex,endIndex>
+            boolean logPaintTime = ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE);
+            long nanoTime = 0L;
+            if (logPaintTime) {
+                nanoTime = System.nanoTime();
+            }
             // Compute offset bounds to compute paint highlights
             int startOffset = get(startIndex).getStartOffset(); // startIndex < viewCount
             int endOffset = get(endIndex - 1).getEndOffset();
@@ -491,13 +497,19 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             for (int i = startIndex; i < endIndex; i++) {
                 ParagraphView pView = get(i);
                 Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
-                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
-                    ViewHierarchy.PAINT_LOG.fine("    pView[" + i + "]: pAlloc=" + // NOI18N
+                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINER)) {
+                    ViewHierarchy.PAINT_LOG.finer("    pView[" + i + "]: pAlloc=" + // NOI18N
                             ViewUtils.toString(childAlloc) + "\n"); // NOI18N
                 }
                 pView.paint(g, childAlloc, clipBounds);
             }
             viewPaintHighlights = null;
+            if (logPaintTime) {
+                nanoTime = System.nanoTime() - nanoTime;
+                ViewHierarchy.PAINT_LOG.fine("Painted " + (endIndex-startIndex) + // NOI18N
+                        " lines <" + startIndex + "," + endIndex + // NOI18N
+                        "> in " + (nanoTime/1000000d) + " ms\n"); // NOI18N
+            }
             // [TODO] Since this portion was painted => exclude it from possibly scheduled paint
         }
     }

@@ -49,6 +49,10 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -57,8 +61,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.*;
 import org.openide.xml.XMLUtil;
-
-import org.apache.xerces.parsers.DOMParser;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
@@ -73,7 +75,9 @@ import org.netbeans.modules.java.source.queries.api.Function;
 import org.netbeans.modules.java.source.queries.api.Queries;
 import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.openide.nodes.Node.Property;
+import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
+import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -245,6 +249,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
         ErrorManager.getDefault().annotate(t,target);
     }
 
+    private DocumentBuilder getDocumentBuilder() throws PersistenceException {
+        // We don't use XMLUtil.parse() because there is a bug
+        // in the default JDK 6 DOM parser, see issue 181955
+        DocumentBuilderFactory factory;
+        try {
+            // We prefer Xerces parser because of issue 181955
+            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+            factory = DocumentBuilderFactory.newInstance("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl", classLoader); // NOI18N
+        } catch (FactoryConfigurationError fce) {
+            factory = DocumentBuilderFactory.newInstance();
+        }
+        try {
+            return factory.newDocumentBuilder();
+        } catch (ParserConfigurationException pcex) {
+            PersistenceException pe = new PersistenceException(pcex, FormUtils.getBundleString("MSG_ERR_XMLParser")); // NOI18N
+            throw pe;
+        }
+    }
     
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
@@ -258,11 +280,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Element mainElement;
         try {
-            // We don't use XMLUtil.parse() because there is a bug
-            // in the default JDK 6 DOM parser, see issue 181955
-            DOMParser parser = new DOMParser();
-            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
-            mainElement = parser.getDocument().getDocumentElement();
+            DocumentBuilder builder = getDocumentBuilder();
+            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
             throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
@@ -319,11 +339,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            // We don't use XMLUtil.parse() because there is a bug
-            // in the default JDK 6 DOM parser, see issue 181955
-            DOMParser parser = new DOMParser();
-            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
-            mainElement = parser.getDocument().getDocumentElement();
+            DocumentBuilder builder = getDocumentBuilder();
+            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
             PersistenceException pe = new PersistenceException(ex,
@@ -966,6 +984,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     layoutSupport = null;
                     layoutInitialized = true;
                     newLayout = Boolean.TRUE;
+                    
+                    // Issue 200093
+                    Integer lctSetting = (Integer)formModel.getSettings().get(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET);
+                    if (lctSetting == null) {
+                        // Old form that has no layout code target set, but
+                        // it uses Free Design => it was created before
+                        // layout code target property was added, i.e.,
+                        // it uses the library, not JDK 6 code
+                        formModel.getSettings().setLayoutCodeTarget(JavaCodeGenerator.LAYOUT_CODE_LIBRARY);
+                    }
                 }
                 catch (Exception ex) {
                     // error occurred - treat this container as with unknown layout

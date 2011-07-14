@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,49 +34,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
-import java.util.Map;
-
-import javax.swing.text.Document;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.openide.filesystems.FileObject;
-
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.plaf.UIResource;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 
 /**
- * @author ads
  *
+ * @author Jan Becicka
  */
-public interface JaxWsClientMethodGeneratorStrategy {
-    
-    String STRATEGY = "strategy";       // NOI18N
-    
-    
-    /**
-     * Checks is this strategy is applicable to the context given by arguments.
-     * @param client
-     * @param project
-     * @param wsdlFileObject
-     * @param wsdlUrl
-     * @param context additional context which can be initialized in this method and will be passed to the other methods
-     * @return
-     */
-    boolean isApplicable(Client client , Project project, FileObject wsdlFileObject, 
-            String wsdlUrl , Map<String,Object> context );
-    
-    void insertMethod(Document document, int pos, WsdlService service,
-            WsdlPort port, WsdlOperation operation,  FileObject wsdlFileObject, 
-            String wsdlUrl, Map<String,Object> context);
-    
-    void insertDispatchMethod(Document document, int pos, WsdlService service,
-            WsdlPort port, WsdlOperation operation,  FileObject wsdlFileObject, 
-            String wsdlUrl,  Map<String,Object> context);
-    
+public class InspectionRenderer extends JLabel implements ListCellRenderer, UIResource {
 
+    public InspectionRenderer() {
+        setOpaque(true);
+    }
+
+    @Override
+    public Component getListCellRendererComponent(
+            JList list,
+            Object value,
+            int index,
+            boolean isSelected,
+            boolean cellHasFocus) {
+        
+        if (value != null) {
+            if (value instanceof HintMetadata) {
+                setText(((HintMetadata) value).displayName);
+            } else {
+                setText(value.toString());
+            }
+        }
+
+        if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+        } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
+        }
+        return this;
+    }
+
+    // #89393: GTK needs name to render cell renderer "natively"
+    @Override
+    public String getName() {
+        String name = super.getName();
+        return name == null ? "ComboBox.renderer" : name;  // NOI18N
+    }
+    
 }
