@@ -310,7 +310,6 @@ made subject to such option by the copyright holder.
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.apisupport.ant</code-name-base>
                         <recursive/>
-                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.apisupport.project</code-name-base>
