@@ -968,6 +968,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     layoutSupport = null;
                     layoutInitialized = true;
                     newLayout = Boolean.TRUE;
+                    
+                    // Issue 200093
+                    Integer lctSetting = (Integer)formModel.getSettings().get(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET);
+                    if (lctSetting == null) {
+                        // Old form that has no layout code target set, but
+                        // it uses Free Design => it was created before
+                        // layout code target property was added, i.e.,
+                        // it uses the library, not JDK 6 code
+                        formModel.getSettings().setLayoutCodeTarget(JavaCodeGenerator.LAYOUT_CODE_LIBRARY);
+                    }
                 }
                 catch (Exception ex) {
                     // error occurred - treat this container as with unknown layout
