@@ -110,13 +110,13 @@ class WhiteListConfigHandler extends DefaultHandler2 {
     private void registedHandlers() {
         handlers.put("WhitelistClassMethod", 
             new WhiteListClassHandler(WhiteListClassHandler.Type.Class,
-                "ClassName", "Method", "MethodName", "Parameters"));
+                "WhitelistClassMethod","ClassName", "Method", "MethodName", "Parameters"));
         handlers.put("WhitelistExtendableClass", 
             new WhiteListClassHandler(WhiteListClassHandler.Type.Extendable,
-                "ExtendableClassName", "Method", "OverrideMethodName", "Parameters"));
+                "WhitelistExtendableClass","ExtendableClassName", "Method", "OverrideMethodName", "Parameters"));
         handlers.put("WhitelistInstantiateableClass", 
             new WhiteListClassHandler(WhiteListClassHandler.Type.Instantiable,
-                "InstantiateableClassName", "Constructor", null, "Parameters"));
+                "WhitelistInstantiateableClass", "InstantiateableClassName", "Constructor", null, "Parameters"));
         handlers.put("ListOfPackageImport", 
             new WhiteListPackageImportHandler(otherFiles));
     }

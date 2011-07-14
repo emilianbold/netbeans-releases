@@ -60,13 +60,16 @@ public class WhiteListClassHandler extends DefaultHandler2 {
     };
     
     private Type type;
+    private String topLevelTag;
     private String classNameTag;
     private String methodBlockNameTag;
     private String methodNameTag;
     private String paramNameTag;
+    private boolean empty;
 
-    public WhiteListClassHandler(Type type, String classNameTag, String methodBlockNameTag, String methodNameTag, String paramNameTag) {
+    public WhiteListClassHandler(Type type, String topLevelTag, String classNameTag, String methodBlockNameTag, String methodNameTag, String paramNameTag) {
         this.type = type;
+        this.topLevelTag = topLevelTag;
         this.classNameTag = classNameTag;
         this.methodBlockNameTag = methodBlockNameTag;
         this.methodNameTag = methodNameTag;
@@ -82,13 +85,13 @@ public class WhiteListClassHandler extends DefaultHandler2 {
             className = "";
             methodName = "";
             parameter = "";
-        }
-        if (methodBlockNameTag.equals(qName)) {
+        } else if (methodBlockNameTag.equals(qName)) {
             methodName = "";
             parameter = "";
-        }
-        if (paramNameTag.equals(qName)) {
+        } else if (paramNameTag.equals(qName)) {
             parameter = "";
+        } else if (topLevelTag.equals(qName)) {
+            empty = true;
         }
     }
 
@@ -120,6 +123,7 @@ public class WhiteListClassHandler extends DefaultHandler2 {
                 case Class:
                     WhiteListConfigReader.getBuilder().addInvocableMethod(className, methodName, args);
                     invocableMethodCount++;
+                    empty = false;
                     break;
                 case Extendable:
                     WhiteListConfigReader.getBuilder().addOverridableMethod(className, methodName, args);
@@ -130,6 +134,10 @@ public class WhiteListClassHandler extends DefaultHandler2 {
                     invocableMethodCount++;
                     break;
             }
+        } else if (empty &&
+                   type == Type.Class &&
+                   topLevelTag.equals(qName)) {
+            WhiteListConfigReader.getBuilder().addInvocableClass(className);
         }
     }
  
