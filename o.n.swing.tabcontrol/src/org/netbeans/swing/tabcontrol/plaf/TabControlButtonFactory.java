@@ -247,6 +247,7 @@ public class TabControlButtonFactory {
     private static class RestoreGroupButton extends TabControlButton {
         
         private final String groupName;
+        private static boolean useCustomUI = true;
         
         public RestoreGroupButton( TabDisplayer displayer, String groupName ) {
             super( displayer );
@@ -284,7 +285,7 @@ public class TabControlButtonFactory {
          */
         @Override
         public String getUIClassID() {
-            return "RestoreGroupButtonUI"; //NOI18N
+            return useCustomUI ? "RestoreGroupButtonUI" : super.getUIClassID(); //NOI18N
         }
         
         /**
@@ -292,16 +293,17 @@ public class TabControlButtonFactory {
          */
         @Override
         public void updateUI () {
-            ButtonUI ui = null;
+            ButtonUI customUI = null;
             Class uiClass = UIManager.getDefaults().getUIClass( getUIClassID() );
             if( null != uiClass ) {
-                ui = (ButtonUI)UIManager.getUI(this);
+                customUI = (ButtonUI)UIManager.getUI(this);
             }
-            if (ui == null) {
-                // create default UI class if not found in UIManager
-                ui = (ButtonUI)UIManager.getUI( new JButton() );
+            if (customUI != null) {
+                setUI (customUI);
+            } else {
+                useCustomUI = false;
+                super.updateUI();
             }
-            setUI (ui);
         }
     }
 
