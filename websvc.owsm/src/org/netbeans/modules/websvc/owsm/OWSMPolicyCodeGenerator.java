@@ -40,27 +40,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.websvc.owsm;
 
 import java.util.Collection;
-import java.util.Map;
+
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 
 
 /**
  * @author ads
  *
  */
-public interface WLPolicyClientCodeGenerator {
+public interface OWSMPolicyCodeGenerator {
+    
+    String getId();
+    
+    String getClientId();
 
-    String getPolicyId();
+    void addRequiredClassesFqns(Collection<String> fqns );
     
-    String getPolicyAccessCode( Map<String,Object> context );
+    void generatePolicyAccessCode( StringBuilder code , Client client);
     
-    Collection<String> getRequiredImports();
-    
-    Collection<String> getGeneratoinClientIds();
-    
-    String getDefaultGenerationClientId();
-    
-    void extendsProjectClasspath( Map<String,Object> context );
+    Collection<String> getRelatedPolicyIds();
 }

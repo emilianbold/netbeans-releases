@@ -39,26 +39,20 @@ class CompilerTask implements CancellableTask<CompilationController> {
     private final String[] argumentDeclPart;
     private final String[] paramNames;
     private final String[] argumentInitPart;
+    private final PolicyManager manager;
 
     public CompilerTask(String serviceJavaName, String[] serviceFName, 
             String[] argumentDeclPart, String[] paramNames, 
-            String[] argumentInitPart) 
+            String[] argumentInitPart, PolicyManager manager ) 
     {
         this.serviceJavaName = serviceJavaName;
         this.argumentInitPart = argumentInitPart;
         this.argumentDeclPart = argumentDeclPart;
         this.paramNames = paramNames;
         this.serviceFName = serviceFName;
+        this.manager = manager;
     }
     
-    public CompilerTask(String serviceJavaName, String[] serviceFName, 
-            String[] argumentDeclPart, 
-            String[] argumentInitPart) 
-    {
-        this(serviceJavaName, serviceFName, argumentDeclPart, new String[0], 
-                argumentInitPart);
-    }
-
     public void run(CompilationController controller) throws IOException {
         controller.toPhase(Phase.ELEMENTS_RESOLVED);
         CompilationUnitTree cut = controller.getCompilationUnit();
@@ -67,7 +61,8 @@ class CompilerTask implements CancellableTask<CompilationController> {
         if (thisTypeEl != null) {
             ClassTree javaClass = controller.getTrees().getTree(thisTypeEl);
             // find if class is Injection Target
-            generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
+            generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(
+                    controller, thisTypeEl);
             if (generateWsRefInjection[0]) {
                 // issue 126014 : check if J2EE Container supports EJBs (e.g. Tomcat 6 doesn't)
                 Project project = FileOwnerQuery.getOwner(controller.getFileObject());
@@ -94,8 +89,10 @@ class CompilerTask implements CancellableTask<CompilationController> {
                         // get variable type
                         VariableTree var = (VariableTree) member;
                         Tree typeTree = var.getType();
-                        TreePath typeTreePath = controller.getTrees().getPath(cut, typeTree);
-                        TypeElement typeEl = (TypeElement) controller.getTrees().getElement(typeTreePath);
+                        TreePath typeTreePath = controller.getTrees().
+                            getPath(cut, typeTree);
+                        TypeElement typeEl = (TypeElement) controller.getTrees().
+                            getElement(typeTreePath);
                         if (typeEl != null) {
                             String variableType = typeEl.getQualifiedName().toString();
                             if (serviceJavaName.equals(variableType)) {
@@ -123,7 +120,8 @@ class CompilerTask implements CancellableTask<CompilationController> {
             String returnTypeName,String operationJavaName) {
 
         String methodBody = ""; //NOI18N
-        Object[] args = getMethodBodyPortInitArguments(portJavaName, portGetterMethod, 
+        Object[] args = getMethodBodyPortInitArguments(portJavaName, 
+                portGetterMethod, 
                 returnTypeName, operationJavaName);
         if ("void".equals(returnTypeName)) { //NOI18N
             String body =
@@ -200,10 +198,14 @@ class CompilerTask implements CancellableTask<CompilationController> {
     protected Object[] getMethodBodyPortInitArguments(String portJavaName, 
             String portGetterMethod, String returnTypeName,String operationJavaName)
     {
-        return new Object[] { serviceJavaName, portJavaName,
+        Object[] result =  new Object[] { serviceJavaName, portJavaName,
                 portGetterMethod, "", "", operationJavaName,
                 argumentDeclPart[0], serviceFName[0], "", ""
             };
+        if ( manager.isSupported() ){
+            manager.modifyPortCallInitArguments( result );
+        }
+        return result;
     }
     
     /*
@@ -213,10 +215,14 @@ class CompilerTask implements CancellableTask<CompilationController> {
     protected Object[] getInvocationBodyPortInitArguments(String portJavaName, 
             String portGetterMethod, String returnTypeName,String operationJavaName)
     {
-        return new Object[] {serviceJavaName, portJavaName,portGetterMethod, 
+        Object[] result = new Object[] {serviceJavaName, portJavaName,portGetterMethod, 
                 argumentInitPart[0],returnTypeName, operationJavaName,
                 argumentDeclPart[0], serviceFName[0],printerName[0], ""
             };
+        if ( manager.isSupported() ){
+            manager.modifyPortInvocationInitArguments( result );
+        }
+        return result;
     }
     
     private static boolean isServletClass(CompilationController controller, TypeElement typeElement) {

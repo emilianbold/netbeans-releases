@@ -1,15 +1,24 @@
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -19,8 +28,13 @@ import org.openide.filesystems.FileObject;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
@@ -29,20 +43,20 @@ import com.sun.source.util.TreePath;
  */
 class InsertTask implements CancellableTask<WorkingCopy> {
     
-    public static final String WEB_SERVICE_REF = "webServiceRef";      // NOI18N
-    
     private final String serviceJavaName;
     private final String serviceFName;
     private final String wsdlUrl;
-    private final boolean needWsRef;
+    private final boolean containsWsRefInjection;
+    private final PolicyManager manager;
 
     public InsertTask(String serviceJavaName, String serviceFName, String wsdlUrl,
-            Map<String, Object>  context ) 
+            PolicyManager manager , boolean containsWsRefInjection) 
     {
         this.serviceJavaName = serviceJavaName;
         this.serviceFName = serviceFName;
         this.wsdlUrl = wsdlUrl;
-        this.needWsRef = !(Boolean)context.get(WEB_SERVICE_REF);
+        this.containsWsRefInjection = containsWsRefInjection;
+        this.manager = manager;
     }
 
     public void run(WorkingCopy workingCopy) throws IOException {
@@ -57,8 +71,10 @@ class InsertTask implements CancellableTask<WorkingCopy> {
         
         if (javaClass != null) {
             ClassTree modifiedClass = generateWsServiceRef(workingCopy, make, javaClass);
-            modifiedClass = modifyJavaClass(workingCopy, make,
+            if ( manager.isSupported() ){
+                modifiedClass = modifyJavaClass(workingCopy, make,
                     modifiedClass, classElement);
+            }
             workingCopy.rewrite(javaClass, modifiedClass);
         }
     }
@@ -66,10 +82,10 @@ class InsertTask implements CancellableTask<WorkingCopy> {
     public void cancel() {
     }
     
-    protected ClassTree generateWsServiceRef(WorkingCopy workingCopy,
+    private ClassTree generateWsServiceRef(WorkingCopy workingCopy,
             TreeMaker make, ClassTree javaClass)
     {
-        if ( !needWsRef ) {
+        if ( containsWsRefInjection ) {
             return javaClass;
         }
         TypeElement wsRefElement = workingCopy.getElements().getTypeElement("javax.xml.ws.WebServiceRef"); //NOI18N
@@ -97,9 +113,75 @@ class InsertTask implements CancellableTask<WorkingCopy> {
         return modifiedClass;
     }
     
-    protected ClassTree modifyJavaClass( WorkingCopy workingCopy,
+    private ClassTree modifyJavaClass( WorkingCopy workingCopy,
             TreeMaker make, ClassTree javaClass, TypeElement classElement )
     {
-        return javaClass;
+        Collection<String> existingImports = getImports(workingCopy);
+        CompilationUnitTree original = workingCopy.getCompilationUnit();
+        CompilationUnitTree modified = original;
+        for (String imp : manager.getImports()) {
+            if (!existingImports.contains(imp)) {
+                modified = make.addCompUnitImport(
+                        modified, make.Import(make.Identifier(imp), false));
+            }
+        }
+        workingCopy.rewrite(original, modified);
+        return insertSecurityFetaureField(workingCopy, make, javaClass, 
+                classElement);
+    }
+    
+    private ClassTree insertSecurityFetaureField(WorkingCopy workingCopy,
+            TreeMaker make, ClassTree javaClass, TypeElement classElement )
+    {
+        for (VariableElement var : 
+            ElementFilter.fieldsIn( classElement.getEnclosedElements())) 
+        {
+            TypeMirror varType = var.asType();
+            if (!varType.getKind().equals(TypeKind.ARRAY)) {
+                continue;
+            }
+            if ( var.getSimpleName().contentEquals(PolicyManager.SECURITY_FEATURE)) {
+                /*
+                 * there is no way to find existing comments. So if field is
+                 * already in the class. Just return
+                 */
+                return javaClass;
+            }
+        }
+        Set<Modifier> modifiers = new HashSet<Modifier>();
+        modifiers.add( Modifier.PRIVATE);
+        modifiers.add( Modifier.STATIC);
+        modifiers.add( Modifier.FINAL);
+        
+        ModifiersTree modifiersTree = make.Modifiers(
+                modifiers);
+        
+        Tree typeTree = manager.createSecurityFeatureType( workingCopy , make );
+        ExpressionTree initializer = manager.createSecurityFeatureInitializer( 
+                workingCopy, make );
+        VariableTree securityFeature = make.Variable(
+                modifiersTree, PolicyManager.SECURITY_FEATURE,      
+                typeTree,
+                initializer);
+        if ( manager.isSupported() ){
+            manager.modifySecurityFeatureAttribute( securityFeature , workingCopy , 
+                make );
+        }
+        return make.insertClassMember(javaClass, 0, securityFeature);
+    }
+    
+    public static Collection<String> getImports(CompilationController controller) {
+        Set<String> imports = new HashSet<String>();
+        CompilationUnitTree cu = controller.getCompilationUnit();
+        
+        if (cu != null) {
+            List<? extends ImportTree> importTrees = cu.getImports();
+            
+            for (ImportTree importTree : importTrees) {
+                imports.add(importTree.getQualifiedIdentifier().toString());
+            }
+        }
+        
+        return imports;
     }
 }
