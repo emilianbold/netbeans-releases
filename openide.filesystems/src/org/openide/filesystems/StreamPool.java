@@ -384,7 +384,7 @@ final class StreamPool extends Object {
                     super.close();
                 } finally {
                     closeOutputStream(fo, this, fireFileChanged);
-
+                    MIMESupport.freeCaches();
                     synchronized (StreamPool.class) {
                         StreamPool.class.notifyAll();
                     }
