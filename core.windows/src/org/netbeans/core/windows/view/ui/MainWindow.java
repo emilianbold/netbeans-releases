@@ -215,7 +215,8 @@ public final class MainWindow {
                         statusLinePanel.getBorder(),
                         BorderFactory.createEmptyBorder (0, 0, 0, magicConstant)));
 
-                if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) 
+                        && !UIManager.getBoolean( "NbMainWindow.StatusBar.HideSeparator" ) ) { //NOI18N
                     statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                 }
                 statusLinePanel.add(status, BorderLayout.CENTER);
