@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.branding;
 
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import javax.swing.JPanel;
 
 /**
@@ -51,7 +52,7 @@ import javax.swing.JPanel;
  */
 abstract class AbstractBrandingPanel extends JPanel {
 
-    private final BasicBrandingModel model;
+    private final BrandingModel model;
     private BrandingEditorPanel editor;
     private final String displayName;
     private boolean brandingValid = true;
@@ -62,7 +63,7 @@ abstract class AbstractBrandingPanel extends JPanel {
      * @param displayName Tab's display name.
      * @param model Branding model
      */
-    protected AbstractBrandingPanel( String displayName, BasicBrandingModel model ) {
+    protected AbstractBrandingPanel( String displayName, BrandingModel model ) {
         this.displayName = displayName;
         this.model = model;
     }
@@ -71,7 +72,7 @@ abstract class AbstractBrandingPanel extends JPanel {
         this.editor = editor;
     }
 
-    protected final BasicBrandingModel getBranding() {
+    protected final BrandingModel getBranding() {
         return model;
     }
 

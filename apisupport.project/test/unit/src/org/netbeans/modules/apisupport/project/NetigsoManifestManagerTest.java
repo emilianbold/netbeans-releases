@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeSet;
 import java.util.jar.Manifest;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -56,7 +58,7 @@ import org.openide.util.test.TestFileUtils;
  *
  * @author Jaroslav Tulach
  */
-public class NetigsoManifestManagerTest extends TestBase {
+public class NetigsoManifestManagerTest extends NbTestCase {
 
     public NetigsoManifestManagerTest(String name) {
         super(name);
@@ -79,7 +81,7 @@ public class NetigsoManifestManagerTest extends TestBase {
                 "Export-Package: a, b, c\n" +
                 "Bundle-RequireExecutionEnvironment: J2SE-1.3\n" +
                 "OpenIDE-Module-Layer: org/netbeans/modules/sendopts/layer.xml\n";
-        dump(manifest, mfContent);
+        TestFileUtils.writeFile(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.modules.sendopts", mm.getCodeNameBase());
         assertEquals("version", "1.9", mm.getSpecificationVersion());
@@ -99,7 +101,7 @@ public class NetigsoManifestManagerTest extends TestBase {
                 "Created-By: 1.4.2_10-b03 (Sun Microsystems Inc.)\n" +
                 "Bundle-SymbolicName: org.netbeans.send-opts; singleton:=true\n" +
                 "Require-Bundle: org.netbeans.some-lib;version=\"[1.0,2)\"\n";
-        dump(manifest, mfContent);
+        TestFileUtils.writeFile(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.send_opts", mm.getCodeNameBase());
         assertEquals(Collections.singletonList("org.netbeans.some_lib"), Arrays.asList(mm.getRequiredTokens()));
@@ -117,7 +119,7 @@ public class NetigsoManifestManagerTest extends TestBase {
                 "Require-Bundle: test.core,test.tasks;bundle-version=\"[3.0.0,4.0.0)\"\n" +
                 "Bundle-RequireExecutionEnvironment: J2SE-1.3\n" +
                 "OpenIDE-Module-Layer: org/netbeans/modules/sendopts/layer.xml\n";
-        dump(manifest, mfContent);
+        TestFileUtils.writeFile(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.modules.sendopts", mm.getCodeNameBase());
         assertEquals("version", "1.9", mm.getSpecificationVersion());
@@ -157,7 +159,7 @@ public class NetigsoManifestManagerTest extends TestBase {
  ".4\",javax.mail.internet;uses:=\"javax.mail.util,javax.activation,javax" +
  ".mail\";version=\"1.4\",javax.mail;uses:=\"javax.mail.search,javax.mail.e" +
  "vent,javax.activation\";version=\"1.4\"\n";
-        dump(manifest, mfContent);
+        TestFileUtils.writeFile(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("cnb", "org.netbeans.modules.sendopts", mm.getCodeNameBase());
         assertEquals("version", "1.9.7", mm.getSpecificationVersion());
