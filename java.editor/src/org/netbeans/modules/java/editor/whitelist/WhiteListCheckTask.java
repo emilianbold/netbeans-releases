@@ -82,7 +82,12 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
     }
 
 
-    @NbBundle.Messages(value={"ERR_BlackListed_Call=Invocation of {0} is prohibited by white list"})
+    @NbBundle.Messages(value={
+        "ERR_BlackListed_Call=Invocation of {0} is prohibited by white list",
+        "ERR_BlackListed_Ref=Usage of {0} is prohibited by white list",
+        "ERR_BlackListed_Sub=Subclassing of {0} is prohibited by white list",
+        "ERR_BlackListed_Override=Overriding of {0} is prohibited by white list"
+    })
     @Override
     public void run(
             final Result result,
@@ -101,10 +106,15 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
         final List<WhiteListScanner.Problem> problems = new LinkedList<WhiteListScanner.Problem>();
         final WhiteListScanner scanner = new WhiteListScanner(
                 info.getTrees(),
+                info.getElementUtilities(),
                 whiteList,
                 canceled);
         final CompilationUnitTree cu = info.getCompilationUnit();
-        scanner.scan(cu, problems);
+        try {
+            scanner.scan(cu, problems);
+        } catch (WhiteListScanner.Cancel cancel) {
+            return;
+        }
         final SourcePositions sp = info.getTrees().getSourcePositions();
         final List<ErrorDescription> errors = new ArrayList<ErrorDescription>(problems.size());
         for (WhiteListScanner.Problem problem : problems) {
@@ -114,9 +124,26 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
             final int start = (int) sp.getStartPosition(cu, problem.tree);
             final int end = (int) sp.getEndPosition(cu, problem.tree);
             if (start >= 0 && end >= 0) {
+                final String msg;
+                switch (problem.kind) {
+                    case REFERENCE:
+                        msg = Bundle.ERR_BlackListed_Ref(problem.element.toString());
+                        break;
+                    case INVOKE:
+                        msg = Bundle.ERR_BlackListed_Call(problem.element.toString());
+                        break;
+                    case SUBCLASS:
+                        msg = Bundle.ERR_BlackListed_Sub(problem.element.toString());
+                        break;
+                    case OVERRIDE:
+                        msg = Bundle.ERR_BlackListed_Override(problem.element.toString());
+                        break;
+                    default:
+                        throw new IllegalStateException("Unknown problem kind: " + problem.kind);   //NOI18N
+                }
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.ERROR,
-                        Bundle.ERR_BlackListed_Call(problem.element.toString()),
+                        msg,
                         file,
                         start,
                         end));

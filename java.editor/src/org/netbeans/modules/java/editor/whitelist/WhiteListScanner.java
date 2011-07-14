@@ -41,15 +41,21 @@
  */
 package org.netbeans.modules.java.editor.whitelist;
 
-import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.WhiteListQuery.WhiteList;
 
 /**
@@ -59,31 +65,111 @@ import org.netbeans.api.java.source.WhiteListQuery.WhiteList;
 class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScanner.Problem>> {
 
     private final Trees trees;
+    private final ElementUtilities elementUtil;
     private final AtomicBoolean cancel;
     private final WhiteList whiteList;
+    private boolean inheritance = false;
 
     WhiteListScanner(
         final Trees trees,
+        final ElementUtilities elementUtil,
         final WhiteList whiteList,
         final AtomicBoolean cancel) {
         this.trees = trees;
+        this.elementUtil = elementUtil;
         this.whiteList = whiteList;
         this.cancel = cancel;
     }
 
     @Override
-    public Void visitMethodInvocation(
-            final MethodInvocationTree node,
-            final List<? super Problem> p) {
-        final Element e = trees.getElement(TreePath.getPath(getCurrentPath(),node.getMethodSelect()));
-        if (!whiteList.canInvoke(ElementHandle.create(e))) {
-            p.add(new Problem (Kind.INVOKE, e, node));
+    public Void visitMethod(MethodTree node, List<? super Problem> p) {
+        checkCancel();
+        final ExecutableElement ee = (ExecutableElement) trees.getElement(getCurrentPath());
+        if (ee != null) {
+            for (ExecutableElement om = elementUtil.getOverriddenMethod(ee);
+                 om!=null;
+                 om = elementUtil.getOverriddenMethod(om)) {
+                 if (!whiteList.canOverride(ElementHandle.create(om))){
+                     p.add(new Problem(Kind.OVERRIDE, om, node));
+                 }
+            }
         }
-        return super.visitMethodInvocation(node, p);
+        return super.visitMethod(node, p);
     }
 
+    @Override
+    public Void visitClass(ClassTree node, List<? super Problem> p) {
+        checkCancel();
+        scan(node.getModifiers(), p);
+	scan(node.getTypeParameters(), p);
+        inheritance = true;
+        scan(node.getExtendsClause(), p);
+        scan(node.getImplementsClause(), p);
+        inheritance = false;
+	scan(node.getMembers(), p);
+        return null;
+    }
+
+    @Override
+    public Void visitParameterizedType(ParameterizedTypeTree node, List<? super Problem> p) {
+        scan(node.getType(), p);
+        final boolean ci = inheritance;
+        inheritance = false;
+        scan(node.getTypeArguments(), p);
+        inheritance = ci;
+        return null;
+    }
+
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, List<? super Problem> p) {
+        handleNode(node,p);
+        return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Void visitMemberSelect(MemberSelectTree node, List<? super Problem> p) {
+        handleNode(node,p);
+        return super.visitMemberSelect(node, p);
+    }
+
+    private void handleNode(
+            final Tree node,
+            final List<? super Problem> p) {
+        final Element e = trees.getElement(getCurrentPath());
+        if (e == null) {
+            return;
+        }
+        final ElementKind k = e.getKind();
+        if (k.isClass() || k.isInterface()) {
+            if (inheritance) {
+                if (!whiteList.canOverride(ElementHandle.create(e))) {
+                    p.add(new Problem(Kind.SUBCLASS, e, node));
+                }
+            } else {
+                if (!whiteList.canInvoke(ElementHandle.create(e))) {
+                    p.add(new Problem(Kind.REFERENCE, e, node));
+                }
+            }
+        } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
+            if (!whiteList.canInvoke(ElementHandle.create(e))) {
+                p.add(new Problem(Kind.INVOKE, e, node));
+            }
+        }
+    }
+
+    private void checkCancel() {
+        if (cancel.get()) {
+            throw new Cancel();
+        }
+    }
+
+
     static enum Kind {
-        INVOKE
+        INVOKE,
+        REFERENCE,
+        SUBCLASS,
+        OVERRIDE
     }
 
     static final class Problem {
@@ -99,6 +185,9 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
             this.element = element;
             this.tree = tree;
         }
+    }
+
+    static final class Cancel extends RuntimeException {
     }
 
 }
