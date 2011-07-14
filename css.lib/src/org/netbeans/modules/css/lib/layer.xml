@@ -10,9 +10,9 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
-                <file name="org-netbeans-modules-css-lib-api-CssParserFactory.instance">
+<!--                <file name="org-netbeans-modules-css-lib-api-CssParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
-                </file>
+                </file>-->
 
             </folder>
         </folder>

@@ -80,14 +80,13 @@ import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.model.HtmlTags;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
@@ -107,7 +106,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CssParserResult info = (CssParserResult) context.getParserResult();
+        CssParserResultCslWrapper info = (CssParserResultCslWrapper) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
 
@@ -149,7 +148,8 @@ public class CssCompletion implements CodeCompletionHandler {
         ts.move(astOffset);
         boolean hasNext = ts.moveNext();
 
-        SimpleNode root = info.root();
+        SimpleNode root = null;
+//        SimpleNode root = info.root();
         if (root == null) {
             //broken source
             return CodeCompletionResult.NONE;

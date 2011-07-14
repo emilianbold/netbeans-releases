@@ -42,97 +42,41 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
- * A CSS specific extension of CSL's CodeCompletionContext
- *
  * @author marekfukala
  */
-public final class CssCodeCompletionContext {
+public class FeatureContext {
 
-    private Node activeNode;
-    private int caretOffset, anchorOffset, embeddedCaretOffset, embeddedAnchorOffset;
-    private String prefix;
     private CssParserResult result;
-    private TokenSequence<CssTokenId> tokenSequence;
-    private QueryType queryType;
 
-    CssCodeCompletionContext(Node activeNode, int caretOffset, int anchorOffset, int embeddedCaretOffset, int embeddedAnchorOffset, String prefix, CssParserResult result, TokenSequence<CssTokenId> tokenSequence, QueryType queryType) {
-        this.activeNode = activeNode;
-        this.caretOffset = caretOffset;
-        this.anchorOffset = anchorOffset;
-        this.embeddedCaretOffset = embeddedCaretOffset;
-        this.embeddedAnchorOffset = embeddedAnchorOffset;
-        this.prefix = prefix;
+    public FeatureContext(CssParserResult result) {
         this.result = result;
-        this.tokenSequence = tokenSequence;
-        this.queryType = queryType;
-    }
-    
-    public Node getActiveNode() {
-        return activeNode;
-    }
-    
-    /**
-     * The editor's caret offset relative to the edited document.
-     * 
-     */
-    public int getCaretOffset() {
-        return caretOffset;
-    }
-    
-    /**
-     * anchor offset = caret offset - prefix length.
-     * Relative to the edited document.
-     * 
-     */
-    public int getAnchorOffset() {
-        return anchorOffset;
-    }
-    
-    /**
-     * Same as getCaretOffset() but relative to the embedded css code.
-     */
-    public int getEmbeddedCaretOffset() {
-        return embeddedCaretOffset;
-    }
-    
-    /**
-     * Same as getAnchorOffset() but relative to the embedded css code.
-     */
-    public int getEmbeddedAnchorOffset() {
-        return embeddedAnchorOffset;
-    }
-        
-    public String getPrefix() {
-        return prefix;
     }
     
     public CssParserResult getParserResult() {
         return result;
     }
     
+    public Node getParseTreeRoot() {
+        return getParserResult().getParseTree();
+    }
+    
     public Snapshot getSnapshot() {
         return result.getSnapshot();
     }
+    
+    public Source getSource() {
+        return getSnapshot().getSource();
+    }
         
-    /**
-     * 
-     * @return a TokenSequence of Css tokens created on top of the *virtual* css source.
-     * The TokenSequence is positioned on a token laying at the getAnchorOffset() offset.
-     */
     public TokenSequence<CssTokenId> getTokenSequence() {
-        return tokenSequence;
+        return getSnapshot().getTokenHierarchy().tokenSequence(CssTokenId.language());
     }
-    
-    public QueryType getQueryType() {
-        return queryType;
-    }
-    
     
 }

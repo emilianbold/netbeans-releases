@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.css.parser;
 
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTokenManager;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.ASCII_CharStream;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
 import java.io.StringReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -68,7 +71,7 @@ public class CssParserTokenManagerTest {
     public void basic() {
         String source = "h1 { color : red; /* comment */ }";
         CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
-        org.netbeans.modules.css.parser.Token token = null;
+        org.netbeans.modules.css.editor._TO_BE_REMOVED.Token token = null;
         do {
             token = tm.getNextToken();
 //            System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");

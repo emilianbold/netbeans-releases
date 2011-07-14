@@ -52,10 +52,10 @@ import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
 import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
@@ -78,103 +78,103 @@ public class CssAnalyser {
     public static List<Error> checkForErrors(final Snapshot snapshot, final SimpleNode node) {
         final ArrayList<Error> errors = new ArrayList<Error>();
         final PropertyModel model = PropertyModel.instance();
-        NodeVisitor visitor = new NodeVisitor() {
-
-            @Override
-            public void visit(SimpleNode node) {
-                if (node.kind() == CssParserTreeConstants.JJTDECLARATION) {
-                    SimpleNode propertyNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTPROPERTY);
-                    SimpleNode valueNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTEXPR);
-
-                    if (propertyNode != null) {
-                        String propertyName = propertyNode.image().trim();
-
-                        //check non css 2.1 compatible properties and ignore them
-                        //values are not checked as well
-                        if(isNonCss21CompatibleDeclarationPropertyName(propertyName)) {
-                            return ;
-                        }
-
-                        //check for vendor specific properies - ignore them
-                        Property property = model.getProperty(propertyName);
-                        if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
-                            //unknown property - report
-                            String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
-                            Error error = makeError(propertyNode.startOffset(),
-                                    propertyNode.endOffset(),
-                                    snapshot,
-                                    UNKNOWN_PROPERTY_ERROR_KEY + propertyName,
-                                    msg,
-                                    msg,
-                                    false /* not line error */,
-                                    Severity.WARNING);
-                            if(error != null) {
-                                errors.add(error);
-                            }
-                        }
-
-                        //check value
-                        if (valueNode != null && property != null) {
-                            String valueImage = valueNode.image().trim();
-                            
-                            //do not check values which contains generated code
-                            //we are no able to identify the templating semantic
-                            if (!CssGSFParser.containsGeneratedCode(valueImage)) {
-                                CssPropertyValue pv = new CssPropertyValue(property, valueImage);
-                                if (!pv.success()) {
-                                    String errorMsg = null;
-                                    if (pv instanceof CustomErrorMessageProvider) {
-                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
-                                    }
-
-                                    //error in property 
-                                    String unexpectedToken = pv.left().get(pv.left().size() - 1);
-
-                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
-                                        return ;
-                                    }
-
-                                    if (errorMsg == null) {
-                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
-                                    }
-
-                                    Error error = makeError(valueNode.startOffset(),
-                                            valueNode.endOffset(),
-                                            snapshot,
-                                            INVALID_PROPERTY_VALUE,
-                                            errorMsg,
-                                            errorMsg,
-                                            false /* not line error */,
-                                            Severity.WARNING);
-                                    if(error != null) {
-                                        errors.add(error);
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                } else if(node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
-                    Error error = makeError(
-                            node.startOffset(),
-                            node.endOffset(),
-                            snapshot,
-                            INVALID_CONTENT,
-                            INVALID_CONTENT_MSG,
-                            INVALID_CONTENT_MSG,
-                            true,
-                            Severity.ERROR);
-                    if(error != null) {
-                        errors.add(error);
-                    }
-                }
-            }
-        };
-        
-        if(node != null) {
-            SimpleNodeUtil.visitChildren(node, visitor);
-        }
+//        NodeVisitor visitor = new NodeVisitor() {
+//
+//            @Override
+//            public void visit(SimpleNode node) {
+//                if (node.kind() == CssParserTreeConstants.JJTDECLARATION) {
+//                    SimpleNode propertyNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTPROPERTY);
+//                    SimpleNode valueNode = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTEXPR);
+//
+//                    if (propertyNode != null) {
+//                        String propertyName = propertyNode.image().trim();
+//
+//                        //check non css 2.1 compatible properties and ignore them
+//                        //values are not checked as well
+//                        if(isNonCss21CompatibleDeclarationPropertyName(propertyName)) {
+//                            return ;
+//                        }
+//
+//                        //check for vendor specific properies - ignore them
+//                        Property property = model.getProperty(propertyName);
+//                        if (!CssGSFParser.containsGeneratedCode(propertyName) && !isVendorSpecificProperty(propertyName) && property == null) {
+//                            //unknown property - report
+//                            String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
+//                            Error error = makeError(propertyNode.startOffset(),
+//                                    propertyNode.endOffset(),
+//                                    snapshot,
+//                                    UNKNOWN_PROPERTY_ERROR_KEY + propertyName,
+//                                    msg,
+//                                    msg,
+//                                    false /* not line error */,
+//                                    Severity.WARNING);
+//                            if(error != null) {
+//                                errors.add(error);
+//                            }
+//                        }
+//
+//                        //check value
+//                        if (valueNode != null && property != null) {
+//                            String valueImage = valueNode.image().trim();
+//                            
+//                            //do not check values which contains generated code
+//                            //we are no able to identify the templating semantic
+//                            if (!CssGSFParser.containsGeneratedCode(valueImage)) {
+//                                CssPropertyValue pv = new CssPropertyValue(property, valueImage);
+//                                if (!pv.success()) {
+//                                    String errorMsg = null;
+//                                    if (pv instanceof CustomErrorMessageProvider) {
+//                                        errorMsg = ((CustomErrorMessageProvider) pv).customErrorMessage();
+//                                    }
+//
+//                                    //error in property 
+//                                    String unexpectedToken = pv.left().get(pv.left().size() - 1);
+//
+//                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken)) {
+//                                        return ;
+//                                    }
+//
+//                                    if (errorMsg == null) {
+//                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken);
+//                                    }
+//
+//                                    Error error = makeError(valueNode.startOffset(),
+//                                            valueNode.endOffset(),
+//                                            snapshot,
+//                                            INVALID_PROPERTY_VALUE,
+//                                            errorMsg,
+//                                            errorMsg,
+//                                            false /* not line error */,
+//                                            Severity.WARNING);
+//                                    if(error != null) {
+//                                        errors.add(error);
+//                                    }
+//                                }
+//                            }
+//                        }
+//
+//                    }
+//
+//                } else if(node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE && node.image().length() > 0) {
+//                    Error error = makeError(
+//                            node.startOffset(),
+//                            node.endOffset(),
+//                            snapshot,
+//                            INVALID_CONTENT,
+//                            INVALID_CONTENT_MSG,
+//                            INVALID_CONTENT_MSG,
+//                            true,
+//                            Severity.ERROR);
+//                    if(error != null) {
+//                        errors.add(error);
+//                    }
+//                }
+//            }
+//        };
+//        
+//        if(node != null) {
+//            SimpleNodeUtil.visitChildren(node, visitor);
+//        }
         return errors;
     }
 

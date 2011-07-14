@@ -40,14 +40,87 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.parser;
+package org.netbeans.modules.css.editor._TO_BE_REMOVED;
+
+import java.io.IOException;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
  * @author marek
  */
-public interface NodeVisitor {
+public class LexerCharStream implements CharStream {
+
+    private LexerInput li;
     
-    public void visit(SimpleNode node);
+    public LexerCharStream(LexerRestartInfo lri) {
+        this.li = lri.input();
+        
+    }
+
+    public char readChar() throws IOException {
+        int c = li.read();
+        if(c == LexerInput.EOF) {
+            throw new IOException("end"); //NOI18N
+        } else {
+            return (char)c;
+        }
+    }
+
+    public void backup(int amount) {
+        li.backup(amount);
+    }
+
+    public char BeginToken() throws IOException {
+        return readChar();
+    }
+
+    public String GetImage() {
+        return li.readText().toString();
+    }
+
+    public char[] GetSuffix(int len) {
+        String t = GetImage();
+        if(t.length() == 0) {
+            return new char[]{};
+        } else {
+            return t.substring(t.length() - len, t.length()).toCharArray();
+        }
+    }
+
+    public void Done() {
+        //do nothing
+    }
+    
+    public int getColumn() {
+        return  -1;
+    }
+
+    public int getLine() {
+        return -1;
+    }
+
+    public int getEndColumn() {
+        return -1;
+    }
+
+    public int getEndLine() {
+        return -1;
+    }
+
+    public int getBeginColumn() {
+        return -1;
+    }
+
+    public int getBeginLine() {
+        return -1;
+    }
+
+    //TODO how to implement this when running in lexer????????
+    public int offset() {
+        return -1;
+    }
+    
 
 }

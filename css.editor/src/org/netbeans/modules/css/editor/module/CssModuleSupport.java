@@ -41,8 +41,18 @@
  */
 package org.netbeans.modules.css.editor.module;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.openide.util.Lookup;
 
 /**
@@ -55,4 +65,41 @@ public class CssModuleSupport {
         return Lookup.getDefault().lookupAll(CssModule.class);
     }
     
+    public static Map<OffsetRange, Set<ColoringAttributes>> getSemanticHighlights(FeatureContext context) {
+        Map<OffsetRange, Set<ColoringAttributes>> all = new HashMap<OffsetRange, Set<ColoringAttributes>>();
+        Collection<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>> visitors = new ArrayList<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>>();
+        
+        for(CssModule module: getModules()) {
+            NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>> visitor = module.getSemanticHighlightingNodeVisitor(context, all);
+            //modules may return null visitor instead of a dummy empty visitor 
+            //to speed up the parse tree visiting when there're no result
+            if(visitor != null) {
+                visitors.add(visitor);
+            }
+        }
+
+        NodeVisitor.visitChildren(context.getParseTreeRoot(), visitors);
+        
+        return all;
+    }
+    
+    public static Set<OffsetRange> getMarkOccurrences(EditorFeatureContext context) {
+        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        Collection<NodeVisitor<Set<OffsetRange>>> visitors = new ArrayList<NodeVisitor<Set<OffsetRange>>>();
+        
+        for(CssModule module: getModules()) {
+            NodeVisitor<Set<OffsetRange>> visitor = module.getMarkOccurrencesNodeVisitor(context, all); 
+            //modules may return null visitor instead of a dummy empty visitor 
+            //to speed up the parse tree visiting when there're no result
+            if(visitor != null) {
+                visitors.add(visitor);
+            }
+        }
+
+        NodeVisitor.visitChildren(context.getParseTreeRoot(), visitors);
+        
+        return all;
+        
+    }
+     
 }

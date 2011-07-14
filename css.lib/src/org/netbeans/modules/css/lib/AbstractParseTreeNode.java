@@ -55,10 +55,22 @@ public abstract class AbstractParseTreeNode extends ParseTree implements Node {
 
     Tree parent;
     
-    public AbstractParseTreeNode() {
+    private CharSequence source;
+    
+    public AbstractParseTreeNode(CharSequence source) {
         super(null);
+        this.source = source;
     }
 
+    protected CharSequence getSource() {
+        return source;
+    }
+
+    @Override
+    public CharSequence image() {
+        return getSource().subSequence(from(), to());
+    }
+    
     public boolean deleteChild(AbstractParseTreeNode node) {
         if (children == null) {
             return false;

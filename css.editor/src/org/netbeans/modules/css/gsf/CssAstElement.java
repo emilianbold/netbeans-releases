@@ -43,7 +43,7 @@ package org.netbeans.modules.css.gsf;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

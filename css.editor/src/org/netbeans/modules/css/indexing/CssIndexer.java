@@ -46,13 +46,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -99,7 +97,7 @@ public class CssIndexer extends EmbeddingIndexer {
                 LOGGER.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
             }
 
-            CssFileModel model = CssFileModel.create((CssParserResult) parserResult);
+            CssFileModel model = CssFileModel.create((CssParserResultCslWrapper) parserResult);
             IndexingSupport support = IndexingSupport.getInstance(context);
             IndexDocument document = support.createDocument(indexable);
 

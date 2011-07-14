@@ -54,7 +54,6 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 
@@ -114,7 +113,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return new CssGSFParser();
+        return new CssParserCslWrapper();
     }
 
     @Override
@@ -149,7 +148,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public OccurrencesFinder getOccurrencesFinder() {
-        return new CssOccurancesFinder();
+        return new CssOccurrencesFinder();
     }
 
     @Override

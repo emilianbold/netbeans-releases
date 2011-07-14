@@ -46,25 +46,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.swing.ImageIcon;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -74,15 +63,7 @@ public class CssStructureScanner implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
-//         //so far the css parser always parses the whole css content
-//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
-//        if(!presultIterator.hasNext()) {
-//            return Collections.emptyList();
-//        }
-//
-//        ParserResult presult = presultIterator.next();
-//        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CssParserResult) info).root();
+        Node root = ((CssParserResultCslWrapper) info).getParseTree();
         final Snapshot snapshot = info.getSnapshot();
 
         if (root == null) {
@@ -96,73 +77,70 @@ public class CssStructureScanner implements StructureScanner {
         NodeVisitor rulesSearch = new NodeVisitor() {
 
             @Override
-            public void visit(SimpleNode node) {
-                if (node.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
-                    //get parent - style rule
-                    SimpleNode ruleNode = (SimpleNode) node.jjtGetParent();
-                    assert ruleNode.kind() == CssParserTreeConstants.JJTSTYLERULE;
-                    int so = snapshot.getOriginalOffset(ruleNode.startOffset());
-                    int eo = snapshot.getOriginalOffset(ruleNode.endOffset());
-                    if (eo != so) {
-
-                        StringBuilder selectorsListText = new StringBuilder();
-                        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-                            SimpleNode n = (SimpleNode) node.jjtGetChild(i);
-                            if (n.kind() == CssParserTreeConstants.JJTSELECTOR) {
-                                StringBuilder content = new StringBuilder();
-                                //found selector
-                                for (int j = 0; j < n.jjtGetNumChildren(); j++) {
-                                    SimpleNode n2 = (SimpleNode) n.jjtGetChild(j);
-                                    //append simpleselectors and combinators
-                                    if (n2.kind() == CssParserTreeConstants.JJTSIMPLESELECTOR ||
-                                            n2.kind() == CssParserTreeConstants.JJTCOMBINATOR) {
-                                        if (n2.image().trim().length() > 0) {
-                                            try {
-                                                CharSequence nodeText = topLevelSnapshotText.subSequence(
-                                                        snapshot.getOriginalOffset(n2.startOffset()),
-                                                        snapshot.getOriginalOffset(n2.endOffset()));
-                                                content.append(nodeText);
-                                                content.append(' ');
-                                            } catch (StringIndexOutOfBoundsException e) {
-                                                //the source is not locked so it may change in the way that the boundaries doesn't fit
-                                                //the whole parsing process will be run again, so it doesn't matter that
-                                                //we will return a bad result now.
-                                            }
-
-                                        }
-                                    }
-                                }
-                                //filter out inlined style definitions - they have just virtual selector which
-                                //is mapped to empty string
-
-                                if (content.length() > 0) {
-                                    selectorsListText.append(content.substring(0, content.length() - 1)); //cut last space
-                                    selectorsListText.append(", "); //append selectos separator //NOI18N
-                                }
-                            }
-                        }
-                        //filter empty(virtual) selector lists
-                        if (selectorsListText.length() > 2 /* ", ".length() */) {
-
-                            //possibly remove last space and comma
-                            if (selectorsListText.charAt(selectorsListText.length() - 2) == ',') {
-                                selectorsListText.deleteCharAt(selectorsListText.length() - 2);
-                            }
-
-                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.createElement(ruleNode), snapshot));
-                        }
-
-                    }
-                }
+            public boolean visit(Node node) {
+//                if (node.type() == NodeType.selectorsGroup) {
+//                    //get parent - style rule
+//                    Node ruleNode = (Node) node.jjtGetParent();
+//                    assert ruleNode.kind() == CssParserTreeConstants.JJTSTYLERULE;
+//                    int so = snapshot.getOriginalOffset(ruleNode.from());
+//                    int eo = snapshot.getOriginalOffset(ruleNode.to());
+//                    if (eo != so) {
+//
+//                        StringBuilder selectorsListText = new StringBuilder();
+//                        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+//                            Node n = (Node) node.jjtGetChild(i);
+//                            if (n.kind() == CssParserTreeConstants.JJTSELECTOR) {
+//                                StringBuilder content = new StringBuilder();
+//                                //found selector
+//                                for (int j = 0; j < n.jjtGetNumChildren(); j++) {
+//                                    Node n2 = (Node) n.jjtGetChild(j);
+//                                    //append simpleselectors and combinators
+//                                    if (n2.kind() == CssParserTreeConstants.JJTSIMPLESELECTOR ||
+//                                            n2.kind() == CssParserTreeConstants.JJTCOMBINATOR) {
+//                                        if (n2.image().trim().length() > 0) {
+//                                                CharSequence nodeText = topLevelSnapshotText.subSequence(
+//                                                        snapshot.getOriginalOffset(n2.from()),
+//                                                        snapshot.getOriginalOffset(n2.to()));
+//                                                content.append(nodeText);
+//                                                content.append(' ');
+//
+//                                        }
+//                                    }
+//                                }
+//                                //filter out inlined style definitions - they have just virtual selector which
+//                                //is mapped to empty string
+//
+//                                if (content.length() > 0) {
+//                                    selectorsListText.append(content.substring(0, content.length() - 1)); //cut last space
+//                                    selectorsListText.append(", "); //append selectos separator //NOI18N
+//                                }
+//                            }
+//                        }
+//                        //filter empty(virtual) selector lists
+//                        if (selectorsListText.length() > 2 /* ", ".length() */) {
+//
+//                            //possibly remove last space and comma
+//                            if (selectorsListText.charAt(selectorsListText.length() - 2) == ',') {
+//                                selectorsListText.deleteCharAt(selectorsListText.length() - 2);
+//                            }
+//
+//                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.createElement(ruleNode), snapshot));
+//                        }
+//
+//                    }
+//                }
+                
+                return false;
             }
         };
-        root.visitChildren(rulesSearch);
+        
+        rulesSearch.visit(root);
         return items;
     }
 
-//    private String extractDocumentText(SimpleNode node, CompilationInfo ci, TranslatedSource source) {
-//        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
-//        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+//    private String extractDocumentText(Node node, CompilationInfo ci, TranslatedSource source) {
+//        int documentSO = AstUtils.documentPosition(node.from(), source);
+//        int documentEO = AstUtils.documentPosition(node.to(), source);
 //        return ci.getText().substring(documentSO, documentEO);
 //    }
     @Override
@@ -180,7 +158,7 @@ public class CssStructureScanner implements StructureScanner {
 //
 //        ParserResult presult = presultIterator.next();
 //        final TranslatedSource source = presult.getTranslatedSource();
-        SimpleNode root = ((CssParserResult) info).root();
+        Node root = ((CssParserResultCslWrapper) info).getParseTree();
         final Snapshot snapshot = info.getSnapshot();
 
         if (root == null) {
@@ -191,36 +169,36 @@ public class CssStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
 
-        NodeVisitor foldsSearch = new NodeVisitor() {
-
-            @Override
-            public void visit(SimpleNode node) {
-                if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
-                    int so = snapshot.getOriginalOffset(node.startOffset());
-                    int eo = snapshot.getOriginalOffset(node.endOffset());
-                    for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-                        SimpleNode n = (SimpleNode) node.jjtGetChild(i);
-                        if (n.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
-                            // shift fold start to the end of rule name:
-                            so = snapshot.getOriginalOffset(n.endOffset());
-                            break;
-                        }
-                    }
-                    try {
-                        //document is not locked so need to check current boundaries
-                        if (so >= 0 && eo >= 0 && eo < doc.getLength() && Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-                            //do not creare one line folds
-                            //XXX this logic could possibly seat in the GSF folding impl.
-                            foldRange.add(new OffsetRange(so, eo));
-                        }
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        };
-        root.visitChildren(foldsSearch);
-        folds.put("codeblocks", foldRange); //NOI18N
+//        NodeVisitor foldsSearch = new NodeVisitor() {
+//
+//            @Override
+//            public void visit(Node node) {
+//                if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
+//                    int so = snapshot.getOriginalOffset(node.from());
+//                    int eo = snapshot.getOriginalOffset(node.to());
+//                    for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+//                        Node n = (Node) node.jjtGetChild(i);
+//                        if (n.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
+//                            // shift fold start to the end of rule name:
+//                            so = snapshot.getOriginalOffset(n.to());
+//                            break;
+//                        }
+//                    }
+//                    try {
+//                        //document is not locked so need to check current boundaries
+//                        if (so >= 0 && eo >= 0 && eo < doc.getLength() && Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
+//                            //do not creare one line folds
+//                            //XXX this logic could possibly seat in the GSF folding impl.
+//                            foldRange.add(new OffsetRange(so, eo));
+//                        }
+//                    } catch (BadLocationException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+//                }
+//            }
+//        };
+//        root.visitChildren(foldsSearch);
+//        folds.put("codeblocks", foldRange); //NOI18N
 
         return folds;
 
@@ -231,79 +209,79 @@ public class CssStructureScanner implements StructureScanner {
         return new Configuration(true, false);
     }
 
-    private static class CssRuleStructureItem implements StructureItem {
-
-        private String name;
-        private CssAstElement element;
-        private int from,  to;
-
-        private static String escape(String s) {
-            s = s.replace("<", "&lt;");
-            s = s.replace(">", "&gt;");
-            return s;
-        }
-
-        private CssRuleStructureItem(String name, CssAstElement element, Snapshot source) {
-            this.name = name;
-            this.element = element;
-            this.from = source.getOriginalOffset(element.node().startOffset());
-            this.to = source.getOriginalOffset(element.node().endOffset());
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getSortText() {
-            return getName();
-        }
-
-        @Override
-        public String getHtml(HtmlFormatter formatter) {
-            return escape(getName());
-        }
-
-        @Override
-        public ElementHandle getElementHandle() {
-            return element;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.RULE;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public boolean isLeaf() {
-            return true;
-        }
-
-        //TODO - could I put rules here???
-        @Override
-        public List<? extends StructureItem> getNestedItems() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public long getPosition() {
-            return from;
-        }
-
-        @Override
-        public long getEndPosition() {
-            return to;
-        }
-
-        @Override
-        public ImageIcon getCustomIcon() {
-            return null;
-        }
-    }
+//    private static class CssRuleStructureItem implements StructureItem {
+//
+//        private String name;
+//        private CssAstElement element;
+//        private int from,  to;
+//
+//        private static String escape(String s) {
+//            s = s.replace("<", "&lt;");
+//            s = s.replace(">", "&gt;");
+//            return s;
+//        }
+//
+//        private CssRuleStructureItem(String name, CssAstElement element, Snapshot source) {
+//            this.name = name;
+//            this.element = element;
+//            this.from = source.getOriginalOffset(element.node().from());
+//            this.to = source.getOriginalOffset(element.node().to());
+//        }
+//
+//        @Override
+//        public String getName() {
+//            return name;
+//        }
+//
+//        @Override
+//        public String getSortText() {
+//            return getName();
+//        }
+//
+//        @Override
+//        public String getHtml(HtmlFormatter formatter) {
+//            return escape(getName());
+//        }
+//
+//        @Override
+//        public ElementHandle getElementHandle() {
+//            return element;
+//        }
+//
+//        @Override
+//        public ElementKind getKind() {
+//            return ElementKind.RULE;
+//        }
+//
+//        @Override
+//        public Set<Modifier> getModifiers() {
+//            return Collections.emptySet();
+//        }
+//
+//        @Override
+//        public boolean isLeaf() {
+//            return true;
+//        }
+//
+//        //TODO - could I put rules here???
+//        @Override
+//        public List<? extends StructureItem> getNestedItems() {
+//            return Collections.emptyList();
+//        }
+//
+//        @Override
+//        public long getPosition() {
+//            return from;
+//        }
+//
+//        @Override
+//        public long getEndPosition() {
+//            return to;
+//        }
+//
+//        @Override
+//        public ImageIcon getCustomIcon() {
+//            return null;
+//        }
+//    }
 }

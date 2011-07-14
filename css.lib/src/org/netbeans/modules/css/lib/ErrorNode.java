@@ -54,7 +54,8 @@ public class ErrorNode extends AbstractParseTreeNode {
     private RecognitionException re;
     private ProblemDescription problem;
 
-    public ErrorNode(RecognitionException re, ProblemDescription problem) {
+    public ErrorNode(RecognitionException re, ProblemDescription problem, CharSequence source) {
+        super(source);
         this.re = re;
         this.problem = problem;
     }

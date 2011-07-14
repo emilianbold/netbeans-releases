@@ -72,12 +72,12 @@ public class CssParser extends Parser {
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         try {
-            String source = snapshot.getText().toString();
-            CharStream charstream = new ANTLRStringStream(source);
+            CharSequence source = snapshot.getText();
+            CharStream charstream = new ANTLRStringStream(source.toString());
             
             ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
             TokenStream tokenstream = new CommonTokenStream(lexer);
-            NbParseTreeBuilder builder = new NbParseTreeBuilder();
+            NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
             ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder);
             parser.styleSheet();
 

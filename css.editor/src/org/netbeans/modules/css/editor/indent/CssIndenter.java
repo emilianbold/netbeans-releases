@@ -55,7 +55,7 @@ import org.netbeans.modules.web.indent.api.support.IndenterContextData;
 import org.netbeans.modules.web.indent.api.support.IndentCommand;
 import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.web.indent.api.LexUtilities;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
 import org.netbeans.modules.editor.indent.spi.Context;
 
 /**

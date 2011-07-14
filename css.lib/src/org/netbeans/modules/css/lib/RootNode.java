@@ -51,8 +51,8 @@ import org.netbeans.modules.css.lib.api.NodeType;
  */
 public class RootNode extends RuleNode {
 
-    public RootNode() {
-        super(NodeType.root);
+    public RootNode(CharSequence source) {
+        super(NodeType.root, source);
     }
     
     @Override

@@ -40,58 +40,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.gsf.api;
+package org.netbeans.modules.css.gsf;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.gsf.CssAnalyser;
+import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
  * @author marek.fukala@sun.com
  */
-public class CssParserResult extends ParserResult {
+public class CssParserResultCslWrapper extends ParserResult {
 
-    private SimpleNode root;
-    private Node css3root; //temp
-    private final List<Error> errors = new ArrayList<Error>();
+    private CssParserResult wrappedCssParserResult;
     
+    private final List<Error> errors = new ArrayList<Error>();
     private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
 
     private boolean invalidated = false;
-    
-    public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, List<Error> parserErrors) {
-        this(parser, snapshot, root, null, parserErrors);
-    }
-    
-    public CssParserResult(Parser parser, Snapshot snapshot, SimpleNode root, Node css3root, List<Error> parserErrors) {
+
+    public CssParserResultCslWrapper(Snapshot snapshot) {
         super(snapshot);
-        this.root = root;
-        this.css3root = css3root;
-        errors.addAll(parserErrors);
     }
     
-    public SimpleNode root() {
-        if(invalidated) {
-            throw new IllegalStateException("The CssParserResult already invalidated!"); //NOI18N
-        }
-        return root;
-    }
-    
-    public Node css3root() {
-        if(invalidated) {
-            throw new IllegalStateException("The CssParserResult already invalidated!"); //NOI18N
-        }
-        return css3root;
+    public CssParserResultCslWrapper(CssParserResult cssParserResult) {
+        super(null);
+        this.wrappedCssParserResult = cssParserResult;
     }
 
+    public CssParserResult getWrappedCssParserResult() {
+        return wrappedCssParserResult;
+    }
+    
+    @Override
+    public Snapshot getSnapshot() {
+        return wrappedCssParserResult.getSnapshot();
+    }
+    
+    public Node getParseTree() {
+        return wrappedCssParserResult.getParseTree();
+    }
     
     @Override
     public List<? extends Error> getDiagnostics() {
@@ -100,7 +94,14 @@ public class CssParserResult extends ParserResult {
         }
         
         if(!analyzerErrorsComputed.getAndSet(true)) {
-            errors.addAll(CssAnalyser.checkForErrors(getSnapshot(), root));
+            //convert all problem descriptions to the CSL Error-s
+            errors.addAll(Css3Utils.getCslErrorForCss3ProblemDescription(
+                        wrappedCssParserResult.getSnapshot().getSource().getFileObject(), wrappedCssParserResult.getDiagnostics()));
+            
+            //and add the "advanced" errors
+            //XXX this should be possibly done via hints!
+            
+//            errors.addAll(CssAnalyser.checkForErrors(getSnapshot(), root));
         }
         
         return errors;

@@ -70,10 +70,11 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private CommonToken lastConsumedToken;
     private Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
     private boolean resyncing;
+    private CharSequence source;
     
-    
-    public NbParseTreeBuilder() {
-        callStack.push(new RootNode());
+    public NbParseTreeBuilder(CharSequence source) {
+        this.source = source;
+        callStack.push(new RootNode(source));
     }
 
     public AbstractParseTreeNode getTree() {
@@ -97,7 +98,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             return;
         }
         AbstractParseTreeNode parentRuleNode = callStack.peek();
-        RuleNode ruleNode = new RuleNode(NodeType.valueOf(ruleName));
+        RuleNode ruleNode = new RuleNode(NodeType.valueOf(ruleName), source);
         parentRuleNode.addChild(ruleNode);
         ruleNode.setParent(parentRuleNode);
         callStack.push(ruleNode);
@@ -125,6 +126,13 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
+        
+        //ignore the closing EOF token, we do not want it
+        //it the parse tree
+        if(token.getType() == Css3Lexer.EOF) {
+            return ;
+        }
+        
         lastConsumedToken = (CommonToken)token;
         
         RuleNode ruleNode = callStack.peek();
@@ -223,7 +231,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         problems.add(pp);
         
         //create an error node and add it to the parse tree
-        ErrorNode errorNode = new ErrorNode(e, pp);
+        ErrorNode errorNode = new ErrorNode(e, pp, source);
         ruleNode.addChild(errorNode);
     }
 

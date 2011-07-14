@@ -47,7 +47,6 @@ import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -81,9 +80,9 @@ public class CssGSFParserTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssParserResultCslWrapper);
 
-        CssParserResult cssresult = (CssParserResult)result;
+        CssParserResultCslWrapper cssresult = (CssParserResultCslWrapper)result;
         assertNull(cssresult.root());
         assertEquals(1, cssresult.getDiagnostics().size());
     }
@@ -103,9 +102,9 @@ public class CssGSFParserTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssParserResultCslWrapper);
 
-        CssParserResult cssresult = (CssParserResult)result;
+        CssParserResultCslWrapper cssresult = (CssParserResultCslWrapper)result;
         assertNotNull(cssresult.root());
         assertEquals(0, cssresult.getDiagnostics().size());
     }
@@ -124,9 +123,9 @@ public class CssGSFParserTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssParserResultCslWrapper);
 
-        CssParserResult cssresult = (CssParserResult)result;
+        CssParserResultCslWrapper cssresult = (CssParserResultCslWrapper)result;
         assertNotNull(cssresult.root());
 
         List<? extends Error> errors = cssresult.getDiagnostics();
@@ -149,9 +148,9 @@ public class CssGSFParserTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssParserResultCslWrapper);
 
-        CssParserResult cssresult = (CssParserResult)result;
+        CssParserResultCslWrapper cssresult = (CssParserResultCslWrapper)result;
         assertNotNull(cssresult.root());
 
         List<? extends Error> errors = cssresult.getDiagnostics();

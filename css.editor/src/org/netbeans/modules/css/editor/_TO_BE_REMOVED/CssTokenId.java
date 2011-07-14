@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.lexer.api;
+package org.netbeans.modules.css.editor._TO_BE_REMOVED;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -53,7 +53,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.lexer.CssLexer;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;

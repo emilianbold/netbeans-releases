@@ -48,7 +48,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
 
 /**
  * @author  marek.fukala@sun.com

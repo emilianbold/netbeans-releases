@@ -60,12 +60,11 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.editor.LexerUtils;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -289,17 +288,17 @@ public class CssBracketCompleter implements KeystrokeHandler {
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
 
-        SimpleNode root = ((CssParserResult) info).root();
+        Node root = ((CssParserResultCslWrapper) info).getParseTree();
         Snapshot snapshot = info.getSnapshot();
 
         if (root != null) {
             //find leaf at the position
-            SimpleNode node = SimpleNodeUtil.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
+            Node node = NodeUtil.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
             if (node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int from = snapshot.getOriginalOffset(node.startOffset());
-                    int to = snapshot.getOriginalOffset(node.endOffset());
+                    int from = snapshot.getOriginalOffset(node.from());
+                    int to = snapshot.getOriginalOffset(node.to());
 
                     if (from == -1 || to == -1) {
                         continue;
@@ -310,7 +309,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     if (last == null || ((last.getEnd() - last.getStart()) < (to - from))) {
                         ranges.add(new OffsetRange(from, to));
                     }
-                } while ((node = (SimpleNode) node.jjtGetParent()) != null);
+                } while ((node = node.parent()) != null);
             }
         }
 

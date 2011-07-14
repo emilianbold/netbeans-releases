@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.parser;
+package org.netbeans.modules.css.editor._TO_BE_REMOVED;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;

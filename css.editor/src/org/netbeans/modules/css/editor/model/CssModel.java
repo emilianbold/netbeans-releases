@@ -52,13 +52,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserConstants;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.Token;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -84,17 +85,17 @@ public final class CssModel {
     private Snapshot snapshot;
     private FileObject fileObject;
 
-    public static CssModel create(CssParserResult result) {
-        return new CssModel(result.getSnapshot(), result.root());
+    public static CssModel create(CssParserResultCslWrapper result) {
+        return new CssModel(result.getSnapshot(), result.getParseTree());
     }
 
-    private CssModel(Snapshot snapshot, SimpleNode root) {
+    private CssModel(Snapshot snapshot, Node root) {
         this.snapshot = snapshot;
         this.fileObject = snapshot.getSource().getFileObject();
         //check for null which may happen if the source is severely broken
         //if it happens, the model contains just empty list of rules
         if (root != null) {
-            updateModel(snapshot, root);
+//            updateModel(snapshot, root);
         }
     }
 
@@ -140,7 +141,7 @@ public final class CssModel {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                            CssParserResultCslWrapper result = (CssParserResultCslWrapper) resultIterator.getParserResult();
                             ref.set(CssModel.create(result));
                         }
                     });
@@ -181,6 +182,7 @@ public final class CssModel {
         synchronized (rules) {
             NodeVisitor styleRuleVisitor = new NodeVisitor() {
 
+                @Override
                 public void visit(SimpleNode node) {
                     if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
                         //find curly brackets

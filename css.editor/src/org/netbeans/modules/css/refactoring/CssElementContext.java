@@ -43,10 +43,10 @@ package org.netbeans.modules.css.refactoring;
 
 import java.util.Collection;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
@@ -95,14 +95,14 @@ public abstract class CssElementContext {
 
     public static class File extends AbstractFileContext {
 
-	private Collection<CssParserResult> results;
+	private Collection<CssParserResultCslWrapper> results;
 
-	public File(FileObject fileObject, Collection<CssParserResult> result) {
+	public File(FileObject fileObject, Collection<CssParserResultCslWrapper> result) {
 	    super(fileObject);
 	    this.results = result;
 	}
 
-	public Collection<CssParserResult> getParserResults() {
+	public Collection<CssParserResultCslWrapper> getParserResults() {
 	    return results;
 	}
 
@@ -117,10 +117,10 @@ public abstract class CssElementContext {
 	private int caretOffset;
 	private int selectionFrom, selectionTo;
 	private SimpleNode element;
-	private CssParserResult result;
+	private CssParserResultCslWrapper result;
         private Snapshot topLevelSnapshot;
 
-	public Editor(CssParserResult result, Snapshot topLevelSnapshot, int caretOffset, int selectionFrom, int selectionTo) {
+	public Editor(CssParserResultCslWrapper result, Snapshot topLevelSnapshot, int caretOffset, int selectionFrom, int selectionTo) {
 	    this.result = result;
 	    this.caretOffset = caretOffset;
 	    this.selectionFrom = selectionFrom;
@@ -133,11 +133,14 @@ public abstract class CssElementContext {
 
 	//XXX make it only caret position sensitive for now
 	private SimpleNode findCurrentElement() {
-	    SimpleNode root = getParserResult().root();
-	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
-	    SimpleNode leaf = SimpleNodeUtil.findDescendant(root, astOffset);
-            //if leaf == null the astOffset is out of the root's node range, return the root node
-            return leaf == null ? root : leaf;
+            
+            return null;
+            
+//	    SimpleNode root = getParserResult().root();
+//	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
+//	    SimpleNode leaf = SimpleNodeUtil.findDescendant(root, astOffset);
+//            //if leaf == null the astOffset is out of the root's node range, return the root node
+//            return leaf == null ? root : leaf;
 	}
 
         public Document getDocument() {
@@ -148,7 +151,7 @@ public abstract class CssElementContext {
             return topLevelSnapshot;
         }
 
-	public CssParserResult getParserResult() {
+	public CssParserResultCslWrapper getParserResult() {
 	    return result;
 	}
 

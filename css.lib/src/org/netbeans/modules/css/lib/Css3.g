@@ -234,7 +234,8 @@ simpleSelectorSequence
 	/* typeSelector and universal are ambiguous for lookahead==1 since namespace name and element name both starts with IDENT */
 	:   
 //	(  ( typeSelector | universal ) ((esPred)=>elementSubsequent)* )
-	//using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
+	
+        //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 	(  typeSelector ((esPred)=>elementSubsequent)* )
 	| 
 	( ((esPred)=>elementSubsequent)+ )
@@ -265,20 +266,28 @@ typeSelector
  	;
     
  namespacePrefix
-  : ( IDENT | STAR )? '|'
+  : ( namespaceName)? '|'
   ;
+        
+ namespaceName
+  : IDENT | STAR 
+ ;
         
 esPred
     : HASH | DOT | LBRACKET | COLON
     ;
     
 elementSubsequent
-    : HASH
+    : cssId
     | cssClass
     | attrib
     | pseudo
     ;
     
+cssId
+    : HASH
+    ;
+
 cssClass
     : DOT IDENT
     ;

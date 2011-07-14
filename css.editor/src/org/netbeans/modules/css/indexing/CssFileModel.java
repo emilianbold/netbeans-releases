@@ -54,15 +54,14 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.css.gsf.CssGSFParser;
 import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserConstants;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.Token;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -91,7 +90,7 @@ public class CssFileModel {
     private SimpleNode parseTreeRoot;
 
     public static CssFileModel create(Source source) throws ParseException {
-        final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
+        final AtomicReference<CssParserResultCslWrapper> result = new AtomicReference<CssParserResultCslWrapper>();
         final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
@@ -99,7 +98,7 @@ public class CssFileModel {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
                 snapshot.set(resultIterator.getSnapshot());
-                result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
+                result.set(cssRi == null ? null : (CssParserResultCslWrapper) cssRi.getParserResult());
             }
         });
 
@@ -108,7 +107,7 @@ public class CssFileModel {
         return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get(), snapshot.get());
     }
 
-    public static CssFileModel create(CssParserResult result) {
+    public static CssFileModel create(CssParserResultCslWrapper result) {
         return new CssFileModel(result, null);
     }
 
@@ -116,9 +115,9 @@ public class CssFileModel {
         this.snapshot = this.topLevelSnapshot = topLevelSnapshot;
     }
 
-    private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
+    private CssFileModel(CssParserResultCslWrapper parserResult, Snapshot topLevelSnapshot) {
         snapshot = parserResult.getSnapshot();
-        parseTreeRoot = parserResult.root();
+//        parseTreeRoot = parserResult.root();
         this.topLevelSnapshot = topLevelSnapshot;
 
         if (parseTreeRoot != null) {
@@ -364,9 +363,9 @@ public class CssFileModel {
 
     private Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
         //do not create entries for virtual generated code
-        if (CssGSFParser.containsGeneratedCode(name)) {
-            return null;
-        }
+//        if (CssGSFParser.containsGeneratedCode(name)) {
+//            return null;
+//        }
 
         return new LazyEntry(name, range, bodyRange, isVirtual);
     }

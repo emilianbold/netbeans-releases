@@ -49,8 +49,8 @@ public enum NodeType {
     
         invalidRule, styleSheet, declaration, declarations, elementSubsequent, 
         bodylist, hexColor, charSet, attribute, term, media, 
-        medium, expr, cssClass, pseudoPage, property, synpred3_Css3, 
-        prio, unaryOperator, namespacePrefix, synpred1_Css3, combinator, 
+        medium, expr, cssId, cssClass, pseudoPage, property, synpred3_Css3, 
+        prio, unaryOperator, namespacePrefix, namespaceName, synpred1_Css3, combinator, 
         page, selector, attrib, attrvalue, esPred, pseudo, simpleSelectorSequence, 
         ruleSet, function_name, bodyset, synpred2_Css3, operator, 
         attrname, selectorsGroup, typeSelector, nsPred, elementName, 

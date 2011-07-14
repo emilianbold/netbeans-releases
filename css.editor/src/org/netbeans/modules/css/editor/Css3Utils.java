@@ -44,8 +44,10 @@ package org.netbeans.modules.css.editor;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.openide.filesystems.FileObject;
 
@@ -91,4 +93,7 @@ public final class Css3Utils {
         return Severity.ERROR;
     }
     
+    public static OffsetRange getOffsetRange(Node node) {
+        return new OffsetRange(node.from(), node.to());
+    }
 }

@@ -53,7 +53,6 @@ import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -97,9 +96,9 @@ public class CssCompletionTest extends TestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssParserResult);
+                assertTrue(result instanceof CssParserResultCslWrapper);
 
-                CssParserResult cssresult = (CssParserResult)result;
+                CssParserResultCslWrapper cssresult = (CssParserResultCslWrapper)result;
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);

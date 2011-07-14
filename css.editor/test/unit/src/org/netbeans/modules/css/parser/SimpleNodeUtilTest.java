@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.css.parser;
 
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.Token;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

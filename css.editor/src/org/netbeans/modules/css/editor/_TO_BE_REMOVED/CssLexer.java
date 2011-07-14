@@ -41,14 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.lexer;
+package org.netbeans.modules.css.editor._TO_BE_REMOVED;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
-import org.netbeans.modules.css.parser.CssParserConstants;
-import org.netbeans.modules.css.parser.CssParserTokenManager;
-import org.netbeans.modules.css.parser.PatchedCssParserTokenManager;
-import org.netbeans.modules.css.parser.TokenMgrError;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -119,7 +114,7 @@ public final class CssLexer implements Lexer<CssTokenId> {
                 input.read ();
             return tokenFactory.createToken (tokens [lexerState++]);
         }
-        org.netbeans.modules.css.parser.Token token = null;
+        org.netbeans.modules.css.editor._TO_BE_REMOVED.Token token = null;
         try {
 
             //read a token from the javacc tokenizer

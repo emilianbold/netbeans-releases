@@ -40,89 +40,67 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.lexer;
+package org.netbeans.modules.css.gsf;
 
-import java.io.IOException;
-import org.netbeans.modules.css.parser.CssParserConstants;
-import org.netbeans.modules.css.parser.CharStream;
-import org.netbeans.spi.lexer.LexerInput;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
-public class LexerCharStream implements CharStream {
+public class CssOccurrencesFinder extends OccurrencesFinder {
 
-    private LexerInput li;
-    
-    public LexerCharStream(LexerRestartInfo lri) {
-        this.li = lri.input();
+    private int caretDocumentPosition;
+    private boolean cancelled;
+    private Map<OffsetRange, ColoringAttributes> occurrencesMap;
+
+    @Override
+    public void setCaretPosition(int position) {
+        caretDocumentPosition = position;
+    }
+
+    @Override
+    public Map<OffsetRange, ColoringAttributes> getOccurrences() {
+        return occurrencesMap;
+    }
+
+    @Override
+    public void cancel() {
+        cancelled = true;
+    }
+
+    @Override
+    public void run(Result result, SchedulerEvent event) {
+        CssParserResultCslWrapper parserResultWrapper = (CssParserResultCslWrapper)result;
+        EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper.getWrappedCssParserResult(), caretDocumentPosition);
+        Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context);
         
-    }
-
-    public char readChar() throws IOException {
-        int c = li.read();
-        if(c == LexerInput.EOF) {
-            throw new IOException("end"); //NOI18N
-        } else {
-            return (char)c;
+        Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
+        for(OffsetRange range : occurrences) {
+            occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
         }
+        
+        occurrencesMap = occurrencesMapLocal;
     }
 
-    public void backup(int amount) {
-        li.backup(amount);
+    @Override
+    public int getPriority() {
+        return 20;
     }
 
-    public char BeginToken() throws IOException {
-        return readChar();
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return null;
     }
-
-    public String GetImage() {
-        return li.readText().toString();
-    }
-
-    public char[] GetSuffix(int len) {
-        String t = GetImage();
-        if(t.length() == 0) {
-            return new char[]{};
-        } else {
-            return t.substring(t.length() - len, t.length()).toCharArray();
-        }
-    }
-
-    public void Done() {
-        //do nothing
-    }
-    
-    public int getColumn() {
-        return  -1;
-    }
-
-    public int getLine() {
-        return -1;
-    }
-
-    public int getEndColumn() {
-        return -1;
-    }
-
-    public int getEndLine() {
-        return -1;
-    }
-
-    public int getBeginColumn() {
-        return -1;
-    }
-
-    public int getBeginLine() {
-        return -1;
-    }
-
-    //TODO how to implement this when running in lexer????????
-    public int offset() {
-        return -1;
-    }
-    
 
 }

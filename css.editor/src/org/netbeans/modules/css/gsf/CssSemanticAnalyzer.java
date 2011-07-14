@@ -41,110 +41,100 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.util.HashMap;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
-public class CssSemanticAnalyzer extends  SemanticAnalyzer {
+public class CssSemanticAnalyzer extends SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }
 
     @Override
     public void run(Result result, SchedulerEvent event) {
-        cancelled = false;
+//        cancelled = false;
+//        
+//        if (cancelled) {
+//            return;
+//        }
         
-        if (cancelled) {
-            return;
-        }
+        CssParserResultCslWrapper wrappedResult = (CssParserResultCslWrapper) result;
+        FeatureContext featureContext = new FeatureContext(wrappedResult.getWrappedCssParserResult());
+        semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext);
         
-        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
+//        NodeVisitor visitor = new NodeVisitor() {
+//
+//            //XXX using the ColoringAttributes.YYY java specific codes should
+//            //be changed to something more meaningful
+//            
+//            public boolean visit(Node node) {
+//                if (node.type() == NodeType.elementName || node.type() == NodeType.elementSubsequent) {
+//                    //selector name
+//                    int dso = snapshot.getOriginalOffset(node.from());
+//                    if(dso == -1) {
+//                        //try next offset - for virtually created class and id
+//                        //selectors the . an # prefix are virtual code and is not
+//                        //a part of the source document, try to highlight just
+//                        //the class or id name
+//                        dso = snapshot.getOriginalOffset(node.to() + 1);
+//                    }
+//
+//                    int deo =snapshot.getOriginalOffset(node.to());
+//                    //filter out generated and inlined style definitions - they have just virtual selector which
+//                    //is mapped to empty string
+//                    if(dso >= 0 && deo >= 0) {
+//                        OffsetRange range = new OffsetRange(dso, deo);
+//                        highlights.put(range, ColoringAttributes.METHOD_SET);
+//                    }
+//                } else if (node.type() == NodeType.property) {
+//                    int dso = snapshot.getOriginalOffset(node.from());
+//                    int deo =snapshot.getOriginalOffset(node.to());
+//
+//                    if (dso >= 0 && deo >= 0) { //filter virtual nodes
+//                        //check vendor speficic property
+//                        OffsetRange range = new OffsetRange(dso, deo);
+//
+//                        String propertyName = node.name().trim();
+//                        if(CssGSFParser.containsGeneratedCode(propertyName)) {
+//                            return false;
+//                        }
+//                        
+//                        if (CssAnalyser.isVendorSpecificProperty(propertyName)) {
+//                            //special highlight for vend. spec. properties
+//                            highlights.put(range, ColoringAttributes.CUSTOM2_SET);
+//                        } else {
+//                            highlights.put(range, ColoringAttributes.CUSTOM1_SET);
+//                        }
+//                    }
+//                }
+//                return false;
+//            }
+//            
+//        };
+//
+//        NodeVisitor.visitChildren(root, visitor);
 
-        Node root = ((CssParserResult) result).css3root();
-        final Snapshot snapshot = result.getSnapshot();
-        
-        if(root == null) {
-            //serious error in the source, no results
-            semanticHighlights = highlights;
-            return;
-        }
-        
-        NodeVisitor visitor = new NodeVisitor() {
-
-            //XXX using the ColoringAttributes.YYY java specific codes should
-            //be changed to something more meaningful
-            
-            public boolean visit(Node node) {
-                if (node.type() == NodeType.elementName || node.type() == NodeType.elementSubsequent) {
-                    //selector name
-                    int dso = snapshot.getOriginalOffset(node.from());
-                    if(dso == -1) {
-                        //try next offset - for virtually created class and id
-                        //selectors the . an # prefix are virtual code and is not
-                        //a part of the source document, try to highlight just
-                        //the class or id name
-                        dso = snapshot.getOriginalOffset(node.to() + 1);
-                    }
-
-                    int deo =snapshot.getOriginalOffset(node.to());
-                    //filter out generated and inlined style definitions - they have just virtual selector which
-                    //is mapped to empty string
-                    if(dso >= 0 && deo >= 0) {
-                        OffsetRange range = new OffsetRange(dso, deo);
-                        highlights.put(range, ColoringAttributes.METHOD_SET);
-                    }
-                } else if (node.type() == NodeType.property) {
-                    int dso = snapshot.getOriginalOffset(node.from());
-                    int deo =snapshot.getOriginalOffset(node.to());
-
-                    if (dso >= 0 && deo >= 0) { //filter virtual nodes
-                        //check vendor speficic property
-                        OffsetRange range = new OffsetRange(dso, deo);
-
-                        String propertyName = node.name().trim();
-                        if(CssGSFParser.containsGeneratedCode(propertyName)) {
-                            return false;
-                        }
-                        
-                        if (CssAnalyser.isVendorSpecificProperty(propertyName)) {
-                            //special highlight for vend. spec. properties
-                            highlights.put(range, ColoringAttributes.CUSTOM2_SET);
-                        } else {
-                            highlights.put(range, ColoringAttributes.CUSTOM1_SET);
-                        }
-                    }
-                }
-                return false;
-            }
-            
-        };
-
-        NodeVisitor.visitChildren(root, visitor);
-
-        semanticHighlights = highlights;
 
     }
 

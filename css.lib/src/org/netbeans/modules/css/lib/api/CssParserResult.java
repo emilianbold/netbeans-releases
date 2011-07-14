@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.AbstractParseTreeNode;
 import org.netbeans.modules.parsing.api.Snapshot;

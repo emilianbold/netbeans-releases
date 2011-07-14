@@ -53,7 +53,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -236,9 +235,9 @@ public class CssBracketCompleterTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssParserResultCslWrapper);
 
-        CssParserResult cssResult = (CssParserResult)result;
+        CssParserResultCslWrapper cssResult = (CssParserResultCslWrapper)result;
         assertNotNull(cssResult.root());
         assertEquals(0, cssResult.getDiagnostics().size()); //no errors
 

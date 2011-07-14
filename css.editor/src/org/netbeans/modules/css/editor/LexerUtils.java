@@ -45,7 +45,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

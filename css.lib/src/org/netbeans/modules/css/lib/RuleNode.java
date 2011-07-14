@@ -53,7 +53,8 @@ public class RuleNode extends AbstractParseTreeNode {
     private NodeType rule;
     private CommonToken first, last;
     
-    RuleNode(NodeType rule) {
+    RuleNode(NodeType rule, CharSequence source) {
+        super(source);
         this.rule = rule;
     }
     
@@ -97,5 +98,5 @@ public class RuleNode extends AbstractParseTreeNode {
     public String name() {
         return type().name();
     }
-    
+        
 }

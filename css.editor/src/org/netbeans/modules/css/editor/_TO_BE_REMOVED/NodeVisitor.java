@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,82 +34,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api;
 
-import java.util.Collection;
-import java.util.List;
+package org.netbeans.modules.css.editor._TO_BE_REMOVED;
 
 /**
  *
- * @author marekfukala
+ * @author marek
  */
-public abstract class NodeVisitor<T> {
+public interface NodeVisitor {
     
-    private T result;
-    
-    public NodeVisitor(T result) {
-        this.result = result;
-    }
-    
-    public NodeVisitor() {
-        this(null);
-    }
-    
-    /**
-     * Performs the given node visit.
-     * @param node
-     * @return true if the visiting process should be interrupted
-     */
-    public abstract boolean visit(Node node);
-    
-    public T getResult() {
-        return result;
-    }
-    
-    public void visitAncestors(Node node) {
-        Node parent = node.parent();
-        if (parent != null) {
-            if(visit(parent)) {
-                return; //visiting stopped by the visitor
-            }
-            visitAncestors(parent);
-        }
-    }
-    
-    public Node visitChildren(Node node) {
-        List<Node> children = node.children();
-        if (children != null) {
-            for (Node child : children) {
-                if(visit(child)) {
-                    return child; //visiting stopped by the visitor
-                }
-                //recursion
-                Node breakNode = visitChildren(child); 
-                if(breakNode != null) {
-                    return breakNode;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public static <TE> void visitChildren(Node node, Collection<NodeVisitor<TE>> visitors) {
-        List<Node> children = node.children();
-        if (children != null) {
-            for (Node child : children) {
-                for(NodeVisitor v : visitors) {
-                    v.visit(node);
-                }
-                //recursion
-                visitChildren(child, visitors); 
-            }
-        }
-    }
-    
-    
+    public void visit(SimpleNode node);
+
 }

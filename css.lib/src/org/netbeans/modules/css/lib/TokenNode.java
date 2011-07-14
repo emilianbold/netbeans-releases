@@ -53,6 +53,7 @@ public class TokenNode extends AbstractParseTreeNode {
     private CommonToken token;
 
     public TokenNode(CommonToken token) {
+        super(null); //no source needed since the node text itself holds the image
         this.token = token;
     }
 
@@ -75,5 +76,12 @@ public class TokenNode extends AbstractParseTreeNode {
     public String name() {
         return token.getText();
     }
+
+    @Override
+    public CharSequence image() {
+        return token.getText();
+    }
+    
+    
     
 }

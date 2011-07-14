@@ -50,8 +50,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.css.lib.Css3Parser;
 import org.netbeans.modules.css.lib.TokenNode;
+import org.netbeans.modules.css.lib.nbparser.CssParser;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -175,7 +178,7 @@ public class Css3ParserTest extends CslTestBase {
         String typeSelectorPath = "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/";
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "namespacePrefix/myns"));
+                bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/myns"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + typeSelectorPath + "elementName/h1"));        
         
@@ -183,7 +186,7 @@ public class Css3ParserTest extends CslTestBase {
         //dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "namespacePrefix/*"));
+                bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + typeSelectorPath + "elementName/h1"));
         
@@ -191,9 +194,41 @@ public class Css3ParserTest extends CslTestBase {
         //dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "namespacePrefix/*"));
+                bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + typeSelectorPath + "elementName/*"));
+    }
+    
+    public void testNodeImages() throws ParseException, BadLocationException {
+        String selectors = "#id .class body";
+        String code = selectors + " { color: red}";
+        CssParserResult res = parse(code);
+//        dumpResult(res);
+        
+        String selectorsGroupPath = "ruleSet/selectorsGroup";
+        
+        //test rule node image
+        Node selectorsGroup = NodeUtil.query(res.getParseTree(), bodysetPath + selectorsGroupPath); 
+        assertNotNull(selectorsGroup);
+        
+        assertTrue(CharSequenceUtilities.equals(selectors, selectorsGroup.image()));
+         
+        //test root node image
+        assertTrue(CharSequenceUtilities.equals(code, res.getParseTree().image()));
+        
+        //test token node image
+        Node id = NodeUtil.query(selectorsGroup, "selector/simpleSelectorSequence/elementSubsequent/cssId/#id"); 
+        assertNotNull(id);
+        assertTrue(id instanceof TokenNode);
+        assertTrue(CharSequenceUtilities.equals("#id", id.image()));
+        
+    }
+    
+    public void testCommon() throws ParseException, BadLocationException {
+//        String code = "body, head > #id {} .class {}";
+        String code = "#id .class body { color: red}";
+        CssParserResult res = parse(code);
+        dumpResult(res);
     }
         
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
@@ -235,17 +270,24 @@ public class Css3ParserTest extends CslTestBase {
     }
    
     private CssParserResult parse(Source source) throws ParseException {
-        final AtomicReference<CssParserResult> resultRef = new AtomicReference<CssParserResult>();
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
-                resultRef.set(result);
-            }
-        });
+//        final AtomicReference<CssParserResult> resultRef = new AtomicReference<CssParserResult>();
+//        ParserManager.parse(Collections.singleton(source), new UserTask() {
+//
+//            @Override
+//            public void run(ResultIterator resultIterator) throws Exception {
+//                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+//                resultRef.set(result);
+//            }
+//        });
+//        
+//        return resultRef.get();
         
-        return resultRef.get();
+        //the CssParserFactory is not registered in the system fs by default. 
+        //If it was the above is the clean way how to get the CssParserResult
+        CssParser parser = (CssParser)CssParserFactory.getDefault().createParser(null);
+        parser.parse(source.createSnapshot(), null, null);
+        return (CssParserResult)parser.getResult(null);
+        
     }
     
     private void dumpResult(CssParserResult result) {

@@ -41,6 +41,15 @@
  */
 package org.netbeans.modules.css.parser;
 
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.ASCII_CharStream;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTokenManager;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParser;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.ParseException;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
+import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -331,7 +340,7 @@ public class CssParserTest extends TestBase {
 
     private void dumpTokens(String source) {
     CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
-        org.netbeans.modules.css.parser.Token token = null;
+        org.netbeans.modules.css.editor._TO_BE_REMOVED.Token token = null;
         do {
             token = tm.getNextToken();
             System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");

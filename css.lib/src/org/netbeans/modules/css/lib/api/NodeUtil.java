@@ -42,18 +42,160 @@
 package org.netbeans.modules.css.lib.api;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class NodeUtil {
+public final class NodeUtil {
 
-    private static final String INDENT = "    ";
+    private static final String INDENT = "    ";//NOI18N
+
+    private NodeUtil() {
+    }
+    
+    public static CharSequence getNodeImage(Node node, CharSequence source) {
+        return source.subSequence(node.from(), node.to());
+    }
+    
+     public static int[] getTrimmedNodeRange(Node node) {
+        CharSequence text = node.name();
+        int from_diff;
+        int to_diff;
+        for(from_diff = 0; from_diff < text.length(); from_diff++) {
+            if(!Character.isWhitespace(text.charAt(from_diff))) {
+                break;
+            }
+        }
+
+        for(to_diff = 0; to_diff < text.length() - from_diff; to_diff++) {
+            if(!Character.isWhitespace(text.charAt(text.length() - 1 - to_diff))) {
+                break;
+            }
+        }
+
+        return new int[]{node.from() + from_diff, node.to() - to_diff};
+    }
+
+//    public static Token getNodeToken(Node node, int tokenKind) {
+//        Token t = node.jjtGetFirstToken();
+//        if (t == null) {
+//            return null;
+//        }
+//        do {
+//            if(t.kind == tokenKind) {
+//                return t;
+//            }
+//            t = t.next;
+//        } while (t != node.jjtGetLastToken());
+//        return null;
+//    }
+
+    public static Node findDescendant(Node node, int astOffset) {
+        int so = node.from();
+        int eo = node.to();
+       
+        
+        if (astOffset < so || astOffset > eo) {
+            //we are out of the scope - may happen just with the first client call
+            return null;
+        }
+
+        if (astOffset >= so && astOffset <= eo && node.children().isEmpty()) {
+            //if the node matches and has no children we found it
+            return node;
+        }
+
+        for (Node child : node.children()) {
+
+            int ch_so = child.from();
+            int ch_eo = child.to();
+            if (astOffset >= ch_so && astOffset <= ch_eo) {
+                //the child is or contains the searched node
+                return findDescendant(child, astOffset);
+            }
+
+        }
+
+        return node;
+    }
 
     
+    /** @return first child of the node with the specified kind. */
+    public static Node getChildByType(Node node, NodeType type) {
+        Node[] children = getChildrenByType(node, type);
+        return children.length == 0 ? null : children[0];
+    }
+
+    public static Node getAncestorByType(Node node, final NodeType type) {
+	AtomicReference<Node> found = new AtomicReference<Node>();
+        NodeVisitor visitor = new NodeVisitor<AtomicReference<Node>>(found) {
+
+            @Override
+            public boolean visit(Node node) {
+                if(node.type() == type) {
+                    getResult().set(node);
+                    return true;
+                }
+                return false;
+            }
+            
+        };
+        visitor.visitAncestors(node);
+	return found.get();
+    }
+    
+    /** @return list of children of the node with the specified kind. */
+    public static Node[] getChildrenByType(Node node, NodeType type) {
+        ArrayList<Node> list = new ArrayList<Node>(node.children().size() / 4);
+        for(Node child : node.children()) {
+            if(child.type() == type) {
+                list.add(child);
+            }
+        }
+        return list.toArray(new Node[]{});
+    }
+    
+   
+        /** @return A sibling node before or after the given node. */
+    public static Node getSibling(Node node, boolean before) {
+        Node parent = node.parent();
+        if(parent == null) {
+            return null;
+        }
+        Node sibling = null;
+        for(int i = 0; i < parent.children().size() ; i++) {
+            List<Node> children = parent.children();
+            Node child = children.get(i);
+            if(child == node) {
+                //we found myself
+                if(before) {
+                    if(i == 0) {
+                        //we are first node, no sibling before
+                        return null;
+                    } else {
+                        return children.get(i - 1);
+                    }
+                } else {
+                    //after
+                    if(i == children.size() - 1) {
+                        //we are last node, no sibling after
+                        return null;
+                    } else {
+                        return children.get(i + 1);
+                    }
+                }
+            }
+        }
+        return sibling;
+    }
+
+     
     public static Node query(Node base, String path) {
         return query(base, path, false);
     }
