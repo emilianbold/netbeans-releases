@@ -44,6 +44,7 @@ package org.netbeans.spi.java.source.support;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -53,25 +54,36 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.spi.java.source.WhiteListQueryImplementation;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 
 /**
  *
  * @author Tomas Zezula
  */
+//@NotThreadSafe
 public final class WhiteListImplementationBuilder {
 
     private static final byte INVOKE = 1;
     private static final byte OVERRIDE = INVOKE << 1;
 
-    private final Model model;
+    private Model model;
 
     private WhiteListImplementationBuilder() {
         this.model = new Model();
     }
 
     @NonNull
+    public WhiteListImplementationBuilder addCheckedPackage(@NonNull final String checkedPackage) {
+        Parameters.notNull("checkedPackage", checkedPackage);   //NOI18N
+        checkPreconditions();
+        model.addCheckedPackage(checkedPackage);
+        return this;
+    }
+
+    @NonNull
     public WhiteListImplementationBuilder addInvocableClass(@NonNull final String classBinaryName) {
         Parameters.notNull("classBinaryName", classBinaryName); //NOI18N
+        checkPreconditions();
         model.addClass(classBinaryName, INVOKE);
         return this;
     }
@@ -79,6 +91,7 @@ public final class WhiteListImplementationBuilder {
     @NonNull
     public WhiteListImplementationBuilder addSubclassableClass(@NonNull final String classBinaryName) {
         Parameters.notNull("classBinaryName", classBinaryName); //NOI18N
+        checkPreconditions();
         model.addClass(classBinaryName, OVERRIDE);
         return this;
     }
@@ -91,6 +104,7 @@ public final class WhiteListImplementationBuilder {
         Parameters.notNull("classBinaryName", classBinaryName);    //NOI18N
         Parameters.notNull("methodName", methodName);   //NOI18N
         Parameters.notNull("argumentTypes", argumentTypes); //NOI18N
+        checkPreconditions();
         model.addMethod(classBinaryName, methodName, argumentTypes, INVOKE);
         return this;
     }
@@ -104,18 +118,28 @@ public final class WhiteListImplementationBuilder {
         Parameters.notNull("classBinaryName", classBinaryName);    //NOI18N
         Parameters.notNull("methodName", methodName);   //NOI18N
         Parameters.notNull("argumentTypes", argumentTypes); //NOI18N
+        checkPreconditions();
         model.addMethod(classBinaryName, methodName, argumentTypes, OVERRIDE);
         return this;
     }
 
     @NonNull
     public WhiteListQueryImplementation.WhiteListImplementation build() {
-        return new WhiteList(model);
+        final WhiteList result = new WhiteList(model.build());
+        model = null;
+        return result;
     }
 
     @NonNull
     public static WhiteListImplementationBuilder create() {
         return new WhiteListImplementationBuilder();
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="Private implementation">
+    private void checkPreconditions() {
+        if (model == null) {
+            throw new IllegalStateException("Modifying already built builder, create a new one");   //NOI18N
+        }
     }
 
     private static final class WhiteList implements WhiteListQueryImplementation.WhiteListImplementation {
@@ -142,6 +166,7 @@ public final class WhiteListImplementationBuilder {
 
     private static final class Model {
         private static final String DEF_NAMES = PackedNames.class.getName();
+        private Union2<StringBuilder,Pattern> checkedPkgs;
         private final Names names;
         private final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>> root =
                 new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>>();
@@ -156,6 +181,15 @@ public final class WhiteListImplementationBuilder {
                 } catch (ClassNotFoundException ex) {
                     throw new IllegalStateException("Cannot instantiate names", ex);    //NOI18N
                 }
+                checkedPkgs = Union2.<StringBuilder,Pattern>createFirst(new StringBuilder());
+        }
+
+        void addCheckedPackage(
+                @NonNull final String pkg) {
+            if (checkedPkgs.first().length()>0) {
+                checkedPkgs.first().append('|');    //NOI18N
+            }
+            checkedPkgs.first().append(Pattern.quote(pkg+'.')).append(".*"); //NOI18N
         }
 
         void addClass(
@@ -194,11 +228,20 @@ public final class WhiteListImplementationBuilder {
             methodSigNode.state |= mode;
         }
 
+        Model build() {
+            checkedPkgs = Union2.createSecond(
+                    Pattern.compile(checkedPkgs.first().toString()));
+            return this;
+        }
+
         boolean isAllowed(
                 @NonNull final ElementHandle<?> element,
                 final byte mode) {
             final String[] vmSignatures = SourceUtils.getJVMSignature(element);
             final String[] pkgNamePair = splitName(vmSignatures[0],'.');  //NOI18N
+            if (!checkedPkgs.second().matcher(pkgNamePair[0]+'.').matches()) {  //NOI18N
+                return true;
+            }
             final Integer pkgId = names.getName(pkgNamePair[0]);
             final Integer clsId = names.getName(pkgNamePair[1]);
             final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>> pkgNode = root.get(pkgId);
@@ -463,4 +506,5 @@ public final class WhiteListImplementationBuilder {
             }
         }
     }
+    //</editor-fold>
 }

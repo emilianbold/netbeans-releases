@@ -41,85 +41,45 @@
  */
 package org.netbeans.modules.libs.cloud9;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
-import org.xml.sax.helpers.DefaultHandler;
 
-class WhiteListConfigHandler extends DefaultHandler2 {
+/**
+ *
+ * @author Tomas Zezula
+ */
+class WhiteListSystemPackageHandler extends DefaultHandler2 {
 
-    private String configStartElement = null;
-    private DefaultHandler handler = null;
-    private static HashMap<String, DefaultHandler> handlers = new HashMap<String, DefaultHandler>();
-    private List<String> otherFiles;
+    private static final String SYS_PKG_TAG = "SystemPackage";  //NOI18N
 
-    public WhiteListConfigHandler(List<String> otherFiles) {
-        this.otherFiles = otherFiles;
+    private StringBuilder pkg;
+
+    public WhiteListSystemPackageHandler() {
     }
 
-    public void startDocument()
-            throws SAXException {
-        registedHandlers();
-    }
-
-    public void endDocument()
-            throws SAXException {
-        Collection<DefaultHandler> hlds = handlers.values();
-        for (DefaultHandler hld : hlds) {
-            hld.endDocument();
-        }
-        handlers.clear();
-    }
-
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (configStartElement == null) {
-            handler = getHandler(qName);
-            if (handler != null) {
-                configStartElement = qName;
-            }
-        }
-        if (handler != null) {
-            handler.startElement(uri, localName, qName, attributes);
+        if (SYS_PKG_TAG.equals(qName)) {
+            pkg = new StringBuilder();
         }
     }
 
+    @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if (handler != null) {
-            handler.characters(ch, start, length);
+        if (pkg != null) {
+            pkg.append(ch, start, length);
         }
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (handler != null) {
-            handler.endElement(uri, localName, qName);
-        }
-        if (qName.equals(configStartElement)) {
-            configStartElement = null;
-            handler = null;
+        if (SYS_PKG_TAG.equals(qName)) {
+            WhiteListConfigReader.getBuilder().addCheckedPackage(pkg.toString());
+            pkg = null;
         }
     }
 
-    private DefaultHandler getHandler(String element) {
-        return handlers.get(element);
-    }
 
-    private void registedHandlers() {
-        handlers.put("WhitelistClassMethod", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Class,
-                "WhitelistClassMethod","ClassName", "Method", "MethodName", "Parameters"));
-        handlers.put("WhitelistExtendableClass", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Extendable,
-                "WhitelistExtendableClass","ExtendableClassName", "Method", "OverrideMethodName", "Parameters"));
-        handlers.put("WhitelistInstantiateableClass", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Instantiable,
-                "WhitelistInstantiateableClass", "InstantiateableClassName", "Constructor", null, "Parameters"));
-        handlers.put("ListOfPackageImport", 
-            new WhiteListPackageImportHandler(otherFiles));
-        handlers.put("ListOfSystemPackage",
-            new WhiteListSystemPackageHandler());
-    }
+
 }
