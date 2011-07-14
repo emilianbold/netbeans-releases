@@ -40,56 +40,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javaee.specs.support.api;
+package org.netbeans.modules.javaee.specs.support.bridge;
 
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.javaee.specs.support.bridge.IdeJaxRsSupportImpl;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
-import org.openide.util.Parameters;
 
 
 /**
  * @author ads
  *
  */
-public final class JaxRsStackSupport {
+public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
     
-    private final JaxRsStackSupportImplementation impl;
-    
-    private JaxRsStackSupport(JaxRsStackSupportImplementation impl){
-        this.impl = impl;
-    }
-    
-    
-    @NonNull
-    public static JaxRsStackSupport getInstance(@NonNull J2eePlatform platform){
-        Parameters.notNull("platform", platform);
-        JaxRsStackSupportImplementation support = platform.getLookup().lookup(
-                JaxRsStackSupportImplementation.class);
-        if ( support == null ){
-            return new JaxRsStackSupport( new IdeJaxRsSupportImpl(  ));
-        }
-        return new JaxRsStackSupport( support );
-    }
-    
-    /**
-     * Adds JSR311 API into project's classpath if it supported.
-     * Returns <code>false</code> if jsr311 is  not added ( not supported).
-     * @param project project which classpath should be extended
-     * @return <code>true</code> if project's classpath is extended with jsr311
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#addJsr311Api(org.netbeans.api.project.Project)
      */
-    public boolean addJsr311Api(Project project){
-        return impl.addJsr311Api( project );
+    @Override
+    public boolean addJsr311Api( Project project ) {
+        // TODO Auto-generated method stub
+        return false;
     }
 
-    /**
-     * Extends project's classpath  with Jersey libraries
-     * @param project project which classpath should be extended
-     * @return  <code>true</code> if project's classpath is extended
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#extendsJerseyProjectClasspath(org.netbeans.api.project.Project)
      */
-    public boolean extendsJerseyProjectClasspath( Project project  ){
-        return impl.extendsJerseyProjectClasspath( project );
+    @Override
+    public boolean extendsJerseyProjectClasspath( Project project ) {
+        // TODO Auto-generated method stub
+        return false;
     }
+
 }
