@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.impl;
 
 import java.io.IOException;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -70,10 +71,15 @@ public class FolderRenameHandlerImpl implements FolderRenameHandler {
         ExplorerContext d = new ExplorerContext();
         d.setNewName(newName);
         ic.add(d);
-        Lookup l = new AbstractLookup(ic);
+        final Lookup l = new AbstractLookup(ic);
         if (ActionsImplementationFactory.canRename(l)) {
-            Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
-            a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
+                    a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+                }
+            });
         } else {
             FileObject fo = folder.getPrimaryFile();
             try {

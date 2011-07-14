@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.jira.issue;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -79,7 +80,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.openide.util.Lookup;
@@ -99,6 +99,9 @@ public class CommentsPanel extends JPanel {
     private NewCommentHandler newCommentHandler;
 
     private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+
+    private final static Color BLUE_BACKGROUND = new Color(0xf3f6fd);
+    private final static Color GREY_FOREGROUND = new Color(0x999999);
     
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
@@ -175,43 +178,97 @@ public class CommentsPanel extends JPanel {
 
     private void addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
+        
         JTextPane textPane = new JTextPane();
+        setupTextPane(textPane, text);
+        
+        
         JPanel headerPanel = new JPanel();
-        JLabel leftLabel = new ExpandLabel(textPane, headerPanel, number);
+        JPanel placeholder = createTextPanelPlaceholder();      
+        JLabel commentLabel = new JLabel();
+        ExpandLabel iconLabel = new ExpandLabel(placeholder, textPane, headerPanel, commentLabel, number);
+        JLabel leftLabel = new JLabel();
+        JLabel rightLabel = new JLabel();
+        
+        headerPanel.addMouseListener(iconLabel);
+        headerPanel.setComponentPopupMenu(expandPopup);
+        
+        // left label
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
         String leftTxt = "";
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
-            String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
-            leftTxt = MessageFormat.format(leftFormat, summary);
-        } 
-        leftTxt += " " + author + " " + dateTimeString;
+            leftTxt = MessageFormat.format(leftFormat, author);
+        } else {
+            leftTxt = author;
+        }
         leftLabel.setText(leftTxt);
         leftLabel.setLabelFor(textPane);
+        leftLabel.setForeground(GREY_FOREGROUND);
+        leftLabel.setOpaque(false);
+        leftLabel.addMouseListener(iconLabel);
+        leftLabel.setComponentPopupMenu(expandPopup);
+        
+        // comment label
+        commentLabel.setOpaque(false);
+        commentLabel.addMouseListener(iconLabel);
+        commentLabel.setComponentPopupMenu(expandPopup);
+        
+        // right label
+        rightLabel.setText(dateTimeString);
+        rightLabel.setForeground(GREY_FOREGROUND);
+        rightLabel.setOpaque(false);
+        rightLabel.addMouseListener(iconLabel);
+        rightLabel.setComponentPopupMenu(expandPopup);
+        
+        // state label
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
             stateLabel = KenaiUtil.createUserWidget(author, host, KenaiUtil.getChatLink(issue));
             stateLabel.setText(null);
         }
+        
+        // replay button
         LinkButton replyButton = new LinkButton(bundle.getString("Comments.replyButton.text")); // NOI18N
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
+        replyButton.setOpaque(false);
         
-        setupHeaderPanel(headerPanel, leftLabel, replyButton, stateLabel);
-        setupTextPane(textPane, text);
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+        placeholder.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+        leftLabel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+        commentLabel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
+        rightLabel.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
         
-        // Layout
+        layoutHeaderPanel(headerPanel, iconLabel, leftLabel, commentLabel, rightLabel, replyButton, stateLabel);
+        
         horizontalGroup
             .addComponent(headerPanel)
-            .addComponent(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(placeholder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(textPane));                
+        
         if (!description) {
             verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED);
         }
         verticalGroup
             .addComponent(headerPanel)
-            .addComponent(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                .addComponent(placeholder)
+                .addComponent(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
+    }
+
+    private JPanel createTextPanelPlaceholder() {
+        JPanel placeholder = new JPanel();
+        placeholder.setBackground(BLUE_BACKGROUND);
+        GroupLayout layout = new GroupLayout(placeholder);
+        placeholder.setLayout(layout);
+        layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, ICON_WIDTH, Short.MAX_VALUE));
+        layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 0, Short.MAX_VALUE));
+        return placeholder;
     }
 
     private void setupTextPane(JTextPane textPane, String comment) {
@@ -226,33 +283,40 @@ public class CommentsPanel extends JPanel {
         HyperlinkSupport.getInstance().registerForURLs(textPane);
         HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
         
-        textPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
-                BorderFactory.createEmptyBorder(3,3,3,3)));
+        textPane.setBackground(BLUE_BACKGROUND);
+        textPane.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
         textPane.setEditable(false);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
-    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel stateLabel) {
-        headerPanel.setOpaque(false);
+    private void layoutHeaderPanel(JPanel headerPanel, JLabel iconLabel, JLabel leftLabel, JLabel commentLabel, JLabel rightLabel, LinkButton replyButton, JLabel stateLabel) {
         GroupLayout layout = new GroupLayout(headerPanel);
         headerPanel.setLayout(layout);
         GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
-            .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(replyButton);
+            .addComponent(iconLabel)
+            .addComponent(leftLabel);
         if (stateLabel != null) {
-            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
-            hGroup.addComponent(stateLabel);
+            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                  .addComponent(stateLabel);
         }
+        hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+              .addComponent(commentLabel,0, 0, Short.MAX_VALUE)
+              .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+              .addComponent(rightLabel)
+              .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+              .addComponent(replyButton);
         layout.setHorizontalGroup(hGroup);
+        
         GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+            .addComponent(iconLabel)
             .addComponent(leftLabel);
         if (stateLabel != null) {
             vGroup.addComponent(stateLabel);
         }
-        vGroup.addComponent(replyButton);
+        vGroup.addComponent(commentLabel)
+              .addComponent(rightLabel)
+              .addComponent(replyButton);
         layout.setVerticalGroup(vGroup);
     }
 
@@ -346,28 +410,32 @@ public class CommentsPanel extends JPanel {
             IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
         } 
     }    
+
+    private final static Icon ei;
+    private final static Icon ci;
+    private static final int ICON_WIDTH;
+    static {
+        JTree tv = new JTree();
+        BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+        ei = tvui.getExpandedIcon();
+        ci = tvui.getCollapsedIcon();
+        ICON_WIDTH = ei != null ? ei.getIconWidth() : 16;
+    }
     
     private class ExpandLabel extends JLabel implements MouseListener {
         private final JTextPane textPane;
         private final JPanel headerPanel;
+        private final JPanel placeholderPanel;
+        private final JLabel commentLabel;
         private final Long number;
-        private final Icon ei;
-        private final Icon ci;
         
-        private Border border;
-
-        public ExpandLabel(JTextPane textPane, JPanel headerPanel, Long number) {
+        public ExpandLabel(JPanel placeholderPanel, JTextPane textPane, JPanel headerPanel, JLabel commentLabel, Long number) {
             this.textPane = textPane;
             this.headerPanel = headerPanel;
+            this.placeholderPanel = placeholderPanel;
+            this.commentLabel = commentLabel;
             this.number = number;
 
-            border = headerPanel.getBorder(); 
-            
-            JTree tv = new JTree();
-            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
-            ei = tvui.getExpandedIcon();
-            ci = tvui.getCollapsedIcon();
-            
             addMouseListener(this);
             setComponentPopupMenu(expandPopup);
             setState(isCollapsed(number));
@@ -393,13 +461,17 @@ public class CommentsPanel extends JPanel {
         private void setState(boolean collapsed) {
             if(collapsed) {
                 textPane.setVisible(false);
+                placeholderPanel.setVisible(false);
+                commentLabel.setText(textPane.getText().replace("\n", " ").replace("\t", " "));
                 setIcon(ci);
-                headerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
+                headerPanel.setBackground(BLUE_BACKGROUND);
                 commentCollapsed(number);
             } else {
                 textPane.setVisible(true);
+                placeholderPanel.setVisible(true);
+                commentLabel.setText("");
                 setIcon(ei);
-                headerPanel.setBorder(border);
+                headerPanel.setBackground(Color.white);
                 commentExpanded(number);
             }           
         }
