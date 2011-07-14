@@ -82,7 +82,7 @@ import javax.swing.ImageIcon;
  * The most straightforward replacement for <code>CookieAction</code> is
  * <code>LookupProviderAction</code>.  It handles one layer of indirection -
  * that is, a <code>CookieAction</code> first needs to have at least one <code>Node</code>
- * selected;  a <code>Node is itself a <code>Lookup.Provider</code>,
+ * selected;  a <code>Node</code> is itself a <code>Lookup.Provider</code>,
  * and so the <code>CookieAction</code>
  * is sensitive to some object type in the lookup of one or more selected
  * <code>Node</code>s.  So a <code>CookieAction</code> is an action sensitive

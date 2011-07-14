@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor;
+package org.netbeans.modules.php.editor.parser.astnodes;
+
+import java.util.List;
 
 /**
  *
- * @author tomslot
+ * @author Petr Pisl
  */
-class PHPDocParamTagData {
+public class PHPDocMethodTag extends PHPDocTypeTag {
+    
+    private final List<PHPDocVarTypeTag> params;
+    private final PHPDocNode name;
+    
+    public PHPDocMethodTag(int start, int end, PHPDocTag.Type kind,
+            List<PHPDocTypeNode> returnTypes, PHPDocNode methodName, 
+            List<PHPDocVarTypeTag> parameters, String documentation) {
+        super(start, end, kind, documentation, returnTypes);
+        this.params = parameters;
+        this.name = methodName;
+    }
+    
+    public PHPDocNode getMethodName() {
+        return name;
+    }
+    
+    /**
+     * 
+     * @return parameters of the method
+     */
+    public List<PHPDocVarTypeTag> getParameters() {
+        return params;
+    }
 
-    final String name;
-    final String type;
-    final String description;
-
-    PHPDocParamTagData(String text) {
-        String paramName, paramType, descriptionTmp;
-        paramName = paramType = descriptionTmp = ""; //NOI18N
-        String parts[] = text.trim().split("\\s+", 3); //NOI18N
-
-        if (parts.length > 0) {
-            paramType = parts[0];
-            if (parts.length > 1) {
-                paramName = parts[1];
-                if (parts.length > 2) {
-                    descriptionTmp = parts[2];
+    @Override
+    public String getDocumentation() {
+        if (documentation == null) {
+            int index = getValue().indexOf(name.getValue());
+            if (index > -1) {
+                index = getValue().indexOf(')', index);
+                if (index  > -1) {
+                    documentation = getValue().substring(index + 1).trim();
                 }
             }
         }
-
-        String optionalStr = "[optional]"; //NOI18N
-        if (paramType.endsWith(optionalStr)) {
-            paramType = paramType.substring(0, paramType.length() - optionalStr.length());
-        }
-
-        name = paramName;
-        type = paramType;
-        description = descriptionTmp;
+        return documentation;
+    }
+    
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.visit(this);
     }
 }
