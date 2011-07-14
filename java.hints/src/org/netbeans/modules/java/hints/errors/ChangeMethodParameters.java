@@ -188,7 +188,8 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                     if(methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
                         doFullRefactoring = false;
                     }
-                    fixes.add(new ChangeParametersFix(doFullRefactoring, tph, genDeclarationString(methodTree, parameterInfo), genDeclarationString(methodTree, newParameterInfo), newParameterInfo));
+		    Set<Modifier> modifiers = method.getModifiers();
+                    fixes.add(new ChangeParametersFix(doFullRefactoring, tph, modifiers, genDeclarationString(methodTree, parameterInfo), genDeclarationString(methodTree, newParameterInfo), newParameterInfo));
                 }
                 return fixes;
             }

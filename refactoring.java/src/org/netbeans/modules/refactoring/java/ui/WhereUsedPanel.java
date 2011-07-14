@@ -224,7 +224,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
                 TreePath path = WhereUsedPanel.this.element.resolve(info);
                 final String packageName = path.getCompilationUnit().getPackageName().toString();
-                packageFolder = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(packageName);
+                packageFolder = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(packageName.replaceAll("\\.", "/"));
                 
                 final Set<Modifier> modifiers = modif;
                 final String isBaseClassText = m_isBaseClassText;
@@ -249,9 +249,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                     } catch (DataObjectNotFoundException ex) {
                     } // Not important, only for Icon.
                     customScope = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CustomScope"), pi.getIcon(), SwingConstants.LEFT); //NOI18N
-                    currentFile = new JLabel(WhereUsedPanel.this.element.getFileObject().getNameExt(), currentFileDo != null ? new ImageIcon(currentFileDo.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)) : pi.getIcon(), SwingConstants.LEFT);
-                    currentPackage = new JLabel(packageName, ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
-                    currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
+                    currentFile = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentFile", WhereUsedPanel.this.element.getFileObject().getNameExt()), currentFileDo != null ? new ImageIcon(currentFileDo.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)) : pi.getIcon(), SwingConstants.LEFT); //NOI18N
+                    currentPackage = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentPackage", packageName), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT); //NOI18N
+                    currentProject = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentProject", pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT); //NOI18N
                     allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); //NOI18N
                 } else {
                     customScope = null;
