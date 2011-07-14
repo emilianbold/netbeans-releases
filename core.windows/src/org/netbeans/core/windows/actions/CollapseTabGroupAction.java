@@ -140,6 +140,7 @@ implements PropertyChangeListener {
             return;
         }
         boolean enable = contextMode.getState() == Constants.MODE_STATE_JOINED;
+        enable &= contextMode.getKind() == Constants.MODE_KIND_EDITOR;
         boolean hasOtherEditorMode = false;
         for( ModeImpl m : WindowManagerImpl.getInstance().getModes() ) {
             if( m.getKind() == Constants.MODE_KIND_EDITOR && m.getState() == Constants.MODE_STATE_JOINED && m != contextMode ) {

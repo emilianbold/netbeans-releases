@@ -40,27 +40,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.javaee.specs.support.spi;
 
-import java.util.Collection;
-import java.util.Map;
+import org.netbeans.api.project.Project;
 
 
 /**
  * @author ads
  *
  */
-public interface WLPolicyClientCodeGenerator {
+public interface JaxRsStackSupportImplementation {
 
-    String getPolicyId();
-    
-    String getPolicyAccessCode( Map<String,Object> context );
-    
-    Collection<String> getRequiredImports();
-    
-    Collection<String> getGeneratoinClientIds();
-    
-    String getDefaultGenerationClientId();
-    
-    void extendsProjectClasspath( Map<String,Object> context );
+    /**
+     * Adds JSR311 API into project's classpath if it supported.
+     * Returns <code>false</code> if jsr311 is  not added ( not supported).
+     * @param project project which classpath should be extended
+     * @return <code>true</code> if project's classpath is extended with jsr311
+     */
+    boolean addJsr311Api( Project project );
+
+    /**
+     * Extends project's classpath  with Jersey libraries.
+     * @param project project which classpath should be extended
+     * @return  <code>true</code> if project's classpath is extended
+     */
+    boolean extendsJerseyProjectClasspath( Project project );
+
 }

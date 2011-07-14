@@ -126,6 +126,16 @@ public final class HighlightingManager {
     }
     
     /**
+     * Find highlighting layer that uses a given container.
+     *
+     * @param container non-null container.
+     * @return layer that uses the container or null if none does.
+     */
+    public HighlightsLayer findLayer(HighlightsContainer container) {
+        return highlighting.findLayer(container);
+    }
+
+    /**
      * This is primarily for testing purposes - the resulting container is not cached.
      * 
      * @param filter valid filter or null.
@@ -222,6 +232,15 @@ public final class HighlightingManager {
             }
             return new DirectMergeContainer(containers.toArray(new HighlightsContainer[containers.size()]));
                 
+        }
+        
+        synchronized HighlightsLayer findLayer(HighlightsContainer container) {
+            for (HighlightsLayer layer : sortedLayers) {
+                if (HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer).getContainer() == container) {
+                    return layer;
+                }
+            }
+            return null;
         }
 
         // ----------------------------------------------------------------------

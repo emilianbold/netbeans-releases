@@ -51,8 +51,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.plaf.ButtonUI;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabListPopupAction;
@@ -244,6 +247,7 @@ public class TabControlButtonFactory {
     private static class RestoreGroupButton extends TabControlButton {
         
         private final String groupName;
+        private static boolean useCustomUI = true;
         
         public RestoreGroupButton( TabDisplayer displayer, String groupName ) {
             super( displayer );
@@ -273,6 +277,33 @@ public class TabControlButtonFactory {
         @Override
         public String getToolTipText() {
             return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Restore_Window_Group"); //NOI18N
+        }
+
+        /**
+         * @since 1.28
+         * @return 
+         */
+        @Override
+        public String getUIClassID() {
+            return useCustomUI ? "RestoreGroupButtonUI" : super.getUIClassID(); //NOI18N
+        }
+        
+        /**
+         * @since 1.28
+         */
+        @Override
+        public void updateUI () {
+            ButtonUI customUI = null;
+            Class uiClass = UIManager.getDefaults().getUIClass( getUIClassID() );
+            if( null != uiClass ) {
+                customUI = (ButtonUI)UIManager.getUI(this);
+            }
+            if (customUI != null) {
+                setUI (customUI);
+            } else {
+                useCustomUI = false;
+                super.updateUI();
+            }
         }
     }
 
