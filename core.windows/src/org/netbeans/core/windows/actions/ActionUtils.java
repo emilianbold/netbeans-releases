@@ -430,6 +430,8 @@ public abstract class ActionUtils {
         public CloneDocumentAction(TopComponent tc) {
             this.tc = tc;
             putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloneDocumentAction"));
+            //hack to insert extra actions into JDev's popup menu
+            putValue("_nb_action_id_", "clone"); //NOI18N
             setEnabled(tc instanceof TopComponent.Cloneable);
         }
         

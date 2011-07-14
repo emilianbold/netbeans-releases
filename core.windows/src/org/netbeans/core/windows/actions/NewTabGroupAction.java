@@ -129,7 +129,7 @@ public final class NewTabGroupAction extends AbstractAction {
             if( res ) {
                 res &= mode.getKind() == Constants.MODE_KIND_EDITOR;
                 res &= mode.getOpenedTopComponents().size() > 1;
-                res &= wm.isDocked( tc );
+                res &= wm.isDocked( context );
             }
         }
         return res;
