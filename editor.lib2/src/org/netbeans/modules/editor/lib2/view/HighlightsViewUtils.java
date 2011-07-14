@@ -341,8 +341,8 @@ public class HighlightsViewUtils {
     }
 
     /**
-     * Fill background into given shape (shape is given since the shape for text layout parts
-     * may be non-rectangular) and paint 
+     * Render border lines, underline or wave underline and text limit line (but do not clear background).
+     * 
      * @param g
      * @param partAlloc
      * @param attrs
@@ -351,8 +351,6 @@ public class HighlightsViewUtils {
     static void paintBackgroundHighlights(Graphics2D g, Shape partAlloc, AttributeSet attrs, DocumentView docView) {
         // Paint background
         Rectangle2D partAllocBounds = ViewUtils.shapeAsRect(partAlloc);
-        JTextComponent c = docView.getTextComponent();
-        fillBackground(g, partAlloc, attrs, c);
         // Also get integer coords for text limit line and other renderings
         int x = (int) partAllocBounds.getX();
         int y = (int) partAllocBounds.getY();

@@ -420,7 +420,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 // Ensure valid children
                 // Possibly build extra 5 lines in each direction to speed up possible scrolling
                 // If there was any update then recompute indices since rebuilding might change vertical spans
-            } while (docView.ensureChildrenValid(startIndex, endIndex, 5, 5));
+            } while (docView.ensureChildrenValid(startIndex, endIndex, 10, 10));
 
             // Ensure that the (inited) children are all measured
             // Text layout cache must be able to contain TLs for all painted views.
