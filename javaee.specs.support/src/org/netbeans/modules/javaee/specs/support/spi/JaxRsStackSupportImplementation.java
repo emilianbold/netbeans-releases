@@ -40,48 +40,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
-
-import java.util.Map;
-
-import javax.swing.text.Document;
+package org.netbeans.modules.javaee.specs.support.spi;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
  *
  */
-public interface JaxWsClientMethodGeneratorStrategy {
-    
-    String STRATEGY = "strategy";       // NOI18N
-    
-    
+public interface JaxRsStackSupportImplementation {
+
     /**
-     * Checks is this strategy is applicable to the context given by arguments.
-     * @param client
-     * @param project
-     * @param wsdlFileObject
-     * @param wsdlUrl
-     * @param context additional context which can be initialized in this method and will be passed to the other methods
-     * @return
+     * Adds JSR311 API into project's classpath if it supported.
+     * Returns <code>false</code> if jsr311 is  not added ( not supported).
+     * @param project project which classpath should be extended
+     * @return <code>true</code> if project's classpath is extended with jsr311
      */
-    boolean isApplicable(Client client , Project project, FileObject wsdlFileObject, 
-            String wsdlUrl , Map<String,Object> context );
-    
-    void insertMethod(Document document, int pos, WsdlService service,
-            WsdlPort port, WsdlOperation operation,  FileObject wsdlFileObject, 
-            String wsdlUrl, Map<String,Object> context);
-    
-    void insertDispatchMethod(Document document, int pos, WsdlService service,
-            WsdlPort port, WsdlOperation operation,  FileObject wsdlFileObject, 
-            String wsdlUrl,  Map<String,Object> context);
-    
+    boolean addJsr311Api( Project project );
+
+    /**
+     * Extends project's classpath  with Jersey libraries.
+     * @param project project which classpath should be extended
+     * @return  <code>true</code> if project's classpath is extended
+     */
+    boolean extendsJerseyProjectClasspath( Project project );
 
 }

@@ -239,6 +239,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javaee.specs.support</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -608,7 +617,9 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.websvc.owsm</friend>
                 <package>org.netbeans.modules.websvc.core</package>
+                <package>org.netbeans.modules.websvc.core.jaxws.policies</package>
                 <package>org.netbeans.modules.websvc.core.jaxws.nodes</package>
                 <package>org.netbeans.modules.websvc.core.webservices.ui</package>
                 <package>org.netbeans.modules.websvc.core.webservices.ui.panels</package>
