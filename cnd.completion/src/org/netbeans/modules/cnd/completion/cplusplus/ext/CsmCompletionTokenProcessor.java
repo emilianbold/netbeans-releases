@@ -997,6 +997,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case SPECIAL_PARENTHESIS_OPEN:
                                 case MEMBER_POINTER_OPEN:
                                 case OPERATOR:
+                                case CONVERSION:
                                     popExp();
                                     top = peekExp();
                                     topID = getValidExpID(top);
@@ -1164,6 +1165,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case OPERATOR:
                                 case UNARY_OPERATOR:
                                 case MEMBER_POINTER:
+                                case CONVERSION:
                                     pushExp(createTokenExp(OPERATOR));
                                     break;
 
