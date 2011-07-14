@@ -47,6 +47,7 @@ package org.netbeans.modules.refactoring.java;
 import java.io.IOException;
 import java.text.MessageFormat;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
@@ -112,10 +113,15 @@ public class PackageRenameHandlerImpl implements PackageRenameHandler {
         ExplorerContext d = new ExplorerContext();
         d.setNewName(newName);
         ic.add(d);
-        Lookup l = new AbstractLookup(ic);
-        Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
-        if (Boolean.TRUE.equals(a.getValue("applicable"))) { //NOI18N
-            a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-        }
+        final Lookup l = new AbstractLookup(ic);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
+                if (Boolean.TRUE.equals(a.getValue("applicable"))) { //NOI18N
+                    a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
+                }
+            }
+        });
     }
 }

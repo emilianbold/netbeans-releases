@@ -93,7 +93,7 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if ("enabled".equals(evt.getPropertyName())) {
+        if ("enabled".equals(evt.getPropertyName())) { // NOI18N
             updateEnabled();
         }
     }

@@ -1096,6 +1096,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         private final String desc;
         private final String filename;
         private final String author;
+        private final String authorName;
         private final Date date;
         private final String id;
         private String contentType;
@@ -1120,21 +1121,23 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
             desc = getMappedValue(ta, TaskAttribute.ATTACHMENT_DESCRIPTION);
 
-            String who = null;
             TaskAttribute authorAttr = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR);
             if(authorAttr != null) {
+                author = authorAttr.getValue();
                 TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
-                who = nameAttr != null ? nameAttr.getValue() : null;
+                authorName = nameAttr != null ? nameAttr.getValue() : null;
+            } else {
+                author = authorName = null;
             }
-            if ( ((who == null) || who.trim().equals("")) && authorAttr != null) { // NOI18N
-                who = authorAttr.getValue();
-            }
-            author = who;
             contentType = getMappedValue(ta, TaskAttribute.ATTACHMENT_CONTENT_TYPE);
             isDeprected = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);
             isPatch = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_PATCH);
             size = getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
             url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
+        }
+
+        public String getAuthorName() {
+            return authorName;
         }
 
         public String getAuthor() {

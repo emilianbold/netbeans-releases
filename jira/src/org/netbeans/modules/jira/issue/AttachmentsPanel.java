@@ -173,20 +173,27 @@ public class AttachmentsPanel extends JPanel {
             for (NbJiraIssue.Attachment attachment : attachments) {
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
-                String author = attachment.getAuthor();
+                String email = attachment.getEmail();
+                String authorName = attachment.getAuthor();
+                authorName = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : email;                
                 LinkButton filenameButton = new LinkButton();
                 JPopupMenu menu = menuFor(attachment);
                 filenameButton.setAction(new DefaultAttachmentAction(attachment));
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
-                authorLabel = new JLabel(author);
+                JComponent authorComponent;
+                if(email != null && !email.isEmpty()) {
+                    authorComponent = new LinkButton.MailtoButton(authorName, NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), email);
+                } else {
+                    authorComponent = new JLabel(authorName);
+                }
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
-                authorLabel.setComponentPopupMenu(menu);
+                authorComponent.setComponentPopupMenu(menu);
                 filenameGroup.addComponent(filenameButton);
                 dateGroup.addComponent(dateLabel);
-                authorGroup.addComponent(authorLabel);
+                authorGroup.addComponent(authorComponent);
                 panel = createHighlightPanel();
                 panel.addMouseListener(new MouseAdapter() {}); // Workaround for bug 6272233
                 panel.setComponentPopupMenu(menu);
@@ -194,7 +201,7 @@ public class AttachmentsPanel extends JPanel {
                 GroupLayout.ParallelGroup pGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
                 pGroup.addComponent(filenameButton);
                 pGroup.addComponent(dateLabel);
-                pGroup.addComponent(authorLabel);
+                pGroup.addComponent(authorComponent);
                 verticalGroup
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
