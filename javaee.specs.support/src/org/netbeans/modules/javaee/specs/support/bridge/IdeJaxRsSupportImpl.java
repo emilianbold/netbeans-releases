@@ -40,27 +40,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws.actions;
+package org.netbeans.modules.javaee.specs.support.bridge;
 
-import java.util.Collection;
-import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 
 
 /**
  * @author ads
  *
  */
-public interface WLPolicyClientCodeGenerator {
+public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
+    
 
-    String getPolicyId();
-    
-    String getPolicyAccessCode( Map<String,Object> context );
-    
-    Collection<String> getRequiredImports();
-    
-    Collection<String> getGeneratoinClientIds();
-    
-    String getDefaultGenerationClientId();
-    
-    void extendsProjectClasspath( Map<String,Object> context );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#addJsr311Api(org.netbeans.api.project.Project)
+     */
+    @Override
+    public boolean addJsr311Api( Project project ) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#extendsJerseyProjectClasspath(org.netbeans.api.project.Project)
+     */
+    @Override
+    public boolean extendsJerseyProjectClasspath( Project project ) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
 }
