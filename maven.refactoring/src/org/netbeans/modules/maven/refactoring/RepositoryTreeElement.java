@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.actions;
+package org.netbeans.modules.maven.refactoring;
 
-import java.io.File;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
+import javax.swing.Icon;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle.Messages;
 
-/**
- *
- * @author ondra
- */
-@ActionID(id = "org.netbeans.modules.git.ui.actions.DisconnectAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DisconnectAction_Name")
-public class DisconnectAction extends SingleRepositoryAction {
+class RepositoryTreeElement implements TreeElement {
 
-    @Override
-    protected void performAction (final File repository, File[] roots, VCSContext context) {
-        new GitProgressSupport() {
-            @Override
-            protected void perform () {
-                Git.getInstance().disconnectRepository(repository);
-                Git.getInstance().refreshAllAnnotations();
-                refreshState();
-                SystemAction.get(ConnectAction.class).refreshState();
-            }
-        }.start(Git.getInstance().getRequestProcessor(), repository, NbBundle.getMessage(DisconnectAction.class, "LBL_DisconnectProgress")); //NOI18N
+    private final RepositoryInfo repo;
+
+    RepositoryTreeElement(RepositoryInfo repo) {
+        this.repo = repo;
     }
-    
-    void refreshState () {
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                setEnabled(enable(getActivatedNodes()));
-            }
-        });
+
+    @Override public TreeElement getParent(boolean isLogical) {
+        return null;
     }
+
+    @Override public Icon getIcon() {
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/maven/repository/localrepo.png", true);
+    }
+
+    @Messages({"# {0} - repository id", "RepositoryTreeElement.text=Maven Repository: <b>{0}</b>"})
+    @Override public String getText(boolean isLogical) {
+        return Bundle.RepositoryTreeElement_text(repo.getId());
+    }
+
+    @Override public Object getUserObject() {
+        return repo;
+    }
+
 }

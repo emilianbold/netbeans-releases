@@ -135,6 +135,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -168,6 +169,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean reloading;
     private Map<NbJiraIssue.IssueField,Object> initialValues = new EnumMap<NbJiraIssue.IssueField,Object>(NbJiraIssue.IssueField.class);
     private PropertyChangeListener tasklistListener;
+    private UndoRedoSupport undoRedoSupport;
 
     public IssuePanel() {
         initComponents();
@@ -2379,6 +2381,25 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         } catch (BadLocationException blex) {
             Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
+    }
+
+    void opened() {
+        undoRedoSupport = UndoRedoSupport.getSupport(issue); 
+        undoRedoSupport.register(addCommentArea); 
+        undoRedoSupport.register(environmentArea); 
+        
+        // Hack - reset any previous modifications when the issue window is reopened
+        reloadForm(true);
+    }
+    
+    void closed() {
+        if(issue != null) {
+            commentsPanel.storeSettings();
+            if (undoRedoSupport != null) {
+                undoRedoSupport.unregisterAll(issue);
+                undoRedoSupport = null;
+            }
         }
     }
 

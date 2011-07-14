@@ -324,7 +324,7 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
-        if ( projectNameTextField.getText().length() == 0 ) {
+        if (isIllegalName(projectNameTextField.getText())) {
             wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(ProjectLocationPanel.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
@@ -560,4 +560,15 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ProjectImportLocationPanel.generateHelpID(ProjectLocationPanel.class, j2eeModuleType));
     }
+
+    static boolean isIllegalName(final String name) {
+        return name.length() == 0      || 
+            name.indexOf('/')  >= 0 ||        //NOI18N
+            name.indexOf('\\') >= 0 ||        //NOI18N
+            name.indexOf(':')  >= 0 ||        //NOI18N
+            name.indexOf("\"") >= 0 ||        //NOI18N
+            name.indexOf('<')  >= 0 ||        //NOI18N
+            name.indexOf('>')  >= 0;          //NOI18N
+    }
+
 }

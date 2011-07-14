@@ -398,7 +398,9 @@ made subject to such option by the copyright holder.
 
 
     <target name="-nbm-prompt-for-storepass" if="keystore" unless="storepass">
-        <input addproperty="storepass" message="Enter password for ${keystore}:"/>
+        <input addproperty="storepass" message="Enter password for ${keystore}:">
+            <handler type="secure"/>
+        </input>
     </target>
 
     <target name="-init-executables">

@@ -42,42 +42,43 @@
 
 package org.netbeans.modules.jira.issue;
 
-import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
@@ -90,58 +91,40 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class CommentsPanel extends JPanel {
-    private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private NbJiraIssue issue;
     private JiraIssueFinder issueFinder;
-    private MouseAdapter listener;
-    private MouseMotionListener motionListener;
+    private HyperlinkSupport.Link issueLink;
     private NewCommentHandler newCommentHandler;
 
+    private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+    
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
-        motionListener = new MouseMotionAdapter() {
+        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
+        issueLink = new HyperlinkSupport.Link() {
             @Override
-            public void mouseMoved(MouseEvent e) {
-                JTextPane pane = (JTextPane)e.getSource();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                AttributeSet as = elem.getAttributes();
-                if (StyleConstants.isUnderline(as)) {
-                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                } else {
-                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-            }
-        };
-        listener = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        JTextPane pane = (JTextPane)e.getSource();
-                        StyledDocument doc = pane.getStyledDocument();
-                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                        AttributeSet as = elem.getAttributes();
-                        IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
-                        if (issueAction != null) {
-                            issueAction.openIssue(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()));
+            public void onClick(String linkText) {
+                final String issueKey = issueFinder.getIssueId(linkText);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Issue is = issue.getRepository().getIssue(issueKey);
+                        if (is != null) {
+                            is.open();
                         }
                     }
-                } catch(Exception ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                }
+                });
             }
         };
-
-        issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
         assert issueFinder != null;
     }
 
     public void setIssue(NbJiraIssue issue) {
         removeAll();
         this.issue = issue;
+        initCollapsedComments();
         GroupLayout layout = new GroupLayout(this);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -161,11 +144,26 @@ public class CommentsPanel extends JPanel {
         }
         String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-        addSection(layout, description, reporter, creationTxt, horizontalGroup, verticalGroup, true);
+        addSection(
+                layout, 
+                new Long(0),    
+                description, 
+                reporter, 
+                creationTxt, 
+                horizontalGroup, 
+                verticalGroup, 
+                true);
         for (NbJiraIssue.Comment comment : issue.getComments()) {
             Date date = comment.getWhen();
             String when = (date == null) ? "" : format.format(date); // NOI18N
-            addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
+            addSection(
+                    layout, 
+                    comment.getNumber(),
+                    comment.getText(), 
+                    comment.getWho(), 
+                    when, 
+                    horizontalGroup, 
+                    verticalGroup, false);
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -175,25 +173,21 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, String text, String author, String dateTimeString,
+    private void addSection(GroupLayout layout, Long number, String text, String author, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         JTextPane textPane = new JTextPane();
-        JLabel leftLabel = new JLabel();
+        JPanel headerPanel = new JPanel();
+        JLabel leftLabel = new ExpandLabel(textPane, headerPanel, number);
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
-        String leftTxt;
+        String leftTxt = "";
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
             String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
             leftTxt = MessageFormat.format(leftFormat, summary);
-        } else {
-            leftTxt = bundle.getString("CommentsPanel.leftLabel.text"); // NOI18N
-        }
+        } 
+        leftTxt += " " + author + " " + dateTimeString;
         leftLabel.setText(leftTxt);
-        JLabel rightLabel = new JLabel();
-        String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
-        String rightTxt = MessageFormat.format(rightFormat, dateTimeString, author);
-        rightLabel.setText(rightTxt);
-        rightLabel.setLabelFor(textPane);
+        leftLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
@@ -204,37 +198,23 @@ public class CommentsPanel extends JPanel {
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
+        
+        setupHeaderPanel(headerPanel, leftLabel, replyButton, stateLabel);
         setupTextPane(textPane, text);
-
+        
         // Layout
-        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
-            .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(replyButton)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(rightLabel);
-        if (stateLabel != null) {
-            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
-            hGroup.addComponent(stateLabel);
-        }
-        horizontalGroup.addGroup(hGroup)
-        .addComponent(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+        horizontalGroup
+            .addComponent(headerPanel)
+            .addComponent(textPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
             verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED);
         }
-        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(leftLabel)
-            .addComponent(replyButton)
-            .addComponent(rightLabel);
-        if (stateLabel != null) {
-            vGroup.addComponent(stateLabel);
-        }
-        verticalGroup.addGroup(vGroup)
+        verticalGroup
+            .addComponent(headerPanel)
             .addComponent(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
     private void setupTextPane(JTextPane textPane, String comment) {
-        StyledDocument doc = textPane.getStyledDocument();
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
@@ -242,37 +222,38 @@ public class CommentsPanel extends JPanel {
 
         // Stack-traces
         textPane.setText(comment);
-        StackTraceSupport.addHyperlinks(textPane);
-
-        // Issues/bugs
-        int[] pos = issueFinder.getIssueSpans(comment);
-        if (pos.length > 0) {
-            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(ISSUE_ATTRIBUTE, new IssueAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-
-            for (int i=0; i<pos.length; i+=2) {
-                int off = pos[i];
-                int length = pos[i+1]-pos[i];
-                try {
-                    doc.remove(off, length);
-                    doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
-                } catch (BadLocationException blex) {
-                    Jira.LOG.log(Level.INFO, blex.getMessage(), blex);
-                }
-            }
-        }
-
+        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
+        HyperlinkSupport.getInstance().registerForURLs(textPane);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
-        textPane.addMouseListener(listener);
-        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
+    }
+
+    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel stateLabel) {
+        headerPanel.setOpaque(false);
+        GroupLayout layout = new GroupLayout(headerPanel);
+        headerPanel.setLayout(layout);
+        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
+            .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(replyButton);
+        if (stateLabel != null) {
+            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+            hGroup.addComponent(stateLabel);
+        }
+        layout.setHorizontalGroup(hGroup);
+        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+            .addComponent(leftLabel);
+        if (stateLabel != null) {
+            vGroup.addComponent(stateLabel);
+        }
+        vGroup.addComponent(replyButton);
+        layout.setVerticalGroup(vGroup);
     }
 
     private ActionListener replyListener;
@@ -303,23 +284,124 @@ public class CommentsPanel extends JPanel {
         return replyListener;
     }
 
-    private class IssueAction {
-        void openIssue(final String hyperlinkText) {
-            final String issueKey = issueFinder.getIssueId(hyperlinkText);
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    Issue is = issue.getRepository().getIssue(issueKey);
-                    if (is != null) {
-                        is.open();
-                    }
-                }
-            });
-        }
-    }
-
     public interface NewCommentHandler {
         void append(String text);
     }
 
+    private final JPopupMenu expandPopup = new ExpandPopupMenu();
+    private Set<ExpandLabel> expandLabels = new HashSet<ExpandLabel>();
+    
+    private class ExpandPopupMenu extends JPopupMenu {
+        public ExpandPopupMenu() {
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_ExpandAll")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ExpandLabel l : expandLabels) {
+                        l.setState(false);
+                    }
+                }
+            }));
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_CollapseAll")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ExpandLabel l : expandLabels) {
+                        l.setState(true);
+                    }
+                }
+            }));
+        }
+    }    
+
+    private void commentCollapsed(Long number) {
+        collapsedComments.add(number);
+    }
+
+    private Set<Long> touchedCommenst = Collections.synchronizedSet(new HashSet<Long>());
+    private void commentExpanded(Long number) {
+        if(collapsedComments.remove(number)) {
+            touchedCommenst.add(number);
+        }
+    }
+
+    private boolean isCollapsed(Long number) {
+        return collapsedComments.contains(number);
+    }
+    
+    private void initCollapsedComments() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
+                for (Long l : s) {
+                    if(!touchedCommenst.contains(l)) {
+                        collapsedComments.add(l);
+                    }
+                }
+            }
+        });
+    }
+    
+    void storeSettings() {
+        if(issue != null) {
+            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+        } 
+    }    
+    
+    private class ExpandLabel extends JLabel implements MouseListener {
+        private final JTextPane textPane;
+        private final JPanel headerPanel;
+        private final Long number;
+        private final Icon ei;
+        private final Icon ci;
+        
+        private Border border;
+
+        public ExpandLabel(JTextPane textPane, JPanel headerPanel, Long number) {
+            this.textPane = textPane;
+            this.headerPanel = headerPanel;
+            this.number = number;
+
+            border = headerPanel.getBorder(); 
+            
+            JTree tv = new JTree();
+            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+            ei = tvui.getExpandedIcon();
+            ci = tvui.getCollapsedIcon();
+            
+            addMouseListener(this);
+            setComponentPopupMenu(expandPopup);
+            setState(isCollapsed(number));
+            expandLabels.add(this);
+        }
+        
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                setState(!isCollapsed(number)); 
+            } 
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {}
+        @Override
+        public void mouseReleased(MouseEvent e) {}
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+        @Override
+        public void mouseExited(MouseEvent e) {}
+        
+        private void setState(boolean collapsed) {
+            if(collapsed) {
+                textPane.setVisible(false);
+                setIcon(ci);
+                headerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
+                commentCollapsed(number);
+            } else {
+                textPane.setVisible(true);
+                setIcon(ei);
+                headerPanel.setBorder(border);
+                commentExpanded(number);
+            }           
+        }
+    }    
 }

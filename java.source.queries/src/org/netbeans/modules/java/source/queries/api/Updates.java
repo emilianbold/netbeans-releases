@@ -67,6 +67,8 @@ public final class Updates extends Queries {
      * @param toRemove the {@link Collection} of fully qualified names of
      * interfaces to be removed
      * @throws QueryException in case of failure
+     * @throws IllegalArgumentException when cls is not in a file the
+     * {@link Updates} instance was created for.
      */
     public void modifyInterfaces(
             @NonNull String cls,
@@ -83,6 +85,8 @@ public final class Updates extends Queries {
      * @param cls the fully qualified name of class to be changed
      * @param superCls the fully qualified name of super class
      * @throws QueryException in case of failure
+     * @throws IllegalArgumentException when cls is not in a file the
+     * {@link Updates} instance was created for.
      */
     public void setSuperClass(
             @NonNull String cls,
@@ -116,6 +120,8 @@ public final class Updates extends Queries {
      * @param oldName the old field name
      * @param newName the new field name
      * @throws QueryException in case of failure
+     * @throws IllegalArgumentException when cls is not in a file the
+     * {@link Updates} instance was created for.
      */
     public void renameField(
             @NonNull final String cls,

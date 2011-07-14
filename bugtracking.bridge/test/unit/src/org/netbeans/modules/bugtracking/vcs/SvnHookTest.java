@@ -93,6 +93,10 @@ public class SvnHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
         VCSHooksConfig.getInstance(HookType.SVN).setResolve(true);
 
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
+
         HookPanel panel = getPanel(hook, getContext());
         assertFalse(panel.pushRadioButton.isVisible());
         assertFalse(panel.pushRadioButton.isVisible());
@@ -102,6 +106,10 @@ public class SvnHookTest extends NbTestCase {
 
         VCSHooksConfig.getInstance(HookType.SVN).setLink(false);
         VCSHooksConfig.getInstance(HookType.SVN).setResolve(false);
+
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
 
         panel = getPanel(hook, getContext());
 
@@ -144,6 +152,10 @@ public class SvnHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
         VCSHooksConfig.getInstance(HookType.SVN).setResolve(false);
 
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
+
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
@@ -160,6 +172,10 @@ public class SvnHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.SVN).setLink(false);
         VCSHooksConfig.getInstance(HookType.SVN).setResolve(true);
 
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
+
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
@@ -174,6 +190,10 @@ public class SvnHookTest extends NbTestCase {
 
         VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
         VCSHooksConfig.getInstance(HookType.SVN).setResolve(true);
+
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
 
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);

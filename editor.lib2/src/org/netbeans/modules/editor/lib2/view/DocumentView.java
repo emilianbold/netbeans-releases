@@ -830,8 +830,8 @@ public final class DocumentView extends EditorView
         if (lock()) {
             try {
                 checkDocumentLockedIfLogging(); // Should only be called with read-locked document
-                if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
-                    ViewHierarchy.CHANGE_LOG.fine("OFFSET-REPAINT: <" + startOffset + "," + endOffset + ">\n");
+                if (ViewHierarchy.REPAINT_LOG.isLoggable(Level.FINE)) {
+                    ViewHierarchy.REPAINT_LOG.fine("OFFSET-REPAINT: <" + startOffset + "," + endOffset + ">\n");
                 }
                 if (isActive() && startOffset < endOffset) {
                     Rectangle2D repaintRect;

@@ -64,6 +64,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.omg.CORBA.portable.ApplicationException;
 import org.openide.util.Exceptions;
 
@@ -75,6 +76,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     
     private ObjectReference exeption;
     private JPDADebuggerImpl debugger;
+    private JPDAThreadImpl preferredThread;
     
     private String invocationMessage;
     private String message;
@@ -92,6 +94,10 @@ public class InvocationExceptionTranslated extends ApplicationException {
         this.exeption = exeption;
         this.debugger = debugger;
     }
+    
+    public void setPreferredThread(JPDAThreadImpl preferredThread) {
+        this.preferredThread = preferredThread;
+    }
 
     @Override
     public synchronized String getMessage() {
@@ -104,6 +110,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 } else {
                     try {
                         StringReference sr = (StringReference) debugger.invokeMethod (
+                                preferredThread,
                                 exeption,
                                 getMessageMethod,
                                 new Value [0]
@@ -142,6 +149,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 } else {
                     try {
                         StringReference sr = (StringReference) debugger.invokeMethod (
+                                preferredThread,
                                 exeption,
                                 getMessageMethod,
                                 new Value [0]
@@ -188,6 +196,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         or = null;
                     } else {
                         or = (ObjectReference) debugger.invokeMethod (
+                            preferredThread,
                             exeption,
                             getCauseMethod,
                             new Value [0]
@@ -327,6 +336,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     return new StackTraceElement[0];
                 }
                 ArrayReference ar = (ArrayReference) debugger.invokeMethod (
+                        preferredThread,
                         exeption,
                         getStackTraceMethod,
                         new Value [0]
@@ -367,6 +377,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             } else {
                 try {
                     StringReference sr = (StringReference) debugger.invokeMethod (
+                            preferredThread,
                             stElement,
                             getMethod,
                             new Value [0]
@@ -386,6 +397,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             } else {
                 try {
                     StringReference sr = (StringReference) debugger.invokeMethod (
+                            preferredThread,
                             stElement,
                             getMethod,
                             new Value [0]
@@ -405,6 +417,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             } else {
                 try {
                     StringReference sr = (StringReference) debugger.invokeMethod (
+                            preferredThread,
                             stElement,
                             getMethod,
                             new Value [0]
@@ -425,6 +438,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             } else {
                 try {
                     IntegerValue iv = (IntegerValue) debugger.invokeMethod (
+                            preferredThread,
                             stElement,
                             getMethod,
                             new Value [0]

@@ -1588,7 +1588,7 @@ public final class FileUtil extends Object {
         FileObject parent = fo.getParent();
 
         while (parent != null) {
-            if (parent == folder) {
+            if (parent.equals(folder)) {
                 return true;
             }
 

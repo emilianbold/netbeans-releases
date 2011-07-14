@@ -1436,17 +1436,17 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         public void opened() {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
-                // Hack - reset any previous modifications when the issue window is reopened
-                issuePanel.reloadForm(true);
+                issuePanel.opened();
                 issue.opened();
             }
         }
-
+        
         @Override
         public void closed() {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
                 issue.closed();
+                issuePanel.closed();
             }
         }
 

@@ -317,53 +317,56 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
             if(a != null) actions.add(a);
-            actions.add(null);
-            actions.add(SystemAction.get(StatusAction.class));
-            actions.add(SystemAction.get(DiffAction.class));
-            actions.add(SystemAction.get(UpdateAction.class));
-            actions.add(SystemAction.get(CommitAction.class));
-            actions.add(SystemAction.get(AddAction.class));
-            actions.add(null);
-            actions.add(new ExportMenu());
-            actions.add(SystemAction.get(ImportDiffAction.class));
+            if (noneVersioned) {
+                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                if(a != null) actions.add(a);
+            } else {
+                actions.add(null);
+                actions.add(SystemAction.get(StatusAction.class));
+                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(SystemAction.get(UpdateAction.class));
+                actions.add(SystemAction.get(CommitAction.class));
+                actions.add(SystemAction.get(AddAction.class));
+                actions.add(null);
+                actions.add(new ExportMenu());
+                actions.add(SystemAction.get(ImportDiffAction.class));
 
-            actions.add(null);
-            if (!noneVersioned) {
+                actions.add(null);
                 actions.add(SystemAction.get(CloneAction.class));
-            }
-            a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
-            if(a != null) actions.add(a);
+                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                if(a != null) actions.add(a);
 
-            actions.add(SystemAction.get(FetchAction.class));
-            actions.add(new ShareMenu());
-            actions.add(new MergeMenu(false));
-            actions.add(null);
-            actions.add(SystemAction.get(LogAction.class));
-            if (!onlyProjects  && !onlyFolders) {
-                AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
-                if (tempA.visible(nodes)) {
-                    actions.add(new ShowMenu(true, true));
-                } else {
-                    actions.add(new ShowMenu(true, false));
+                actions.add(SystemAction.get(FetchAction.class));
+                actions.add(new ShareMenu());
+                actions.add(new MergeMenu(false));
+                actions.add(null);
+                actions.add(SystemAction.get(LogAction.class));
+                if (!onlyProjects  && !onlyFolders) {
+                    AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
+                    if (tempA.visible(nodes)) {
+                        actions.add(new ShowMenu(true, true));
+                    } else {
+                        actions.add(new ShowMenu(true, false));
+                    }
+                }else{
+                    actions.add(new ShowMenu(false, false));
                 }
-            }else{
-                actions.add(new ShowMenu(false, false));
+                actions.add(null);
+                actions.add(SystemAction.get(RevertModificationsAction.class));
+                actions.add(new RecoverMenu());
+                if (!onlyProjects) {
+                    actions.add(SystemAction.get(IgnoreAction.class));
+                }
+                actions.add(null);
+                actions.add(new BranchMenu(null));
+                actions.add(new TagMenu(null));
+                actions.add(null);
+                actions.add(SystemAction.get(PropertiesAction.class));
             }
-            actions.add(null);
-            actions.add(SystemAction.get(RevertModificationsAction.class));
-            actions.add(new RecoverMenu());
-            if (!onlyProjects) {
-                actions.add(SystemAction.get(IgnoreAction.class));
-            }
-            actions.add(null);
-            actions.add(new BranchMenu(null));
-            actions.add(new TagMenu(null));
-            actions.add(null);
-            actions.add(SystemAction.get(PropertiesAction.class));
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
+                Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
@@ -534,18 +537,18 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         File repo = null;        
         String folderAnotation = ""; //NOI18N
         File root = null; 
+        boolean isRepoRoot = false;
         if(rootFiles.size() == 1) {
-            for (File file : rootFiles) {
-                repo = Mercurial.getInstance().getRepositoryRoot(file);
-                if(repo == null) {
-                    Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
-                } else {
-                    root = file;
-                    break;
-                }
+            File file = rootFiles.iterator().next();
+            repo = Mercurial.getInstance().getRepositoryRoot(file);
+            if(repo == null) {
+                Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
+            } else {
+                root = file;
+                isRepoRoot = repo.equals(root);
             }
             // repo = null iff the file' status is actually unversioned, but cache has not yet have the right value
-            if (repo == null || !repo.getAbsolutePath().equals(root.getAbsolutePath())) {
+            if (repo == null || !isRepoRoot) {
                 // not from repo root => do not annnotate with folder name 
                 return uptodateFormat.format(new Object [] { nameHtml, ""});
             }             
@@ -558,7 +561,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                     parentFile = file.getParentFile();
                 } else {
                     File p = file.getParentFile();
-                    if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
+                    if(p == null || !parentFile.equals(p)) {
                         // not comming from the same parent => do not annnotate with folder name
                         return uptodateFormat.format(new Object [] { nameHtml, ""});
                     }
@@ -568,18 +571,16 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 repo = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repo == null) {
                     Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
-                } else if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
-                    // not from repo root => do not annnotate with folder name 
-                    return uptodateFormat.format(new Object [] { nameHtml, ""});
                 } else {
                     root = file;
                     break;
                 }
             }
+            isRepoRoot = parentFile != null && parentFile.equals(repo);
         }
 
         if (annotationsVisible && repo != null) {
-            if (!repo.getName().equals(name)) {
+            if (isRepoRoot && !repo.getName().equals(name)) {
                 folderAnotation = repo.getName();
             }
             WorkingCopyInfo info = WorkingCopyInfo.getInstance(repo);

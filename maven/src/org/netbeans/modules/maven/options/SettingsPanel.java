@@ -59,18 +59,17 @@ import javax.swing.JList;
 import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.TextValueCompleter;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.NbGlobalActionGoalProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -86,7 +85,6 @@ import org.openide.util.RequestProcessor;
  * @author  mkleint
  */
 public class SettingsPanel extends javax.swing.JPanel {
-    private static final String CP_SELECTED = "wasSelected"; //NOI18N
     private static final String SEPARATOR = "SEPARATOR";
     private static final String BUNDLED_RUNTIME_VERSION =
             MavenSettings.getCommandLineMavenVersion(MavenSettings.getDefaultMavenHome());
@@ -94,7 +92,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     private boolean changed;
     private boolean valid;
     private ActionListener listener;
-    private DocumentListener docList;
     private MavenOptionController controller;
     private TextValueCompleter completer;
     private ActionListener   listItemChangedListener;
@@ -184,11 +181,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         initValues();
         ((MyJTextField)txtLocalRepository).setHintText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "txt_default_repository"));
         listener = new ActionListenerImpl();
-        cbSnapshots.addActionListener(listener);
         comIndex.addActionListener(listener);
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
     }
 
+    /** XXX update for M3 from {@link org.apache.maven.cli.CLIManager#CLIManager} */
     static String[] AVAILABLE_OPTIONS = new String[] {
             "--offline", //NOI18N
             "--debug", //NOI18N
@@ -230,7 +227,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void initValues() {
         comIndex.setSelectedIndex(0);
-        cbSnapshots.setSelected(true);
     }
     
     private String getSelectedRuntime(int selected) {
@@ -304,9 +300,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        bgChecksums = new javax.swing.ButtonGroup();
-        bgPlugins = new javax.swing.ButtonGroup();
-        bgFailure = new javax.swing.ButtonGroup();
         lblCommandLine = new javax.swing.JLabel();
         lblExternalVersion = new javax.swing.JLabel();
         lblOptions = new javax.swing.JLabel();
@@ -328,7 +321,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
-        cbSnapshots = new javax.swing.JCheckBox();
         comMavenHome = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
@@ -385,8 +377,6 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbSnapshots, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbSnapshots.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -430,9 +420,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(lblIndex)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbSnapshots)
-                            .addComponent(comIndex, 0, 421, Short.MAX_VALUE))
+                        .addComponent(comIndex, 0, 421, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnIndex)))
                 .addContainerGap())
@@ -484,9 +472,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(btnIndex)
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbSnapshots)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -567,15 +553,11 @@ public class SettingsPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup bgChecksums;
-    private javax.swing.ButtonGroup bgFailure;
-    private javax.swing.ButtonGroup bgPlugins;
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnLocalRepository;
     private javax.swing.JButton btnOptions;
     private javax.swing.JCheckBox cbSkipTests;
-    private javax.swing.JCheckBox cbSnapshots;
     private javax.swing.JComboBox comBinaries;
     private javax.swing.JComboBox comIndex;
     private javax.swing.JComboBox comJavadoc;
@@ -678,7 +660,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         lastSelected = comMavenHome.getSelectedIndex();
         comMavenHome.addActionListener(listItemChangedListener);
         
-        cbSnapshots.setSelected(RepositoryPreferences.getInstance().isIncludeSnapshots());
         comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
         String repo = MavenSettings.getDefault().getCustomLocalRepository();
         ((MyJTextField)txtLocalRepository).setRealText(repo != null ? repo : "");
@@ -717,7 +698,6 @@ public class SettingsPanel extends javax.swing.JPanel {
             MavenSettings.getDefault().setMavenHome(null);
         }
         RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
-        RepositoryPreferences.getInstance().setIncludeSnapshots(cbSnapshots.isSelected());
         MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());

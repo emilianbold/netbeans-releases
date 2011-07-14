@@ -100,6 +100,7 @@ final class WarmUpSupport implements Runnable {
         err.fine("Warmup done."); // NOI18N
         } finally {
         StartLog.logEnd("Warmup"); // NOI18N
+        StartLog.impl.flush();
         }
     }
 }

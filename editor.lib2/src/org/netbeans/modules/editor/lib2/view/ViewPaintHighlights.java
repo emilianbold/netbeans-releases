@@ -195,7 +195,7 @@ class ViewPaintHighlights implements HighlightsSequence {
         int high = vaItems.length - 1;
         while (low <= high) {
             int mid = (low + high) >>> 1; // mid in the binary search
-            int hEndOffset = vaItems[mid].getEndOffset();
+            int hEndOffset = vaItems[mid].getEndOffset() + offsetDiff;
             if (hEndOffset < offset) {
                 low = mid + 1;
             } else if (hEndOffset > offset) {
