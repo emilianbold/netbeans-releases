@@ -2316,9 +2316,11 @@ final class Central implements ControllerHandler {
                 tmpIndex++;
             TopComponentTracker.getDefault().add( tc, target );
         }
-        target.addOtherName( source.getName() );
-        for( String otherName : source.getOtherNames() ) {
-            target.addOtherName( otherName );
+        if( source.isPermanent() ) {
+            target.addOtherName( source.getName() );
+            for( String otherName : source.getOtherNames() ) {
+                target.addOtherName( otherName );
+            }
         }
         if( source.isPermanent() )
             model.makeModePermanent( target );
