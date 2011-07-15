@@ -60,22 +60,22 @@ public final class SftpConfiguration extends RemoteConfiguration {
     private final String host;
     private final int port;
     private final String userName;
-    private final String password;
     private final String knownHostsFile;
     private final String identityFile;
     private final String initialDirectory;
     private final int timeout;
 
-    public SftpConfiguration(final ConfigManager.Configuration cfg, boolean withSecrets) {
-        super(cfg, withSecrets);
+    private String password;
+    private boolean passwordRead = false;
+
+    public SftpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        super(cfg, createWithSecrets);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
         userName = cfg.getValue(SftpConnectionProvider.USER);
-        if (withSecrets) {
+        if (createWithSecrets) {
             password = readPassword(SftpConnectionProvider.PASSWORD);
-        } else {
-            password = null;
         }
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
@@ -111,8 +111,9 @@ public final class SftpConfiguration extends RemoteConfiguration {
     }
 
     public String getPassword() {
-        if (!withSecrets) {
-            throw new IllegalStateException("Configuration created without secrets");
+        if (!createWithSecrets && !passwordRead) {
+            password = readPassword(SftpConnectionProvider.PASSWORD);
+            passwordRead = true;
         }
         return password != null ? password : ""; // NOI18N
     }

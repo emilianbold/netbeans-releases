@@ -54,7 +54,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
@@ -223,9 +222,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
         assert descriptor != null;
 
         File sources = NewPhpProjectWizardIterator.getSources(descriptor);
-        // ensure we have configuration with password
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(
-                ((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION)).getName(), true);
+        RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()

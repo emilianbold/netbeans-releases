@@ -123,9 +123,9 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean withSecrets) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets) {
         if (accept(configuration)) {
-            return new SftpConfiguration(configuration, withSecrets);
+            return new SftpConfiguration(configuration, createWithSecrets);
         }
         return null;
     }

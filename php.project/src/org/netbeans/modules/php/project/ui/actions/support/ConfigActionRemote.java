@@ -69,7 +69,7 @@ class ConfigActionRemote extends ConfigActionLocal {
             return false;
         }
         String remoteConnection = ProjectPropertiesSupport.getRemoteConnection(project);
-        if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection, false) == null) {
+        if (remoteConnection == null || RemoteConnections.get().remoteConfigurationForName(remoteConnection) == null) {
             valid = false;
         } else if (RunAsValidator.validateUploadDirectory(ProjectPropertiesSupport.getRemoteDirectory(project), true) != null) {
             valid = false;

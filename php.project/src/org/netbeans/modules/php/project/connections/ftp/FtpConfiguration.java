@@ -58,23 +58,24 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final String host;
     private final int port;
     private final String userName;
-    private final String password;
     private final boolean anonymousLogin;
     private final String initialDirectory;
     private final int timeout;
     private final boolean passiveMode;
     private final boolean ignoreDisconnectErrors;
 
-    public FtpConfiguration(final ConfigManager.Configuration cfg, boolean withSecrets) {
-        super(cfg, withSecrets);
+    private String password;
+    private boolean passwordRead = false;
+
+
+    public FtpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        super(cfg, createWithSecrets);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        if (withSecrets) {
+        if (createWithSecrets) {
             password = readPassword(FtpConnectionProvider.PASSWORD);
-        } else {
-            password = null;
         }
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
@@ -128,11 +129,12 @@ public final class FtpConfiguration extends RemoteConfiguration {
      * @return the password or "nobody@nowhere.net".
      */
     public String getPassword() {
-        if (!withSecrets) {
-            throw new IllegalStateException("Configuration created without secrets");
-        }
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
+        }
+        if (!createWithSecrets && !passwordRead) {
+            password = readPassword(FtpConnectionProvider.PASSWORD);
+            passwordRead = true;
         }
         return password != null ? password : ""; // NOI18N
     }

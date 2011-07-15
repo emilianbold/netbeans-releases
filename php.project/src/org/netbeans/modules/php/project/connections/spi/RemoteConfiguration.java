@@ -69,7 +69,7 @@ public abstract class RemoteConfiguration {
     static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
 
     protected final ConfigManager.Configuration cfg;
-    protected final boolean withSecrets;
+    protected final boolean createWithSecrets;
 
     private final String displayName;
     private final String name;
@@ -81,15 +81,15 @@ public abstract class RemoteConfiguration {
     /**
      * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}.
      * @param cfg {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} with configuration data.
-     * @param withSecrets whther secret parameters (typically password) should be provided as well
+     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
      */
-    public RemoteConfiguration(final ConfigManager.Configuration cfg, boolean withSecrets) {
+    public RemoteConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
         if (cfg == null) {
             throw new NullPointerException("Configuration cannot be null");
         }
 
         this.cfg = cfg;
-        this.withSecrets = withSecrets;
+        this.createWithSecrets = createWithSecrets;
         name = cfg.getName();
         displayName = cfg.getDisplayName();
         deprecatedPasswordKey = getClass().getName() + "." + name + ".password"; // NOI18N
@@ -107,7 +107,7 @@ public abstract class RemoteConfiguration {
         this.displayName = displayName;
 
         this.cfg = null;
-        this.withSecrets = false;
+        this.createWithSecrets = false;
         deprecatedPasswordKey = null;
         passwordKey = null;
     }

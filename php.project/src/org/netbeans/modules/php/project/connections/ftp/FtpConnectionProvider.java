@@ -122,9 +122,9 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean withSecrets) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets) {
         if (accept(configuration)) {
-            return new FtpConfiguration(configuration, withSecrets);
+            return new FtpConfiguration(configuration, createWithSecrets);
         }
         return null;
     }
