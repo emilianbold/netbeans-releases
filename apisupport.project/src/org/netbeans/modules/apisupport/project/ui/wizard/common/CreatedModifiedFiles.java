@@ -899,30 +899,23 @@ public final class CreatedModifiedFiles {
             op.run(cmf.getLayerHandle().layer(true));
         }
         
-        private String layerPrefix() {
+        @Override public String[] getModifiedPaths() {
             FileObject layer = cmf.getLayerHandle().getLayerFile();
-            if (layer == null) {
-                return null;
-            }
-            return FileUtil.getRelativePath(project.getProjectDirectory(), layer);
+            return layer != null ? new String[] {FileUtil.getRelativePath(project.getProjectDirectory(), layer)} : new String[0];
         }
         
-        public String[] getModifiedPaths() {
-            String layerPath = layerPrefix();
-            if (layerPath == null) {
-                return new String[0];
-            }
-            return new String[] {layerPath};
-        }
-        
-        public String[] getCreatedPaths() {
-            String layerPath = layerPrefix();
-            if (layerPath == null) {
-                return new String[0];
-            }
+        @Override public String[] getCreatedPaths() {
+            LayerHandle handle = cmf.getLayerHandle();
+            FileObject layer = handle.getLayerFile();
+            String layerPath = layer != null ?
+                    FileUtil.getRelativePath(project.getProjectDirectory(), layer) :
+                    project.getLookup().lookup(NbModuleProvider.class).getResourceDirectoryPath(false) + '/' + handle.newLayerPath();
             int slash = layerPath.lastIndexOf('/');
             String prefix = layerPath.substring(0, slash + 1);
             SortedSet<String> s = new TreeSet<String>();
+            if (layer == null) {
+                s.add(layerPath);
+            }
             for (String file : externalFiles) {
                 s.add(prefix + file);
             }
