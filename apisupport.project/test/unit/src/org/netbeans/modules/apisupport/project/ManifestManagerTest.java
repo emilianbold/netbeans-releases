@@ -44,18 +44,21 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * Test functionality of ManifestManager.
  *
  * @author Martin Krauskopf
  */
-public class ManifestManagerTest extends TestBase {
+public class ManifestManagerTest extends NbTestCase {
 
     // XXX test also implementation version
 
@@ -63,6 +66,7 @@ public class ManifestManagerTest extends TestBase {
         super(name);
     }
 
+    /* XXX
     private File suite1, suite2;
 
     protected void setUp() throws Exception {
@@ -85,6 +89,7 @@ public class ManifestManagerTest extends TestBase {
         assertEquals("right codeNameBase", "org.netbeans.examples.modules.action", mm.getCodeNameBase());
         assertNull("no release version", mm.getReleaseVersion());
     }
+    */
     
     public void testFriends() throws Exception {
         File manifest = new File(getWorkDir(), "testManifest.mf");
@@ -108,7 +113,7 @@ public class ManifestManagerTest extends TestBase {
                 "OpenIDE-Module-Install: org/netbeans/modules/editor/hints/HintsModule.\n" +
                 " class\n" +
                 "OpenIDE-Module-Requires: org.openide.modules.ModuleFormat1\n";
-        dump(manifest, mfContent);
+        TestFileUtils.writeFile(manifest, mfContent);
         ManifestManager mm = ManifestManager.getInstance(manifest, true);
         assertEquals("one public package", 1, mm.getPublicPackages().length);
     }
@@ -116,7 +121,7 @@ public class ManifestManagerTest extends TestBase {
     public void testJarWithNoManifest() throws Exception {
         // See #87064.
         File jar = new File(getWorkDir(), "test.jar");
-        TestBase.createJar(jar, Collections.singletonMap("foo", "bar"), null);
+        TestUtil.createJar(jar, Collections.singletonMap("foo", "bar"), null);
         ManifestManager.getInstanceFromJAR(jar);
     }
 
@@ -129,13 +134,13 @@ public class ManifestManagerTest extends TestBase {
         contents.put("platform/module/Bundle.properties", "folder/file=English");
         contents.put("platform/module/layer.xml", "<filesystem><folder name=\"folder\"><file name=\"file\"><attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"platform.module.Bundle\"/></file></folder></filesystem>");
         File jar = new File(getWorkDir(), "test.jar");
-        TestBase.createJar(jar, contents, mf);
+        TestUtil.createJar(jar, contents, mf);
         ManifestManager mm = ManifestManager.getInstanceFromJAR(jar, true);
         assertNull(mm.getGeneratedLayer());
 
         contents.put("META-INF/generated-layer.xml", "</filesystem>");
         jar = new File(getWorkDir(), "test2.jar");
-        TestBase.createJar(jar, contents, mf);
+        TestUtil.createJar(jar, contents, mf);
         mm = ManifestManager.getInstanceFromJAR(jar, true);
         assertEquals("META-INF/generated-layer.xml", mm.getGeneratedLayer());
     }

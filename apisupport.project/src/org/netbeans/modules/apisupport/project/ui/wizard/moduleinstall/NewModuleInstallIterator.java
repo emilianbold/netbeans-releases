@@ -46,8 +46,8 @@ package org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 
 /**

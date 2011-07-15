@@ -14,12 +14,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.apisupport.project</code-name-base>
+                    <code-name-base>org.netbeans.modules.apisupport.ant</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.33</specification-version>
+                        <specification-version>2.45</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
