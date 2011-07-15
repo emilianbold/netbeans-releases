@@ -514,6 +514,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         timeoutTextField.setText(timeout);
     }
 
+    @Override
     public void read(Configuration cfg) {
         setHostName(cfg.getValue(SftpConnectionProvider.HOST));
         setPort(cfg.getValue(SftpConnectionProvider.PORT));
@@ -525,6 +526,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         setTimeout(cfg.getValue(SftpConnectionProvider.TIMEOUT));
     }
 
+    @Override
     public void store(Configuration cfg) {
         cfg.putValue(SftpConnectionProvider.HOST, getHostName());
         cfg.putValue(SftpConnectionProvider.PORT, getPort());
@@ -537,12 +539,15 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }

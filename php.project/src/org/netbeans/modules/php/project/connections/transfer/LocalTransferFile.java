@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.connections.transfer;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
 /**
  * {@link TransferFile Transfer file} implementation for {@link File local file}.
@@ -98,7 +97,7 @@ final class LocalTransferFile extends TransferFile {
     public boolean isDirectory() {
         if (file.exists()) {
             boolean directory = file.isDirectory();
-            if (!directory && forceDirectory) {
+            if (forceDirectory && !directory && file.isFile()) {
                 assert false : "File forced as directory but is regular existing file";
             }
             return directory;
@@ -109,10 +108,11 @@ final class LocalTransferFile extends TransferFile {
     @Override
     public boolean isFile() {
         if (file.exists()) {
-            if (forceDirectory) {
+            boolean isFile = file.isFile();
+            if (isFile && forceDirectory) {
                 assert false : "File forced as directory but is regular existing file";
             }
-            return file.isFile();
+            return isFile;
         }
         return !forceDirectory;
     }
