@@ -168,7 +168,7 @@ public abstract class PhpUnit extends PhpProgram {
         if (hasValidVersion(new PhpUnitCustom(command))
                 && version[0] >= MINIMAL_VERSION_PHP53[0]
                 && version[1] >= MINIMAL_VERSION_PHP53[1]) {
-            return new PhpUnit34(command);
+            return new PhpUnitImpl(command);
         }
         return new PhpUnit33(command);
     }
@@ -295,7 +295,7 @@ public abstract class PhpUnit extends PhpProgram {
             case PHP_53:
                 if (version[0] <= MINIMAL_VERSION_PHP53[0]
                         && version[1] < MINIMAL_VERSION_PHP53[1]) {
-                    // this instanceof PhpUnit34; - would not work with PhpUnit35 etc.
+                    // this instanceof PhpUnitImpl; - would not work with PhpUnit35 etc.
                     error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnitPhp53", PhpUnit.getVersions(phpUnit, project));
                 }
                 break;

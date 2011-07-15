@@ -60,19 +60,23 @@ public final class SftpConfiguration extends RemoteConfiguration {
     private final String host;
     private final int port;
     private final String userName;
-    private final String password;
     private final String knownHostsFile;
     private final String identityFile;
     private final String initialDirectory;
     private final int timeout;
 
-    public SftpConfiguration(final ConfigManager.Configuration cfg) {
-        super(cfg);
+    private String password;
+    private boolean passwordRead = false;
+
+    public SftpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        super(cfg, createWithSecrets);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
         userName = cfg.getValue(SftpConnectionProvider.USER);
-        password = readPassword(cfg, SftpConnectionProvider.PASSWORD);
+        if (createWithSecrets) {
+            password = readPassword(SftpConnectionProvider.PASSWORD);
+        }
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
@@ -107,6 +111,10 @@ public final class SftpConfiguration extends RemoteConfiguration {
     }
 
     public String getPassword() {
+        if (!createWithSecrets && !passwordRead) {
+            password = readPassword(SftpConnectionProvider.PASSWORD);
+            passwordRead = true;
+        }
         return password != null ? password : ""; // NOI18N
     }
 
@@ -131,8 +139,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
     @Override
     public boolean saveProperty(String key, String value) {
         if (SftpConnectionProvider.PASSWORD.equals(key)) {
-            // value cannot be used (is scrambled)
-            savePassword(password, SftpConnectionProvider.get().getDisplayName());
+            savePassword(ConfigManager.decode(value), SftpConnectionProvider.get().getDisplayName());
             return true;
         }
         return false;
