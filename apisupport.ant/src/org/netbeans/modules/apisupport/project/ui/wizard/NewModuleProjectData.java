@@ -69,7 +69,6 @@ final class NewModuleProjectData {
     private String codeNameBase;
     private String platformID;
     private String bundle;
-    private String layer;
     private String projectDisplayName;
     private int moduleCounter;
     private int suiteCounter;
@@ -180,14 +179,6 @@ final class NewModuleProjectData {
     
     void setBundle(String bundle) {
         this.bundle = bundle;
-    }
-    
-    String getLayer() {
-        return layer;
-    }
-    
-    void setLayer(String layer) {
-        this.layer = layer;
     }
     
     String getProjectDisplayName() {

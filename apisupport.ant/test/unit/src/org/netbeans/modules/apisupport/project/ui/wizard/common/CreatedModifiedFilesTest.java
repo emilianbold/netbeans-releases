@@ -66,19 +66,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import junit.framework.TestCase;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.SpecificationVersion;
@@ -354,6 +359,26 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         assertEquals("one dependency", 1, deps.size());
         ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
         assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
+    }
+
+    public void testCreateInitialLayer() throws Exception {
+        NbModuleProjectGenerator.createStandAloneModule(getWorkDir(), "test", "test", "test/Bundle.properties", null, NbPlatform.PLATFORM_ID_DEFAULT, false, false);
+        Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(p);
+        cmf.add(cmf.layerModifications(new CreatedModifiedFiles.LayerOperation() {@Override public void run(FileSystem layer) throws IOException {}}, Collections.<String>emptySet()));
+        assertNull(p.getProjectDirectory().getFileObject("src/test/layer.xml"));
+        assertEquals("[src/test/layer.xml]", Arrays.toString(cmf.getCreatedPaths()));
+        assertEquals("[]", Arrays.toString(cmf.getModifiedPaths()));
+        assertEquals("[]", Arrays.toString(cmf.getInvalidPaths()));
+        cmf.run();
+        assertNotNull(p.getProjectDirectory().getFileObject("src/test/layer.xml"));
+        cmf = new CreatedModifiedFiles(p);
+        cmf.add(cmf.layerModifications(new CreatedModifiedFiles.LayerOperation() {@Override public void run(FileSystem layer) throws IOException {}}, Collections.singleton("stuff")));
+        assertEquals("[src/test/stuff]", Arrays.toString(cmf.getCreatedPaths()));
+        assertEquals("[src/test/layer.xml]", Arrays.toString(cmf.getModifiedPaths()));
+        assertEquals("[]", Arrays.toString(cmf.getInvalidPaths()));
+        cmf.run();
+        assertNotNull(p.getProjectDirectory().getFileObject("src/test/layer.xml"));
     }
     
     public void testCreateLayerEntry() throws Exception {
