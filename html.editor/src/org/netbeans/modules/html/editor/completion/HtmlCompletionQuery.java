@@ -538,13 +538,11 @@ public class HtmlCompletionQuery extends UserTask {
                 }
 
                 HtmlTag tag = model.getTag(node.name());
-                if(tag == null) {
-                    return null;
-                }
-                HtmlTagAttribute attribute = tag.getAttribute(argName);
+                HtmlTagAttribute attribute = tag != null ? tag.getAttribute(argName) : null;
                 result = new ArrayList<CompletionItem>();
 
                 if (id != HTMLTokenId.VALUE) {
+                    //after the equal sign
                     anchor = offset;
                     if (attribute != null) {
                         result.addAll(translateValues(anchor, attribute.getPossibleValues()));
@@ -560,6 +558,7 @@ public class HtmlCompletionQuery extends UserTask {
                     }
 
                 } else {
+                    //inside the attribute value
                     String quotationChar = null;
                     if (preText != null && preText.length() > 0) {
                         if (preText.substring(0, 1).equals("'")) {

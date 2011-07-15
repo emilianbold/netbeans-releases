@@ -437,6 +437,37 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         
         
     }
+    
+    public void testHtmlExtensionCompletionOfTagAttributeValue() throws BadLocationException, ParseException {
+        HtmlExtension.register("text/html", new HtmlExtension() {
+
+            @Override
+            public List<CompletionItem> completeAttributeValue(CompletionContext context) {
+                List<CompletionItem> items = new ArrayList<CompletionItem>();
+                items.add(HtmlCompletionItem.createAttributeValue("fake", 0));
+                return items;
+            }
+            
+            @Override
+            public UndeclaredContentResolver getUndeclaredContentResolver() {
+                return new UndeclaredContentResolver() {
+
+                    @Override
+                    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                        return Collections.singletonMap("myns", Collections.singletonList("my"));
+                    }
+                };
+            }
+
+        });
+        
+        assertItems("<my:tag attr=|", arr("fake"), Match.CONTAINS);
+        assertItems("<my:tag attr=\"|", arr("fake"), Match.CONTAINS);
+        assertItems("<my:tag attr=\"|\"", arr("fake"), Match.CONTAINS);
+        assertItems("<my:tag attr=\"fa|\"", arr("fake"), Match.CONTAINS);
+        
+        
+    }
     //helper methods ------------
 
     @Override
