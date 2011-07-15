@@ -44,14 +44,25 @@
 package org.netbeans.modules.html.editor.completion;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
+import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension.CompletionContext;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**Html completion test
  * This class extends TestBase class which provides access to the html editor module layer
@@ -399,7 +410,64 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 //        assertItems("<td><a h|</td>  ", arr("href"), Match.CONTAINS);
     }
 
+    public void testHtmlExtensionCompletionOfTagAttribute() throws BadLocationException, ParseException {
+        HtmlExtension.register("text/html", new HtmlExtension() {
+
+            @Override
+            public List<CompletionItem> completeAttributes(CompletionContext context) {
+                List<CompletionItem> items = new ArrayList<CompletionItem>();
+                items.add(HtmlCompletionItem.createAttributeValue("fake", 0));
+                return items;
+            }
+            
+            @Override
+            public UndeclaredContentResolver getUndeclaredContentResolver() {
+                return new UndeclaredContentResolver() {
+
+                    @Override
+                    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                        return Collections.singletonMap("myns", Collections.singletonList("my"));
+                    }
+                };
+            }
+
+        });
+        
+        assertItems("<my:tag att|", arr("fake"), Match.CONTAINS);
+        
+        
+    }
     
+    public void testHtmlExtensionCompletionOfTagAttributeValue() throws BadLocationException, ParseException {
+        HtmlExtension.register("text/html", new HtmlExtension() {
+
+            @Override
+            public List<CompletionItem> completeAttributeValue(CompletionContext context) {
+                List<CompletionItem> items = new ArrayList<CompletionItem>();
+                items.add(HtmlCompletionItem.createAttributeValue("fake", 0));
+                return items;
+            }
+            
+            @Override
+            public UndeclaredContentResolver getUndeclaredContentResolver() {
+                return new UndeclaredContentResolver() {
+
+                    @Override
+                    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                        return Collections.singletonMap("myns", Collections.singletonList("my"));
+                    }
+                };
+            }
+
+        });
+        
+        assertItems("<my:tag attr=|", arr("fake"), Match.CONTAINS);
+        assertItems("<my:tag attr=\"|", arr("fake"), Match.CONTAINS);
+        assertItems("<my:tag attr=\"|\"", arr("fake"), Match.CONTAINS);
+        assertItems("<my:tag attr=\"fa|\"", arr("fake"), Match.CONTAINS);
+        
+        
+    }
     //helper methods ------------
 
     @Override
