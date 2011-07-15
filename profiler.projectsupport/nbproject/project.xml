@@ -177,16 +177,11 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.javafx.profiler</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>
-                <friend>org.netbeans.modules.profiler</friend>
-                <friend>org.netbeans.modules.profiler.freeform</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
                 <friend>org.netbeans.modules.profiler.j2se</friend>
                 <friend>org.netbeans.modules.profiler.nbimpl</friend>
-                <friend>org.netbeans.modules.profiler.nbmodule</friend>
                 <friend>org.netbeans.modules.profiler.selector.java</friend>
-                <friend>org.netbeans.modules.profiler.stp</friend>
                 <package>org.netbeans.modules.profiler.projectsupport</package>
                 <package>org.netbeans.modules.profiler.projectsupport.utilities</package>
             </friend-packages>
