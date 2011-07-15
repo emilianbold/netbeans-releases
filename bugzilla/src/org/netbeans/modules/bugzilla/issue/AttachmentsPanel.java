@@ -60,6 +60,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -165,6 +166,8 @@ public class AttachmentsPanel extends JPanel {
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
                 String author = attachment.getAuthor();
+                String authorName = attachment.getAuthorName();
+                authorName = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
                 descriptionLabel = new JLabel(description);
                 LinkButton filenameButton = new LinkButton();
                 LinkButton patchButton = null;
@@ -187,11 +190,17 @@ public class AttachmentsPanel extends JPanel {
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
-                authorLabel = new JLabel(author);
+                
+                JComponent authorComponent;
+                if(author.indexOf("@") > -1) { // NOI18N
+                    authorComponent = new LinkButton.MailtoButton(authorName, NbBundle.getMessage(IssuePanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), author); // NOI18N
+                } else {
+                    authorComponent = new JLabel(authorName);
+                }
                 descriptionLabel.setComponentPopupMenu(menu);
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
-                authorLabel.setComponentPopupMenu(menu);
+                authorComponent.setComponentPopupMenu(menu);
                 descriptionGroup.addComponent(descriptionLabel, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
                 if (isPatch) {
                     lBrace.setComponentPopupMenu(menu);
@@ -202,7 +211,7 @@ public class AttachmentsPanel extends JPanel {
                     filenameGroup.addComponent(filenameButton);
                 }
                 dateGroup.addComponent(dateLabel);
-                authorGroup.addComponent(authorLabel);
+                authorGroup.addComponent(authorComponent);
                 panel = createHighlightPanel();
                 panel.addMouseListener(new MouseAdapter() {}); // Workaround for bug 6272233
                 panel.setComponentPopupMenu(menu);
@@ -216,7 +225,7 @@ public class AttachmentsPanel extends JPanel {
                     pGroup.addComponent(rBrace);
                 }
                 pGroup.addComponent(dateLabel);
-                pGroup.addComponent(authorLabel);
+                pGroup.addComponent(authorComponent);
                 verticalGroup
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)

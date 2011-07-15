@@ -60,8 +60,9 @@ import org.xml.sax.EntityResolver;
  * @author Jesse Glick
  * @see "#62363"
  */
+@Deprecated
 public abstract class LayerTestBase extends NbTestCase {
-    
+
     public static final class Lkp extends ProxyLookup {
         // Copied from org.netbeans.api.project.TestUtil:
         static {

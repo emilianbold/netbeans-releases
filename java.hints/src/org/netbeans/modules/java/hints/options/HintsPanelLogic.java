@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.java.hints.options;
 
+import java.awt.event.ItemEvent;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Configuration;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
@@ -52,6 +54,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -91,7 +94,7 @@ import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
  *
  * @author Petr Hrebejk
  */
-class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
+class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener, ItemListener {
 
     private Map<String,ModifiedPreferences> changes = new HashMap<String, ModifiedPreferences>();
     private DependencyTracking depScn = null;
@@ -131,6 +134,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private String defLabel = NbBundle.getMessage(HintsPanel.class, "CTL_ShowAs_Label"); //NOI18N
     private String depScanningLabel = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Label"); //NOI18N
     private String depScanningDescription = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Desc"); //NOI18N
+    private JComboBox configCombo;
+    private String currentProfileId = HintsSettings.getCurrentProfileId();
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
@@ -142,9 +147,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         depScanningModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_SrcRoot")); //NOI18N
     }
     
-    void connect( JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
+    void connect( final JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
-                  JEditorPane descriptionTextArea) {
+                  JEditorPane descriptionTextArea, final JComboBox configCombo) {
         
         this.errorTree = errorTree;
         this.errorTreeModel = errorTreeModel;
@@ -153,13 +158,18 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         this.tasklistCheckBox = tasklistCheckBox;
         this.customizerPanel = customizerPanel;
         this.descriptionTextArea = descriptionTextArea;        
+        this.configCombo = configCombo;
         
+        if (configCombo.getSelectedItem() !=null) {
+            currentProfileId = ((Configuration) configCombo.getSelectedItem()).id();
+        }        
         valueChanged( null );
         
         errorTree.addKeyListener(this);
         errorTree.addMouseListener(this);
         errorTree.getSelectionModel().addTreeSelectionListener(this);
             
+        this.configCombo.addItemListener(this);
         severityComboBox.addActionListener(this);
         tasklistCheckBox.addChangeListener(this);
         
@@ -173,8 +183,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
         severityComboBox.removeActionListener(this);
         tasklistCheckBox.removeChangeListener(this);
+        configCombo.removeItemListener(this);
                 
         componentsSetEnabled( false );
+    }
+    
+    String getCurrentProfileId() {
+        return currentProfileId;
     }
     
     synchronized void applyChanges() {
@@ -182,7 +197,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for (String hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
 	    containsChanges |= !mn.isEmpty();
-            mn.store(RulesManager.getPreferences(hint, HintsSettings.getCurrentProfileId()));
+            mn.store(RulesManager.getPreferences(hint, getCurrentProfileId()));
         }
 	if (containsChanges) {
 	    HintsSettings.fireChangeEvent();
@@ -199,13 +214,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     synchronized Preferences getCurrentPrefernces( String id ) {
         Preferences node = changes.get(id);
-        return node == null ? RulesManager.getPreferences(id, HintsSettings.getCurrentProfileId() ) : node;
+        return node == null ? RulesManager.getPreferences(id, getCurrentProfileId() ) : node;
     }
     
     synchronized Preferences getPreferences4Modification(String hint ) {
         Preferences node = changes.get(hint);        
         if ( node == null ) {
-            node = new ModifiedPreferences(RulesManager.getPreferences(hint, HintsSettings.getCurrentProfileId() ) );
+            node = new ModifiedPreferences(RulesManager.getPreferences(hint, getCurrentProfileId() ) );
             changes.put( hint, (ModifiedPreferences)node);
         }        
         return node;                
@@ -473,6 +488,16 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severityComboBox.setEnabled(enabled);
         tasklistCheckBox.setEnabled(enabled);
         descriptionTextArea.setEnabled(enabled);
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent ie) {
+        Object o = configCombo.getSelectedItem();
+        if (o instanceof Configuration) {
+            currentProfileId = ((Configuration) o).id();
+            valueChanged(null);
+            errorTree.repaint();
+        }
     }
 
     public static final class HintCategory {

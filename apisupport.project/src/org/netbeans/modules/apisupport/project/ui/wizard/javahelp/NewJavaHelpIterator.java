@@ -52,10 +52,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
@@ -158,7 +157,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                     files.add(files.addManifestToken(ManifestManager.OPENIDE_MODULE_REQUIRES, "org.netbeans.api.javahelp.Help")); // NOI18N
                 }
 
-                boolean isMaven = !(getProject() instanceof NbModuleProject); // XXX clumsy... but irrelevant unless !ann
+                boolean isMaven = getProject().getProjectDirectory().getFileObject("nbproject/project.properties") == null; // XXX clumsy... but irrelevant unless !ann
                 
                 //copying templates
                 for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {

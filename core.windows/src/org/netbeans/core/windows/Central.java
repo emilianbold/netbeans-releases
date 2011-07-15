@@ -2316,9 +2316,11 @@ final class Central implements ControllerHandler {
                 tmpIndex++;
             TopComponentTracker.getDefault().add( tc, target );
         }
-        target.addOtherName( source.getName() );
-        for( String otherName : source.getOtherNames() ) {
-            target.addOtherName( otherName );
+        if( source.isPermanent() ) {
+            target.addOtherName( source.getName() );
+            for( String otherName : source.getOtherNames() ) {
+                target.addOtherName( otherName );
+            }
         }
         if( source.isPermanent() )
             model.makeModePermanent( target );
@@ -3014,6 +3016,8 @@ final class Central implements ControllerHandler {
         ModeImpl newMode = attachModeToSide( currentMode, null, currentMode.getKind() );
         moveTopComponentIntoMode( newMode, tc );
         tc.requestActive();
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     /**
@@ -3024,8 +3028,13 @@ final class Central implements ControllerHandler {
         ModeImpl neighbor = findClosestNeighbor( mode );
         if( null == neighbor )
             return;
+        TopComponent selTC = mode.getSelectedTopComponent();
         mergeModes( mode, neighbor, -1 );
+        if( null != selTC )
+            selTC.requestActive();
         updateViewAfterDnD( true );
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     /**

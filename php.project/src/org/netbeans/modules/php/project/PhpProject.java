@@ -102,7 +102,6 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -446,7 +445,7 @@ public final class PhpProject implements Project {
         NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
                 NbBundle.getMessage(PhpProject.class, "MSG_CanFolderRestore", dir.getAbsolutePath()),   //NOI18N
                 NbBundle.getMessage(PhpProject.class, "LBL_TitleCanFolderRestore", projectName),        //NOI18N
-                NotifyDescriptor.YES_NO_OPTION, 
+                NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 null, NotifyDescriptor.NO_OPTION);
         if (DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.YES_OPTION) {
@@ -1010,7 +1009,7 @@ public final class PhpProject implements Project {
         private SearchInfo.Files delegate = null;
 
         private PhpSearchInfo(PhpProject project) {
-            this.project = project;            
+            this.project = project;
         }
 
         public static SearchInfo create(PhpProject project) {

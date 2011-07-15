@@ -177,9 +177,11 @@ public final class ConfigManager {
         return new Configuration(name);
     }
 
-    public synchronized void markAsCurrentConfiguration(String currentConfig) {
-        assert configs.keySet().contains(currentConfig);
-        this.currentConfig = currentConfig;
+    public void markAsCurrentConfiguration(String currentConfig) {
+        synchronized (this) {
+            assert configs.keySet().contains(currentConfig);
+            this.currentConfig = currentConfig;
+        }
         changeSupport.fireChange();
     }
 
@@ -189,6 +191,40 @@ public final class ConfigManager {
 
     private Map<String, String/*|null*/> getProperties(String config) {
         return configs.get(config);
+    }
+
+    public static String encode(String input) {
+        return encodeDecode(input);
+    }
+
+    public static String decode(String input) {
+        return encodeDecode(input);
+    }
+
+    private static String encodeDecode(String input) {
+        if (input == null) {
+            return null;
+        }
+        return rot13coder(input);
+    }
+
+    // not secure - just not to be obvious at first glance
+    static String rot13coder(String input) {
+        char[] out = new char[input.length()];
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c >= 'a' && c <= 'm') {
+                c += 13;
+            } else if (c >= 'n' && c <= 'z') {
+                c -= 13;
+            } else if (c >= 'A' && c <= 'M') {
+                c += 13;
+            } else if (c >= 'A' && c <= 'Z') {
+                c -= 13;
+            }
+            out[i] = c;
+        }
+        return String.valueOf(out);
     }
 
     public final class Configuration {
@@ -241,25 +277,6 @@ public final class ConfigManager {
                 value = rot13coder(value);
             }
             return value;
-        }
-
-        //not secure - just not to be obvious at first glance
-        private String rot13coder(String input) {
-            char[] out = new char[input.length()];
-            for (int i = 0; i < input.length(); i++) {
-                char c = input.charAt(i);
-                if (c >= 'a' && c <= 'm') {
-                    c += 13;
-                } else if (c >= 'n' && c <= 'z') {
-                    c -= 13;
-                } else if (c >= 'A' && c <= 'M') {
-                    c += 13;
-                } else if (c >= 'A' && c <= 'Z') {
-                    c -= 13;
-                }
-                out[i] = c;
-            }
-            return String.valueOf(out);
         }
 
         public String getValue(String propertyName) {
