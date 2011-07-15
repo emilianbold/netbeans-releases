@@ -56,7 +56,7 @@ import javax.swing.SwingUtilities;
  */
 public class RemoteService {
     
-    private static final String AWTAccessThreadName = "NetBeans Visual Debugger AWT Access Loop";   // NOI18N
+    private static final String AWTAccessThreadName = "org.netbeans.modules.debugger.jpda.visual AWT Access Loop";   // NOI18N
     private static volatile boolean awtAccess = false;
     private static volatile boolean awtAccessLoop = false;
     
