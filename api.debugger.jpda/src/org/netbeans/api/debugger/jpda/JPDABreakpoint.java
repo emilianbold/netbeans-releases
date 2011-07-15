@@ -176,7 +176,7 @@ public class JPDABreakpoint extends Breakpoint {
     /**
      * Gets value of print text property.
      *
-     * @return value of print text property
+     * @return value of print text property or <code>null</code>.
      */
     public String getPrintText () {
         return printText;
@@ -185,10 +185,12 @@ public class JPDABreakpoint extends Breakpoint {
     /**
      * Sets value of print text property.
      *
-     * @param printText a new value of print text property
+     * @param printText a new value of print text property. Can be <code>null</code>.
      */
     public void setPrintText (String printText) {
-        if (printText.equals(this.printText)) return;
+        if (printText == this.printText || (printText != null && printText.equals(this.printText))) {
+            return;
+        }
         String old = this.printText;
         this.printText = printText;
         firePropertyChange (PROP_PRINT_TEXT, old, printText);
