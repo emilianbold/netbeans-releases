@@ -69,9 +69,13 @@ public final class JaxRsStackSupport {
         JaxRsStackSupportImplementation support = platform.getLookup().lookup(
                 JaxRsStackSupportImplementation.class);
         if ( support == null ){
-            return new JaxRsStackSupport( new IdeJaxRsSupportImpl(  ));
+            return getDefault();
         }
         return new JaxRsStackSupport( support );
+    }
+    
+    public static JaxRsStackSupport getDefault(){
+        return new JaxRsStackSupport( new IdeJaxRsSupportImpl());
     }
     
     /**

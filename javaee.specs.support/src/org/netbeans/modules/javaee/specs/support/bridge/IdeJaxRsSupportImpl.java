@@ -42,8 +42,18 @@
  */
 package org.netbeans.modules.javaee.specs.support.bridge;
 
+
+import java.io.IOException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -52,14 +62,21 @@ import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementa
  */
 public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
     
+    private static final String RESTAPI_LIBRARY = "restapi";        //NOI18N
+    private static final String SWDP_LIBRARY = "restlib";           //NOI18N
+    
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#addJsr311Api(org.netbeans.api.project.Project)
      */
     @Override
     public boolean addJsr311Api( Project project ) {
-        // TODO Auto-generated method stub
-        return false;
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(
+                RESTAPI_LIBRARY);
+        if (restapiLibrary == null) {
+            return false;
+        }
+        return addSwdpLibrary( project , restapiLibrary);
     }
 
     /* (non-Javadoc)
@@ -67,8 +84,31 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
      */
     @Override
     public boolean extendsJerseyProjectClasspath( Project project ) {
-        // TODO Auto-generated method stub
-        return false;
+        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+        if (swdpLibrary == null) {
+            return false;
+        }
+        return addSwdpLibrary( project , swdpLibrary);
+    }
+    
+    private boolean addSwdpLibrary( Project project , Library lib)  {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).
+            getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sourceGroups == null || sourceGroups.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sourceGroups[0].getRootFolder();
+        try {
+            ProjectClassPathModifier.addLibraries(new Library[] { lib },
+                    sourceRoot, ClassPath.COMPILE);
+        }
+        catch (UnsupportedOperationException ex) {
+            return false;
+        }
+        catch (IOException ex) {
+            return false;
+        }
+        return true;
     }
 
 }
