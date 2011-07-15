@@ -64,6 +64,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -198,9 +199,9 @@ public class ScreenshotComponent extends TopComponent {
             private void showPopupMenu(int x, int y) {
                 Node[] activatedNodes = getActivatedNodes();
                 if (activatedNodes.length == 1) {
-                    JPopupMenu contextMenu = activatedNodes[0].getContextMenu();
-                    contextMenu.show(ScreenshotComponent.this, x, y);
-                    //showPopup(e.getX(), e.getY(), activatedNodes[0].getActions(true));
+                    Action[] actions = activatedNodes[0].getActions(true);
+                    JPopupMenu contextMenu = Utilities.actionsToPopup(actions, ScreenshotComponent.this);
+                    contextMenu.show(ScreenshotComponent.this.canvas, x, y);
                 }
             }
             
@@ -262,17 +263,6 @@ public class ScreenshotComponent extends TopComponent {
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-            }
-
-            private void showPopup(int x, int y, Action[] actions) {
-                if (actions.length == 0) {
-                    return ;
-                }
-                JPopupMenu menu = new JPopupMenu();
-                for (Action a : actions) {
-                    
-                }
-                menu.show(canvas, x, y);
             }
 
         }
