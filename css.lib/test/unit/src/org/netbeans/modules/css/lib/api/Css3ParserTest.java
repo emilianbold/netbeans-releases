@@ -137,7 +137,7 @@ public class Css3ParserTest extends CslTestBase {
                 +      "#id { }";
         
         CssParserResult res = parse(code);
-//        dumpResult(res);
+        dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 bodysetPath + "ruleSet/declarations/declaration|0/property/color"));

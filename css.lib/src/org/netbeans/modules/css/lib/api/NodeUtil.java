@@ -157,7 +157,7 @@ public final class NodeUtil {
         return list.toArray(new Node[]{});
     }
     
-   
+    
         /** @return A sibling node before or after the given node. */
     public static Node getSibling(Node node, boolean before) {
         Node parent = node.parent();

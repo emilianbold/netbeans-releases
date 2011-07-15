@@ -46,14 +46,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.editor.BaseDocument;
+import javax.swing.text.BadLocationException;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -73,7 +77,7 @@ public class CssStructureScanner implements StructureScanner {
 
         final List<StructureItem> items = new ArrayList<StructureItem>();
         final CharSequence topLevelSnapshotText = snapshot.getSource().createSnapshot().getText();
-        
+
         NodeVisitor rulesSearch = new NodeVisitor() {
 
             @Override
@@ -129,76 +133,65 @@ public class CssStructureScanner implements StructureScanner {
 //
 //                    }
 //                }
-                
+
                 return false;
             }
         };
-        
+
         rulesSearch.visit(root);
         return items;
     }
 
-//    private String extractDocumentText(Node node, CompilationInfo ci, TranslatedSource source) {
-//        int documentSO = AstUtils.documentPosition(node.from(), source);
-//        int documentEO = AstUtils.documentPosition(node.to(), source);
-//        return ci.getText().substring(documentSO, documentEO);
-//    }
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        final BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
-        if (doc == null) {
-            return Collections.emptyMap();
-        }
-
-//        //so far the css parser always parses the whole css content
-//        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
-//        if (!presultIterator.hasNext()) {
-//            return Collections.emptyMap();
-//        }
-//
-//        ParserResult presult = presultIterator.next();
-//        final TranslatedSource source = presult.getTranslatedSource();
-        Node root = ((CssParserResultCslWrapper) info).getParseTree();
-        final Snapshot snapshot = info.getSnapshot();
-
-        if (root == null) {
-            //serious error in the source, no results
-            return Collections.emptyMap();
-        }
+        CssParserResultCslWrapper parserResult = (CssParserResultCslWrapper) info;
+        Node root = parserResult.getParseTree();
+        final Snapshot snapshot = parserResult.getSnapshot();
 
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
 
-//        NodeVisitor foldsSearch = new NodeVisitor() {
-//
-//            @Override
-//            public void visit(Node node) {
-//                if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
-//                    int so = snapshot.getOriginalOffset(node.from());
-//                    int eo = snapshot.getOriginalOffset(node.to());
-//                    for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-//                        Node n = (Node) node.jjtGetChild(i);
-//                        if (n.kind() == CssParserTreeConstants.JJTSELECTORLIST) {
-//                            // shift fold start to the end of rule name:
-//                            so = snapshot.getOriginalOffset(n.to());
-//                            break;
-//                        }
-//                    }
-//                    try {
-//                        //document is not locked so need to check current boundaries
-//                        if (so >= 0 && eo >= 0 && eo < doc.getLength() && Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
-//                            //do not creare one line folds
-//                            //XXX this logic could possibly seat in the GSF folding impl.
-//                            foldRange.add(new OffsetRange(so, eo));
-//                        }
-//                    } catch (BadLocationException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//            }
-//        };
-//        root.visitChildren(foldsSearch);
-//        folds.put("codeblocks", foldRange); //NOI18N
+        NodeVisitor<List<OffsetRange>> foldsSearch = new NodeVisitor<List<OffsetRange>>(foldRange) {
+
+            @Override
+            public boolean visit(Node node) {
+                int from = -1, to = -1;
+                if (node.type() == NodeType.ruleSet) {
+                    //find the ruleSet curly brackets and create the fold between them inclusive
+                    Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.leaf);
+                    for (Node leafNode : tokenNodes) {
+                        if (CharSequenceUtilities.equals("{", leafNode.image())) {
+                            from = leafNode.from();
+                        } else if (CharSequenceUtilities.equals("}", leafNode.image())) {
+                            to = leafNode.to();
+                        }
+                    }
+
+                    if (from != -1 && to != -1) {
+                        int doc_from = snapshot.getOriginalOffset(from);
+                        int doc_to = snapshot.getOriginalOffset(to);
+
+                        try {
+                            //check the boundaries a bit
+                            if (doc_from >= 0 && doc_to >= 0) {
+                                //do not creare one line folds
+                                if (LexerUtils.getLineOffset(snapshot.getText(), from)
+                                        < LexerUtils.getLineOffset(snapshot.getText(), to)) {
+                                    getResult().add(new OffsetRange(doc_from, doc_to));
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            //ignore
+                        }
+                    }
+                }
+                return false;
+            }
+        };
+
+        foldsSearch.visitChildren(root);
+
+        folds.put("codeblocks", foldRange); //NOI18N
 
         return folds;
 
@@ -208,7 +201,6 @@ public class CssStructureScanner implements StructureScanner {
     public Configuration getConfiguration() {
         return new Configuration(true, false);
     }
-
 //    private static class CssRuleStructureItem implements StructureItem {
 //
 //        private String name;

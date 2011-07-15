@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class FeatureContext {
 

@@ -47,7 +47,7 @@ import java.util.List;
 /**
  * Feature processing cancel support
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class FeatureCancel {
     
