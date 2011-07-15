@@ -63,14 +63,6 @@ org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl
 org.netbeans.modules.cnd.utils.CndUtils
 org.netbeans.modules.cnd.utils.MIMENames
 
-#200043
-org.netbeans.core.windows.services.DialogDisplayerImpl$1AWTQuery
-org.netbeans.modules.java.project.BrokenReferencesModel$BrokenProject
-org.netbeans.modules.java.project.BrokenReferencesModel$Context
-org.netbeans.modules.java.project.BrokenReferencesModel$RefType
-org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport$LibraryDefiner
-org.netbeans.modules.junit.JUnitLibraryDownloader
-
 #200042
 org.netbeans.modules.bugtracking.spi.IssueProvider
 org.netbeans.modules.bugtracking.spi.IssueProvider$LazyIssue

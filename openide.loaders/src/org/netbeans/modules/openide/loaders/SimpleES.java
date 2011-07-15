@@ -42,11 +42,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.text;
+package org.netbeans.modules.openide.loaders;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.openide.loaders.Unmodify;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -62,6 +61,7 @@ import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
+import org.openide.text.DataEditorSupport;
 import org.openide.windows.CloneableOpenSupport;
 
 /** 
@@ -69,7 +69,7 @@ import org.openide.windows.CloneableOpenSupport;
  *
  * @author Jaroslav Tulach
  */
-final class SimpleES extends DataEditorSupport 
+public final class SimpleES extends DataEditorSupport 
 implements OpenCookie, EditCookie, EditorCookie.Observable, 
 PrintCookie, CloseCookie, SaveAsCapable, LineCookie {
     /** SaveCookie for this support instance. The cookie is adding/removing 
@@ -83,11 +83,11 @@ PrintCookie, CloseCookie, SaveAsCapable, LineCookie {
      * @param obj data object to work on
      * @param set set to add/remove save cookie from
      */
-    SimpleES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
+    public SimpleES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
         this(obj, entry, set, null);
     }
 
-    SimpleES(DataObject obj, Entry entry, CookieSet set, Callable<Pane> paneFactory) {
+    public SimpleES(DataObject obj, Entry entry, CookieSet set, Callable<Pane> paneFactory) {
         super(obj, obj.getLookup(), new Environment(obj, entry));
         this.set = set;
         this.factory = paneFactory;

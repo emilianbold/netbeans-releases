@@ -109,7 +109,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
                         "mediawiki.zip",
                         "mediawiki-1.14.0"
                 },
-                { "http://hg.netbeans.org/binaries/F06FC0FE0FADAB8275F29F47ED449ACF3C5F0CF0-tomcat6.zip",
+                { "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
                             "tomcat6.zip",
                             "tomcat6"
                 },
