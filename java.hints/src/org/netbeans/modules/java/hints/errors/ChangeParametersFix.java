@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import java.util.Collections;
+import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
