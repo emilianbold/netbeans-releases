@@ -51,6 +51,8 @@ import java.util.List;
 public abstract class NodeVisitor<T> {
     
     private T result;
+    private boolean cancelled = false;
+    
     
     public NodeVisitor(T result) {
         this.result = result;
@@ -71,9 +73,27 @@ public abstract class NodeVisitor<T> {
         return result;
     }
     
+    /**
+     * Implementors may use this flag to possibly stop the visit(...) method 
+     * execution. The nodes recursive visiting is canceled automatically once
+     * cancel() method is called.
+     * 
+     * @return true if the visitor should stop performing the code.
+     */
+    protected boolean isCancelled() {
+        return cancelled;
+    }
+    
+    public void cancel() {
+        cancelled = true;
+    }
+    
     public void visitAncestors(Node node) {
         Node parent = node.parent();
         if (parent != null) {
+            if(isCancelled()) {
+                return ;
+            }
             if(visit(parent)) {
                 return; //visiting stopped by the visitor
             }
@@ -85,6 +105,9 @@ public abstract class NodeVisitor<T> {
         List<Node> children = node.children();
         if (children != null) {
             for (Node child : children) {
+                if(isCancelled()) {
+                    return null;
+                }
                 if(visit(child)) {
                     return child; //visiting stopped by the visitor
                 }
@@ -103,6 +126,9 @@ public abstract class NodeVisitor<T> {
         if (children != null) {
             for (Node child : children) {
                 for(NodeVisitor v : visitors) {
+                    if(v.isCancelled()) {
+                        continue; //skip the cancelled visitors
+                    }
                     v.visit(node);
                 }
                 //recursion

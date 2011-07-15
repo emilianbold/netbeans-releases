@@ -47,6 +47,7 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -58,7 +59,7 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  */
 public class CssSemanticAnalyzer extends SemanticAnalyzer {
 
-    private boolean cancelled;
+    private FeatureCancel featureCancel = new FeatureCancel();
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     @Override
@@ -68,20 +69,16 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
 
     @Override
     public void cancel() {
-        cancelled = true;
+        featureCancel.cancel();
     }
 
     @Override
     public void run(Result result, SchedulerEvent event) {
-//        cancelled = false;
-//        
-//        if (cancelled) {
-//            return;
-//        }
+        resume();
         
         CssParserResultCslWrapper wrappedResult = (CssParserResultCslWrapper) result;
         FeatureContext featureContext = new FeatureContext(wrappedResult.getWrappedCssParserResult());
-        semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext);
+        semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
         
 //        NodeVisitor visitor = new NodeVisitor() {
 //
@@ -146,5 +143,9 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
         return null; //todo what class to return here?
+    }
+
+    private void resume() {
+        featureCancel = new FeatureCancel();
     }
 }

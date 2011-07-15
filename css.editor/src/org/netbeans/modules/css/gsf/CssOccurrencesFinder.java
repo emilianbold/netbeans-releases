@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.css.gsf;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +51,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -61,8 +63,8 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 public class CssOccurrencesFinder extends OccurrencesFinder {
 
     private int caretDocumentPosition;
-    private boolean cancelled;
-    private Map<OffsetRange, ColoringAttributes> occurrencesMap;
+    private Map<OffsetRange, ColoringAttributes> occurrencesMap = Collections.emptyMap();
+    private FeatureCancel featureCancel = new FeatureCancel();
 
     @Override
     public void setCaretPosition(int position) {
@@ -76,14 +78,24 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
 
     @Override
     public void cancel() {
-        cancelled = true;
+        featureCancel.cancel();
     }
 
+    private void resume() {
+        featureCancel = new FeatureCancel();
+    }
+    
     @Override
     public void run(Result result, SchedulerEvent event) {
+        resume();
+        
         CssParserResultCslWrapper parserResultWrapper = (CssParserResultCslWrapper)result;
         EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper.getWrappedCssParserResult(), caretDocumentPosition);
-        Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context);
+        Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
+        
+        if(featureCancel.isCancelled()) {
+            return ;
+        }
         
         Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
         for(OffsetRange range : occurrences) {
@@ -102,5 +114,6 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
     public Class<? extends Scheduler> getSchedulerClass() {
         return null;
     }
+
 
 }
