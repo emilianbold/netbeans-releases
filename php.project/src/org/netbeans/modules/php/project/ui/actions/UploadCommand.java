@@ -110,7 +110,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             return;
         }
 
-        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration(false).getDisplayName());
         DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor("LBL_Uploading"); // NOI18N
         RemoteClient remoteClient = getRemoteClient(remoteLog, uploadOperationMonitor);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());

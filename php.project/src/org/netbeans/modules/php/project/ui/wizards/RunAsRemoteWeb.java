@@ -247,7 +247,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     private void populateRemoteConnectionComboBox() {
-        List<RemoteConfiguration> connections = RemoteConnections.get().getRemoteConfigurations();
+        List<RemoteConfiguration> connections = RemoteConnections.get().getRemoteConfigurations(false);
         if (connections.isEmpty()) {
             // no connections defined
             connections = Arrays.asList(NO_REMOTE_CONFIGURATION);

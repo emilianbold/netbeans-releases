@@ -129,7 +129,7 @@ public final class RemoteConnections {
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
         RemoteConnectionsPanel panel = createPanel();
         // original remote configurations
-        List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
+        final List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations(true);
 
         final boolean changed = panel.open(remoteConfiguration);
         if (changed) {
@@ -166,10 +166,15 @@ public final class RemoteConnections {
         return Collections.unmodifiableList(names);
     }
 
-    /** Can be null. */
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
+    /**
+     * Get remote configuration from the given configuration.
+     * @param cfg {@link Configuration} to read data from
+     * @param withSecrets whether secret information (typically password) should be provided as well
+     * @return remote configuration or {@code null} if the given configuration is not accepted by any {@link RemoteConnectionProvider}
+     */
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg, boolean withSecrets) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
-            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg);
+            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg, withSecrets);
             if (configuration != null) {
                 return configuration;
             }
@@ -202,17 +207,18 @@ public final class RemoteConnections {
     /**
      * Get the ordered list of existing (already defined) {@link RemoteConfiguration remote configurations}.
      * The list is ordered according to configuration's display name (locale-sensitive string comparison).
+     * @param withSecrets whether secret information (typically password) should be provided as well
      * @return the ordered list of all the existing remote configurations.
      * @see RemoteConfiguration
      */
-    public List<RemoteConfiguration> getRemoteConfigurations() {
+    public List<RemoteConfiguration> getRemoteConfigurations(boolean withSecrets) {
         // get all the configs
         List<Configuration> configs = getConfigurations();
 
         // convert them to remote connections
         List<RemoteConfiguration> remoteConfigs = new ArrayList<RemoteConfiguration>(configs.size());
         for (Configuration cfg : configs) {
-            RemoteConfiguration configuration = getRemoteConfiguration(cfg);
+            RemoteConfiguration configuration = getRemoteConfiguration(cfg, withSecrets);
             if (configuration == null) {
                 // unknown configuration type => get config of unknown type
                 configuration = UNKNOWN_REMOTE_CONFIGURATION;
@@ -225,11 +231,12 @@ public final class RemoteConnections {
     /**
      * Get the {@link RemoteConfiguration remote configuration} for the given name (<b>NOT</b> the display name).
      * @param name the name of the configuration.
+     * @param withSecrets whether secret information (typically password) should be provided as well
      * @return the {@link RemoteConfiguration remote configuration} for the given name or <code>null</code> if not found.
      */
-    public RemoteConfiguration remoteConfigurationForName(String name) {
+    public RemoteConfiguration remoteConfigurationForName(String name, boolean withSecrets) {
         assert name != null;
-        for (RemoteConfiguration remoteConfig : getRemoteConfigurations()) {
+        for (RemoteConfiguration remoteConfig : getRemoteConfigurations(withSecrets)) {
             if (remoteConfig.getName().equals(name)) {
                 return remoteConfig;
             }
@@ -270,8 +277,8 @@ public final class RemoteConnections {
         return configs;
     }
 
-    private void saveRemoteConnections(List<RemoteConfiguration> originalRemoteConfigurations) {
-        Preferences remoteConnections = getPreferences();
+    private void saveRemoteConnections(List<RemoteConfiguration> remoteConfigurations) {
+        final Preferences remoteConnectionsPreferences = getPreferences();
         for (String name : configManager.configurationNames()) {
             if (name == null) {
                 // default config
@@ -280,9 +287,9 @@ public final class RemoteConnections {
             if (!configManager.exists(name)) {
                 // deleted
                 try {
-                    remoteConnections.node(name).removeNode();
+                    remoteConnectionsPreferences.node(name).removeNode();
                     // remove password from keyring
-                    for (RemoteConfiguration remoteConfiguration : originalRemoteConfigurations) {
+                    for (RemoteConfiguration remoteConfiguration : remoteConfigurations) {
                         if (remoteConfiguration.getName().equals(name)) {
                             remoteConfiguration.notifyDeleted();
                             break;
@@ -294,10 +301,16 @@ public final class RemoteConnections {
             } else {
                 // add/update
                 Configuration configuration = configManager.configurationFor(name);
-                RemoteConfiguration remoteConfiguration = getRemoteConfiguration(configuration);
-                assert remoteConfiguration != null : configuration.getName();
+                RemoteConfiguration remoteConfiguration = null;
+                for (RemoteConfiguration rc : remoteConfigurations) {
+                    if (rc.getName().equals(name)) {
+                        remoteConfiguration = rc;
+                        break;
+                    }
+                }
+                assert remoteConfiguration != null : "No remote configuration for configuration " + configuration.getName();
 
-                Preferences node = remoteConnections.node(name);
+                Preferences node = remoteConnectionsPreferences.node(name);
                 for (String propertyName : configuration.getPropertyNames()) {
                     String value = configuration.getValue(propertyName);
                     if (value == null) {

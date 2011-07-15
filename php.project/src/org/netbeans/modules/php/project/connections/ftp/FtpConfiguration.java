@@ -65,13 +65,17 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final boolean passiveMode;
     private final boolean ignoreDisconnectErrors;
 
-    public FtpConfiguration(final ConfigManager.Configuration cfg) {
-        super(cfg);
+    public FtpConfiguration(final ConfigManager.Configuration cfg, boolean withSecrets) {
+        super(cfg, withSecrets);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        password = readPassword(cfg, FtpConnectionProvider.PASSWORD);
+        if (withSecrets) {
+            password = readPassword(FtpConnectionProvider.PASSWORD);
+        } else {
+            password = null;
+        }
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
@@ -124,6 +128,9 @@ public final class FtpConfiguration extends RemoteConfiguration {
      * @return the password or "nobody@nowhere.net".
      */
     public String getPassword() {
+        if (!withSecrets) {
+            throw new IllegalStateException("Configuration created without secrets");
+        }
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
@@ -143,8 +150,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
     @Override
     public boolean saveProperty(String key, String value) {
         if (FtpConnectionProvider.PASSWORD.equals(key)) {
-            // value cannot be used (is scrambled)
-            savePassword(password, FtpConnectionProvider.get().getDisplayName());
+            savePassword(ConfigManager.decode(value), FtpConnectionProvider.get().getDisplayName());
             return true;
         }
         return false;

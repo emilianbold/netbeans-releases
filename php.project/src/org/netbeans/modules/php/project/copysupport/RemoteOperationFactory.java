@@ -208,7 +208,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
             LOGGER.log(Level.WARNING, "REMOTE copying disabled for project {0}. Reason: source root is null", project.getName());
             return false;
         }
-        if (getRemoteConfiguration() == null) {
+        if (getRemoteConfiguration(false) == null) {
             LOGGER.log(Level.INFO, "REMOTE copying disabled for project {0}. Reason: remote config not found", project.getName());
 
             if (askUser(NbBundle.getMessage(RemoteOperationFactory.class, "MSG_RemoteConfigNotFound", project.getName()))) {
@@ -250,7 +250,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
             InputOutput remoteLog = RemoteCommand.getRemoteLog(
                     NbBundle.getMessage(RemoteOperationFactory.class, "LBL_RemoteSynchronizationLog", project.getName(),
                     false));
-            remoteClient = new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
+            remoteClient = new RemoteClient(getRemoteConfiguration(true), new RemoteClient.AdvancedProperties()
                     .setAdditionalInitialSubdirectory(ProjectPropertiesSupport.getRemoteDirectory(project))
                     .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(project))
                     .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(project))
@@ -268,10 +268,10 @@ final class RemoteOperationFactory extends FileOperationFactory {
         return RunAsType.REMOTE.equals(ProjectPropertiesSupport.getRunAs(project));
     }
 
-    protected RemoteConfiguration getRemoteConfiguration() {
+    protected RemoteConfiguration getRemoteConfiguration(boolean withSecrets) {
         String configName = ProjectPropertiesSupport.getRemoteConnection(project);
         assert StringUtils.hasText(configName) : "Remote configuration name must be selected for project " + project.getName();
-        return RemoteConnections.get().remoteConfigurationForName(configName);
+        return RemoteConnections.get().remoteConfigurationForName(configName, withSecrets);
     }
 
     Boolean doCopy(RemoteClient client, FileObject source) throws RemoteException {

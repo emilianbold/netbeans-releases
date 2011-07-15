@@ -65,6 +65,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.LocalServer;
@@ -510,7 +511,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         remoteMonitor.startingDownload();
 
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
-        RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
+        // ensure we have configuration with password
+        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(
+                projectProperties.getRemoteConfiguration().getName(), true);
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
         DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
         RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
