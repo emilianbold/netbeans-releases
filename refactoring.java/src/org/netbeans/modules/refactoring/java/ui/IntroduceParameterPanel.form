@@ -9,7 +9,7 @@
     </Property>
     <Property name="autoscrolls" type="boolean" value="true"/>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-      <Connection code="getString(&quot;LBL_TitleChangeParameters&quot;)" type="code"/>
+      <Connection code="getString(&quot;LBL_TitleIntroduceParameter&quot;)" type="code"/>
     </Property>
   </Properties>
   <AuxValues>
