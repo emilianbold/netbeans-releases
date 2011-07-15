@@ -59,11 +59,7 @@ public final class NodeUtil {
     private NodeUtil() {
     }
     
-    public static CharSequence getNodeImage(Node node, CharSequence source) {
-        return source.subSequence(node.from(), node.to());
-    }
-    
-     public static int[] getTrimmedNodeRange(Node node) {
+    public static int[] getTrimmedNodeRange(Node node) {
         CharSequence text = node.name();
         int from_diff;
         int to_diff;

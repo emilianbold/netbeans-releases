@@ -43,6 +43,7 @@ package org.netbeans.modules.css.editor;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
@@ -52,12 +53,12 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.openide.filesystems.FileObject;
 
 /**
- * Utility methods to be refactored out later.
  * 
- * 
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public final class Css3Utils {
+    
+    public static final String GENERATED_CODE_MARK = "@@@"; //NOI18N
    
     public static List<Error> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
         List<Error> errors = new ArrayList<Error>();
@@ -95,5 +96,13 @@ public final class Css3Utils {
     
     public static OffsetRange getOffsetRange(Node node) {
         return new OffsetRange(node.from(), node.to());
+    }
+
+    public static boolean containsGeneratedCode(CharSequence text) {
+        return CharSequenceUtilities.indexOf(text, GENERATED_CODE_MARK) != -1;
+    }
+    
+    public static boolean isVendorSpecificProperty(CharSequence propertyName) {
+        return CharSequenceUtilities.startsWith(propertyName, "_") || CharSequenceUtilities.startsWith(propertyName, "-"); //NOI18N
     }
 }

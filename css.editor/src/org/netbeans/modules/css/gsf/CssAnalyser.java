@@ -48,14 +48,8 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.css.editor.CssPropertyValue;
-import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
-import org.netbeans.modules.css.editor.properties.CustomErrorMessageProvider;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
@@ -217,9 +211,7 @@ public class CssAnalyser {
         return unknownPropertyErrorKey.substring(index + 1);
     }
 
-    public static boolean isVendorSpecificProperty(String propertyName) {
-        return propertyName.startsWith("_") || propertyName.startsWith("-"); //NOI18N
-    }
+    
 
     //this is only a temporary hack for being able to filter out the css 2.1 errors for
     //commonly used properties not defined in the specification

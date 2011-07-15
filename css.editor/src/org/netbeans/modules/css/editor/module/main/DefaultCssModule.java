@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -77,6 +75,7 @@ public class DefaultCssModule extends CssModule {
 
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
+        final Snapshot snapshot = context.getSnapshot();
         return new NodeVisitor<T>(result) {
 
             @Override
@@ -84,16 +83,51 @@ public class DefaultCssModule extends CssModule {
                 switch (node.type()) {
                     case elementName:
                     case elementSubsequent:
-                        getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.METHOD_SET);
+                        int dso = snapshot.getOriginalOffset(node.from());
+                        if(dso == -1) {
+                            //try next offset - for virtually created class and id
+                            //selectors the . an # prefix are virtual code and is not
+                            //a part of the source document, try to highlight just
+                            //the class or id name
+                            dso = snapshot.getOriginalOffset(node.to() + 1);
+                        }
+                        int deo =snapshot.getOriginalOffset(node.to());
+                        //filter out generated and inlined style definitions - they have just virtual selector which
+                        //is mapped to empty string
+                        if(dso >= 0 && deo >= 0) {
+                            OffsetRange range = new OffsetRange(dso, deo);
+                            getResult().put(range, ColoringAttributes.METHOD_SET);
+                        }
                         break;
                     case property:
-                        getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CUSTOM1_SET);
+                        dso = snapshot.getOriginalOffset(node.from());
+                        deo =snapshot.getOriginalOffset(node.to());
+
+                        if (dso >= 0 && deo >= 0) { //filter virtual nodes
+                            //check vendor speficic property
+                            OffsetRange range = new OffsetRange(dso, deo);
+
+                            CharSequence propertyName = node.image();
+                            if(Css3Utils.containsGeneratedCode(propertyName)) {
+                                return false;
+                            }
+
+                            Set<ColoringAttributes> ca;
+                            if (Css3Utils.isVendorSpecificProperty(propertyName)) {
+                                //special highlight for vend. spec. properties
+                                ca = ColoringAttributes.CUSTOM2_SET;
+                            } else {
+                                //normal property
+                                ca = ColoringAttributes.CUSTOM1_SET;
+                            }
+                            getResult().put(range, ca);
+                            
+                        }
                         break;
                     case namespaceName:
                         getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CUSTOM3_SET);
                         break;
-
-                    //add vendor specific coloring
+                    
                 }
                 return false;
             }
