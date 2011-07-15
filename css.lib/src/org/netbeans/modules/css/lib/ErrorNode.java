@@ -43,7 +43,6 @@ package org.netbeans.modules.css.lib;
 
 import org.antlr.runtime.RecognitionException;
 import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.ProblemDescription;
 
 /**
  *
@@ -52,31 +51,25 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 public class ErrorNode extends AbstractParseTreeNode {
     
     private RecognitionException re;
-    private ProblemDescription problem;
 
-    public ErrorNode(RecognitionException re, ProblemDescription problem, CharSequence source) {
+    public ErrorNode(RecognitionException re, CharSequence source) {
         super(source);
         this.re = re;
-        this.problem = problem;
     }
 
     @Override
     public NodeType type() {
         return NodeType.error;
     }
-
-    public ProblemDescription getProblemDescription() {
-        return problem;
-    }
     
     @Override
     public int from() {
-        return problem.getFrom();
+        return re.index;
     }
 
     @Override
     public int to() {
-        return problem.getTo();
+        return re.index;
     }
 
     @Override

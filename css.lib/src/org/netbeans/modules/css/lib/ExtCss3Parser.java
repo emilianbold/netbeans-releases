@@ -73,5 +73,10 @@ public class ExtCss3Parser extends Css3Parser {
         //disable the default token auto-insertion/deletion recovery
         throw new MismatchedTokenException(ttype, input);
     }
+
+    @Override
+    public void emitErrorMessage(String msg) {
+        //no-op since errors are reported via NbParseTreeBuilder (an impl of parser's DebugEventListener)
+    }
     
 }

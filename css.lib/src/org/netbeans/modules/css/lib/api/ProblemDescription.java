@@ -51,7 +51,7 @@ public class ProblemDescription {
     private final String description;
     private final String key;
     private Type type;
-
+    
     public ProblemDescription(int from, int to, String description, String key, Type type) {
         this.from = from;
         this.to = to;
@@ -79,7 +79,7 @@ public class ProblemDescription {
     public Type getType() {
         return type;
     }
-   
+    
     public enum Type {
         INFO, WARNING, ERROR, FATAL;
     }

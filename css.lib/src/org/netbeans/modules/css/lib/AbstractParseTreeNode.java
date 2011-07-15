@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.antlr.runtime.tree.ParseTree;
 import org.antlr.runtime.tree.Tree;
 import org.netbeans.modules.css.lib.api.Node;
@@ -106,5 +107,10 @@ public abstract class AbstractParseTreeNode extends ParseTree implements Node {
     @Override
     public Node parent() {
         return (Node)getParent();
+    }
+    
+    @Override
+    public Map<String, ?> metadata() {
+        return Collections.emptyMap();
     }
 }

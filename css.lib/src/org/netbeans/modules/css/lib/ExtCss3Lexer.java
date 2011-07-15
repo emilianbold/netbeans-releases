@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -52,6 +53,10 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.api.ProblemDescription.Type;
 
 /**
+ * Note: Funny aspect of the ANTLR lexer is that it doesn't create any kind
+ * of error tokens. So if there's a character in the input which cannot be properly
+ * made a part of a token it is simply skipped. The result is that the sequence of
+ * tokens is not continuous and there might be "holes".
  *
  * @author marekfukala
  */
@@ -72,14 +77,17 @@ public class ExtCss3Lexer extends Css3Lexer {
         StringBuilder b = new StringBuilder();
         b.append(getErrorHeader(e));
         b.append(' ');
-        b.append(getErrorMessage(e, tokenNames));
         
-//        CommonToken token = (CommonToken)e.token;
-        
-        //XXX fix the ParsingProblem creation
-        ProblemDescription pp = new ProblemDescription(e.input.index(), e.input.index(), b.toString(), ProblemDescription.Keys.LEXING.name(), Type.ERROR);
-        
-        problems.add(pp);
+         if(e instanceof NoViableAltException) {
+             //lexing error - unexpected character in the char stream
+            char unexpectedChar = (char)input.LA(1);
+            b.append(String.format("Unexpected character '%s' found.", unexpectedChar));
+            ProblemDescription pp = new ProblemDescription(e.input.index(), e.input.index() + 1, b.toString(), ProblemDescription.Keys.LEXING.name(), Type.ERROR);
+            problems.add(pp);
+         } else {
+            b.append(getErrorHeader(e));
+            b.append(getErrorMessage(e, tokenNames));
+         }
         
     }
 

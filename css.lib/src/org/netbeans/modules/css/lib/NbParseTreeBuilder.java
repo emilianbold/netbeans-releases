@@ -72,6 +72,8 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private boolean resyncing;
     private CharSequence source;
     
+    static boolean debug_tokens = false; //testing 
+    
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
         callStack.push(new RootNode(source));
@@ -127,6 +129,12 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             return;
         }
         
+        if(debug_tokens) {
+            CommonToken ct = (CommonToken)token;
+            int[] ctr = CommonTokenUtil.getCommonTokenOffsetRange(ct);
+            System.out.println(token + "(" + ctr[0] + "-" + ctr[1] + ")");
+        }
+        
         //ignore the closing EOF token, we do not want it
         //it the parse tree
         if(token.getType() == Css3Lexer.EOF) {
@@ -166,6 +174,13 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
+        
+        if(debug_tokens) {
+            CommonToken ct = (CommonToken)token;
+            int[] ctr = CommonTokenUtil.getCommonTokenOffsetRange(ct);
+            System.out.println(token + "(" + ctr[0] + "-" + ctr[1] + ")");
+        }
+        
         hiddenTokens.add((CommonToken)token);
         
         if(resyncing) {
@@ -220,6 +235,10 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             message = ruleNode.toString();
         }
         
+        //create an error node and add it to the parse tree
+        ErrorNode errorNode = new ErrorNode(e, source);
+        ruleNode.addChild(errorNode);
+        
         //create a ParsingProblem
         ProblemDescription pp = new ProblemDescription(
                 from, 
@@ -230,9 +249,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         
         problems.add(pp);
         
-        //create an error node and add it to the parse tree
-        ErrorNode errorNode = new ErrorNode(e, pp, source);
-        ruleNode.addChild(errorNode);
     }
 
     public Collection<ProblemDescription> getProblems() {

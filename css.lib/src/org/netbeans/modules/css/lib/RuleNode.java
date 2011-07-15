@@ -98,5 +98,5 @@ public class RuleNode extends AbstractParseTreeNode {
     public String name() {
         return type().name();
     }
-        
+
 }

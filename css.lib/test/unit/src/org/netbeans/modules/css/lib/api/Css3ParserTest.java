@@ -45,20 +45,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.lib.Css3Parser;
 import org.netbeans.modules.css.lib.TokenNode;
 import org.netbeans.modules.css.lib.nbparser.CssParser;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 
@@ -105,7 +99,6 @@ public class Css3ParserTest extends CslTestBase {
                       + "}";
         
         CssParserResult res = parse(code);
-        //dumpResult(res);
         
         //the background: red; declaration is properly parsed even if the previous declaration is broken
         assertNotNull(NodeUtil.query(res.getParseTree(), 
@@ -116,13 +109,16 @@ public class Css3ParserTest extends CslTestBase {
     
     public void testErrorRecoveryGargabeBeforeDeclaration() throws ParseException, BadLocationException {
         //recovery before entering declaration rule, the Parser.syncToIdent() is used to skip until ident is found
+        
+        //the presence of the @ char is a lexical error so the parser won't be affected at all since
+        //the lexer simply ignores such chars
         String code = "a {\n"
                         + " @ color: red; \n"
                         + " background: red; \n"
                       + "}";
         
         CssParserResult res = parse(code);
-        //dumpResult(res);
+//        dumpResult(res);
         
         //the garbage char @ is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(), 
@@ -155,7 +151,7 @@ public class Css3ParserTest extends CslTestBase {
         //             0         1
         
         CssParserResult res = parse(code);
-        dumpResult(res);
+//        dumpResult(res);
         
         Node aNode = NodeUtil.query(res.getParseTree(), 
                 bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName/body");
@@ -228,7 +224,7 @@ public class Css3ParserTest extends CslTestBase {
 //        String code = "body, head > #id {} .class {}";
         String code = "#id .class body { color: red}";
         CssParserResult res = parse(code);
-        dumpResult(res);
+//        dumpResult(res);
     }
         
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {

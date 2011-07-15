@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.api;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -62,5 +63,7 @@ public interface Node {
     public Node parent();
     
     public CharSequence image();
+    
+    public Map<String, ?> metadata();
     
 }
