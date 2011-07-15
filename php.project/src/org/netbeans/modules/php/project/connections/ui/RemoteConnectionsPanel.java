@@ -198,7 +198,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         Configuration selectedConfiguration = getSelectedConfiguration();
         assert selectedConfiguration != null;
-        RemoteConfiguration remoteConfiguration = remoteConnections.getRemoteConfiguration(selectedConfiguration);
+        RemoteConfiguration remoteConfiguration = remoteConnections.getRemoteConfiguration(selectedConfiguration, true);
         assert remoteConfiguration != null : "Cannot find remote configuration for config manager configuration " + selectedConfiguration.getName();
 
         String configName = selectedConfiguration.getDisplayName();

@@ -43,12 +43,17 @@
 package org.netbeans.modules.php.project.phpunit;
 
 /**
+ * Default implementation of PHPUnit.
+ * <p>
+ * Specific features can be implemented using separate class, see {@link PhpUnit33} for example.
  * @author Tomas Mysik
  */
-class PhpUnit34 extends PhpUnit {
+class PhpUnitImpl extends PhpUnit {
+
     private static final String PARAM_JUNIT_LOG = "--log-junit"; // NOI18N
 
-    PhpUnit34(String command) {
+
+    PhpUnitImpl(String command) {
         super(command);
     }
 
@@ -56,4 +61,5 @@ class PhpUnit34 extends PhpUnit {
     public String getXmlLogParam() {
         return PARAM_JUNIT_LOG;
     }
+
 }

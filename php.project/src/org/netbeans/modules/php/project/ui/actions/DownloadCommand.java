@@ -102,7 +102,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             return;
         }
 
-        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
+        InputOutput remoteLog = getRemoteLog(getRemoteConfiguration(false).getDisplayName());
         DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
         RemoteClient remoteClient = getRemoteClient(remoteLog, downloadOperationMonitor);
         String projectName = getProject().getName();

@@ -146,7 +146,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     protected RemoteClient getRemoteClient(InputOutput io, RemoteClient.OperationMonitor operationMonitor) {
-        return new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
+        return new RemoteClient(getRemoteConfiguration(true), new RemoteClient.AdvancedProperties()
                 .setInputOutput(io)
                 .setOperationMonitor(operationMonitor)
                 .setAdditionalInitialSubdirectory(getRemoteDirectory())
@@ -155,11 +155,11 @@ public abstract class RemoteCommand extends Command {
                 .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(getProject())));
     }
 
-    protected RemoteConfiguration getRemoteConfiguration() {
+    protected RemoteConfiguration getRemoteConfiguration(boolean withSecrets) {
         String configName = getRemoteConfigurationName();
         assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
 
-        return RemoteConnections.get().remoteConfigurationForName(configName);
+        return RemoteConnections.get().remoteConfigurationForName(configName, withSecrets);
     }
 
     protected boolean isRemoteConfigSelected() {

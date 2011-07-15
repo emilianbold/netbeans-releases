@@ -66,13 +66,17 @@ public final class SftpConfiguration extends RemoteConfiguration {
     private final String initialDirectory;
     private final int timeout;
 
-    public SftpConfiguration(final ConfigManager.Configuration cfg) {
-        super(cfg);
+    public SftpConfiguration(final ConfigManager.Configuration cfg, boolean withSecrets) {
+        super(cfg, withSecrets);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
         userName = cfg.getValue(SftpConnectionProvider.USER);
-        password = readPassword(cfg, SftpConnectionProvider.PASSWORD);
+        if (withSecrets) {
+            password = readPassword(SftpConnectionProvider.PASSWORD);
+        } else {
+            password = null;
+        }
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
@@ -107,6 +111,9 @@ public final class SftpConfiguration extends RemoteConfiguration {
     }
 
     public String getPassword() {
+        if (!withSecrets) {
+            throw new IllegalStateException("Configuration created without secrets");
+        }
         return password != null ? password : ""; // NOI18N
     }
 
@@ -131,8 +138,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
     @Override
     public boolean saveProperty(String key, String value) {
         if (SftpConnectionProvider.PASSWORD.equals(key)) {
-            // value cannot be used (is scrambled)
-            savePassword(password, SftpConnectionProvider.get().getDisplayName());
+            savePassword(ConfigManager.decode(value), SftpConnectionProvider.get().getDisplayName());
             return true;
         }
         return false;

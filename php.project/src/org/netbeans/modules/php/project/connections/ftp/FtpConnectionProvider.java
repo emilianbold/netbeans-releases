@@ -118,13 +118,13 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
 
         assert accept(configuration) : "Not my configuration?!";
 
-        return new FtpConfiguration(configuration);
+        return new FtpConfiguration(configuration, false);
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean withSecrets) {
         if (accept(configuration)) {
-            return new FtpConfiguration(configuration);
+            return new FtpConfiguration(configuration, withSecrets);
         }
         return null;
     }
