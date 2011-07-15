@@ -55,6 +55,7 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.api.NodeFactoryUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -258,7 +259,9 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private void refreshKeys() {
             Set<FileObject> files = new HashSet<FileObject>();
             List<String> newVisibleFiles = new ArrayList<String>();
-            newVisibleFiles.add(KEY_LAYER);
+            if (LayerHandle.forProject(project).getLayerFile() != null) {
+                newVisibleFiles.add(KEY_LAYER);
+            }
             for (String loc : FILES.keySet()) {
                 String locEval = project.evaluator().evaluate(loc);
                 if (locEval == null) {

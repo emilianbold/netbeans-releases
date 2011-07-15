@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.event.DocumentEvent;
@@ -62,6 +60,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.apisupport.project.ui.wizard.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Second UI panel of <code>NewNbModuleWizardIterator</code> for
@@ -72,7 +72,6 @@ import org.openide.util.NbBundle;
  *  <li>Code Name Base</li>
  *  <li>Module Display Name</li>
  *  <li>Localizing Bundle</li>
- *  <li>XML Layer</li>
  * </ul>
  *
  * @author Martin Krauskopf
@@ -80,50 +79,28 @@ import org.openide.util.NbBundle;
 final class BasicConfVisualPanel extends NewTemplateVisualPanel {
     
     private boolean wasBundleUpdated;
-    private boolean wasLayerUpdated;
     
     private boolean listenersAttached;
     private final DocumentListener cnbDL;
-    private final DocumentListener layerDL;
     private final DocumentListener bundleDL;
-    private final ActionListener layerAL;
     
     public BasicConfVisualPanel(final NewModuleProjectData data) {
         super(data);
         initComponents();
         cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
-                checkValues(true, false, false); 
+                checkValues(true, false); 
             }
         };
         if (isLibraryWizard()) {
-            // for library modules, don't generate any layer.
-            layer.setVisible(false);
-            layerValue.setVisible(false);
-            generateLayer.setVisible(false);
-            layerDL = null;
-            layerAL = null;
             // We do not intend to support OSGi-style lib wrappers.
             // These would need to use Bundle-ClassPath etc.
             osgi.setVisible(false);
-        } else {
-            layerDL = new UIUtil.DocumentAdapter() {
-                public void insertUpdate(DocumentEvent e) {
-                    wasLayerUpdated = true;
-                    checkValues(false, false, true);
-                }
-            };
-            layerAL = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    checkValues(false, false, true);
-                }
-            };
-            
         }
         bundleDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
                 wasBundleUpdated = true; 
-                checkValues(false, true, false); 
+                checkValues(false, true); 
             }
         };
     }
@@ -137,15 +114,11 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         } else if (getData().isSuiteComponent() && cnbIsAlreadyInSuite(getData().getSuiteRoot(), dotName)) {
             setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", dotName));
         } else {
-            // update layer and bundle from the cnb
+            // update bundle from the cnb
             String slashName = dotName.replace('.', '/');
             if (! wasBundleUpdated) {
                 bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
                 wasBundleUpdated = false;
-            }
-            if (! wasLayerUpdated) {
-                layerValue.setText(slashName + "/layer.xml"); // NOI18N
-                wasLayerUpdated = false;
             }
             if (getData().isNetBeansOrg()) {
                 // Ensure that official naming conventions are respected.
@@ -161,49 +134,37 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         return false;
     }
     
+    @Messages({
+        "BasicConfVisualPanel_err_bundle_empty=Bundle cannot be empty.",
+        "BasicConfVisualPanel_err_bundle_def_pkg=Cannot use default package for bundle.",
+        "BasicConfVisualPanel_err_bundle_extension=Bundle must have \".properties\" extension."
+    })
     private boolean checkBundle() {
-        return checkEntry(getBundleValue(), "bundle", ".properties"); // NOI18N
-    }
-    
-    private boolean checkLayer() {
-        String layerPath = getLayerValue();
-        layerValue.setEnabled(layerPath != null);
-        return (layerPath != null) ?
-            checkEntry(layerPath, "layer", ".xml") // NOI18N
-            : true;
-    }
-    
-    /** Used for Layer and Bundle entries. */
-    private boolean checkEntry(String path, String resName, String extension) {
+        String path = getBundleValue();
         if (path.length() == 0) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_empty"));
+            setError(BasicConfVisualPanel_err_bundle_empty());
             return false;
         }
         if (path.indexOf('/') == -1) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_def_pkg"));
+            setError(BasicConfVisualPanel_err_bundle_def_pkg());
             return false;
         }
-        if (!path.endsWith(extension)) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_ext", extension));
+        if (!path.endsWith(".properties")) {
+            setError(BasicConfVisualPanel_err_bundle_extension());
             return false;
         }
         return true;
     }
     
-    private void checkValues(boolean preferCNB, boolean preferBundle, boolean preferLayer) {
-        boolean valid = true;
+    private void checkValues(boolean preferCNB, boolean preferBundle) {
         if (preferCNB && ! checkCodeNameBase())
             return; // invalid CNB
         if (preferBundle && ! checkBundle())
             return; // invalid Bundle
-        if (preferLayer && ! checkLayer())
-            return; // invalid layer
         if (! preferCNB && ! checkCodeNameBase())
             return;  // invalid CNB
         if (! preferBundle && ! checkBundle())
             return; // invalid Bundle
-        if (! preferLayer && ! checkLayer())
-            return; // invalid layer
         // all valid
         markValid();
     }
@@ -211,7 +172,7 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
     void refreshData() {
         String dn = getData().getProjectDisplayName();
         displayNameValue.setText(dn);
-        checkValues(true, false, false);
+        checkValues(true, false);
     }
     
     /** Stores collected data into model. */
@@ -220,7 +181,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         getData().setCodeNameBase(getCodeNameBaseValue());
         getData().setProjectDisplayName(displayNameValue.getText());
         getData().setBundle(getBundleValue());
-        getData().setLayer(getLayerValue());
         getData().setOsgi(osgi.isSelected());
     }
     
@@ -230,11 +190,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
     
     private String getBundleValue() {
         return bundleValue.getText().trim();
-    }
-    
-    private String getLayerValue() {
-        String v = layerValue.getText().trim();
-        return generateLayer.isSelected() ? v : null;
     }
     
     private boolean cnbIsAlreadyInSuite(String suiteDir, String cnb) {
@@ -270,10 +225,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         if (!listenersAttached) {
             codeNameBaseValue.getDocument().addDocumentListener(cnbDL);
             bundleValue.getDocument().addDocumentListener(bundleDL);
-            if (!isLibraryWizard()) {
-                layerValue.getDocument().addDocumentListener(layerDL);
-                generateLayer.addActionListener(layerAL);
-            }
             listenersAttached = true;
         }
     }
@@ -282,10 +233,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         if (listenersAttached) {
             codeNameBaseValue.getDocument().removeDocumentListener(cnbDL);
             bundleValue.getDocument().removeDocumentListener(bundleDL);
-            if (!isLibraryWizard()) {
-                layerValue.getDocument().removeDocumentListener(layerDL);
-                generateLayer.removeActionListener(layerAL);
-            }
             listenersAttached = false;
         }
     }
@@ -312,9 +259,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         displayNameValue = new javax.swing.JTextField();
         bundle = new javax.swing.JLabel();
         bundleValue = new javax.swing.JTextField();
-        generateLayer = new javax.swing.JCheckBox();
-        layer = new javax.swing.JLabel();
-        layerValue = new javax.swing.JTextField();
         osgi = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
@@ -385,35 +329,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         confPanel.add(bundleValue, gridBagConstraints);
         bundleValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_BundleValue")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(generateLayer, getMessage("CTL_GenerateLayer")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipady = -2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        confPanel.add(generateLayer, gridBagConstraints);
-        generateLayer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_GenerateLayer")); // NOI18N
-
-        layer.setLabelFor(layerValue);
-        org.openide.awt.Mnemonics.setLocalizedText(layer, org.openide.util.NbBundle.getMessage(BasicConfVisualPanel.class, "LBL_XMLLayer")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 20, 0, 12);
-        confPanel.add(layer, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
-        confPanel.add(layerValue, gridBagConstraints);
-        layerValue.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(BasicConfVisualPanel.class, "ACS_CTL_LayerValue")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(osgi, NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel.osgi")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -446,9 +361,6 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
     private javax.swing.JLabel displayName;
     private javax.swing.JTextField displayNameValue;
     private javax.swing.JLabel filler;
-    private javax.swing.JCheckBox generateLayer;
-    private javax.swing.JLabel layer;
-    private javax.swing.JTextField layerValue;
     private javax.swing.JCheckBox osgi;
     // End of variables declaration//GEN-END:variables
     

@@ -310,7 +310,7 @@ public final class LayerHandle {
     /**
      * Resource path in which to make a new XML layer.
      */
-    private String newLayerPath() {
+    public String newLayerPath() {
         NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
         FileObject manifest = module.getManifestFile();
         if (manifest != null) {
