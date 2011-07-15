@@ -354,7 +354,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                             if (filterPrefix == null) {
                                 String prefix = component.getDocument().getText(offset, newOffset - offset);
-                                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
+                                if (prefix.length() > 0 && Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
                                     return false;
                             } else if (filterPrefix.length() == 0) {
                                 anchorOffset = newOffset;
