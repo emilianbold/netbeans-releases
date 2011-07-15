@@ -861,7 +861,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug200141.c", 10, 41, "bug200141.c", 2, 5);
         performTest("bug200141.c", 11, 41, "bug200141.c", 2, 5);
     }    
-    
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -872,6 +872,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         public Failed(String testName) {
             super(testName, true);
         }
+
+        public void testBug200171() throws Exception {
+            // Bug 200171 - Unresolved forward class declaration
+            performTest("bug200171.c", 2, 17, "bug200171.c", 2, 5);
+        }    
+        
     }
 }
 

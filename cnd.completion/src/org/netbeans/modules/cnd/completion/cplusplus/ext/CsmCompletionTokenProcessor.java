@@ -987,6 +987,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case ARRAY:
                                 case DOT:
                                 case ARROW:
+                                case ARROW_OPEN:
                                 case SCOPE:
                                 case PARENTHESIS:
                                 case UNARY_OPERATOR:
