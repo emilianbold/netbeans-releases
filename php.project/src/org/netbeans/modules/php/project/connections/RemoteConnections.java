@@ -320,13 +320,7 @@ public final class RemoteConnections {
             } else {
                 // add/update
                 Configuration configuration = configManager.configurationFor(name);
-                RemoteConfiguration remoteConfiguration = null;
-                for (RemoteConfiguration rc : remoteConfigurations) {
-                    if (rc.getName().equals(name)) {
-                        remoteConfiguration = rc;
-                        break;
-                    }
-                }
+                RemoteConfiguration remoteConfiguration = getRemoteConfiguration(configuration);
                 assert remoteConfiguration != null : "No remote configuration for configuration " + configuration.getName();
 
                 Preferences node = remoteConnectionsPreferences.node(name);
