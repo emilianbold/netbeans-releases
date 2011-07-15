@@ -229,8 +229,12 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         if( null != img ) {
             closeButton.setPressedIcon( new ImageIcon( img ) );
         }
-        closeButton.setToolTipText(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.tooltip"));
     }
+    
+    private void setCloseButtonNameAndTooltip() {
+        closeButton.setName(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.name"));
+        closeButton.setToolTipText(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.tooltip"));
+	}
     
     private void discardCloseButton() {
         closeButton = null;
@@ -432,6 +436,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         } else {
             closeButton.setAction(new EmptyCancelAction());
         }
+        
+        // #200126: tooltip property must be set following the action or it will be overwritten
+        setCloseButtonNameAndTooltip();
+        
         if (toShow) {
             revalidate();
             repaint();
