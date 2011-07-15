@@ -663,7 +663,17 @@ public final class ProjectEar extends J2eeApplicationProvider
             listeners.remove(listener);
         }
 
+        private boolean isCopyOnSaveEnabled() {
+            return Boolean.parseBoolean(ProjectEar.this.project.evaluator().getProperty(EarProjectProperties.J2EE_COMPILE_ON_SAVE));
+        }
+        
         public void initialize() throws FileStateInvalidException {
+            ProjectEar.this.project.evaluator().addPropertyChangeListener(this);
+
+            if (!isCopyOnSaveEnabled()) {
+                return;
+            }
+            
             if (resources != null) {
                 FileUtil.removeFileChangeListener(this, resources);
             }
@@ -672,8 +682,6 @@ public final class ProjectEar extends J2eeApplicationProvider
             if (resources != null) {
                 FileUtil.addFileChangeListener(this, resources);
             }
-
-            ProjectEar.this.project.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
@@ -686,7 +694,8 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (EarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
+            if (EarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName()) ||
+                    EarProjectProperties.J2EE_COMPILE_ON_SAVE.equals(evt.getPropertyName())) {
                 try {
                     cleanup();
                     initialize();

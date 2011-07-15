@@ -43,166 +43,213 @@
  */
 package org.netbeans.modules.form;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreeScanner;
 import java.beans.Introspector;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.swing.text.Position;
-import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.source.queries.api.Function;
+import org.netbeans.modules.java.source.queries.api.Queries;
+import org.netbeans.modules.java.source.queries.api.QueryException;
+import org.netbeans.modules.java.source.queries.api.Updates;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 
 /**
- *
  * Provides information about the forms java source file.
  *
- * @author Tomas Stupka
+ * @author Tomas Stupka, Tomas Pavek
  */
-public class FormJavaSource {
-    
-    private final FormDataObject formDataObject;	
-    private List<String> fields = null;	
+public final class FormJavaSource {
+    private final FileObject javaFile;
+    private String className;
+    private String filePath;
+    private final Object javaContext;
+    private Collection<? extends String> fields;
+
     private static final String[] PROPERTY_PREFIXES = new String[] {"get", // NOI18N
 								    "is"}; // NOI18N
-    
-    public FormJavaSource(FormDataObject formDataObject) {
-	this.formDataObject = formDataObject;
-    }    
-    
-    public void refresh() {
-        this.fields = Collections.<String>emptyList();
-        runUserActionTask(new CancellableTask<CompilationController>() {
-            @Override
-            public void cancel() {
+    private static final String JAVA_QUERIES_CONTEXT_KEY = "JavaQueriesContext_key"; // NOI18N
+
+    FormJavaSource(FileObject fo, Object javaContext) {
+        this.javaFile = fo;
+        this.javaContext = javaContext;
+    }
+
+    public <T> T query(Function<Queries,T> queryFnc) {
+        try {
+            setTransientContext(true);
+            return Queries.query(javaFile.getURL(), queryFnc);
+        } catch(QueryException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        } catch (FileStateInvalidException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            setTransientContext(false);
+        }
+        return null;
+    }
+
+    public Boolean update(Function<Updates,Boolean> updateFnc) {
+        try {
+            setTransientContext(true);
+            return Updates.update(javaFile.getURL(), updateFnc);
+        } catch(QueryException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        } catch (FileStateInvalidException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            setTransientContext(false);
+        }
+        return null;
+    }
+
+    /**
+     * Allows to associate the FileObject with additional context information
+     * that can be used by the Java Queries implementation. For JDev.
+     */
+    private void setTransientContext(boolean set) {
+        if (javaContext != null) {
+            if (set) {
+                ThreadLocal tl;
+                synchronized (javaFile) {
+                    Object o = javaFile.getAttribute(JAVA_QUERIES_CONTEXT_KEY);
+                    tl = o instanceof ThreadLocal ? (ThreadLocal) o : null;
+                    if (tl == null) {
+                        tl = new ThreadLocal();
+                        try {
+                            javaFile.setAttribute(JAVA_QUERIES_CONTEXT_KEY, tl);
+                        } catch (IOException ex) {
+                            Logger.getLogger(getClass().getName()).log(Level.WARNING, null, ex);
+                        }
+                    }
+                }
+                tl.set(javaContext);
+            } else {
+                Object o = javaFile.getAttribute(JAVA_QUERIES_CONTEXT_KEY);
+                if (o instanceof ThreadLocal) {
+                    ((ThreadLocal)o).remove();
+                }
             }
+        }
+    }
+
+    public String getFormClassName() {
+        if (className != null && javaFile.getPath().equals(filePath)) {
+            return className;
+        }
+        Collection<? extends String> names = query(new Function<Queries, Collection<? extends String>>() {
             @Override
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.PARSED);
-                FormJavaSource.this.fields = getFieldNames(controller);
+            public Collection< ? extends String> apply(Queries queries) throws QueryException {
+                return queries.getTopLevelClasses();
             }
         });
-
-    }
-    
-    private void runUserActionTask(CancellableTask<CompilationController> task) {
-        FileObject javaFileObject = formDataObject.getPrimaryFile();		
-        JavaSource js = JavaSource.forFileObject(javaFileObject);
-        if (js != null) {
-            try {
-                js.runUserActionTask(task, true);
-            } catch (IOException ex) {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+        className = null;
+        if (names != null) {
+            String fileName = javaFile.getName();
+            String dotFileName = "." + fileName; // NOI18N
+            for (String s : names) {
+                if (s.equals(fileName) || s.endsWith(dotFileName)) {
+                    className = s;
+                    break;
+                }
             }
         }
-    }
-
-    private void runModificationTask(CancellableTask<WorkingCopy> task) {
-        FileObject javaFileObject = formDataObject.getPrimaryFile();		
-        JavaSource js = JavaSource.forFileObject(javaFileObject);
-        if (js != null) {
-            try {
-                js.runModificationTask(task).commit();
-            } catch (IOException ex) {
-                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
-            }
+        if (className == null) { // fallback
+            className = ClassPath.getClassPath(javaFile, ClassPath.SOURCE)
+                        .getResourceName(javaFile, '.', false);
         }
+        filePath = javaFile.getPath();
+        return className;
     }
 
     public boolean containsField(String name, boolean refresh) {
-	if(refresh) {
+	if (refresh) {
 	    refresh();
 	}	    
 	return fields != null && fields.contains(name);
     }	
 
-    private ClassTree findClassTree(CompilationController controller) {
-        String fileName = formDataObject.getPrimaryFile().getName();
-        
-        for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) &&
-                    fileName.equals(((ClassTree) t).getSimpleName().toString())) {
-                return (ClassTree) t;
+    private void refresh() {
+        final String cls = getFormClassName();
+        fields = query(new Function<Queries, Collection<? extends String>> () {
+            @Override
+            public Collection< ? extends String> apply(Queries queries) throws QueryException {
+                return queries.getFieldNames(cls, true, null);
             }
-        }
-        return null;
+        });
     }
 
-    private static TypeKind primitiveClassToTypeKind(Class clazz) {
-        TypeKind kind = null;
-        if (clazz == char.class) {
-            kind = TypeKind.CHAR;
-        } else if (clazz == boolean.class) {
-            kind = TypeKind.BOOLEAN;
-        } else if (clazz == int.class) {
-            kind = TypeKind.INT;
-        } else if (clazz == long.class) {
-            kind = TypeKind.LONG;
-        } else if (clazz == byte.class) {
-            kind = TypeKind.BYTE;
-        } else if (clazz == short.class) {
-            kind = TypeKind.SHORT;
-        } else if (clazz == float.class) {
-            kind = TypeKind.FLOAT;
-        } else if (clazz == double.class) {
-            kind = TypeKind.DOUBLE;
-        }
-        return kind;
+    public String getSuperClassName() {
+        final String cls = getFormClassName();
+        return query(new Function<Queries, String>() {
+            @Override
+            public String apply(Queries queries) throws QueryException {
+                return queries.getSuperClass(cls);
+            }
+        });
     }
 
-    private TypeMirror clazzToTypeMirror(CompilationController controller, Class clazz) {
-        TypeMirror type;
-        if (clazz.isPrimitive()) {
-            TypeKind kind = primitiveClassToTypeKind(clazz);
-            type = controller.getTypes().getPrimitiveType(kind);
-        } else if (clazz.isArray()) {
-            type = clazzToTypeMirror(controller, clazz.getComponentType());
-            type = controller.getTypes().getArrayType(type);
-        } else {
-            String returnTypeName = clazz.getCanonicalName();
-            TypeElement returnTypeElm = controller.getElements().getTypeElement(returnTypeName);
-            type = returnTypeElm.asType();
-        }
-        return type;
+    public String getClassBinaryName() {
+        final String cls = getFormClassName();
+        return query(new Function<Queries, String>() {
+            @Override
+            public String apply(Queries queries) throws QueryException {
+                return queries.getClassBinaryName(cls);
+            }
+        });
     }
 
-    private List<String> findMethodsByReturnType(CompilationController controller, TypeElement celem, Class returnType) {
-        List<String> methods = new ArrayList<String>();
-        TypeMirror type = clazzToTypeMirror(controller, returnType);
-        for (Element el: celem.getEnclosedElements()) {
-            if (el.getKind() == ElementKind.METHOD) {
-                ExecutableElement method = (ExecutableElement) el;
-                TypeMirror methodRT = method.getReturnType();
-                if (controller.getTypes().isAssignable(type, methodRT)) {
-                    methods.add(method.getSimpleName().toString());
+    public void modifyInterfaces(final Collection<String> toAdd, final Collection<String> toRemove) {
+        final String cls = getFormClassName();
+        update(new Function<Updates, Boolean>() {
+            @Override
+            public Boolean apply(final Updates updates) throws QueryException {
+                updates.modifyInterfaces(cls, toAdd, toRemove);
+                return true;
+            }
+        });
+    }
+
+    public void renameField(final String oldName, final String newName) {
+        if (containsField(oldName, true)) {
+            final String cls = getFormClassName();
+            update(new Function<Updates, Boolean>() {
+                @Override
+                public Boolean apply(Updates updates) throws QueryException {
+                    updates.renameField(cls, oldName, newName);
+                    return true;
                 }
-            }
+            });
         }
-        return methods;
     }
+
+    public int[] getEventHandlerMethodSpan(final String evenHandlerName, final String eventType) {
+        final String cls = getFormClassName();
+        return query(new Function<Queries, int[]>() {
+            @Override
+            public int[] apply(Queries queries) throws QueryException {
+                String[] paramTypes = eventType != null ? new String[] { eventType } : new String[0];
+                return queries.getMethodSpan(cls, evenHandlerName, true, "void", paramTypes); // NOI18N
+            }
+        });
+    }
+
+    /** Assuming the method is either initComponents or an event handler method,
+      * i.e. void return type. */
+    public int[] getMethodSpan(final String methodName, final String... paramTypes) {
+        final String cls = getFormClassName();
+        return query(new Function<Queries, int[]>() {
+            @Override
+            public int[] apply(Queries queries) throws QueryException {
+                return queries.getMethodSpan(cls, methodName, true, "void", paramTypes); // NOI18N
+            }
+        });
+    }
+
     /**
      * Returns names for all methods with the specified return type
      * 
@@ -210,68 +257,15 @@ public class FormJavaSource {
      * @return names of all methods with the given return type.
      */
     public String[] getMethodNames(final Class returnType) {
-        final Object[] result = new Object[1];
-        
-        runUserActionTask(new CancellableTask<CompilationController>() {
+        final String cls = getFormClassName();
+        Collection<? extends String> result = query(
+                new Function<Queries, Collection<? extends String>>() {
             @Override
-            public void cancel() {
-            }
-            @Override
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                
-                ClassTree ct = findClassTree(controller);
-                if (ct != null) {
-                    TreePath cpath = controller.getTrees().getPath(controller.getCompilationUnit(), ct);
-                    TypeElement celem = (TypeElement) controller.getTrees().getElement(cpath);
-                    List<String> names = findMethodsByReturnType(controller, celem, returnType);
-                    result[0] = toArray(names);
-                }
-                
+            public Collection< ? extends String> apply(Queries queries) throws QueryException {
+                return queries.getMethodNames(cls, true, returnType.getCanonicalName(), new String[0]);
             }
         });
-        
-        return result[0] == null? new String[0]: (String[]) result[0];
-    }
-
-    public String getAnnotationCode(final String methodName, final Position startPosition, final Position endPosition, final boolean removeAnnotations) {
-        final StringBuilder sb = new StringBuilder();
-        runModificationTask(new CancellableTask<WorkingCopy>() {
-            @Override
-            public void cancel() {
-            }
-            @Override
-            public void run(WorkingCopy wc) throws Exception {
-                wc.toPhase(JavaSource.Phase.RESOLVED);
-                ClassTree ct = findClassTree(wc);
-                int start = startPosition.getOffset();
-                int end = endPosition.getOffset();
-                if (ct != null) {
-                    SourcePositions sp = wc.getTrees().getSourcePositions();
-                    for (Tree member : ct.getMembers()) {
-                        if (Tree.Kind.METHOD == member.getKind()) {
-                            MethodTree method = (MethodTree)member;
-                            if (methodName.equals(method.getName().toString())) {
-                                long methodStart = sp.getStartPosition(wc.getCompilationUnit(), method);
-                                long methodEnd = sp.getEndPosition(wc.getCompilationUnit(), method);
-                                if ((methodStart <= end) && (start <= methodEnd)) {
-                                    for (AnnotationTree annotation : method.getModifiers().getAnnotations()) {
-                                        sb.append(annotation.toString()).append('\n');
-                                    }
-                                }
-                                if (removeAnnotations) {
-                                    ModifiersTree oldModifiers = method.getModifiers();
-                                    TreeMaker make = wc.getTreeMaker();
-                                    ModifiersTree newModifiers = make.Modifiers(oldModifiers.getFlags());
-                                    wc.rewrite(oldModifiers, newModifiers);
-                                }
-                            }
-                        }
-                    }
-                }                
-            }
-        });
-        return (sb.length() == 0) ? null : sb.toString();
+        return result != null ? result.toArray(new String[result.size()]) : new String[0];
     }
 
     /**
@@ -285,15 +279,12 @@ public class FormJavaSource {
         String[] names = getMethodNames(returnType);
         List<String> result = new ArrayList<String>(names.length);
         for (String name: names) {
-            if(!FormJavaSource.extractPropertyName(name).equals("")) { // NOI18N	
+            if(!extractPropertyName(name).equals("")) { // NOI18N	
                 // seems to be property method
                 result.add(name);
             }		    
-            
         }
-        
-        return toArray(result);
-        
+        return result.toArray(new String[result.size()]);
     }
     
     public static String extractPropertyName(String methodName) {
@@ -307,51 +298,14 @@ public class FormJavaSource {
 	return "";  // NOI18N	
     }    
 
-    private List<String> getFieldNames(final CompilationController controller) {
-        SimpleSection variablesSection = 
-            formDataObject.getFormEditorSupport().getVariablesSection();	    
-
-        if(variablesSection==null) {
-            return null;
-        }
-
-        final int genVariablesStartOffset = variablesSection.getStartPosition().getOffset();
-        final int genVariablesEndOffset = variablesSection.getEndPosition().getOffset();
-        
-        final SourcePositions positions = controller.getTrees().getSourcePositions();
-        
-        TreeScanner<Void, List<String>> scan = new TreeScanner<Void, List<String>>() {
+    public void importFQNs(final int[][] ranges) {
+        update(new Function<Updates, Boolean>() {
             @Override
-            public Void visitClass(ClassTree node, List<String> p) {
-                long startOffset = positions.getStartPosition(controller.getCompilationUnit(), node);
-                long endOffset = positions.getEndPosition(controller.getCompilationUnit(), node);
-                if (genVariablesStartOffset > startOffset && genVariablesEndOffset < endOffset) {
-                    for (Tree tree: node.getMembers()) {
-                        if (tree.getKind() == Tree.Kind.VARIABLE) {
-                            testVariable((VariableTree) tree, p);
-                        }
-                    }
-                }
-                return null;
+            public Boolean apply(Updates updates) throws QueryException {
+                updates.fixImports(ranges);
+                return true;
             }
-            
-            private void testVariable(VariableTree node, List<String> p) {
-                long startOffset = positions.getStartPosition(controller.getCompilationUnit(), node);
-                if (startOffset >= genVariablesEndOffset ||
-                        startOffset <= genVariablesStartOffset) {
-                    p.add(node.getName().toString());
-                }
-            }
-        };
-        
-        List<String> fieldNames = new ArrayList<String>();
-        scan.scan(controller.getCompilationUnit(), fieldNames);
-        
-        return fieldNames;
-    }	
-
-    private static String[] toArray(List<String> list) {
-        return list.toArray(new String[list.size()]);
+        });
     }
 
     public static boolean isInDefaultPackage(FormModel formModel) {

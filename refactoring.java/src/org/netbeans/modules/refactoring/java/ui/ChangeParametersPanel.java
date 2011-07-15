@@ -79,6 +79,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -117,6 +118,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         "<default>", // NOI18N
         "private" // NOI18N
     };
+    private ParameterInfo[] preConfiguration;
     
     public Component getComponent() {
         return this;
@@ -139,9 +141,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
     /** Creates new form ChangeMethodSignature */
-    public ChangeParametersPanel(TreePathHandle refactoredObj, ChangeListener parent) {
+    public ChangeParametersPanel(TreePathHandle refactoredObj, ChangeListener parent, ParameterInfo[] preConfiguration) {
         this.refactoredObj = refactoredObj;
         this.parent = parent;
+        this.preConfiguration = preConfiguration;
         model = new ParamTableModel(columnNames, 0);
         initComponents();
 
@@ -643,6 +646,23 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     ((Vector) model.getDataVector().get(originalIndex)).set(4, removable);
                 }
                 originalIndex++;
+            }
+        }
+        if(preConfiguration != null) {
+            List<Object[]> newModel = new LinkedList<Object[]>();
+            for (int i = 0; i < preConfiguration.length; i++) {
+                ParameterInfo parameterInfo = preConfiguration[i];
+                newModel.add(new Object[] {parameterInfo.getName(),
+                    parameterInfo.getType(),
+                    parameterInfo.getDefaultValue() == null? "" : parameterInfo.getDefaultValue(),
+                    parameterInfo.getOriginalIndex(),
+                    model.isRemovable(parameterInfo.getOriginalIndex())});
+            }
+            while(model.getRowCount() > 0) {
+                model.removeRow(0);
+            }
+            for (Object[] row : newModel) {
+                model.addRow(row);
             }
         }
     }

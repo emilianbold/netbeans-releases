@@ -51,6 +51,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
@@ -123,14 +124,31 @@ public class RemoteServices {
         List<RemoteClass> remoteClasses = getRemoteClasses(BASIC_REMOTE_CLASS, true);
         ClassObjectReference basicClass = null;
         for (RemoteClass rc : remoteClasses) {
+            ClassObjectReference theUploadedClass = null;
             ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-            Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-            ClassObjectReference theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf(rc.name), byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+            try {
+                Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                boolean uploaded = false;
+                while (!uploaded) {
+                    theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf(rc.name), byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                    if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith(BASIC_REMOTE_CLASS)) {
+                        try {
+                            // Disable collection only of the basic class
+                            theUploadedClass.disableCollection();
+                            basicClass = theUploadedClass;
+                            uploaded = true;
+                        } catch (ObjectCollectedException ocex) {
+                            // Just collected, try again...
+                        }
+                    } else {
+                        uploaded = true;
+                    }
+                }
+            } finally {
+                byteArray.enableCollection(); // We can dispose it now
+            }
             //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
             //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
-            if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith(BASIC_REMOTE_CLASS)) {
-                basicClass = theUploadedClass;
-            }
         }
         if (basicClass != null) {
             // Initialize the class:
@@ -163,8 +181,12 @@ public class RemoteServices {
         List<RemoteClass> remoteClasses = getRemoteClasses(basicRemoteClass, false);
         for (RemoteClass rc : remoteClasses) {
             ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-            Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-            systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf(rc.name), byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+            try {
+                Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf(rc.name), byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+            } finally {
+                byteArray.enableCollection(); // We can dispose it now
+            }
         }
     }
     
@@ -453,7 +475,17 @@ public class RemoteServices {
     
     private static ArrayReference createTargetBytes(VirtualMachine vm, byte[] bytes) throws InvalidTypeException, ClassNotLoadedException {
         ArrayType bytesArrayClass = getArrayClass(vm, "byte[]");
-        ArrayReference array = bytesArrayClass.newInstance(bytes.length);
+        ArrayReference array = null;
+        boolean disabledCollection = false;
+        while (!disabledCollection) {
+            array = bytesArrayClass.newInstance(bytes.length);
+            try {
+                array.disableCollection();
+                disabledCollection = true;
+            } catch (ObjectCollectedException ocex) {
+                // Collected too soon, try again...
+            }
+        }
         for (int i = 0; i < bytes.length; i++) {
             array.setValue(i, vm.mirrorOf(bytes[i]));
         }

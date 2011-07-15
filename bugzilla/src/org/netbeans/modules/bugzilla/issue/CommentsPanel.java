@@ -42,32 +42,31 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
-import java.net.URI;
-import java.net.URL;
+import java.awt.event.MouseListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -76,28 +75,25 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import javax.swing.text.Element;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.ErrorManager;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -109,8 +105,6 @@ import org.openide.util.RequestProcessor;
 public class CommentsPanel extends JPanel {
     static final RequestProcessor RP = new RequestProcessor("Bugzilla Comments Panel", 5, false); // NOI18N
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
-    private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
-    private final static String URL_ATTRIBUTE = "url hyperlink";        //NOI18N
     private final static String ATTACHMENT_ATTRIBUTE = "attachment hyperlink"; //NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
@@ -120,67 +114,29 @@ public class CommentsPanel extends JPanel {
     private BugzillaIssue issue;
     private List<BugzillaIssue.Attachment> attachments;
     private List<String> attachmentIds;
-    private MouseAdapter listener;
-    private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
+    private Set<Long> collapsedComments = Collections.synchronizedSet(new HashSet<Long>());
+    private final Link issueLink;
+    
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
-        motionListener = new MouseMotionAdapter() {
+        
+        issueLink = new HyperlinkSupport.Link() {
             @Override
-            public void mouseMoved(MouseEvent e) {
-                JTextPane pane = (JTextPane)e.getSource();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                AttributeSet as = elem.getAttributes();
-                if (StyleConstants.isUnderline(as)) {
-                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                } else {
-                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-            }
-        };
-        listener = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    if (SwingUtilities.isLeftMouseButton(e)) {
-                        JTextPane pane = (JTextPane)e.getSource();
-                        StyledDocument doc = pane.getStyledDocument();
-                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                        AttributeSet as = elem.getAttributes();
-
-                        IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
-                        if (issueAction != null) {
-                            int startOffset = elem.getStartOffset();
-                            int endOffset = elem.getEndOffset();
-                            int length = endOffset - startOffset;
-                            String hyperlinkText = doc.getText(startOffset, length);
-                            issueAction.openIssue(hyperlinkText);
-                            return;
-                        }
-
-                        UrlAction urlAction = (UrlAction) as.getAttribute(URL_ATTRIBUTE);
-                        if (urlAction != null) {
-                            int startOffset = elem.getStartOffset();
-                            int endOffset = elem.getEndOffset();
-                            int length = endOffset - startOffset;
-                            String hyperlinkText = doc.getText(startOffset, length);
-                            urlAction.openUrlHyperlink(hyperlinkText);
-                            return;
-                        }
-
-                        if (as.getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
-                            CommentsPanel.this.openAttachmentHyperlink(pane);
-                            return;
+            public void onClick(String linkText) {
+                final String issueKey = issueFinder.getIssueId(linkText);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Issue is = issue.getRepository().getIssue(issueKey);
+                        if (is != null) {
+                            is.open();
                         }
                     }
-                } catch(Exception ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                }
+                });
             }
         };
-
         issueFinder = Lookup.getDefault().lookup(BugzillaIssueFinder.class);
         assert issueFinder != null;
     }
@@ -189,6 +145,7 @@ public class CommentsPanel extends JPanel {
                   List<BugzillaIssue.Attachment> attachments) {
         removeAll();
         this.issue = issue;
+        initCollapsedComments();
         this.attachments = attachments;
         this.attachmentIds = getAttachmentIds(attachments);
         GroupLayout layout = new GroupLayout(this);
@@ -209,13 +166,14 @@ public class CommentsPanel extends JPanel {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
         addSection(layout,
+            new Long(0),    
             issue.getFieldValue(IssueField.DESCRIPTION),
             issue.getFieldValue(IssueField.REPORTER),
             issue.getFieldValue(IssueField.REPORTER_NAME),
             creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
-            addSection(layout, comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false);
+            addSection(layout, comment.getNumber(), comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
         setLayout(layout);
@@ -238,26 +196,22 @@ public class CommentsPanel extends JPanel {
         newCommentHandler = handler;
     }
 
-    private void addSection(GroupLayout layout, String text, String author, String authorName, String dateTimeString,
+    private void addSection(GroupLayout layout, final Long number, String text, final String author, String authorName, String dateTimeString,
             GroupLayout.ParallelGroup horizontalGroup, GroupLayout.SequentialGroup verticalGroup, boolean description) {
         JTextPane textPane = new JTextPane();
-        JLabel leftLabel = new JLabel();
+        JPanel headerPanel = new JPanel();
+        JLabel leftLabel = new ExpandLabel(textPane, headerPanel, number);
         ResourceBundle bundle = NbBundle.getBundle(CommentsPanel.class);
-        String leftTxt;
+        String leftTxt = "";
         if (description) {
             String leftFormat = bundle.getString("CommentsPanel.leftLabel.format"); // NOI18N
             String summary = TextUtils.escapeForHTMLLabel(issue.getSummary());
             leftTxt = MessageFormat.format(leftFormat, summary);
-        } else {
-            leftTxt = bundle.getString("CommentsPanel.leftLabel.text"); // NOI18N
-        }
-        leftLabel.setText(leftTxt);
-        JLabel rightLabel = new JLabel();
-        String rightFormat = bundle.getString("CommentsPanel.rightLabel.format"); // NOI18N
+        } 
         String authorTxt = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
-        String rightTxt = MessageFormat.format(rightFormat, dateTimeString, authorTxt);
-        rightLabel.setText(rightTxt);
-        rightLabel.setLabelFor(textPane);
+        leftTxt += " " + authorTxt + " " + dateTimeString;
+        leftLabel.setText(leftTxt);
+        leftLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             int index = author.indexOf('@');
@@ -270,6 +224,8 @@ public class CommentsPanel extends JPanel {
         replyButton.addActionListener(getReplyListener());
         replyButton.putClientProperty(REPLY_TO_PROPERTY, textPane);
         replyButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.replyButton.AccessibleContext.accessibleDescription")); // NOI18N
+
+        setupHeaderPanel(headerPanel, leftLabel, replyButton, stateLabel);
         setupTextPane(textPane, text);
 
         // Issue 172653 - JTextPane too big
@@ -284,88 +240,28 @@ public class CommentsPanel extends JPanel {
         }
 
         // Layout
-        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
-            .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(replyButton)
-            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(rightLabel);
-        if (stateLabel != null) {
-            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
-            hGroup.addComponent(stateLabel);
-        }
-        horizontalGroup.addGroup(hGroup)
+        horizontalGroup
+            .addComponent(headerPanel)
             .addComponent(pane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
         if (!description) {
             verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED);
         }
-        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-            .addComponent(leftLabel)
-            .addComponent(replyButton)
-            .addComponent(rightLabel);
-        if (stateLabel != null) {
-            vGroup.addComponent(stateLabel);
-        }
-        verticalGroup.addGroup(vGroup)
+        verticalGroup
+            .addComponent(headerPanel)
             .addComponent(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
-    private void setupTextPane(JTextPane textPane, String comment) {
+    private void setupTextPane(final JTextPane textPane, String comment) {
+        textPane.setText(comment);
+        
+        HyperlinkSupport.getInstance().registerForStacktraces(textPane);
+        HyperlinkSupport.getInstance().registerForURLs(textPane);
+        HyperlinkSupport.getInstance().registerForIssueLinks(textPane, issueLink, issueFinder);
+        
         StyledDocument doc = textPane.getStyledDocument();
         Caret caret = textPane.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-        }
-
-        // Stack-traces
-        textPane.setText(comment);
-        StackTraceSupport.addHyperlinks(textPane);
-
-        // Issues/bugs
-        int[] pos = issueFinder.getIssueSpans(comment);
-        if (pos.length > 0) {
-            Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("bugBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(ISSUE_ATTRIBUTE, new IssueAction());
-            StyleConstants.setForeground(hlStyle, Color.BLUE);
-            StyleConstants.setUnderline(hlStyle, true);
-
-            for (int i=0; i<pos.length; i+=2) {
-                int off = pos[i];
-                int length = pos[i+1]-pos[i];
-                try {
-                    doc.remove(off, length);
-                    doc.insertString(off, comment.substring(pos[i], pos[i+1]), hlStyle);
-                } catch (BadLocationException blex) {
-                    Bugzilla.LOG.log(Level.INFO, blex.getMessage(), blex);
-                }
-            }
-        }
-
-        // URL hyperlinks
-        {
-            final int[] boundaries = WebUrlHyperlinkSupport.findBoundaries(comment);
-            if ((boundaries != null) && (boundaries.length != 0)) {
-                Style defStyle = StyleContext.getDefaultStyleContext()
-                                 .getStyle(StyleContext.DEFAULT_STYLE);
-                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
-                hlStyle.addAttribute(URL_ATTRIBUTE, new UrlAction());
-                StyleConstants.setForeground(hlStyle, Color.BLUE);
-                StyleConstants.setUnderline(hlStyle, true);
-
-                for (int i = 0; i < boundaries.length; i+=2) {
-                    int off = boundaries[i];
-                    int length = boundaries[i + 1] - boundaries[i];
-                    try {
-                        doc.remove(off, length);
-                        doc.insertString(off, comment.substring(boundaries[i],
-                                                                boundaries[i + 1]),
-                                                                hlStyle);
-                    } catch (BadLocationException ex) {
-                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
-                    }
-                }
-            }
         }
 
         // attachments
@@ -373,25 +269,13 @@ public class CommentsPanel extends JPanel {
             final int[] boundaries = AttachmentHyperlinkSupport
                                      .findBoundaries(comment, attachmentIds);
             if ((boundaries != null) && (boundaries.length != 0)) {
-                Style defStyle = StyleContext.getDefaultStyleContext()
-                                 .getStyle(StyleContext.DEFAULT_STYLE);
-                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
-                hlStyle.addAttribute(ATTACHMENT_ATTRIBUTE, new Object());
-                StyleConstants.setForeground(hlStyle, Color.BLUE);
-                StyleConstants.setUnderline(hlStyle, true);
-
-                for (int i = 0; i < boundaries.length; i+=2) {
-                    int off = boundaries[i];
-                    int length = boundaries[i + 1] - boundaries[i];
-                    try {
-                        doc.remove(off, length);
-                        doc.insertString(off, comment.substring(boundaries[i],
-                                                                boundaries[i + 1]),
-                                                                hlStyle);
-                    } catch (BadLocationException ex) {
-                        Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
+                HyperlinkSupport.Link attachmentLink = new HyperlinkSupport.Link() {
+                    @Override
+                    public void onClick(String linkText) {
+                        CommentsPanel.this.openAttachmentHyperlink(textPane);
                     }
-                }
+                };
+                HyperlinkSupport.getInstance().registerLink(textPane, new int[] {boundaries[0], boundaries[1]}, attachmentLink);
             }
         }
 
@@ -402,10 +286,30 @@ public class CommentsPanel extends JPanel {
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
-        textPane.addMouseListener(listener);
-        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
+    }
+
+    private void setupHeaderPanel(JPanel headerPanel, JLabel leftLabel, LinkButton replyButton, JLabel stateLabel) {
+        headerPanel.setOpaque(false);
+        GroupLayout layout = new GroupLayout(headerPanel);
+        headerPanel.setLayout(layout);
+        GroupLayout.SequentialGroup hGroup = layout.createSequentialGroup()
+            .addComponent(leftLabel, 0, 0, Short.MAX_VALUE)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(replyButton);
+        if (stateLabel != null) {
+            hGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+            hGroup.addComponent(stateLabel);
+        }
+        layout.setHorizontalGroup(hGroup);
+        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+            .addComponent(leftLabel);
+        if (stateLabel != null) {
+            vGroup.addComponent(stateLabel);
+        }
+        vGroup.addComponent(replyButton);
+        layout.setVerticalGroup(vGroup);
     }
 
     private ActionListener replyListener;
@@ -434,37 +338,6 @@ public class CommentsPanel extends JPanel {
             };
         }
         return replyListener;
-    }
-
-    private class IssueAction {
-        void openIssue(String hyperlinkText) {
-            final String issueNo = issueFinder.getIssueId(hyperlinkText);
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    Issue is = issue.getRepository().getIssue(issueNo);
-                    if (is != null) {
-                        is.open();
-                    }
-                }
-            });
-        }
-    }
-
-    private class UrlAction {
-        void openUrlHyperlink(String hyperlinkText) {
-            try {
-                URL url = new URI(hyperlinkText).toURL();
-                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-            } catch (Exception ex) {
-                assert false;
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                              "Could not open URL: "    //NOI18N
-                                                      + hyperlinkText);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                 ex);
-            }
-        }
     }
 
     private void openAttachmentHyperlink(JTextPane textPane) {
@@ -518,18 +391,14 @@ public class CommentsPanel extends JPanel {
         public void setVisible(boolean b) {
             if (b) {
                 JTextPane pane = (JTextPane) getInvoker();
-                StyledDocument doc = pane.getStyledDocument();
-                Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
-                if (elem.getAttributes().getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
-                    BugzillaIssue.Attachment attachment = getAttachment(pane);
-                    if (attachment != null) {
-                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
-                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
-                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
-                            add(attachment.new ApplyPatchAction());
-                        }
-                        super.setVisible(true);
+                BugzillaIssue.Attachment attachment = getAttachment(pane);
+                if (attachment != null) {
+                    add(new JMenuItem(attachment.new DefaultAttachmentAction()));
+                    add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                    if ("1".equals(attachment.getIsPatch())) { // NOI18N
+                        add(attachment.new ApplyPatchAction());
                     }
+                    super.setVisible(true);
                 }
             } else {
                 super.setVisible(false);
@@ -543,4 +412,118 @@ public class CommentsPanel extends JPanel {
         void append(String text);
     }
 
+    private final JPopupMenu expandPopup = new ExpandPopupMenu();
+    private Set<ExpandLabel> expandLabels = new HashSet<ExpandLabel>();
+    
+    private class ExpandPopupMenu extends JPopupMenu {
+        public ExpandPopupMenu() {
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_ExpandAll")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ExpandLabel l : expandLabels) {
+                        l.setState(false);
+                    }
+                }
+            }));
+            add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CommentsPanel.class, "LBL_CollapseAll")) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (ExpandLabel l : expandLabels) {
+                        l.setState(true);
+                    }
+                }
+            }));
+        }
+    }    
+
+    private void commentCollapsed(Long number) {
+        collapsedComments.add(number);
+    }
+
+    private Set<Long> touchedCommenst = Collections.synchronizedSet(new HashSet<Long>());
+    private void commentExpanded(Long number) {
+        if(collapsedComments.remove(number)) {
+            touchedCommenst.add(number);
+        }
+    }
+
+    private boolean isCollapsed(Long number) {
+        return collapsedComments.contains(number);
+    }
+    
+    private void initCollapsedComments() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
+                for (Long l : s) {
+                    if(!touchedCommenst.contains(l)) {
+                        collapsedComments.add(l);
+                    }
+                }
+            }
+        });
+    }
+    
+    void storeSettings() {
+        IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+    }    
+    
+    private class ExpandLabel extends JLabel implements MouseListener {
+        private final JTextPane textPane;
+        private final JPanel headerPanel;
+        private final Long number;
+        private final Icon ei;
+        private final Icon ci;
+        
+        private Border border;
+
+        public ExpandLabel(JTextPane textPane, JPanel headerPanel, Long number) {
+            this.textPane = textPane;
+            this.headerPanel = headerPanel;
+            this.number = number;
+            
+            border = headerPanel.getBorder(); 
+            
+            JTree tv = new JTree();
+            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+            ei = tvui.getExpandedIcon();
+            ci = tvui.getCollapsedIcon();
+            
+            addMouseListener(this);
+            setComponentPopupMenu(expandPopup);
+            setState(isCollapsed(number));
+            expandLabels.add(this);
+        }
+        
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                setState(!isCollapsed(number)); 
+            } 
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {}
+        @Override
+        public void mouseReleased(MouseEvent e) {}
+        @Override
+        public void mouseEntered(MouseEvent e) {}
+        @Override
+        public void mouseExited(MouseEvent e) {}
+        
+        private void setState(boolean collapsed) {
+            if(collapsed) {
+                textPane.setVisible(false);
+                setIcon(ci);
+                headerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
+                commentCollapsed(number);
+            } else {
+                textPane.setVisible(true);
+                setIcon(ei);
+                headerPanel.setBorder(border);
+                commentExpanded(number);
+            }           
+        }
+    }
 }

@@ -65,12 +65,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 
-// <RAVE>
-// Implement HelpCtx.Provider interface to provide help ids for help system
-// public class CallStackView extends TopComponent {
-// ====
 public class View extends TopComponent implements org.openide.util.HelpCtx.Provider {
-// </RAVE>
     
     public static final String EVENTS_VIEW_NAME = "EventsView";
     
@@ -94,10 +89,12 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         this.toolTipResource = toolTipResource;
     }
 
+    @Override
     protected String preferredID() {
         return this.getClass().getPackage().getName() + "." + name;
     }
 
+    @Override
     protected void componentShowing () {
         super.componentShowing ();
         if (viewModelListener != null) {
@@ -147,6 +144,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         // </RAVE>
     }
     
+    @Override
     protected void componentHidden () {
         super.componentHidden ();
         if (viewModelListener != null) {
@@ -156,15 +154,18 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     // <RAVE>
     // Implement getHelpCtx() with the correct help ID
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(helpID);
     }
     // </RAVE>
     
+    @Override
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;
     }
         
+    @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
         if (contentComponent == null) return false;
@@ -175,6 +176,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         }
     }
 
+    @Override
     public void requestActive() {
         super.requestActive();
         if (contentComponent != null) {
@@ -186,14 +188,17 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
         }
     }
     
+    @Override
     public String getName () {
         return NbBundle.getMessage (View.class, displayNameResource);
     }
     
+    @Override
     public String getToolTipText () {
         return NbBundle.getMessage (View.class, toolTipResource);// NOI18N
     }
     
+    @Override
     public Object writeReplace() {
         return new ResolvableHelper(name);
     }

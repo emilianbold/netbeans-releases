@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="getMethodSpan-includeComments">
+             <api name="general"/>
+             <summary>Removed includeComments parameter from Queries.getMethodSpan</summary>
+             <version major="1" minor="1"/>
+             <date day="12" month="7" year="2011"/>
+             <author login="tzezula"/>
+             <compatibility binary="incompatible" modification="yes" semantic="incompatible" source="incompatible"/>
+             <description>
+                 Removed non needed includeComments parameter from Queries.getMethodSpan method.
+             </description>
+             <class package="org.netbeans.modules.java.source.queries.api" name="Queries"/>
+             <class package="org.netbeans.modules.java.source.queries.spi" name="ModelOperations"/>
+             <issue number="199405"/>
+        </change>
         <change id="form-use-cases">
              <api name="general"/>
              <summary>Created a new Java Source Queries friend API</summary>

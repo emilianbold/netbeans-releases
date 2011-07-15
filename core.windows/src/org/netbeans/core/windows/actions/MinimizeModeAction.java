@@ -61,7 +61,7 @@ import org.openide.windows.WindowManager;
 
 
 /**
- * Minimize/restore all TopComponent in a given non-editor Mode.
+ * Minimize all TopComponent in a given non-editor Mode.
  * 
  * @author S. Aubrecht
  * @since 2.30

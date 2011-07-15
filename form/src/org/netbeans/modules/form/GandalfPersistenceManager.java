@@ -48,28 +48,17 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
-import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.*;
 import org.openide.xml.XMLUtil;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import org.apache.xerces.parsers.DOMParser;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
@@ -79,6 +68,10 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.modules.form.editors.EnumEditor;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.netbeans.modules.java.source.queries.api.Function;
+import org.netbeans.modules.java.source.queries.api.Queries;
+import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.openide.nodes.Node.Property;
 import org.openide.util.TopologicalSortException;
 import org.w3c.dom.NamedNodeMap;
@@ -272,12 +265,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
             mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
-            throw new PersistenceException(ex, "Cannot open form file"); // NOI18N
+            throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
         }
-        catch (org.xml.sax.SAXException e) {
-            // ignore SAXException?
-            e.printStackTrace();
-            return false;
+        catch (org.xml.sax.SAXException ex) {
+            throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
         }
 
         return mainElement != null && XML_FORM.equals(mainElement.getTagName());
@@ -335,25 +326,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
             mainElement = parser.getDocument().getDocumentElement();
         }
         catch (IOException ex) {
-            PersistenceException pe = new PersistenceException(
-                                          ex, "Cannot open form file"); // NOI18N
-            annotateException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
+            PersistenceException pe = new PersistenceException(ex,
+                    FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
             throw pe;
         }
         catch (org.xml.sax.SAXException ex) {
-            PersistenceException pe = new PersistenceException(
-                                          ex, "Invalid XML in form file"); // NOI18N
-            annotateException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
+            PersistenceException pe = new PersistenceException(ex,
+                    FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
             throw pe;
         }
 
         // check the main element
         if (mainElement == null || !XML_FORM.equals(mainElement.getTagName())) {
             PersistenceException ex = new PersistenceException(
-                            "Missing expected main XML element"); // NOI18N
-            annotateException(ex, ErrorManager.ERROR,
-                    FormUtils.getBundleString("MSG_ERR_MissingMainElement") // NOI18N
-                    );
+                    FormUtils.getBundleString("MSG_ERR_MissingMainElement")); // NOI18N
             throw ex;
         }
 
@@ -361,13 +347,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String versionString = mainElement.getAttribute(ATTR_FORM_VERSION);
         if (!isSupportedFormatVersion(versionString)) {
             PersistenceException ex = new PersistenceException(
-                                     "Unsupported form version"); // NOI18N
-            annotateException(ex,
-                    ErrorManager.ERROR,
                     FormUtils.getFormattedBundleString(
-                        "FMT_ERR_UnsupportedVersion", // NOI18N
-                        new Object[] { versionString })
-                    );
+                        "FMT_ERR_UnsupportedVersion", new Object[] { versionString }));// NOI18N
             throw ex;
         }
         formModel.setCurrentVersionLevel(FormModel.FormVersion.BASIC);
@@ -398,7 +379,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (!underTest) { // try declared superclass from java source first
             // (don't scan java source in tests, we only use the basic form types)
             try {
-                declaredSuperclassName = getSuperClassName(javaFile);
+                declaredSuperclassName = getSuperClassName(formModel);
                 if (declaredSuperclassName != null) {
                     Class designClass = getFormDesignClass(declaredSuperclassName);
                     if (designClass == null) {
@@ -492,13 +473,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                 PersistenceException ex;
                 if (formBaseClassEx != null) {
-                    ex = new PersistenceException(formBaseClassEx,
-                                                  "Invalid form base class"); // NOI18N
-                    annotateException(formBaseClassEx, annotation);
+                    ex = new PersistenceException(formBaseClassEx, annotation);
                 }
                 else {
-                    ex = new PersistenceException("Invalid form base class"); // NOI18N
-                    annotateException(ex, ErrorManager.ERROR, annotation);
+                    ex = new PersistenceException(annotation);
                 }
                 throw ex;
             }
@@ -606,73 +584,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
     /**
      * For special use when form superclass is being determined before the form
      * is started to be loaded. Assuming loadForm is called for the form in
-     * the same EDT round then. See FormDesigner.PreLoadTask.
+     * the same EDT round then.
      */
     void setPrefetchedSuperclassName(String clsName) {
         prefetchedSuperclassName = clsName;
     }
 
-    private String getSuperClassName(FileObject javaFile) throws IllegalArgumentException, IOException {
-        return prefetchedSuperclassName != null ? prefetchedSuperclassName : determineSuperClassName(javaFile);
-    }
-
-    /**
-     * gets superclass if the 'extends' keyword is present
-     */
-    static String determineSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
-        final String javaFileName = javaFile.getName();
-        final String[] result = new String[1];
-        JavaSource js = JavaSource.forFileObject(javaFile);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            @Override
-            public void cancel() {
-            }
-            @Override
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                ClassTree formClass = null;
-                for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
-                        ClassTree ct = (ClassTree) t;
-                        if (isClass(ct, controller)) {
-                            if (javaFileName.equals(ct.getSimpleName().toString())) {
-                                formClass = ct;
-                                break;
-                            }
-                            if (formClass == null
-                                    || ct.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
-                                formClass = ct; // find at least something (if not matching file name - issue 105626)
-                            }
-                        }
-                    }
-                }
-                if (formClass != null) {
-                    if (!javaFileName.equals(formClass.getSimpleName().toString())) {
-                        // may happen during refactoring - see issue 105626
-                        Logger.getLogger(GandalfPersistenceManager.class.getName())
-                            .log(Level.INFO, "Form class not matching the java file name: " // NOI18N
-                                + formClass.getSimpleName().toString() + " in " + javaFileName + ".java"); // NOI18N
-                    }
-                    Tree superT = formClass.getExtendsClause();
-                    if (superT != null) {
-                        TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
-                        Element superEl = controller.getTrees().getElement(superTPath);
-                        if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
-                            result[0] = controller.getElements().getBinaryName((TypeElement)superEl).toString(); // .getQualifiedName()
-                        }
-                    } else {
-                        result[0] = "java.lang.Object"; // NOI18N
-                    }
-                }
-            }
-        }, true);
-        return result[0];
-    }
-
-    private static boolean isClass(ClassTree ct, CompilationController controller) {
-        return !controller.getTreeUtilities().isEnum(ct)
-                && !controller.getTreeUtilities().isInterface(ct)
-                && !controller.getTreeUtilities().isAnnotation(ct);
+    private String getSuperClassName(FormModel form) throws QueryException, FileStateInvalidException {
+        if (prefetchedSuperclassName != null) {
+            return prefetchedSuperclassName;
+        }
+        FormJavaSource javaSource = FormEditor.getFormJavaSource(form);
+        if (javaSource != null) {
+            return javaSource.getSuperClassName();
+        }
+        return null;
     }
 
     private void setBindingProperties() {
@@ -3081,11 +3007,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         if (!formFile.canWrite()) { // should not happen
             PersistenceException ex = new PersistenceException(
-                                 "Tried to save read-only form"); // NOI18N
-            String msg = FormUtils.getFormattedBundleString(
-                             "FMT_ERR_SaveToReadOnly", // NOI18N
-                             new Object[] { formFile.getNameExt() });
-            annotateException(ex, ErrorManager.ERROR, msg);
+                    FormUtils.getFormattedBundleString(
+                         "FMT_ERR_SaveToReadOnly", new Object[] { formFile.getNameExt() }));// NOI18N
             throw ex;
         }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.openide.loaders;
 
-package org.netbeans.modules.git.ui.actions;
+import org.netbeans.api.actions.Savable;
 
-import java.io.File;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-
-/**
+/** Interface for those who wish to be notified about unmodification 
+ * of a save cookie.
  *
- * @author ondra
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.git.ui.actions.DisconnectAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DisconnectAction_Name")
-public class DisconnectAction extends SingleRepositoryAction {
-
-    @Override
-    protected void performAction (final File repository, File[] roots, VCSContext context) {
-        new GitProgressSupport() {
-            @Override
-            protected void perform () {
-                Git.getInstance().disconnectRepository(repository);
-                Git.getInstance().refreshAllAnnotations();
-                refreshState();
-                SystemAction.get(ConnectAction.class).refreshState();
-            }
-        }.start(Git.getInstance().getRequestProcessor(), repository, NbBundle.getMessage(DisconnectAction.class, "LBL_DisconnectProgress")); //NOI18N
-    }
-    
-    void refreshState () {
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                setEnabled(enable(getActivatedNodes()));
-            }
-        });
-    }
+public interface Unmodify extends Savable {
+    public void unmodify();
 }
+

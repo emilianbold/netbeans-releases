@@ -612,7 +612,7 @@ public class IntroduceHintTest extends NbTestCase {
                        "        String s = |\"const\"|;\n" +
                        "    }\n" +
                        "}\n",
-                       "package test; public class Test { private String const; public Test() { super(); const = \"const\"; System.out.println(\"ctor\"); } public void method() { String s = const; } } ",
+                       "package test; public class Test { private String aconst; public Test() { super(); aconst = \"const\"; System.out.println(\"ctor\"); } public void method() { String s = aconst; } } ",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        4, 2);
     }
@@ -624,7 +624,7 @@ public class IntroduceHintTest extends NbTestCase {
                        "        String s = |\"const\"|;\n" +
                        "    }\n" +
                        "}\n",
-                       "package test; public enum Test { A; private String const; Test() { const = \"const\"; } public void method() { String s = const; } } ",
+                       "package test; public enum Test { A; private String aconst; Test() { aconst = \"const\"; } public void method() { String s = aconst; } } ",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        4, 2);
     }

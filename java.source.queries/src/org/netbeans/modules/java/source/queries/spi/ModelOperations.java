@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.source.queries.spi;
 
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -132,8 +133,6 @@ public interface ModelOperations {
      * @param cls the fully qualified name of the class to look up methods in
      * @param methodName name of the method
      * @param useRawTypes if true the erasure is done before comparison
-     * @param includeComments if true the length of the preceding and trailing
-     * comments is added to method span
      * @param returnType the return type of the method specified by
      * the class canonical name, @see Class#getCanonicalName. If useRawTypes is
      * false parameterized type is allowed.
@@ -149,7 +148,6 @@ public interface ModelOperations {
             @NonNull String cls,
             @NonNull String methodName,
             boolean useRawTypes,
-            boolean includeComments,
             @NonNull String returnType,
             @NonNull String... parameterTypes) throws QueryException;
 
@@ -182,6 +180,9 @@ public interface ModelOperations {
      * @param toRemove the {@link Collection} of fully qualified names of
      * interfaces to be removed
      * @throws QueryException in case of failure
+     * @throws IllegalArgumentException when cls is not in a file the
+     * {@link Updates} instance was created for. The file {@link URL} is
+     * passed to the {@link QueriesController} by {@link QueriesController.Context#getURL()}.
      */
     void modifyInterfaces(
             @NonNull String cls,
@@ -193,6 +194,9 @@ public interface ModelOperations {
      * @param cls the fully qualified name of class to be changed
      * @param superCls the fully qualified name of super class
      * @throws QueryException in case of failure
+     * @throws IllegalArgumentException when cls is not in a file the
+     * {@link Updates} instance was created for. The file {@link URL} is
+     * passed to the {@link QueriesController} by {@link QueriesController.Context#getURL()}.
      */
     void setSuperClass(
             @NonNull String cls,
@@ -205,6 +209,9 @@ public interface ModelOperations {
      * @param oldName the old field name
      * @param newName the new field name
      * @throws QueryException in case of failure
+     * @throws IllegalArgumentException when cls is not in a file the
+     * {@link Updates} instance was created for. The file {@link URL} is
+     * passed to the {@link QueriesController} by {@link QueriesController.Context#getURL()}.
      */
     void renameField(
             @NonNull String cls,
