@@ -157,6 +157,15 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
+            <file name="newLayer">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.layer.Bundle#template_label"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"/>
+                <attr name="position" intvalue="1300"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.apisupport.project.ui.wizard.layer.NewLayerIterator"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLayer.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
         </folder>
         <folder name="NetBeansModuleDevelopment-files"> <!-- XXX later could be made visible (just need localized labels) -->
             <attr name="position" intvalue="0"/>

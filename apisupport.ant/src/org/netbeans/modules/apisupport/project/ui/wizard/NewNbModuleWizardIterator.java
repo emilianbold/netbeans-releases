@@ -194,17 +194,17 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
                     // create module within the netbeans.org source tree
                     NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), data.isOSGi());
+                            data.getBundle(), null, data.isOSGi());
                 } else if (data.isStandalone()) {
                     // create standalone module
                     NbModuleProjectGenerator.createStandAloneModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), data.getPlatformID(), data.isOSGi(), false);
+                            data.getBundle(), null, data.getPlatformID(), data.isOSGi(), false);
                 } else {
                     // create suite-component module
                     NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()), data.isOSGi(), false);
+                            data.getBundle(), null, new File(data.getSuiteRoot()), data.isOSGi(), false);
                 }
                 break;
             case LIBRARY_MODULE:
