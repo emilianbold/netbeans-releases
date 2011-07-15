@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.Tree.Kind;
 import java.net.URL;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -383,7 +382,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS);
     }
     private boolean isSearchFromBaseClass() {
-        return false;
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
 
     private static ClassPath merge (final ClassPath... cps) {
@@ -431,6 +430,20 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             if (element==null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "element is null for handle " + handle); // NOI18N
                 return;
+            }
+            
+            if(element.getKind() == ElementKind.METHOD && isSearchFromBaseClass()) {
+                Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, compiler);
+                if (!overridens.isEmpty()) {
+                    ExecutableElement el = overridens.iterator().next();                        
+                    assert el!=null;
+                    handle = TreePathHandle.create(el, compiler);
+                    element = handle.resolveElement(compiler);
+                    if (element==null) {
+                        ErrorManager.getDefault().log(ErrorManager.ERROR, "element is null for handle " + handle); // NOI18N
+                        return;
+                    }
+                }
             }
             
             Collection<TreePath> result = new ArrayList<TreePath>();
