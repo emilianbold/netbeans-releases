@@ -44,7 +44,6 @@ package org.netbeans.modules.php.project.connections.transfer;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 
 /**
  * {@link TransferFile Transfer file} implementation for {@link File local file}.
@@ -82,8 +81,12 @@ final class LocalTransferFile extends TransferFile {
         if (absolutePath.equals(baseDirectory)) {
             return REMOTE_PROJECT_ROOT;
         }
-        // +1 => remove '/' from the beginning of the relative path
-        return absolutePath.substring(baseDirectory.length() + REMOTE_PATH_SEPARATOR.length());
+        // remove file-separator from the beginning of the relative path
+        String remotePath = absolutePath.substring(baseDirectory.length() + File.separator.length());
+        if (File.separator.equals(REMOTE_PATH_SEPARATOR)) {
+            return remotePath;
+        }
+        return remotePath.replace(File.separator, REMOTE_PATH_SEPARATOR);
     }
 
     @Override
@@ -98,7 +101,7 @@ final class LocalTransferFile extends TransferFile {
     public boolean isDirectory() {
         if (file.exists()) {
             boolean directory = file.isDirectory();
-            if (!directory && forceDirectory) {
+            if (forceDirectory && !directory && file.isFile()) {
                 assert false : "File forced as directory but is regular existing file";
             }
             return directory;
@@ -109,10 +112,11 @@ final class LocalTransferFile extends TransferFile {
     @Override
     public boolean isFile() {
         if (file.exists()) {
-            if (forceDirectory) {
+            boolean isFile = file.isFile();
+            if (isFile && forceDirectory) {
                 assert false : "File forced as directory but is regular existing file";
             }
-            return file.isFile();
+            return isFile;
         }
         return !forceDirectory;
     }
