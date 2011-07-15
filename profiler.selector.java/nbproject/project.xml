@@ -109,11 +109,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.profiler.freeform</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
-                <friend>org.netbeans.modules.profiler.j2se</friend>
-                <friend>org.netbeans.modules.profiler.nbmodule</friend>
-                <friend>org.netbeans.modules.profiler.projectsupport</friend>
                 <package>org.netbeans.modules.profiler.selector.java.impl</package>
                 <package>org.netbeans.modules.profiler.selector.java.nodes</package>
             </friend-packages>
