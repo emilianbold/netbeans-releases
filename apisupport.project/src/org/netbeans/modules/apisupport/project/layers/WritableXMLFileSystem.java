@@ -72,7 +72,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.InvalidArgumentException;
 import org.netbeans.tax.ReadOnlyException;
