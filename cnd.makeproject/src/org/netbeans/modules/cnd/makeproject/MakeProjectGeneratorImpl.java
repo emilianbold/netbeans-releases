@@ -64,7 +64,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.makeproject.api.LogicalFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -209,7 +210,8 @@ public class MakeProjectGeneratorImpl {
         final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
         final Iterator<String> importantItems = prjParams.getImportantFiles();
-        final Iterator<LogicalFolderInfo> logicalFolderItems = prjParams.getLogicalFolderItems();
+        final Iterator<LogicalFolderItemsInfo> logicalFolderItems = prjParams.getLogicalFolderItems();
+        final Iterator<LogicalFoldersInfo> logicalFolders = prjParams.getLogicalFolders();
         String mainFile = prjParams.getMainFile();
         MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -273,7 +275,7 @@ public class MakeProjectGeneratorImpl {
 
             @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, logicalFolderItems, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, logicalFolders, logicalFolderItems, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 
                 
                 projectDescriptor.save();

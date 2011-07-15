@@ -86,7 +86,8 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
-import org.netbeans.modules.cnd.makeproject.api.LogicalFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
@@ -121,6 +122,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
+    public static final String ROOT_FOLDER = "root"; // NOI18N
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
@@ -295,7 +297,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
-            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFolderInfo> logicalFolderItems, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
+            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -312,21 +314,25 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         if (logicalFolderItems != null) {
             while (logicalFolderItems.hasNext()) {
-                LogicalFolderInfo logicalFolderInfo = logicalFolderItems.next();
-                if (logicalFolderInfo.getLogicalFolderName().equals(SOURCE_FILES_FOLDER)) {
-                    sourceFileItems.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
+                LogicalFolderItemsInfo logicalFolderInfo = logicalFolderItems.next();
+                Folder f = rootFolder.findFolderByName(logicalFolderInfo.getLogicalFolderName());
+                if (f != null) {
+                    f.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
                 }
-                else if (logicalFolderInfo.getLogicalFolderName().equals(HEADER_FILES_FOLDER)) {
-                    headerFileItems.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
+            }
+        }
+        if (logicalFolders != null) {
+            while (logicalFolders.hasNext()) {
+                LogicalFoldersInfo logicalFoldersInfo = logicalFolders.next();
+                Folder f;
+                if (logicalFoldersInfo.getLogicalFolderName().equals("root")) {
+                    f = rootFolder;
+                } else {
+                    f = rootFolder.findFolderByName(logicalFoldersInfo.getLogicalFolderName());
                 }
-                else if (logicalFolderInfo.getLogicalFolderName().equals(RESOURCE_FILES_FOLDER)) {
-                    resourceFileItems.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
-                }
-                else if (logicalFolderInfo.getLogicalFolderName().equals(EXTERNAL_FILES_FOLDER)) {
-                    externalFileItems.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
-                }
-                else if (logicalFolderInfo.getLogicalFolderName().equals(TEST_FILES_FOLDER)) {
-                    testItems.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
+                if (f != null) {
+                    Folder newFolder = new Folder(this, f.getParent(), logicalFoldersInfo.getFolderName(), logicalFoldersInfo.getFolderName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                    f.addFolder(newFolder, false);
                 }
             }
         }

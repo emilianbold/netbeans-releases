@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api;
  *
  * @author thp
  */
-public interface LogicalFolderInfo {
+public interface LogicalFolderItemsInfo {
     public String getLogicalFolderName();
     public String getItemPath();
 }
