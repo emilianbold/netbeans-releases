@@ -81,8 +81,12 @@ final class LocalTransferFile extends TransferFile {
         if (absolutePath.equals(baseDirectory)) {
             return REMOTE_PROJECT_ROOT;
         }
-        // +1 => remove '/' from the beginning of the relative path
-        return absolutePath.substring(baseDirectory.length() + REMOTE_PATH_SEPARATOR.length());
+        // remove file-separator from the beginning of the relative path
+        String remotePath = absolutePath.substring(baseDirectory.length() + File.separator.length());
+        if (File.separator.equals(REMOTE_PATH_SEPARATOR)) {
+            return remotePath;
+        }
+        return remotePath.replace(File.separator, REMOTE_PATH_SEPARATOR);
     }
 
     @Override
