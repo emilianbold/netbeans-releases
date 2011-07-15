@@ -134,7 +134,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setAutoscrolls(true);
-        setName(getString("LBL_TitleChangeParameters"));
+        setName(getString("LBL_TitleIntroduceParameter"));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(IntroduceParameterPanel.class, "IntroduceParameterPanel.lblName.text")); // NOI18N
 

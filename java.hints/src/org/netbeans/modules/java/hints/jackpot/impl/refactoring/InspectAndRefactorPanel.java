@@ -148,7 +148,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         if (fileObject!=null) {
             currentFile = new JLabel(fileObject.getNameExt(), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
             currentPackage = new JLabel(getPackageName(fileObject), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
-            currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
+            currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
         }
         allProjects = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_AllProjects"), prj, SwingConstants.LEFT); //NOI18N
         //scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));

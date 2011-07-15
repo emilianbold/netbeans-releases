@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import java.util.Collections;
+import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -69,10 +70,12 @@ public final class ChangeParametersFix implements Fix {
     private final String declaration;
     private final String newDeclaration;
     private final ChangeParametersRefactoring.ParameterInfo[] newParameterInfo;
+    private final Set<Modifier> modifiers;
 
-    public ChangeParametersFix(boolean doFullRefactoring, TreePathHandle tph, String declaration, String newDeclaration, ParameterInfo[] newParameterInfo) {
+    public ChangeParametersFix(boolean doFullRefactoring, TreePathHandle tph, Set<Modifier> modifiers, String declaration, String newDeclaration, ParameterInfo[] newParameterInfo) {
         this.doFullRefactoring = doFullRefactoring;
         this.tph = tph;
+	this.modifiers = modifiers;
         this.declaration = declaration;
         this.newDeclaration = newDeclaration;
         this.newParameterInfo = newParameterInfo;
@@ -91,7 +94,7 @@ public final class ChangeParametersFix implements Fix {
         }
         ChangeParametersRefactoring refactoring = new ChangeParametersRefactoring(tph);
         refactoring.setParameterInfo(new ChangeParametersRefactoring.ParameterInfo[]{});
-        refactoring.setModifiers(Collections.<Modifier>emptySet());
+        refactoring.setModifiers(modifiers);
         refactoring.setParameterInfo(newParameterInfo);
         RefactoringSession session = RefactoringSession.create("ChangeMethodParameterHint"); // NOI18N
         Problem problem = null;
