@@ -107,7 +107,7 @@ public class ScreenshotComponent extends TopComponent {
 
     @Override
     protected void componentActivated() {
-        logger.severe("componentActivated() root = "+componentNodes+", ci = "+componentNodes.getLookup().lookup(ComponentInfo.class));
+        logger.fine("componentActivated() root = "+componentNodes+", ci = "+componentNodes.getLookup().lookup(ComponentInfo.class));
         ComponentHierarchy.getInstance().getExplorerManager().setRootContext(componentNodes);
         ComponentHierarchy.getInstance().getExplorerManager().setExploredContext(componentNodes);
         canvas.activated();
@@ -207,7 +207,7 @@ public class ScreenshotComponent extends TopComponent {
             
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                logger.severe("propertyChange("+evt+") propertyName = "+evt.getPropertyName());
+                logger.fine("propertyChange("+evt+") propertyName = "+evt.getPropertyName());
                 String propertyName = evt.getPropertyName();
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(propertyName)) {
                     Node[] nodes = ComponentHierarchy.getInstance().getExplorerManager().getSelectedNodes();
@@ -215,7 +215,7 @@ public class ScreenshotComponent extends TopComponent {
                     if (nodes.length > 0) {
                         ci = nodes[0].getLookup().lookup(ComponentInfo.class);
                     }
-                    logger.severe("nodes = "+Arrays.toString(nodes)+" => selectComponent("+ci+")");
+                    logger.fine("nodes = "+Arrays.toString(nodes)+" => selectComponent("+ci+")");
                     selectComponent(ci);
                 } else if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName)) {
                     deactivated();
@@ -226,8 +226,7 @@ public class ScreenshotComponent extends TopComponent {
                 x -= 1;
                 y -= 1;
                 RemoteScreenshot.ComponentInfo ci = screenshot.getComponentInfo().findAt(x, y);
-                System.err.println("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
-                logger.severe("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
+                logger.fine("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
                 selectComponent(ci);
             }
             
@@ -246,9 +245,9 @@ public class ScreenshotComponent extends TopComponent {
                         repaint(oldSelection.x, oldSelection.y, oldSelection.width + 3, oldSelection.height + 3);
                     }
                     repaint(selection.x, selection.y, selection.width + 3, selection.height + 3);
-                    logger.severe("New selection = "+selection);
+                    logger.fine("New selection = "+selection);
                     node = componentNodes.findNodeFor(ci);
-                    logger.severe("FindNodeFor("+ci+") on '"+componentNodes+"' gives: "+node);
+                    logger.fine("FindNodeFor("+ci+") on '"+componentNodes+"' gives: "+node);
                 }
                 Node[] nodes;
                 if (node != null) {
@@ -256,7 +255,7 @@ public class ScreenshotComponent extends TopComponent {
                 } else {
                     nodes = new Node[] {};
                 }
-                logger.severe("setActivated/SelectedNodes("+Arrays.toString(nodes)+")");
+                logger.fine("setActivated/SelectedNodes("+Arrays.toString(nodes)+")");
                 setActivatedNodes(nodes);
                 try {
                     ComponentHierarchy.getInstance().getExplorerManager().setSelectedNodes(nodes);
