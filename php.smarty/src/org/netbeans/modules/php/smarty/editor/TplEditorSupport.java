@@ -47,9 +47,15 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -60,15 +66,23 @@ import org.openide.filesystems.FileLock;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
- * Editor support for TPL data objects.
- * @author Martin Fousek
+ * Editor support for TPL data objects. Most code of this class was get from 
+ * HtmlEditorSupport - especially encoding support.
+ * 
+ * @author Martin Fousek <marfous@netbeans.org>
  */
 public final class TplEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
 
+    private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
+    private static final String UTF_8_ENCODING = "UTF-8";
+    // only to be ever user from unit tests:
+    public static boolean showConfirmationDialog = true;
+    
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
      * It also invokes beforeSave() method on the TplDataObject to give it
@@ -100,16 +114,124 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
 
     @Override
     public void saveDocument() throws IOException {
+        updateEncoding();
         super.saveDocument();
         TplEditorSupport.this.getDataObject().setModified(false);
     }
+    
+    void updateEncoding() throws UserCancelException {
+        //try to find encoding specification in the editor content
+        String documentContent = getDocumentText();
+        String encoding = TplDataObject.findEncoding(documentContent);
 
-    /**
+        
+        
+        
+        
+        String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
+        String finalEncoding = null;
+        if (encoding != null) {
+            //found encoding specified in the file content by meta tag
+            if (!isSupportedEncoding(encoding) || !canEncode(documentContent, encoding)) {
+                //test if the file can be saved by the original encoding or if it needs to be saved using utf-8
+                finalEncoding = canEncode(documentContent, feqEncoding) ? feqEncoding : UTF_8_ENCODING;
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(TplEditorSupport.class, "MSG_unsupportedEncodingSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), encoding, finalEncoding, finalEncoding.equals(UTF_8_ENCODING) ? "" : " the original"}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                    throw new UserCancelException();
+                }
+            } else {
+                finalEncoding = encoding;
+            }
+        } else {
+            //no encoding specified in the file, use FEQ value
+            if (!canEncode(documentContent, feqEncoding)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(TplEditorSupport.class, "MSG_badCharConversionSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), feqEncoding}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                nd.setValue(NotifyDescriptor.NO_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                    throw new UserCancelException();
+                } else {
+                    finalEncoding = UTF_8_ENCODING;
+                }
+            } else {
+                finalEncoding = feqEncoding;
+            }
+        }
+
+        //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
+        //so setting the FEQ result to document property
+        getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
+    }
+
+
+    private String getDocumentText() {
+        String text = "";
+        try {
+            StyledDocument doc = getDocument();
+            if (doc != null) {
+                text = doc.getText(doc.getStartPosition().getOffset(), doc.getLength());
+            }
+        } catch (BadLocationException e) {
+            Logger.getLogger("global").log(Level.WARNING, null, e);
+        }
+        return text;
+    }    
+    
+
+    private boolean canEncode(String docText, String encoding) {
+        CharsetEncoder encoder = Charset.forName(encoding).newEncoder();
+        return encoder.canEncode(docText);
+    }
+
+    private boolean isSupportedEncoding(String encoding) {
+        boolean supported;
+        try {
+            supported = java.nio.charset.Charset.isSupported(encoding);
+        } catch (java.nio.charset.IllegalCharsetNameException e) {
+            supported = false;
+        }
+        return supported;
+    }
+    
+   @Override
+    public void open() {
+        String encoding = ((TplDataObject) getDataObject()).getFileEncoding();
+        String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
+        if (encoding != null && !isSupportedEncoding(encoding)) {
+            if(!showConfirmationDialog) {
+                return ; //simulate "No" pressed in the dialog if opened
+            }
+//            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
+//                feqEncoding = UTF_8_ENCODING;
+//            }
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(TplEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
+                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
+                        encoding,
+                        feqEncoding}),
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                return; // do not open the file
+            }
+        }
+
+//        if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
+//            feqEncoding = UTF_8_ENCODING;
+//        }
+
+        super.open();
+    }
+    
+   /**
      * @inheritDoc
      */
     @Override
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
-        final Charset c = Charset.forName("UTF-8");
+        final Charset c = Charset.forName((String) doc.getProperty(DOCUMENT_SAVE_ENCODING));
         final Writer w = new OutputStreamWriter(stream, c);
         try {
             kit.write(w, doc, 0, doc.getLength());
