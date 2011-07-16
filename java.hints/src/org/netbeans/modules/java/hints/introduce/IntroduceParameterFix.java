@@ -85,4 +85,10 @@ public final class IntroduceParameterFix implements Fix {
         });
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "[Introduce Parameter Fix]";
+    }
+
 }
