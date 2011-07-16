@@ -66,7 +66,7 @@ public class CssLanguageHierarchy extends LanguageHierarchy<CssTokenId> {
 
     @Override
     protected String mimeType() {
-        return "text/css3"; //XXX just temporary while testing - change to text/css!!!
+        return "text/x-css";
     }
     
 }

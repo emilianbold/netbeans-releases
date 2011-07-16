@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.gsf;
 
 import java.util.regex.Matcher;
@@ -50,20 +49,23 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Hyperlinking for @import declaration only.
+ * 
+ * TODO: Add support for URLs in properties, namespace declarations
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssDeclarationFinder implements DeclarationFinder {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
 
-     /**
+    /**
      * Find the declaration for the program element that is under the caretOffset
      * Return a Set of regions that should be renamed if the element under the caret offset is
      * renamed.
@@ -88,14 +90,14 @@ public class CssDeclarationFinder implements DeclarationFinder {
                 valueText = m.group(groupIndex);
             }
         }
-        
+
         valueText = WebUtils.unquotedValue(valueText);
 
         FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), valueText);
-        if(resolved != null) {
+        if (resolved != null) {
             return new DeclarationLocation(resolved, 0);
         }
-        
+
         return DeclarationLocation.NONE;
     }
 
@@ -116,30 +118,24 @@ public class CssDeclarationFinder implements DeclarationFinder {
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(doc, caretOffset, CssTokenId.language());
-        if(ts == null) {
+        if (ts == null) {
             return OffsetRange.NONE;
         }
 
         Token<CssTokenId> token = ts.token();
         int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
         OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-        if(token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
+        if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
             //check if there is @import token before
-            if(ts.movePrevious()) {
-                //whitespace expected
-                if(ts.token().id() == CssTokenId.S) {
-                    if(ts.movePrevious()) {
-                        //@import token expected
-                        if(ts.token().id() == CssTokenId.IMPORT_SYM) {
-                            //gotcha!
-                            return range;
-                        }
-                    }
+            if (ts.movePrevious()) {
+                //@import token expected
+                if (ts.token().id() == CssTokenId.IMPORT_SYM) {
+                    //gotcha!
+                    return range;
                 }
             }
         }
 
         return OffsetRange.NONE;
     }
-
 }
