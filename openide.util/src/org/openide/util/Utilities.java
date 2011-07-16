@@ -1829,10 +1829,14 @@ widthcheck:  {
 
     private static final int getMenuShortcutKeyMask() {
         // #152050 - work in headless environment too
-        if (GraphicsEnvironment.isHeadless()) {
-            return Event.CTRL_MASK;
+        try {
+            if (!GraphicsEnvironment.isHeadless()) {
+                return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+            }
+        } catch (Throwable ex) {
+            // OK, just assume we are headless
         }
-        return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        return Event.CTRL_MASK;
     }
 
     /** Convert a space-separated list of user-friendly key binding names to a list of Swing key strokes.
