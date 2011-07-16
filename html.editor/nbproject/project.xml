@@ -453,6 +453,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.ext4yii.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
