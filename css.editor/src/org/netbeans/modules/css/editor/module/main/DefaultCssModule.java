@@ -41,23 +41,37 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Pair;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -67,6 +81,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = CssModule.class)
 public class DefaultCssModule extends CssModule {
+
+    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
 
     @Override
     public List<CompletionProposal> complete(CompletionContext context) {
@@ -84,31 +100,31 @@ public class DefaultCssModule extends CssModule {
                     case elementName:
                     case elementSubsequent:
                         int dso = snapshot.getOriginalOffset(node.from());
-                        if(dso == -1) {
+                        if (dso == -1) {
                             //try next offset - for virtually created class and id
                             //selectors the . an # prefix are virtual code and is not
                             //a part of the source document, try to highlight just
                             //the class or id name
                             dso = snapshot.getOriginalOffset(node.to() + 1);
                         }
-                        int deo =snapshot.getOriginalOffset(node.to());
+                        int deo = snapshot.getOriginalOffset(node.to());
                         //filter out generated and inlined style definitions - they have just virtual selector which
                         //is mapped to empty string
-                        if(dso >= 0 && deo >= 0) {
+                        if (dso >= 0 && deo >= 0) {
                             OffsetRange range = new OffsetRange(dso, deo);
                             getResult().put(range, ColoringAttributes.METHOD_SET);
                         }
                         break;
                     case property:
                         dso = snapshot.getOriginalOffset(node.from());
-                        deo =snapshot.getOriginalOffset(node.to());
+                        deo = snapshot.getOriginalOffset(node.to());
 
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
                             //check vendor speficic property
                             OffsetRange range = new OffsetRange(dso, deo);
 
                             CharSequence propertyName = node.image();
-                            if(Css3Utils.containsGeneratedCode(propertyName)) {
+                            if (Css3Utils.containsGeneratedCode(propertyName)) {
                                 return false;
                             }
 
@@ -121,13 +137,13 @@ public class DefaultCssModule extends CssModule {
                                 ca = ColoringAttributes.CUSTOM1_SET;
                             }
                             getResult().put(range, ca);
-                            
+
                         }
                         break;
                     case namespaceName:
                         getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CUSTOM3_SET);
                         break;
-                    
+
                 }
                 return false;
             }
@@ -149,13 +165,13 @@ public class DefaultCssModule extends CssModule {
         if (current == null) {
             return null;
         }
-        
+
         //we must always get a token node
         assert current.type() == NodeType.leaf;
-        
+
         //get the rule node (its parent)
         current = current.parent();
-        
+
         final NodeType nodeType = current.type();
 
         //process only some interesting nodes
@@ -177,7 +193,7 @@ public class DefaultCssModule extends CssModule {
                 if (nodeType == node.type()) {
                     boolean ignoreCase = nodeType == NodeType.hexColor;
                     if (LexerUtils.equals(currentNodeImage, node.image(), ignoreCase, false)) {
-                        
+
                         int[] trimmedNodeRange = NodeUtil.getTrimmedNodeRange(node);
                         int docFrom = snapshot.getOriginalOffset(trimmedNodeRange[0]);
 
@@ -193,7 +209,7 @@ public class DefaultCssModule extends CssModule {
 
                         if (docFrom != -1 && docTo != -1) {
                             getResult().add(new OffsetRange(docFrom, docTo));
-                        }                        
+                        }
                     }
                 }
 
@@ -203,7 +219,122 @@ public class DefaultCssModule extends CssModule {
             }
         };
 
+    }
 
+    @Override
+    public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
+        final Snapshot snapshot = context.getSnapshot();
+
+        return new NodeVisitor<T>(result) {
+
+            @Override
+            public boolean visit(Node node) {
+                int from = -1, to = -1;
+                if (node.type() == NodeType.ruleSet) {
+                    //find the ruleSet curly brackets and create the fold between them inclusive
+                    Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.leaf);
+                    for (Node leafNode : tokenNodes) {
+                        if (CharSequenceUtilities.equals("{", leafNode.image())) {
+                            from = leafNode.from();
+                        } else if (CharSequenceUtilities.equals("}", leafNode.image())) {
+                            to = leafNode.to();
+                        }
+                    }
+
+                    if (from != -1 && to != -1) {
+                        int doc_from = snapshot.getOriginalOffset(from);
+                        int doc_to = snapshot.getOriginalOffset(to);
+
+                        try {
+                            //check the boundaries a bit
+                            if (doc_from >= 0 && doc_to >= 0) {
+                                //do not creare one line folds
+                                if (LexerUtils.getLineOffset(snapshot.getText(), from)
+                                        < LexerUtils.getLineOffset(snapshot.getText(), to)) {
+
+                                    List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
+                                    if (codeblocks == null) {
+                                        codeblocks = new ArrayList<OffsetRange>();
+                                        getResult().put("codeblocks", codeblocks);
+                                    }
+
+                                    codeblocks.add(new OffsetRange(doc_from, doc_to));
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            //ignore
+                        }
+                    }
+                }
+                return false;
+            }
+        };
 
     }
+
+    
+    @Override
+    public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
+        //first try to find the reference span
+        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(document, caretOffset, CssTokenId.language());
+        if (ts == null) {
+            return null;
+        }
+
+        OffsetRange foundRange = null;
+        Token<CssTokenId> token = ts.token();
+        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+        OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+        if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
+            //check if there is @import token before
+            if (ts.movePrevious()) {
+                //@import token expected
+                if (ts.token().id() == CssTokenId.IMPORT_SYM) {
+                    //gotcha!
+                    foundRange = range;
+                }
+            }
+        }
+
+        if (foundRange == null) {
+            return null;
+        }
+
+        //if span found then create the future task which will finally create the declaration location
+        //possibly using also parser result
+        FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
+
+            @Override
+            public DeclarationLocation run(EditorFeatureContext context) {
+                final TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(context.getDocument(), context.getCaretOffset(), CssTokenId.language());
+                if (ts == null) {
+                    return null;
+                }
+
+                Token<CssTokenId> valueToken = ts.token();
+                String valueText = valueToken.text().toString();
+
+                //adjust the value if a part of an URI
+                if (valueToken.id() == CssTokenId.URI) {
+                    Matcher m = URI_PATTERN.matcher(valueToken.text());
+                    if (m.matches()) {
+                        int groupIndex = 1;
+                        valueText = m.group(groupIndex);
+                    }
+                }
+
+                valueText = WebUtils.unquotedValue(valueText);
+
+                FileObject resolved = WebUtils.resolve(context.getSource().getFileObject(), valueText);
+                return resolved != null
+                        ? new DeclarationLocation(resolved, 0)
+                        : null;
+
+
+            }
+        };
+
+        return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+    }
+
 }

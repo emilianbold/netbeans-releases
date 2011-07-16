@@ -51,7 +51,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;

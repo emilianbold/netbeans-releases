@@ -56,7 +56,7 @@ public class EditorFeatureContext extends FeatureContext {
         super(result);
         this.caretOffset = caretOffset;
     }
-
+    
     /**
      * The editor's caret offset relative to the edited document.
      * 

@@ -39,32 +39,41 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
 
-import java.util.Set;
+package org.netbeans.modules.css.editor.csl;
+
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
-import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
- *
  * @author mfukala@netbeans.org
  */
-public class CssSemanticAnalyzer extends SemanticAnalyzer {
+public class CssOccurrencesFinder extends OccurrencesFinder {
 
+    private int caretDocumentPosition;
+    private Map<OffsetRange, ColoringAttributes> occurrencesMap = Collections.emptyMap();
     private FeatureCancel featureCancel = new FeatureCancel();
-    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     @Override
-    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
-        return semanticHighlights;
+    public void setCaretPosition(int position) {
+        caretDocumentPosition = position;
+    }
+
+    @Override
+    public Map<OffsetRange, ColoringAttributes> getOccurrences() {
+        return occurrencesMap;
     }
 
     @Override
@@ -72,26 +81,39 @@ public class CssSemanticAnalyzer extends SemanticAnalyzer {
         featureCancel.cancel();
     }
 
+    private void resume() {
+        featureCancel = new FeatureCancel();
+    }
+    
     @Override
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssParserResultCslWrapper wrappedResult = (CssParserResultCslWrapper) result;
-        FeatureContext featureContext = new FeatureContext(wrappedResult.getWrappedCssParserResult());
-        semanticHighlights = CssModuleSupport.getSemanticHighlights(featureContext, featureCancel);
+        CssParserResultCslWrapper parserResultWrapper = (CssParserResultCslWrapper)result;
+        EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper.getWrappedCssParserResult(), caretDocumentPosition);
+        Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
+        
+        if(featureCancel.isCancelled()) {
+            return ;
+        }
+        
+        Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
+        for(OffsetRange range : occurrences) {
+            occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
+        }
+        
+        occurrencesMap = occurrencesMapLocal;
     }
 
     @Override
     public int getPriority() {
-        return 500; //higher means less important
+        return 20;
     }
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
-        return null; 
+        return null;
     }
 
-    private void resume() {
-        featureCancel = new FeatureCancel();
-    }
+
 }

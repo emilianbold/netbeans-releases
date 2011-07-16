@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;

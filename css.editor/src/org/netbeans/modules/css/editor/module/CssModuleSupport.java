@@ -46,15 +46,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.web.common.api.Pair;
 import org.openide.util.Lookup;
 
 /**
@@ -130,6 +135,52 @@ public class CssModuleSupport {
         
         return all;
         
+    }
+    
+    public static Map<String, List<OffsetRange>> getFolds(FeatureContext context, FeatureCancel cancel) {
+        Map<String, List<OffsetRange>> all = new HashMap<String, List<OffsetRange>>();
+        final Collection<NodeVisitor<Map<String, List<OffsetRange>>>> visitors = new ArrayList<NodeVisitor<Map<String, List<OffsetRange>>>>();
+        
+        for(CssModule module: getModules()) {
+            NodeVisitor<Map<String, List<OffsetRange>>> visitor = module.getFoldsNodeVisitor(context, all); 
+            //modules may return null visitor instead of a dummy empty visitor 
+            //to speed up the parse tree visiting when there're no result
+            if(visitor != null) {
+                visitors.add(visitor);
+            }
+        }
+        
+        if(cancel.isCancelled()) {
+            return Collections.emptyMap();
+        }
+        
+        cancel.attachCancelAction(new Runnable() {
+
+            @Override
+            public void run() {
+                for(NodeVisitor visitor : visitors) {
+                    visitor.cancel();
+                }
+            }
+        });
+
+        NodeVisitor.visitChildren(context.getParseTreeRoot(), visitors);
+        
+        return all;
+        
+    }
+    
+    public static Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclarationLocation(Document document, int caretOffset, FeatureCancel cancel) {
+        for(CssModule module: getModules()) {
+            if(cancel.isCancelled()) {
+                return null;
+            }
+            Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> declarationLocation = module.getDeclaration(document, caretOffset);
+            if(declarationLocation != null) {
+                return declarationLocation;
+            }
+        }
+        return null;
     }
      
 }

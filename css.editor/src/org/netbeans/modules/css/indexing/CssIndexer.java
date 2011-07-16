@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;

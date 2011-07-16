@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.editor.csl;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -54,6 +54,12 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.css.gsf.CssBracketCompleter;
+import org.netbeans.modules.css.gsf.CssCommentHandler;
+import org.netbeans.modules.css.gsf.CssCompletion;
+import org.netbeans.modules.css.gsf.CssHintsProvider;
+import org.netbeans.modules.css.gsf.CssParserCslWrapper;
+import org.netbeans.modules.css.gsf.CssStructureScanner;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;

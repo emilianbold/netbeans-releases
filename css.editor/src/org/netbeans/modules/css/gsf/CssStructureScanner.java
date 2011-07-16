@@ -43,21 +43,18 @@ package org.netbeans.modules.css.gsf;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
+import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -144,57 +141,9 @@ public class CssStructureScanner implements StructureScanner {
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        CssParserResultCslWrapper parserResult = (CssParserResultCslWrapper) info;
-        Node root = parserResult.getParseTree();
-        final Snapshot snapshot = parserResult.getSnapshot();
-
-        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-        final List<OffsetRange> foldRange = new ArrayList<OffsetRange>();
-
-        NodeVisitor<List<OffsetRange>> foldsSearch = new NodeVisitor<List<OffsetRange>>(foldRange) {
-
-            @Override
-            public boolean visit(Node node) {
-                int from = -1, to = -1;
-                if (node.type() == NodeType.ruleSet) {
-                    //find the ruleSet curly brackets and create the fold between them inclusive
-                    Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.leaf);
-                    for (Node leafNode : tokenNodes) {
-                        if (CharSequenceUtilities.equals("{", leafNode.image())) {
-                            from = leafNode.from();
-                        } else if (CharSequenceUtilities.equals("}", leafNode.image())) {
-                            to = leafNode.to();
-                        }
-                    }
-
-                    if (from != -1 && to != -1) {
-                        int doc_from = snapshot.getOriginalOffset(from);
-                        int doc_to = snapshot.getOriginalOffset(to);
-
-                        try {
-                            //check the boundaries a bit
-                            if (doc_from >= 0 && doc_to >= 0) {
-                                //do not creare one line folds
-                                if (LexerUtils.getLineOffset(snapshot.getText(), from)
-                                        < LexerUtils.getLineOffset(snapshot.getText(), to)) {
-                                    getResult().add(new OffsetRange(doc_from, doc_to));
-                                }
-                            }
-                        } catch (BadLocationException ex) {
-                            //ignore
-                        }
-                    }
-                }
-                return false;
-            }
-        };
-
-        foldsSearch.visitChildren(root);
-
-        folds.put("codeblocks", foldRange); //NOI18N
-
-        return folds;
-
+        CssParserResultCslWrapper parserResultWrapper = (CssParserResultCslWrapper)info;
+        FeatureContext context = new FeatureContext(parserResultWrapper.getWrappedCssParserResult());
+        return CssModuleSupport.getFolds(context, new FeatureCancel()); //XXX no cancel support from CSL side!
     }
 
     @Override

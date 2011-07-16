@@ -54,7 +54,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;

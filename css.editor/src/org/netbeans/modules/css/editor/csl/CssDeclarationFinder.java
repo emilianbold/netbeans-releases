@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.editor.csl;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
@@ -49,8 +50,15 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
+import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
+import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
@@ -63,79 +71,27 @@ import org.openide.filesystems.FileObject;
  */
 public class CssDeclarationFinder implements DeclarationFinder {
 
-    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
+    private AtomicReference<FutureParamTask<DeclarationLocation, EditorFeatureContext>> taskRef 
+            = new AtomicReference<FutureParamTask<DeclarationLocation, EditorFeatureContext>>();
 
-    /**
-     * Find the declaration for the program element that is under the caretOffset
-     * Return a Set of regions that should be renamed if the element under the caret offset is
-     * renamed.
-     *
-     * Return {@link DeclarationLocation#NONE} if the declaration can not be found, otherwise return
-     *   a valid DeclarationLocation.
-     */
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(
-                info.getSnapshot().getSource().getDocument(true),
-                caretOffset,
-                CssTokenId.language());
-        Token<CssTokenId> valueToken = ts.token();
-        String valueText = valueToken.text().toString();
-
-        //adjust the value if a part of an URI
-        if (valueToken.id() == CssTokenId.URI) {
-            Matcher m = URI_PATTERN.matcher(valueToken.text());
-            if (m.matches()) {
-                int groupIndex = 1;
-                valueText = m.group(groupIndex);
-            }
+        FutureParamTask<DeclarationLocation, EditorFeatureContext> task = taskRef.getAndSet(null);
+        if(task != null) {
+            CssParserResultCslWrapper wrapper = (CssParserResultCslWrapper)info;
+            return task.run(new EditorFeatureContext(wrapper.getWrappedCssParserResult(), caretOffset));
         }
-
-        valueText = WebUtils.unquotedValue(valueText);
-
-        FileObject resolved = WebUtils.resolve(info.getSnapshot().getSource().getFileObject(), valueText);
-        if (resolved != null) {
-            return new DeclarationLocation(resolved, 0);
-        }
-
+        
         return DeclarationLocation.NONE;
     }
 
-    /**
-     * Check the caret offset in the document and determine if it is over a span
-     * of text that should be hyperlinkable ("Go To Declaration" - in other words,
-     * locate the reference and return it. When the user drags the mouse with a modifier
-     * key held this will be hyperlinked, and so on.
-     * <p>
-     * Remember that when looking up tokens in the token hierarchy, you will get the token
-     * to the right of the caret offset, so check for these conditions
-     * {@code (sequence.move(offset); sequence.offset() == offset)} and check both
-     * sides such that placing the caret between two tokens will match either side.
-     *
-     * @return {@link OffsetRange#NONE} if the caret is not over a valid reference span,
-     *   otherwise return the character range for the given hyperlink tokens
-     */
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(doc, caretOffset, CssTokenId.language());
-        if (ts == null) {
-            return OffsetRange.NONE;
+        Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> declarationLocation = CssModuleSupport.getDeclarationLocation(doc, caretOffset, new FeatureCancel());
+        if(declarationLocation != null) {
+            taskRef.set(declarationLocation.getB());
+            return declarationLocation.getA();
         }
-
-        Token<CssTokenId> token = ts.token();
-        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
-        OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-        if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
-            //check if there is @import token before
-            if (ts.movePrevious()) {
-                //@import token expected
-                if (ts.token().id() == CssTokenId.IMPORT_SYM) {
-                    //gotcha!
-                    return range;
-                }
-            }
-        }
-
         return OffsetRange.NONE;
     }
 }
