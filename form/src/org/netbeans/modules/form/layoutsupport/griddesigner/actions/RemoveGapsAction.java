@@ -50,20 +50,16 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.GridUtils;
 import org.openide.util.NbBundle;
 
 /**
- * Action that inserts a new (default) column before or after the focused column.
+ * Action that removes gaps between columns and rows.
  *
- * @author Jan Stola
  * @author Petr Somol
+ * @author Jan Stola
  */
-public class InsertColumnAction extends AbstractGridAction {
+public class RemoveGapsAction extends AbstractGridAction {
     private String name;
-    /** Determines whether the new column should be inserted before of after the focused column. */
-    private boolean insertAfter;
 
-    public InsertColumnAction(boolean insertAfter) {
-        String key = "InsertColumn" + (insertAfter ? "After" : "Before") + "Action_Name";  // NOI18N
-        name = NbBundle.getMessage(InsertColumnAction.class, key);
-        this.insertAfter = insertAfter;
+    public RemoveGapsAction() {
+        name = NbBundle.getMessage(RemoveGapsAction.class, "RemoveGapsAction_Name"); // NOI18N
     }
 
     @Override
@@ -73,48 +69,40 @@ public class InsertColumnAction extends AbstractGridAction {
 
     @Override
     public boolean isEnabled(DesignerContext context) {
-        return (context.getFocusedColumn() != -1);
+        return context.getGridInfo().hasGaps();
     }
 
     @Override
     public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
         GridInfoProvider gridInfo = gridManager.getGridInfo();
-        boolean gapSupport = gridInfo.hasGaps();
         int[] originalColumnBounds = gridInfo.getColumnBounds();
         int[] originalRowBounds = gridInfo.getRowBounds();
+        int columnCount = Math.max(originalColumnBounds.length / 2, 1);
+        int rowCount = Math.max(originalRowBounds.length / 2, 1);
 
         GridUtils.removePaddingComponents(gridManager);
-
-        int column = context.getFocusedColumn();
-        if (insertAfter) {
-            column += (gapSupport ? 2 : 1);
-        }
-        gridManager.insertColumn(column);
-
-        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length - 1 + (gapSupport ? 2 : 1), originalRowBounds.length - 1);
+        gridManager.removeGaps();
+        GridUtils.addPaddingComponents(gridManager, columnCount, rowCount);
         GridUtils.revalidateGrid(gridManager);
 
         int[] newColumnBounds = gridInfo.getColumnBounds();
         int[] newRowBounds = gridInfo.getRowBounds();
-        int[] oldColumnBounds = new int[originalColumnBounds.length + (gapSupport ? 2 : 1)];
-        if(gapSupport) {
-            if(originalColumnBounds.length == column) {
-                // inserting after rightmost column
-                System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column);
-                oldColumnBounds[column] = oldColumnBounds[column - 1];
-                oldColumnBounds[column + 1] = oldColumnBounds[column - 1];
-            } else {
-                System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column + 1);
-                oldColumnBounds[column + 1] = oldColumnBounds[column];
-                oldColumnBounds[column + 2] = oldColumnBounds[column];
-                System.arraycopy(originalColumnBounds, column + 1, oldColumnBounds, column + 3, originalColumnBounds.length - column - 1);
-            }
-        } else {
-            System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column + 1);
-            oldColumnBounds[column + 1] = oldColumnBounds[column];
-            System.arraycopy(originalColumnBounds, column + 1, oldColumnBounds, column + 2, originalColumnBounds.length - column - 1);
+        int[] columnBounds;
+        int[] rowBounds;
+
+        columnBounds = new int[originalColumnBounds.length];
+        columnBounds[0] = newColumnBounds[0];
+        for(int i=1; i<newColumnBounds.length - 1; i++) {
+            columnBounds[2 * i] = columnBounds[2 * i - 1] = newColumnBounds[i];
         }
-        return new GridBoundsChange(oldColumnBounds, originalRowBounds, newColumnBounds, newRowBounds);
+        columnBounds[originalColumnBounds.length - 1] = newColumnBounds[newColumnBounds.length - 1];
+        rowBounds = new int[originalRowBounds.length];
+        rowBounds[0] = newRowBounds[0];
+        for(int j=1; j<newRowBounds.length - 1; j++) {
+            rowBounds[2 * j] = rowBounds[2 * j - 1] = newRowBounds[j];
+        }
+        rowBounds[originalRowBounds.length - 1] = newRowBounds[newRowBounds.length - 1];
+        return new GridBoundsChange(originalColumnBounds, originalRowBounds, columnBounds, rowBounds);
     }
 
 }

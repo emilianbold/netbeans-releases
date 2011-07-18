@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  * Action that deletes the focused column.
  *
  * @author Jan Stola
+ * @author Petr Somol
  */
 public class DeleteColumnAction extends AbstractGridAction {
     private String name;
@@ -74,26 +75,34 @@ public class DeleteColumnAction extends AbstractGridAction {
     @Override
     public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
         GridInfoProvider gridInfo = gridManager.getGridInfo();
+        boolean gapSupport = gridInfo.hasGaps();
         int[] originalColumnBounds = gridInfo.getColumnBounds();
         int[] originalRowBounds = gridInfo.getRowBounds();
         int column = context.getFocusedColumn();
 
         GridUtils.removePaddingComponents(gridManager);
         gridManager.deleteColumn(column);
-        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length-2, originalRowBounds.length-1);
+        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length - 1 -(gapSupport ? 2 : 1), originalRowBounds.length - 1);
         GridUtils.revalidateGrid(gridManager);
 
         int[] newColumnBounds = gridInfo.getColumnBounds();
         int[] newRowBounds = gridInfo.getRowBounds();
         int[] columnBounds;
-        if (column == originalColumnBounds.length-2) {
+        if (column == originalColumnBounds.length - 2) {
             // The last column deleted
             columnBounds = newColumnBounds;
         } else {
-            columnBounds = new int[newColumnBounds.length+1];
-            System.arraycopy(newColumnBounds, 0, columnBounds, 0, column+1);
-            columnBounds[column+1]=columnBounds[column];
-            System.arraycopy(newColumnBounds, column+1, columnBounds, column+2, newColumnBounds.length-column-1);
+            columnBounds = new int[newColumnBounds.length + (gapSupport ? 2 : 1)];
+            if(gapSupport) {
+                System.arraycopy(newColumnBounds, 0, columnBounds, 0, column + 1);
+                columnBounds[column + 1]=columnBounds[column];
+                columnBounds[column + 2]=columnBounds[column];
+                System.arraycopy(newColumnBounds, column + 1, columnBounds, column + 3, newColumnBounds.length - column - 1);
+            } else {
+                System.arraycopy(newColumnBounds, 0, columnBounds, 0, column + 1);
+                columnBounds[column + 1]=columnBounds[column];
+                System.arraycopy(newColumnBounds, column + 1, columnBounds, column + 2, newColumnBounds.length - column - 1);
+            }
         }
         return new GridBoundsChange(originalColumnBounds, originalRowBounds, columnBounds, newRowBounds);
     }
