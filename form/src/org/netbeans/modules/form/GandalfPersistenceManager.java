@@ -153,6 +153,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String ATTR_PROPERTY_NORES = "noResource"; // NOI18N
     static final String ATTR_PROPERTY_EDITOR = "editor"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+    static final String ATTR_PROPERTY_INVALID_XML_CHARS = "containsInvalidXMLChars"; // NOI18N
     static final String ATTR_PROPERTY_PRE_CODE = "preCode"; // NOI18N
     static final String ATTR_PROPERTY_POST_CODE = "postCode"; // NOI18N
     static final String ATTR_BINDING_SOURCE = "source"; // NOI18N
@@ -2041,6 +2042,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	Object value = NO_VALUE;
 	if (valueStr != null) { // it is a primitive value
 	    try {
+                boolean containsInvalidXMLChars = "true".equals(getAttribute(propNode, ATTR_PROPERTY_INVALID_XML_CHARS)); // NOI18N
+                if (containsInvalidXMLChars) {
+                    valueStr = decodeInvalidXMLChars(valueStr);
+                }
 		value = decodePrimitiveValue(valueStr, propertyType);
 		if (prEd != null) {
 		    prEd.setValue(value);
@@ -3018,6 +3023,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // -----------
 
+    private void addFormElement(StringBuffer buf) {
+        // add form specification element
+        String formatVersion = versionStringForFormVersion(formModel.getCurrentVersionLevel());
+        String maxVersion = versionStringForFormVersion(formModel.getMaxVersionLevel());
+        String compatFormInfo = getFormInfoForKnownClass(formModel.getFormBaseClass());
+        if (compatFormInfo == null) {
+            addElementOpenAttr(buf, XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION },
+                new String[] { formatVersion, maxVersion });
+        }
+        else { // FormInfo type stored for backward compatibility
+            addElementOpenAttr(buf, XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION, ATTR_FORM_TYPE },
+                new String[] { formatVersion, maxVersion, compatFormInfo });
+        }
+    }
+
     /** This method saves the form to given data object.
      * @param formObject FormDataObject representing the form files
      * @param formModel FormModel to be saved
@@ -3060,24 +3082,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // store XML file header
         final String encoding = "UTF-8"; // NOI18N
-        buf.append("<?xml version=\"1.1\" encoding=\""); // NOI18N
+        buf.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
         buf.append(encoding);
         buf.append("\" ?>\n\n"); // NOI18N
-
-        // add form specification element
-        String formatVersion = versionStringForFormVersion(formModel.getCurrentVersionLevel());
-        String maxVersion = versionStringForFormVersion(formModel.getMaxVersionLevel());
-        String compatFormInfo = getFormInfoForKnownClass(formModel.getFormBaseClass());
-        if (compatFormInfo == null) {
-            addElementOpenAttr(buf, XML_FORM,
-                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION },
-                new String[] { formatVersion, maxVersion });
-        }
-        else { // FormInfo type stored for backward compatibility
-            addElementOpenAttr(buf, XML_FORM,
-                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION, ATTR_FORM_TYPE },
-                new String[] { formatVersion, maxVersion, compatFormInfo });
-        }
+        
+        int formElementPosition = buf.length();
 
         // store "Other Components"
         Collection<RADComponent> otherComps = formModel.getOtherComponents();
@@ -3115,6 +3124,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             saveAuxValues(auxValues, buf, ONE_INDENT + ONE_INDENT);
             buf.append(ONE_INDENT); addElementClose(buf, XML_AUX_VALUES);
         }
+
+        // Creating Form element at the end to make sure that we have
+        // collected the right versions that are stored there
+        StringBuffer sb = new StringBuffer();
+        addFormElement(sb);
+        buf.insert(formElementPosition, sb);
 
         addElementClose(buf, XML_FORM);
 
@@ -3787,6 +3802,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node valueNode = null;
         String encodedValue = null;
         String encodedSerializeValue = null;
+        boolean containsInvalidXMLChars = false;
 
         PropertyEditor prEd = property.getCurrentEditor();	
         
@@ -3832,6 +3848,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             if (valueNode == null) { // save as primitive or serialized value
                 encodedValue = encodePrimitiveValue(value);
+                String encodedInvalidXMLChars = encodeInvalidXMLChars(encodedValue);
+                if (encodedInvalidXMLChars != null) {
+                    containsInvalidXMLChars = true;
+                    encodedValue = encodedInvalidXMLChars;
+                }
                 if (encodedValue == null) {
                     try {
                         encodedSerializeValue = encodeValue(value);
@@ -3893,27 +3914,129 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addElementClose(buf, XML_PROPERTY);
         }
         else { // primitive value or resource - just one element with attributes
-            addLeafElementOpenAttr(
-                buf,
-                XML_PROPERTY,
-                new String[] {
+            String[] attrs = new String[] {
                     ATTR_PROPERTY_NAME,
                     ATTR_PROPERTY_TYPE,
                     ATTR_PROPERTY_VALUE,
                     ATTR_PROPERTY_RES_KEY,
                     ATTR_PROPERTY_NORES,
                     ATTR_PROPERTY_PRE_CODE,
-                    ATTR_PROPERTY_POST_CODE },
-                new String[] {
+                    ATTR_PROPERTY_POST_CODE };
+            String[] values = new String[] {
                     propertyName,
                     property.getValueType().getName(),
                     encodedValue,
                     resourceKey,
                     noResource,
                     property.getPreCode(),
-                    property.getPostCode() });
+                    property.getPostCode() };
+            if (containsInvalidXMLChars) {
+                formModel.raiseVersionLevel(FormModel.FormVersion.NB71, FormModel.FormVersion.NB71);
+                formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
+                attrs = append(attrs, ATTR_PROPERTY_INVALID_XML_CHARS);
+                values = append(values, "true"); // NOI18N
+            }
+            addLeafElementOpenAttr(buf, XML_PROPERTY, attrs, values);
         }
         return true;
+    }
+
+    /**
+     * Appends specified element at the end of the array.
+     * 
+     * @param array array that should be enlarged.
+     * @param element element that should be appended.
+     * @return new array with the element appended.
+     */
+     private static String[] append(String[] array, String element) {
+        String[] newArray = new String[array.length+1];
+        System.arraycopy(array, 0, newArray, 0, array.length);
+        newArray[array.length] = element;
+        return newArray;
+    }
+
+    /**
+     * Encodes invalid XML 1.0 characters using valid ones.
+     * Note that this method doesn't handle characters like &lt;
+     * %gt; etc. These characters are valid within XML, just
+     * problematic in textual version of the XML. Instead
+     * this method handles characters like \b that must not
+     * appear in XML 1.0 at all.
+     * 
+     * @param xml string to encode.
+     * @return {@code null} if there were no invalid characters
+     * in the given string. It returns encoded
+     * version of the given string otherwise.
+     */
+    private static String encodeInvalidXMLChars(String xml) {
+        boolean containsInvalidXMLChar = false;
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<xml.length(); i++) {
+            char c = xml.charAt(i);
+            if  (isInvalidXMLChar(c) || (c == '\\')) {
+                containsInvalidXMLChar = true;
+                String hex = Integer.toHexString(c);
+                sb.append("\\u"); // NOI18N
+                for (int j=hex.length(); j<4; j++) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            } else {
+                sb.append(c);
+            }
+        }
+        return containsInvalidXMLChar ? sb.toString() : null;
+    }
+
+    /**
+     * Determines whether the specified character is a valid
+     * XML 1.0 character. 
+     * 
+     * @param c character to check.
+     * @return {@code true} when the character is invalid,
+     * returns {@code false} when the character is valid.
+     * @see <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#charsets">XML 1.0 Characters</a>
+     */
+    private static boolean isInvalidXMLChar(char c) {
+        boolean valid = (c == '\t')
+                || (c == '\n')
+                || (c == '\r')
+                || (c >= 0x20 && c <= 0xD7FF)
+                || (c >= 0xE000 && c <= 0xFFFD)
+                || (c >= 0x10000 && c <= 0x10FFFF);
+        return !valid;
+    }
+
+    /**
+     * Decodes string with encoded invalid XML characters.
+     * 
+     * @param xml string with encoded invalid XML characters.
+     * @return string with all characters decoded.
+     */
+    private static String decodeInvalidXMLChars(String xml) {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<xml.length(); i++) {
+            char c = xml.charAt(i);
+            if (c == '\\') {
+                char d = xml.charAt(i+1);
+                if (d == '\\') {
+                    sb.append('\\');
+                    i++;
+                } else {
+                    // expecting uXXXX
+                    if (d != 'u') {
+                        throw new IllegalArgumentException();
+                    }
+                    String code = xml.substring(i+2, i+6);
+                    char ch = (char)Integer.parseInt(code, 16);
+                    sb.append(ch);
+                    i+=5;
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
     
     private org.w3c.dom.Node saveBeanToXML(Class type, org.w3c.dom.Document doc) {
