@@ -86,6 +86,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 
 /** Special subclass of TopComponent which shows and handles set of
@@ -96,10 +97,18 @@ import org.openide.windows.TopComponent;
  * @author Dafe Simonek, Milos Kleint
  */
 public final class MultiViewPeer  {
-
     static final String MULTIVIEW_ID = "MultiView-"; //NOI18N
 
     private static final String TOOLBAR_VISIBLE_PROP = /* org.netbeans.api.editor.settings.SimpleValueNames.TOOLBAR_VISIBLE_PROP */ "toolbarVisible"; // NOI18N
+    private static final Preferences editorSettingsPreferences; 
+    static {
+        Preferences p = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        String n;
+        if (p == null && (n = System.getProperty("test.multiview.toolbar.settings")) != null) { // NOI18N
+            p = NbPreferences.root().node(n);
+        }
+        editorSettingsPreferences = p;
+    }
 
     private Lookup.Provider context;
     private String mimeType;
@@ -113,18 +122,7 @@ public final class MultiViewPeer  {
     private ActionRequestObserverFactory factory;
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
-    private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListener() {
-        public @Override void preferenceChange(PreferenceChangeEvent evt) {
-            if (TOOLBAR_VISIBLE_PROP.equals(evt.getKey())) {
-                EventQueue.invokeLater(new Runnable() {
-                    public @Override void run() {
-                        tabs.setToolbarBarVisible(isToolbarVisible());
-                    }
-                });
-            }
-        }
-    };
-    private final Preferences editorSettingsPreferences = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+    private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListenerImpl();
     private DelegateUndoRedo delegateUndoRedo;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
@@ -811,6 +809,21 @@ public final class MultiViewPeer  {
             fireElementChange();
         }
         
+    }
+
+    private class PreferenceChangeListenerImpl 
+    implements PreferenceChangeListener, Runnable {
+        public PreferenceChangeListenerImpl() {
+        }
+
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
+            if (TOOLBAR_VISIBLE_PROP.equals(evt.getKey())) {
+                EventQueue.invokeLater(this);
+            }
+        }
+        public @Override void run() {
+            tabs.setToolbarBarVisible(isToolbarVisible());
+        }
     }
     
 }

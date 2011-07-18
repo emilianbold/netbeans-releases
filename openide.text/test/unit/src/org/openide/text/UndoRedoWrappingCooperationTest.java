@@ -47,6 +47,8 @@ package org.openide.text;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
@@ -90,16 +92,37 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
         return new NbLikeEditorKit();
     }
 
+    // could install a logger "Handler" and test the warning only when
+    // expected. Maybe later.
+    Level disableWarning()
+    {
+        Logger l = Logger.getLogger("org.openide.text.CloneableEditorSupport");
+        Level level = l.getLevel();
+        l.setLevel(Level.SEVERE);
+        return level;
+    }
+    void enableWarning(Level level)
+    {
+        Logger l = Logger.getLogger("org.openide.text.CloneableEditorSupport");
+        l.setLevel(level);
+    }
+
     // Use these methods with the UndoRedoGroup patch
     CompoundEdit beginChunk(Document d) {
-        // ur().beginUndoGroup();
         sendUndoableEdit(d, CloneableEditorSupport.BEGIN_COMMIT_GROUP);
         return null;
     }
     
+    void endChunk(Document d) {
+        endChunk(d, null);
+    }
+
     void endChunk(Document d, CompoundEdit ce) {
-        // ur().endUndoGroup();
         sendUndoableEdit(d, CloneableEditorSupport.END_COMMIT_GROUP);
+    }
+
+    void markChunk(Document d) {
+        sendUndoableEdit(d, CloneableEditorSupport.MARK_COMMIT_GROUP);
     }
 
     void sendUndoableEdit(Document d, UndoableEdit ue) {
@@ -203,33 +226,38 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
         endChunk(d, ce);
         assertEquals("chunk: data", "ab", d.getText(0, d.getLength()));
 
-        endChunk(d, ce);
-        endChunk(d, ce);
+        Level level = disableWarning();
+        try {
+            endChunk(d, ce);
+            endChunk(d, ce);
 
-        assertEquals("extraEnd: data", "ab", d.getText(0, d.getLength()));
-        assertTrue("extraEnd: modified", support.isModified());
-        assertTrue("extraEnd: can undo", ur().canUndo());
-        assertFalse("extraEnd: no redo", ur().canRedo());
+            assertEquals("extraEnd: data", "ab", d.getText(0, d.getLength()));
+            assertTrue("extraEnd: modified", support.isModified());
+            assertTrue("extraEnd: can undo", ur().canUndo());
+            assertFalse("extraEnd: no redo", ur().canRedo());
 
-        d.insertString(d.getLength(), "c", null);
-        d.insertString(d.getLength(), "d", null);
-        endChunk(d, ce);
-        assertEquals("extraEnd2: data", "abcd", d.getText(0, d.getLength()));
-        ur().undo();
-        endChunk(d, ce);
-        assertEquals("undo1: data", "abc", d.getText(0, d.getLength()));
-        ur().undo();
-        assertEquals("undo2: data", "ab", d.getText(0, d.getLength()));
-        ur().undo();
-        endChunk(d, ce);
-        assertEquals("undo3: data", "", d.getText(0, d.getLength()));
-        ur().redo();
-        assertEquals("redo1: data", "ab", d.getText(0, d.getLength()));
-        ur().redo();
-        endChunk(d, ce);
-        assertEquals("redo2: data", "abc", d.getText(0, d.getLength()));
-        ur().redo();
-        assertEquals("redo3: data", "abcd", d.getText(0, d.getLength()));
+            d.insertString(d.getLength(), "c", null);
+            d.insertString(d.getLength(), "d", null);
+            endChunk(d, ce);
+            assertEquals("extraEnd2: data", "abcd", d.getText(0, d.getLength()));
+            ur().undo();
+            endChunk(d, ce);
+            assertEquals("undo1: data", "abc", d.getText(0, d.getLength()));
+            ur().undo();
+            assertEquals("undo2: data", "ab", d.getText(0, d.getLength()));
+            ur().undo();
+            endChunk(d, ce);
+            assertEquals("undo3: data", "", d.getText(0, d.getLength()));
+            ur().redo();
+            assertEquals("redo1: data", "ab", d.getText(0, d.getLength()));
+            ur().redo();
+            endChunk(d, ce);
+            assertEquals("redo2: data", "abc", d.getText(0, d.getLength()));
+            ur().redo();
+            assertEquals("redo3: data", "abcd", d.getText(0, d.getLength()));
+        } finally {
+            enableWarning(level);
+        }
     }
 
     public void testUndoRedoWhileActiveChunk() throws Exception {
@@ -356,6 +384,136 @@ public class UndoRedoWrappingCooperationTest extends NbTestCase implements Clone
         d.insertString(d.getLength(), "f", null);
 
         endChunk(d, ce2);
+
+        assertEquals("data", "abcdef", d.getText(0, d.getLength()));
+
+        // following fails if nesting not supported
+        ur().undo();
+        assertEquals("undo1", "abcd", d.getText(0, d.getLength()));
+
+        ur().undo();
+        assertEquals("undo2", "ab", d.getText(0, d.getLength()));
+
+        ur().undo();
+        assertEquals("undo3", "", d.getText(0, d.getLength()));
+    }
+
+    public void testNestedEmpyChunks() throws Exception {
+        content = "";
+        StyledDocument d = support.openDocument();
+        beginChunk(d);
+        d.insertString(d.getLength(), "a", null);
+        d.insertString(d.getLength(), "b", null);
+
+        // should have no effect
+        beginChunk(d);
+        endChunk(d);
+
+        d.insertString(d.getLength(), "e", null);
+        d.insertString(d.getLength(), "f", null);
+
+        endChunk(d);
+
+        assertEquals("data", "abef", d.getText(0, d.getLength()));
+
+        ur().undo();
+        assertEquals("undo3", "", d.getText(0, d.getLength()));
+    }
+
+    public void testNestedEmpyChunks2() throws Exception {
+        content = "";
+        StyledDocument d = support.openDocument();
+        beginChunk(d);
+        d.insertString(d.getLength(), "a", null);
+        d.insertString(d.getLength(), "b", null);
+
+        // should have no effect
+        beginChunk(d);
+        beginChunk(d);
+        endChunk(d);
+        endChunk(d);
+        beginChunk(d);
+        endChunk(d);
+
+        d.insertString(d.getLength(), "e", null);
+        d.insertString(d.getLength(), "f", null);
+
+        endChunk(d);
+
+        assertEquals("data", "abef", d.getText(0, d.getLength()));
+
+        ur().undo();
+        assertEquals("undo3", "", d.getText(0, d.getLength()));
+    }
+
+    public void testNestedEmpyChunks3() throws Exception {
+        content = "";
+        StyledDocument d = support.openDocument();
+        beginChunk(d);
+        d.insertString(d.getLength(), "a", null);
+        d.insertString(d.getLength(), "b", null);
+
+        beginChunk(d);
+        d.insertString(d.getLength(), "c", null);
+
+        // should have no effect
+        beginChunk(d);
+        endChunk(d);
+
+        d.insertString(d.getLength(), "d", null);
+        endChunk(d);
+
+        // should have no effect
+        beginChunk(d);
+        endChunk(d);
+
+        d.insertString(d.getLength(), "e", null);
+
+        // should have no effect
+        beginChunk(d);
+        endChunk(d);
+
+        d.insertString(d.getLength(), "f", null);
+
+        // should have no effect
+        beginChunk(d);
+        endChunk(d);
+
+        d.insertString(d.getLength(), "g", null);
+
+        endChunk(d);
+
+        assertEquals("data", "abcdefg", d.getText(0, d.getLength()));
+
+        // following fails if nesting not supported
+        ur().undo();
+        assertEquals("undo1", "abcd", d.getText(0, d.getLength()));
+
+        ur().undo();
+        assertEquals("undo2", "ab", d.getText(0, d.getLength()));
+
+        ur().undo();
+        assertEquals("undo3", "", d.getText(0, d.getLength()));
+    }
+
+    public void testMarkCommitGroup() throws Exception {
+        content = "";
+        StyledDocument d = support.openDocument();
+        beginChunk(d);
+        d.insertString(d.getLength(), "a", null);
+        d.insertString(d.getLength(), "b", null);
+
+        markChunk(d); // creates a separate undoable chunk
+
+        d.insertString(d.getLength(), "c", null);
+        d.insertString(d.getLength(), "d", null);
+
+        markChunk(d);
+
+        d.insertString(d.getLength(), "e", null);
+        d.insertString(d.getLength(), "f", null);
+
+        endChunk(d);
 
         assertEquals("data", "abcdef", d.getText(0, d.getLength()));
 
