@@ -173,7 +173,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                         fireProgressListenerStart(AbstractRefactoring.PREPARE, refFileObjSet.size());
                         try{
                             Collection<ModificationResult> results = processFiles(refFileObjSet, new FindRefTask(subClassHandle, refactoring.getTargetSuperType()));
-                            elemsBag.registerTransaction(new RetoucheCommit(results));
+                            elemsBag.registerTransaction(createTransaction(results));
                             for (ModificationResult result : results) {
                                 for (FileObject fileObj : result.getModifiedFileObjects()) {
                                     for (Difference diff : result.getDifferences(fileObj)) {
