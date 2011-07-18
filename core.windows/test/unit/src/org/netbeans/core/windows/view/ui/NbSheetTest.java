@@ -73,7 +73,7 @@ public class NbSheetTest extends NbTestCase {
     public NbSheetTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         Lookup.getDefault().lookup(ModuleInfo.class);
@@ -136,8 +136,14 @@ public class NbSheetTest extends NbTestCase {
         
         final N another = new N("another");
         
-        tc.setActivatedNodes(new Node[] { another });
-        tc.requestActive();
+        SwingUtilities.invokeAndWait( new Runnable() {
+
+            @Override
+            public void run() {
+                tc.setActivatedNodes(new Node[] { another });
+                tc.requestActive();
+            }
+        });
                 
         
         class R2 implements Runnable {
