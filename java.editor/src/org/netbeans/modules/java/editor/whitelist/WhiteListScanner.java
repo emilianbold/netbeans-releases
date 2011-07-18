@@ -59,7 +59,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.WhiteListQuery.WhiteList;
+import org.netbeans.api.whitelist.WhiteListQuery.WhiteList;
 
 /**
  *

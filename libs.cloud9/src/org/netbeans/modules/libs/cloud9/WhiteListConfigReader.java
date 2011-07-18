@@ -55,8 +55,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation.WhiteListImplementation;
-import org.netbeans.spi.java.source.support.WhiteListImplementationBuilder;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 

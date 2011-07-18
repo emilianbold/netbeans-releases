@@ -39,14 +39,14 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.java.source.support;
+package org.netbeans.spi.whitelist.support;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;

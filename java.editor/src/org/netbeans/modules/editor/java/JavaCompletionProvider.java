@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.java;
 
+import org.netbeans.api.whitelist.WhiteListQuery;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 

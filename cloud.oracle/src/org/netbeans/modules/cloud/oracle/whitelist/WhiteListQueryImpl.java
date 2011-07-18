@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.cloud.oracle.whitelist;
 
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation;
-import org.netbeans.spi.java.source.support.WhiteListImplementationBuilder;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
 
 /**

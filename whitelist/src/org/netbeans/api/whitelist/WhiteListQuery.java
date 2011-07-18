@@ -39,12 +39,13 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.api.java.source;
+package org.netbeans.api.whitelist;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;

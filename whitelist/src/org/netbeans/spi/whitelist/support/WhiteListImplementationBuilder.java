@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.java.source.support;
+package org.netbeans.spi.whitelist.support;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -51,8 +51,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.util.Parameters;
 import org.openide.util.Union2;
 
@@ -196,7 +195,7 @@ public final class WhiteListImplementationBuilder {
                 @NonNull final String binaryName,
                 final byte mode) {
             final String[] pkgNamePair = splitName(binaryName,'/');
-            final Integer pkgId = names.putName(FileObjects.convertFolder2Package(pkgNamePair[0]));
+            final Integer pkgId = names.putName(folderToPackage(pkgNamePair[0]));
             @SuppressWarnings("RedundantStringConstructorCall")
             final Integer clsId = names.putName(new String(pkgNamePair[1]));
             final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>> pkgNode =
@@ -212,7 +211,7 @@ public final class WhiteListImplementationBuilder {
                 @NonNull final String[] argTypes,
                 @NonNull final byte mode) {
             final String[] pkgNamePair = splitName(clsBinaryName,'/');
-            final Integer pkgId = names.putName(FileObjects.convertFolder2Package(pkgNamePair[0]));
+            final Integer pkgId = names.putName(folderToPackage(pkgNamePair[0]));
             @SuppressWarnings("RedundantStringConstructorCall")
             final Integer clsId = names.putName(new String(pkgNamePair[1]));
             final Integer methodNameId = names.putName(methodName);
@@ -374,6 +373,11 @@ public final class WhiteListImplementationBuilder {
                 sb.append(type);
                 sb.append(';'); //NOI18N
             }
+        }
+
+        @NonNull
+        private String folderToPackage(@NonNull final String folder) {
+            return folder.replace( '/', '.' );  //NOI18N
         }
     }
 

@@ -42,7 +42,7 @@
 package org.netbeans.modules.libs.cloud9.api;
 
 import org.netbeans.modules.libs.cloud9.WhiteListConfigReader;
-import org.netbeans.spi.java.source.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 
 /**
  *
