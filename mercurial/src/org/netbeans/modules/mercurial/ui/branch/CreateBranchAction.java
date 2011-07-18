@@ -56,12 +56,16 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
  * 
  */
+@ActionID(id = "org.netbeans.modules.mercurial.ui.branch.CreateBranchAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_CreateBranch")
 public class CreateBranchAction extends ContextAction {
     
     @Override
