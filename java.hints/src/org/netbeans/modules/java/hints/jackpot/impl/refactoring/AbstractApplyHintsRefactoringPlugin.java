@@ -62,6 +62,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -106,7 +107,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
         Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, /*XXX*/new AtomicBoolean(), problems);
 
-        refactoringElements.registerTransaction(new RetoucheCommit(new LinkedList<ModificationResult>(res)));
+        refactoringElements.registerTransaction(JavaRefactoringPlugin.createTransaction(new LinkedList<ModificationResult>(res)));
 
         for (ModificationResult mr : res) {
             for (FileObject file : mr.getModifiedFileObjects()) {
