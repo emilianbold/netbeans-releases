@@ -54,6 +54,7 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPe
  * and supports some basic modifications of the grid.
  *
  * @author Jan Stola
+ * @author Petr Somol
  */
 public interface GridManager {
 
@@ -166,6 +167,29 @@ public interface GridManager {
      * @param rowIndex index of the row to delete.
      */
     void deleteRow(int rowIndex);
+
+    /**
+     * Adds gaps between rows and columns.
+     *
+     * @param gapWidth gap column width (typically in pixels).
+     * @param gapHeight gap row height (typically in pixels).
+     */
+    void addGaps(int gapWidth, int gapHeight);
+
+    /**
+     * Updates gaps either to accomodate layout changes or to change gap sizes.
+     * Optionally modifies positions and sizes of components to accomodate
+     * edits outside grid designer (e.g., in free form) that may have broken gap consistency
+     *
+     * @param updateComponents if true, updates also component position/sizes.
+     */
+    void updateGaps(boolean updateComponents);
+
+    /**
+     * Removes gaps from between rows/columns.
+     *
+     */
+    void removeGaps();
 
     /**
      * Encloses given set of components in a new container.

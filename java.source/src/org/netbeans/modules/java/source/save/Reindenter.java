@@ -598,7 +598,7 @@ public class Reindenter implements IndentTask {
                             break;
                     }
                 } else {
-                    currentIndent += cs.getContinuationIndentSize();
+                    currentIndent = getContinuationIndent(path, currentIndent);
                 }
                 break;
             case METHOD_INVOCATION:

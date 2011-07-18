@@ -58,6 +58,8 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -65,6 +67,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
+@ActionID(id = "org.netbeans.modules.mercurial.ui.branch.CloseBranchAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_CloseBranch")
 public class CloseBranchAction extends ContextAction {
     
     @Override
