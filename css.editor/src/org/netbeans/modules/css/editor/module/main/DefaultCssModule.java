@@ -42,11 +42,13 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -55,8 +57,14 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
@@ -272,7 +280,6 @@ public class DefaultCssModule extends CssModule {
 
     }
 
-    
     @Override
     public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
         //first try to find the reference span
@@ -337,4 +344,107 @@ public class DefaultCssModule extends CssModule {
         return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
     }
 
+    @Override
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
+
+        final Snapshot snapshot = context.getSnapshot();
+
+        return new NodeVisitor<T>(result) {
+
+            @Override
+            public boolean visit(Node node) {
+                if (node.type() == NodeType.selectorsGroup) {
+                    //get parent - ruleSet to obtain the { ... } range 
+                    Node ruleNode = (Node) node.parent();
+                    assert ruleNode.type() == NodeType.ruleSet;
+
+                    int so = snapshot.getOriginalOffset(ruleNode.from());
+                    int eo = snapshot.getOriginalOffset(ruleNode.to());
+                    if (eo > so) {
+                        //todo: filter out virtual selectors
+                        StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(ruleNode), snapshot);
+                        getResult().add(item);
+                    }
+                }
+                return false;
+            }
+            
+        };
+        
+    }
+
+    private static class CssRuleStructureItem implements StructureItem {
+
+        private CharSequence name;
+        private CssNodeElement element;
+        private int from, to;
+
+        private static String escape(String s) {
+            s = s.replace("<", "&lt;");
+            s = s.replace(">", "&gt;");
+            return s;
+        }
+
+        private CssRuleStructureItem(CharSequence name, CssNodeElement element, Snapshot source) {
+            this.name = name;
+            this.element = element;
+            this.from = source.getOriginalOffset(element.node().from());
+            this.to = source.getOriginalOffset(element.node().to());
+        }
+
+        @Override
+        public String getName() {
+            return name.toString();
+        }
+
+        @Override
+        public String getSortText() {
+            return getName();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            return escape(getName());
+        }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            return element;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.RULE;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean isLeaf() {
+            return true;
+        }
+
+        @Override
+        public List<? extends StructureItem> getNestedItems() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public long getPosition() {
+            return from;
+        }
+
+        @Override
+        public long getEndPosition() {
+            return to;
+        }
+
+        @Override
+        public ImageIcon getCustomIcon() {
+            return null;
+        }
+    }
 }

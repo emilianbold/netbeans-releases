@@ -39,33 +39,64 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.csl;
 
-package org.netbeans.modules.css.gsf;
-
-import org.netbeans.modules.css.editor.Property;
-import org.netbeans.modules.css.editor.PropertyModel.Element;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class CssValueElement extends CssPropertyElement {
+public class CssNodeElement extends CssElement {
+
+    private Node node;
+
+    public static CssNodeElement createElement(Node node) {
+        return new CssNodeElement(node);
+    }
     
-    private Element value; 
-    
-    public CssValueElement(Property property, Element value) {
-        super(property);
-        this.value = value;
+    CssNodeElement(Node node) {
+        super(node.image());
+        this.node = node;
     }
 
-    public Element value() {
-        return value;
+    public Node node() {
+        return node;
     }
-    
+
+    /** Note(I): the css structure itema are renewed after each modification so we can
+     * return the cached offset range here instead of searching the new parser
+     * result. The only problem may happen if someone modifies the source
+     * and very quickly doubleclicks the navigator before it gets refreshed.
+     *
+     * TODO: fix this so we resolve this element to the new element in the fresh result.
+     */
     @Override
-    public String getName() {
-        return value().toString();
+    public OffsetRange getOffsetRange(ParserResult result) {
+        Snapshot s = result.getSnapshot();
+        int from = node.from();
+        int to = node.to();
+
+        if(s.getText().length() == 0) {
+            return null;
+        }
+
+        //check the boundaries bacause of (I)
+        int origFrom = from > s.getText().length() ? 0 : s.getOriginalOffset(from);
+        int origTo = to > s.getText().length() ? 0 : s.getOriginalOffset(to);
+
+        if(origFrom == origTo || origTo == 0) {
+            return null;
+        }
+        
+        return new OffsetRange(origFrom, origTo);
+                
+                
     }
+
+
 
 }

@@ -43,158 +43,114 @@
  */
 package org.netbeans.modules.css.editor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.css.visual.ui.preview.CssTCController;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
-
 /**
  * 
  * @author Marek Fukala
  */
-public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
-
-    //static, will hold the singleton reference forever but I cannot reasonably
-    //hook to gsf to be able to free this once last css component closes
-    private static CssTCController windowController;
-
-    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-
-    private static synchronized void initializeWindowController() {
-        if(windowController == null) {
-            windowController = CssTCController.getDefault();
-        }
-    }
-
-    public static class Factory extends TaskFactory {
-
-        @Override
-        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-            initializeWindowController();
-
-            String mimeType = snapshot.getMimeType();
-            String sourceMimeType = snapshot.getSource().getMimeType();
-
-            //allow to run only on .css files
-            if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
-                return Collections.singletonList(new CssCaretAwareSourceTask());
-            } else {
-                return Collections.EMPTY_LIST;
-            }
-        }
-    }
-
-//    private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
-
-//    public static synchronized Source forDocument(Document doc) {
-//        Source source = (Source) doc.getProperty(SOURCE_DOCUMENT_PROPERTY_NAME);
-//        if (source == null) {
-//            source = new Source();
-//            doc.putProperty(SOURCE_DOCUMENT_PROPERTY_NAME, source);
+public final class CssCaretAwareSourceTask /*extends ParserResultTask<CssParserResult> */{
+//
+//    //static, will hold the singleton reference forever but I cannot reasonably
+//    //hook to gsf to be able to free this once last css component closes
+//    private static CssTCController windowController;
+//
+//    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+//
+//    private static synchronized void initializeWindowController() {
+//        if(windowController == null) {
+//            windowController = CssTCController.getDefault();
 //        }
-//        return source;
 //    }
-
-    @Override
-    public int getPriority() {
-        return 100; //todo use reasonable number
-    }
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
-    }
-
-    @Override
-    public void cancel() {
-        //xxx cancel???
-    }
-
-    @Override
-    public void run(CssParserResult result, SchedulerEvent event) {
-        //xxx: how come I can get null event here? parsing api bug?
-        if(event == null) {
-            return ;
-        }
-
-        if(!(event instanceof CursorMovedSchedulerEvent)) {
-            return ;
-        }
-
-        int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
-
-        SimpleNode root = result.root();
-        if(root != null) {
-            //find the rule scope and check if there is an error inside it
-            SimpleNode leaf = SimpleNodeUtil.findDescendant(root, caretOffset);
-            if(leaf != null) {
-                SimpleNode ruleNode = leaf.kind() == CssParserTreeConstants.JJTSTYLERULE ?
-                    leaf :
-                    SimpleNodeUtil.getAncestorByType(leaf, CssParserTreeConstants.JJTSTYLERULE);
-                if(ruleNode != null) {
-                    //filter out warnings
-                    List<? extends Error> errors = result.getDiagnostics();
-                    for(Error e : errors) {
-
-                        if(e.getSeverity() == Severity.ERROR) {
-                            if(ruleNode.startOffset() <= e.getStartPosition() &&
-                                    ruleNode.endOffset() >= e.getEndPosition()) {
-                                //there is an error in the selected rule
-                                CssEditorSupport.getDefault().parsedWithError(result);
-                                return ;
-                            }
-                        }
-                    }
-
-                    //no errors found in the node
-                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
-                    return ;
-                }
-            }
-        }
-
-        //some error
-        CssEditorSupport.getDefault().parsedWithError(result);
-
-    }
-
-//    public static class Source {
 //
-//        private Vector<SourceListener> listeners = new Vector<SourceListener>();
+//    public static class Factory extends TaskFactory {
 //
-//        protected void parsed(Result ci, SchedulerEvent event) {
-//            //distribute to clients
-//            for (SourceListener listener : listeners) {
-//                listener.parsed(ci, event);
+//        @Override
+//        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+//            initializeWindowController();
+//
+//            String mimeType = snapshot.getMimeType();
+//            String sourceMimeType = snapshot.getSource().getMimeType();
+//
+//            //allow to run only on .css files
+//            if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
+//                return Collections.singletonList(new CssCaretAwareSourceTask());
+//            } else {
+//                return Collections.EMPTY_LIST;
 //            }
 //        }
-//
-//        public void addChangeListener(SourceListener l) {
-//            listeners.add(l);
-//        }
-//
-//        public void removeChangeListener(SourceListener l) {
-//            listeners.remove(l);
-//        }
 //    }
 //
-//    public static interface SourceListener {
+////    private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
 //
-//        public void parsed(Result info, SchedulerEvent event);
+////    public static synchronized Source forDocument(Document doc) {
+////        Source source = (Source) doc.getProperty(SOURCE_DOCUMENT_PROPERTY_NAME);
+////        if (source == null) {
+////            source = new Source();
+////            doc.putProperty(SOURCE_DOCUMENT_PROPERTY_NAME, source);
+////        }
+////        return source;
+////    }
+//
+//    @Override
+//    public int getPriority() {
+//        return 100; //todo use reasonable number
+//    }
+//
+//    @Override
+//    public Class<? extends Scheduler> getSchedulerClass() {
+//        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+//    }
+//
+//    @Override
+//    public void cancel() {
+//        //xxx cancel???
+//    }
+//
+//    @Override
+//    public void run(CssParserResult result, SchedulerEvent event) {
+////        //xxx: how come I can get null event here? parsing api bug?
+////        if(event == null) {
+////            return ;
+////        }
+////
+////        if(!(event instanceof CursorMovedSchedulerEvent)) {
+////            return ;
+////        }
+////
+////        int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
+////
+////        SimpleNode root = result.root();
+////        if(root != null) {
+////            //find the rule scope and check if there is an error inside it
+////            SimpleNode leaf = SimpleNodeUtil.findDescendant(root, caretOffset);
+////            if(leaf != null) {
+////                SimpleNode ruleNode = leaf.kind() == CssParserTreeConstants.JJTSTYLERULE ?
+////                    leaf :
+////                    SimpleNodeUtil.getAncestorByType(leaf, CssParserTreeConstants.JJTSTYLERULE);
+////                if(ruleNode != null) {
+////                    //filter out warnings
+////                    List<? extends Error> errors = result.getDiagnostics();
+////                    for(Error e : errors) {
+////
+////                        if(e.getSeverity() == Severity.ERROR) {
+////                            if(ruleNode.startOffset() <= e.getStartPosition() &&
+////                                    ruleNode.endOffset() >= e.getEndPosition()) {
+////                                //there is an error in the selected rule
+////                                CssEditorSupport.getDefault().parsedWithError(result);
+////                                return ;
+////                            }
+////                        }
+////                    }
+////
+////                    //no errors found in the node
+////                    CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
+////                    return ;
+////                }
+////            }
+////        }
+////
+////        //some error
+////        CssEditorSupport.getDefault().parsedWithError(result);
+//
 //    }
 }
 

@@ -39,60 +39,33 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.csl.CssLanguage;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.css.editor.csl;
 
+import org.netbeans.modules.css.editor.Property;
+import org.netbeans.modules.css.editor.PropertyModel.Element;
 
-public class CssElement implements ElementHandle {
-
-    private String name;
-
-    CssElement(String name) {
-        this.name = name;
+/**
+ * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
+ *
+ * @author mfukala@netbeans.org
+ */
+public class CssValueElement extends CssPropertyElement {
+    
+    private Element value; 
+    
+    public CssValueElement(Property property, Element value) {
+        super(property);
+        this.value = value;
     }
 
+    public Element value() {
+        return value;
+    }
+    
+    @Override
     public String getName() {
-        return name;
-    }
-
-    public FileObject getFileObject() {
-        return null;
-    }
-
-    public String getMimeType() {
-        return CssLanguage.CSS_MIME_TYPE;
-    }
-
-    public String getIn() {
-        return null;
-    }
-
-    public ElementKind getKind() {
-        //XXX I need to specify my own element types, not just the default ones!
-        return ElementKind.FIELD;
-    }
-
-    public Set<Modifier> getModifiers() {
-        //XXX modifiers are something java similar specific, should't it be more generic?
-        return Collections.emptySet();
-    }
-
-    public boolean signatureEquals(ElementHandle handle) {
-        //TODO implement
-        return false;
-    }
-
-    public OffsetRange getOffsetRange(ParserResult result) {
-        return null; //XXX: fix!!!!!!!!!!
+        return value().toString();
     }
 
 }

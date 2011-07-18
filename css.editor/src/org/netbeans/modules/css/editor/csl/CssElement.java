@@ -39,25 +39,67 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.csl;
 
-package org.netbeans.modules.css.gsf;
-
-import org.netbeans.modules.css.editor.Property;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class CssPropertyElement extends CssElement {
+public class CssElement implements ElementHandle {
 
-    private Property property;
-    
-    public CssPropertyElement(Property property) {
-        super(property.name());
-        this.property = property;
+    private CharSequence name;
+
+    public CssElement(CharSequence name) {
+        this.name = name;
     }
-    
-    public Property property() {
-        return this.property;
+
+    @Override
+    public String getName() {
+        return name.toString();
     }
+
+    @Override
+    public FileObject getFileObject() {
+        return null;
+    }
+
+    @Override
+    public String getMimeType() {
+        return CssLanguage.CSS_MIME_TYPE;
+    }
+
+    @Override
+    public String getIn() {
+        return null;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.FIELD;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return null;
+    }
+
 }

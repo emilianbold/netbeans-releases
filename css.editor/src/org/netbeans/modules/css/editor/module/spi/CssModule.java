@@ -44,12 +44,12 @@ package org.netbeans.modules.css.editor.module.spi;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.Pair;
 
@@ -99,4 +99,16 @@ public abstract class CssModule {
      * @return 
      */
     public abstract Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset);
+    
+    
+     /**
+     * May return null if there are no structure items
+     * 
+     * @param <T>
+     * @param context
+     * @param result
+     * @return 
+     */
+    public abstract <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result);
+    
 }

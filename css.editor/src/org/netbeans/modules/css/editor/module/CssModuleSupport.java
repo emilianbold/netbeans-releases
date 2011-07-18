@@ -53,6 +53,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
@@ -183,4 +184,37 @@ public class CssModuleSupport {
         return null;
     }
      
+    public static List<StructureItem> getStructureItems(FeatureContext context, FeatureCancel cancel) {
+        List<StructureItem> all = new ArrayList<StructureItem>();
+        final Collection<NodeVisitor<List<StructureItem>>> visitors = new ArrayList<NodeVisitor<List<StructureItem>>>();
+        
+        for(CssModule module: getModules()) {
+            NodeVisitor<List<StructureItem>> visitor = module.getStructureItemsNodeVisitor(context, all); 
+            //modules may return null visitor instead of a dummy empty visitor 
+            //to speed up the parse tree visiting when there're no result
+            if(visitor != null) {
+                visitors.add(visitor);
+            }
+        }
+        
+        if(cancel.isCancelled()) {
+            return Collections.emptyList();
+        }
+        
+        cancel.attachCancelAction(new Runnable() {
+
+            @Override
+            public void run() {
+                for(NodeVisitor visitor : visitors) {
+                    visitor.cancel();
+                }
+            }
+        });
+
+        NodeVisitor.visitChildren(context.getParseTreeRoot(), visitors);
+        
+        return all;
+        
+    }
+    
 }
