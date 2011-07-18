@@ -471,23 +471,23 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        
-                JComboBox box = (JComboBox) e.getSource();
-        
-        Object comp = box.getUI().getAccessibleChild(box, 0);
-        if (!(comp instanceof JPopupMenu)) return;
-        
-        final JPopupMenu menu = (JPopupMenu) comp;
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                Dimension size = menu.getSize();
-                Point location = menu.getLocationOnScreen();
-                popup = PopupFactory.getSharedInstance().getPopup(menu, new JLabel("test"), (int) (location.getX() + size.getWidth()), (int) location.getY());
-                popup.show();
-            }
-        });
+//        
+//                JComboBox box = (JComboBox) e.getSource();
+//        
+//        Object comp = box.getUI().getAccessibleChild(box, 0);
+//        if (!(comp instanceof JPopupMenu)) return;
+//        
+//        final JPopupMenu menu = (JPopupMenu) comp;
+//        SwingUtilities.invokeLater(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                Dimension size = menu.getSize();
+//                Point location = menu.getLocationOnScreen();
+//                popup = PopupFactory.getSharedInstance().getPopup(menu, new JLabel("test"), (int) (location.getX() + size.getWidth()), (int) location.getY());
+//                popup.show();
+//            }
+//        });
     }
 
     @Override
