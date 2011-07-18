@@ -48,11 +48,15 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 
 /**
  * 
  */
+@ActionID(id = "org.netbeans.modules.mercurial.ui.tag.ManageTagsAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_ManageTags")
 public class ManageTagsAction extends ContextAction {
     
     @Override
