@@ -42,6 +42,7 @@ package org.netbeans.modules.openide.awt;
 import java.net.URL;
 import javax.tools.ToolProvider;
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import org.openide.util.Lookup;
@@ -77,6 +78,9 @@ import static org.junit.Assert.*;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ActionProcessorTest extends NbTestCase {
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
 
     public ActionProcessorTest(String n) {
         super(n);
@@ -85,6 +89,25 @@ public class ActionProcessorTest extends NbTestCase {
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+    
+    public void testHeadlessCompilationWorks() throws IOException {
+        clearWorkDir();
+        assertTrue("Headless run", GraphicsEnvironment.isHeadless());
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A",
+                  "import org.openide.awt.ActionRegistration;\n"
+                + "import org.openide.awt.ActionID;\n"
+                + "import org.openide.awt.ActionReference;\n"
+                + "import java.awt.event.*;\n"
+                + "@ActionID(category=\"Tools\",id=\"my.action\")"
+                + "@ActionRegistration(displayName=\"AAA\") "
+                + "@ActionReference(path=\"Shortcuts\", name=\"C-F2 D-A\")"
+                + "public class A implements ActionListener {\n"
+                + "    public void actionPerformed(ActionEvent e) {}"
+                + "}\n");
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertTrue("Compilation has to succeed:\n" + os, r);
     }
 
     @ActionRegistration(

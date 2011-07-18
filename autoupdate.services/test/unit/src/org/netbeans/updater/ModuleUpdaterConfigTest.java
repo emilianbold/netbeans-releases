@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.packets;
+package org.netbeans.updater;
 
-import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
-
-
-
+import java.io.FileOutputStream;
+import java.io.File;
+import java.util.Properties;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * @author ads
  *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class BrkpntUpdateCommand extends DbgpCommand {
-
-    public static final String UPDATE = "breakpoint_update"; // NOI18N
-    static final String ID_ARG = "-d "; // NOI18N
-    private static final String STATE_ARG = "-s "; // NOI18N
-    private String myId;
-    private State state;
-
-    public BrkpntUpdateCommand( String transactionId , String brkpntId ) {
-        super( UPDATE , transactionId);
-        myId = brkpntId;
-    }
-
-    public String getBreakpointId() {
-        return myId;
-    }
+public class ModuleUpdaterConfigTest extends NbTestCase {
+    private File props;
+    private File cluster;
     
-    public void setState(State state) {
-        this.state = state;
-    }
-    
-    @Override
-    protected String getArguments() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(ID_ARG);
-        builder.append(getBreakpointId());
-        builder.append(SPACE);
-        builder.append(STATE_ARG);
-        builder.append(state.toString());
-        return builder.toString();
+    public ModuleUpdaterConfigTest(String s) {
+        super(s);
     }
 
     @Override
-    public boolean wantAcknowledgment() {
-        return true;
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        
+        Properties p = new Properties();
+        p.setProperty("relativeClassPath", "%FS%jarda%PS%%FS%darda%PS%%FS%parda");
+        
+        props = new File(getWorkDir(), "p.properties");
+        FileOutputStream os = new FileOutputStream(props);
+        p.store(os, "");
+        os.close();
+        
+        cluster = new File(getWorkDir(), "cluster");
+        cluster.mkdirs();
+    }
+    
+    public void testMainConfigParsesPathSeparator() {
+        ModuleUpdater.MainConfig mc = new ModuleUpdater.MainConfig(props.getPath(), cluster);
+        String exp = File.separator + "jarda" + File.pathSeparator + File.separator + "darda" + File.pathSeparator + File.separator + "parda";
+        if (!mc.getClasspath().contains(exp)) {
+            fail("Expecting " + exp + " but was: " + mc.getClasspath());
+        }
     }
 
+    
 }

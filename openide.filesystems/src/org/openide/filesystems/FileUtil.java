@@ -1723,6 +1723,13 @@ public final class FileUtil extends Object {
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
         String unnormalized = file.getPath();
         String normalized = normalizedPaths.get(unnormalized);
+        if (
+            normalized != null && 
+                normalized.equalsIgnoreCase(unnormalized) && 
+                !normalized.equals(unnormalized)
+        ) {
+            normalized = null;
+        }
         File ret;
         if (normalized == null) {
             ret = normalizeFileImpl(file);
