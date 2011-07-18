@@ -31,11 +31,11 @@ made subject to such option by the copyright holder.
         </tocitem>
     </tocitem>
     <tocitem text="PHP Applications" expand="false">
-        <tocitem text="About PHP Development in the NetBeans IDE" target="org.netbeans.modules.php.help.about" />
+        <tocitem text="About the NetBeans IDE for PHP" target="org.netbeans.modules.php.help.about" />
         <tocitem text="Working with PHP" target="php_process"/>
-        <tocitem text="PHP Project Tasks: Quick Reference" target="php_quickref"/>
+        <tocitem text="PHP Application Tasks: Quick Reference" target="php_quickref"/>
         <tocitem text="PHP Projects" target="php_projects"/>
-        <tocitem text="Editing PHP Files">
+        <tocitem text="Editing PHP Files" expand="false">
             <tocitem text="About Editing PHP Files" target="php_editor"/>
             <tocitem text="Syntax Highligting" target="php_syntax_highlighting"/>
             <tocitem text="Code Completion" target="php_code_completion"/>
@@ -46,12 +46,6 @@ made subject to such option by the copyright holder.
             <tocitem target="php_codegen" text="Code Generators"/>
             <tocitem target="def_var_in_comment" text="Defining Variables in Comments"/>
         </tocitem>
-        <tocitem text="Creating a PHP Project without Previously Developed Sources" target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" />
-        <tocitem text="Importing Previously Developed Source Files into a New Project" target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" />
-        <tocitem text="Defining the Default Run Configuration" target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" />
-        <tocitem text="Customizing the Project Settings: Source Files Location" target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" />
-        <tocitem text="Customizing the Project Settings: Run Configuration" target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" />
-        <tocitem text="Customizing the Project Settings: Include Path" target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" />
-        <tocitem text="Selecting a PHP Framework" target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel"/>
+        
     </tocitem>
 </toc>
