@@ -43,10 +43,11 @@ package org.netbeans.modules.css.refactoring;
 
 import java.util.Collection;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
+import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
@@ -116,11 +117,11 @@ public abstract class CssElementContext {
 
 	private int caretOffset;
 	private int selectionFrom, selectionTo;
-	private SimpleNode element;
-	private CssParserResultCslWrapper result;
+	private Node element;
+	private CssParserResult result;
         private Snapshot topLevelSnapshot;
 
-	public Editor(CssParserResultCslWrapper result, Snapshot topLevelSnapshot, int caretOffset, int selectionFrom, int selectionTo) {
+	public Editor(CssParserResult result, Snapshot topLevelSnapshot, int caretOffset, int selectionFrom, int selectionTo) {
 	    this.result = result;
 	    this.caretOffset = caretOffset;
 	    this.selectionFrom = selectionFrom;
@@ -132,15 +133,17 @@ public abstract class CssElementContext {
 	}
 
 	//XXX make it only caret position sensitive for now
-	private SimpleNode findCurrentElement() {
+	private Node findCurrentElement() {
+	    Node root = getParserResult().getParseTree();
+	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
+	    Node leaf = NodeUtil.findDescendant(root, astOffset);
+            if(leaf != null) {
+                //we found token node, use its encolosing node - parent
+                leaf = leaf.parent();
+            }
             
-            return null;
-            
-//	    SimpleNode root = getParserResult().root();
-//	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
-//	    SimpleNode leaf = SimpleNodeUtil.findDescendant(root, astOffset);
-//            //if leaf == null the astOffset is out of the root's node range, return the root node
-//            return leaf == null ? root : leaf;
+            //if leaf == null the astOffset is out of the root's node range, return the root node
+            return leaf == null ? root : leaf;
 	}
 
         public Document getDocument() {
@@ -151,7 +154,7 @@ public abstract class CssElementContext {
             return topLevelSnapshot;
         }
 
-	public CssParserResultCslWrapper getParserResult() {
+	public CssParserResult getParserResult() {
 	    return result;
 	}
 
@@ -172,24 +175,25 @@ public abstract class CssElementContext {
 	    return selectionTo;
 	}
 
-	public SimpleNode getElement() {
+	public Node getElement() {
 	    return element;
 	}
 
-        public SimpleNode getSimpleSelectorElement() {
-            return  SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
-        }
+//        public Node getSimpleSelectorElement() {
+//            return  NodeUtil.getAncestorByType(getElement(), NodeType.simpleSelectorSequence);
+//        }
 
 	@Override
 	public String getElementName() {
-	    return SimpleNodeUtil.getNodeImage(getElement()).trim();
+	    return getElement().image().toString().trim();
 	}
 
 	@Override
 	public boolean isRefactoringAllowed() {
             //class, id or element selector
             //hex color
-	    return null != getSimpleSelectorElement() || getElement().kind() == CssParserTreeConstants.JJTHEXCOLOR;
+            return NodeUtil.isSelectorNode(getElement()) 
+                    || getElement().type() == NodeType.hexColor;
 	}
     }
 }

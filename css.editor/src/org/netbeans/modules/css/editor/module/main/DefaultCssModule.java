@@ -175,23 +175,17 @@ public class DefaultCssModule extends CssModule {
         }
 
         //we must always get a token node
-        assert current.type() == NodeType.leaf;
+        assert current.type() == NodeType.token;
 
         //get the rule node (its parent)
         current = current.parent();
 
-        final NodeType nodeType = current.type();
-
         //process only some interesting nodes
-        switch (nodeType) {
-            case elementName:
-            case cssClass:
-            case cssId:
-                break;
-            default:
-                return null;
+        if (!NodeUtil.isSelectorNode(current)) {
+            return null;
         }
 
+        final NodeType nodeType = current.type();
         final CharSequence currentNodeImage = current.image();
 
         return new NodeVisitor<T>(result) {
@@ -240,7 +234,7 @@ public class DefaultCssModule extends CssModule {
                 int from = -1, to = -1;
                 if (node.type() == NodeType.ruleSet) {
                     //find the ruleSet curly brackets and create the fold between them inclusive
-                    Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.leaf);
+                    Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.token);
                     for (Node leafNode : tokenNodes) {
                         if (CharSequenceUtilities.equals("{", leafNode.image())) {
                             from = leafNode.from();
@@ -368,9 +362,8 @@ public class DefaultCssModule extends CssModule {
                 }
                 return false;
             }
-            
         };
-        
+
     }
 
     private static class CssRuleStructureItem implements StructureItem {

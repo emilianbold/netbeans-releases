@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.editor.csl.CssColor;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
 import java.awt.Color;

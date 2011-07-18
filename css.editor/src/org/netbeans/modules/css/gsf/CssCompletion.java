@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;

@@ -39,44 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.lib.api;
 
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.css.lib.api.CssParserFactory;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
+import javax.swing.text.BadLocationException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.TestUtil;
+import static org.junit.Assert.*;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
- * Wraps the CssParserResult from css.lib as an instance of CSL's Parser
  *
  * @author marekfukala
  */
-public class CssParserCslWrapper extends Parser {
-
-    private final Parser CSS3_PARSER = CssParserFactory.getDefault().createParser(null);
+public class NodeUtilTest extends NbTestCase {
     
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        CSS3_PARSER.parse(snapshot, task, event);
+    public NodeUtilTest(String name) {
+        super(name);
     }
 
-    @Override
-    public Result getResult(Task task) throws ParseException {
-        return new CssParserResultCslWrapper((CssParserResult)CSS3_PARSER.getResult(task));
+    public void test_getChildTokenNode() throws BadLocationException, ParseException {
+        String code = "@import \"file.css\";";
+        CssParserResult res = TestUtil.parse(code);
+        
+//        TestUtil.dumpResult(res);
+        Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports"); 
+        assertNotNull(imports);
+        
+        Node value = NodeUtil.getChildTokenNode(imports, CssTokenId.STRING);
+        assertNotNull(value);
+        
+        assertEquals("\"file.css\"", value.image().toString());
     }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-        CSS3_PARSER.addChangeListener(changeListener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-        CSS3_PARSER.addChangeListener(changeListener);
-    }
- 
 }

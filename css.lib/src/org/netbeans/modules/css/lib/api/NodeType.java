@@ -61,6 +61,6 @@ public enum NodeType {
         //following node types don't correspond to any of the grammar rules:
         root, //an artificial root node of each parse tree
         error, //an error node
-        leaf; //a leaf - a value node
+        token; //a token node
         
 }

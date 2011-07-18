@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
 import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.test.TestBase;

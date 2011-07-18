@@ -42,25 +42,15 @@
 package org.netbeans.modules.css.editor.csl;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
-import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
-import org.netbeans.modules.css.gsf.CssParserResultCslWrapper;
-import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
-import org.netbeans.modules.web.common.api.WebUtils;
-import org.openide.filesystems.FileObject;
 
 /**
  * Hyperlinking for @import declaration only.

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;

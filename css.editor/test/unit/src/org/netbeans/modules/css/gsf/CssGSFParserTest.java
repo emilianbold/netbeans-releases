@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;

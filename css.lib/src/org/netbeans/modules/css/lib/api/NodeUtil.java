@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.css.lib.TokenNode;
 
 /**
  *
@@ -77,20 +78,6 @@ public final class NodeUtil {
 
         return new int[]{node.from() + from_diff, node.to() - to_diff};
     }
-
-//    public static Token getNodeToken(Node node, int tokenKind) {
-//        Token t = node.jjtGetFirstToken();
-//        if (t == null) {
-//            return null;
-//        }
-//        do {
-//            if(t.kind == tokenKind) {
-//                return t;
-//            }
-//            t = t.next;
-//        } while (t != node.jjtGetLastToken());
-//        return null;
-//    }
 
     public static Node findDescendant(Node node, int astOffset) {
         int so = node.from();
@@ -127,6 +114,24 @@ public final class NodeUtil {
         Node[] children = getChildrenByType(node, type);
         return children.length == 0 ? null : children[0];
     }
+    
+    /**
+     * 
+     * @param node
+     * @param tokenId
+     * @return 
+     */
+    public static Node getChildTokenNode(Node node, CssTokenId tokenId) {
+        Node[] children = getChildrenByType(node, NodeType.token);
+        for(Node n : children) {
+            TokenNode tn = (TokenNode)n;
+            if(tn.getTokenId() == tokenId) {
+                return n;
+            }
+        }
+        return null;
+    }
+
 
     public static Node getAncestorByType(Node node, final NodeType type) {
 	AtomicReference<Node> found = new AtomicReference<Node>();
@@ -258,6 +263,37 @@ public final class NodeUtil {
         for (Node c : tree.children()) {
             dump(c, level + 1, pw);
         }
+    }
+    
+    public static boolean isSelectorNode(Node node) {
+        switch (node.type()) {
+            case elementName:
+            case cssClass:
+            case cssId:
+                return true;
+            default:
+                return false;
+        }
+
+    }
+    
+    /**
+     * finds the selector { } rule curly bracket range
+     * @param node representing a selector node (element, class or id)
+     */
+    public static int[] getSelectorNodeRange(Node node) {
+        if(!isSelectorNode(node)) {
+            throw new IllegalArgumentException("Only selector node is allowed as a parameter!"); //NOI18N
+        }
+        
+        Node lbrace = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
+        Node rbrace = NodeUtil.getChildTokenNode(node, CssTokenId.RBRACE);
+
+        if(lbrace == null || rbrace == null) {
+            return null;
+        }
+        
+        return new int[]{lbrace.from(), rbrace.to()};
     }
 
     private static void treeToString(Node tree, PrintWriter b)  {
