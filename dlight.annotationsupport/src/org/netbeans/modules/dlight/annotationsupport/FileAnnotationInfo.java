@@ -147,10 +147,8 @@ public class FileAnnotationInfo {
     public LineAnnotationInfo getLineAnnotationInfoByYCoordinate(int y) {
         synchronized (lineAnnotationsInfo) {
             for (LineAnnotationInfo lineInfo : lineAnnotationsInfo) {
-                if (lineInfo.getPosition() != null) {
-                    if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
-                        return lineInfo;
-                    }
+                if (lineInfo.getPosition() != null && lineInfo.contains(y)) {
+                    return lineInfo;
                 }
             }
         }
@@ -160,10 +158,8 @@ public class FileAnnotationInfo {
     public LineAnnotationInfo getBlockAnnotationInfoByYCoordinate(int y) {
         synchronized (blockAnnotationsInfo) {
             for (LineAnnotationInfo lineInfo : blockAnnotationsInfo) {
-                if (lineInfo.getPosition() != null) {
-                    if (lineInfo.getY1() <= y && y <= lineInfo.getY2()) {
-                        return lineInfo;
-                    }
+                if (lineInfo.getPosition() != null && lineInfo.contains(y)) {
+                    return lineInfo;
                 }
             }
         }
