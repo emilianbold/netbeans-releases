@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 
 /**
@@ -102,7 +104,7 @@ abstract public class ClassNode extends ContainerNode {
     }
 
     public ClassNode(String className, String displayName, boolean isAnonymous, final ContainerNode parent) {
-        super(className, displayName, IconResource.CLASS_ICON, parent);
+        super(className, displayName, Icons.getIcon(LanguageIcons.CLASS), parent);
         this.anonymous = isAnonymous;
     }
 

@@ -22,7 +22,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.loadgenerator.api.EngineManagerException;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
-import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstanceListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -112,7 +111,7 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
    *
    * @Override
    */
-  public Collection<FileObject> listScripts(Project project) {
+  public Collection<FileObject> listScripts(Lookup.Provider project) {
     EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
     Set<String> allExtensions = new HashSet<String>();
     Collection<Engine> engines = manager.findEngines();
@@ -120,7 +119,7 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
     for (Engine engine : engines) {
       allExtensions.addAll(engine.getSupportedExtensions());
     }
-    return findScripts(project, allExtensions);
+    return findScripts((Project)project, allExtensions);
   }
 
   /**

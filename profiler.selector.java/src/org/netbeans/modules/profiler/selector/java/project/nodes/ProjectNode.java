@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.openide.util.lookup.Lookups;
@@ -81,7 +82,7 @@ public class ProjectNode extends ContainerNode {
     /** Creates a new instance of ProjectNode */
     public ProjectNode(final Project project, ContainerNode root) {
         super(ProjectUtilities.getProjectName(project), ProjectUtilities.getProjectIcon(project), root, Lookups.fixed(project)); // NOI18N
-        setValid(ProjectUtilities.getClasspathInfo(project, true) != null);
+        setValid(ClasspathInfoFactory.infoFor(project, true) != null);
     }
 
     public ProjectNode(Project project) {

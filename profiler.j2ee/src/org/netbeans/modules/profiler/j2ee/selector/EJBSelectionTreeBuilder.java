@@ -53,16 +53,17 @@ import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 @ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
-    "org-netbeans-modules-j2ee-earproject",
-    "org-netbeans-modules-j2ee-ejbjarproject",
-    "org-netbeans-modules-maven/ear",
-    "org-netbeans-modules-maven/ejb"
+    "org-netbeans-modules-j2ee-earproject", // NOI18N
+    "org-netbeans-modules-j2ee-ejbjarproject", // NOI18N
+    "org-netbeans-modules-maven/ear", // NOI18N
+    "org-netbeans-modules-maven/ejb" // NOI18N
 })
 public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
 
@@ -71,7 +72,8 @@ public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     }
 
     public EJBSelectionTreeBuilder(Project project, boolean isPreferred) {
-        super(new Type("ejb-application", "EJB View"), isPreferred, project);
+        super(new Type("ejb-application", NbBundle.getMessage(EJBSelectionTreeBuilder.class, // NOI18N
+                "EJBSelectionTreeBuilder_DisplayName")), isPreferred, project); // NOI18N
     }
 
     public List<SelectorNode> buildSelectionTree() {
