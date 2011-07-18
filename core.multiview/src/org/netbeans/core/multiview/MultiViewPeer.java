@@ -412,25 +412,27 @@ public final class MultiViewPeer  {
         // no need to serialize the tc when the element that want to be serialized, was not 
         // even opened?!? but maybe handle this during the serialization proceess, avoid creating
         // the element when serializing.
-        MultiViewDescription[] descs = model.getDescriptions();
         int type = TopComponent.PERSISTENCE_NEVER;
-        for (int i = 0; i < descs.length; i++) {
-            if (context == null && !(descs[i] instanceof Serializable)) {
-                Logger.getLogger(MultiViewTopComponent.class.getName()).warning(
-                        "The MultiviewDescription instance " + descs[i].getClass() + " is not serializable. Cannot persist TopComponent.");
-                type = TopComponent.PERSISTENCE_NEVER;
-                break;
+        if( null != model ) {
+            MultiViewDescription[] descs = model.getDescriptions();
+            for (int i = 0; i < descs.length; i++) {
+                if (context == null && !(descs[i] instanceof Serializable)) {
+                    Logger.getLogger(MultiViewTopComponent.class.getName()).warning(
+                            "The MultiviewDescription instance " + descs[i].getClass() + " is not serializable. Cannot persist TopComponent.");
+                    type = TopComponent.PERSISTENCE_NEVER;
+                    break;
+                }
+                if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ALWAYS) {
+                    type = descs[i].getPersistenceType();
+                    // cannot ge any better than that.
+                }
+                if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED &&
+                     type != TopComponent.PERSISTENCE_ALWAYS) {
+                    type = descs[i].getPersistenceType();
+                    // go on searching..
+                }
+
             }
-            if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ALWAYS) {
-                type = descs[i].getPersistenceType();
-                // cannot ge any better than that.
-            }
-            if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED &&
-                 type != TopComponent.PERSISTENCE_ALWAYS) {
-                type = descs[i].getPersistenceType();
-                // go on searching..
-            }
-        
         }
         return type;
     }  
