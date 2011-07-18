@@ -124,7 +124,7 @@ public class WhiteListAction extends AbstractAction {
                 return this;
             }
             J2eePlatform j2eePlatformLocal = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-            if (j2eePlatformLocal.getLookup().lookup(OracleJ2eePlatformImpl2.Marker.class) == null) {
+            if (j2eePlatformLocal == null || j2eePlatformLocal.getLookup().lookup(OracleJ2eePlatformImpl2.Marker.class) == null) {
                 return this;
             }
             return new WhiteListAction(project);
