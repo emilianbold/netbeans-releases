@@ -44,11 +44,14 @@ package org.netbeans.modules.java.editor.whitelist;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
@@ -68,6 +71,7 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
     private final ElementUtilities elementUtil;
     private final AtomicBoolean cancel;
     private final WhiteList whiteList;
+    private final ArrayDeque<MethodInvocationTree> methodInvocation;
     private boolean inheritance = false;
 
     WhiteListScanner(
@@ -79,6 +83,7 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
         this.elementUtil = elementUtil;
         this.whiteList = whiteList;
         this.cancel = cancel;
+        methodInvocation = new ArrayDeque<MethodInvocationTree>();
     }
 
     @Override
@@ -133,6 +138,26 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
         return super.visitMemberSelect(node, p);
     }
 
+    @Override
+    public Void visitNewClass(NewClassTree node, List<? super Problem> p) {
+        final Element e = trees.getElement(getCurrentPath());
+        if (e != null && !whiteList.canInvoke(ElementHandle.create(e))) {
+                p.add(new Problem(Kind.INVOKE, e, node));
+        }
+        scan(node.getTypeArguments(), p);
+        scan(node.getArguments(), p);
+	scan(node.getClassBody(), p);
+        return null;
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, List<? super Problem> p) {
+        methodInvocation.offerFirst(node);
+        super.visitMethodInvocation(node, p);
+        methodInvocation.removeFirst();
+        return null;
+    }
+
     private void handleNode(
             final Tree node,
             final List<? super Problem> p) {
@@ -152,8 +177,8 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
                 }
             }
         } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
-            if (!whiteList.canInvoke(ElementHandle.create(e))) {
-                p.add(new Problem(Kind.INVOKE, e, node));
+            if (!(methodInvocation.isEmpty() || whiteList.canInvoke(ElementHandle.create(e)))) {
+                p.add(new Problem(Kind.INVOKE, e, methodInvocation.peekFirst()));
             }
         }
     }
