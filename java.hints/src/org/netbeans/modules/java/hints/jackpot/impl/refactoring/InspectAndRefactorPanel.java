@@ -89,6 +89,7 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
@@ -133,9 +134,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         Icon prj = null;
         ProjectInformation pi=null;
         if (dob!=null) {
-            fileObject = context.lookup(FileObject.class);
-            pi = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fileObject));
-            prj = pi.getIcon();
+            FileObject file = context.lookup(FileObject.class);
+            Project owner = FileOwnerQuery.getOwner(file);
+            if (owner!=null) {
+                fileObject = file;
+                pi = ProjectUtils.getInformation(owner);
+                prj = pi.getIcon();
+            }
         }
         
         JLabel customScope = null;
@@ -147,8 +152,8 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         customScope = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CustomScope"), prj , SwingConstants.LEFT); //NOI18N
         if (fileObject!=null) {
             currentFile = new JLabel(fileObject.getNameExt(), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
-            currentPackage = new JLabel(getPackageName(fileObject), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
-            currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
+            //currentPackage = new JLabel(getPackageName(fileObject), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
+            currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
         }
         allProjects = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_AllProjects"), prj, SwingConstants.LEFT); //NOI18N
         //scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
@@ -466,23 +471,23 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        
-                JComboBox box = (JComboBox) e.getSource();
-        
-        Object comp = box.getUI().getAccessibleChild(box, 0);
-        if (!(comp instanceof JPopupMenu)) return;
-        
-        final JPopupMenu menu = (JPopupMenu) comp;
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                Dimension size = menu.getSize();
-                Point location = menu.getLocationOnScreen();
-                popup = PopupFactory.getSharedInstance().getPopup(menu, new JLabel("test"), (int) (location.getX() + size.getWidth()), (int) location.getY());
-                popup.show();
-            }
-        });
+//        
+//                JComboBox box = (JComboBox) e.getSource();
+//        
+//        Object comp = box.getUI().getAccessibleChild(box, 0);
+//        if (!(comp instanceof JPopupMenu)) return;
+//        
+//        final JPopupMenu menu = (JPopupMenu) comp;
+//        SwingUtilities.invokeLater(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                Dimension size = menu.getSize();
+//                Point location = menu.getLocationOnScreen();
+//                popup = PopupFactory.getSharedInstance().getPopup(menu, new JLabel("test"), (int) (location.getX() + size.getWidth()), (int) location.getY());
+//                popup.show();
+//            }
+//        });
     }
 
     @Override

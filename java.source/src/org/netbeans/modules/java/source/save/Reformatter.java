@@ -3373,7 +3373,7 @@ public class Reformatter implements ReformatTask {
             String indentString = getIndent();
             String lineStartString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE : indentString + SPACE;
             String blankLineString;
-            if (cs.generateParagraphTagOnBlankLines()) {
+            if (javadocTokens != null && cs.generateParagraphTagOnBlankLines()) {
                 blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE + P_TAG : indentString + SPACE + P_TAG;
             } else {
                 blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR : EMPTY;
@@ -3544,7 +3544,7 @@ public class Reformatter implements ReformatTask {
                                                 if (pendingDiff != null) {
                                                     addDiff(pendingDiff);
                                                 }
-                                                pendingDiff = new Diff(offset + currWSPos, offset + i, cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
+                                                pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
                                             }
                                             currWSPos = -1;
                                             lastNewLinePos = i;
