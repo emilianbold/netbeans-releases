@@ -459,6 +459,7 @@
                 <friend>org.netbeans.modules.php.nette</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
+                <friend>org.netbeans.modules.php.smarty</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.editor.api</package>
                 <package>org.netbeans.modules.php.editor.api.elements</package>
