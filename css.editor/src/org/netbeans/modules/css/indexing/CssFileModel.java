@@ -282,7 +282,7 @@ public class CssFileModel {
                         start_offset_diff = 0;
                 }
 
-                CharSequence image = node.image().subSequence(0, start_offset_diff);
+                CharSequence image = node.image().subSequence(start_offset_diff, node.image().length());
                 OffsetRange range = new OffsetRange(node.from() + start_offset_diff, node.to());
 
                 //check if the real start offset can be translated to the original offset
