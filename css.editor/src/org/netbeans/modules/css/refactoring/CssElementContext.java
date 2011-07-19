@@ -43,7 +43,7 @@ package org.netbeans.modules.css.refactoring;
 
 import java.util.Collection;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -96,14 +96,14 @@ public abstract class CssElementContext {
 
     public static class File extends AbstractFileContext {
 
-	private Collection<CssParserResultCslWrapper> results;
+	private Collection<CssCslParserResult> results;
 
-	public File(FileObject fileObject, Collection<CssParserResultCslWrapper> result) {
+	public File(FileObject fileObject, Collection<CssCslParserResult> result) {
 	    super(fileObject);
 	    this.results = result;
 	}
 
-	public Collection<CssParserResultCslWrapper> getParserResults() {
+	public Collection<CssCslParserResult> getParserResults() {
 	    return results;
 	}
 

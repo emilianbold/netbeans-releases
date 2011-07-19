@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.editor.model;
+package org.netbeans.modules.css.editor.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
@@ -85,7 +84,7 @@ public final class CssModel {
     private Snapshot snapshot;
     private FileObject fileObject;
 
-    public static CssModel create(CssParserResultCslWrapper result) {
+    public static CssModel create(CssCslParserResult result) {
         return new CssModel(result.getSnapshot(), result.getParseTree());
     }
 
@@ -141,7 +140,7 @@ public final class CssModel {
                     ParserManager.parse(Collections.singleton(source), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
-                            CssParserResultCslWrapper result = (CssParserResultCslWrapper) resultIterator.getParserResult();
+                            CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
                             ref.set(CssModel.create(result));
                         }
                     });

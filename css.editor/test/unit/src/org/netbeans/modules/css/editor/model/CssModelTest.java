@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.css.editor.model;
 
+import org.netbeans.modules.css.editor.api.CssRule;
+import org.netbeans.modules.css.editor.api.CssModel;
+import org.netbeans.modules.css.editor.api.CssRuleItem;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -82,10 +85,10 @@ public class CssModelTest extends TestBase {
         });
 
         Result result = _result[0];
-        assertTrue(result instanceof CssParserResultCslWrapper);
+        assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create((CssParserResultCslWrapper) result);
+        CssModel model = CssModel.create((CssCslParserResult) result);
         assertNotNull(model);
 
         List<CssRule> rules = model.rules();
@@ -134,10 +137,10 @@ public class CssModelTest extends TestBase {
         });
 
         Result result = _result[0];
-        assertTrue(result instanceof CssParserResultCslWrapper);
+        assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create((CssParserResultCslWrapper) result);
+        CssModel model = CssModel.create((CssCslParserResult) result);
         assertNotNull(model);
 
         List<CssRule> rules = model.rules();
@@ -175,10 +178,10 @@ public class CssModelTest extends TestBase {
         });
 
         Result result = _result[0];
-        assertTrue(result instanceof CssParserResultCslWrapper);
+        assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create((CssParserResultCslWrapper) result);
+        CssModel model = CssModel.create((CssCslParserResult) result);
         assertNotNull(model);
 
         List<CssRule> rules = model.rules();
@@ -204,12 +207,12 @@ public class CssModelTest extends TestBase {
         });
 
         Result result = _result[0];
-        assertTrue(result instanceof CssParserResultCslWrapper);
+        assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        assertNotNull(((CssParserResultCslWrapper)result).root());
+        assertNotNull(((CssCslParserResult)result).root());
 
-        CssModel model = CssModel.create((CssParserResultCslWrapper) result);
+        CssModel model = CssModel.create((CssCslParserResult) result);
         assertNotNull(model);
 
         Collection<String> names = model.getImportedFileNames();

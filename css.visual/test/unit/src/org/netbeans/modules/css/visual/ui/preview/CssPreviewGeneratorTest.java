@@ -46,15 +46,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.model.CssModel;
-import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.editor.api.CssModel;
+import org.netbeans.modules.css.editor.api.CssRule;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.visual.TestBase;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -69,7 +67,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author marekfukala
  */
-public class CssPreviewGeneratorTest extends TestBase {
+public class CssPreviewGeneratorTest extends CslTestBase {
 
     public CssPreviewGeneratorTest(String name) {
         super(name);
@@ -125,9 +123,9 @@ public class CssPreviewGeneratorTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssCslParserResult);
 
-        CssModel model = CssModel.create((CssParserResult) result);
+        CssModel model = CssModel.create((CssCslParserResult) result);
         assertNotNull(model);
 
         return model;

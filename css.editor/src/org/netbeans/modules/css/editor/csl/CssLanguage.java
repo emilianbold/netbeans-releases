@@ -117,7 +117,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Parser getParser() {
-        return new CssParserCslWrapper();
+        return new CssCslParser();
     }
 
     @Override

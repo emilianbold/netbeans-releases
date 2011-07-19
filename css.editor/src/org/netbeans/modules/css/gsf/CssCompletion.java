@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
@@ -83,7 +83,7 @@ import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.CssPropertyValue;
 import org.netbeans.modules.css.editor.Property;
 import org.netbeans.modules.css.editor.PropertyModel;
-import org.netbeans.modules.css.editor.model.HtmlTags;
+import org.netbeans.modules.css.editor.api.HtmlTags;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
@@ -110,7 +110,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CssParserResultCslWrapper info = (CssParserResultCslWrapper) context.getParserResult();
+        CssCslParserResult info = (CssCslParserResult) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
 

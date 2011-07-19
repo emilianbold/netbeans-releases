@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -289,7 +289,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
 
-        Node root = ((CssParserResultCslWrapper) info).getParseTree();
+        Node root = ((CssCslParserResult) info).getParseTree();
         Snapshot snapshot = info.getSnapshot();
 
         if (root != null) {

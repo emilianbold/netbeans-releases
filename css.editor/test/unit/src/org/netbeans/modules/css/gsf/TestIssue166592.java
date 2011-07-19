@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.Collections;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.test.TestBase;
@@ -80,8 +80,8 @@ public class TestIssue166592 extends TestBase {
         assertParserResultType(content, 48, HtmlParserResult.class);
 
         //works - css
-        assertParserResultType(content, 12, CssParserResultCslWrapper.class);
-        assertParserResultType(content, 38, CssParserResultCslWrapper.class);
+        assertParserResultType(content, 12, CssCslParserResult.class);
+        assertParserResultType(content, 38, CssCslParserResult.class);
 
         //fails between the two styles - returns css instead of html parser result
 

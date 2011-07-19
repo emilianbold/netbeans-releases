@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.editor.api.CssRule;
 import org.netbeans.modules.css.visual.ui.StyleBuilderAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

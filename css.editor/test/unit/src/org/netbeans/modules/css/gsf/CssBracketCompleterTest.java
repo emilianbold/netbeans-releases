@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -236,9 +236,9 @@ public class CssBracketCompleterTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResultCslWrapper);
+        assertTrue(result instanceof CssCslParserResult);
 
-        CssParserResultCslWrapper cssResult = (CssParserResultCslWrapper)result;
+        CssCslParserResult cssResult = (CssCslParserResult)result;
         assertNotNull(cssResult.root());
         assertEquals(0, cssResult.getDiagnostics().size()); //no errors
 

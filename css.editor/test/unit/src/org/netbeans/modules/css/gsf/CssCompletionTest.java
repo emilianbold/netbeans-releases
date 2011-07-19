@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,9 +97,9 @@ public class CssCompletionTest extends TestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssParserResultCslWrapper);
+                assertTrue(result instanceof CssCslParserResult);
 
-                CssParserResultCslWrapper cssresult = (CssParserResultCslWrapper)result;
+                CssCslParserResult cssresult = (CssCslParserResult)result;
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);

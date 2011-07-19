@@ -329,7 +329,7 @@
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.smarty</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
-                <package>org.netbeans.modules.css.editor.model</package>
+                <package>org.netbeans.modules.css.editor.api</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>
             </friend-packages>
         </data>

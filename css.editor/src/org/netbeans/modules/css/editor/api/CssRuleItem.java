@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.editor.model;
+package org.netbeans.modules.css.editor.api;
 
 /**
  * An immutable representation of a css rule item eg.:

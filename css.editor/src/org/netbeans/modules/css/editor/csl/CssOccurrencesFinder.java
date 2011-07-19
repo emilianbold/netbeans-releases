@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.css.editor.csl;
 
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,7 +89,7 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
     public void run(Result result, SchedulerEvent event) {
         resume();
         
-        CssParserResultCslWrapper parserResultWrapper = (CssParserResultCslWrapper)result;
+        CssCslParserResult parserResultWrapper = (CssCslParserResult)result;
         EditorFeatureContext context = new EditorFeatureContext(parserResultWrapper.getWrappedCssParserResult(), caretDocumentPosition);
         Set<OffsetRange> occurrences = CssModuleSupport.getMarkOccurrences(context, featureCancel);
         

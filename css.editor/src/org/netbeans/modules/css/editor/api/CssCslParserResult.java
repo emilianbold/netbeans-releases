@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.css.editor.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,18 +57,18 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *
  * @author marek.fukala@sun.com
  */
-public class CssParserResultCslWrapper extends ParserResult {
+public class CssCslParserResult extends ParserResult {
 
     private CssParserResult wrappedCssParserResult;
     
     private final List<Error> errors = new ArrayList<Error>();
     private AtomicBoolean analyzerErrorsComputed = new AtomicBoolean(false);
 
-    public CssParserResultCslWrapper(Snapshot snapshot) {
+    public CssCslParserResult(Snapshot snapshot) {
         super(snapshot);
     }
     
-    public CssParserResultCslWrapper(CssParserResult cssParserResult) {
+    public CssCslParserResult(CssParserResult cssParserResult) {
         super(null);
         this.wrappedCssParserResult = cssParserResult;
     }

@@ -32,7 +32,7 @@ package org.netbeans.modules.css.visual.api;
 
 import java.io.File;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.editor.model.CssModel;
+import org.netbeans.modules.css.editor.api.CssModel;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 
 /**

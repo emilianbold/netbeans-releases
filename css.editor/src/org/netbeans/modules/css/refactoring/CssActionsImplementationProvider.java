@@ -52,7 +52,7 @@ import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor.csl.CssParserResultCslWrapper;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -244,11 +244,11 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
 	@Override
 	public void run(ResultIterator resultIterator) throws Exception {
-	    Collection<CssParserResultCslWrapper> results = new ArrayList<CssParserResultCslWrapper>();
+	    Collection<CssCslParserResult> results = new ArrayList<CssCslParserResult>();
 	    Snapshot snapshot = resultIterator.getSnapshot();
 	    try {
 		if (CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType())) {
-		    results.add((CssParserResultCslWrapper) resultIterator.getParserResult());
+		    results.add((CssCslParserResult) resultIterator.getParserResult());
 		    return;
 		}
 		for (Embedding e : resultIterator.getEmbeddings()) {
@@ -307,7 +307,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    ResultIterator cssri = WebUtils.getResultIterator(ri, CssLanguage.CSS_MIME_TYPE);
 
 	    if (cssri != null) {
-		CssParserResultCslWrapper result = (CssParserResultCslWrapper) cssri.getParserResult();
+		CssCslParserResult result = (CssCslParserResult) cssri.getParserResult();
                 if(result.getParseTree() != null) {
                     //the parser result seems to be quite ok,
                     //in case of serious parse issue the parse root is null
