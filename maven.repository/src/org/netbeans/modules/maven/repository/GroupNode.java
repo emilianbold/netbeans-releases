@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.repository;
 
 import java.awt.Image;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 
@@ -79,7 +80,7 @@ public class GroupNode extends AbstractNode {
         }
 
         protected @Override boolean createKeys(List<String> toPopulate) {
-            toPopulate.addAll(RepositoryQueries.getArtifacts(id, info));
+            toPopulate.addAll(RepositoryQueries.getArtifacts(id, Collections.singletonList(info)));
             return true;
         }
     }
