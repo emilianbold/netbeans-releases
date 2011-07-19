@@ -80,6 +80,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -88,7 +89,7 @@ import org.openide.util.TaskListener;
 /**
  * @author Tomas Mysik
  */
-public final class RemoteConnectionsPanel extends JPanel implements ChangeListener {
+public final class RemoteConnectionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
     private static final long serialVersionUID = -286975118754121236L;
 
     private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
@@ -616,6 +617,11 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         // because of correct coloring of list items (invalid configurations)
         refreshConfigList();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RemoteConnectionsPanel.class);
     }
 
     public static class ConfigListRenderer extends JLabel implements ListCellRenderer, UIResource {

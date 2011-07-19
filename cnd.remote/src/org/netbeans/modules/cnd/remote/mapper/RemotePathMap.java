@@ -452,7 +452,7 @@ public abstract class RemotePathMap extends PathMap {
 
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
-        private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000);
+        private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000); // NOI18N
         
         private CustomizableRemotePathMap(ExecutionEnvironment exc) {
             super(exc);

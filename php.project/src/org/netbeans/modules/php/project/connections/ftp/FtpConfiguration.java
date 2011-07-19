@@ -64,8 +64,8 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final boolean passiveMode;
     private final boolean ignoreDisconnectErrors;
 
+    // @GuardedBy(this)
     private String password;
-    private boolean passwordRead = false;
 
 
     public FtpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
@@ -132,11 +132,15 @@ public final class FtpConfiguration extends RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
-        if (!createWithSecrets && !passwordRead) {
-            password = readPassword(FtpConnectionProvider.PASSWORD);
-            passwordRead = true;
+        synchronized (this) {
+            if (!createWithSecrets && password == null) {
+                password = readPassword(FtpConnectionProvider.PASSWORD);
+            }
+            if (password == null) {
+                password = ""; // NOI18N
+            }
+            return password;
         }
-        return password != null ? password : ""; // NOI18N
     }
 
     @Override
