@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -346,7 +346,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 if (guard != null) {
                     if (guard instanceof APTToken) {
                         APTToken aptGuard = ((APTToken) guard);
-                        return OffsetableBase.create(file, aptGuard.getOffset(), aptGuard.getEndOffset());
+                        return new Offsetable(file, aptGuard.getOffset(), aptGuard.getEndOffset());
                     }
                 }
             } catch (FileNotFoundException ex) {

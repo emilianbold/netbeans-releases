@@ -72,7 +72,7 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     private CsmUID<CsmScope> scopeUID;
     
     private ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         //this.parent = parent;
         if( scope != null ) {
 	    setScope(scope);

@@ -77,10 +77,10 @@ public class TypeFactory {
     }
 
     public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file) {
-        return createType(classifier, ptrOperator, arrayDepth, ast, file, null);
+        return createType(classifier, ptrOperator, arrayDepth, ast, file, TypeImpl.getStartOffset(ast), TypeImpl.getEndOffset(ast));
     }
     
-    public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
+    public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
         boolean refence = false;
         int pointerDepth = 0;
         if (ptrOperator != null &&
@@ -133,7 +133,7 @@ public class TypeFactory {
             //}
             ptrOperator = ptrOperator.getNextSibling();
         }
-        return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file, offset);
+        return new TypeImpl(classifier, pointerDepth, refence, arrayDepth, ast, file, startOffset, endOffset);
     }
 
     public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth) {

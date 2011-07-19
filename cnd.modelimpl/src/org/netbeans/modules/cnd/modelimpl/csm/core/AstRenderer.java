@@ -790,7 +790,8 @@ public class AstRenderer {
         }
         if (token != null) {
             int rcurlyOffset = AstUtil.getFirstCsmAST(token).getEndOffset();
-            CsmOffsetable typeOffset = OffsetableBase.create(file, typeStartOffset, rcurlyOffset);
+            int startOffset = typeStartOffset;
+            int endOffset = rcurlyOffset;
             token = token.getNextSibling();
             boolean nothingBeforSemicolon = true;
             AST ptrOperator = null;
@@ -826,7 +827,7 @@ public class AstRenderer {
                             }
                         }
                         if (nameHolder != null) {
-                            CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file, typeOffset);
+                            CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file, startOffset, endOffset);
                             VariableImpl<?> var = createVariable(token, file, type, nameHolder, _static, _extern, container1, container2, null);
                             if (container2 != null) {
                                 container2.addDeclaration(var);
@@ -846,7 +847,7 @@ public class AstRenderer {
                             if (token.getNextSibling() != null && token.getNextSibling().getType() == CPPTokenTypes.COLON) {
                                 // it could be bit field
                                 // common type for all bit fields
-                                CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
+                                CsmType type = TypeFactory.createType(classifier, null, 0, null, file, startOffset, endOffset);
                                 if (renderBitFieldImpl(token, token, type, classifier)) {
                                     break Outer;
                                 }
@@ -856,8 +857,8 @@ public class AstRenderer {
                     case CPPTokenTypes.SEMICOLON: {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
-                            CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
-                            VariableImpl<?> var = VariableImpl.create(OffsetableBase.create(file, rcurlyOffset, rcurlyOffset),
+                            CsmType type = TypeFactory.createType(classifier, null, 0, null, file, startOffset, endOffset);
+                            VariableImpl<?> var = VariableImpl.create(new Offsetable(file, rcurlyOffset, rcurlyOffset),
                                     file, type, "", null, true, false, !isRenderingLocalContext()); // NOI18N
                             if (container2 != null) {
                                 container2.addDeclaration(var);

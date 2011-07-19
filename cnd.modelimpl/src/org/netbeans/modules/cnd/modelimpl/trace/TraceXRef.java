@@ -90,7 +90,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
@@ -1204,7 +1204,7 @@ public class TraceXRef extends TraceModel {
         public void outputLineAction(OutputEvent ev) {
             CsmFile file = fileUID.getObject();
             if (file != null) {
-                CsmUtilities.openSource(OffsetableBase.create(file, offset, offset));
+                CsmUtilities.openSource(new Offsetable(file, offset, offset));
             }
         }
 
