@@ -80,6 +80,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatus;
@@ -209,6 +210,13 @@ public class HgCommand {
 
     private static final String HG_RESOLVE_CMD = "resolve";             //NOI18N
     private static final String HG_RESOLVE_MARK_RESOLVED = "--mark";   //NOI18N
+    
+    private static final String HG_QSERIES_CMD = "qseries"; //NOI18N
+    private static final String HG_OPT_SUMMARY = "--summary"; //NOI18N
+    private static final String HG_QGOTO_CMD = "qgoto"; //NOI18N
+    private static final String HG_QPOP_CMD = "qpop"; //NOI18N
+    private static final String HG_QPUSH_CMD = "qpush"; //NOI18N
+    private static final String HG_OPT_ALL = "--all"; //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -383,6 +391,9 @@ public class HgCommand {
             HG_FETCH_CMD,
             HG_PULL_CMD,
             HG_MERGE_CMD,
+            HG_QGOTO_CMD,
+            HG_QPOP_CMD,
+            HG_QPUSH_CMD,
             HG_UNBUNDLE_CMD,
             HG_UPDATE_ALL_CMD
     ));
@@ -397,6 +408,9 @@ public class HgCommand {
         HG_MERGE_CMD,
         HG_PULL_CMD,
         HG_ROLLBACK_CMD,
+        HG_QGOTO_CMD,
+        HG_QPOP_CMD,
+        HG_QPUSH_CMD,
         HG_STRIP_CMD,
         HG_TAG_CMD,
         HG_UNBUNDLE_CMD,
@@ -418,6 +432,7 @@ public class HgCommand {
         HG_PARENT_CMD,
         HG_PUSH_CMD,
         HG_RESOLVE_CMD,
+        HG_QSERIES_CMD,
         HG_STATUS_CMD,
         HG_TAG_CMD,
         HG_TAGS_CMD,
@@ -3127,6 +3142,109 @@ public class HgCommand {
         }
 
         return list;
+    }
+
+    public static QPatch[] qListSeries (File repository) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QSERIES_CMD);
+
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_VERBOSE_CMD);
+        command.add(HG_OPT_SUMMARY);
+        
+        List<String> list = exec(command);
+        QPatch[] patches;
+        if (list.isEmpty()) {
+            patches = new QPatch[0];
+        } else {
+            patches = parsePatches(list);
+        }
+        return patches;
+    }
+
+    public static void qPushPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QPUSH_CMD);
+
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        if (onTopPatch == null) {
+            command.add(HG_OPT_ALL);
+        } else {
+            command.add(onTopPatch);
+        }
+        
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QPUSH_FAILED"), logger); //NOI18N
+        }
+    }
+
+    public static void qPopPatches (File repository, String onTopPatch, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QPOP_CMD);
+
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        if (onTopPatch == null) {
+            command.add(HG_OPT_ALL);
+        } else {
+            command.add(onTopPatch);
+        }
+        
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QPOP_FAILED"), logger); //NOI18N
+        }
+    }
+
+    public static void qGoToPatch (File repository, String patch, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QGOTO_CMD);
+
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(patch);
+        
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_QGOTO_FAILED"), logger); //NOI18N
+        }
+    }
+
+    private static QPatch[] parsePatches (List<String> list) {
+        List<QPatch> patches = new ArrayList<QPatch>(list.size());
+        Pattern p = Pattern.compile("^(\\b\\d+)\\s([AU])\\s([^:]+?):\\s(.*)$"); //NOI18N
+        if (patches.isEmpty()) {
+            Mercurial.LOG.log(Level.INFO, "No qpatches found: {0}", list);
+            for (String line : list) {
+                Matcher m = p.matcher(line);
+                if (m.matches()) {
+                    String status = m.group(2);
+                    String id = m.group(3);
+                    String message = m.group(4);
+                    patches.add(new QPatch(id, message, "A".equals(status))); //NOI18N
+                }
+            }
+        }
+        return patches.toArray(new QPatch[patches.size()]);
     }
 
     private static List<String> execEnv(List<? extends Object> command, List<String> env) throws HgException{
