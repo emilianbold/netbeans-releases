@@ -46,49 +46,51 @@ made subject to such option by the copyright holder.
             }
             -->
         </style>
-        <title>New PHP Project: Run Configuration</title>
+        <title>Manage Remote Connections</title>
     </head>
     <body>
         <h2>
-            New PHP Project: Run Configuration
+            Manage Remote Connections
         </h2>
         
-        <p>
-            Run configurations accommodate the most commonly used PHP development use cases. A run
-            configuration is a stored setting for running a PHP project. You can define several
-            configurations for one project and switch between them back and forth. Run configurations
-            apply to both running and debugging.
-        </p>
-        <p>
-            <strong>Note:</strong> During the project creation, the default run configuration is
-            defined. To define additional run configuration, customize your project setup.
-        </p>
+        <p>In this panel you create a new FTP/SFTP connection or reconfigure an existing remote connection.</p>
+        
         <ul>
-            <li>
-                <b>Run As:</b> Choose one of the following. The Run Configuration options change depending
-                on which Run As choice you make.
-                <ul><li>Local Web Site (running on local web server). The default option, described <a href="#runconfig-local">below</a>.</li>
-                    <li><a href="runconfig-remote.html">Remote Web Site (FTP/SFTP)</a></li>
-                    <li><a href="runconfig-script.html">Script (Run on command line)</a></li>
-                </ul>
-            </li>
-
-        </ul>
-        <h3><a name="runconfig-local"></a>Local Web Site options</h3>
-        <ul>
-            <li><b>Project URL:</b> By default, this is http://localhost/ + the path to the copy of your project sources
-                that is in your web server's public folder. You can change the URL if you have a different path mapped to your server.</li>
-            <li><b>Index File:</b> By default, this is index.php. Click <b>Browse...</b> to browse your project files for a
-                different index file.</li>
-            <li><b>Arguments:</b> Arguments for running the index file. For example, <tt>debug=true</tt>.
-            </li>
+            <li><b>Name:</b> The arbitrary name of the connection. Set the name in the
+                <a href="#create-new-connection">Create New Connection panel</a>.</li>
             
+            <li><b>Host name:</b> The root name of your FTP host, such as http://x10hosting.com.</li>
+            <li><b>User name:</b> Your user name on the FTP host.</li>
+            <li><b>Password:</b> Your password on the FTP host. Leave this field
+            blank and the IDE will prompt you for your password.</li>
+            <li><b>Initial directory:</b> The root directory on your host for all
+            of your projects. By default it is only a slash, meaning that your host name +
+            user name is your root directory.</li>
+            <li><b>Timeout (s):</b> Time in which the client waits for a server response
+            before timing out the connection. Timeout is in seconds.</li>
+            <li><b>Passive mode:</b> Tick this for the IDE to communicate with the server
+            in passive mode. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://slacksite.com/other/ftp.html">
+                    <param name="text" value="<html><u>Active FTP vs. Passive FTP, a Definitive Explanation</u>.</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object>
+            </li>
+            <li><b>Add...</b> Click to add a remote connection. The 
+                <a href="#create-new-connection">Create New Connection panel</a>
+            opens.</li>       
+            <li><b>Remove.</b> Click to remove the selected connection.</li>
+            <li><b>Test connection.</b> Click to send a test message to the
+            selected connection. The results appear directly in the Manage Remote 
+            Connections panel.</li>
         </ul>
-
-        <hr>
-        <p>
-            <small><a href="credits.html">Legal Notices</a></small>
-        </p>
+        <h3><a name="create-new-connection"></a>Create New Connection panel </h3>
+        <p>This panel opens when you click the Add... button in the Manage Remote
+        Connections panel.</p>
+        <ul>
+            <li><b>Connection Name:</b> Arbitrary name for the new connection.</li>
+            <li><b>Connection Type:</b> FTP or SFTP.</li>
+        </ul>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
         <table border="0" cellpadding="150">
             <tr>
                 <td>&nbsp;
