@@ -78,6 +78,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     private Boolean[] fileChanges = {false, false, false};
     private Thread[] fileChangeThreads = {null,null,null};
     private Exception[] exceptions = {null,null,null};
+    private FileObject[] files = {null,null,null};
     
     private FileChangeListener fca;
     private FileObject modulesRoot;
@@ -98,6 +99,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[0] = true;
                 fileChangeThreads[0] = Thread.currentThread ();
                 exceptions[0] = new Exception ("fileDataCreated " + fe.getFile());
+                files[0] = fe.getFile();
                 LOG.log(Level.INFO, "fileDataCreated {0}", fe.getFile());
             }
 
@@ -106,6 +108,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[2] = true;
                 fileChangeThreads[2] = Thread.currentThread ();
                 exceptions[2] = new Exception ("fileChanged " + fe.getFile());
+                files[2] = fe.getFile();
                 LOG.log(Level.INFO, "fileChanged {0}", fe.getFile());
             }
 
@@ -115,6 +118,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[1] = true;
                 fileChangeThreads[1] = Thread.currentThread ();
                 exceptions[1] = new Exception ("fileDeleted " + fe.getFile());
+                files[1] = fe.getFile();
                 LOG.log(Level.INFO, "fileDeleted {0}", fe.getFile());
             }
 
@@ -301,6 +305,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                     assertTrue("We expect a change in a config file", fileChanges[2]);
                 } else {
                     if (fileChanges[2]) {
+                        LOG.log(Level.WARNING, "Touch of the file: " + files[2], exceptions[2]);
                         AssertionFailedError afe = new AssertionFailedError("We don't expect any changes");
                         afe.initCause(exceptions[2]);
                         throw afe;
