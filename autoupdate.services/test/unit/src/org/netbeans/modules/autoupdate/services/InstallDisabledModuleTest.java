@@ -106,6 +106,13 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
         return false;
     }
 
+    @Override
+    boolean expectChangeOfModuleConfigFiles() {
+        // yes, the file created in setUp needs to be recreated in user directory
+        // so it is observed as a change of existing file
+        return true;
+    }
+
     protected String moduleCodeNameBaseForTest() {
         return "com.sun.testmodule.cluster"; //NOI18N
     }

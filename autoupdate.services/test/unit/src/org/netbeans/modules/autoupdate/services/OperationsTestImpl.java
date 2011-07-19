@@ -77,6 +77,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
     private Boolean[] fileChanges = {false, false, false};
     private Thread[] fileChangeThreads = {null,null,null};
     private Exception[] exceptions = {null,null,null};
+    private FileObject[] files = {null,null,null};
     
     private FileChangeListener fca;
     private FileObject modulesRoot;
@@ -97,6 +98,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[0] = true;
                 fileChangeThreads[0] = Thread.currentThread ();
                 exceptions[0] = new Exception ();
+                files[0] = fe.getFile();
                 LOG.log(Level.INFO, "fileDataCreated {0}", fe.getFile());
             }
 
@@ -105,6 +107,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[2] = true;
                 fileChangeThreads[2] = Thread.currentThread ();
                 exceptions[2] = new Exception ();
+                files[2] = fe.getFile();
                 LOG.log(Level.INFO, "fileChanged {0}", fe.getFile());
             }
 
@@ -114,6 +117,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
                 fileChanges[1] = true;
                 fileChangeThreads[1] = Thread.currentThread ();
                 exceptions[1] = new Exception ();
+                files[1] = fe.getFile();
                 LOG.log(Level.INFO, "fileDeleted {0}", fe.getFile());
             }
 
@@ -188,6 +192,9 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
 
     boolean incrementNumberOfModuleConfigFiles() {
         return true;
+    }
+    boolean expectChangeOfModuleConfigFiles() {
+        return false;
     }
     
     /*public void installModuleDirect(UpdateUnit toInstall) throws Exception {
@@ -292,7 +299,14 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
             if (incrementNumberOfModuleConfigFiles()) {
                 assertTrue (fileChanges[0]);
             } else {
-                assertFalse("Don't expect any changes", fileChanges[2]);
+                if (expectChangeOfModuleConfigFiles()) {
+                    assertTrue("The config files should have been modified", fileChanges[2]);
+                } else {
+                    if (fileChanges[2]) {
+                        LOG.log(Level.WARNING, "Touch of the file: " + files[2], exceptions[2]);
+                        fail("Don't expect any changes!");
+                    }
+                }
                 return installElement;
             }
             fileChanges[0]=false;
