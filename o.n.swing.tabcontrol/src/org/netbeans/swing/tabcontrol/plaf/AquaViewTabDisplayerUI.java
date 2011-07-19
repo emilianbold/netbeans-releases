@@ -122,6 +122,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 && !isSelected(index);
     }
 
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
@@ -135,8 +136,13 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
 
-                textW = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation( x + textW+2*TXT_X_PAD-2, y + (height-buttonsSize.height)/2 );
+                if( width < buttonsSize.width+ICON_X_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    textW = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
+                    buttons.setLocation( x + textW+2*TXT_X_PAD-2, y + (height-buttonsSize.height)/2 );
+                }
             }
         } else {
             textW = width - 2 * TXT_X_PAD;
@@ -172,6 +178,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                           HtmlRenderer.STYLE_TRUNCATE, true);
     }
     
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
         Color borderColor = UIManager.getColor("NbTabControl.borderColor");
@@ -184,7 +191,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 g.drawLine(x+1, y+1, x+1, y+height-1);
             }
         }
-        if( index < getDataModel().size()-1 ) {
+        if( index < getDataModel().size()-1 || !isUseStretchingTabs() ) {
             g.setColor(borderColor);
             g.drawLine(x+width, y, x+width, y+height);
             if( !isSelected(index) ) {
@@ -208,6 +215,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
     }
 
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         Graphics2D g2d = (Graphics2D) g;
@@ -266,6 +274,20 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/mac_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 

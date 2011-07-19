@@ -15,7 +15,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -26,7 +26,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="mainClassLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="495" max="32767" attributes="0"/>
+              <EmptySpace pref="523" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
@@ -39,18 +39,18 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jTextFieldEjbModuleName" alignment="0" pref="246" max="32767" attributes="2"/>
-                  <Component id="jTextFieldWebAppName" alignment="0" pref="246" max="32767" attributes="2"/>
-                  <Component id="jTextFieldCarName" alignment="0" pref="246" max="32767" attributes="2"/>
-                  <Component id="mainClassTextFieldWithinEar" alignment="0" pref="246" max="32767" attributes="0"/>
+                  <Component id="jTextFieldEjbModuleName" alignment="0" pref="251" max="32767" attributes="2"/>
+                  <Component id="jTextFieldWebAppName" alignment="0" pref="251" max="32767" attributes="2"/>
+                  <Component id="jTextFieldCarName" alignment="0" pref="251" max="32767" attributes="2"/>
+                  <Component id="mainClassTextFieldWithinEar" alignment="0" pref="251" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
           </Group>
-          <Component id="warningPlaceHolderPanel" alignment="0" pref="567" max="32767" attributes="0"/>
+          <Component id="warningPlaceHolderPanel" alignment="0" pref="603" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabelEnterprise" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jComboBoxEnterprise" pref="366" max="32767" attributes="0"/>
+              <Component id="jComboBoxEnterprise" pref="374" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
@@ -61,15 +61,15 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="cdiCheckbox" pref="441" max="32767" attributes="2"/>
+                      <Component id="cdiCheckbox" pref="469" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="mainClassTextField" pref="379" max="32767" attributes="2"/>
+                      <Component id="mainClassTextField" pref="403" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jTextFieldContextPath" pref="379" max="32767" attributes="2"/>
+                      <Component id="jTextFieldContextPath" pref="403" max="32767" attributes="2"/>
                       <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -78,7 +78,7 @@
                       <Component id="addServerButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="serverLibraryCheckbox" pref="379" max="32767" attributes="2"/>
+                      <Component id="serverLibraryCheckbox" pref="403" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Component id="j2eeSpecComboBox" alignment="0" min="-2" max="-2" attributes="2"/>

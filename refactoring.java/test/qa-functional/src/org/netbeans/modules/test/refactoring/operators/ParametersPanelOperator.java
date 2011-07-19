@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.test.refactoring.operators;
 
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
@@ -59,6 +59,7 @@ public class ParametersPanelOperator extends JDialogOperator {
     private JButtonOperator back;
     private JButtonOperator preview;
     private JButtonOperator refactor;
+    private JCheckBoxOperator openInNewTab;
     
     public JButtonOperator getBack() {
         if(back==null) {
@@ -79,6 +80,13 @@ public class ParametersPanelOperator extends JDialogOperator {
             refactor = new JButtonOperator(this, "Refactor");            
         }
         return refactor;
+    }
+
+    public JCheckBoxOperator getOpenInNewTab() {
+        if(openInNewTab == null) {
+            openInNewTab = new JCheckBoxOperator(this, "Open In New Tab");
+        }
+        return openInNewTab;
     }
     
     public FindUsagesClassOperator getFindUsagesClassOperator() {

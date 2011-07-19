@@ -123,13 +123,7 @@ public class UnitDetails extends DetailsPanel {
         }
     }
 
-    private void setUnitText(Unit u, StringBuilder text) {
-        getDetails().setText(text.toString());
-        setUnitHighlighing(u);
-    }
-
-    private StringBuilder getUnitText(Unit u, boolean collectDependencies) {
-        StringBuilder text = new StringBuilder();
+    private void buildUnitText(Unit u, StringBuilder text, boolean collectDependencies) {
         if (u instanceof Unit.Available) {
             Unit.Available u1 = (Unit.Available) u;
             Image c = u1.getSourceIcon();
@@ -190,6 +184,27 @@ public class UnitDetails extends DetailsPanel {
         if (desc != null && desc.length() > 0) {
             text.append("<br><br><h4>" + getBundle("Unit_InternalUpdates_Title") + "</h4>"); // NOI18N
             text.append(desc);
+        }
+    }
+
+    private void setUnitText(Unit u, StringBuilder text) {
+        getDetails().setText(text.toString());
+        setUnitHighlighing(u);
+    }
+
+    private StringBuilder getUnitText(Unit u, boolean collectDependencies) {
+        StringBuilder text = new StringBuilder();
+        for (int i = 0; ; i++) {
+            try {
+                buildUnitText(u, text, collectDependencies);
+            } catch (IllegalStateException ex) {
+                if (i > 100) {
+                    throw ex;
+                }
+                Unit.log.log(Level.INFO, "Can't compute getUnitText for " + u, ex); // NOI18N
+                continue;
+            }
+            break;
         }
         return text;
     }

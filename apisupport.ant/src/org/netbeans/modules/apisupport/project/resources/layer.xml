@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-apisupport-project">
+            <folder name="Customizer">
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.indent.project.api.Customizers.createFormattingCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-apisupport-project-suite">
+            <folder name="Actions"/>
+        </folder>
+    </folder>
+    <folder name="ProjectXMLCatalog">
+        <folder name="nb-module-project">
+            <file name="2.xsd" url="nb-module-project2.xsd"/>
+            <file name="3.xsd" url="nb-module-project3.xsd"/>
+        </folder>
+        <folder name="nb-module-project-private">
+            <file name="1.xsd" url="nb-module-project-private.xsd"/>
+        </folder>
+        <folder name="nb-module-suite-project">
+            <file name="1.xsd" url="../suite/resources/nb-module-suite-project.xsd"/>
+        </folder>
+        <folder name="nb-module-suite-project-private">
+            <file name="1.xsd" url="../suite/resources/nb-module-suite-project-private.xsd"/>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="Licenses">
+            <file name="license-cddl-netbeans-sun.txt" url="license-cddl-netbeans-sun.txt">
+                <attr name="template" boolvalue="true"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.Bundle#Templates/Licenses/license-cddl-netbeans-sun.txt"/>
+                <attr name="mavenLicenseURL" stringvalue="http://www.netbeans.org/cddl-gplv2.html"/>
+            </file>
+        </folder>
+        <folder name="Project">
+            <folder name="APISupport">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport"/>
+                <attr name="position" intvalue="900"/>
+                <file name="emptyModule">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/emptyModule"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/resources/module.png"/>
+                    <attr name="position" intvalue="100"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createModuleIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/emptyModule.html"/>
+                </file>
+                <file name="emptySuite">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/emptySuite"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/suite/resources/suite.png"/>
+                    <attr name="position" intvalue="200"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createSuiteIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/emptySuite.html"/>
+                </file>
+                <file name="libraryModule">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/libraryModule"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/resources/module.png"/>
+                    <attr name="position" intvalue="300"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createLibraryModuleIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/libraryModule.html"/>
+                </file>
+                <file name="emptyApplication">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/emptyApplication"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/suite/resources/suite.png"/>
+                    <attr name="position" intvalue="400"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createApplicationIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/emptyApplication.html"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

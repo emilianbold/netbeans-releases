@@ -82,6 +82,9 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             assert reg != null;
             
             Description info = findInfo(e);
+            if (info == null) {
+                throw new LayerGenerationException("Cannot find TopComponent.Description for this element", e);
+            }
             String id = info.preferredID().replace('.', '-');
             
             String role = reg.role();

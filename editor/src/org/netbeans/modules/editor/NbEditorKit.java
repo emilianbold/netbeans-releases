@@ -975,7 +975,7 @@ public class NbEditorKit extends ExtKit implements Callable {
             }
         };
         pane.setDocument(doc);
-        HighlightingManager.getInstance().getHighlights(pane, HighlightsLayerFilter.IDENTITY);
+        HighlightingManager.getInstance(pane).getBottomHighlights();
 
         // initialize FoldHierarchy (#172381)
         FoldHierarchy.get(pane).getRootFold();

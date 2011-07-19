@@ -74,6 +74,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -340,10 +341,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            String prefix = component.getDocument().getText(offset, newOffset - offset);
-                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
+                            TokenSequence<JavaTokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence(JavaTokenId.language());
+                            if (ts.move(offset) == 0 && ts.moveNext()) {
+                                int len = newOffset - offset;
+                                if (len >= 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                                        && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                                    filterPrefix = ts.token().text().toString().substring(0, len);
+                                }
+                            }
                             if (filterPrefix == null) {
-                                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
+                                String prefix = component.getDocument().getText(offset, newOffset - offset);
+                                if (prefix.length() > 0 && Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
                                     return false;
                             } else if (filterPrefix.length() == 0) {
                                 anchorOffset = newOffset;
@@ -3371,7 +3382,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, prefix)) {
                 String value = completion.getValue().trim();
-                if (value.length() > 0) {
+                if (value.length() > 0 && startsWith(env, value, prefix)) {
                     TypeMirror type = member.getReturnType();
                     TypeElement typeElement = null;
                     while (type.getKind() == TypeKind.ARRAY) {

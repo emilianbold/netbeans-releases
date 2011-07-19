@@ -300,6 +300,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.wsitest</friend>
+                <friend>org.netbeans.modules.websvc.owsm</friend>
                 <package>org.netbeans.modules.websvc.api.customization.model</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.bindings</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>

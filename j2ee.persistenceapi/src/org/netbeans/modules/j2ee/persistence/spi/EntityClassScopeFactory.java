@@ -63,6 +63,16 @@ public final class EntityClassScopeFactory {
      * Creates an EntityClassScope from the given EntityClassScopeImplementation.
      */
     public static EntityClassScope createEntityClassScope(EntityClassScopeImplementation impl) {
+        if(EntityClassScopeAccessor.DEFAULT == null) {//initialize accessor
+            Class c = EntityClassScope.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (Exception ex) {
+                // XXX should probably use ErrorManager, but this could
+                // be called very early during the startup, when EM is not initialized yet?
+                ex.printStackTrace();
+            }
+        }
         return EntityClassScopeAccessor.DEFAULT.createEntityClassScope(impl);
     }
 }

@@ -764,7 +764,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
             cont.open();
             cont.requestActive();
-            if (isQuery && !parametersPanel.isCreateNewTab()) {
+            if (isQuery && parametersPanel!=null && !parametersPanel.isCreateNewTab()) {
                 cont.removePanel(null);
             }
             cont.addPanel(this);

@@ -58,7 +58,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author ondra
  */
-public class HgCommandTest extends AbstractHgTest {
+public class HgCommandTest extends AbstractHgTestCase {
 
     public HgCommandTest(String arg0) throws IOException {
         super(arg0);

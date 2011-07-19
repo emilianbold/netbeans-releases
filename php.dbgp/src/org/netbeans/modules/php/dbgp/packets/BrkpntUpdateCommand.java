@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import org.netbeans.modules.php.dbgp.packets.BrkpntSetCommand.State;
+
 
 
 
@@ -50,11 +52,13 @@ package org.netbeans.modules.php.dbgp.packets;
  * @author ads
  *
  */
-public class BrkpntUpdateCommand extends BrkpntSetCommand {
+public class BrkpntUpdateCommand extends DbgpCommand {
 
-    public  static final String UPDATE      = "breakpoint_update";  // NOI18N
-    
-    static final String ID_ARG              = "-d ";                // NOI18N
+    public static final String UPDATE = "breakpoint_update"; // NOI18N
+    static final String ID_ARG = "-d "; // NOI18N
+    private static final String STATE_ARG = "-s "; // NOI18N
+    private String myId;
+    private State state;
 
     public BrkpntUpdateCommand( String transactionId , String brkpntId ) {
         super( UPDATE , transactionId);
@@ -65,17 +69,24 @@ public class BrkpntUpdateCommand extends BrkpntSetCommand {
         return myId;
     }
     
-    @Override
-    protected String getArguments()
-    {
-        String setArgs = super.getArguments();
-        StringBuilder builder = new StringBuilder( setArgs );
-        builder.append( SPACE );
-        builder.append( ID_ARG );
-        builder.append( getBreakpointId() );
-        return builder.toString();
+    public void setState(State state) {
+        this.state = state;
     }
     
-    private String myId;
+    @Override
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(ID_ARG);
+        builder.append(getBreakpointId());
+        builder.append(SPACE);
+        builder.append(STATE_ARG);
+        builder.append(state.toString());
+        return builder.toString();
+    }
+
+    @Override
+    public boolean wantAcknowledgment() {
+        return true;
+    }
 
 }

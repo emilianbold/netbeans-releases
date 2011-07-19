@@ -50,9 +50,9 @@ made subject to such option by the copyright holder.
 
     <property name="nb_all" location="${whitelist-test.basedir}/../../.."/>
     <property name="temp_dir" location="${whitelist-test.basedir}/temp"/>
-    <property name="lime6_zip" location="${temp_dir}/lime6.zip"/>
-    <property name="lime6_dir" location="${temp_dir}/lime6"/>
-    <property name="lime6_dest_dir" location="${whitelist-test.basedir}/../qa-functional/data/lime6"/>
+    <property name="tomcat6_zip" location="${temp_dir}/tomcat6.zip"/>
+    <property name="tomcat6_dir" location="${temp_dir}/tomcat6"/>
+    <property name="tomcat6_dest_dir" location="${whitelist-test.basedir}/../qa-functional/data/tomcat6"/>
     <property name="work_dir" location="${whitelist-test.basedir}/../../build/test/qa-functional/work"/>
     <condition property="ant.executable" value="ant.bat" else="ant">
         <os family="windows"/>
@@ -69,24 +69,24 @@ made subject to such option by the copyright holder.
             Execute
 
             ant test             to perform measurement
-            ant unprepare        to remove LimeWire project from ide.kit test data dir
+            ant unprepare        to remove Tomcat project from ide.kit test data dir
         </echo>
     </target>
     
     <!-- Download -->
 
-    <target name="init-download-project" depends="init-prepare,init-unzip-project" if="lime6_zip">
-        <available property="lime6_zip_exists" file="${lime6_zip}"/>
+    <target name="init-download-project" depends="init-prepare,init-unzip-project" if="tomcat6_zip">
+        <available property="tomcat6_zip_exists" file="${tomcat6_zip}"/>
         <condition property="do-download-project">
             <and>
                 <not>
-                    <isset property="lime6_dir_exists"/>
+                    <isset property="tomcat6_dir_exists"/>
                 </not>
                 <not>
-                    <isset property="lime6_zip_exists"/>
+                    <isset property="tomcat6_zip_exists"/>
                 </not>
                 <not>
-                    <isset property="lime6_dest_dir_exists"/>
+                    <isset property="tomcat6_dest_dir_exists"/>
                 </not>
             </and>
         </condition>
@@ -94,39 +94,39 @@ made subject to such option by the copyright holder.
     
     <target name="download-project" depends="init-download-project" if="do-download-project">
         <mkdir dir="${temp_dir}"/>
-        <get src="http://hg.netbeans.org/binaries/FDCBE13B6CA7B154F6EE29BEF3B9404F7A7B1A57-lime6.zip"
-            dest="${temp_dir}/lime6.zip"/>
+        <get src="http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip"
+            dest="${temp_dir}/tomcat6.zip"/>
     </target>
     
     <!-- Prepare -->
 
-    <target name="init-unzip-project" depends="init-prepare" if="lime6_dir">
-        <available property="lime6_dir_exists" file="${lime6_dir}"/>
+    <target name="init-unzip-project" depends="init-prepare" if="tomcat6_dir">
+        <available property="tomcat6_dir_exists" file="${tomcat6_dir}"/>
         <condition property="do-unzip-project">
             <and>
                 <not>
-                    <isset property="lime6_dir_exists"/>
+                    <isset property="tomcat6_dir_exists"/>
                 </not>
                 <not>
-                    <isset property="lime6_dest_dir_exists"/>
+                    <isset property="tomcat6_dest_dir_exists"/>
                 </not>
             </and>
         </condition>
     </target>
 
     <target name="unzip-project" depends="init-unzip-project,download-project" if="do-unzip-project">
-        <unzip dest="${temp_dir}" src="${lime6_zip}"/>
-        <delete file="${lime6_dir}"/>
+        <unzip dest="${temp_dir}" src="${tomcat6_zip}"/>
+        <delete file="${tomcat6_dir}"/>
     </target>
 
-    <target name="init-prepare" depends="" if="lime6_dest_dir">
-        <available property="lime6_dest_dir_exists" file="${lime6_dest_dir}"/>
+    <target name="init-prepare" depends="" if="tomcat6_dest_dir">
+        <available property="tomcat6_dest_dir_exists" file="${tomcat6_dest_dir}"/>
     </target>
 
-    <target name="prepare" depends="init-prepare,unzip-project" unless="lime6_dest_dir_exists">
-<!--        <mkdir dir="${lime6_dest_dir}"/>-->
-        <copy todir="${lime6_dest_dir}">
-            <fileset dir="${lime6_dir}"/>
+    <target name="prepare" depends="init-prepare,unzip-project" unless="tomcat6_dest_dir_exists">
+<!--        <mkdir dir="${tomcat6_dest_dir}"/>-->
+        <copy todir="${tomcat6_dest_dir}">
+            <fileset dir="${tomcat6_dir}"/>
         </copy>
         <echo>
             Environment is prepared to run the project
@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
 
     <target name="clean">
         <delete dir="${work_dir}"/>
-        <delete dir="${lime6_dest_dir}"/>
+        <delete dir="${tomcat6_dest_dir}"/>
     </target>
 
     <!-- Don't use this task to run the test -->
@@ -173,7 +173,7 @@ made subject to such option by the copyright holder.
     <!-- Don't use this task to run the test  -->
     <target name="test3">
         <echo>
-            Startup with LimeWire project test
+            Startup with Tomcat project test
             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         </echo>
         <exec executable="${ant.executable}" dir="${whitelist-test.basedir}/../..">
@@ -197,7 +197,7 @@ made subject to such option by the copyright holder.
 
             ant unprepare
 
-            to remove LimeWire project project from ide.kit test data dir
+            to remove Tomcat project project from ide.kit test data dir
             (recommended if you're going to run ide.kit tests such as commit-validation suite)
         </echo>
     </target>
@@ -205,7 +205,7 @@ made subject to such option by the copyright holder.
     <!-- Unprepare -->
     
     <target name="unprepare">
-        <delete dir="${lime6_dest_dir}"/>
+        <delete dir="${tomcat6_dest_dir}"/>
         <delete dir="${temp_dir}"/>
     </target>
         

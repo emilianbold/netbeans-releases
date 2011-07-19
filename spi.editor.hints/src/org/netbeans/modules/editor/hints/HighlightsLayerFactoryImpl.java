@@ -61,7 +61,7 @@ public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
         OffsetsBag bag = AnnotationHolder.getBag(context.getDocument());
         
         return new HighlightsLayer[] {
-            HighlightsLayer.create(AnnotationHolder.class.getName(), ZOrder.SHOW_OFF_RACK.forPosition(420), false, bag),
+            HighlightsLayer.create(AnnotationHolder.class.getName(), ZOrder.SHOW_OFF_RACK.forPosition(420), true, bag),
         };
     }
 

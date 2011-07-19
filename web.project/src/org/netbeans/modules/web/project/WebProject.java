@@ -1518,7 +1518,17 @@ public final class WebProject implements Project {
             listeners.remove(listener);
         }
 
+        private boolean isCopyOnSaveEnabled() {
+            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COMPILE_ON_SAVE));
+        }
+        
         public void initialize() throws FileStateInvalidException {
+            WebProject.this.evaluator().addPropertyChangeListener(this);
+
+            if (!isCopyOnSaveEnabled()) {
+                return;
+            }
+            
             docBase = getWebModule().getDocumentBase();
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
             webInf = getWebModule().getWebInf();
@@ -1547,8 +1557,6 @@ public final class WebProject implements Project {
 
             LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
             LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
-
-            WebProject.this.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
@@ -1573,6 +1581,7 @@ public final class WebProject implements Project {
         public void propertyChange(PropertyChangeEvent evt) {
             if (WebProjectProperties.WEB_DOCBASE_DIR.equals(evt.getPropertyName())
                     || WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())
+                    || WebProjectProperties.J2EE_COMPILE_ON_SAVE.equals(evt.getPropertyName())
                     || WebProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
                 try {
                     cleanup();

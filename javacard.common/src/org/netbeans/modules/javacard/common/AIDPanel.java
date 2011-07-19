@@ -324,15 +324,15 @@ public final class AIDPanel extends javax.swing.JPanel implements DocumentListen
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(titleLabel, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout spacerLayout = new org.jdesktop.layout.GroupLayout(spacer);
+        javax.swing.GroupLayout spacerLayout = new javax.swing.GroupLayout(spacer);
         spacer.setLayout(spacerLayout);
         spacerLayout.setHorizontalGroup(
-            spacerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 511, Short.MAX_VALUE)
+            spacerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 512, Short.MAX_VALUE)
         );
         spacerLayout.setVerticalGroup(
-            spacerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 7, Short.MAX_VALUE)
+            spacerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 4, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();

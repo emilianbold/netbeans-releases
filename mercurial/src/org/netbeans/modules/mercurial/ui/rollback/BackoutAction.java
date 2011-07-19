@@ -112,7 +112,7 @@ public class BackoutAction extends ContextAction {
         if (root == null) return;
          
 
-        final Backout backout = new Backout(root, repoRev);
+        final Backout backout = new Backout(root, repoRev.getLog());
         if (!backout.showDialog()) {
             return;
         }

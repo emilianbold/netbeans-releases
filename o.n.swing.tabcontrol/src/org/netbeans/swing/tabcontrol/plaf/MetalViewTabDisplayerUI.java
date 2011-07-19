@@ -114,6 +114,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return new MetalViewTabDisplayerUI((TabDisplayer) c);
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -127,6 +128,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      * Overrides basic paint mathod, adds painting of overall blue or gray
      * bottom area, depending on activation status value
      */
+    @Override
     public void paint(Graphics g, JComponent c) {
         super.paint(g, c);
         paintBottomBorder(g, c);
@@ -144,6 +146,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         g.drawLine(1, bounds.height - 1, bounds.width - 1, bounds.height - 1);
     }
 
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
@@ -155,9 +158,14 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             int buttonsWidth = 0;
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
-                buttonsWidth = buttonsSize.width + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD;
-                txtWidth = width - (buttonsWidth + 2*TXT_X_PAD);
-                buttons.setLocation( x + txtWidth+2*TXT_X_PAD+ICON_X_LEFT_PAD, y + (height-buttonsSize.height)/2+1 );
+                if( width < buttonsSize.width+ICON_X_LEFT_PAD+ICON_X_RIGHT_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    buttonsWidth = buttonsSize.width + ICON_X_LEFT_PAD + ICON_X_RIGHT_PAD;
+                    txtWidth = width - (buttonsWidth + TXT_X_PAD);
+                    buttons.setLocation( x + txtWidth+TXT_X_PAD+ICON_X_LEFT_PAD, y + (height-buttonsSize.height)/2-1 );
+                }
             }
             
             txtWidth = (int)HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
@@ -179,6 +187,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
     }
 
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
         Color highlight = getBorderHighlight();
@@ -206,11 +215,15 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         }
         if (!isSelected) {
             g.drawLine(0, height - 4, isLast ? width - 1 : width, height - 4);
+        } else if( isLast ) {
+            g.setColor(shadow);
+            g.drawLine(width-1, 0, width-1, height - 5);
         }
 
         g.translate(-x, -y);
     }
 
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         boolean selected = isSelected(index);
@@ -226,6 +239,11 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             g.setColor(getInactBgColor());
             g.fillRect(x, y, width, height - 3);
         }
+    }
+
+    @Override
+    int getModeButtonVerticalOffset() {
+        return -1;
     }
 
     private void paintBump(int index, Graphics g, int x, int y, int width,
@@ -310,6 +328,20 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/metal_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 

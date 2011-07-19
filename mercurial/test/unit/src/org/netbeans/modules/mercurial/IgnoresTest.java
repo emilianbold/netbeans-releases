@@ -65,7 +65,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author tomas
  */
-public class IgnoresTest extends AbstractHgTest {
+public class IgnoresTest extends AbstractHgTestCase {
 
     public IgnoresTest(String arg0) {
         super(arg0);
@@ -231,7 +231,7 @@ public class IgnoresTest extends AbstractHgTest {
         assertIgnoreStatus(parentFiles, ignoredFiles);
     }
 
-    private void assertIgnoreStatus (File[] parents, Set<File> ignoredFiles) {
+    private void assertIgnoreStatus (File[] parents, Set<File> ignoredFiles) throws InterruptedException {
         for (File parent : parents) {
             assertIgnoreStatus(parent, ignoredFiles);
             File[] files = parent.listFiles();
@@ -241,14 +241,28 @@ public class IgnoresTest extends AbstractHgTest {
         }
     }
 
-    private void assertIgnoreStatus (File file, Set<File> ignoredFiles) {
+    private void assertIgnoreStatus (File file, Set<File> ignoredFiles) throws InterruptedException {
         FileInformation info = getCache().getCachedStatus(file);
-        int status = info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
-        if (expectedIgnored(file, ignoredFiles)) {
-            assertTrue("Supposed to be ignored: " + file.getAbsolutePath(), status != 0);
-        } else {
-            assertTrue("Supposed to be normal: " + file.getAbsolutePath(), status == 0);
+        String msg = null;
+        for (int i = 0; i < 100; ++i) {
+            int status = info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+            msg = null;
+            if (expectedIgnored(file, ignoredFiles)) {
+                if (status == 0) {
+                    msg = "Supposed to be ignored: " + file.getAbsolutePath();
+                }
+            } else {
+                if (status != 0) {
+                    msg = "Supposed to be normal: " + file.getAbsolutePath();
+                }
+            }
+            if (msg == null) {
+                break;
+            } else {
+                Thread.sleep(200);
+            }
         }
+        assertNull(msg, msg);
     }
 
     private boolean expectedIgnored (File file, Set<File> ignoredFiles) {

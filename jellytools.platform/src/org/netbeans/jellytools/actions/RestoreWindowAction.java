@@ -61,9 +61,11 @@ public class RestoreWindowAction extends Action {
     /** "Window" main menu item. */
     private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                                                      "Menu/Window");
-    
+    private static final String configureWindowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
+            "Menu/Window/ConfigureWindow");
     /** "Window|Restore Window" */
     private static final String windowRestorePath = windowItem+"|"+
+                configureWindowItem + "|"+
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                         "CTL_UnmaximizeWindowAction");
 

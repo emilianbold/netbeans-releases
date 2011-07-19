@@ -104,6 +104,14 @@ public class UtilitiesTest extends NbTestCase {
         performNameGuessTest("package test; public class Test {public void t() {getDo();} public int getDo() {return 0;}}", 52, "aDo");
     }
     
+    public void testNameGuessCapitalLetters1() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() {getFOOBar();} public int getFOOBar() {return 0;}}", 52, "fooBar");
+    }
+
+    public void testNameGuessCapitalLetters2() throws Exception {
+        performNameGuessTest("package test; public class Test {public void t() {getBBar();} public int getBBar() {return 0;}}", 52, "bBar");
+    }
+
     public void testNameGuessKeywordNoShortName() throws Exception {
         performNameGuessTest("package test; public class Test {public void t() {t(this);}}", 54, "aThis");
     }

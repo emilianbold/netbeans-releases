@@ -82,6 +82,7 @@ public interface Constants {
     public static final String PLUGIN_EJB = "maven-ejb-plugin";//NOI18N
     public static final String PLUGIN_EAR = "maven-ear-plugin";//NOI18N
     public static final String PLUGIN_JAR = "maven-jar-plugin";//NOI18N
+    public static final String PLUGIN_APPCLIENT = "maven-acr-plugin";//NOI18N
     public static final String PLUGIN_SUREFIRE = "maven-surefire-plugin";//NOI18N
     public static final String PLUGIN_CHECKSTYLE = "maven-checkstyle-plugin";//NOI18N
     

@@ -45,8 +45,11 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -55,9 +58,11 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
 import org.netbeans.lib.editor.bookmarks.actions.ToggleBookmarkAction;
+import org.openide.awt.Actions;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -67,7 +72,7 @@ import org.openide.util.actions.NodeAction;
  * @version 1.00
  */
 
-public class WrapperBookmarkAction extends NodeAction {
+public class WrapperBookmarkAction extends AbstractAction implements PropertyChangeListener{
     
     static final long serialVersionUID = 0L;
     
@@ -75,69 +80,31 @@ public class WrapperBookmarkAction extends NodeAction {
 
     public WrapperBookmarkAction(Action originalAction) {
         this.originalAction = originalAction;
+        putValue(Action.NAME, originalAction.getValue(Action.SHORT_DESCRIPTION));
+        putValue(Action.SHORT_DESCRIPTION, Actions.cutAmpersand( (String) originalAction.getValue(Action.SHORT_DESCRIPTION)));
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon( (String) originalAction.getValue(BaseAction.ICON_RESOURCE_PROPERTY),false));
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         // Re-add the property as SystemAction.putValue() is final
 //        putValue(BaseAction.ICON_RESOURCE_PROPERTY, getValue(BaseAction.ICON_RESOURCE_PROPERTY));
-    }
-    
-    @Override
-    public String getName() {
-        String name = (String)originalAction.getValue(Action.SHORT_DESCRIPTION);
-        assert (name != null);
-        return name;
+        updateEnabled();
+        originalAction.addPropertyChangeListener(this);
     }
 
+
     @Override
-    public void performAction(Node[] activatedNodes) {
-        JTextComponent editorPane = getEditorPane (activatedNodes);
-        if (editorPane != null) {
-            ActionEvent paneEvt = new ActionEvent (editorPane, 0, "");
-            originalAction.actionPerformed (paneEvt);
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("enabled".equals(evt.getPropertyName())) { // NOI18N
+            updateEnabled();
         }
     }
     
-    @Override
-    protected boolean enable (Node[] activatedNodes) {
-        if (activatedNodes == null || activatedNodes.length != 1) {
-            return false;
-        }
-
-        if (EditorRegistry.componentList().isEmpty()) {
-            return false;
-        }
-
-        return activatedNodes[0].getLookup().lookup(EditorCookie.class) != null;
-    }
-    
-    private static JTextComponent getEditorPane (Node[] activatedNodes) {
-        if (activatedNodes != null && activatedNodes.length > 0) {
-            Set<JTextComponent> editors = new HashSet<JTextComponent> ();
-            for (Node node : activatedNodes) {
-                JTextComponent pane = ToggleBookmarkAction.findComponent(node.getLookup());
-                if (pane != null) {
-                    editors.add(pane);
-                }
-            }
-            if (editors.size () == 1) {
-                return editors.iterator ().next ();
-            }
-        }
-        return null;
+    private void updateEnabled() {
+        setEnabled(originalAction.isEnabled());
     }
 
     @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    protected String iconResource() {
-        return (String)originalAction.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
+    public void actionPerformed(ActionEvent e) {
+        originalAction.actionPerformed(e);
     }
 
     public static final class Next extends WrapperBookmarkAction {

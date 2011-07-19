@@ -58,20 +58,25 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final String host;
     private final int port;
     private final String userName;
-    private final String password;
     private final boolean anonymousLogin;
     private final String initialDirectory;
     private final int timeout;
     private final boolean passiveMode;
     private final boolean ignoreDisconnectErrors;
 
-    public FtpConfiguration(final ConfigManager.Configuration cfg) {
-        super(cfg);
+    private String password;
+    private boolean passwordRead = false;
+
+
+    public FtpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        super(cfg, createWithSecrets);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        password = readPassword(cfg, FtpConnectionProvider.PASSWORD);
+        if (createWithSecrets) {
+            password = readPassword(FtpConnectionProvider.PASSWORD);
+        }
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
@@ -127,6 +132,10 @@ public final class FtpConfiguration extends RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
+        if (!createWithSecrets && !passwordRead) {
+            password = readPassword(FtpConnectionProvider.PASSWORD);
+            passwordRead = true;
+        }
         return password != null ? password : ""; // NOI18N
     }
 
@@ -143,8 +152,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
     @Override
     public boolean saveProperty(String key, String value) {
         if (FtpConnectionProvider.PASSWORD.equals(key)) {
-            // value cannot be used (is scrambled)
-            savePassword(password, FtpConnectionProvider.get().getDisplayName());
+            savePassword(ConfigManager.decode(value), FtpConnectionProvider.get().getDisplayName());
             return true;
         }
         return false;
