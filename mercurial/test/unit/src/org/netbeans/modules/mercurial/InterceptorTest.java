@@ -72,11 +72,11 @@ public class InterceptorTest extends AbstractHgTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
         MockLookup.setLayersAndInstances();
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
-        System.setProperty("netbeans.user", "/tmp/hgtest");
     }
 
     public void testGetAttributeRefreh() throws HgException, IOException {

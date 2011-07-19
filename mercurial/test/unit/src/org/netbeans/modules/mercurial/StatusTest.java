@@ -62,7 +62,7 @@ public class StatusTest extends AbstractHgTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", "/tmp/" + System.currentTimeMillis());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
         
         // create
