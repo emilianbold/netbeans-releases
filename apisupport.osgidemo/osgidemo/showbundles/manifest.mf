@@ -6,4 +6,5 @@ Bundle-SymbolicName: org.netbeans.demo.osgi.showbundles
 Bundle-Version: 1.0
 Import-Package: org.osgi.framework, javax.swing
 OpenIDE-Module-Layer: org/netbeans/demo/osgi/showbundles/layer.xml
+OpenIDE-Module-Needs: org.netbeans.Netbinox
 

@@ -46,6 +46,8 @@ import java.util.logging.Level;
 import org.netbeans.core.startup.MainLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
@@ -57,12 +59,16 @@ import org.osgi.framework.launch.Framework;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class NetigsoServices
-implements ServiceListener, InstanceContent.Convertor<ServiceReference, Object> {
-    public NetigsoServices(Framework f) {
+implements BundleListener, ServiceListener, InstanceContent.Convertor<ServiceReference, Object> {
+    private final Netigso netigso;
+    
+    NetigsoServices(Netigso netigso, Framework f) {
+        this.netigso = netigso;
         for (ServiceReference ref : f.getRegisteredServices()) {
             MainLookup.register(ref, this);
         }
         f.getBundleContext().addServiceListener(this);
+        f.getBundleContext().addBundleListener(this);
     }
 
     @Override
@@ -104,9 +110,18 @@ implements ServiceListener, InstanceContent.Convertor<ServiceReference, Object> 
     public String id(ServiceReference obj) {
         return (String) obj.getProperty(Constants.SERVICE_ID);
     }
-
+    
     @Override
     public String displayName(ServiceReference obj) {
         return (String) obj.getProperty(Constants.SERVICE_DESCRIPTION);
+    }
+
+    @Override
+    public void bundleChanged(BundleEvent be) {
+        netigso.notifyBundleChange(
+            be.getBundle().getSymbolicName(),
+            be.getBundle().getVersion(),
+            be.getType()
+        );
     }
 }
