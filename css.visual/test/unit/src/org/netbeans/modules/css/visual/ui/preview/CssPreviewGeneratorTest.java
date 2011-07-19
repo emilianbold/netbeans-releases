@@ -50,8 +50,8 @@ import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.editor.api.CssModel;
-import org.netbeans.modules.css.editor.api.CssRule;
+import org.netbeans.modules.css.editor.api.model.Stylesheet;
+import org.netbeans.modules.css.editor.api.model.Rule;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -74,8 +74,8 @@ public class CssPreviewGeneratorTest extends CslTestBase {
     }
 
     public void testCleanPseudoClass() throws ParseException, IOException {
-       CssModel model = modelFor(":focus { }");
-       CssRule rule = rule(model, 0);
+       Stylesheet model = modelFor(":focus { }");
+       Rule rule = rule(model, 0);
        CssRuleContext context = context(model, rule);
        String preview = CssPreviewGenerator.getPreviewCode(context).toString();
 
@@ -85,8 +85,8 @@ public class CssPreviewGeneratorTest extends CslTestBase {
     }
 
     public void testPseudoClass() throws ParseException, IOException {
-       CssModel model = modelFor("a:focus { }");
-       CssRule rule = rule(model, 0);
+       Stylesheet model = modelFor("a:focus { }");
+       Rule rule = rule(model, 0);
        CssRuleContext context = context(model, rule);
 
        String preview = CssPreviewGenerator.getPreviewCode(context).toString();
@@ -94,21 +94,21 @@ public class CssPreviewGeneratorTest extends CslTestBase {
                + "</head><body><a><aXfocus>Sample Text</aXfocus></a></body></html>", preview);
     }
 
-    private CssRuleContext context(CssModel model, CssRule rule) {
+    private CssRuleContext context(Stylesheet model, Rule rule) {
         return new CssRuleContext(CssRuleContent.create(rule), model, null, null);
     }
 
-    private CssRule rule(CssModel model, int index) {
-        List<CssRule> rules = model.rules();
+    private Rule rule(Stylesheet model, int index) {
+        List<Rule> rules = model.rules();
         assertNotNull(rules);
         assertTrue(String.format("No rule for index %s, there's only %s rules", index, rules.size()),
                 rules.size() > index);
-        CssRule rule = rules.get(index);
+        Rule rule = rules.get(index);
         assertNotNull(rule);
         return rule;
     }
 
-    private CssModel modelFor(String code) throws ParseException, IOException {
+    private Stylesheet modelFor(String code) throws ParseException, IOException {
         FileObject fo = createTempFile("test.css", code);
         Document doc = getDocument(fo);
         Source source = Source.create(doc);
@@ -125,7 +125,7 @@ public class CssPreviewGeneratorTest extends CslTestBase {
         assertNotNull(result);
         assertTrue(result instanceof CssCslParserResult);
 
-        CssModel model = CssModel.create((CssCslParserResult) result);
+        Stylesheet model = Stylesheet.create(((CssCslParserResult) result).getWrappedCssParserResult());
         assertNotNull(model);
 
         return model;

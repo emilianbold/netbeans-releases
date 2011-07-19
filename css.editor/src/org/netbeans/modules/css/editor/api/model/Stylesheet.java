@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.css.editor.api.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,14 +51,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.Token;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -73,28 +73,28 @@ import org.openide.util.Exceptions;
  * A domain object model representing CSS file backed up by 
  * instance of {@link org.netbeans.modules.parsing.api.Snapshot;}.
  *
- * @author Marek Fukala
+ * @author mfukala@netbeans.org
  */
-public final class CssModel {
+public final class Stylesheet {
 
-    private static final Logger LOGGER = Logger.getLogger(CssModel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Stylesheet.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private final List<CssRule> rules = new ArrayList<CssRule>(10);
+    private final List<Rule> rules = new ArrayList<Rule>(10);
     private final Collection<String> imported_files = new ArrayList<String>();
     private Snapshot snapshot;
     private FileObject fileObject;
 
-    public static CssModel create(CssCslParserResult result) {
-        return new CssModel(result.getSnapshot(), result.getParseTree());
+    public static Stylesheet create(CssParserResult result) {
+        return new Stylesheet(result.getSnapshot(), result.getParseTree());
     }
 
-    private CssModel(Snapshot snapshot, Node root) {
+    private Stylesheet(Snapshot snapshot, Node root) {
         this.snapshot = snapshot;
         this.fileObject = snapshot.getSource().getFileObject();
         //check for null which may happen if the source is severely broken
         //if it happens, the model contains just empty list of rules
         if (root != null) {
-//            updateModel(snapshot, root);
+            updateModel(snapshot, root);
         }
     }
 
@@ -105,7 +105,7 @@ public final class CssModel {
     }
 
     /** @return List of {@link CssRule}s or null if the document hasn't been parsed yet. */
-    public List<CssRule> rules() {
+    public List<Rule> rules() {
         return rules;
     }
 
@@ -125,15 +125,15 @@ public final class CssModel {
         return files;
     }
 
-    public Collection<CssModel> getImportedFileModels() {
-        Collection<CssModel> models = new HashSet<CssModel>();
+    public Collection<Stylesheet> getImportedFileModels() {
+        Collection<Stylesheet> models = new HashSet<Stylesheet>();
         processModels(models, this);
         return models;
     }
 
-    private void processModels(final Collection<CssModel> models, CssModel model) {
+    private void processModels(final Collection<Stylesheet> models, Stylesheet model) {
         for (FileObject importedFile : model.getImportedFiles()) {
-            final AtomicReference<CssModel> ref = new AtomicReference<CssModel>();
+            final AtomicReference<Stylesheet> ref = new AtomicReference<Stylesheet>();
             if (importedFile.isValid() && importedFile.getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
                 try {
                     Source source = Source.create(importedFile);
@@ -141,14 +141,14 @@ public final class CssModel {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
-                            ref.set(CssModel.create(result));
+                            ref.set(Stylesheet.create(result.getWrappedCssParserResult()));
                         }
                     });
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            CssModel created = ref.get();
+            Stylesheet created = ref.get();
             if(created != null) {
                 if(models.add(created)) {
                     processModels(models, created);
@@ -163,10 +163,10 @@ public final class CssModel {
      * offset falls into a space where there is no css rule.
      * @param offset within the model's document
      */
-    public CssRule ruleForOffset(int offset) {
+    public Rule ruleForOffset(int offset) {
         synchronized (rules) {
             if (rules != null) {
-                for (CssRule rule : rules()) {
+                for (Rule rule : rules()) {
                     if (rule.getRuleNameOffset() <= offset && rule.getRuleCloseBracketOffset() >= offset) {
                         return rule;
                     }
@@ -176,83 +176,24 @@ public final class CssModel {
         }
     }
 
-    //--- private methods ---
-    private synchronized void updateModel(final Snapshot snapshot, SimpleNode root) {
+    private synchronized void updateModel(final Snapshot snapshot, Node root) {
         synchronized (rules) {
             NodeVisitor styleRuleVisitor = new NodeVisitor() {
 
                 @Override
-                public void visit(SimpleNode node) {
-                    if (node.kind() == CssParserTreeConstants.JJTSTYLERULE) {
-                        //find curly brackets
-                        Token t = node.jjtGetFirstToken();
-                        Token last = node.jjtGetLastToken();
-
-                        int openCurlyBracketOffset = -1;
-                        int closeCurlyBracketOffset = -1;
-                        ArrayList<Integer> semicolons = new ArrayList<Integer>();
-                        ArrayList<Integer> colons = new ArrayList<Integer>();
-                        while (t != null && t.offset <= last.offset) { //also include the last token
-                            if (t.kind == CssParserConstants.LBRACE) {
-                                openCurlyBracketOffset = t.offset;
-                            } else if (t.kind == CssParserConstants.RBRACE) {
-                                closeCurlyBracketOffset = t.offset;
-                            } else if (t.kind == CssParserConstants.SEMICOLON) {
-                                semicolons.add(Integer.valueOf(t.offset));
-                            } else if (t.kind == CssParserConstants.COLON) {
-                                colons.add(Integer.valueOf(t.offset));
-                            }
-                            t = t.next;
-                        }
-
-                        //parse style rule
-                        SimpleNode selectortList = SimpleNodeUtil.getChildByType(node, CssParserTreeConstants.JJTSELECTORLIST);
-                        SimpleNode[] declarations = SimpleNodeUtil.getChildrenByType(node, CssParserTreeConstants.JJTDECLARATION);
-                        List<CssRuleItem> ruleItems = new ArrayList<CssRuleItem>(declarations.length);
-                        for (int i = 0; i < declarations.length; i++) {
-                            SimpleNode declaration = declarations[i];
-                            SimpleNode property = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTPROPERTY);
-                            SimpleNode value = SimpleNodeUtil.getChildByType(declaration, CssParserTreeConstants.JJTEXPR);
-
-                            if (property == null || value == null) {
-                                //likely a parse error, do not create the rule
-                                return;
-                            }
-
-                            int semicolonOffset = i < semicolons.size() ? semicolons.get(i) : -1; //there may not be the semicolon after last declaration
-                            int colonOffset = i < colons.size() ? colons.get(i) : -1; //missing colon in declaration
-
-                            CssRuleItem ruleItem = new CssRuleItem(property.image().trim(), property.startOffset(), value.image().trim(), value.startOffset(), colonOffset, semicolonOffset);
-
-                            ruleItems.add(ruleItem);
-                        }
-
-                        String ruleName = selectortList.image().trim();
-                        CssRule rule = new CssRule(snapshot, ruleName, selectortList.startOffset(),
-                                openCurlyBracketOffset, closeCurlyBracketOffset, ruleItems);
-                        rules.add(rule);
-
-                    } else if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE) {
-                        Token importedFile = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
+                public boolean visit(Node node) {
+                    if (node.type() == NodeType.ruleSet) {
+                        rules.add(new Rule(snapshot, node));
+                    } else if (node.type() == NodeType.imports) {
+                        Node importedFile = NodeUtil.getChildTokenNode(node, CssTokenId.STRING);
                         if (importedFile != null) {
-                            imported_files.add(WebUtils.unquotedValue(importedFile.image));
+                            imported_files.add(WebUtils.unquotedValue(importedFile.image()));
                         }
-
                     }
+                    return false;
                 }
             };
-
-            SimpleNodeUtil.visitChildren(root, styleRuleVisitor);
-
-            if (LOG) {
-                LOGGER.fine("CssModel parse tree:"); //NOI18N
-                LOGGER.fine(root.dump());
-                LOGGER.fine("CssModel structure:"); //NOI18N
-                for (CssRule rule : rules) {
-                    LOGGER.fine(rule.toString());
-                }
-            }
-
+            styleRuleVisitor.visitChildren(root);
         }
     }
 
@@ -264,7 +205,7 @@ public final class CssModel {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CssModel other = (CssModel) obj;
+        final Stylesheet other = (Stylesheet) obj;
         if (this.fileObject != other.fileObject && (this.fileObject == null || !this.fileObject.equals(other.fileObject))) {
             return false;
         }

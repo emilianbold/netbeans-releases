@@ -45,7 +45,6 @@ import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.TokenNode;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
@@ -59,8 +58,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
  */
 public class Css3ParserTest extends CslTestBase {
 
-    private static final String bodysetPath = "styleSheet/bodylist/bodyset/";
-    
     public Css3ParserTest(String testName) {
         super(testName);
     }
@@ -99,7 +96,7 @@ public class Css3ParserTest extends CslTestBase {
         
         //the background: red; declaration is properly parsed even if the previous declaration is broken
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
         
 //        dumpResult(res);
     }
@@ -119,9 +116,9 @@ public class Css3ParserTest extends CslTestBase {
         
         //the garbage char @ is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
         
     }
     
@@ -137,9 +134,9 @@ public class Css3ParserTest extends CslTestBase {
 //        dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
     }
     
     public void testParseTreeOffsets() throws ParseException, BadLocationException {
@@ -151,7 +148,7 @@ public class Css3ParserTest extends CslTestBase {
 //        dumpResult(res);
         
         Node aNode = NodeUtil.query(res.getParseTree(), 
-                bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName/body");
+                TestUtil.bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName/body");
         
         assertNotNull(aNode);
         assertTrue(aNode instanceof TokenNode);
@@ -171,25 +168,25 @@ public class Css3ParserTest extends CslTestBase {
         String typeSelectorPath = "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/";
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/myns"));
+                TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/myns"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "elementName/h1"));        
+                TestUtil.bodysetPath + typeSelectorPath + "elementName/h1"));        
         
         res = assertResultOK(TestUtil.parse("*|h1 { color: red; }"));
         //dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
+                TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "elementName/h1"));
+                TestUtil.bodysetPath + typeSelectorPath + "elementName/h1"));
         
         res = assertResultOK(TestUtil.parse("*|* { color: red; }"));
         //dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
+                TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                bodysetPath + typeSelectorPath + "elementName/*"));
+                TestUtil.bodysetPath + typeSelectorPath + "elementName/*"));
     }
     
     public void testNodeImages() throws ParseException, BadLocationException {
@@ -201,7 +198,7 @@ public class Css3ParserTest extends CslTestBase {
         String selectorsGroupPath = "ruleSet/selectorsGroup";
         
         //test rule node image
-        Node selectorsGroup = NodeUtil.query(res.getParseTree(), bodysetPath + selectorsGroupPath); 
+        Node selectorsGroup = NodeUtil.query(res.getParseTree(), TestUtil.bodysetPath + selectorsGroupPath); 
         assertNotNull(selectorsGroup);
         
         assertTrue(CharSequenceUtilities.equals(selectors, selectorsGroup.image()));

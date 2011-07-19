@@ -62,6 +62,8 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class TestUtil {
+    
+    public static final String bodysetPath = "styleSheet/bodylist/bodyset/";
 
     public static CssParserResult parse(String code) throws BadLocationException, ParseException {
         Document doc = new PlainDocument();

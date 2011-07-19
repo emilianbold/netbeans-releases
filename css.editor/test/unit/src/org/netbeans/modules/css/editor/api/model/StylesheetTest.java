@@ -39,13 +39,14 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.css.editor.api.model;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -57,10 +58,10 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  *
  * @author marekfukala
  */
-public class CssModelTest extends TestBase {
+public class StylesheetTest extends TestBase {
 
-    public CssModelTest() {
-        super(CssModelTest.class.getName());
+    public StylesheetTest() {
+        super(StylesheetTest.class.getName());
     }
 
     public void testBasis() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
@@ -83,34 +84,35 @@ public class CssModelTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create((CssCslParserResult) result);
+        CssCslParserResult wrapper = (CssCslParserResult) result;
+        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
         assertNotNull(model);
 
-        List<CssRule> rules = model.rules();
+        List<Rule> rules = model.rules();
         assertNotNull(rules);
         assertEquals(1, rules.size());
 
-        CssRule rule = rules.get(0);
+        Rule rule = rules.get(0);
         assertNotNull(rule);
         assertEquals("h1", rule.name());
         assertEquals(3, rule.getRuleOpenBracketOffset());
         assertEquals(17, rule.getRuleCloseBracketOffset());
 
-        List<CssRuleItem> items = rule.items();
+        List<Declaration> items = rule.items();
         assertNotNull(items);
         assertEquals(1, items.size());
 
-        CssRuleItem item = rule.items().get(0);
+        Declaration item = rule.items().get(0);
         assertNotNull(item);
 
-        CssRuleItem.Item property = item.key();
+        Item property = item.getProperty();
         assertNotNull(property);
-        assertEquals("color", property.name());
+        assertEquals("color", property.image().toString());
         assertEquals(5, property.offset());
 
-        CssRuleItem.Item value = item.value();
+        Item value = item.getValue();
         assertNotNull(value);
-        assertEquals("red", value.name());
+        assertEquals("red", value.image().toString());
         assertEquals(12, value.offset());
 
     }
@@ -135,23 +137,24 @@ public class CssModelTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create((CssCslParserResult) result);
+        CssCslParserResult wrapper = (CssCslParserResult) result;
+        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
         assertNotNull(model);
 
-        List<CssRule> rules = model.rules();
+        List<Rule> rules = model.rules();
         assertNotNull(rules);
         assertEquals(1, rules.size());
 
 
-        CssRuleItem item = rules.get(0).items().get(0);
+        Declaration item = rules.get(0).items().get(0);
         assertNotNull(item);
 
-        CssRuleItem.Item property = item.key();
+        Item property = item.getProperty();
         assertNotNull(property);
 
         //whitespace between the property name and the semicolon must not be present
         //in the property name
-        assertEquals("color", property.name());
+        assertEquals("color", property.image().toString());
         assertEquals(5, property.offset());
 
     }
@@ -176,10 +179,12 @@ public class CssModelTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        CssModel model = CssModel.create((CssCslParserResult) result);
+        CssCslParserResult wrapper = (CssCslParserResult) result;
+        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
+        
         assertNotNull(model);
 
-        List<CssRule> rules = model.rules();
+        List<Rule> rules = model.rules();
         assertNotNull(rules);
         assertEquals(0, rules.size()); //no rules
     }
@@ -207,7 +212,8 @@ public class CssModelTest extends TestBase {
 
         assertNotNull(((CssCslParserResult)result).getParseTree());
 
-        CssModel model = CssModel.create((CssCslParserResult) result);
+        CssCslParserResult wrapper = (CssCslParserResult) result;
+        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
         assertNotNull(model);
 
         Collection<String> names = model.getImportedFileNames();

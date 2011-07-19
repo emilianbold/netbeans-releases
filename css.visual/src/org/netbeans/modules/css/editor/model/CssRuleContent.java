@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.css.editor.model;
 
-import org.netbeans.modules.css.editor.api.CssRule;
-import org.netbeans.modules.css.editor.api.CssRuleItem;
+import org.netbeans.modules.css.editor.api.model.Rule;
+import org.netbeans.modules.css.editor.api.model.Declaration;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.StringWriter;
@@ -58,22 +58,22 @@ import org.netbeans.modules.css.visual.model.Utils;
 public class CssRuleContent {
 
     private final List<PropertyChangeListener> LISTENERS = new ArrayList<PropertyChangeListener>();
-    private final CssRule rule;
+    private final Rule rule;
 
-    public static CssRuleContent create(CssRule rule) {
+    public static CssRuleContent create(Rule rule) {
         return new CssRuleContent(rule);
     }
 
-    private CssRuleContent(CssRule rule) {
+    private CssRuleContent(Rule rule) {
         this.rule = rule;
     }
 
-    public CssRule rule() {
+    public Rule rule() {
         return rule;
     }
 
     /** @return a list of Css rule items. */
-    public List<CssRuleItem> ruleItems() {
+    public List<Declaration> ruleItems() {
         return rule.items();
     }
 
@@ -83,9 +83,9 @@ public class CssRuleContent {
      * @return Value of the specified property.
      */
     public String getProperty(String property) {
-        CssRuleItem item = findItem(property);
+        Declaration item = findItem(property);
         if(item != null) {
-            return item.value().name();
+            return item.getValue().name();
         } else {
             return  null;
         }
@@ -108,7 +108,7 @@ public class CssRuleContent {
 
     //this method now doesn't modify the css rule items!!!!!!!!!!!!!!!!!!!
     public void modifyProperty(String property, String newValue) throws BadLocationException {
-        CssRuleItem item = findItem(property);
+        Declaration item = findItem(property);
         newValue = newValue.trim();
         if(item == null && newValue.length() == 0) {
             return ; //TODO: marek - should be fixed in the UI so it doesn't fire such stupid events
@@ -120,11 +120,11 @@ public class CssRuleContent {
 //            }
             firePropertyChange(item, null); //NOI18N
         } else {
-            String oldVal = item == null ? null : item.value().name();
+            String oldVal = item == null ? null : item.getValue().name();
             //do not fire events when the old and new values are the same
             if(oldVal == null || !newValue.equals(oldVal)) {
                 //property add or modify
-                CssRuleItem newRuleItem = new CssRuleItem(property, newValue);
+                Declaration newRuleItem = Declaration.createArtificial(property, newValue);
 //                if (!immutable) {
 //                    if (item == null) {
 //                        //create
@@ -148,9 +148,9 @@ public class CssRuleContent {
         StringWriter strWriter = new StringWriter();
 
 
-        for(CssRuleItem item : ruleItems()) {
-            String property = item.key().name();
-            String propertyValue = item.value().name().trim();
+        for(Declaration item : ruleItems()) {
+            String property = item.getProperty().name();
+            String propertyValue = item.getValue().name().trim();
             if(!(propertyValue.equals(Utils.NOT_SET) || propertyValue.equals(""))){ //NOI18N
                 strWriter.write("   " + property); //NOI18N
                 strWriter.write(": "); //NOI18N
@@ -184,16 +184,16 @@ public class CssRuleContent {
         LISTENERS.remove(listener);
     }
 
-    private synchronized void firePropertyChange(CssRuleItem oldVal, CssRuleItem newVal) {
+    private synchronized void firePropertyChange(Declaration oldVal, Declaration newVal) {
         List<PropertyChangeListener> copy = new ArrayList<PropertyChangeListener>(LISTENERS);
         for(PropertyChangeListener l : copy) {
             l.propertyChange(new PropertyChangeEvent(this, "property", oldVal, newVal)); //NOI18N
         }
     }
 
-    private CssRuleItem findItem(String keyName) {
-        for(CssRuleItem ri : ruleItems()) {
-            if(ri.key().name().equals(keyName)) {
+    private Declaration findItem(String keyName) {
+        for(Declaration ri : ruleItems()) {
+            if(ri.getProperty().name().equals(keyName)) {
                 return ri;
             }
         }

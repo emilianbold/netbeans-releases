@@ -42,9 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.css.editor.api.model;
 
+import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -55,52 +61,60 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *      color: red;
  * }
  *
- * @author Marek Fukala
+ * @author mfukala@netbeans.org
  */
-public class CssRule {
+public class Rule extends Item {
 
-    private int ruleNameOffset, ruleOpenBracketOffset, ruleCloseBracketOffset;
-    private String ruleName;
-    private List<CssRuleItem> items;
-    
-    public CssRule(Snapshot doc, String ruleName, int ruleNameOffset, int ruleOpenBracketOffset, int ruleCloseBracketOffset, List<CssRuleItem> items) {
-        this.ruleName = ruleName;
-        this.ruleNameOffset = ruleNameOffset;
-        this.ruleOpenBracketOffset = ruleOpenBracketOffset;
-        this.ruleCloseBracketOffset = ruleCloseBracketOffset;
-        this.items = items;
+    public Rule(Snapshot snapshot, Node node) {
+        super(snapshot, node);
+        assert node.type() == NodeType.ruleSet;
     }
+    
+    public List<Declaration> items() {
+        List<Declaration> items = new ArrayList<Declaration>();
+        NodeVisitor<List<Declaration>> declarationsVisitor = new NodeVisitor<List<Declaration>>(items) {
 
-    /** @return an instance of {@link CssRuleContent} which represents the items inside the css rule.
-     * It also allows to listen on the changes in the rule items.
-     */
-    public List<CssRuleItem> items() {
+            @Override
+            public boolean visit(Node node) {
+                if(node.type() == NodeType.declaration) {
+                    getResult().add(new Declaration(snapshot, node));
+                }
+                return false;
+            }
+            
+        };
+        
+        declarationsVisitor.visitChildren(node);
         return items;
+    }
+    
+    public Node getSelectorsGroup() {
+        return NodeUtil.getChildByType(node, NodeType.selectorsGroup);
     }
     
     /** @return the css rule name */
     public String name() {
-        return ruleName;
+        return getSelectorsGroup().image().toString();
     }
 
     /** @return offset of the rule name in the model's document. */
     public int getRuleNameOffset() {
-        return ruleNameOffset;
+        return getSelectorsGroup().from();
     }
     
     /** @return offset of the rule's closing bracket in the model's document. */
     public int getRuleCloseBracketOffset() {
-        return ruleCloseBracketOffset;
+        return NodeUtil.getChildTokenNode(node, CssTokenId.RBRACE).from();
     }
 
     /** @return offset of the rule's opening bracket in the model's document. */
     public int getRuleOpenBracketOffset() {
-        return ruleOpenBracketOffset;
+        return NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE).from();
     }
 
     @Override
     public String toString() {
-        return "CssRule[" + name() + "; " + getRuleOpenBracketOffset() + " - " + getRuleCloseBracketOffset() + "]"; //NOI18N
+        return "Rule[" + name() + "; " + getRuleOpenBracketOffset() + " - " + getRuleCloseBracketOffset() + "]"; //NOI18N
     }
     
 }

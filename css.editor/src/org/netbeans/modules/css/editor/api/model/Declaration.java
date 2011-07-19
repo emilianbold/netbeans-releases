@@ -42,95 +42,101 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.editor.api;
+package org.netbeans.modules.css.editor.api.model;
 
+import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.parsing.api.Snapshot;
+ 
 /**
  * An immutable representation of a css rule item eg.:
  *
  * color: red;
  *
- * @author Marek Fukala
+ * @author mfukala@netbeans.org
  */
-public final class CssRuleItem {
+public class Declaration extends Item {
 
-    public Item key;
-    public Item value;
+    //XXX: hack for the terrible StyleBuilder logic. Must be fixed!!!
+    public static Declaration createArtificial(final String propertyName, final String expression) {
+        return new Declaration(null,null) {
 
-    //offset of colon key-value separator and ending semicolon of the item
-    private int colon_offset;
-    private int semicolon_offset;
+            @Override
+            public Item getProperty() {
+                return new Item(null,null) {
 
-    public CssRuleItem(String key, String value) {
-        this(key, -1, value, -1, -1, -1);
+                    @Override
+                    public String name() {
+                        return propertyName;
+                    }
+
+                    @Override
+                    public int offset() {
+                        return -1;
+                    }
+                    
+                };
+            }
+            
+            @Override
+            public Item getValue() {
+                return new Item(null,null) {
+
+                    @Override
+                    public String name() {
+                        return expression;
+                    }
+
+                    @Override
+                    public int offset() {
+                        return -1;
+                    }
+                    
+                };
+            }
+        };
+    }
+    
+    Declaration(Snapshot snapshot, Node declarationNode) {
+        super(snapshot, declarationNode);
+    }
+    
+    public boolean isImporant() {
+        return false;
     }
 
-    CssRuleItem(String key, int keyOffset, String val, int valOffset, int colon_offset, int semicolon_offset) {
-        this.key = new Item(key, keyOffset);
-        this.value = new Item(val, valOffset);
-        this.colon_offset = colon_offset;
-        this.semicolon_offset = semicolon_offset;
+    public Item getProperty() {
+        Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
+        return new Item(snapshot, propertyNode);
     }
 
-    /** @return representation of the key of the rule item. */
-    public Item key() {
-        return key;
-    }
-
-    /** @return representation of the value of the rule item. */
-    public Item value() {
-        return value;
+    public Item getValue() {
+        Node propertyNode = NodeUtil.getChildByType(node, NodeType.expr);
+        return new Item(snapshot, propertyNode);
     }
 
     @Override
     public String toString() {
-        return "CssRuleItem[" + key + "; " + value + "]"; //NOI18N
+        return "Declaration[" + getProperty() + "; " + getValue() + "]"; //NOI18N
     }
 
     /** Gets offset of the key - value separator in the css rule item.
      */
     public int colonOffset() {
-        return colon_offset;
+        Node colonNode = NodeUtil.getChildTokenNode(node, CssTokenId.COLON);
+        return colonNode.from();
     }
 
     /** Gets offset of the ending semicolon in rule item or -1 if there is no ending semicolon.
      */
     public int semicolonOffset() {
-        return semicolon_offset;
+        //the semicolon following the declaration is a member of parent 'declarations' node
+        Node n = NodeUtil.getSibling(node, false);
+        return n.type() == NodeType.token && NodeUtil.getTokenNodeTokenId(n) == CssTokenId.SEMI
+                ? n.from()
+                : -1;
     }
 
-
-/** A representation of the key or value of the rule item.
-     * Contains information about the item position in the model's document
-     * and its string value.
-     */
-    public static final class Item {
-
-        private String name;
-        private int offset;
-
-        public Item(String name) {
-            this(name, -1);
-        }
-
-        Item(String name, int offset)  {
-            this.name = name;
-            this.offset = offset;
-        }
-
-        /** @return text content of the attribute's item. */
-        public String name() {
-            return name;
-        }
-
-        /** @return offset in the model's document of the attribute's item. */
-        public int offset() {
-            return offset;
-        }
-
-        @Override
-        public String toString() {
-            return "Item[" + name + "; " + offset + "]"; //NOI18N
-        }
-
-    }
 }

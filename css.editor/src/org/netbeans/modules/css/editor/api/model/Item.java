@@ -39,74 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api;
+package org.netbeans.modules.css.editor.api.model;
 
-import javax.swing.text.BadLocationException;
-import org.antlr.runtime.CommonToken;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.lib.Css3Lexer;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.TokenNode;
-import static org.junit.Assert.*;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author marekfukala
  */
-public class NodeUtilTest extends NbTestCase {
+public class Item {
     
-    public NodeUtilTest(String name) {
-        super(name);
-    }
+    protected Snapshot snapshot;
+    protected Node node;
 
-    public void test_getChildTokenNode() throws BadLocationException, ParseException {
-        String code = "@import \"file.css\";";
-        CssParserResult res = TestUtil.parse(code);
-        
-//        TestUtil.dumpResult(res);
-        Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports"); 
-        assertNotNull(imports);
-        
-        Node value = NodeUtil.getChildTokenNode(imports, CssTokenId.STRING);
-        assertNotNull(value);
-        
-        assertEquals("\"file.css\"", value.image().toString());
+    protected Item(Snapshot snapshot, Node node) {
+        this.snapshot = snapshot;
+        this.node = node;
     }
     
-    public void test_getTrimmedNodeRange() {
-        CommonToken token = new CommonToken(Css3Lexer.IDENT);
-        token.setText(" hello! ");
-        //             012345678
-        token.setStartIndex(0);
-        token.setStopIndex(7); //len - 1 -> points to last char not the end!
-        
-        Node node = new TokenNode(token);
-        
-        assertEquals(" hello! ", node.image().toString());
-        int[] result = NodeUtil.getTrimmedNodeRange(node);
-
-        assertEquals(1, result[0]);
-        assertEquals(7, result[1]);
-        
+    public CharSequence image() {
+        return node.image();
     }
     
-    public void test_getSelectorNodeRange() throws BadLocationException, ParseException {
-        String code = "h1 { color: red; } ";
-        //             01234567890123456789
-        CssParserResult result = TestUtil.parse(code);
-        
-//        TestUtil.dumpResult(result);
-        
-        Node ruleSet = NodeUtil.query(result.getParseTree(), TestUtil.bodysetPath + "ruleSet");
-        assertNotNull(ruleSet);
-        
-        int[] range = NodeUtil.getRuleBodyRange(ruleSet);
-        assertNotNull(range);
-        
-        assertEquals(3, range[0]);
-        assertEquals(18, range[1]);
-        
+    public int offset() {
+        return node.from();
     }
     
+    //compatibility - remove later
+    public String name() {
+        return image().toString();
+    }
 }

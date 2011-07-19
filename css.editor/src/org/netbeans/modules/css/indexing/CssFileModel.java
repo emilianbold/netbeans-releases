@@ -249,6 +249,8 @@ public class CssFileModel {
 
     private class ParseTreeVisitor extends NodeVisitor {
 
+        private int[] currentBodyRange;
+        
         @Override
         public boolean visit(Node node) {
             if (node.type() == NodeType.imports) {
@@ -256,13 +258,12 @@ public class CssFileModel {
                 if (entry != null) {
                     getImportsCollectionInstance().add(entry);
                 }
+            } else if (node.type() == NodeType.ruleSet) {
+                currentBodyRange = NodeUtil.getRuleBodyRange(node);
             } else if (NodeUtil.isSelectorNode(node)) {
 
                 Collection<Entry> collection;
                 int start_offset_diff;
-                //find the selector body range if possible
-                int[] bodyRange = NodeUtil.getSelectorNodeRange(node);
-                OffsetRange body = bodyRange != null ? new OffsetRange(bodyRange[0], bodyRange[1]) : OffsetRange.NONE;
 
                 switch (node.type()) {
                     case cssClass:
@@ -288,6 +289,7 @@ public class CssFileModel {
                 //check if the real start offset can be translated to the original offset
                 boolean isVirtual = getSnapshot().getOriginalOffset(node.from()) == -1;
 
+                OffsetRange body = currentBodyRange != null ? new OffsetRange(currentBodyRange[0], currentBodyRange[1]) : OffsetRange.NONE;
                 Entry e = createEntry(image.toString(), range, body, isVirtual);
                 if (e != null) {
                     collection.add(e);

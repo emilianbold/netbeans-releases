@@ -131,6 +131,15 @@ public final class NodeUtil {
         }
         return null;
     }
+    
+    public static CssTokenId getTokenNodeTokenId(Node node) {
+        //strange, possibly better expose TokenNode!
+        if(node.type() != NodeType.token) {
+            throw new IllegalArgumentException(
+                    String.format("The argument must by of NodeType.token type. The actual type is %s", node.type()));
+        }
+        return ((TokenNode)node).getTokenId();
+    }
 
 
     public static Node getAncestorByType(Node node, final NodeType type) {
@@ -278,11 +287,11 @@ public final class NodeUtil {
     }
     
     /**
-     * finds the selector { } rule curly bracket range
-     * @param node representing a selector node (element, class or id)
+     * finds the rule curly bracket range
+     * @param node representing a rule node
      */
-    public static int[] getSelectorNodeRange(Node node) {
-        if(!isSelectorNode(node)) {
+    public static int[] getRuleBodyRange(Node node) {
+        if(node.type() != NodeType.ruleSet) {
             throw new IllegalArgumentException("Only selector node is allowed as a parameter!"); //NOI18N
         }
         
