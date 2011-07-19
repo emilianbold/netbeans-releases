@@ -59,6 +59,8 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Class representing a remote configuration (e.g. FTP, SFTP).
+ * <p>
+ * This class is thread-safe, all subclasses should stay thread-safe as well.
  * @author Tomas Mysik
  * @see org.netbeans.modules.php.project.connections.RemoteConnections
  * @see org.netbeans.modules.php.project.connections.RemoteConnections#getRemoteConfigurations()
