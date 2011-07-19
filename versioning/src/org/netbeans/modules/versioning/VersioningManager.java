@@ -388,8 +388,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 owner = folderOwners.get(folder);
             }
         }
-        
-        if (owner != null) {
+
+        if (owner == null && VersioningSupport.isExcluded(folder)) {
+            // the owner is not known yet and the folder is excluded/unversioned
+            LOG.log(Level.FINE, " caching NULL_OWNER of excluded {0}", new Object[] { file }); //NOI18N
+            if (isFile) {
+                synchronized(fileOwners) {
+                    fileOwners.put(folder, NULL_OWNER);
+                }
+            }
+            synchronized(folderOwners) {
+                folderOwners.put(folder, NULL_OWNER);
+            }
+            return null;
+        } else if (owner != null) {
             synchronized(fileOwners) {
                 LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
                 fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
