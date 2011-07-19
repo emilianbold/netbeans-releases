@@ -93,11 +93,12 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Debug
 import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 
 /**
  * @author Tomas Mysik
  */
-public class RunAsWebAdvanced extends JPanel {
+public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 7842376554376847L;
     static final String DEFAULT_LOCAL_PATH = ""; // NOI18N
     static final int COLUMN_REMOTE_PATH = 0;
@@ -169,6 +170,11 @@ public class RunAsWebAdvanced extends JPanel {
         };
         proxyHostTextField.getDocument().addDocumentListener(defaultDocumentListener);
         proxyPortTextField.getDocument().addDocumentListener(defaultDocumentListener);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(RunAsWebAdvanced.class);
     }
 
     public boolean open() {
