@@ -88,6 +88,11 @@ public class Utils {
     private static FileSystem filesystem;
 
     /**
+     * Keeps excluded/unversioned folders
+     */
+    private static File [] unversionedFolders;
+
+    /**
      * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
      * Nodes are converted to Files based on their nature. 
      * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
@@ -321,6 +326,45 @@ public class Utils {
             priority = Integer.MAX_VALUE;
         }
         return priority;
+    }
+
+    public static File[] getUnversionedFolders () {
+        if (unversionedFolders == null) {
+            File[] files;
+            try {
+                String uf = VersioningSupport.getPreferences().get("unversionedFolders", ""); //NOI18N
+                String ufProp = System.getProperty("versioning.unversionedFolders", ""); //NOI18N
+                StringBuilder sb = new StringBuilder(uf);
+                String nbUserdir = System.getProperty("netbeans.user", ""); //NOI18N
+                if (!nbUserdir.isEmpty() && !"true".equals(System.getProperty("versioning.netbeans.user.versioned", "false"))) { //NOI18N
+                    if (sb.length() > 0) {
+                        sb.append(';');
+                    }
+                    sb.append(nbUserdir);
+                }
+                if (!ufProp.isEmpty()) {
+                    if (sb.length() > 0) {
+                        sb.append(';');
+                    }
+                    sb.append(ufProp);
+                }
+                if (sb.length() == 0) {
+                    files = new File[0];
+                } else {
+                    String [] paths = sb.toString().split("\\;"); //NOI18N
+                    files = new File[paths.length];
+                    int idx = 0;
+                    for (String path : paths) {
+                        files[idx++] = new File(path);
+                    }
+                }
+            } catch (Exception e) {
+                files = new File[0];
+                Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
+            }
+            unversionedFolders = files;
+        }
+        return unversionedFolders;
     }
 
     static FileSystem getRootFilesystem() {

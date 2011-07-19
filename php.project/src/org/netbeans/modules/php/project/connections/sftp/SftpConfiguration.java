@@ -54,6 +54,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
  * @see org.netbeans.modules.php.project.connections.RemoteConnections
  */
 public final class SftpConfiguration extends RemoteConfiguration {
+
     private static final Logger LOGGER = Logger.getLogger(SftpConfiguration.class.getName());
     private static final String PATH_SEPARATOR = "/"; // NOI18N
 
@@ -65,8 +66,9 @@ public final class SftpConfiguration extends RemoteConfiguration {
     private final String initialDirectory;
     private final int timeout;
 
+    // @GuardedBy(this)
     private String password;
-    private boolean passwordRead = false;
+
 
     public SftpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
         super(cfg, createWithSecrets);
@@ -110,12 +112,14 @@ public final class SftpConfiguration extends RemoteConfiguration {
         return userName;
     }
 
-    public String getPassword() {
-        if (!createWithSecrets && !passwordRead) {
+    public synchronized String getPassword() {
+        if (!createWithSecrets && password == null) {
             password = readPassword(SftpConnectionProvider.PASSWORD);
-            passwordRead = true;
         }
-        return password != null ? password : ""; // NOI18N
+        if (password == null) {
+            password = ""; // NOI18N
+        }
+        return password;
     }
 
     public String getKnownHostsFile() {

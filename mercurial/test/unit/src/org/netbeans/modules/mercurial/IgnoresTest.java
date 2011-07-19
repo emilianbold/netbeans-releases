@@ -73,11 +73,11 @@ public class IgnoresTest extends AbstractHgTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();        
         MockLookup.setLayersAndInstances();
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
     }
 
     // ignore patterns - issue 171378 - should pass
@@ -202,15 +202,18 @@ public class IgnoresTest extends AbstractHgTestCase {
         toggleIgnore(folderAB, ignoredFiles);
         ignoredFiles.addAll(getFiles(folderAB));
         assertIgnoreStatus(parentFiles, ignoredFiles);
+        Thread.sleep(2000); // time for refresh
         // ignoring folderA and all its descendants
         toggleIgnore(folderA, ignoredFiles);
         ignoredFiles.addAll(getFiles(folderA));
         assertIgnoreStatus(parentFiles, ignoredFiles);
+        Thread.sleep(2000); // time for refresh
         // unignoring folderA and all its descendants - folder AB remains ignored
         toggleIgnore(folderA, ignoredFiles);
         ignoredFiles.removeAll(getFiles(folderA));
         ignoredFiles.addAll(getFiles(folderAB));
         assertIgnoreStatus(parentFiles, ignoredFiles);
+        Thread.sleep(2000); // time for refresh
         // unignoring folderAB and all its descendants - no file is ignored
         toggleIgnore(folderAB, ignoredFiles);
         ignoredFiles.removeAll(getFiles(folderAB));
