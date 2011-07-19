@@ -10,12 +10,6 @@ org.netbeans.modules.project.libraries.Util
 org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation
 org.netbeans.core.execution.IOTable
 
-#200037
-org.netbeans.modules.mercurial.MercurialInterceptor$HgFolderEventsHandler
-org.netbeans.modules.mercurial.MercurialInterceptor$LockedRepositoryRefreshTask
-org.netbeans.modules.mercurial.kenai.HgKenaiAccessor
-org.netbeans.modules.mercurial.kenai.KenaiNotificationListener
-
 #200038
 org.netbeans.modules.csl.core.AbstractTaskFactory
 org.netbeans.modules.csl.editor.fold.GsfFoldScheduler

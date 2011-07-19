@@ -73,6 +73,7 @@ public final class InspectionComboModel extends AbstractListModel implements Com
     @Override
     public void setSelectedItem(Object o) {
         selected = o;
+        fireContentsChanged(this, -1, -1);
     }
 
     @Override

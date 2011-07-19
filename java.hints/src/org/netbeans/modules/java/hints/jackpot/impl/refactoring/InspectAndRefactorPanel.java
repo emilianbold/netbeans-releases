@@ -55,6 +55,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.accessibility.AccessibleContext;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
@@ -72,10 +75,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
 import javax.swing.Popup;
@@ -89,6 +94,7 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
@@ -103,7 +109,6 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -133,9 +138,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         Icon prj = null;
         ProjectInformation pi=null;
         if (dob!=null) {
-            fileObject = context.lookup(FileObject.class);
-            pi = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fileObject));
-            prj = pi.getIcon();
+            FileObject file = context.lookup(FileObject.class);
+            Project owner = FileOwnerQuery.getOwner(file);
+            if (owner!=null) {
+                fileObject = file;
+                pi = ProjectUtils.getInformation(owner);
+                prj = pi.getIcon();
+            }
         }
         
         JLabel customScope = null;
@@ -147,8 +156,8 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         customScope = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CustomScope"), prj , SwingConstants.LEFT); //NOI18N
         if (fileObject!=null) {
             currentFile = new JLabel(fileObject.getNameExt(), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
-            currentPackage = new JLabel(getPackageName(fileObject), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
-            currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
+            //currentPackage = new JLabel(getPackageName(fileObject), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
+            currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
         }
         allProjects = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_AllProjects"), prj, SwingConstants.LEFT); //NOI18N
         //scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
@@ -462,24 +471,49 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file.getParent(), '.', false);
     }
 
-    Popup popup = null;
+    private Popup popup = null;
+    private PropertyChangeListener listener;
 
     @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         
-                JComboBox box = (JComboBox) e.getSource();
+        final Object comp = singleRefactoringCombo.getUI().getAccessibleChild(singleRefactoringCombo, 0);
+        if (!(comp instanceof JPopupMenu)) {
+            return;
+        }
         
-        Object comp = box.getUI().getAccessibleChild(box, 0);
-        if (!(comp instanceof JPopupMenu)) return;
         
-        final JPopupMenu menu = (JPopupMenu) comp;
+        
         SwingUtilities.invokeLater(new Runnable() {
+            private static final String HTML_DESC_FOOTER = "</body></html>"; //NOI18N
+            private final String HTML_DESC_HEADER = "<html><body><b>" + NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border") + "</b><br>";//NOI18N
 
             @Override
             public void run() {
+                final JPopupMenu menu = (JPopupMenu) comp;
+                HintMetadata item = (HintMetadata) singleRefactoringCombo.getSelectedItem();
+                
+                final JEditorPane pane = new JEditorPane();
+                pane.setContentType("text/html");  //NOI18N
+                pane.setEditable(false);
+                JScrollPane scrollPane = new JScrollPane(pane);
+                pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                scrollPane.setPreferredSize(menu.getSize());
                 Dimension size = menu.getSize();
                 Point location = menu.getLocationOnScreen();
-                popup = PopupFactory.getSharedInstance().getPopup(menu, new JLabel("test"), (int) (location.getX() + size.getWidth()), (int) location.getY());
+                singleRefactoringCombo.getAccessibleContext().addPropertyChangeListener(listener = new PropertyChangeListener() {
+
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY)) {
+                            AccessibleContext context = (AccessibleContext) evt.getNewValue();
+                            HintMetadata item = (HintMetadata) singleRefactoringCombo.getModel().getElementAt(context.getAccessibleIndexInParent());
+                            pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                            pane.setCaretPosition(0);
+                        }
+                    }
+                });
+                popup = PopupFactory.getSharedInstance().getPopup(menu, scrollPane, (int) (location.getX()), (int) (location.getY() - size.getHeight() - singleRefactoringCombo.getHeight()) + 5);
                 popup.show();
             }
         });
@@ -487,7 +521,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     @Override
     public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-//        popup.hide();
+        if (popup!=null) {
+            popup.hide();
+            popup = null;
+        }
+        singleRefactoringCombo.getAccessibleContext().removePropertyChangeListener(listener);
     }
 
     @Override

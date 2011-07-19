@@ -48,7 +48,6 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -56,12 +55,16 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
  * 
  */
+@ActionID(id = "org.netbeans.modules.mercurial.ui.tag.CreateTagAction", category = "Mercurial")
+@ActionRegistration(displayName = "#CTL_MenuItem_CreateTag")
 public class CreateTagAction extends ContextAction {
     
     @Override

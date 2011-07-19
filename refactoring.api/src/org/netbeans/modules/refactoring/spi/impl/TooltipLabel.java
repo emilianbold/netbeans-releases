@@ -39,54 +39,43 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.util;
+package org.netbeans.modules.refactoring.spi.impl;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
+import java.awt.FontMetrics;
+import java.awt.Point;
+import java.awt.SystemColor;
+import java.awt.event.MouseEvent;
+import javax.swing.JLabel;
+import javax.swing.JToolTip;
 
 /**
  *
- * @author ondra
+ * @author Jan Becicka
  */
-public class UtilsTest extends NbTestCase {
+public class TooltipLabel extends JLabel {
 
-    public UtilsTest (String name) {
-        super(name);
+    public TooltipLabel() {
+        setToolTipText(" "); //NOI18N
     }
     
-    public void testUnversionedFolders () throws Exception {
-        File a = new File(getWorkDir(), "a");
-        File b = new File(getWorkDir(), "b");
-        System.setProperty("versioning.unversionedFolders", a.getAbsolutePath() + ";" + b.getAbsolutePath() + ";");
-        File c = new File(getWorkDir(), "c");
-        VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
-        File userdir = new File(getWorkDir(), "userdir");
-        System.setProperty("netbeans.user", userdir.getAbsolutePath());
-        assertTrue(Utils.isScanForbidden(a));
-        assertTrue(Utils.isScanForbidden(b));
-        assertTrue(Utils.isScanForbidden(c));
-        assertTrue(Utils.isScanForbidden(userdir));
-        assertTrue(Utils.isScanForbidden(new File(userdir, "ffff")));
-        assertFalse(Utils.isScanForbidden(userdir.getParentFile()));
+    public String getToolTipText(MouseEvent e) {
+        FontMetrics metrix = getFontMetrics(getFont());
+        String text = getText();
+        int textWidth = metrix.stringWidth(text.replaceAll("<[^>]*>", ""));//NOI18N
+        return (textWidth > getParent().getSize().width ? text : null);
+    }
 
-        Field f = Utils.class.getDeclaredField("unversionedFolders");
-        f.setAccessible(true);
-        assertEquals(4, ((File[]) f.get(Utils.class)).length);
+    public Point getToolTipLocation(MouseEvent event) {
+        return new Point(-3, 0);
+    }
 
-        System.setProperty("versioning.netbeans.user.versioned", "true");
-        
-        f.set(Utils.class, (File[]) null);
-        
-        assertTrue(Utils.isScanForbidden(a));
-        assertTrue(Utils.isScanForbidden(b));
-        assertTrue(Utils.isScanForbidden(c));
-        assertFalse(Utils.isScanForbidden(userdir));
-        assertFalse(Utils.isScanForbidden(new File(userdir, "ffff")));
-        assertFalse(Utils.isScanForbidden(userdir.getParentFile()));
-
-        f.setAccessible(true);
-        assertEquals(3, ((File[]) f.get(Utils.class)).length);
+    public JToolTip createToolTip() {
+        JToolTip tooltp = new JToolTip();
+        tooltp.setBackground(SystemColor.control);
+        tooltp.setFont(getFont());
+        tooltp.setOpaque(true);
+        tooltp.setComponent(this);
+        tooltp.setBorder(null);
+        return tooltp;
     }
 }

@@ -64,12 +64,12 @@ import org.openide.util.Utilities;
  *
  * @author  phrebejk
  */
-public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener, DocumentListener {
+public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
 
-    public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
-    public static final String MAIN_CLASS = "mainClass"; //NOI18N
+    private static final String SET_AS_MAIN = "setAsMain"; //NOI18N
+    private static final String MAIN_CLASS = "mainClass"; //NOI18N
     
     
     protected PanelConfigureProject panel;
@@ -106,7 +106,24 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 separator.setVisible(true);
                 break;
         }
-        this.mainClassTextField.getDocument().addDocumentListener(this);
+        
+        this.mainClassTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                mainClassChanged();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                mainClassChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                mainClassChanged();
+            }
+        });
      }
 
     @Override
@@ -126,21 +143,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     NbBundle.getMessage(PanelOptionsVisual.class, "TXT_ClassName"), new Object[]{newProjectName} //NOI18N
                     ));
         }
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        mainClassChanged();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        mainClassChanged();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        mainClassChanged();
     }
 
     /** This method is called from within the constructor to

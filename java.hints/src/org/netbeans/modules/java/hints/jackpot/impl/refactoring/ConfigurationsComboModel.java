@@ -115,6 +115,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
     public void setSelectedItem(Object o) {
         setLastSelected(selected);
         selected = o;
+        fireContentsChanged(this, -1, -1);
     }
 
     private void setLastSelected(Object o) {
