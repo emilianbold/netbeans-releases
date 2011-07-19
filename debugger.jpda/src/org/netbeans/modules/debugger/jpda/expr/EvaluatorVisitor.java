@@ -196,6 +196,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
+    private static final Value NO_VALUE = new NoValue();
+    
     private Type newArrayType;
     private JavaExpression expression;
     private Map<Tree, Type> subExpressionTypes = new IdentityHashMap<Tree, Type>();
@@ -1687,10 +1689,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         ObjectReference thiz = evaluationContext.getContextObject();
         if (thiz != null) {
-            Field outer = thiz.referenceType().fieldByName("val$"+name);
-            if (outer != null) {
-                Value val = thiz.getValue(outer);
-                evaluationContext.putField(arg0, outer, thiz);
+            Value val = getOuterValue(thiz, name, evaluationContext, arg0);
+            if (val != NO_VALUE) {
                 return val;
             }
         }
@@ -1701,6 +1701,30 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         Assert.error(arg0, "unknownVariable", name);
         return null;
+    }
+    
+    private Value getOuterValue(ObjectReference thiz, String name, EvaluationContext evaluationContext, IdentifierTree arg0) {
+        Field outer = thiz.referenceType().fieldByName("val$"+name);
+        if (outer != null) {
+            Value val = thiz.getValue(outer);
+            evaluationContext.putField(arg0, outer, thiz);
+            return val;
+        }
+        // If the field is not there, we'll look for this$0 etc.
+        List<Field> fields = thiz.referenceType().fields();
+        for (Field f : fields) {
+            if (f.name().startsWith("this$")) {
+                Value val = thiz.getValue(f);
+                if (!(val instanceof ObjectReference)) {
+                    continue;
+                }
+                val = getOuterValue((ObjectReference) val, name, evaluationContext, arg0);
+                if (val != NO_VALUE) {
+                    return val;
+                }
+            }
+        }
+        return NO_VALUE;
     }
 
     @Override
@@ -1869,10 +1893,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             }
                         }
                         if (thiz != null) {
-                            Field outer = thiz.referenceType().fieldByName("val$"+varName);
-                            if (outer != null) {
-                                Value val = thiz.getValue(outer);
-                                evaluationContext.putField(arg0, outer, thiz);
+                            Value val = getOuterValue(thiz, varName, evaluationContext, arg0);
+                            if (val != NO_VALUE) {
                                 return val;
                             }
                         }
@@ -1901,10 +1923,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             }
                         }
                         if (thiz != null) {
-                            Field outer = thiz.referenceType().fieldByName("val$"+paramName);
-                            if (outer != null) {
-                                Value val = thiz.getValue(outer);
-                                evaluationContext.putField(arg0, outer, thiz);
+                            Value val = getOuterValue(thiz, paramName, evaluationContext, arg0);
+                            if (val != NO_VALUE) {
                                 return val;
                             }
                         }
@@ -4478,5 +4498,21 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
 
     } // DoubleVal
+    
+    private static final class NoValue implements Value {
+        
+        public NoValue() {}
+
+        @Override
+        public Type type() {
+            throw new UnsupportedOperationException("No value.");
+        }
+
+        @Override
+        public VirtualMachine virtualMachine() {
+            throw new UnsupportedOperationException("No value.");
+        }
+        
+    }
 
 }
