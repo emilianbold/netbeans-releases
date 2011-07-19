@@ -262,9 +262,11 @@ public class UseNbBundleMessages extends AbstractHint {
                         } // else annotation value, nothing to change
                         if (!isAlreadyRegistered) {
                             Tree enclosing = findEnclosingElement(wc, treePath);
-                            ModifiersTree modifiers;
+                            Tree modifiers;
                             if (enclosing.getKind() == Kind.METHOD) {
                                 modifiers = ((MethodTree) enclosing).getModifiers();
+                            } else if (enclosing.getKind() == Kind.COMPILATION_UNIT) {
+                                modifiers = enclosing;
                             } else {
                                 modifiers = ((ClassTree) enclosing).getModifiers();
                             }
@@ -278,10 +280,15 @@ public class UseNbBundleMessages extends AbstractHint {
                         // XXX remove NbBundle import if now unused
                     }
                     // borrowed from FindBugsHint:
-                    private ModifiersTree addMessage(WorkingCopy wc, ModifiersTree original, List<ExpressionTree> lines) throws Exception {
+                    private Tree addMessage(WorkingCopy wc, /*Modifiers|CompilationUnit*/Tree original, List<ExpressionTree> lines) throws Exception {
                         TreeMaker make = wc.getTreeMaker();
                         // First try to insert into a value list for an existing annotation:
-                        List<? extends AnnotationTree> anns = original.getAnnotations();
+                        List<? extends AnnotationTree> anns;
+                        if (original.getKind() == Kind.COMPILATION_UNIT) {
+                            anns = ((CompilationUnitTree) original).getPackageAnnotations();
+                        } else {
+                            anns = ((ModifiersTree) original).getAnnotations();
+                        }
                         for (int i = 0; i < anns.size(); i++) {
                             AnnotationTree ann = anns.get(i);
                             Tree annotationType = ann.getAnnotationType();
@@ -308,7 +315,14 @@ public class UseNbBundleMessages extends AbstractHint {
                                     arr = make.addNewArrayInitializer(arr, line);
                                 }
                                 ann = make.Annotation(annotationType, Collections.singletonList(arr));
-                                return make.insertModifiersAnnotation(make.removeModifiersAnnotation(original, i), i, ann);
+                                if (original.getKind() == Kind.COMPILATION_UNIT) {
+                                    CompilationUnitTree cut = (CompilationUnitTree) original;
+                                    List<AnnotationTree> newAnns = new ArrayList<AnnotationTree>(anns);
+                                    newAnns.set(i, ann);
+                                    return make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
+                                } else {
+                                    return make.insertModifiersAnnotation(make.removeModifiersAnnotation((ModifiersTree) original, i), i, ann);
+                                }
                             }
                         }
                         // Not found, so create a new annotation:
@@ -318,7 +332,17 @@ public class UseNbBundleMessages extends AbstractHint {
                         } else { // @Messages("k=v")
                             values = lines;
                         }
-                        return GeneratorUtilities.get(wc).importFQNs(make.addModifiersAnnotation(original, make.Annotation(make.QualIdent("org.openide.util.NbBundle.Messages"), values)));
+                        AnnotationTree atMessages = make.Annotation(make.QualIdent("org.openide.util.NbBundle.Messages"), values);
+                        Tree result;
+                        if (original.getKind() == Kind.COMPILATION_UNIT) {
+                            CompilationUnitTree cut = (CompilationUnitTree) original;
+                            List<AnnotationTree> newAnns = new ArrayList<AnnotationTree>(anns);
+                            newAnns.add(atMessages);
+                            result = make.CompilationUnit(newAnns, cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile());
+                        } else {
+                            result = make.addModifiersAnnotation((ModifiersTree) original, atMessages);
+                        }
+                        return GeneratorUtilities.get(wc).importFQNs(result);
                     }
                     private Tree findEnclosingElement(WorkingCopy wc, TreePath treePath) {
                         Tree leaf = treePath.getLeaf();
@@ -336,6 +360,9 @@ public class UseNbBundleMessages extends AbstractHint {
                                     return leaf;
                                 } // else part of an inner class
                             }
+                            break;
+                        case COMPILATION_UNIT:
+                            return leaf;
                         }
                         TreePath parentPath = treePath.getParentPath();
                         if (parentPath == null) {
