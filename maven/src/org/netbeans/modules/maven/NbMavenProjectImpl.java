@@ -573,6 +573,7 @@ public final class NbMavenProjectImpl implements Project {
             put(NbMavenProject.TYPE_JAR, "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
             put(NbMavenProject.TYPE_WAR, "org/netbeans/modules/maven/resources/maven_web_application_16.png"); //NOI18N
             put(NbMavenProject.TYPE_EJB, "org/netbeans/modules/maven/resources/maven_ejb_module_16.png"); //NOI18N
+            put(NbMavenProject.TYPE_APPCLIENT, "org/netbeans/modules/maven/resources/appclient.png"); //NOI18N
             put(NbMavenProject.TYPE_EAR, "org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"); //NOI18N
             put(NbMavenProject.TYPE_POM, "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
             put(NbMavenProject.TYPE_NBM, "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
