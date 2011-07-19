@@ -44,6 +44,11 @@ package org.netbeans.modules.javaee.specs.support.bridge;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -109,6 +114,41 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
             return false;
         }
         return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#removeJaxRsLibraries(org.netbeans.api.project.Project)
+     */
+    @Override
+    public void removeJaxRsLibraries( Project project ) {
+        List<Library> libraries = new ArrayList<Library>(2);
+        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
+        if (swdpLibrary != null) {
+            libraries.add( swdpLibrary );
+        }
+
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        if (restapiLibrary == null) {
+            libraries.add( restapiLibrary );
+        }
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        String[] classPathTypes = new String[]{ ClassPath.COMPILE , ClassPath.EXECUTE };
+        for (String type : classPathTypes) {
+            try {
+                ProjectClassPathModifier.removeLibraries(libraries.toArray( 
+                        new Library[ libraries.size()]), sourceRoot, type);
+            } 
+            catch(UnsupportedOperationException ex) {
+                Logger.getLogger( IdeJaxRsSupportImpl.class.getName() ).log( 
+                        Level.INFO, null , ex );
+            }
+            catch( IOException e ){
+                Logger.getLogger( IdeJaxRsSupportImpl.class.getName() ).log( 
+                        Level.INFO, null , e );
+            }
+        }        
     }
 
 }
