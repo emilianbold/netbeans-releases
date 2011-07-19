@@ -102,6 +102,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.options.HintsPanel;
 import org.netbeans.modules.refactoring.java.ui.JavaScopeBuilder;
 import org.openide.DialogDescriptor;
@@ -382,7 +383,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
             for (HintMetadata hint:config.getHints()) {
-                hintsToApply.addAll(RulesManager.getInstance().allHints.get(hint));
+                for (HintDescription desc: RulesManager.getInstance().allHints.get(hint)) {
+                    if (desc.getTrigger() instanceof PatternDescription) {
+                        hintsToApply.add(desc);
+                    }
+                }
             }
             return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintsToApply);
         }
