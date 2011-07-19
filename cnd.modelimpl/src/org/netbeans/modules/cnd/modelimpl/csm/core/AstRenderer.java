@@ -858,8 +858,8 @@ public class AstRenderer {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
                             CsmType type = TypeFactory.createType(classifier, null, 0, null, file, startOffset, endOffset);
-                            VariableImpl<?> var = VariableImpl.create(new Offsetable(file, rcurlyOffset, rcurlyOffset),
-                                    file, type, "", null, true, false, !isRenderingLocalContext()); // NOI18N
+                            VariableImpl<?> var = VariableImpl.create(file, rcurlyOffset, rcurlyOffset,
+                                    type, "", null, true, false, !isRenderingLocalContext()); // NOI18N
                             if (container2 != null) {
                                 container2.addDeclaration(var);
                             }

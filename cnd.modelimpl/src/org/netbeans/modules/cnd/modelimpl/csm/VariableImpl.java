@@ -75,17 +75,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private final boolean _extern;
     private ExpressionBase initExpr;
 
-    protected VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern) {
-        super(file, pos);
-        this._static = _static;
-        this._extern = _extern;
-        this.name = NameCache.getManager().getString(name);
-        this.type = type;
-        _setScope(scope);
-    }
-
-    public static<T> VariableImpl<T> create(CsmOffsetable pos, CsmFile file, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
-        VariableImpl<T> variableImpl = new VariableImpl<T>(pos, file, type, name, scope, _static, _extern);
+    public static<T> VariableImpl<T> create(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
+        VariableImpl<T> variableImpl = new VariableImpl<T>(file, startOffset, endOffset, type, name, scope, _static, _extern);
         postObjectCreateRegistration(registerInProject, variableImpl);
         if (registerInProject && (type instanceof TypeImpl)) {
             ((TypeImpl)type).setOwner(variableImpl);
@@ -120,7 +111,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.type = type;
         _setScope(scope);
     }
-
+    
     public static int getStartOffset(AST node) {
         if (node != null) {
             CsmAST csmAst = AstUtil.getFirstCsmAST(node);
