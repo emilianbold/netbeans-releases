@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.maven.graph/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/graph/Bundle.properties
 OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-Specification-Version: 1.12
+OpenIDE-Module-Specification-Version: 1.13
 

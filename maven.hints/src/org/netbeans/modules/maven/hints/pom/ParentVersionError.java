@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.hints.pom;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,12 +54,10 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Parent;
@@ -70,7 +67,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -138,18 +134,14 @@ public class ParentVersionError implements POMErrorFixProvider {
         }
         if ((!useSources || currentVersion == null) && declaredVersion != null) {
             ArtifactVersion currentAV = new DefaultArtifactVersion(declaredVersion);
-            List<RepositoryInfo> loadedRepos = RepositoryQueries.getLoadedContexts();
-            if (!loadedRepos.isEmpty()) {
-                List<NBVersionInfo> infos = RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId(), loadedRepos.toArray(new RepositoryInfo[]{}));
-                for (NBVersionInfo info : infos) {
-                    if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
-                        continue;
-                    }
-                    // XXX can probably just pick the first one, since RQ now sorts
-                    ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
-                    if (currentAV.compareTo(av) < 0) {
-                        currentAV = av;
-                    }
+            for (NBVersionInfo info : RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId(), null)) {
+                if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
+                    continue;
+                }
+                // XXX can probably just pick the first one, since RQ now sorts
+                ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
+                if (currentAV.compareTo(av) < 0) {
+                    currentAV = av;
                 }
             }
             currentVersion = currentAV.toString();

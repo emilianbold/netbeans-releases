@@ -51,7 +51,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -109,7 +108,7 @@ class MavenRefactoringPlugin implements RefactoringPlugin {
         }
         LOG.log(Level.FINE, "for {0} found FQN: {1}", new Object[] {handle, fqn});
         if (fqn.get() != null) {
-            for (ClassUsageQuery.ClassUsageResult result : RepositoryQueries.findClassUsages(fqn.get(), RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]))) {
+            for (ClassUsageQuery.ClassUsageResult result : RepositoryQueries.findClassUsages(fqn.get(), null)) {
                 for (String clazz : result.getClasses()) {
                     refactoringElements.add(query, new MavenRefactoringElementImplementation(new ReferringClass(result.getArtifact(), clazz)));
                 }
