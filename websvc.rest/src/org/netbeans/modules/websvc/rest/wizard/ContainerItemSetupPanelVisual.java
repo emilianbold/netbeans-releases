@@ -184,8 +184,6 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         containerRepresentationClassTextField = new javax.swing.JTextField();
         selectClassButton1 = new javax.swing.JButton();
 
-        setName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_JSFPagesAndClasses")); // NOI18N
-
         classLabel.setLabelFor(classTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(classLabel, bundle.getString("LBL_ClassName")); // NOI18N
@@ -301,10 +299,10 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(containerUriLabel)
-                .addContainerGap(547, Short.MAX_VALUE))
+                .addContainerGap(585, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(mediaTypeLabel)
-                .addContainerGap(581, Short.MAX_VALUE))
+                .addContainerGap(604, Short.MAX_VALUE))
             .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -316,12 +314,12 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .addComponent(packageLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(packageComboBox, 0, 487, Short.MAX_VALUE)
-                    .addComponent(resourceNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
-                    .addComponent(classTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
-                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
-                    .addComponent(locationComboBox, 0, 487, Short.MAX_VALUE)
-                    .addComponent(containerTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)))
+                    .addComponent(packageComboBox, 0, 548, Short.MAX_VALUE)
+                    .addComponent(resourceNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
+                    .addComponent(classTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
+                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
+                    .addComponent(locationComboBox, 0, 548, Short.MAX_VALUE)
+                    .addComponent(containerTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(contentClassLabel1)
@@ -329,11 +327,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .addComponent(uriLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(uriTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .addComponent(representationClassTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .addComponent(containerRepresentationClassTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .addComponent(containerUriTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .addComponent(medaTypeComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 315, Short.MAX_VALUE))
+                    .addComponent(uriTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(representationClassTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(containerRepresentationClassTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(containerUriTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(medaTypeComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 422, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(selectClassButton)
