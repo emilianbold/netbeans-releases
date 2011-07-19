@@ -71,10 +71,6 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         super(file, getStartOffset(ast), getEndOffset(ast));
     }
 
-    protected OffsetableIdentifiableBase(CsmFile containingFile, CsmOffsetable pos) {
-        super(containingFile, pos != null ? pos.getStartOffset() : 0, pos != null ? pos.getEndOffset() : 0);
-    }
-
     protected OffsetableIdentifiableBase(CsmFile containingFile, int startOffset, int endOffset) {
         super(containingFile, startOffset, endOffset);
     }
