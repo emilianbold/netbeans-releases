@@ -31,12 +31,6 @@ org.netbeans.modules.cnd.modelimpl.debug.TraceFlags
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport
 org.netbeans.modules.cnd.modelimpl.platform.ModelSupport$ModifiedObjectsChangeListener
 
-#179838
-org.apache.derby.jdbc.AutoloadedDriver
-org.h2.Driver
-org.netbeans.modules.db.explorer.DatabaseConnector
-
-
 #177560
 org.netbeans.modules.csl.core.GsfModuleInstaller
 

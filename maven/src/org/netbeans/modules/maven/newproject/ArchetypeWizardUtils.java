@@ -162,13 +162,15 @@ public class ArchetypeWizardUtils {
         APPCLIENT_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0"); //NOI18N
+        arch.setVersion("1.0-20110719.122342-1"); //NOI18N
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/"); // XXX temporary!
         arch.setArtifactId("appclient-javaee6"); //NOI18N
         APPCLIENT_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0"); //NOI18N
+        arch.setVersion("1.0-20110719.122638-1"); //NOI18N
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/"); // XXX temporary!
         arch.setArtifactId("appclient-jee5"); //NOI18N
         APPCLIENT_ARCHS[1] = arch;
         

@@ -45,71 +45,49 @@ made subject to such option by the copyright holder.
             }
             -->
         </style>
-        <title>New PHP Project without Previously Developed Sources: Configure</title>
+        <title>New PHP Project: Name and Location</title>
     </head>
     <body>
-        <h1>
-            Creating a PHP Project without Previously Developed Sources
-        </h1>
-        <p>
-            <small><a href="#seealso">See Also</a></small>
-        </p>
-        <ol>
+        <h2>
+            New PHP Project: Name and Location
+        </h2>
+        <ul>
             <li>
-                In the Project Name text field, enter the name of the project.
+                <b>Project Name:</b> Arbitrary name you give your project.
             </li>
             <li>
-                In the Sources Folder field, specify the folder on your web server where you want to store
-                your source files.<br>
-                Because the wizard presupposes that you will store the source files on the local web
-                server, the field by default specifies the following path: <tt>&lt;Document
-                    Root&gt;\&lt;New PHP Project&gt;</tt>. The document root is the folder where the local web
-                server looks for files to open in the browser. The document root is specified in the web
-                server configuration file.<br>
-                The wizard detects the Apache installation type, either a component or within a package,
-                and provides the path to the default location of the <tt>htdocs</tt> folder for the current
-                installation type. Therefore, if you accepted the default settings during the installation
-                of the Apache server or the AMP package, choose the path from the dropdown list.
+                <b>Sources Folder:</b> Folder in which you want to store 
+                the project's PHP sources. By default, this is your web
+                server's standard document root.
+                <ul>
+                    <li><b>Browse...</b> Browse your file system for a folder
+                    in which to store PHP sources.</li>
+                </ul>
             </li>
+            
+            <li<b>PHP Version:</b> The PHP version that your project uses. Note that
+            you do not affect your PHP code by your choice in this field. Only 
+            the IDE's code completion feature uses the value in this field.</li>
             <li>
-                From the Default Encoding dropdown list, choose the default encoding for your project.
+                <b>Default Encoding.</b> Encoding for the files in your project. 
+                Select encoding from the drop-down list.
             </li>
-            <li>
-                To store the project internal files separately from the source files, select the Put
-                NetBeans metadata into a separate directory checkbox. In the Metadata Folder text field,
-                specify the folder where you want to create a subfolder for storing the internal files for
-                your project. Use the Browse button if necessary.<br>
+            <li><b>Put NetBeans metadata into a separate directory.</b>
+                Tick to store the NetBeans project metadata separately from the source files.
+                <ul>
+                    <li><b>Metadata folder:</b> The location where you want to store
+                    the project's metadata.</li>
+                    <li><b>Browse...</b> Click to browse your file system for a location
+                    in which to store the project's metadata.</li>
+                </ul>
             </li>
-            <li>
-                Click Next. The <a href="new-project-run-configuration.html">Run Configuration</a> panel
-                opens.
-            </li>
-        </ol>
-        <dl>
-            <dt>
-                <a name="seealso">See Also</a>
-            </dt>
-            <dd>
-                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://www.netbeans.org/kb/trails/php.html">
-                    <param name="text" value="<html><u>PHP Learning Trail (Web document)</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>
-            </dd>
-            <dd>
-                <a href="new-project-configure_existing_sources.html" title=
-                   "Importing Previously Developed Source Files into a New Project">Importing Previously
-                    Developed Source Files into a New Project</a>
-            </dd>
-            <dd>
-                <a href="new-project-run-configuration.html" title="Run Configurations">Run
-                    Configuration</a>
-            </dd>
-        </dl>
+            
+        </ul>
+        
+        
         <hr>
         <p>
-            <small><a href="credits.html">Legal Notices</a></small>
+            <small><a href="../credits.html">Legal Notices</a></small>
         </p>
         <table border="0" cellpadding="150">
             <tr>
