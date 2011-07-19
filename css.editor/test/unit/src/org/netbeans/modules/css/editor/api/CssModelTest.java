@@ -39,24 +39,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.model;
+package org.netbeans.modules.css.editor.api;
 
-import org.netbeans.modules.css.editor.api.CssRule;
-import org.netbeans.modules.css.editor.api.CssModel;
-import org.netbeans.modules.css.editor.api.CssRuleItem;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -210,7 +205,7 @@ public class CssModelTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
         assertNotNull(result);
 
-        assertNotNull(((CssCslParserResult)result).root());
+        assertNotNull(((CssCslParserResult)result).getParseTree());
 
         CssModel model = CssModel.create((CssCslParserResult) result);
         assertNotNull(model);

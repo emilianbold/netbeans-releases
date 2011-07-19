@@ -42,8 +42,11 @@
 package org.netbeans.modules.css.lib.api;
 
 import javax.swing.text.BadLocationException;
+import org.antlr.runtime.CommonToken;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.Css3Lexer;
 import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.TokenNode;
 import static org.junit.Assert.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -69,5 +72,22 @@ public class NodeUtilTest extends NbTestCase {
         assertNotNull(value);
         
         assertEquals("\"file.css\"", value.image().toString());
+    }
+    
+    public void test_getTrimmedNodeRange() {
+        CommonToken token = new CommonToken(Css3Lexer.IDENT);
+        token.setText(" hello! ");
+        //             012345678
+        token.setStartIndex(0);
+        token.setStopIndex(7); //len - 1 -> points to last char not the end!
+        
+        Node node = new TokenNode(token);
+        
+        assertEquals(" hello! ", node.image().toString());
+        int[] result = NodeUtil.getTrimmedNodeRange(node);
+
+        assertEquals(1, result[0]);
+        assertEquals(7, result[1]);
+        
     }
 }

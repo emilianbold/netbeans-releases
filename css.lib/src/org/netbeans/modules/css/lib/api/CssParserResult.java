@@ -52,7 +52,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  */
 public class CssParserResult extends Parser.Result {
 
-    static boolean IN_UNIT_TESTS = false;
+    public static boolean IN_UNIT_TESTS = false;
     
     private AbstractParseTreeNode parseTree;
     private List<ProblemDescription> diagnostics;

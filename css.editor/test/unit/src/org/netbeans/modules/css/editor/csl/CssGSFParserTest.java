@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.editor.csl;
 
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.Collections;
@@ -84,7 +84,7 @@ public class CssGSFParserTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
 
         CssCslParserResult cssresult = (CssCslParserResult)result;
-        assertNull(cssresult.root());
+        assertNull(cssresult.getParseTree());
         assertEquals(1, cssresult.getDiagnostics().size());
     }
 
@@ -106,7 +106,7 @@ public class CssGSFParserTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
 
         CssCslParserResult cssresult = (CssCslParserResult)result;
-        assertNotNull(cssresult.root());
+        assertNotNull(cssresult.getParseTree());
         assertEquals(0, cssresult.getDiagnostics().size());
     }
 
@@ -127,7 +127,7 @@ public class CssGSFParserTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
 
         CssCslParserResult cssresult = (CssCslParserResult)result;
-        assertNotNull(cssresult.root());
+        assertNotNull(cssresult.getParseTree());
 
         List<? extends Error> errors = cssresult.getDiagnostics();
         assertEquals(1, errors.size());
@@ -152,7 +152,7 @@ public class CssGSFParserTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
 
         CssCslParserResult cssresult = (CssCslParserResult)result;
-        assertNotNull(cssresult.root());
+        assertNotNull(cssresult.getParseTree());
 
         List<? extends Error> errors = cssresult.getDiagnostics();
         assertEquals(1, errors.size());

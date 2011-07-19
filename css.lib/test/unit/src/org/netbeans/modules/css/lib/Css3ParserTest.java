@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api;
+package org.netbeans.modules.css.lib;
 
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
@@ -47,6 +47,10 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.TokenNode;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

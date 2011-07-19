@@ -39,73 +39,50 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.parser;
+package org.netbeans.modules.css.lib;
 
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNode;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTreeConstants;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.ASCII_CharStream;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserTokenManager;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.NodeVisitor;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParser;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.ParseException;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssParserConstants;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.SimpleNodeUtil;
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import javax.swing.text.BadLocationException;
 import org.junit.Assert;
-import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class CssParserTest extends TestBase {
+public class Css3ParserTest2 extends CslTestBase {
 
-    public CssParserTest(String testName) {
+    public Css3ParserTest2(String testName) {
         super(testName);
     }
 
-    public static Test Xsuite(){
-	TestSuite suite = new TestSuite();
-        suite.addTest(new CssParserTest("testErrorInMediaRule"));
-        return suite;
+//    public static Test Xsuite(){
+//	TestSuite suite = new TestSuite();
+//        suite.addTest(new Css3ParserTest2("testErrorInMediaRule"));
+//        return suite;
+//    }
+
+    private CssParserResult parse(String source) throws BadLocationException, ParseException {
+        CssParserResult result = TestUtil.parse(source);
+        assertNotNull(result);
+        return result;
     }
 
-    private SimpleNode parse(String source) throws ParseException {
-        CssParser parser = new CssParser();
-        parser.ReInit(new ASCII_CharStream(new StringReader(source)));
-        return parser.styleSheet();
+    private static List<ProblemDescription> getErrors(CssParserResult result) {
+        return result.getDiagnostics();
     }
 
-    private static boolean isErrorNode(SimpleNode node) {
-        return node.kind() == CssParserTreeConstants.JJTERROR_SKIPBLOCK ||
-                node.kind() == CssParserTreeConstants.JJTERROR_SKIPDECL ||
-                node.kind() == CssParserTreeConstants.JJTERROR_SKIP_TO_WHITESPACE;
-    }
-
-    /** returns number of error nodes underneath the node. */
-    private static List<SimpleNode> getErrors(SimpleNode node) {
-        final List<SimpleNode> errors = new ArrayList<SimpleNode>();
-        SimpleNodeUtil.visitChildren(node, new NodeVisitor() {
-
-            public void visit(SimpleNode node) {
-                if (isErrorNode(node)) {
-                    errors.add(node);
-                }
-            }
-        });
-        return errors;
-    }
-
-    private void assertNoErrors(SimpleNode node) {
-        Assert.assertNotNull(node);
-        List<SimpleNode> errors = getErrors(node);
+    private void assertNoErrors(CssParserResult result) {
+        Assert.assertNotNull(result);
+        List<ProblemDescription> errors = getErrors(result);
         if(errors.size() > 0) {
-            StringBuffer buf = new StringBuffer();
-            for(SimpleNode e : errors) {
+            StringBuilder buf = new StringBuilder();
+            for(ProblemDescription e : errors) {
                 buf.append(e.toString());
                 buf.append(',');
             }
@@ -114,28 +91,28 @@ public class CssParserTest extends TestBase {
         }
     }
 
-    public void testParserBasis() throws ParseException {
-        SimpleNode node = parse("h1 { color: red; }");
-        Assert.assertNotNull(node);
-        assertNoErrors(node);
+    public void testParserBasis() throws ParseException, BadLocationException {
+        CssParserResult result = parse("h1 { color: red; }");
+        Assert.assertNotNull(result);
+        assertNoErrors(result);
         
     }
 
-    public void testParseComment() throws ParseException {
+    public void testParseComment() throws ParseException, BadLocationException {
         assertNoErrors(parse("h1 { /* comment */ }"));
         assertNoErrors(parse("h1 { color: /* comment */ red; }"));
         assertNoErrors(parse("h1 /* c */ { /* c2 */ color: red; }"));
         assertNoErrors(parse("/* c */ h1 {  color: red; } /* c2 */"));
     }
 
-    private SimpleNode check(String source) throws ParseException {
-        SimpleNode node = parse(source);
-        Assert.assertNotNull(node);
-        assertNoErrors(node);
-        return node;
+    private CssParserResult check(String source) throws ParseException, BadLocationException {
+        CssParserResult result = parse(source);
+        Assert.assertNotNull(result);
+        assertNoErrors(result);
+        return result;
     }
 
-    public void testIssue183158() throws ParseException {
+    public void testIssue183158() throws ParseException, BadLocationException {
         String code = "div { margin-left: -49%; }";
 //        dumpTokens(code);
 //        dumpParseTree(code);
@@ -143,19 +120,17 @@ public class CssParserTest extends TestBase {
         check(code);
     }
 
-    public void testIssue183601() throws ParseException {
+    public void testIssue183601() throws ParseException, BadLocationException {
         String code = "table tbody tr:not(.Current):hover { }";
         check(code);
     }
 
-    public void testAtSymbol() throws ParseException {
+    public void testAtSymbol() throws ParseException, BadLocationException {
         String code = "@a ";
-        dumpTokens(code);
-//        dumpParseTree(code);
         check(code);
     }
 
-    public void testIssue182434() throws ParseException {
+    public void testIssue182434() throws ParseException, BadLocationException {
         //css3
         check("A[href^=\"https://\"] {}");
         check("IMG[src*=\"icon\"] {}");
@@ -164,7 +139,7 @@ public class CssParserTest extends TestBase {
         check("div { quotes: '\"' '\"' \"'\" \"'\"; } ");
     }
 
-    public void testMSSyntax() throws ParseException {
+    public void testMSSyntax() throws ParseException, BadLocationException {
         check("h1 { top: expression(offsetParent.scrollTop) } ");
         check("h1 { filter:alpha(opacity=50); }");
         check("h1 { filter: progid:DXImageTransform.Microsoft.Blur(PixelRadius=5,MakeShadow=true,ShadowOpacity=0.20); }");
@@ -180,7 +155,7 @@ public class CssParserTest extends TestBase {
 
     // @@@ represents a gap from the css perspective in reality filled with 
     // a templating language code.
-    public void testParserOnTemplating() throws ParseException {
+    public void testParserOnTemplating() throws ParseException, BadLocationException {
         //generated properties
         check("h1 { @@@: red; }");
         check("h1 { color: @@@; }");
@@ -228,16 +203,17 @@ public class CssParserTest extends TestBase {
         check("@page:left{margin-left:@@@;}");
     }
 
-    public void testTemplatingInComment() throws ParseException {
+    public void testTemplatingInComment() throws ParseException, BadLocationException {
         check("EXAMPLE { /* @@@ */ }");
     }
 
-    public void testParserRootNodeSpan() throws ParseException {
+    public void testParserRootNodeSpan() throws ParseException, BadLocationException {
         String source = "h1 { }";
         //               0123456
-        SimpleNode node = parse(source);
+        CssParserResult result = parse(source);
+        assertNoErrors(result);
+        Node node = result.getParseTree();
         Assert.assertNotNull(node);
-        assertNoErrors(node);
 
 //        Token t = node.jjtGetFirstToken();
 //        while(t != null) {
@@ -247,13 +223,13 @@ public class CssParserTest extends TestBase {
 //        }
 
         //test the root node size - if it spans over the whole source text
-        assertEquals(source.length(), node.endOffset() - node.startOffset());
+        assertEquals(source.length(), node.to() - node.from());
 
     }
 
-    public void testPropertyValueWithComment() throws ParseException {
+    public void testPropertyValueWithComment() throws ParseException, BadLocationException {
         //fails - issue http://www.netbeans.org/issues/show_bug.cgi?id=162844
-        //the problem is that the SimpleNode for property value contains also the whitespace and comment
+        //the problem is that the Node for property value contains also the whitespace and comment
 
         String code = "h3 { color: red /*.....*/ }";
 
@@ -267,96 +243,70 @@ public class CssParserTest extends TestBase {
 //        }
 //        System.out.println(".");
 
-        SimpleNode root = check(code);
+        CssParserResult result = check(code);
+        Node root = result.getParseTree();
 //        System.out.println(root.dump());
 
-        SimpleNode node = SimpleNodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
+        Node node = NodeUtil.query(root, "styleSheetRuleList/rule/styleRule/declaration/expr/term");
         assertNotNull(node);
-        assertEquals("red", node.image(CssParserConstants.COMMENT, CssParserConstants.S));
+        assertEquals("red", node.image());
  
     }
 
-    public void testErrorInMediaRule() throws ParseException {
+    public void testErrorInMediaRule() throws ParseException, BadLocationException {
         String source = "@media page {  htm }  ";
 //        dumpParseTree(source);
-        SimpleNode node = parse(source);
+        CssParserResult result = parse(source);
+        Node node = result.getParseTree();
         assertNotNull(node);
 
-        List<SimpleNode> errors = getErrors(node);
+        List<ProblemDescription> errors = getErrors(result);
         assertEquals(2, errors.size());
 
-        SimpleNode error = errors.get(0);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
-        error = errors.get(1);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
-    }
+//        Node error = errors.get(0);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+//        error = errors.get(1);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+    } 
 
-    public void testErrorInStyleRule() throws ParseException {
+    public void testErrorInStyleRule() throws ParseException, BadLocationException {
         String source = "div {  htm }";
-        SimpleNode node = parse(source);
-        assertNotNull(node);
+        CssParserResult result = parse(source);
 
-        List<SimpleNode> errors = getErrors(node);
+        List<ProblemDescription> errors = getErrors(result);
         assertEquals(2, errors.size());
 
-        SimpleNode error = errors.get(0);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
-        error = errors.get(1);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+//        Node error = errors.get(0);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
+//        error = errors.get(1);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
     }
 
-    public void testErrorInDeclaration() throws ParseException {
+    public void testErrorInDeclaration() throws ParseException, BadLocationException {
         String source = "div {  color: ; azimuth: center; }";
-        SimpleNode node = parse(source);
-        assertNotNull(node);
-
-        List<SimpleNode> errors = getErrors(node);
-
+        CssParserResult result = parse(source);
+        List<ProblemDescription> errors = getErrors(result);
 
         assertEquals(2, errors.size());
 
-        SimpleNode error = errors.get(0);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
-        error = errors.get(1);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+//        Node error = errors.get(0);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
+//        error = errors.get(1);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
     }
 
-    public void testErrorInDeclarationInMediaRule() throws ParseException {
+    public void testErrorInDeclarationInMediaRule() throws ParseException, BadLocationException {
         String source = "@media page { div { color: } } ";
-        SimpleNode node = parse(source);
-        assertNotNull(node);
-
-        List<SimpleNode> errors = getErrors(node);
-
+        CssParserResult result = parse(source);
+        List<ProblemDescription> errors = getErrors(result);
 
         assertEquals(2, errors.size());
 
-        SimpleNode error = errors.get(0);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
-        error = errors.get(1);
-        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
+//        Node error = errors.get(0);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPDECL, error.kind());
+//        error = errors.get(1);
+//        assertEquals(CssParserTreeConstants.JJTERROR_SKIPBLOCK, error.kind());
     }
 
-
-    private void dumpTokens(String source) {
-    CssParserTokenManager tm = new CssParserTokenManager(new ASCII_CharStream(new StringReader(source)));
-        org.netbeans.modules.css.editor._TO_BE_REMOVED.Token token = null;
-        do {
-            token = tm.getNextToken();
-            System.out.println(token + "; kind = " + token.kind + " (" + CssParserConstants.tokenImage[token.kind] + ")");
-            if(token == null) {
-                break;
-            }
-            if(token.kind == CssParserConstants.EOF) {
-                break;
-            }
-        } while(true);
-    }
-
-    private void dumpParseTree(String source) throws ParseException {
-        SimpleNode node = parse(source);
-        assertNotNull(node);
-        System.out.println(node.dump());
-    }
 }
 

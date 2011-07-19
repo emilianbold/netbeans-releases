@@ -61,7 +61,7 @@ public final class NodeUtil {
     }
     
     public static int[] getTrimmedNodeRange(Node node) {
-        CharSequence text = node.name();
+        CharSequence text = node.image();
         int from_diff;
         int to_diff;
         for(from_diff = 0; from_diff < text.length(); from_diff++) {

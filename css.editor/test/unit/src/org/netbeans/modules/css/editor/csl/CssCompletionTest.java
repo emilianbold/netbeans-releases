@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.editor.csl;
 
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.ArrayList;

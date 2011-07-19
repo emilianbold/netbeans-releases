@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.editor.csl;
 
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.event.ActionEvent;
@@ -66,7 +66,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  * @author marek.fukala@sun.com
@@ -239,7 +238,7 @@ public class CssBracketCompleterTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
 
         CssCslParserResult cssResult = (CssCslParserResult)result;
-        assertNotNull(cssResult.root());
+        assertNotNull(cssResult.getParseTree());
         assertEquals(0, cssResult.getDiagnostics().size()); //no errors
 
         KeystrokeHandler handler = getPreferredLanguage().getKeystrokeHandler();
