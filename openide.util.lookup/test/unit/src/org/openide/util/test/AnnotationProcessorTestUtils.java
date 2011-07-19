@@ -121,7 +121,11 @@ public class AnnotationProcessorTestUtils {
         args.add(dest.getAbsolutePath());
         args.add("-sourcepath");
         args.add(src.getAbsolutePath());
+        args.add("-s");
+        File destG = new File(dest.getParentFile(), "generated-" + dest.getName());
+        args.add(destG.getAbsolutePath());
         dest.mkdirs();
+        destG.mkdirs();
         scan(args, src, srcIncludes);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         Assert.assertNotNull("no JSR 199 compiler impl found; perhaps tools.jar missing from CP?", compiler);
