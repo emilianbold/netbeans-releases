@@ -70,7 +70,7 @@ public class HostMappingsAnalyzer {
         firstPI = PlatformInfo.getDefault(firstEnv);
     }
     
-    public void cancel() {
+    /*package*/ void cancel() {
         Thread thr;
         synchronized (lock) {
             thr = thread;
