@@ -92,6 +92,9 @@ public class ThreadsCache implements Executor {
     public static final String PROP_THREAD_STARTED = "threadStarted";   // NOI18N
     public static final String PROP_THREAD_DIED = "threadDied";         // NOI18N
     public static final String PROP_GROUP_ADDED = "groupAdded";         // NOI18N
+    
+    /** Threads containing this pattern in their names are filtered out (private threads, see visual debugger). */
+    public static final String THREAD_NAME_FILTER_PATTERN = "org.netbeans.modules.debugger.jpda";  // NOI18N
 
     private static final Logger logger = Logger.getLogger(ThreadsCache.class.getName());
     
@@ -170,12 +173,28 @@ public class ThreadsCache implements Executor {
     
     private synchronized void init() throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper {
         allThreads = new ArrayList<ThreadReference>(VirtualMachineWrapper.allThreads(vm));
+        filterThreads(allThreads);
+    }
+    
+    private void filterThreads(List<ThreadReference> threads) {
+        for (int i = 0; i < threads.size(); i++) {
+            ThreadReference tr = threads.get(i);
+            try {
+                if (ThreadReferenceWrapper.name(tr).contains(THREAD_NAME_FILTER_PATTERN)) {
+                    threads.remove(i);
+                    i--;
+                }
+            } catch (Exception ex) {
+                // continue
+            }
+        }
     }
 
     private void initGroups(ThreadGroupReference group) {
         try {
             List<ThreadGroupReference> groups = new ArrayList(ThreadGroupReferenceWrapper.threadGroups0(group));
             List<ThreadReference> threads = new ArrayList(ThreadGroupReferenceWrapper.threads0(group));
+            filterThreads(threads);
             groupMap.put(group, groups);
             threadMap.put(group, threads);
             for (ThreadGroupReference g : groups) {
@@ -367,6 +386,11 @@ public class ThreadsCache implements Executor {
             ThreadGroupReference group = null;
             try {
                 thread = ThreadStartEventWrapper.thread((ThreadStartEvent) event);
+                String name = ThreadReferenceWrapper.name(thread);
+                if (name.contains(THREAD_NAME_FILTER_PATTERN)) {
+                    // Filtered
+                    return true;
+                }
                 if (handleGroups) {
                     group = ThreadReferenceWrapper.threadGroup(thread);
                 }
@@ -470,6 +494,7 @@ public class ThreadsCache implements Executor {
                     logger.log(Level.FINE, ex.getLocalizedMessage(), ex);
                 }
             }
+            boolean removed = false;
             synchronized (this) {
                 if (threadMap != null) {
                     List<ThreadReference> threads;
@@ -487,16 +512,18 @@ public class ThreadsCache implements Executor {
                         threads.remove(thread);
                     }
                 }
-                allThreads.remove(thread);
+                removed = allThreads.remove(thread);
             }
-            synchronized (canFireChanges) {
-                if (!canFireChanges[0]) {
-                    try {
-                        canFireChanges.wait();
-                    } catch (InterruptedException ex) {}
+            if (removed) {
+                synchronized (canFireChanges) {
+                    if (!canFireChanges[0]) {
+                        try {
+                            canFireChanges.wait();
+                        } catch (InterruptedException ex) {}
+                    }
                 }
+                pcs.firePropertyChange(PROP_THREAD_DIED, thread, null);
             }
-            pcs.firePropertyChange(PROP_THREAD_DIED, thread, null);
         }
         return true;
     }
@@ -518,6 +545,9 @@ public class ThreadsCache implements Executor {
             String tname;
             try {
                 tname = tref.toString();
+                if (tname.contains(THREAD_NAME_FILTER_PATTERN)) {
+                    return ;
+                }
             } catch (Exception ex) {
                 tname = ex.getLocalizedMessage();
             }
@@ -546,6 +576,7 @@ public class ThreadsCache implements Executor {
             } catch (VMDisconnectedExceptionWrapper vmdex) {
                 return ;
             }
+            filterThreads(allThreadsNew);
 
             newThreads = new ArrayList<ThreadReference>(allThreadsNew);
             newThreads.removeAll(allThreads);

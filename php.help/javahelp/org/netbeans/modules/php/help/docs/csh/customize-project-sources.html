@@ -45,58 +45,47 @@ made subject to such option by the copyright holder.
             }
             -->
         </style>
-        <title>Customizing the Project Settings: Source Files Location</title>
+        <title>Project Properties: Sources</title>
     </head>
     <body>
-        <h1>
-            Customizing the Project Settings: Source Files Location
-        </h1>
-        <p>
-            <small><a href="#seealso">See Also</a></small>
-        </p>
-        <ol>
+        <h2>
+            Project Properties: Sources
+        </h2>
+        
+        <ul>
             <li>
-                The Web Root field shows the root folder of your application site. By default, the field
+                <b>Project Folder:</b> The folder containing the project's NetBeans metadata.</li>
+            <li><b>Source Folder:</b> The folder containing the PHP source files.</li>
+            <li><b>Test Folder:</b> Location of PHPUnit test files, if set. 
+                <ul>
+                    <li><b>Browse...</b> Click to change the location of PHPUnit test files.</li>
+                </ul>
+            </li>
+            <li><b>Web Root:</b> The root folder of your application site. By default, the field
                 shows the Sources folder. To change the web root, click Browse and select another folder.
             </li>
-            <li>
-                Select the Copy files from Sources Folder to another location, if necessary, and specify
-                the path to the storage folder.
+            <li><b>Copy files from Sources Folder to another location.</b> Tick the box to keep a second copy
+                of your sources in another location. For example, you could have your Sources Folder in a folder
+                with all your NetBeans project and copy the sources to your web server.
+                <ul>
+                    <li><b>Copy to Folder:</b> Folder containing a second copy of your source files.</li>
+                    <li><b>Browse...</b> Click to select the folder to contain the second copy of your source
+                    files.</li>
+                </ul>
             </li>
             <li>
-                Change the encoding, if necessary<br>
+                <b>Encoding.</b> Encoding for the files in your project. Select encoding from the drop-down
+                list.
             </li>
-        </ol>
+            <li><b>Allow short tags.</b> Allow the use of PHP short tags, such as &lt;? in place of 
+                &lt;?php. Enabled by default.</li>
+            <li><b>Allow ASP tags.</b> Allow the use of ASP tags such as &lt;%. Disabled by default.</li>
+        </ul>
         <dl>
-            <dt>
-                <a name="seealso">See Also</a>
-            </dt>
-            <dd>
-                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://www.netbeans.org/kb/trails/php.html">
-                    <param name="text" value="<html><u>PHP Learning Trail (Web document)</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>
-            </dd>
-            <dd>
-                <a href="new-project-configure_no_sources.html" title=
-                   "Configurinag a New PHP Project without Previously Developed Sources">New PHP Project
-                    without Previously Developed Sources</a>
-            </dd>
-            <dd>
-                <a href="new-project-configure_existing_sources.html" title=
-                   "Importing Previously Developed Source Files into a New Project">Importing Previously
-                    Developed Source Files into a New Project</a>
-            </dd>
-            <dd>
-                <a href="new-project-run-configuration.html" title="Run Configurations">Run
-                    Configuration</a>
-            </dd>
-        </dl>
+            
         <hr>
         <p>
-            <small><a href="credits.html">Legal Notices</a></small>
+            <small><a href="../credits.html">Legal Notices</a></small>
         </p>
         <table border="0" cellpadding="150">
             <tr>
