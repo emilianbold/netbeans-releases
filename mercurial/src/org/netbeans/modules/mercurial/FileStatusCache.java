@@ -386,7 +386,7 @@ public class FileStatusCache {
             Map<File, FileInformation> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = HgCommand.getStatus(repository, new LinkedList<File>(refreshEntry.getValue()));
+                interestingFiles = HgCommand.getStatus(repository, new LinkedList<File>(refreshEntry.getValue()), null, null);
                 for (Map.Entry<File, FileInformation> interestingEntry : interestingFiles.entrySet()) {
                     // put the file's FI into the cache
                     File file = interestingEntry.getKey();

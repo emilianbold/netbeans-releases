@@ -113,7 +113,7 @@ public final class Setup extends AbstractDiffSetup {
 
     private final HgRevision    firstRevision;
     private final HgRevision    secondRevision;
-    private FileInformation info;
+    private final FileInformation info;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
@@ -205,11 +205,12 @@ public final class Setup extends AbstractDiffSetup {
      * @param firstRevision first revision or <code>null</code> for inital.
      * @param secondRevision second revision
      */
-    public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, final boolean forceNonEditable) {
+    public Setup(File baseFile, HgRevision firstRevision, HgRevision secondRevision, FileInformation info, final boolean forceNonEditable) {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
+        this.info = info;
         firstSource = new DiffStreamSource(baseFile, firstRevision, firstRevision.getRevisionNumber());
         // XXX delete when UndoAction works correctly
         secondSource = new DiffStreamSource(baseFile, secondRevision, secondRevision.getRevisionNumber()) {

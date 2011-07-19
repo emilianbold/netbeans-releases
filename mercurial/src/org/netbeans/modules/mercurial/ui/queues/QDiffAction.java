@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.mercurial.ui.queues;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -57,14 +60,15 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QPushAllPatchesAction", category = "Mercurial Queues")
-@ActionRegistration(displayName = "#CTL_MenuItem_QPushAllPatches")
-public class QPushAllPatchesAction extends ContextAction {
+@ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QDiffAction", category = "Mercurial Queues")
+@ActionRegistration(displayName = "#CTL_MenuItem_QDiff")
+public class QDiffAction extends ContextAction {
 
     @Override
     protected boolean enable (Node[] nodes) {
@@ -73,7 +77,7 @@ public class QPushAllPatchesAction extends ContextAction {
 
     @Override
     protected String getBaseName (Node[] nodes) {
-        return "CTL_MenuItem_QPushAllPatches"; //NOI18N
+        return "CTL_MenuItem_QDiff"; //NOI18N
     }
 
     @Override
@@ -83,19 +87,27 @@ public class QPushAllPatchesAction extends ContextAction {
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         new HgProgressSupport() {
+
             @Override
             protected void perform () {
-                OutputLogger logger = getLogger();
                 try {
-                    logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_TITLE")); //NOI18N
-                    logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_TITLE_SEP")); //NOI18N
-                    logger.output(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_INFO_SEP", root.getAbsolutePath())); //NOI18N
-                    HgCommand.qPushPatches(root, null, logger);
-                    HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
-                    logger.output(""); // NOI18N
-                    HgUtils.logHgLog(parent, logger);
-                    logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_DONE")); // NOI18N
-                    logger.output(""); // NOI18N
+                    List<HgLogMessage> parents = HgCommand.getParents(root, null, null);
+                    if (parents.size() != 1 || !Arrays.asList(parents.get(0).getTags()).contains(QPatch.TAG_QTIP)) {
+                        NotifyDescriptor.Message e = new NotifyDescriptor.Message(NbBundle.getMessage(QDiffAction.class, "MSG_DiffAction.error.notAtTip"), NotifyDescriptor.ERROR_MESSAGE); //NOI18N
+                        DialogDisplayer.getDefault().notifyLater(e);
+                    } else {
+                        final HgLogMessage.HgRevision parent = HgCommand.getParent(root, null, QPatch.TAG_QTIP);
+                        if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    SystemAction.get(DiffAction.class).diff(roots, parent, HgLogMessage.HgRevision.CURRENT,
+                                            NbBundle.getMessage(QDiffAction.class, "LBL_DiffView.name", //NOI18N
+                                            roots.length == 1 ? roots[0].getName() : NbBundle.getMessage(QDiffAction.class, "LBL_DiffView.name.files", roots.length)), false); //NOI18N
+                                }
+                            });
+                        }
+                    }
                 } catch (HgException.HgCommandCanceledException ex) {
                     // canceled by user, do nothing
                 } catch (HgException ex) {
@@ -103,7 +115,8 @@ public class QPushAllPatchesAction extends ContextAction {
                     DialogDisplayer.getDefault().notifyLater(e);
                 }
             }
-        }.start(Mercurial.getInstance().getRequestProcessor(root), root, NbBundle.getMessage(QPushAllPatchesAction.class, "LBL_QPushAllPatchesAction.progress")); //NOI18N
+            
+        }.start(Mercurial.getInstance().getRequestProcessor(root), root, NbBundle.getMessage(QDiffAction.class, "LBL_DiffAction.progress")); //NOI18N
     }
-    
+
 }

@@ -47,6 +47,7 @@ package org.netbeans.modules.mercurial.ui.queues;
  */
 public class QPatch {
     
+    public static final String TAG_QTIP = "qtip"; //NOI18N
     private final String id;
     private final String message;
     private final boolean applied;

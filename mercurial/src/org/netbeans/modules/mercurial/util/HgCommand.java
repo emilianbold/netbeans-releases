@@ -2710,8 +2710,8 @@ public class HgCommand {
      * @return Map of files and status for all files of interest, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static Map<File, FileInformation> getStatus (File repository, List<File> files)  throws HgException{
-        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, true);
+    public static Map<File, FileInformation> getStatus (File repository, List<File> files, String revision1, String revision2) throws HgException{
+        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, revision1, revision2, true);
     }
 
     /**
@@ -2951,7 +2951,7 @@ public class HgCommand {
         return list;
     }
 
-    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
+    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags, String rev1, String rev2, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
@@ -2959,7 +2959,7 @@ public class HgCommand {
             startTime = System.currentTimeMillis();
         }
         FileInformation prev_info = null;
-        List<String> list = doRepositoryDirStatusCmd(repository, dirs, statusFlags);
+        List<String> list = doRepositoryDirStatusCmd(repository, dirs, statusFlags, rev1, rev2);
 
         Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(list.size());
 
@@ -3076,7 +3076,7 @@ public class HgCommand {
     /**
      * Gets hg status command output cmdOutput for the specified status flags for a given repository and directory
      */
-    private static List<String> doRepositoryDirStatusCmd(File repository, List<File> dirs, String statusFlags)  throws HgException{
+    private static List<String> doRepositoryDirStatusCmd (File repository, List<File> dirs, String statusFlags, String rev1, String rev2)  throws HgException{
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -3087,6 +3087,16 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
+        boolean workDirStatus = true;
+        if (rev1 != null) {
+            command.add(HG_FLAG_REV_CMD);
+            if (rev2 == null || HgRevision.CURRENT.getRevisionNumber().equals(rev2)) {
+                command.add(rev1);
+            } else {
+                command.add(rev1 + ":" + rev2); //NOI18N
+                workDirStatus = false;
+            }
+        }
         List<List<String>> attributeGroups = splitAttributes(command, dirs, true);
         List<String> commandOutput = new LinkedList<String>();
         for (List<String> attributes : attributeGroups) {
@@ -3100,7 +3110,7 @@ public class HgCommand {
                 } finally {
                     logger.closeLog();
                 }
-            } else if (HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
+            } else if (workDirStatus && HgUtils.hasResolveCommand(Mercurial.getInstance().getVersion())) {
                 try {
                     List<String> unresolved = getUnresolvedFiles(repository, attributes);
                     list.addAll(unresolved);

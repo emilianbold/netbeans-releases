@@ -278,7 +278,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             File root = hg.getRepositoryRoot(file);
             FileInformation info = null;
             try {
-                Map<File, FileInformation> statusMap = HgCommand.getStatus(root, Arrays.asList(file));
+                Map<File, FileInformation> statusMap = HgCommand.getStatus(root, Arrays.asList(file), null, null);
                 info = statusMap != null ? statusMap.get(file) : null;
             } catch (HgException ex) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): getStatus failed for file: {0} {1}", new Object[]{file.getAbsolutePath(), ex.toString()}); // NOI18N

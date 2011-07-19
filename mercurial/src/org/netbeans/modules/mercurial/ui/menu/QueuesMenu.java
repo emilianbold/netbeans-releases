@@ -47,6 +47,7 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.mercurial.ui.queues.QDiffAction;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPopAllAction;
 import org.netbeans.modules.mercurial.ui.queues.QPushAllPatchesAction;
@@ -77,13 +78,20 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Menu {
         if (lkp == null) {
             org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(QueuesMenu.class, "CTL_MenuItem_QueuesMenu")); // NOI18N
             item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(QDiffAction.class), false);
+            menu.add(item);
+            item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(QGoToPatchAction.class), false);
+            menu.add(item);
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(QPopAllAction.class), false);
+            menu.add(item);
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(QPushAllPatchesAction.class), false);
             menu.add(item);
         } else {
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QDiffAction.class), NbBundle.getMessage(QDiffAction.class, "CTL_PopupMenuItem_QDiff"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QGoToPatchAction.class), NbBundle.getMessage(QGoToPatchAction.class, "CTL_PopupMenuItem_QGoToPatch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QPopAllAction.class), NbBundle.getMessage(QPopAllAction.class, "CTL_PopupMenuItem_QPopAllPatches"), lkp)); //NOI18N
