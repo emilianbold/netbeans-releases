@@ -204,7 +204,7 @@ public class CssCompletionTest extends TestBase {
             assertEquals(exp, real);
         } else if(type == Match.CONTAINS) {
             exp.removeAll(real);
-            assertEquals(Collections.EMPTY_LIST, exp);
+            assertEquals(Collections.emptyList(), exp);
         } else if(type == Match.EMPTY) {
             assertEquals(0, real.size());
         } else if(type == Match.NOT_EMPTY) {

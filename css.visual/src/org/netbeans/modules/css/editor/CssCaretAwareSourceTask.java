@@ -63,7 +63,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * 
- * @author Marek Fukala
+ * @author mfukala@netbeans.org
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
 
@@ -72,6 +72,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
     private static CssTCController windowController;
 
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+    
+    private boolean cancelled;
 
     private static synchronized void initializeWindowController() {
         if(windowController == null) {
@@ -99,7 +101,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
     @Override
     public int getPriority() {
-        return 100; //todo use reasonable number
+        return 5000; //low priority
     }
 
     @Override
@@ -109,12 +111,13 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
     @Override
     public void cancel() {
-        //xxx cancel???
+        cancelled = true;
     }
 
     @Override
     public void run(CssCslParserResult result, SchedulerEvent event) {
-        //xxx: how come I can get null event here? parsing api bug?
+        cancelled = false;
+        
         if(event == null) {
             return ;
         }
@@ -147,12 +150,20 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                             }
                         }
                     }
+                    
+                    if(cancelled) {
+                        return ;
+                    }
 
                     //no errors found in the node
                     CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
                     return ;
                 }
             }
+        }
+        
+        if(cancelled) {
+            return ;
         }
 
         //some error

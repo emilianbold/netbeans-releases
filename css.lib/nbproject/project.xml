@@ -96,6 +96,7 @@
                 <package>org.antlr.runtime.misc</package>
                 <package>org.antlr.runtime.tree</package>
                 <package>org.netbeans.modules.css.lib.api</package>
+                <package>org.netbeans.modules.css.lib.api.model</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/antlr3.3-runtime.jar</runtime-relative-path>

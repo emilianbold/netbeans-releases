@@ -91,5 +91,10 @@ public class CssLexerTest extends TestBase {
         assertEquals(";", ts.token().text().toString());
         assertEquals(CssTokenId.SEMICOLON, ts.token().id());
     }
+    
+    public void testLexing_Netbeans_org() throws Exception {
+      LexerTestUtilities.checkTokenDump(this, "testfiles/netbeans.css",
+                CssTokenId.language());
+    };
 
 }

@@ -91,20 +91,19 @@ public class CssRuleContent {
         }
     }
 
-    //??? toString().equals(toString)????????
     @Override
     public boolean equals(Object obj) {
         if(obj instanceof CssRuleContent) {
-            return toString().equals(obj.toString());
+            CssRuleContent cssRuleContent = (CssRuleContent)obj;
+            return getFormattedString().equals(cssRuleContent.getFormattedString());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        return getFormattedString().hashCode();
     }
-
 
     //this method now doesn't modify the css rule items!!!!!!!!!!!!!!!!!!!
     public void modifyProperty(String property, String newValue) throws BadLocationException {
@@ -172,7 +171,6 @@ public class CssRuleContent {
      * @param listener The listener to add.
      */
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        //debug code >>>
         LISTENERS.add(listener);
     }
 
