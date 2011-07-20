@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,16 +60,31 @@ public final class TypeBrowser {
 
     /**
      * Blocking call for opening modal search dialog
-     * 
+     *
      * @param title title of the dialog
      * @param filter optional filter of the results; can be null
-     * @param typeProviders type providers defining the scope of the search; 
+     * @param typeProviders type providers defining the scope of the search;
      * if none specified, all type providers from default lookup will be used
      * @return selected type or null if dialog was canceled
      */
     public static TypeDescriptor browse(String title, Filter filter, TypeProvider... typeProviders) {
+        return browse(title, null, filter, typeProviders);
+    }
+
+    /**
+     * Blocking call for opening modal search dialog
+     * 
+     * @param title title of the dialog
+     * @param initialText text that should be prefilled in the type name text field
+     * @param filter optional filter of the results; can be null
+     * @param typeProviders type providers defining the scope of the search; 
+     * if none specified, all type providers from default lookup will be used
+     * @return selected type or null if dialog was canceled
+     * @since 1.25
+     */
+    public static TypeDescriptor browse(String title, String initialText, Filter filter, TypeProvider... typeProviders) {
         GoToTypeAction goToTypeAction = new GoToTypeAction(title, filter, false, typeProviders);
-        final Iterable<? extends TypeDescriptor> tds = goToTypeAction.getSelectedTypes();
+        final Iterable<? extends TypeDescriptor> tds = goToTypeAction.getSelectedTypes(true, initialText);
         return tds.iterator().hasNext() ? tds.iterator().next() : null;
     }
 
