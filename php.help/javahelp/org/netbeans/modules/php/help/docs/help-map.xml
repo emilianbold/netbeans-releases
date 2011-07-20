@@ -53,8 +53,7 @@ made subject to such option by the copyright holder.
     <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.EXISTING" url="csh/new-project-run-configuration.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.REMOTE" url="csh/new-project-remote-configuration.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel" url="csh/new-project-frameworks.html"/>
-    <mapID target="org.netbeans.modules.php.project.connections.ftp.FtpConfigurationPanel" url="csh/manage-connections.html"/>
-    <mapID target="org.netbeans.modules.php.project.connections.ftp.SftpConfigurationPanel" url="csh/manage-connections.html"/>
+    <mapID target="org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel" url="csh/manage-connections.html"/>
     <!-- Project Properties help -->
     <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="csh/customize-project-sources.html"/>
     <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="csh/customize-project-run-configuration.html"/>
