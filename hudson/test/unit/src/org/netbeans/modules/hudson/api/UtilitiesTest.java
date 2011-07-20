@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.util;
+package org.netbeans.modules.hudson.api;
 
 import org.netbeans.junit.NbTestCase;
 

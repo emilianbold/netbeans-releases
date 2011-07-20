@@ -59,7 +59,7 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;

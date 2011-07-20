@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.hudson.util;
+package org.netbeans.modules.hudson.api;
 
 import java.net.URI;
 import java.net.URISyntaxException;
