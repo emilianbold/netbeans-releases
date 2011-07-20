@@ -1,10 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
- *
- * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
- * Other names may be trademarks of their respective owners.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -16,9 +13,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the GPL Version 2 section of the License file that
+ * by Sun in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -37,47 +34,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.rest;
 
-import java.util.logging.Logger;
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+package entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Tests for New REST web services from Entity Classes wizard
- *
- * Duration of this test suite: aprox. 3min
  *
  * @author lukas
  */
-public class JEE6CRUDTest extends CRUDTest {
+@Entity
+@Table(name = "PERSON")
+@XmlRootElement
+public class Person implements java.io.Serializable {
 
-     protected static Server server = Server.GLASSFISH;
-    
-    /** Default constructor.
-     * @param testName name of particular test case
-     */
-    public JEE6CRUDTest(String name) {
-        super(name, server);
-    }
+    private String id;
 
-    @Override
-    protected JavaEEVersion getJavaEEversion() {
-        return JavaEEVersion.JAVAEE6;
-    }
+    private String lastName;
+
+    private String firstName;
 
     /**
-     * Creates suite from particular test cases. You can define order of testcases here.
+     * Creates a new instance of Person
      */
-    public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6CRUDTest.class),
-                "testRfE", //NOI18N
-                "testPropAccess", //NOI18N
-                "testDeploy", //NOI18N
-                "testCreateRestClient", //NOI18N
-                "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+    public Person() {
     }
+
+    public Person(String id, String firstName, String lastName) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName  = lastName;
+    }
+
+    @Column(name = "ID")
+    @Id
+    public String getId() {
+        return this.id;
+    }
+
+    @Column(name = "LASTNAME")
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    @Column(name = "FIRSTNAME")
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
 }
