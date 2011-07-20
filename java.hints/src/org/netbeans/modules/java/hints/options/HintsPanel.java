@@ -132,6 +132,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         init(null, false);
         configCombo.setSelectedItem(preselected);
     }
+    public HintsPanel(HintMetadata preselected) {
+        init(null, false);
+        select(preselected);
+    }
+    
 
     private void init(@NullAllowed OptionsFilter filter, boolean allHints) {
         initComponents();
@@ -305,6 +310,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
         descriptionTextArea.setEditable(false);
+        descriptionTextArea.setPreferredSize(new java.awt.Dimension(100, 50));
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

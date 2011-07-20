@@ -102,6 +102,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.hints.options.HintsPanel;
 import org.netbeans.modules.refactoring.java.ui.JavaScopeBuilder;
 import org.openide.DialogDescriptor;
@@ -264,15 +265,14 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                             .addComponent(singleRefactorRadio))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(scopeCombo, 0, 96, Short.MAX_VALUE)
-                            .addComponent(singleRefactoringCombo, 0, 96, Short.MAX_VALUE)
-                            .addComponent(configurationCombo, 0, 96, Short.MAX_VALUE))
+                            .addComponent(scopeCombo, 0, 82, Short.MAX_VALUE)
+                            .addComponent(singleRefactoringCombo, 0, 82, Short.MAX_VALUE)
+                            .addComponent(configurationCombo, 0, 82, Short.MAX_VALUE))
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
                             .addComponent(customScopeButton)
-                            .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                                .addComponent(manageSingleRefactoring)
-                                .addComponent(manageConfigurations)))))
+                            .addComponent(manageSingleRefactoring, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(manageConfigurations, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -315,11 +315,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }//GEN-LAST:event_singleRefactorRadioActionPerformed
 
     private void manageConfigurationsActionPerformed(ActionEvent evt) {//GEN-FIRST:event_manageConfigurationsActionPerformed
-        manageRefactorings();
+        manageRefactorings(false);
     }//GEN-LAST:event_manageConfigurationsActionPerformed
 
     private void manageSingleRefactoringActionPerformed(ActionEvent evt) {//GEN-FIRST:event_manageSingleRefactoringActionPerformed
-        manageRefactorings();
+        manageRefactorings(true);
     }//GEN-LAST:event_manageSingleRefactoringActionPerformed
 
     private void manageConfigurationsItemStateChanged(ItemEvent evt) {//GEN-FIRST:event_manageConfigurationsItemStateChanged
@@ -382,7 +382,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             Configuration config = (Configuration) configurationCombo.getSelectedItem();
             List<HintDescription> hintsToApply = new LinkedList();
             for (HintMetadata hint:config.getHints()) {
-                hintsToApply.addAll(RulesManager.getInstance().allHints.get(hint));
+                for (HintDescription desc: RulesManager.getInstance().allHints.get(hint)) {
+                    if (desc.getTrigger() instanceof PatternDescription) {
+                        hintsToApply.add(desc);
+                    }
+                }
             }
             return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintsToApply);
         }
@@ -409,8 +413,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         return Scopes.specifiedFoldersScope(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots());
     }
 
-    private void manageRefactorings() {
-        HintsPanel panel = new HintsPanel((Configuration)configurationCombo.getSelectedItem());
+    private void manageRefactorings(boolean single) {
+        HintsPanel panel;
+        if (single) {
+            panel = new HintsPanel((HintMetadata) singleRefactoringCombo.getSelectedItem());
+        } else {
+            panel = new HintsPanel((Configuration) configurationCombo.getSelectedItem());
+        }
         DialogDescriptor descriptor = new DialogDescriptor(panel, NbBundle.getMessage(InspectAndRefactorPanel.class, "CTL_ManageRefactorings"), true, new Object[]{}, null, 0, null, null);
         
         JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(descriptor);
