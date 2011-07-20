@@ -32,17 +32,15 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="scopeCombo" pref="96" max="32767" attributes="0"/>
-                          <Component id="singleRefactoringCombo" pref="96" max="32767" attributes="0"/>
-                          <Component id="configurationCombo" alignment="0" pref="96" max="32767" attributes="0"/>
+                          <Component id="scopeCombo" pref="82" max="32767" attributes="0"/>
+                          <Component id="singleRefactoringCombo" pref="82" max="32767" attributes="0"/>
+                          <Component id="configurationCombo" alignment="0" pref="82" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="customScopeButton" min="-2" max="-2" attributes="0"/>
-                          <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                              <Component id="manageSingleRefactoring" min="-2" max="-2" attributes="0"/>
-                              <Component id="manageConfigurations" alignment="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="manageSingleRefactoring" alignment="1" max="32767" attributes="1"/>
+                          <Component id="manageConfigurations" alignment="1" max="32767" attributes="1"/>
                       </Group>
                   </Group>
               </Group>
