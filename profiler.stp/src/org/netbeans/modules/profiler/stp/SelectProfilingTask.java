@@ -1010,7 +1010,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         }
 
         String projectSubprojectsFilterName = pss.getProjectSubprojectsFilterName();
-        if (projectFilterName != null) {
+        if (projectSubprojectsFilterName != null) {
             PROJECT_SUBPROJECTS_FILTER.setFilterName(projectSubprojectsFilterName);
             v.add(PROJECT_SUBPROJECTS_FILTER);
         }
