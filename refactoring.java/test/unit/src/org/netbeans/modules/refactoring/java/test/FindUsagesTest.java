@@ -210,6 +210,27 @@ public class FindUsagesTest extends NbTestCase {
         doRefactoring("FindSubClassesTest", wuq, 3);
     }
     
+    public void test200230() throws IOException, InterruptedException, ExecutionException {
+        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/Main.java");
+        JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement klass = controller.getElements().getTypeElement("simplej2seapp.Main");
+                Element field = klass.getEnclosedElements().get(4);
+                TreePathHandle element = TreePathHandle.create(field, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+            }
+        }, false).get();
+        setScope(wuq, true, true, false, false, false, false);
+
+        doRefactoring("FindCurrentPackageTest", wuq, 9);
+    }
+    
     private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) {
         RefactoringSession rs = RefactoringSession.create("Session");
 
@@ -238,7 +259,7 @@ public class FindUsagesTest extends NbTestCase {
     }
     
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(FindUsagesTest.class)
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindUsagesTest.class, "test200230")
                 .clusters(".*").enableModules(".*")
                 .gui(false));
     }
