@@ -69,7 +69,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     public static final char UNIQUE_NAME_SEPARATOR = ':';
     
     protected OffsetableDeclarationBase(AST ast, CsmFile file) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
     }
 
     protected OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
