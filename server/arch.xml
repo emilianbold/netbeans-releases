@@ -49,18 +49,18 @@ Microsystems, Inc. All Rights Reserved.
   <p>
    The Server module provides the
    <api group="java" name="CommonServerSPI" type="export" category="devel" url="@TOP@org/netbeans/spi/server/package-summary.html"/>
-   that contains SPIs needed for the UI presentation of servers (anykind). It covers
-   the services tab, server manager and server add wizard.
+   that contains SPIs needed for the UI presentation of servers (anykind) and cloud providers. It covers
+   the services tab, server manager, server add wizard, cloud manager and cloud add wizard.
   </p>
   <p>
    There is also API part of the module
    <api group="java" name="CommonServerAPI" type="export" category="devel" url="@TOP@org/netbeans/api/server/package-summary.html"/>
-   that provides API representation of the server instance. API access if
+   that provides API representation of the server and cloud instances. API access if
    required in future will be placed here.
   </p>  
   <p>
    Clients can provide its instances through the SPI. They can also provide
-   wizards to define UI way for the server instance addition. It is done with
+   wizards to define UI way for the server or cloud instance addition. It is done with
    <api group="layer" name="CommonServerLayerSPI" type="export" category="devel" url="@TOP@overview-summary.html"/>
    where the SPIs implementation must be registered.
   </p>
@@ -76,15 +76,22 @@ Microsystems, Inc. All Rights Reserved.
             can extend the list of popup actions on Servers node in
             Services tab.
       </api>
+      <api group="layer" name="CloudNodeActions" type="export" category="devel">
+            By registering actions to <code>Cloud/Actions</code> you
+            can extend the list of popup actions on Cloud node in
+            Services tab.
+      </api>
       <api group="property" name="serverNodeHidden" type="export" category="friend">
-            If the action registered in <code>Servers/Actions</code> folder
+            If the action registered in <code>Servers/Actions</code> or <code>Cloud/Actions</code> folder
             has <code>getValue("serverNodeHidden") == Boolean.TRUE</code>, then
             it will not be shown in the popup menu.
       </api>
+  </p>
+  <p>
       <api group="property" name="wizardMessage" type="export" category="friend">
             <p>
             By adding <code>wizardMessage</code> attribute you tell the
-            <q>Add Server...</q> action to display this message as an
+            <q>Add Server...</q> or <q>Add Cloud...</q> action to display this message as an
             option, if no servers are yet registered. If user agrees, your
             action will be called then to enable some server providers.
             </p>
@@ -96,8 +103,8 @@ Microsystems, Inc. All Rights Reserved.
       </api>
       <api group="layer" name="ServersNodeActionsAttributes" type="export" category="friend">
             <p>
-            By adding additional attributes to files in <code>Servers/Actions</code>
-            folder you can influence behaviour of the <q>Servers</q> node.
+            By adding additional attributes to files in <code>Servers/Actions</code> or <code>Cloud/Actions</code>
+            folder you can influence behaviour of the <q>Servers</q> and <q>Cloud</q> node.
             </p>
             <p>
             By adding <code>property-something</code> attribute you identify
@@ -184,12 +191,12 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <usecase id="register-provider" name="Registering the server instance provider">
+  <usecase id="register-provider" name="Registering the server/cloud instance provider">
    <p>
     An external module can register itself as the server instance provider.
-    In order do that it must register the implementation of
+    In order to do that it must register the implementation of
     <a href="@TOP@org/netbeans/spi/server/ServerInstanceProvider.html">ServerInstanceProvider</a>
-    in <code>Servers</code> folder in the layer.xml.
+    in <code>Servers</code> or <code>Cloud</code> folder in the layer.xml.
    </p>
    <p>
     When this is done the module will handle displaying of instances at appropriate
@@ -208,12 +215,12 @@ Microsystems, Inc. All Rights Reserved.
     <a href="@TOP@org/netbeans/spi/server/ServerInstanceProvider.html">ServerInstanceProvider</a>.
    </p>
   </usecase>
-  <usecase id="register-wizard" name="Registering the server wizard">
+  <usecase id="register-wizard" name="Registering the server/cloud wizard">
    <p>
     An external module can register the wizard(s) in order to allow the user
     to add new instances. In order to do that it must register the implementation of
     <a href="@TOP@org/netbeans/spi/server/ServerWizardProvider.html">ServerWizardProvider</a>
-    in <code>Servers</code> folder in the layer.xml.
+    in <code>Servers</code> or <code>Cloud</code> folder in the layer.xml.
    </p>
    <p>
     When this is done the module will offer this wizard in UI (at contexts where
@@ -857,7 +864,7 @@ Microsystems, Inc. All Rights Reserved.
    <a href="@TOP@org/netbeans/spi/server/ServerInstanceProvider.html">ServerInstanceProvider</a>
    and
    <a href="@TOP@org/netbeans/spi/server/ServerWizardProvider.html">ServerWizardProvider</a>
-   located under the <code>Servers</code> folder.
+   located under the <code>Servers</code> or <code>Cloud</code> folder.
    Order is not important.
   </p>
  </answer>
@@ -1120,7 +1127,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="resources-layer">
   <p>
    Yes. The module contains a standard layer which describes menu items, actions and services. The
-   folder <code>Servers</code> where instance providers and wizards are registered, are created.
+   folders <code>Servers</code> and <code>Cloud</code> where instance providers and wizards are registered, are created.
   </p>
  </answer>
 
@@ -1190,7 +1197,7 @@ Microsystems, Inc. All Rights Reserved.
    <a href="@TOP@org/netbeans/spi/server/ServerInstanceProvider.html">ServerInstanceProvider</a>
    and
    <a href="@TOP@org/netbeans/spi/server/ServerWizardProvider.html">ServerWizardProvider</a>
-   located under the <code>Servers</code> folder.
+   located under the <code>Servers</code> and <code>Servers</code> folder.
    It uses Lookup in order to do that.
   </p>
  </answer>
