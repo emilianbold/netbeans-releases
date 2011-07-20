@@ -44,11 +44,13 @@ package org.netbeans.modules.debugger.jpda.visual;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
@@ -144,8 +146,26 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     
     @Override
     public void engineRemoved(DebuggerEngine engine) {
-        // TODO: Stop the remote service.
         // TODO: Remove the screenhots components.
+        JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+        logger.fine("engineRemoved("+engine+"), debugger = "+debugger);
+        if (debugger != null) {
+            stopDebuggerRemoteService(debugger);
+        }
+    }
+    
+    private void stopDebuggerRemoteService(JPDADebugger d) {
+        ClassObjectReference serviceClass = RemoteServices.getServiceClass(d);
+        if (serviceClass == null) {
+            return ;
+        }
+        ReferenceType serviceType =serviceClass.reflectedType();
+        Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
+        try {
+            ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
 }
