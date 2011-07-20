@@ -52,6 +52,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.openide.util.Parameters;
 import org.w3c.dom.Element;
 
 /**
@@ -74,24 +75,22 @@ public class Utilities {
     }
 
     /**
-     * Encode a path segment of a URI (e.g. a job name) suitably for a URL.
-     * @param segment a path segment
+     * Encode a path segment or longer path of a URI (such as a job name) suitably for a URL.
+     * @param path a path segment, or several such segments separated by slashes, with possible initial and/or trailing slashes
      * @return the same with spaces and unsafe characters escaped
-     * @throws IllegalArgumentException if there is some other URI problem, or a slash
+     * @throws IllegalArgumentException if there is some other URI problem
      */
-    public static String uriEncode(String segment) {
-        if (segment.contains("/")) { // NOI18N
-            throw new IllegalArgumentException("cannot contain a slash: " + segment); // NOI18N
-        }
+    public static String uriEncode(String path) {
+        Parameters.notNull("segment", path);
         try {
-            return new URI(null, segment, null).toASCIIString();
+            return new URI(null, path, null).toASCIIString();
         } catch (URISyntaxException x) {
-            throw (IllegalArgumentException) new IllegalArgumentException(x.toString()).initCause(x);
+            throw new IllegalArgumentException(x);
         }
     }
 
     /**
-     * Inverse of {@link #uriEncode}.
+     * Mostly inverse of {@link #uriEncode}, but only decodes a single path segment.
      */
     public static String uriDecode(String string) {
         String d = URI.create(string).getPath();
