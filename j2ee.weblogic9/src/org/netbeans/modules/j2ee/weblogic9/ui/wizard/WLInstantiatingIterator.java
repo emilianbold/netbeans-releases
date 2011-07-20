@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.cloud.CloudDomainDetector;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -151,12 +152,12 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
 
         String displayName = (String) wizardDescriptor.getProperty(PROP_DISPLAY_NAME);
 
-        result.add(instantiate(displayName));
+        result.add(instantiateCloud(displayName));
         return result;
     }
 
     // FIXME used from cloud9
-    public InstanceProperties instantiate(String displayName) throws IOException {
+    public InstanceProperties instantiateCloud(String displayName) throws IOException {
         // if all the data is normally validated - create the instance and
         // attach the additional properties
         Map<String, String> props = new HashMap<String, String>();
@@ -166,6 +167,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.DOMAIN_NAME, domainName);
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
+        props.put(CloudDomainDetector.IS_CLOUD_INSTANCE, Boolean.TRUE.toString());
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
         
         boolean isWebProfile = WLPluginProperties.isWebProfile(new File(serverRoot));

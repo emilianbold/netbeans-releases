@@ -70,7 +70,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
-import org.netbeans.modules.j2ee.weblogic9.tools.WhiteListTool;
+import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

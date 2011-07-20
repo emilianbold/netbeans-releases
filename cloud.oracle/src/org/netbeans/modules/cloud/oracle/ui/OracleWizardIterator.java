@@ -54,7 +54,7 @@ import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.tools.DomainGenerator;
+import org.netbeans.modules.j2ee.weblogic9.cloud.DomainGenerator;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -183,7 +183,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
             iterator.setUsername(LOCAL_DOMAIN_USERNAME);
             iterator.setPassword(LOCAL_DOMAIN_PASSWORD);
 
-            return iterator.instantiate(displayName);
+            return iterator.instantiateCloud(displayName);
         }
         return null;
     }

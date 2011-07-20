@@ -50,7 +50,7 @@ import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.weblogic9.tools.WhiteListTool;
+import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDisplayer;

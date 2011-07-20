@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.tools;
+package org.netbeans.modules.j2ee.weblogic9.cloud;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
