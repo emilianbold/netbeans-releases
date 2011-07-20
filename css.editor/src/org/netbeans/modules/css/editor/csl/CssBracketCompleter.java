@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.gsf;
+package org.netbeans.modules.css.editor.csl;
 
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.ArrayList;
@@ -61,10 +61,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.css.editor.LexerUtils;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -107,7 +106,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //handle curly bracket skipping
             //if there is a matching opening bracket and there is no opened unpaired bracket before
             //then just skip the typed char
-            TokenSequence<CssTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
+            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot);
             if (ts != null) {
                 ts.move(dot);
                 if (ts.moveNext()) {
@@ -137,7 +136,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         if (ch == '\'' || ch == '"') {
             //handle quotations
 
-            TokenSequence<CssTokenId> ts = LexerUtils.getCssTokenSequence(doc, dot);
+            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot);
             if (ts != null) {
                 int diff = ts.move(dot);
                 if (ts.moveNext()) {
@@ -164,22 +163,22 @@ public class CssBracketCompleter implements KeystrokeHandler {
                 //value w/o depending on the html module. An SPI in web.common could do it as well
                 LanguagePath langPath = ts.languagePath();
                 LanguagePath parentPath = langPath.parent();
-                if(parentPath != null) {
+                if (parentPath != null) {
                     //we are embedded
                     Language top = parentPath.topLanguage();
-                    if("text/html".equals(top.mimeType())) {
+                    if ("text/html".equals(top.mimeType())) {
                         //in html
                         TokenHierarchy hi = TokenHierarchy.get(doc);
                         List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
-                        if(embedded.size() > 1) {
+                        if (embedded.size() > 1) {
                             TokenSequence<?> htmlts = embedded.get(embedded.size() - 2);
-                            if(htmlts.languagePath().equals(parentPath)) {
+                            if (htmlts.languagePath().equals(parentPath)) {
                                 //it relly looks like our parent ts
                                 htmlts.move(dot);
-                                if(htmlts.moveNext() || htmlts.movePrevious()) {
+                                if (htmlts.moveNext() || htmlts.movePrevious()) {
                                     TokenId id = htmlts.token().id();
                                     //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
-                                    if(id.name().equals("VALUE_CSS")) { //NOI18N
+                                    if (id.name().equals("VALUE_CSS")) { //NOI18N
                                         //we are in a css value, do not complete the quote
                                         return false;
                                     }
@@ -201,7 +200,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                 while (ts.movePrevious()) {
                     Token t = ts.token();
                     if (t.text().charAt(0) == ch) {
-                        if (t.id() == CssTokenId.STRING || t.id() == CssTokenId.STRING1 || t.id() == CssTokenId.STRING2) {
+                        if (t.id() == CssTokenId.STRING) {
                             //no unmatched quotation mark
                             break;
                         } else {
@@ -209,7 +208,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                             return false;
                         }
                     }
-                    if (t.id() == CssTokenId.LBRACE || t.id() == CssTokenId.RBRACE || t.id() == CssTokenId.SEMICOLON) {
+                    if (t.id() == CssTokenId.LBRACE || t.id() == CssTokenId.RBRACE || t.id() == CssTokenId.SEMI) {
                         //break the loop, not quotation found - we can complete
                         break;
                     }
@@ -271,7 +270,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //move caret
             jtc.getCaret().setDot(dot);
             //and indent the line
-            reindentLater(bdoc, dot-1, dot+2);
+            reindentLater(bdoc, dot - 1, dot + 2);
 
         }
 
@@ -322,9 +321,8 @@ public class CssBracketCompleter implements KeystrokeHandler {
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
-
     public static boolean unitTestingSupport = false;
-    
+
     //since the code runs under document atomic lock, we cannot lock the
     //indentation infrastructure directly. Instead of that create a new
     //AWT task and post it for later execution.
@@ -359,5 +357,61 @@ public class CssBracketCompleter implements KeystrokeHandler {
         } else {
             SwingUtilities.invokeLater(rn);
         }
+    }
+
+    private static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset) {
+        TokenHierarchy hi = TokenHierarchy.get(doc);
+
+        //if we are at the border of the tokensequence then,
+        //try to look ahead
+        TokenSequence<CssTokenId> ts = tokenSequenceList(hi, offset, false);
+
+        //and back
+        if (ts == null) {
+            ts = tokenSequenceList(hi, offset, true);
+        }
+
+        if (ts == null) {
+            //token sequence neither in forward nor in backward direction, give up
+            return null;
+        }
+
+        //check boundaries of the token sequence - if the skip lenghts are used the token 
+        //sequence is returned even for offsets outside of the tokenSequence content
+
+        //test beginning
+        ts.moveStart();
+        if (ts.moveNext()) {
+            if (ts.offset() > offset) {
+                return null;
+            }
+        }
+
+        //test end
+        ts.moveEnd();
+        if (ts.movePrevious()) {
+            if (ts.offset() + ts.token().length() < offset) {
+                return null;
+            }
+        }
+
+        //seems to be ok
+        return ts;
+
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private static TokenSequence<CssTokenId> tokenSequenceList(TokenHierarchy hi, int offset, boolean backwardBias) {
+        List<TokenSequence> tsl = hi.embeddedTokenSequences(offset, backwardBias);
+        if (tsl.size() > 0) {
+            TokenSequence ts = tsl.get(tsl.size() - 1);
+            if (ts.language() != CssTokenId.language()) {
+                return null;
+            } else {
+                return (TokenSequence<CssTokenId>) ts;
+            }
+        }
+        return null;
     }
 }

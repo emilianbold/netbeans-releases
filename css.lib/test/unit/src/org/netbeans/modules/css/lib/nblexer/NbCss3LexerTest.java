@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.lib.nblexer;
 
 import junit.framework.Test;
@@ -81,32 +80,42 @@ public class NbCss3LexerTest extends NbTestCase {
         assertEquals(CssTokenId.SEMI, ts.token().id());
     }
 
-     public void testImportsLexing() throws Exception {
+    public void testBasicLexing() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testBasic.css.txt",
                 CssTokenId.language());
     }
-     
-     public void testLexingOfMissingTokens() throws Exception {
+
+    public void testLexingOfMissingTokens() throws Exception {
         String code = "a {\n"
-                        + " @ color: red; \n"
-                        + " background: red; \n"
-                      + "}";
-        
+                + " @ color: red; \n"
+                + " background: red; \n"
+                + "}";
+
         TokenHierarchy th = TokenHierarchy.create(code, CssTokenId.language());
         TokenSequence ts = th.tokenSequence();
         ts.moveStart();
 
-        while(ts.moveNext()) {
+        while (ts.moveNext()) {
             System.out.println(ts.offset() + "-" + (ts.token().length() + ts.offset()) + ": " + ts.token().text() + "(" + ts.token().id() + ")");
         }
-        
-//        assertTrue(ts.moveNext());
-//        assertEquals("/* c */", ts.token().text().toString());
-//        assertEquals(CssTokenId.COMMENT, ts.token().id());
-//        assertEquals("comment", ts.token().id().primaryCategory());
-//
-//        assertTrue(ts.moveNext());
-//        assertEquals(";", ts.token().text().toString());
-//        assertEquals(CssTokenId.SEMI, ts.token().id());
+
     }
+    
+    //currently fails! FIX!!!
+    public void testLexing_Netbeans_org() throws Exception {
+      LexerTestUtilities.checkTokenDump(this, "testfiles/netbeans.css",
+                CssTokenId.language());
+    };
+    
+    public void testInput() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
+                CssTokenId.language());
+    }
+
+    public void testImportsLexing() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testImportsLexing.css.txt",
+                CssTokenId.language());
+    }
+
+    
 }

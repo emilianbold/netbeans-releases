@@ -53,7 +53,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;

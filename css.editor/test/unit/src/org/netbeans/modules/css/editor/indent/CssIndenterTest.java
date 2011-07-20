@@ -60,7 +60,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
-import org.netbeans.modules.css.gsf.CssBracketCompleter;
+import org.netbeans.modules.css.editor.csl.CssBracketCompleter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.openide.cookies.EditorCookie;
