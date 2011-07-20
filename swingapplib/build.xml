@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="swingapplib">
+    <property name="license.file" location="../nbbuild/licenses/LGPL-2.1"/>
+    <target name="-create-license.file"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>
