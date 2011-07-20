@@ -56,6 +56,7 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.ui.actions.LogInAction;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.actions.ProjectAssociationAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import static org.netbeans.modules.hudson.ui.nodes.Bundle.*;
@@ -133,6 +134,7 @@ public class HudsonJobNode extends AbstractNode {
         }
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(StartJobAction.class));
+        actions.add(new ProjectAssociationAction(job));
         actions.add(null);
         if (job instanceof OpenableInBrowser) {
             actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) job));
