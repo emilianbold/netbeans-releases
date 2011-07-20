@@ -187,6 +187,9 @@ public abstract class RemotePathMap extends PathMap {
                     max = key.length();
                     String mpoint = entry.getValue();
                     String rest = key.length() > lpath.length() ? "" : lpath.substring(key.length()).replace('\\', '/'); //NOI18N
+                    if (!mpoint.endsWith("/")) {
+                        mpoint += '/';
+                    }
                     rpath = mpoint + rest;
                 }
             }
@@ -210,6 +213,9 @@ public abstract class RemotePathMap extends PathMap {
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 String rest = (value.length() > rpath.length()) ? "" : rpath.substring(value.length()); //NOI18N
+                if (!mpoint.endsWith(File.separator)) {
+                    mpoint += File.separator;
+                }
                 return mpoint + rest;
             }
         }        
