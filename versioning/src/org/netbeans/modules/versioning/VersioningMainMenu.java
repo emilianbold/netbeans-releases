@@ -100,6 +100,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                     List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                     items.addAll(systemItems);
                 }
+                items.addAll(actionsToItems(appendAdditionalActions(ctx, vs[0], new Action[0])));
                 items.add(Utils.createJSeparator());
             } else if (vs.length > 1) {
                 JMenuItem dummy = new JMenuItem("<multiple systems>");
@@ -160,21 +161,8 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 actions = system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
             }
         }
-        if (isRegularVCS && ctx.getRootFiles().size() == 1) {
-            // can connect or disconnect just one root
-            File root = system.getTopmostManagedAncestor(ctx.getRootFiles().iterator().next());
-            if (root != null) {
-                VersioningSystem vs = system instanceof DelegatingVCS ? ((DelegatingVCS) system).getDelegate() : system;
-                Action a;
-                // adding connect/disconnect actions to the main menu
-                if (VersioningConfig.getDefault().isDisconnected(vs, root)) {
-                    actions = new Action[] { new ConnectAction(vs, root, null) };
-                } else {
-                    actions = actions == null ? new Action[2] : Arrays.copyOf(actions, actions.length + 2);
-                    actions[actions.length - 2] = null;
-                    actions[actions.length - 1] = new DisconnectAction(vs, root);
-                }
-            }
+        if (isRegularVCS) {
+            actions = appendAdditionalActions(ctx, system, actions);
         }
         if(actions != null && actions.length > 0) {
             List<JComponent> systemItems = actionsToItems(actions);
@@ -249,5 +237,32 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 VersioningManager.getInstance().versionedRootsChanged();
             }
         }
+    }
+
+    /**
+     * appends connect/disconnect actions to given actions
+     * @param ctx
+     * @param system
+     * @param actions initial actions
+     * @return enhanced actions
+     */
+    private Action[] appendAdditionalActions (VCSContext ctx, VersioningSystem system, Action[] actions) {
+        if (ctx.getRootFiles().size() == 1) {
+            // can connect or disconnect just one root
+            File root = system.getTopmostManagedAncestor(ctx.getRootFiles().iterator().next());
+            if (root != null) {
+                VersioningSystem vs = system instanceof DelegatingVCS ? ((DelegatingVCS) system).getDelegate() : system;
+                Action a;
+                // adding connect/disconnect actions to the main menu
+                if (VersioningConfig.getDefault().isDisconnected(vs, root)) {
+                    actions = new Action[] { new ConnectAction(vs, root, null) };
+                } else {
+                    actions = actions == null ? new Action[2] : Arrays.copyOf(actions, actions.length + 2);
+                    actions[actions.length - 2] = null;
+                    actions[actions.length - 1] = new DisconnectAction(vs, root);
+                }
+            }
+        }
+        return actions;
     }
 }
