@@ -433,10 +433,14 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
                     try {
                         if (!previewAll && session != null) {
-                            UndoWatcher.watch(session, ParametersPanel.this);
-                            session.addProgressListener(ParametersPanel.this);
-                            session.doRefactoring(true);
-                            UndoWatcher.stopWatching(ParametersPanel.this);
+                            if (session.getRefactoringElements().isEmpty()) {
+                                JOptionPane.showMessageDialog(ParametersPanel.this, NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"), rui.getName(), JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                UndoWatcher.watch(session, ParametersPanel.this);
+                                session.addProgressListener(ParametersPanel.this);
+                                session.doRefactoring(true);
+                                UndoWatcher.stopWatching(ParametersPanel.this);
+                            }
                         }
                     } finally {
                         if (!previewAll) {
