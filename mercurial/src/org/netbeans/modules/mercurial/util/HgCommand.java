@@ -2710,8 +2710,8 @@ public class HgCommand {
      * @return Map of files and status for all files of interest, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static Map<File, FileInformation> getStatus (File repository, List<File> files, String revision1, String revision2) throws HgException{
-        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, revision1, revision2, true);
+    public static Map<File, FileInformation> getStatus (File repository, List<File> files, String revisionFrom, String revisionTo) throws HgException{
+        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, revisionFrom, revisionTo, true);
     }
 
     /**
@@ -2951,7 +2951,7 @@ public class HgCommand {
         return list;
     }
 
-    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags, String rev1, String rev2, boolean bIgnoreUnversioned)  throws HgException{
+    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags, String revFrom, String revTo, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
@@ -2959,7 +2959,7 @@ public class HgCommand {
             startTime = System.currentTimeMillis();
         }
         FileInformation prev_info = null;
-        List<String> list = doRepositoryDirStatusCmd(repository, dirs, statusFlags, rev1, rev2);
+        List<String> list = doRepositoryDirStatusCmd(repository, dirs, statusFlags, revFrom, revTo);
 
         Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>(list.size());
 
