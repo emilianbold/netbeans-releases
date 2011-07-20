@@ -51,10 +51,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.util.Lookup;
 
 /**
@@ -186,6 +189,26 @@ public abstract class ProjectHudsonProvider {
          */
         public String getJobName() {
             return jobName;
+        }
+
+        /**
+         * Finds the corresponding job on a registered server, if any.
+         * @return a job with the name {@link #getJobName} on the server with the same {@link #getServerUrl}, or null
+         */
+        public @CheckForNull HudsonJob getJob() {
+            if (jobName == null) {
+                return null;
+            }
+            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(serverURL);
+            if (instance == null) {
+                return null;
+            }
+            for (HudsonJob job : instance.getJobs()) {
+                if (job.getName().equals(jobName)) {
+                    return job;
+                }
+            }
+            return null;
         }
 
         public @Override boolean equals(Object obj) {

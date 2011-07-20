@@ -66,7 +66,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;

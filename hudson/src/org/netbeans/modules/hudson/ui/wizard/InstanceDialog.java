@@ -59,7 +59,7 @@ import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
