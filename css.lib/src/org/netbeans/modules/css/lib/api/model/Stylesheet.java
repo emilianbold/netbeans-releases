@@ -41,33 +41,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.editor.api.model;
+package org.netbeans.modules.css.lib.api.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.css.lib.nbparser.CssParser;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+
 
 /**
  * A domain object model representing CSS file backed up by 
@@ -80,7 +74,7 @@ public final class Stylesheet {
     private static final Logger LOGGER = Logger.getLogger(Stylesheet.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private final List<Rule> rules = new ArrayList<Rule>(10);
-    private final Collection<String> imported_files = new ArrayList<String>();
+    /* package private for unit tests only */ final Collection<String> imported_files = new ArrayList<String>(); 
     private Snapshot snapshot;
     private FileObject fileObject;
 
@@ -98,25 +92,23 @@ public final class Stylesheet {
         }
     }
 
-    //--- API methods ---
-    /** @return an instance of the source Snapshot of the parser result used to construct this model. */
-    public Snapshot getSnapshot() {
-        return snapshot;
-    }
-
     /** @return List of {@link CssRule}s or null if the document hasn't been parsed yet. */
     public List<Rule> rules() {
         return rules;
     }
 
-    public Collection<String> getImportedFileNames() {
-        return imported_files;
-    }
-
-    public Collection<FileObject> getImportedFiles() {
-        FileObject baseFolder = snapshot.getSource().getFileObject().getParent();
+    private Collection<FileObject> getImportedFiles() {
+        FileObject sourceFile = snapshot.getSource().getFileObject();
+        if(sourceFile == null) {
+            //this quite unlikely situation but possible. 
+            //in such case we cannot properly resolve the links so 
+            //just return empty list
+            return Collections.emptyList();
+        }
+        
+        FileObject baseFolder = sourceFile.getParent();
         Collection<FileObject> files = new ArrayList<FileObject>();
-        for (String fileNamePath : getImportedFileNames()) {
+        for (String fileNamePath : imported_files) {
             FileObject file = baseFolder.getFileObject(fileNamePath);
             if (file != null) {
                 files.add(file);
@@ -133,25 +125,16 @@ public final class Stylesheet {
 
     private void processModels(final Collection<Stylesheet> models, Stylesheet model) {
         for (FileObject importedFile : model.getImportedFiles()) {
-            final AtomicReference<Stylesheet> ref = new AtomicReference<Stylesheet>();
-            if (importedFile.isValid() && importedFile.getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
+            if (importedFile.isValid() && importedFile.getMIMEType().equals("text/x-css")) {
                 try {
-                    Source source = Source.create(importedFile);
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
-                            ref.set(Stylesheet.create(result.getWrappedCssParserResult()));
+                    Stylesheet created = CssParser.parse(snapshot).getModel();
+                    if(created != null) {
+                        if(models.add(created)) {
+                            processModels(models, created);
                         }
-                    });
+                    }
                 } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            Stylesheet created = ref.get();
-            if(created != null) {
-                if(models.add(created)) {
-                    processModels(models, created);
+                    LOGGER.log(Level.INFO, null, ex);
                 }
             }
         }

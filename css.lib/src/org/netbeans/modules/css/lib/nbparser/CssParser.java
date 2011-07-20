@@ -63,18 +63,17 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssParser extends Parser {
 
     private CssParserResult result;
-    
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+
+    public static CssParserResult parse(Snapshot snapshot) throws ParseException {
         try {
             CharSequence source = snapshot.getText();
             CharStream charstream = new ANTLRStringStream(source.toString());
-            
+
             ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
@@ -87,11 +86,16 @@ public class CssParser extends Parser {
             problems.addAll(lexer.getProblems());
             //add parser issues
             problems.addAll(builder.getProblems());
-            
-            result = new CssParserResult(snapshot, tree, problems);
+
+            return new CssParserResult(snapshot, tree, problems);
         } catch (RecognitionException ex) {
             throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex);
         }
+    }
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        result = parse(snapshot);
     }
 
     @Override
@@ -108,5 +112,4 @@ public class CssParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         //no-op
     }
-    
 }

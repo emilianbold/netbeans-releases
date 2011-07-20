@@ -39,26 +39,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.api.model;
+package org.netbeans.modules.css.lib.api.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.editor.test.TestBase;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.TestUtil;
 
 /**
  *
  * @author marekfukala
  */
-public class StylesheetTest extends TestBase {
+public class StylesheetTest extends NbTestCase {
 
     public StylesheetTest() {
         super(StylesheetTest.class.getName());
@@ -69,23 +62,7 @@ public class StylesheetTest extends TestBase {
         //                0123456789012345678
         //                0         1
 
-        Document doc = getDocument(content);
-        Source source = Source.create(doc);
-        final Result[] _result = new Result[1];
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = resultIterator.getParserResult();
-            }
-        });
-
-        Result result = _result[0];
-        assertTrue(result instanceof CssCslParserResult);
-        assertNotNull(result);
-
-        CssCslParserResult wrapper = (CssCslParserResult) result;
-        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
+        Stylesheet model = TestUtil.parse(content).getModel();
         assertNotNull(model);
 
         List<Rule> rules = model.rules();
@@ -122,23 +99,7 @@ public class StylesheetTest extends TestBase {
         //                0123456789012345678
         //                0         1
 
-        Document doc = getDocument(content);
-        Source source = Source.create(doc);
-        final Result[] _result = new Result[1];
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = resultIterator.getParserResult();
-            }
-        });
-
-        Result result = _result[0];
-        assertTrue(result instanceof CssCslParserResult);
-        assertNotNull(result);
-
-        CssCslParserResult wrapper = (CssCslParserResult) result;
-        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
+        Stylesheet model = TestUtil.parse(content).getModel();
         assertNotNull(model);
 
         List<Rule> rules = model.rules();
@@ -163,24 +124,7 @@ public class StylesheetTest extends TestBase {
         String content = "@ ";
         //                0123456789012345678
         //                0         1
-
-        Document doc = getDocument(content);
-        Source source = Source.create(doc);
-        final Result[] _result = new Result[1];
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = resultIterator.getParserResult();
-            }
-        });
-
-        Result result = _result[0];
-        assertTrue(result instanceof CssCslParserResult);
-        assertNotNull(result);
-
-        CssCslParserResult wrapper = (CssCslParserResult) result;
-        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
+        Stylesheet model = TestUtil.parse(content).getModel();
         
         assertNotNull(model);
 
@@ -194,33 +138,12 @@ public class StylesheetTest extends TestBase {
         String content = " @import \"file.css\";\nh1 { color : red; }";
         //                0123456789012345678
         //                0         1
+        Stylesheet model = TestUtil.parse(content).getModel();        assertNotNull(model);
 
-        Document doc = getDocument(content);
-        Source source = Source.create(doc);
-        final Result[] _result = new Result[1];
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                _result[0] = resultIterator.getParserResult();
-            }
-        });
-
-        Result result = _result[0];
-        assertTrue(result instanceof CssCslParserResult);
-        assertNotNull(result);
-
-        assertNotNull(((CssCslParserResult)result).getParseTree());
-
-        CssCslParserResult wrapper = (CssCslParserResult) result;
-        Stylesheet model = Stylesheet.create(wrapper.getWrappedCssParserResult());
-        assertNotNull(model);
-
-        Collection<String> names = model.getImportedFileNames();
+        Collection<String> names = model.imported_files;
         assertNotNull(names);
 
         assertEquals(1, names.size());
-
         assertEquals("file.css", names.iterator().next());
 
     }

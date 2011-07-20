@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.css.editor.model;
 
-import org.netbeans.modules.css.editor.api.model.Rule;
-import org.netbeans.modules.css.editor.api.model.Declaration;
+import org.netbeans.modules.css.lib.api.model.Rule;
+import org.netbeans.modules.css.lib.api.model.Declaration;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.StringWriter;

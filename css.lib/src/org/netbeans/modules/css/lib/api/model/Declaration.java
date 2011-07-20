@@ -42,79 +42,101 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.editor.api.model;
+package org.netbeans.modules.css.lib.api.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
-
+ 
 /**
- * Immutable content of a CSS rule.
+ * An immutable representation of a css rule item eg.:
  *
- * a rule example:
- * h1 {
- *      color: red;
- * }
+ * color: red;
  *
  * @author mfukala@netbeans.org
  */
-public class Rule extends Item {
+public class Declaration extends Item {
 
-    public Rule(Snapshot snapshot, Node node) {
-        super(snapshot, node);
-        assert node.type() == NodeType.ruleSet;
-    }
-    
-    public List<Declaration> items() {
-        List<Declaration> items = new ArrayList<Declaration>();
-        NodeVisitor<List<Declaration>> declarationsVisitor = new NodeVisitor<List<Declaration>>(items) {
+    //XXX: hack for the terrible StyleBuilder logic. Must be fixed!!!
+    public static Declaration createArtificial(final String propertyName, final String expression) {
+        return new Declaration(null,null) {
 
             @Override
-            public boolean visit(Node node) {
-                if(node.type() == NodeType.declaration) {
-                    getResult().add(new Declaration(snapshot, node));
-                }
-                return false;
+            public Item getProperty() {
+                return new Item(null,null) {
+
+                    @Override
+                    public String name() {
+                        return propertyName;
+                    }
+
+                    @Override
+                    public int offset() {
+                        return -1;
+                    }
+                    
+                };
             }
             
+            @Override
+            public Item getValue() {
+                return new Item(null,null) {
+
+                    @Override
+                    public String name() {
+                        return expression;
+                    }
+
+                    @Override
+                    public int offset() {
+                        return -1;
+                    }
+                    
+                };
+            }
         };
-        
-        declarationsVisitor.visitChildren(node);
-        return items;
     }
     
-    public Node getSelectorsGroup() {
-        return NodeUtil.getChildByType(node, NodeType.selectorsGroup);
+    Declaration(Snapshot snapshot, Node declarationNode) {
+        super(snapshot, declarationNode);
     }
     
-    /** @return the css rule name */
-    public String name() {
-        return getSelectorsGroup().image().toString();
+    public boolean isImporant() {
+        return false;
     }
 
-    /** @return offset of the rule name in the model's document. */
-    public int getRuleNameOffset() {
-        return getSelectorsGroup().from();
-    }
-    
-    /** @return offset of the rule's closing bracket in the model's document. */
-    public int getRuleCloseBracketOffset() {
-        return NodeUtil.getChildTokenNode(node, CssTokenId.RBRACE).from();
+    public Item getProperty() {
+        Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
+        return new Item(snapshot, propertyNode);
     }
 
-    /** @return offset of the rule's opening bracket in the model's document. */
-    public int getRuleOpenBracketOffset() {
-        return NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE).from();
+    public Item getValue() {
+        Node propertyNode = NodeUtil.getChildByType(node, NodeType.expr);
+        return new Item(snapshot, propertyNode);
     }
 
     @Override
     public String toString() {
-        return "Rule[" + name() + "; " + getRuleOpenBracketOffset() + " - " + getRuleCloseBracketOffset() + "]"; //NOI18N
+        return "Declaration[" + getProperty() + "; " + getValue() + "]"; //NOI18N
     }
-    
+
+    /** Gets offset of the key - value separator in the css rule item.
+     */
+    public int colonOffset() {
+        Node colonNode = NodeUtil.getChildTokenNode(node, CssTokenId.COLON);
+        return colonNode.from();
+    }
+
+    /** Gets offset of the ending semicolon in rule item or -1 if there is no ending semicolon.
+     */
+    public int semicolonOffset() {
+        //the semicolon following the declaration is a member of parent 'declarations' node
+        Node n = NodeUtil.getSibling(node, false);
+        return n.type() == NodeType.token && NodeUtil.getTokenNodeTokenId(n) == CssTokenId.SEMI
+                ? n.from()
+                : -1;
+    }
+
 }
