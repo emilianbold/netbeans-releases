@@ -158,6 +158,9 @@ public abstract class ProjectHudsonProvider {
             if (jobName != null && (jobName.length() == 0 || !jobName.trim().equals(jobName))) {
                 throw new IllegalArgumentException("Must provide a nonempty or null job name: " + jobName); // NOI18N
             }
+            if (jobName != null && jobName.indexOf('/') != -1) {
+                throw new IllegalArgumentException("No slashes permitted in job name: " + jobName);
+            }
             this.serverURL = serverURL;
             this.jobName = jobName;
         }

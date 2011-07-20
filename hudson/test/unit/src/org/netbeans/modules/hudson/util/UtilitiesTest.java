@@ -54,10 +54,8 @@ public class UtilitiesTest extends NbTestCase {
         assertEquals("foo", Utilities.uriEncode("foo"));
         assertEquals("foo%20bar", Utilities.uriEncode("foo bar"));
         assertEquals("%C4%8Dau", Utilities.uriEncode("čau"));
-        try {
-            Utilities.uriEncode("foo/bar");
-            fail();
-        } catch (IllegalArgumentException x) {}
+        assertEquals("foo%20bar/baz", Utilities.uriEncode("foo bar/baz"));
+        assertEquals("/foo/", Utilities.uriEncode("/foo/"));
         try {
             Utilities.uriEncode(null);
             fail();
