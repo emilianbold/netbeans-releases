@@ -56,6 +56,7 @@ import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,7 +67,8 @@ public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {
     private FileObject file;
 
     public SingleFileSelectionTreeBuilder(FileObject file) {
-        super(new Type("single-file", "Single File"), false);
+        super(new Type("single-file", NbBundle.getMessage(SingleFileSelectionTreeBuilder.class, // NOI18N
+                "PackageSelectionTreeViewBuilder_PackageView")), false); // NOI18N
         this.file = file;
     }
 

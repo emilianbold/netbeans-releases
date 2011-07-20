@@ -44,7 +44,6 @@ package org.netbeans.modules.profiler.categories.j2se;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Collections;
 
 import org.netbeans.api.project.Project;
@@ -54,11 +53,10 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.profiler.categories.Categorization;
+import org.netbeans.modules.profiler.categorization.api.Categorization;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 
 
 /**
