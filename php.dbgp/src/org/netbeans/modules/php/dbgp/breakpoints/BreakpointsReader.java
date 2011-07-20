@@ -74,6 +74,7 @@ public class BreakpointsReader implements Properties.Reader {
     private static final String FUNC_NAME       = "functionName";      // NOI18N
 
     private static final String TYPE            = "type";              // NOI18N 
+    private static final String GROUP_NAME = "groupName"; // NOI18N
 
 
     public String [] getSupportedClassNames() {
@@ -95,7 +96,8 @@ public class BreakpointsReader implements Properties.Reader {
             if (!properties.getBoolean(ENABED, true)) {
                 breakpoint.disable();
             }
-            return new LineBreakpoint(line);
+            breakpoint.setGroupName(properties.getString(GROUP_NAME, ""));
+            return breakpoint;
         }
         else if (typeID.equals(FunctionBreakpoint.class.getName())){
             String func = properties.getString( FUNC_NAME, null );
@@ -103,7 +105,12 @@ public class BreakpointsReader implements Properties.Reader {
             if ( func == null || type == null ) {
                 return null;
             }
-            return new FunctionBreakpoint( type , func);
+            FunctionBreakpoint breakpoint = new FunctionBreakpoint(type, func);
+            if (!properties.getBoolean(ENABED, true)) {
+                breakpoint.disable();
+            }
+            breakpoint.setGroupName(properties.getString(GROUP_NAME, ""));
+            return breakpoint;
         }
         else {
             return null;
@@ -121,6 +128,7 @@ public class BreakpointsReader implements Properties.Reader {
                 properties.setInt(LINE_NUMBER, breakpoint.getLine()
                         .getLineNumber());
                 properties.setBoolean(ENABED, breakpoint.isEnabled());
+                properties.setString(GROUP_NAME, breakpoint.getGroupName());
             }
             catch (FileStateInvalidException ex) {
                 log(ex);
@@ -132,6 +140,7 @@ public class BreakpointsReader implements Properties.Reader {
             properties.setString( FUNC_NAME , func );
             properties.setString( TYPE , breakpoint.getType().toString() );
             properties.setBoolean(ENABED, breakpoint.isEnabled());
+            properties.setString(GROUP_NAME, breakpoint.getGroupName());
         }
     }
 
