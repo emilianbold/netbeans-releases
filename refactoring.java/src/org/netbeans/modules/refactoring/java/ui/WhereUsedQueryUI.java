@@ -79,7 +79,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
 
     public WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
-        this.query.getContext().add(info.getClasspathInfo());
+//        this.query.getContext().add(info.getClasspathInfo());
         this.element = handle;
         Element el = handle.resolveElement(info);
         elementHandle = ElementHandle.create(el);
