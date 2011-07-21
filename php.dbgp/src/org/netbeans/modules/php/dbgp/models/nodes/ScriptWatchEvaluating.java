@@ -57,6 +57,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         requestValue();
     }
 
+    @Override
     public String getName() {
         return myWatch.getExpression();
     }
@@ -65,14 +66,17 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         return myWatch.getExpression();
     }
 
+    @Override
     public String getShortDescription() {
         return myWatch.getExpression();
     }
 
+    @Override
     public String getIconBase() {
         return WATCH_ICON;
     }
 
+    @Override
     public synchronized String getType() {
         if ( myValue == null ) {
             return null;
@@ -85,6 +89,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         return (className != null && !className.isEmpty()) ? className : myValue.getType();
     }
 
+    @Override
     public synchronized String getValue() throws UnsufficientValueException {
         if (!PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
             return NbBundle.getMessage(ScriptWatchEvaluating.class, "WatchesAndEvalDisabled");
@@ -96,6 +101,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         return myValue.getStringValue();
     }
 
+    @Override
     public VariableNode[] getChildren( int from, int to ) {
         List<AbstractModelNode> list;
         synchronized ( this ) {
@@ -117,10 +123,12 @@ public class ScriptWatchEvaluating extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#isLeaf()
      */
+    @Override
     public boolean isLeaf() {
         return getChildrenSize() == 0;
     }
 
+    @Override
     public boolean isReadOnly() {
         /*
          * Theoretically one could perfrom in Eval command response send
@@ -141,6 +149,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
      * 
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getChildrenSize()
      */
+    @Override
     public synchronized int getChildrenSize() {
         return getVariables() == null ? 0 : getVariables().size();
     }
@@ -187,6 +196,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> set ) {
         return true;
     }

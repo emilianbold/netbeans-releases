@@ -87,10 +87,12 @@ public class LineBreakpoint extends AbstractBreakpoint {
         return myLine;
     }
     
+    @Override
     public int isTemp() {
         return 0;
     }
     
+    @Override
     public boolean isSessionRelated( DebugSession session ){
         SessionId id = session != null ? session.getSessionId() : null;
         if ( id == null ){
@@ -103,6 +105,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         return true;
     }
     
+    @Override
     public void removed(){
         FileObject fileObject = getLine().getLookup().lookup(FileObject.class);
         if( fileObject != null ){
@@ -127,6 +130,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         /* (non-Javadoc)
          * @see org.openide.filesystems.FileChangeListener#fileDeleted(org.openide.filesystems.FileEvent)
          */
+        @Override
         public void fileDeleted( FileEvent arg0 ) {
             DebuggerManager.getDebuggerManager().removeBreakpoint( 
                     LineBreakpoint.this);

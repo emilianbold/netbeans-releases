@@ -48,6 +48,7 @@ class StringVariableNode extends
         return NbBundle.getMessage( StringVariableNode.class , TYPE_STRING);
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.SCALARS );
     }

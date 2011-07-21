@@ -77,6 +77,7 @@ public class BreakpointsReader implements Properties.Reader {
     private static final String GROUP_NAME = "groupName"; // NOI18N
 
 
+    @Override
     public String [] getSupportedClassNames() {
         return new String[] {
             LineBreakpoint.class.getName(),
@@ -84,6 +85,7 @@ public class BreakpointsReader implements Properties.Reader {
         };
     }
 
+    @Override
     public Object read( String typeID, Properties properties ) {
         if (typeID.equals(LineBreakpoint.class.getName())) {
             Line line = getLine(properties.getString(URL, null), properties
@@ -117,6 +119,7 @@ public class BreakpointsReader implements Properties.Reader {
         }
     }
 
+    @Override
     public void write(Object object, Properties properties) {
         if (object instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint) object;
