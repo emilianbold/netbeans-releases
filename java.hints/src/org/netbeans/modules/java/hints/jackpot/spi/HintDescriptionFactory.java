@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
-import java.util.Collections;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 
 /**
  *
@@ -99,7 +98,7 @@ public class HintDescriptionFactory {
 
     public HintDescription produce() {
         if (metadata == null) {
-            metadata = new HintMetadata("no-id", "", "", "", true, HintMetadata.Kind.HINT_NON_GUI, HintSeverity.WARNING, null, Collections.<String>emptyList());
+            metadata = HintMetadata.Builder.create("no-id").addOptions(Options.NON_GUI).build();
         }
         if (this.additionalConstraints == null) {
             this.additionalConstraints = AdditionalQueryConstraints.empty();

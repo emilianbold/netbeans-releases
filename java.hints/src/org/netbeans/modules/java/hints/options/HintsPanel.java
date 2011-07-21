@@ -82,6 +82,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
@@ -595,7 +596,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         Map<String, HintCategory> cat2CatDesc =  new HashMap<String, HintCategory>();
 
         for (HintMetadata m : metadata) {
-            if (m.kind != HintMetadata.Kind.HINT && m.kind != HintMetadata.Kind.SUGGESTION) continue;
+            if (m.options.contains(Options.NON_GUI)) continue;
 
             HintCategory cat = cat2CatDesc.get(m.category);
 
