@@ -44,18 +44,23 @@ package org.netbeans.modules.debugger.jpda.visual.ui;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
@@ -82,13 +87,17 @@ public class ScreenshotComponent extends TopComponent {
     private NavigatorLookupHint componentHierarchyNavigatorHint = new ComponentHierarchyNavigatorHint();
     private ComponentNode componentNodes;
     private ScreenshotCanvas canvas;
+    private JScrollPane scrollPane;
     
     public ScreenshotComponent(RemoteScreenshot screenshot) {
         this.screenshot = screenshot;
         screenshot.getImage();
         ScreenshotCanvas c = new ScreenshotCanvas(screenshot.getImage());
+        scrollPane = new JScrollPane(c);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         setLayout(new BorderLayout());
-        add(c, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         this.canvas = c;
         String title = screenshot.getTitle();
         title = (title == null) ? NbBundle.getMessage(ScreenshotComponent.class, "LBL_DebuggerSnapshot") :
@@ -124,7 +133,7 @@ public class ScreenshotComponent extends TopComponent {
         return PERSISTENCE_NEVER;
     }
     
-    private class ScreenshotCanvas extends Canvas {
+    private class ScreenshotCanvas extends JComponent {
         
         private Image image;
         private Rectangle selection;
@@ -134,11 +143,33 @@ public class ScreenshotComponent extends TopComponent {
         public ScreenshotCanvas(Image image) {
             this.image = image;
             listener = new Listener();
+            initSize();
+        }
+        
+        private void initSize() {
+            ImageObserver io = new ImageObserver() {
+                @Override
+                public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+                    boolean hasHeight = (infoflags & ImageObserver.HEIGHT) > 0;
+                    boolean hasWidth = (infoflags & ImageObserver.WIDTH) > 0;
+                    if (!hasHeight || !hasWidth) {
+                        return true;
+                    }
+                    ScreenshotCanvas.this.setSize(width, height);
+                    ScreenshotCanvas.this.setPreferredSize(ScreenshotCanvas.this.getSize());
+                    return false;
+                }
+            };
+            int width = image.getWidth(io);
+            int height = image.getHeight(io);
+            if (width > 0 && height > 0) {
+                setSize(width, height);
+                setPreferredSize(getSize());
+            }
         }
 
         @Override
-        public void paint(Graphics g) {
-            super.paint(g);
+        public void paintComponent(Graphics g) {
             g.drawImage(image, 1, 1, null);
             g.drawRect(0, 0, image.getWidth(null) + 2, image.getHeight(null) + 2);
             if (selection != null) {
