@@ -100,7 +100,7 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-public class LuceneIndex implements Index {
+public class LuceneIndex implements Index.WithStatus {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
@@ -372,6 +372,16 @@ public class LuceneIndex implements Index {
     @Override
     public Status getStatus (boolean force) throws IOException {
         return dirCache.getStatus(force);
+    }
+
+    @Override
+    public boolean exists() {
+        return this.dirCache.exists();
+    }
+
+    @Override
+    public boolean isValid(boolean tryOpen) throws IOException {
+        return dirCache.getStatus(tryOpen) == Index.Status.VALID;
     }
 
     @Override

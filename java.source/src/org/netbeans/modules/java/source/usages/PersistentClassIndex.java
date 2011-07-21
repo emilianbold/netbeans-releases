@@ -127,7 +127,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
             return IndexManager.readAccess(new IndexManager.Action<Boolean>() {
                 @Override
                 public Boolean run() throws IOException, InterruptedException {
-                    return index.getStatus(false) == Index.Status.EMPTY;
+                    if (index instanceof Index.WithStatus) {
+                        //Fast path
+                        return ((Index.WithStatus)index).getStatus(false) == Index.Status.EMPTY;
+                    } else {
+                       return !index.exists();
+                    }
                 }
             }).booleanValue();
         } catch (InterruptedException ie) {
@@ -142,7 +147,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public boolean isValid() {
         try {
-            return index.getStatus(true) != Index.Status.INVALID;
+            if (index instanceof Index.WithStatus) {
+                return ((Index.WithStatus)index).getStatus(true) != Index.Status.INVALID;
+            } else {
+                return index.isValid(true);
+            }
         } catch (IOException ex) {
             return false;
         }

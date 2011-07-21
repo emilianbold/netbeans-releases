@@ -4254,7 +4254,7 @@ public abstract class CslTestBase extends NbTestCase {
 
     } // End of TestIndexFactoryImpl class
 
-    private static final class TestIndexImpl implements DocumentIndex {
+    private static final class TestIndexImpl implements DocumentIndex.WithStatus {
 
         public TestIndexImpl(DocumentIndex original) {
             this.original = original;
@@ -4263,6 +4263,11 @@ public abstract class CslTestBase extends NbTestCase {
         @Override
         public Status getStatus() throws IOException {
             return Status.VALID;
+        }
+
+        @Override
+        public boolean isValid() throws IOException {
+            return true;
         }
 
         // --------------------------------------------------------------------

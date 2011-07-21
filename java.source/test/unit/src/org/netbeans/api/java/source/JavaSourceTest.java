@@ -2186,7 +2186,7 @@ public class JavaSourceTest extends NbTestCase {
 
     }
 
-    private static class TestIndex implements Index {
+    private static class TestIndex implements Index.WithStatus {
         //Activate the TestIndex.await after scan is done
         //during the scan the prebuildArgs may call the index
         //and cause deadlock
@@ -2200,7 +2200,17 @@ public class JavaSourceTest extends NbTestCase {
         public Status getStatus(boolean tryOpen) throws IOException {
             return Status.VALID;
         }
-        
+
+        @Override
+        public boolean exists() {
+            return true;
+        }
+
+        @Override
+        public boolean isValid(boolean tryOpen) throws IOException {
+            return true;
+        }
+
         @Override
         public <T> void query(
                 Collection<? super T> result,

@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -107,7 +108,11 @@ public final class IndexingSupport {
      */
     public boolean isValid() {
         try {
-            return spiIndex.getStatus() != Index.Status.INVALID;
+            if (spiIndex instanceof DocumentIndex.WithStatus) {
+                return ((DocumentIndex.WithStatus)spiIndex).getStatus() != Index.Status.INVALID;
+            } else {
+                return spiIndex.isValid();
+            }
         } catch (IOException e) {
             return false;
         }
