@@ -51,7 +51,7 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.profiler.oql.language.OQLTokenId;
-import org.netbeans.modules.profiler.spi.OQLEditorImpl;
+import org.netbeans.modules.profiler.oql.spi.OQLEditorImpl;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
