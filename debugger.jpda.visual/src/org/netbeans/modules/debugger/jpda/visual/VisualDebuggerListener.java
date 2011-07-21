@@ -52,6 +52,7 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
 import java.util.Collections;
@@ -163,6 +164,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
         try {
             ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
+        } catch (VMDisconnectedException vdex) {
+            // Ignore
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
