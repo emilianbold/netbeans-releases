@@ -399,38 +399,44 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
      */
     protected static DataObject deserialize(FileObject fileObject) throws IOException {
         String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
-        assert fileAndFileSystem[0] != null;
+        String path = fileAndFileSystem[0];
+        assert path != null;
         FileObject target;
         URI u;
         try {
-            u = new URI(fileAndFileSystem[0]);
+            u = new URI(path);
         } catch (URISyntaxException e) {
             u = null;
         }
+        String fsname = fileAndFileSystem[1];
         if (u != null && u.isAbsolute()) {
             target = URLMapper.findFileObject(u.toURL());
         } else {
             FileSystem fs;
-            if (SFS_NAME.equals(fileAndFileSystem[1])) {
+            if (SFS_NAME.equals(fsname)) {
                 fs = FileUtil.getConfigRoot().getFileSystem();
             } else {
                 // Even if it is specified, we no longer have mounts, so we can no longer find it.
                 fs = fileObject.getFileSystem();
             }
-            target = fs.findResource(fileAndFileSystem[0]);
+            target = fs.findResource(path);
+            if (target == null && fsname == null) {
+                target = FileUtil.getConfigFile(path);
+            }
         }
         if (target != null) {
             return DataObject.find(target);
         } else {
-            throw new FileNotFoundException(fileAndFileSystem[0] + ':' + fileAndFileSystem[1]);
+            throw new FileNotFoundException(path + ':' + fsname);
         }
     }
     static URL readURL(FileObject fileObject) throws IOException {
         String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
-        assert fileAndFileSystem[0] != null;
+        String path = fileAndFileSystem[0];
+        assert path != null;
         URI u;
         try {
-            u = new URI(fileAndFileSystem[0]);
+            u = new URI(path);
         } catch (URISyntaxException e) {
             u = null;
         }
@@ -438,12 +444,13 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             return u.toURL();
         } else {
             FileSystem fs;
-            if (SFS_NAME.equals(fileAndFileSystem[1])) {
+            String fsname = fileAndFileSystem[1];
+            if (SFS_NAME.equals(fsname) || (fsname == null && fileObject.getFileSystem().findResource(path) == null && FileUtil.getConfigFile(path) != null)) {
                 fs = FileUtil.getConfigRoot().getFileSystem();
             } else {
                 fs = fileObject.getFileSystem();
             }
-            return new URL(fs.getRoot().getURL(), fileAndFileSystem[0]);
+            return new URL(fs.getRoot().getURL(), path);
         }
     }
     private static String[] readOriginalFileAndFileSystem(final FileObject f) throws IOException {
