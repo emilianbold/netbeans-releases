@@ -420,8 +420,6 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
             if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
                 standardActions = getAdditionalDiskFolderActions();
-            } else if (active.isCustomConfiguration() && active.getProjectCustomizer().getActions(provider.getProject()) != null) {
-                return active.getProjectCustomizer().getActions(provider.getProject());
             }
             else {
                 standardActions = getAdditionalLogicalFolderActions();
@@ -448,7 +446,13 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
         }
-        return actions.toArray(new Action[actions.size()]);
+        MakeConfiguration active = (getMakeConfigurationDescriptor() == null) ? null : getMakeConfigurationDescriptor().getActiveConfiguration();
+        if (active != null && active.isCustomConfiguration() && active.getProjectCustomizer().getActions(provider.getProject(), actions) != null) {
+                return active.getProjectCustomizer().getActions(provider.getProject(), actions);
+        }
+        else {
+            return actions.toArray(new Action[actions.size()]);
+        }
     }
 
     @Override
