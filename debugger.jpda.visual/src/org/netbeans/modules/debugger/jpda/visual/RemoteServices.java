@@ -127,11 +127,22 @@ public class RemoteServices {
         for (RemoteClass rc : remoteClasses) {
             ClassObjectReference theUploadedClass = null;
             ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+            StringReference nameMirror = null;
             try {
                 Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
                 boolean uploaded = false;
                 while (!uploaded) {
-                    theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf(rc.name), byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                    nameMirror = vm.mirrorOf(rc.name);
+                    try {
+                        nameMirror.disableCollection();
+                        uploaded = true;
+                    } catch (ObjectCollectedException ocex) {
+                        // Just collected, try again...
+                    }
+                }
+                uploaded = false;
+                while (!uploaded) {
+                    theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
                     if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith(BASIC_REMOTE_CLASS)) {
                         try {
                             // Disable collection only of the basic class
@@ -147,6 +158,9 @@ public class RemoteServices {
                 }
             } finally {
                 byteArray.enableCollection(); // We can dispose it now
+                if (nameMirror != null) {
+                    nameMirror.enableCollection();
+                }
             }
             //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
             //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
