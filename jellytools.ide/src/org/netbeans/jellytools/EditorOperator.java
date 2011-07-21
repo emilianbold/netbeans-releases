@@ -708,7 +708,7 @@ public class EditorOperator extends TopComponentOperator {
     public AbstractButtonOperator getToolbarButton(String buttonTooltip) {
         ToolbarButtonChooser chooser = new ToolbarButtonChooser(buttonTooltip, getComparator());
         return new AbstractButtonOperator(
-                AbstractButtonOperator.waitAbstractButton((Container)this.getSource(), chooser));
+                AbstractButtonOperator.waitAbstractButton((Container)findParentTopComponent().getSource(), chooser));
     }
 
     /** Return AbstractButtonOperator representing index-th toolbar button within
@@ -726,7 +726,7 @@ public class EditorOperator extends TopComponentOperator {
                 return "javax.swing.JToolBar";
             }
         };
-        Container toolbar = (Container)findComponent((Container)getSource(), chooser);
+        Container toolbar = (Container)findComponent((Container)findParentTopComponent().getSource(), chooser);
         if(toolbar == null) {
             throw new JemmyException("Toolbar not present.");
         }

@@ -63,55 +63,67 @@ public class DefaultVisitor implements Visitor {
         }
     }
 
+    @Override
     public void visit(ArrayAccess node) {
         scan(node.getName());
         scan(node.getIndex());
     }
 
+    @Override
     public void visit(ArrayCreation node) {
         scan(node.getElements());
     }
 
+    @Override
     public void visit(ArrayElement node) {
         scan(node.getKey());
         scan(node.getValue());
     }
 
+    @Override
     public void visit(Assignment node) {
         scan(node.getLeftHandSide());
         scan(node.getRightHandSide());
     }
 
+    @Override
     public void visit(ASTError astError) {
     }
 
+    @Override
     public void visit(BackTickExpression node) {
         scan(node.getExpressions());
     }
 
+    @Override
     public void visit(Block node) {
         scan(node.getStatements());
     }
 
+    @Override
     public void visit(BreakStatement node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(CastExpression node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(CatchClause node) {
         scan(node.getClassName());
         scan(node.getVariable());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(ConstantDeclaration node) {
         scan(node.getNames());
         scan(node.getInitializers());
     }
 
+    @Override
     public void visit(ClassDeclaration node) {
         scan(node.getName());
         scan(node.getSuperClass());
@@ -119,63 +131,77 @@ public class DefaultVisitor implements Visitor {
         scan(node.getBody());
     }
 
+    @Override
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         scan(node.ctorParams());
     }
 
+    @Override
     public void visit(ClassName node) {
         scan(node.getName());
     }
 
+    @Override
     public void visit(CloneExpression node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(Comment comment) {
     }
 
+    @Override
     public void visit(ConditionalExpression node) {
         scan(node.getCondition());
         scan(node.getIfTrue());
         scan(node.getIfFalse());
     }
 
+    @Override
     public void visit(ContinueStatement node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(DeclareStatement node) {
         scan(node.getDirectiveNames());
         scan(node.getDirectiveValues());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(DoStatement node) {
         scan(node.getCondition());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(EchoStatement node) {
         scan(node.getExpressions());
     }
 
+    @Override
     public void visit(EmptyStatement emptyStatement) {
     }
 
+    @Override
     public void visit(ExpressionStatement node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(FieldAccess node) {
         scan(node.getDispatcher());
         scan(node.getField());
     }
 
+    @Override
     public void visit(FieldsDeclaration node) {
         scan(node.getFields());
     }
 
+    @Override
     public void visit(ForEachStatement node) {
         scan(node.getExpression());
         scan(node.getKey());
@@ -183,12 +209,14 @@ public class DefaultVisitor implements Visitor {
         scan(node.getStatement());
     }
 
+    @Override
     public void visit(FormalParameter node) {
         scan(node.getParameterName());
         scan(node.getParameterType());
         scan(node.getDefaultValue());
     }
 
+    @Override
     public void visit(ForStatement node) {
         scan(node.getInitializers());
         scan(node.getConditions());
@@ -196,225 +224,284 @@ public class DefaultVisitor implements Visitor {
         scan(node.getBody());
     }
 
+    @Override
     public void visit(FunctionDeclaration node) {
         scan(node.getFunctionName());
         scan(node.getFormalParameters());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(FunctionInvocation node) {
         scan(node.getFunctionName());
         scan(node.getParameters());
     }
 
+    @Override
     public void visit(FunctionName node) {
         scan(node.getName());
     }
 
+    @Override
     public void visit(GlobalStatement node) {
         scan(node.getVariables());
     }
 
+    @Override
     public void visit(Identifier identifier) {
     }
 
+    @Override
     public void visit(IfStatement node) {
         scan(node.getCondition());
         scan(node.getTrueStatement());
         scan(node.getFalseStatement());
     }
 
+    @Override
     public void visit(IgnoreError node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(Include node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(InfixExpression node) {
         scan(node.getLeft());
         scan(node.getRight());
     }
 
+    @Override
     public void visit(InLineHtml inLineHtml) {
     }
 
+    @Override
     public void visit(InstanceOfExpression node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(InterfaceDeclaration node) {
         scan(node.getName());
         scan(node.getInterfaes());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(ListVariable node) {
         scan(node.getVariables());
     }
 
+    @Override
     public void visit(MethodDeclaration node) {
         scan(node.getFunction());
     }
 
+    @Override
     public void visit(MethodInvocation node) {
         scan(node.getDispatcher());
         scan(node.getMethod());
     }
 
+    @Override
     public void visit(ParenthesisExpression node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(PostfixExpression node) {
         scan(node.getVariable());
     }
 
+    @Override
     public void visit(PrefixExpression node) {
         scan(node.getVariable());
     }
 
+    @Override
     public void visit(Program program) {
         scan(program.getStatements());
     }
 
+    @Override
     public void visit(Quote node) {
         scan(node.getExpressions());
     }
 
+    @Override
     public void visit(Reference node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(ReflectionVariable node) {
         scan(node.getName());
     }
 
+    @Override
     public void visit(ReturnStatement node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(Scalar scalar) {
     }
 
+    @Override
     public void visit(SingleFieldDeclaration node) {
         scan(node.getName());
         scan(node.getValue());
     }
 
+    @Override
     public void visit(StaticConstantAccess node) {
         scan(node.getClassName());
         scan(node.getConstant());
     }
 
+    @Override
     public void visit(StaticFieldAccess node) {
         scan(node.getClassName());
         scan(node.getField());
     }
 
+    @Override
     public void visit(StaticMethodInvocation node) {
         scan(node.getClassName());
         scan(node.getMethod());
     }
 
+    @Override
     public void visit(StaticStatement node) {
         scan(node.getExpressions());
     }
 
+    @Override
     public void visit(SwitchCase node) {
         scan(node.getValue());
         scan(node.getActions());
     }
 
+    @Override
     public void visit(SwitchStatement node) {
         scan(node.getExpression());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(ThrowStatement node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(TryStatement node) {
         scan(node.getCatchClauses());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(UnaryOperation node) {
         scan(node.getExpression());
     }
 
+    @Override
     public void visit(Variable node) {
         scan(node.getName());
     }
 
+    @Override
     public void visit(WhileStatement node) {
         scan(node.getCondition());
         scan(node.getBody());
     }
 
+    @Override
     public void visit(ASTNode node) {
     }
 
+    @Override
     public void visit(PHPDocBlock node) {
         scan(node.getTags());
     }
 
+    @Override
     public void visit(PHPDocNode node) {
     }
 
+    @Override
     public void visit(PHPDocTag node) {
     }
     
+    @Override
     public void visit(PHPDocTypeNode node) {
     }
 
+    @Override
     public void visit(PHPDocTypeTag node) {
         scan(node.getTypes());
     }
+    
+    @Override
+    public void visit(PHPDocMethodTag node) {
+        scan(node.getMethodName());
+        scan(node.getTypes());
+        scan(node.getParameters());
+    }
 
+    @Override
     public void visit(PHPDocVarTypeTag node) {
         scan(node.getVariable());
         scan(node.getTypes());
     }
 
+    @Override
     public void visit(PHPDocStaticAccessType node) {
         scan(node.getClassName());
         scan(node.getConstant());
     }
 
+    @Override
     public void visit(PHPVarComment node) {
         scan(node.getVariable());
     }
 
+    @Override
     public void visit(NamespaceName namespaceName) {
         scan(namespaceName.getSegments());
     }
 
+    @Override
     public void visit(NamespaceDeclaration declaration) {
         scan(declaration.getName());
         scan(declaration.getBody());
     }
 
+    @Override
     public void visit(GotoLabel label) {
         scan(label.getName());
     }
 
+    @Override
     public void visit(GotoStatement statement) {
         scan(statement.getLabel());
     }
 
+    @Override
     public void visit(LambdaFunctionDeclaration declaration) {
         scan(declaration.getFormalParameters());
         scan(declaration.getLexicalVariables());
         scan(declaration.getBody());
     }
 
+    @Override
     public void visit(UseStatement statement) {
         scan(statement.getParts());
     }
 
+    @Override
     public void visit(UseStatementPart statementPart) {
         scan(statementPart.getName());
         scan(statementPart.getAlias());

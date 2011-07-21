@@ -104,27 +104,17 @@ public final class UnitTestRunner {
     public void start() {
         MANAGER.testStarted(testSession);
         started = true;
+        deleteOldLogFiles();
     }
 
     public void showResults() {
         if (!started) {
             throw new IllegalStateException("Test runner must be started. Call start() method first.");
         }
-        Reader reader;
-        try {
-            // #163633 - php unit always uses utf-8 for its xml logs
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.XML_LOG), "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
+        TestSessionVO session = createTestSession();
+        if (session == null) {
+            // some error occured
             return;
-        } catch (FileNotFoundException ex) {
-            processPhpUnitError();
-            return;
-        }
-        TestSessionVO session = new TestSessionVO();
-        PhpUnitLogParser.parse(reader, session);
-        if (!PhpUnit.KEEP_LOGS) {
-            PhpUnit.XML_LOG.delete();
         }
 
         if (allTests) {
@@ -182,6 +172,35 @@ public final class UnitTestRunner {
                 + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
         MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
         MANAGER.sessionFinished(testSession);
+    }
+
+    private void deleteOldLogFiles() {
+        if (PhpUnit.XML_LOG.exists()) {
+            PhpUnit.XML_LOG.delete();
+        }
+        if (PhpUnit.COVERAGE_LOG.exists()) {
+            PhpUnit.COVERAGE_LOG.delete();
+        }
+    }
+
+    private TestSessionVO createTestSession() {
+        Reader reader;
+        try {
+            // #163633 - php unit always uses utf-8 for its xml logs
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.XML_LOG), "UTF-8")); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (FileNotFoundException ex) {
+            processPhpUnitError();
+            return null;
+        }
+        TestSessionVO session = new TestSessionVO();
+        PhpUnitLogParser.parse(reader, session);
+        if (!PhpUnit.KEEP_LOGS) {
+            PhpUnit.XML_LOG.delete();
+        }
+        return session;
     }
 
     private static final class PhpOutputLineHandler implements OutputLineHandler {

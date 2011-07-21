@@ -57,6 +57,9 @@ public class HostMappingsAnalyzer {
 
     private final PlatformInfo secondPI;
     private final PlatformInfo firstPI;
+    private Thread thread = null;
+    private boolean cancelled = false;
+    private final Object lock = new Object();
 
     public HostMappingsAnalyzer(ExecutionEnvironment remoteExecEnv) {
         this(remoteExecEnv, ExecutionEnvironmentFactory.getLocal());
@@ -66,12 +69,44 @@ public class HostMappingsAnalyzer {
         secondPI = PlatformInfo.getDefault(secondEnv);
         firstPI = PlatformInfo.getDefault(firstEnv);
     }
+    
+    /*package*/ void cancel() {
+        Thread thr;
+        synchronized (lock) {
+            thr = thread;
+        }
+        if (thr != null) {
+            cancelled = true;
+            thr.interrupt();
+        }
+    }
 
     public Map<String, String> getMappings() {
-        Map<String, String> mappingsFirst2Second = new HashMap<String, String>();
+        synchronized (lock) {
+            cancelled = false;
+            thread = Thread.currentThread();
+        }
+        try {      
+            Map<String, String> mappingsFirst2Second = new HashMap<String, String>();
+            getMappingsImpl(mappingsFirst2Second);
+            return mappingsFirst2Second;
+        } finally {
+            synchronized (lock) {
+                thread = null;
+            }            
+        }
+    }
+    
+    private void getMappingsImpl(Map<String, String> mappingsFirst2Second) {
         // all maps are host network name -> host local name
         Map<String, String> firstNetworkNames2Inner = populateMappingsList(firstPI, secondPI);
+        if (cancelled) {
+            return;
+        }
         Map<String, String> secondNetworkNames2Inner = populateMappingsList(secondPI, firstPI);
+        if (cancelled) {
+            return;
+        }
 
         if (firstNetworkNames2Inner.size() > 0 && secondNetworkNames2Inner.size() > 0) {
             for (Map.Entry<String, String> firstNetworkName : firstNetworkNames2Inner.entrySet()) {
@@ -85,10 +120,16 @@ public class HostMappingsAnalyzer {
         }
 
         for (HostMappingProvider provider : singularProviders) {
+            if (cancelled) {
+                return;
+            }
             if (provider.isApplicable(secondPI, firstPI)) {
                 Map<String, String> map = provider.findMappings(
                         secondPI.getExecutionEnvironment(), firstPI.getExecutionEnvironment());
                 mappingsFirst2Second.putAll(map);
+            }
+            if (cancelled) {
+                return;
             }
             if (provider.isApplicable(firstPI, secondPI)) {
                 Map<String, String> map = provider.findMappings(
@@ -96,8 +137,6 @@ public class HostMappingsAnalyzer {
                 mappingsFirst2Second.putAll(map);
             }
         }
-
-        return mappingsFirst2Second;
     }
 
     // host is one we are searching on
@@ -105,6 +144,9 @@ public class HostMappingsAnalyzer {
     private Map<String, String> populateMappingsList(PlatformInfo hostPlatformInfo, PlatformInfo otherPlatformInfo) {
         Map<String, String> map = new HashMap<String, String>();
         for (HostMappingProvider prov : pairedProviders) {
+            if (cancelled) {
+                break;
+            }            
             if (prov.isApplicable(hostPlatformInfo, otherPlatformInfo)) {
                 map.putAll(prov.findMappings(
                         hostPlatformInfo.getExecutionEnvironment(), otherPlatformInfo.getExecutionEnvironment())  );

@@ -64,9 +64,10 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
+import static org.netbeans.modules.project.ui.groups.Bundle.*;
 
 /**
  * Submenu listing available groups and offering some operations on them.
@@ -78,12 +79,13 @@ import org.openide.util.actions.Presenter;
     @ActionReference(path = "Menu/File", position = 1100),
     @ActionReference(path = "ProjectsTabActions", position = 600, separatorAfter = 700)
 })
+@Messages("GroupsMenu.label=Project Gro&up")
 public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup {
 
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
 
     public GroupsMenu() {
-        super(NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.label"));
+        super(GroupsMenu_label());
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -104,10 +106,17 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     private static class Menu extends JMenu implements DynamicMenuContent {
 
         Menu() {
-            Mnemonics.setLocalizedText(this, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.label"));
+            Mnemonics.setLocalizedText(this, GroupsMenu_label());
         }
 
-        public JComponent[] getMenuPresenters() {
+        @Messages({
+            "GroupsMenu.no_group=(none)",
+            "GroupsMenu.new_group=&New Group...",
+            "# {0} - group display name", "GroupsMenu.properties=&Properties of \"{0}\"",
+            "# {0} - group display name", "GroupsMenu.remove=&Remove \"{0}\"",
+            "# {0} - group display name", "Delete_Confirm=Do you want to delete group \"{0}\"?"
+        })
+        @Override public JComponent[] getMenuPresenters() {
             // XXX can it wait to add menu items until it is posted?
             removeAll();
             final Group active = Group.getActiveGroup();
@@ -135,7 +144,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 add(mi);
             }
             JMenuItem mi = new JRadioButtonMenuItem();
-            Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.no_group"));
+            Mnemonics.setLocalizedText(mi, GroupsMenu_no_group());
             if (active == null) {
                 mi.setSelected(true);
                 /* Was disliked by UI people:
@@ -158,7 +167,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             // Special menu items.
             addSeparator();
             mi = new JMenuItem();
-            Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_group"));
+            Mnemonics.setLocalizedText(mi, GroupsMenu_new_group());
             mi.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     newGroup();
@@ -167,7 +176,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             add(mi);
             if (active != null) {
                 mi = new JMenuItem();
-                Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.properties", active.getName()));
+                Mnemonics.setLocalizedText(mi, GroupsMenu_properties(active.getName()));
                 mi.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         openProperties(active);
@@ -175,10 +184,10 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 });
                 add(mi);
                 mi = new JMenuItem();
-                Mnemonics.setLocalizedText(mi, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.remove", active.getName()));
+                Mnemonics.setLocalizedText(mi, GroupsMenu_remove(active.getName()));
                 mi.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(GroupsMenu.class, "Delete_Confirm", active.getName()), NotifyDescriptor.YES_NO_OPTION);
+                        NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(Delete_Confirm(active.getName()), NotifyDescriptor.YES_NO_OPTION);
                         if (DialogDisplayer.getDefault().notify(ask) == NotifyDescriptor.YES_OPTION) {
                             active.destroy();
                         }
@@ -198,14 +207,19 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     /**
      * Create (and open) a new group.
      */
+    @Messages({
+        "GroupsMenu.new_title=Create New Group",
+        "GroupsMenu.new_create=Create Group",
+        "GroupsMenu.new_cancel=Cancel"
+    })
     private static void newGroup() {
         final NewGroupPanel panel = new NewGroupPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_title"));
+        DialogDescriptor dd = new DialogDescriptor(panel, GroupsMenu_new_title());
         panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(GroupsMenu.class));
-        final JButton create = new JButton(NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_create"));
+        final JButton create = new JButton(GroupsMenu_new_create());
         create.setDefaultCapable(true);
         create.setEnabled(panel.isReady());
         panel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -215,7 +229,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 }
             }
         });
-        JButton cancel = new JButton(NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.new_cancel"));
+        JButton cancel = new JButton(GroupsMenu_new_cancel());
         dd.setOptions(new Object[] {create, cancel});
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(create)) {
@@ -231,9 +245,10 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
     /**
      * Open a properties dialog for the group, according to its type.
      */
+    @Messages("GroupsMenu.properties_title=Project Group Properties")
     private static void openProperties(Group g) {
         GroupEditPanel panel = g.createPropertiesPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(GroupsMenu.class, "GroupsMenu.properties_title"));
+        DialogDescriptor dd = new DialogDescriptor(panel, GroupsMenu_properties_title());
         panel.setNotificationLineSupport(dd.createNotificationLineSupport());
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);

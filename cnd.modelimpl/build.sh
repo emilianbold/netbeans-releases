@@ -122,15 +122,15 @@ function main() {
 		fi
 	fi
 
-	local log="/tmp/${USER}-netbeans-build.log"	
+	local log="/tmp/${USER}-netbeans-build.log"
 	if [ ${clean} == "y" ]; then
 		echo ""; echo "========== Cleaning and building cluster ${cluster} =========="; echo ""; 
 		sleep 2 # allow user pressing ^C before we clean :)		
 		if [ ${quiet} == "y" ]; then
 			echo "Quiet mode: redirecting output to ${log}"
-			ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip 2>&1 > ${log}
+			ant -Dadd.junit=true -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip add-junit 2>&1 > ${log}
 		else
-			ant -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip
+			ant -Dadd.junit=true -f ${nbbuild}/build.xml ${cluster_config} clean build-nozip add-junit
 		fi
 	else
 		echo ""; echo "========== Rebuilding cluster ${cluster} =========="; echo ""; 

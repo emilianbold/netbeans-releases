@@ -357,7 +357,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         removed.removeAll(newParameters);
                         comment = updateJavadoc((ExecutableElement) el, removed, paramInfos);
                         GeneratorUtilities.get(workingCopy).copyComments(current, nju, true);
-                        make.removeComment(nju, 0, true);
+                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(nju, true);
+                        if(comments.isEmpty()) {
+                            comment = null;
+                        } else {
+                            if(comments.get(0).isDocComment()) {
+                                make.removeComment(nju, 0, true);
+                            } else {
+                                comment = null;
+                            }
+                        }
                         break;
                     case GENERATE:
                         comment = generateJavadoc(newParameters, current);
@@ -417,10 +426,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
             builder.append("\n"); // NOI18N
         }
-        boolean hasReturn = true;
-        if (returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
-            if (((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
-                hasReturn = false;
+        boolean hasReturn = false;
+        if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+            if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                hasReturn = true;
             }
         }
         if(hasReturn) {

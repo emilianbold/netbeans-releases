@@ -45,7 +45,7 @@ package org.netbeans.modules.mercurial.api;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
-import org.netbeans.modules.mercurial.AbstractHgTest;
+import org.netbeans.modules.mercurial.AbstractHgTestCase;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 
@@ -53,7 +53,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
  *
  * @author ondra vrabec
  */
-public class MercurialApi extends AbstractHgTest {
+public class MercurialApi extends AbstractHgTestCase {
 
     private File workDir;
 
@@ -63,7 +63,7 @@ public class MercurialApi extends AbstractHgTest {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", "/tmp/hgtest");
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
 
         // create

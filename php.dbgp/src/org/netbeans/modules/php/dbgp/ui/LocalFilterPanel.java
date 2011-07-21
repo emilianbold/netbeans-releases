@@ -89,64 +89,6 @@ public class LocalFilterPanel extends javax.swing.JPanel {
         myUninit = new javax.swing.JCheckBox();
         mySuperglobal = new javax.swing.JCheckBox();
 
-        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
-            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
-                return myArray;
-            }//end getDefaultComponent
-
-            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
-                return myArray;
-            }//end getFirstComponent
-
-            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
-                return mySuperglobal;
-            }//end getLastComponent
-
-            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  myArray){
-                    return myObject;
-                }
-                if(aComponent ==  myObject){
-                    return myResource;
-                }
-                if(aComponent ==  myScalars){
-                    return myArray;
-                }
-                if(aComponent ==  myUninit){
-                    return mySuperglobal;
-                }
-                if(aComponent ==  myResource){
-                    return myNull;
-                }
-                if(aComponent ==  myNull){
-                    return myUninit;
-                }
-                return myArray;//end getComponentAfter
-            }
-            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
-                if(aComponent ==  myObject){
-                    return myArray;
-                }
-                if(aComponent ==  myResource){
-                    return myObject;
-                }
-                if(aComponent ==  myArray){
-                    return myScalars;
-                }
-                if(aComponent ==  mySuperglobal){
-                    return myUninit;
-                }
-                if(aComponent ==  myNull){
-                    return myResource;
-                }
-                if(aComponent ==  myUninit){
-                    return myNull;
-                }
-                return mySuperglobal;//end getComponentBefore
-
-            }}
-        );
-
         org.openide.awt.Mnemonics.setLocalizedText(mySelectLbl, org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LBL_Select")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(myScalars, org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LBL_Scalars")); // NOI18N
@@ -164,46 +106,46 @@ public class LocalFilterPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(mySuperglobal, org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LBL_Superglobal")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mySelectLbl)
-                    .add(layout.createSequentialGroup()
-                        .add(10, 10, 10)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(myArray)
-                            .add(myScalars)
-                            .add(myObject)
-                            .add(myResource)
-                            .add(myNull)
-                            .add(myUninit)
-                            .add(mySuperglobal))))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(mySelectLbl)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(myArray)
+                            .addComponent(myScalars)
+                            .addComponent(myObject)
+                            .addComponent(myResource)
+                            .addComponent(myNull)
+                            .addComponent(myUninit)
+                            .addComponent(mySuperglobal))))
                 .addContainerGap(37, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(mySelectLbl)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(myScalars)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(myArray)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(myObject)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(myResource)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(myNull)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(myUninit)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(mySuperglobal)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(mySelectLbl)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(myScalars)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(myArray)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(myObject)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(myResource)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(myNull)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(myUninit)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(mySuperglobal)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         mySelectLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalFilterPanel.class, "LocalFilterPanel.mySelectLbl.AccessibleContext.accessibleName")); // NOI18N

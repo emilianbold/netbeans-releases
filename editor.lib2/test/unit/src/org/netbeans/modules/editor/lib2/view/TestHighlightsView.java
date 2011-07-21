@@ -44,16 +44,12 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  *
@@ -65,18 +61,18 @@ public class TestHighlightsView extends EditorView {
     private static final Logger LOG = Logger.getLogger(HighlightsView.class.getName());
 
     /** Offset of start offset of this view. */
-    private int rawOffset; // 24-super + 4 = 28 bytes
+    private int rawEndOffset; // 24-super + 4 = 28 bytes
 
     /** Length of text occupied by this view. */
     private int length; // 28 + 4 = 32 bytes
 
     /** Attributes for rendering */
-    private final AttributeSet attributes; // 32 + 4 = 36 bytes
+    private AttributeSet attributes; // 32 + 4 = 36 bytes
 
     public TestHighlightsView(int offset, int length, AttributeSet attributes) {
         super(null);
         assert (length > 0) : "length=" + length + " <= 0"; // NOI18N
-        this.rawOffset = offset;
+        this.rawEndOffset = offset + length;
         this.length = length;
         this.attributes = attributes;
     }
@@ -87,13 +83,13 @@ public class TestHighlightsView extends EditorView {
     }
     
     @Override
-    public int getRawOffset() {
-        return rawOffset;
+    public int getRawEndOffset() {
+        return rawEndOffset;
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
-        this.rawOffset = rawOffset;
+    public void setRawEndOffset(int rawOffset) {
+        this.rawEndOffset = rawOffset;
     }
 
     @Override
@@ -103,13 +99,17 @@ public class TestHighlightsView extends EditorView {
 
     @Override
     public int getStartOffset() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
+        return getEndOffset() - getLength();
+    }
+    
+    public void setStartOffset(int startOffset) {
+        setRawEndOffset(startOffset + getLength());
     }
 
     @Override
     public int getEndOffset() {
-        return getStartOffset() + getLength();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getViewEndOffset(rawEndOffset) : rawEndOffset;
     }
 
     @Override
@@ -121,6 +121,10 @@ public class TestHighlightsView extends EditorView {
     @Override
     public AttributeSet getAttributes() {
         return attributes;
+    }
+    
+    public void setAttributes(AttributeSet attrs) {
+        this.attributes = attrs;
     }
 
     ParagraphView getParagraphView() {

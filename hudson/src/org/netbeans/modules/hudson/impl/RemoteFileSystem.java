@@ -66,6 +66,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -159,7 +160,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
     public String[] children(String f) {
         String fSlash = f.length() > 0 ? f + "/" : ""; // NOI18N
         try {
-            URL url = new URL(baseURL, fSlash + "*plain*"); // NOI18N
+            URL url = new URL(baseURL, Utilities.uriEncode(fSlash) + "*plain*"); // NOI18N
             URLConnection conn = new ConnectionBuilder().job(job).url(url).timeout(TIMEOUT).connection();
             String contentType = conn.getContentType();
             if (contentType == null || !contentType.startsWith("text/plain")) { // NOI18N
@@ -205,7 +206,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
 
     private URLConnection connection(String name, boolean cacheMetadata) throws IOException {
         LOG.log(Level.FINE, "metadata in {0}: {1}", new Object[] {baseURL, name});
-        URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, name)).timeout(TIMEOUT).connection();
+        URLConnection conn = new ConnectionBuilder().job(job).url(new URL(baseURL, Utilities.uriEncode(name))).timeout(TIMEOUT).connection();
         if (cacheMetadata) {
             assert Thread.holdsLock(nonDirs);
             lastModified.put(name, conn.getLastModified());
@@ -409,7 +410,7 @@ final class RemoteFileSystem extends AbstractFileSystem implements
             try {
                 FileSystem fs = fo.getFileSystem();
                 if (fs instanceof RemoteFileSystem) {
-                    return new URL(((RemoteFileSystem) fs).baseURL, fo.getPath());
+                    return new URL(((RemoteFileSystem) fs).baseURL, Utilities.uriEncode(fo.getPath()));
                 }
             } catch (IOException x) {
                 LOG.log(Level.INFO, "trying to get URL for " + fo, x);

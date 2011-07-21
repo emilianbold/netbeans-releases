@@ -52,4 +52,5 @@ public interface EditorSupport {
     Document getDocument();
     GuardedSectionManager getGuardedSectionManager();
     void markModified();
+    Object getJavaContext();
 }

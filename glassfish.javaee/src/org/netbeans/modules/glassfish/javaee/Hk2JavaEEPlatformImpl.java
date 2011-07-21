@@ -356,26 +356,17 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
     @Override
     public File getServerHome() {
-        String gfRootStr = dm.getProperties().getGlassfishRoot();
-        File returnedElement;
-        if (gfRootStr != null) {
-            returnedElement = new File(gfRootStr);
-            if (returnedElement.exists()) {
-                return returnedElement;
-            }
-        }
-        return null;
+        return getExistingFolder(dm.getProperties().getGlassfishRoot());
     }
 
     @Override
     public File getDomainHome() {
-        // FIXME perhaps we want to return GF domain
-        return null;
+        return getExistingFolder(dm.getProperties().getDomainDir());
     }
 
     @Override
     public File getMiddlewareHome() {
-        return null;
+        return getExistingFolder(dm.getProperties().getInstallRoot());
     }
     
     /**
@@ -456,6 +447,17 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 //        WSStackSPI metroStack = new GlassfishJaxWsStack(gfRootStr);
 //        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
     }
+
+    private File getExistingFolder(String path) {
+        if (path != null) {
+            File returnedElement = new File(path);
+            if (returnedElement.exists()) {
+                return returnedElement;
+            }
+        }
+        return null;
+    }
+
     /* return the string within quotes
      **/
     private String quotedString(String s){

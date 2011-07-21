@@ -77,7 +77,8 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         if ( myValue == null ) {
             return null;
         }
-        return myValue.getType();
+        String className = myValue.getClassName();
+        return (className != null && !className.isEmpty()) ? className : myValue.getType();
     }
 
     public synchronized String getValue() throws UnsufficientValueException {

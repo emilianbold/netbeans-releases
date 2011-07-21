@@ -541,7 +541,7 @@ public class RADComponent {
         }
 
         try {
-            RADComponentRenameRefactoringSupport.renameComponent(this, name);
+            RenameSupport.renameComponent(this, name);
         } finally { // hack for robustness - if refactoring fails for whatever reason
             if (!getName().equals(name)) {
                 setName(name);

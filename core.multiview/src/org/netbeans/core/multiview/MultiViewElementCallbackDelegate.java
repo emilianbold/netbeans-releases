@@ -44,11 +44,7 @@
 
 package org.netbeans.core.multiview;
 
-import java.util.TooManyListenersException;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JToolBar;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 

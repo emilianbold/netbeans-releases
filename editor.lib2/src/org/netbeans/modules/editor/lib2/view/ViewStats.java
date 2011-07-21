@@ -55,18 +55,18 @@ import java.util.logging.Logger;
 
 public final class ViewStats {
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.ViewStatistics.level=FINE
+    // -J-Dorg.netbeans.modules.editor.lib2.view.ViewStats.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewStats.class.getName());
     
     private static final int TEXT_LAYOUT_CREATED_THRESHOLD = 200;
-    
-    private static final int INIT_TEXT_LAYOUTS_THRESHOLD = 10;
     
     private static int textLayoutCreatedCount;
     
     private static int textLayoutCharCount;
     
     private static int initTextLayoutsCount;
+    
+    private static int staleViewCreationCount;
 
     private ViewStats() { // No instances
     }
@@ -79,17 +79,18 @@ public final class ViewStats {
         }
     }
 
-    public static void incrementInitTextLayouts() {
-        initTextLayoutsCount++;
-        if (LOG.isLoggable(Level.FINE) && (textLayoutCreatedCount % INIT_TEXT_LAYOUTS_THRESHOLD) == 0) {
+    public static void incrementStaleViewCreations() {
+        staleViewCreationCount++;;
+        if (LOG.isLoggable(Level.FINE) && (staleViewCreationCount % 10) == 0) {
             LOG.fine(stats());
         }
     }
-
+    
     public static String stats() {
         return "TextLayouts:\n  created-count: " + textLayoutCreatedCount + // NOI18N
                 "\n  char-count: " + textLayoutCharCount + // NOI18N
                 "\nInitTextLayouts: " + initTextLayoutsCount + // NOI18N
+                "\nStaleCreations: " + staleViewCreationCount + // NOI18N
                 "\n"; // NOI18N
     }
 

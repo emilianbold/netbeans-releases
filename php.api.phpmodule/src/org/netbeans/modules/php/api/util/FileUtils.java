@@ -71,6 +71,11 @@ import org.xml.sax.XMLReader;
 public final class FileUtils {
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
+    private static final boolean IS_UNIX = Utilities.isUnix();
+    private static final boolean IS_MAC = Utilities.isMac();
+    private static final boolean IS_WINDOWS = Utilities.isWindows();
+
+
     /**
      * Constant for PHP MIME type.
      * @since 1.15
@@ -154,7 +159,7 @@ public final class FileUtils {
         if (withDot) {
             sb.append("."); // NOI18N
         }
-        if (Utilities.isWindows()) {
+        if (IS_WINDOWS) {
             sb.append("bat"); // NOI18N
         } else {
             sb.append("sh"); // NOI18N
@@ -266,7 +271,7 @@ public final class FileUtils {
             LOGGER.log(Level.FINE, "{0} is not a folder", directory);
             return false;
         }
-        boolean windows = Utilities.isWindows();
+        boolean windows = IS_WINDOWS;
         LOGGER.log(Level.FINE, "On Windows: {0}", windows);
 
         boolean canWrite = directory.canWrite();
@@ -289,4 +294,33 @@ public final class FileUtils {
         }
         return true;
     }
+
+    /**
+     * Test whether the given file is a folder and is a symlink.
+     * <p>
+     * In other words, a file is never considered to be a symlink. Directory is checked
+     * and correct result is returned.
+     * @param directory file to be checked, cannot be {@code null}
+     * @return {@code true} if the file is a folder and a symlink, {@code false} otherwise
+     * @since 1.46
+     */
+    public static boolean isDirectoryLink(File directory) {
+        Parameters.notNull("directory", directory);
+        if (!IS_UNIX && !IS_MAC) {
+            return false;
+        }
+        if (!directory.isDirectory()) {
+            return false;
+        }
+        final File canDirectory;
+        try {
+            canDirectory = directory.getCanonicalFile();
+        } catch (IOException ioe) {
+            return false;
+        }
+        final String dirPath = directory.getAbsolutePath();
+        final String canDirPath = canDirectory.getAbsolutePath();
+        return IS_MAC ? !dirPath.equalsIgnoreCase(canDirPath) : !dirPath.equals(canDirPath);
+    }
+
 }

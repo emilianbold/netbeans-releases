@@ -58,7 +58,7 @@ import org.openide.filesystems.test.StatFiles;
 /**
  * Count read/write/delete file access and print results.
  */
-public class MercurialFileSystemTestStat extends MercurialFileSystemTest {
+public class MercurialFileSystemTestStat extends MercurialFileSystemTestCase {
 
     public MercurialFileSystemTestStat(Test test) {
         super(test);

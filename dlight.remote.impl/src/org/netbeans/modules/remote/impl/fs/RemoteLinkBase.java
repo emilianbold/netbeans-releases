@@ -66,7 +66,7 @@ import org.openide.filesystems.FileRenameEvent;
  *
  * @author vk155633
  */
-public abstract class RemoteLinkBase extends RemoteFileObjectBase implements FileChangeListener {
+public abstract class RemoteLinkBase extends RemoteFileObjectFile implements FileChangeListener {
     
     protected RemoteLinkBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
         super(fileSystem, execEnv, parent, remotePath, null);
@@ -146,15 +146,6 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     public boolean isData() {
         RemoteFileObjectBase delegate = getDelegate();
         return (delegate == null) ? true : delegate.isData();
-    }
-
-    @Override
-    public String getMIMEType() {
-        RemoteFileObjectBase delegate = getDelegate();
-        if (delegate != null) {
-            return delegate.getMIMEType();
-        }
-        return super.getMIMEType();
     }
 
     @Override

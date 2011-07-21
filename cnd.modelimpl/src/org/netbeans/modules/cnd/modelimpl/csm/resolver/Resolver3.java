@@ -748,6 +748,12 @@ public final class Resolver3 implements Resolver {
         if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
             result = null;
         }
+        if (result == null && needClassifiers() && !needForwardClassesOnly()) {
+            result = resolve(Utils.splitQualifiedName(name.toString()), CLASS_FORWARD);
+        }
+        if(needForwardClassesOnly() && !CsmKindUtilities.isClassForwardDeclaration(result)) {
+            result = null;
+        }
         return result;
     }
 
@@ -889,6 +895,12 @@ public final class Resolver3 implements Resolver {
                 }
             }
         }
+        if (result == null && needClassifiers() && !needForwardClassesOnly()) {
+            result = resolve(nameTokens, CLASS_FORWARD);
+        }
+        if(needForwardClassesOnly() && !CsmKindUtilities.isClassForwardDeclaration(result)) {
+            result = null;
+        }        
         return result;
     }
 
@@ -976,7 +988,7 @@ public final class Resolver3 implements Resolver {
                         }
                     }
                 }
-                if (classifier != null) {
+                if (classifier != null && needForwardClassesOnly()) {
                     return classifier;
                 }
             }
@@ -995,7 +1007,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private boolean needClassifiers() {
-        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses() || needTemplateClasses();
+        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses() || needTemplateClasses() || needForwardClasses();
     }
 
     private boolean needNamespaces() {
@@ -1003,7 +1015,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private boolean needClasses() {
-        return (interestedKind & CLASS) == CLASS || needTemplateClasses();
+        return (interestedKind & CLASS) == CLASS || needTemplateClasses() || needForwardClasses();
     }
 
     private boolean needTemplateClasses() {
@@ -1012,5 +1024,13 @@ public final class Resolver3 implements Resolver {
     
     private boolean needTemplateClassesOnly() {
         return interestedKind == TEMPLATE_CLASS;
+    }
+
+    private boolean needForwardClasses() {
+        return (interestedKind & CLASS_FORWARD) == CLASS_FORWARD;
+    }
+    
+    private boolean needForwardClassesOnly() {
+        return interestedKind == CLASS_FORWARD;
     }
 }

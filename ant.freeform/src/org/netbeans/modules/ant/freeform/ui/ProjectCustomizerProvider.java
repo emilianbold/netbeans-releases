@@ -95,7 +95,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
             //TODO replace with generic apis..
             ic.add(ic);
             
-            OptionListener listener = new OptionListener( project );
+            OptionListener listener = new OptionListener();
             dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, null, listener, null );
             dialog.addWindowListener( listener );
             dialog.setTitle( MessageFormat.format(                 
@@ -111,12 +111,6 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     /** Listens to the actions on the Customizer's option buttons */
     private class OptionListener extends WindowAdapter implements ActionListener {
     
-        private Project project;
-        
-        OptionListener( Project project) {
-            this.project = project;
-        }
-        
         // Listening to OK button ----------------------------------------------
         
         public void actionPerformed( ActionEvent e ) {

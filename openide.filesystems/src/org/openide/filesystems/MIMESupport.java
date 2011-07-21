@@ -44,7 +44,6 @@
 
 package org.openide.filesystems;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -103,12 +102,13 @@ final class MIMESupport extends Object {
     }
 
     static void freeCaches() {
+        CachedFileObject cfo;
         synchronized (lock) {
-            CachedFileObject cfo = lastCfo.get();
-            if (cfo != null) {
-                cfo.clear();
-            }
+            cfo = lastCfo.get();
             lastCfo = CLEARED;
+        }
+        if (cfo != null) {
+            cfo.clear();
         }
     }
 
@@ -156,7 +156,7 @@ final class MIMESupport extends Object {
         return CachedFileObject.getResolvers();
     }
 
-    private static class CachedFileObject extends FileObject implements FileChangeListener {
+    private static class CachedFileObject extends FileObject {
         static Lookup.Result<MIMEResolver> result;
         private static Union2<MIMEResolver[],Set<Thread>> resolvers; // call getResolvers instead 
         /** resolvers that were here before we cleaned them */
@@ -176,11 +176,10 @@ final class MIMESupport extends Object {
 
         CachedFileObject(FileObject fo) {
             fileObj = fo;
-            fileObj.addFileChangeListener(this);
         }
 
         final void clear() {
-            fileObj.removeFileChangeListener(this);
+            freeCaches();
         }
 
         private static MIMEResolver[] getResolvers() {
@@ -406,30 +405,12 @@ final class MIMESupport extends Object {
                 }
                 InputStream is = fileObj.getInputStream();
 
-                if (!(is instanceof BufferedInputStream)) {
-                    is = new BufferedInputStream(is);
-                }
-
                 fixIt = new CachedInputStream(is);
             }
 
             fixIt.cacheToStart();
 
             return fixIt;
-        }
-
-        public void fileChanged(FileEvent fe) {
-            freeCaches();
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            freeCaches();
-
-            //removeFromCache (fe.getFile ());
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            freeCaches();
         }
 
         /*All other methods only delegate to fileObj*/

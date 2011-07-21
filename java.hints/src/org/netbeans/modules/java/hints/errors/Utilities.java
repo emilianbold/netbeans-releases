@@ -146,23 +146,18 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
-        if (tp.getLeaf().getKind() == Kind.VARIABLE) {
-            return ((VariableTree) tp.getLeaf()).getName().toString();
-        }
-        
-        ExpressionTree et = (ExpressionTree) tp.getLeaf();
-        String name = getName(et);
+        String name = getName(tp.getLeaf());
         
         if (name == null) {
-            if(et instanceof LiteralTree) {
-                Object guess = ((LiteralTree) et).getValue();
-                if (guess != null && guess instanceof String)
-                    return guessLiteralName((String) guess);
-            } 
             return DEFAULT_NAME;
         }
         
         Scope s = info.getTrees().getScope(tp);
+        
+        return makeNameUnique(info, s, name);
+    }
+
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name) {
         int counter = 0;
         boolean cont = true;
         String proposedName = name;
@@ -187,7 +182,7 @@ public class Utilities {
     private static String guessLiteralName(String str) {
         StringBuffer sb = new StringBuffer();
         if(str.length() == 0)
-            return DEFAULT_NAME;
+            return null;
         char first = str.charAt(0);
         if(Character.isJavaIdentifierStart(str.charAt(0)))
             sb.append(first);
@@ -204,7 +199,7 @@ public class Utilities {
                 break;
         }
         if (sb.length() == 0)
-            return DEFAULT_NAME;
+            return null;
         else
             return sb.toString();
     }
@@ -306,6 +301,15 @@ public class Utilities {
             return firstToLower(getName(((NewClassTree) et).getIdentifier()));
         case PARAMETERIZED_TYPE:
             return firstToLower(getName(((ParameterizedTypeTree) et).getType()));
+        case STRING_LITERAL:
+            String name = guessLiteralName((String) ((LiteralTree) et).getValue());
+            if(name == null) {
+                return firstToLower(String.class.getSimpleName());
+            } else {
+                return firstToLower(name);
+            }
+        case VARIABLE:
+            return ((VariableTree) et).getName().toString();
         default:
             return null;
         }
@@ -339,17 +343,32 @@ public class Utilities {
     private static String firstToLower(String name) {
         if (name.length() == 0)
             return null;
-        
-        String cand = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-        
-        if (SourceVersion.isKeyword(cand)) {
-            cand = "a" + name;
+
+        StringBuilder result = new StringBuilder();
+        boolean toLower = true;
+        char last = Character.toLowerCase(name.charAt(0));
+
+        for (int i = 1; i < name.length(); i++) {
+            if (toLower && Character.isUpperCase(name.charAt(i))) {
+                result.append(Character.toLowerCase(last));
+            } else {
+                result.append(last);
+                toLower = false;
+            }
+            last = name.charAt(i);
+
         }
+
+        result.append(last);
         
-        return cand;
+        if (SourceVersion.isKeyword(result)) {
+            return "a" + name;
+        } else {
+            return result.toString();
+        }
     }
     
-    private static final class VariablesFilter implements ElementAcceptor {
+    public static final class VariablesFilter implements ElementAcceptor {
         
         private static final Set<ElementKind> ACCEPTABLE_KINDS = EnumSet.of(ElementKind.ENUM_CONSTANT, ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
         
@@ -818,7 +837,8 @@ public class Utilities {
         Set<String>      usedArgumentNames = new HashSet<String>();
 
         for (ExpressionTree arg : realArguments) {
-            TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
+            TreePath argPath = new TreePath(invocation, arg);
+            TypeMirror tm = info.getTrees().getTypeMirror(argPath);
 
             //anonymous class?
             tm = Utilities.convertIfAnonymous(tm);
@@ -839,7 +859,16 @@ public class Utilities {
 
             argumentTypes.add(tm);
 
-            String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+            String proposedName = null;
+            Element elem = info.getTrees().getElement(argPath);
+
+            if (elem != null && elem.getKind() == ElementKind.ENUM_CONSTANT) {
+                proposedName = firstToLower(elem.getEnclosingElement().getSimpleName().toString());
+            }
+
+            if (proposedName == null) {
+                proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
+            }
 
             if (proposedName == null) {
                 proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);

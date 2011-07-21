@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.repository;
 
+import javax.swing.GroupLayout;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -51,14 +52,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 /**
  *
@@ -124,28 +124,28 @@ public class HttpPanel extends JPanel {
         sslPanel.setLayout(sslPanelLayout);
         sslPanelLayout.setHorizontalGroup(
                 sslPanelLayout.createSequentialGroup()
-                    .add(sslPanelLayout.createParallelGroup(LEADING)
-                            .add(certFileLabel)
-                            .add(certPasswordLabel))
+                    .addGroup(sslPanelLayout.createParallelGroup(LEADING)
+                            .addComponent(certFileLabel)
+                            .addComponent(certPasswordLabel))
                     .addPreferredGap(RELATED)
-                    .add(sslPanelLayout.createParallelGroup(LEADING)
-                            .add(sslPanelLayout.createSequentialGroup()
-                                    .add(certFileTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(sslPanelLayout.createParallelGroup(LEADING)
+                            .addGroup(sslPanelLayout.createSequentialGroup()
+                                    .addComponent(certFileTextField, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addPreferredGap(RELATED)
-                                    .add(browseButton))
-                            .add(certPasswordField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
+                                    .addComponent(browseButton))
+                            .addComponent(certPasswordField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
         );
         sslPanelLayout.setVerticalGroup(
                 sslPanelLayout.createParallelGroup(LEADING)
-                .add(sslPanelLayout.createSequentialGroup()
-                        .add(sslPanelLayout.createParallelGroup(BASELINE)
-                                .add(certFileLabel)
-                                .add(certFileTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-                                .add(browseButton))
+                .addGroup(sslPanelLayout.createSequentialGroup()
+                        .addGroup(sslPanelLayout.createParallelGroup(BASELINE)
+                                .addComponent(certFileLabel)
+                                .addComponent(certFileTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                                .addComponent(browseButton))
                         .addPreferredGap(RELATED)
-                        .add(sslPanelLayout.createParallelGroup(BASELINE)
-                                .add(certPasswordLabel)
-                                .add(certPasswordField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)))
+                        .addGroup(sslPanelLayout.createParallelGroup(BASELINE)
+                                .addComponent(certPasswordLabel)
+                                .addComponent(certPasswordField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)))
         );
 
         certPasswordField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(HttpPanel.class, "HttpPanel.certPasswordField.AccessibleContext.accessibleName")); // NOI18N
@@ -163,39 +163,39 @@ public class HttpPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(LEADING)
-                .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(userLabel)
-                                .add(passwordLabel))
+                .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(userLabel)
+                                .addComponent(passwordLabel))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup(LEADING, false)
-                                                .add(userPasswordField)
-                                                .add(userTextField))
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(LEADING, false)
+                                                .addComponent(userPasswordField)
+                                                .addComponent(userTextField))
                                         .addPreferredGap(RELATED)
-                                        .add(leaveBlankLabel))
-                                .add(savePasswordCheckBox)))
-                .add(sslPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(proxySettingsButton)
+                                        .addComponent(leaveBlankLabel))
+                                .addComponent(savePasswordCheckBox)))
+                .addComponent(sslPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(proxySettingsButton)
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(LEADING)
-                .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(userLabel)
-                                .add(userTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-                                .add(leaveBlankLabel))
+                .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(userLabel)
+                                .addComponent(userTextField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                                .addComponent(leaveBlankLabel))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(passwordLabel)
-                                .add(userPasswordField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(passwordLabel)
+                                .addComponent(userPasswordField, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE))
                         .addPreferredGap(RELATED)
-                        .add(savePasswordCheckBox)
-                        .add(18)
-                        .add(sslPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                        .addComponent(savePasswordCheckBox)
+                        .addGap(18)
+                        .addComponent(sslPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
                         .addPreferredGap(RELATED)
-                        .add(proxySettingsButton))
+                        .addComponent(proxySettingsButton))
         );
 
         userPasswordField.getAccessibleContext().setAccessibleParent(this);
