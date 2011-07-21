@@ -77,6 +77,10 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         if ( myValue == null ) {
             return null;
         }
+        if (myValue.getType().equals(NbBundle.getMessage(ArrayVariableNode.class, ArrayVariableNode.TYPE_ARRAY))) {
+            StringBuilder type = new StringBuilder(myValue.getType());
+            return type.append("[").append(myValue.getChildrenSize()).append("]").toString(); // NOI18N
+        }
         String className = myValue.getClassName();
         return (className != null && !className.isEmpty()) ? className : myValue.getType();
     }
