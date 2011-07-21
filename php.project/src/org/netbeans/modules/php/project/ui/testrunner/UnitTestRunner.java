@@ -65,6 +65,7 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO.D
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
@@ -84,19 +85,20 @@ public final class UnitTestRunner {
 
     private final PhpProject project;
     private final TestSession testSession;
-    private final boolean allTests;
+    private final PhpUnitTestRunInfo info;
 
     private volatile boolean started = false;
 
-    public UnitTestRunner(PhpProject project, TestSession.SessionType sessionType, RerunHandler rerunHandler, boolean allTests) {
+    public UnitTestRunner(PhpProject project, TestSession.SessionType sessionType, RerunHandler rerunHandler, PhpUnitTestRunInfo info) {
         assert project != null;
         assert sessionType != null;
         assert rerunHandler != null;
+        assert info != null;
 
         this.project = project;
-        this.allTests = allTests;
+        this.info = info;
 
-        testSession = new TestSession("PHPUnit test session", project, sessionType, new PhpTestRunnerNodeFactory()); // NOI18N
+        testSession = new TestSession(getOutputTitle(project, info), project, sessionType, new PhpTestRunnerNodeFactory());
         testSession.setRerunHandler(rerunHandler);
         testSession.setOutputLineHandler(PHP_OUTPUT_LINE_HANDLER);
     }
@@ -117,7 +119,7 @@ public final class UnitTestRunner {
             return;
         }
 
-        if (allTests) {
+        if (info.allTests()) {
             // custom suite?
             File customSuite = PhpUnit.getCustomSuite(project);
             if (customSuite != null) {
@@ -201,6 +203,17 @@ public final class UnitTestRunner {
             PhpUnit.XML_LOG.delete();
         }
         return session;
+    }
+
+    private String getOutputTitle(PhpProject project, PhpUnitTestRunInfo info) {
+        StringBuilder sb = new StringBuilder(30);
+        sb.append(project.getName());
+        String testName = info.getTestName();
+        if (testName != null) {
+            sb.append(":"); // NOI18N
+            sb.append(testName);
+        }
+        return sb.toString();
     }
 
     private static final class PhpOutputLineHandler implements OutputLineHandler {

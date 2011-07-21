@@ -76,6 +76,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -141,7 +142,7 @@ class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        run(getPhpUnitInfo(null));
+        run(getPhpUnitTestRunInfo(null));
     }
 
     @Override
@@ -154,7 +155,7 @@ class ConfigActionTest extends ConfigAction {
         if (!isPhpUnitValid()) {
             return;
         }
-        run(getPhpUnitInfo(context));
+        run(getPhpUnitTestRunInfo(context));
     }
 
     @Override
@@ -162,7 +163,7 @@ class ConfigActionTest extends ConfigAction {
         if (!isPhpUnitValid()) {
             return;
         }
-        debug(getPhpUnitInfo(context));
+        debug(getPhpUnitTestRunInfo(context));
     }
 
     private boolean isPhpUnitValid() {
@@ -170,7 +171,7 @@ class ConfigActionTest extends ConfigAction {
         return Utils.validatePhpUnitForProject(phpUnit, project);
     }
 
-    void run(PhpUnitInfo info) {
+    void run(PhpUnitTestRunInfo info) {
         if (info == null) {
             return;
         }
@@ -178,7 +179,7 @@ class ConfigActionTest extends ConfigAction {
         new RunScript(new RunScriptProvider(info)).run();
     }
 
-    void debug(PhpUnitInfo info) {
+    void debug(PhpUnitTestRunInfo info) {
         if (info == null) {
             return;
         }
@@ -186,7 +187,7 @@ class ConfigActionTest extends ConfigAction {
         new DebugScript(new DebugScriptProvider(info)).run();
     }
 
-    private PhpUnitInfo getPhpUnitInfo(Lookup context) {
+    private PhpUnitTestRunInfo getPhpUnitTestRunInfo(Lookup context) {
         PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
         if (phpUnit == null) {
             return null;
@@ -198,17 +199,17 @@ class ConfigActionTest extends ConfigAction {
             if (testDirectory == null) {
                 return null;
             }
-            return getProjectPhpUnitInfo(testDirectory);
+            return getProjectPhpUnitRunInfo(testDirectory);
         }
 
-        return getFilePhpUnitInfo(context);
+        return getFilePhpUnitRunInfo(context);
     }
 
-    private PhpUnitInfo getProjectPhpUnitInfo(FileObject testDirectory) {
-        return new PhpUnitInfo(testDirectory, testDirectory, null);
+    private PhpUnitTestRunInfo getProjectPhpUnitRunInfo(FileObject testDirectory) {
+        return new PhpUnitTestRunInfo(testDirectory, testDirectory, null);
     }
 
-    private PhpUnitInfo getFilePhpUnitInfo(Lookup context) {
+    private PhpUnitTestRunInfo getFilePhpUnitRunInfo(Lookup context) {
         assert context != null;
 
         // #188770
@@ -230,44 +231,16 @@ class ConfigActionTest extends ConfigAction {
         if (!fileObj.isValid()) {
             return null;
         }
-        return new PhpUnitInfo(fileObj.getParent(), fileObj, fileObj.getName());
-    }
-
-    private static class PhpUnitInfo {
-        public final FileObject workingDirectory;
-        public final FileObject startFile;
-        public final String testName;
-        private final List<Testcase> customTests = Collections.synchronizedList(new ArrayList<Testcase>());
-
-        public PhpUnitInfo(FileObject workingDirectory, FileObject startFile, String testName) {
-            assert startFile != null;
-
-            this.workingDirectory = workingDirectory;
-            this.startFile = startFile;
-            this.testName = testName;
-        }
-
-        public List<Testcase> getCustomTests() {
-            return new ArrayList<Testcase>(customTests);
-        }
-
-        public void resetCustomTests() {
-            customTests.clear();
-        }
-
-        public void setCustomTests(Collection<Testcase> tests) {
-            resetCustomTests();
-            customTests.addAll(tests);
-        }
+        return new PhpUnitTestRunInfo(fileObj.getParent(), fileObj, fileObj.getName());
     }
 
     private class RunScriptProvider implements RunScript.Provider {
-        protected final PhpUnitInfo info;
+        protected final PhpUnitTestRunInfo info;
         protected final PhpUnit phpUnit;
         protected final UnitTestRunner testRunner;
         protected final RerunUnitTestHandler rerunUnitTestHandler;
 
-        public RunScriptProvider(PhpUnitInfo info) {
+        public RunScriptProvider(PhpUnitTestRunInfo info) {
             assert info != null;
 
             this.info = info;
@@ -275,10 +248,6 @@ class ConfigActionTest extends ConfigAction {
             testRunner = getTestRunner();
             phpUnit = CommandUtils.getPhpUnit(false);
             assert phpUnit != null;
-        }
-
-        protected boolean allTests(PhpUnitInfo info) {
-            return info.testName == null;
         }
 
         @Override
@@ -315,11 +284,11 @@ class ConfigActionTest extends ConfigAction {
 
         @Override
         public ExternalProcessBuilder getProcessBuilder() {
-            File startFile = FileUtil.toFile(info.startFile);
-            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, allTests(info));
+            File startFile = FileUtil.toFile(info.getStartFile());
+            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, info.allTests());
 
             ExternalProcessBuilder externalProcessBuilder = phpUnit.getProcessBuilder()
-                    .workingDirectory(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.workingDirectory)))
+                    .workingDirectory(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())))
                     .addArgument(phpUnit.getXmlLogParam())
                     .addArgument(PhpUnit.XML_LOG.getAbsolutePath());
 
@@ -370,7 +339,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         public String getOutputTabTitle() {
             String title = null;
-            if (allTests(info)) {
+            if (info.allTests()) {
                 File suite = PhpUnit.getCustomSuite(project);
                 if (suite == null) {
                     title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesSuffix");
@@ -378,14 +347,14 @@ class ConfigActionTest extends ConfigAction {
                     title = NbBundle.getMessage(ConfigActionTest.class, "LBL_UnitTestsForTestSourcesWithCustomSuiteSuffix", suite.getName());
                 }
             } else {
-                title = info.testName;
+                title = info.getTestName();
             }
             return String.format("%s - %s", phpUnit.getProgram(), title);
         }
 
         @Override
         public boolean isValid() {
-            return phpUnit.isValid() && info.startFile != null;
+            return phpUnit.isValid() && info.getStartFile() != null;
         }
 
         protected RerunUnitTestHandler getRerunUnitTestHandler() {
@@ -393,7 +362,7 @@ class ConfigActionTest extends ConfigAction {
         }
 
         protected UnitTestRunner getTestRunner() {
-            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler, allTests(info));
+            return new UnitTestRunner(project, TestSession.SessionType.TEST, rerunUnitTestHandler, info);
         }
 
         void handleCodeCoverage() {
@@ -412,7 +381,7 @@ class ConfigActionTest extends ConfigAction {
             if (!PhpUnit.KEEP_LOGS) {
                 PhpUnit.COVERAGE_LOG.delete();
             }
-            if (allTests(info)) {
+            if (info.allTests()) {
                 coverageProvider.setCoverage(coverage);
             } else {
                 coverageProvider.updateCoverage(coverage);
@@ -421,7 +390,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private final class DebugScriptProvider extends RunScriptProvider implements DebugScript.Provider {
-        public DebugScriptProvider(PhpUnitInfo info) {
+        public DebugScriptProvider(PhpUnitTestRunInfo info) {
             super(info);
         }
 
@@ -432,7 +401,7 @@ class ConfigActionTest extends ConfigAction {
 
         @Override
         public FileObject getStartFile() {
-            return info.startFile;
+            return info.getStartFile();
         }
 
         @Override
@@ -443,7 +412,7 @@ class ConfigActionTest extends ConfigAction {
         @Override
         protected UnitTestRunner getTestRunner() {
             assert rerunUnitTestHandler instanceof RedebugUnitTestHandler;
-            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler, allTests(info));
+            return new UnitTestRunner(project, TestSession.SessionType.DEBUG, rerunUnitTestHandler, info);
         }
 
         @Override
@@ -458,11 +427,11 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private class RerunUnitTestHandler implements RerunHandler {
-        protected final PhpUnitInfo info;
+        protected final PhpUnitTestRunInfo info;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         private volatile boolean enabled = false;
 
-        public RerunUnitTestHandler(PhpUnitInfo info) {
+        public RerunUnitTestHandler(PhpUnitTestRunInfo info) {
             assert info != null;
             this.info = info;
         }
@@ -528,7 +497,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private class RedebugUnitTestHandler extends RerunUnitTestHandler {
-        public RedebugUnitTestHandler(PhpUnitInfo info) {
+        public RedebugUnitTestHandler(PhpUnitTestRunInfo info) {
             super(info);
         }
 
