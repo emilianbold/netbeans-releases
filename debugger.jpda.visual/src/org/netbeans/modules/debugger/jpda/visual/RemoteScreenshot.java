@@ -103,18 +103,24 @@ public class RemoteScreenshot {
     
     private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
 
+    private DebuggerEngine engine;
     private String title;
     private BufferedImage image;
     private ComponentInfo componentInfo;
     
-    private RemoteScreenshot(String title, int width, int height, int[] dataArray,
-                             ComponentInfo componentInfo) {
+    private RemoteScreenshot(DebuggerEngine engine, String title, int width, int height,
+                             int[] dataArray, ComponentInfo componentInfo) {
+        this.engine = engine;
         this.title = title;
         final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         WritableRaster raster = bi.getRaster();
         raster.setDataElements(0, 0, width, height, dataArray);
         this.image = bi;
         this.componentInfo = componentInfo;
+    }
+    
+    public DebuggerEngine getDebuggerEngine() {
+        return engine;
     }
     
     public String getTitle() {
@@ -142,7 +148,7 @@ public class RemoteScreenshot {
                 for (JPDAThread t : allThreads) {
                     if (t.getName().startsWith(AWTThreadName)) {
                         //try {
-                            return take(t);
+                            return take(t, engine);
                             /*
                         } catch (InvocationException iex) {
                             //ObjectReference exception = iex.exception();
@@ -172,7 +178,7 @@ public class RemoteScreenshot {
         return NO_SCREENSHOTS;
     }
     
-    public static RemoteScreenshot[] take(JPDAThread t) throws RetrievalException {//throws ClassNotLoadedException, IncompatibleThreadStateException, InvalidTypeException, InvocationException {
+    public static RemoteScreenshot[] take(JPDAThread t, DebuggerEngine engine) throws RetrievalException {//throws ClassNotLoadedException, IncompatibleThreadStateException, InvalidTypeException, InvocationException {
         //RemoteScreenshot[] screenshots = NO_SCREENSHOTS;
         List<RemoteScreenshot> screenshots = new ArrayList<RemoteScreenshot>();
         boolean methodInvoking = false;
@@ -356,7 +362,7 @@ public class RemoteScreenshot {
                     ClassType containerClass = RemoteServices.getClass(vm, "java.awt.Container");
                     ComponentInfo componentInfo = retrieveComponentTree((JPDAThreadImpl) t, containerClass, window);
                     
-                    screenshots.add(new RemoteScreenshot(title, width, height, dataArray, componentInfo));
+                    screenshots.add(new RemoteScreenshot(engine, title, width, height, dataArray, componentInfo));
                 }
             }
         } catch (PropertyVetoException pvex) {
