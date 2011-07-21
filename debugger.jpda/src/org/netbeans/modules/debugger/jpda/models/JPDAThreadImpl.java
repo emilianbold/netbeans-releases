@@ -976,6 +976,19 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
     
+    /**
+     * Call only after {@link #notifyToBeResumedNoFire()} to fire the change events.
+     */
+    public void fireAfterNotifyToBeResumedNoFire() {
+        List<PropertyChangeEvent> evts = resumeChangeEvents;
+        resumeChangeEvents = null;
+        if (evts != null) {
+            for (PropertyChangeEvent evt : evts) {
+                pch.firePropertyChange(evt);
+            }
+        }
+    }
+    
     public boolean notifyToBeResumedNoFire() {
         //System.err.println("notifyToBeResumed("+getName()+")");
         logger.fine("notifyToBeResumedNoFire("+getName()+")");
@@ -987,7 +1000,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 suspendRequested = false;
                 return false;
             }
-            notifyToBeRunning(true, true);
+            resumeChangeEvents = notifyToBeRunning(true, true);
         } finally {
             accessLock.writeLock().unlock();
         }

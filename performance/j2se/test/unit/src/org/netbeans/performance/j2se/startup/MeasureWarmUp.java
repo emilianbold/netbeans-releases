@@ -107,7 +107,7 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
             name = (String)iter.next();
             value = ((Long)measuredValues.get(name)).longValue();
             System.out.println(name+"="+value);
-            reportPerformance(name,value,"ms",1);
+//            reportPerformance(name,value,"ms",1);
         }
     }
     
