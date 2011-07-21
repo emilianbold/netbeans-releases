@@ -87,6 +87,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getRoot()
      */
+    @Override
     public Object getRoot() {
         return ROOT;
     }
@@ -94,6 +95,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
+    @Override
     public Object[] getChildren(Object parent, int from, int to) 
         throws UnknownTypeException 
     {
@@ -123,6 +125,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildrenCount(java.lang.Object)
      */
+    @Override
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if(node == ROOT) {
             if(myListener == null) {
@@ -141,6 +144,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#isLeaf(java.lang.Object)
      */
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if(node == ROOT) {
             return false;
@@ -155,6 +159,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
+    @Override
     public Object getValueAt(Object node, String columnID) 
         throws UnknownTypeException 
     {
@@ -191,6 +196,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
+    @Override
     public boolean isReadOnly(Object node, String string) 
         throws UnknownTypeException 
     {
@@ -200,6 +206,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
+    @Override
     public void setValueAt(Object node, String string, Object value) 
         throws UnknownTypeException 
     {
@@ -212,6 +219,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node == null) {
             return VariablesModel.NULL;
@@ -229,6 +237,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
      */
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node == null || node == ROOT) {
             return VariableNode.LOCAL_VARIABLE_ICON;
@@ -243,6 +252,7 @@ public class WatchesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
      */
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node == null || node == ROOT) {
             return null;
@@ -321,10 +331,12 @@ public class WatchesModel extends ViewModelSupport
             super(provider, watch);
         }
         
+        @Override
         protected synchronized void setEvaluated( Property value ){
             super.setEvaluated( value );
         }
 
+        @Override
         protected void requestValue() {
             super.requestValue();
         }
@@ -369,16 +381,19 @@ public class WatchesModel extends ViewModelSupport
             }
         }
 
+        @Override
         public void watchAdded(Watch watch) {
             watch.addPropertyChangeListener(this);
             fireWatchesChanged();
         }
 
+        @Override
         public void watchRemoved(Watch watch) {
             watch.removePropertyChangeListener(this);
             fireWatchesChanged();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
@@ -424,6 +439,7 @@ class WeakProxyListener<T extends
         if( getTask() == null) {
             myTask = RequestProcessor.getDefault().create(
                 new Runnable() {
+                    @Override
                     public void run() {
                         org.netbeans.modules.php.dbgp.models.WatchesModel.Listener 
                             listener = get();
@@ -440,6 +456,7 @@ class WeakProxyListener<T extends
     /* (non-Javadoc)
      * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
      */
+    @Override
     public void propertyChange( PropertyChangeEvent arg0 ) {
         T t = get();
         if ( t instanceof PropertyChangeListener ){
@@ -450,30 +467,35 @@ class WeakProxyListener<T extends
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointAdded(org.netbeans.api.debugger.Breakpoint)
      */
+    @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#breakpointRemoved(org.netbeans.api.debugger.Breakpoint)
      */
+    @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#engineAdded(org.netbeans.api.debugger.DebuggerEngine)
      */
+    @Override
     public void engineAdded( DebuggerEngine engine ) {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#engineRemoved(org.netbeans.api.debugger.DebuggerEngine)
      */
+    @Override
     public void engineRemoved( DebuggerEngine engine ) {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#initBreakpoints()
      */
+    @Override
     public Breakpoint[] initBreakpoints() {
         return null;
     }
@@ -481,24 +503,28 @@ class WeakProxyListener<T extends
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#initWatches()
      */
+    @Override
     public void initWatches() {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#sessionAdded(org.netbeans.api.debugger.Session)
      */
+    @Override
     public void sessionAdded( Session session ) {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#sessionRemoved(org.netbeans.api.debugger.Session)
      */
+    @Override
     public void sessionRemoved( Session session ) {
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#watchAdded(org.netbeans.api.debugger.Watch)
      */
+    @Override
     public void watchAdded( Watch watch ) {
         T t = get();
         if ( t instanceof DebuggerManagerListener ){
@@ -509,6 +535,7 @@ class WeakProxyListener<T extends
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.DebuggerManagerListener#watchRemoved(org.netbeans.api.debugger.Watch)
      */
+    @Override
     public void watchRemoved( Watch watch ) {
         T t = get();
         if ( t instanceof DebuggerManagerListener ){
