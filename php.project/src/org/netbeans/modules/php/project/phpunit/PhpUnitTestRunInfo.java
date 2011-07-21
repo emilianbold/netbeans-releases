@@ -44,6 +44,12 @@ public final class PhpUnitTestRunInfo {
     private final List<Testcase> customTests = new CopyOnWriteArrayList<Testcase>();
 
 
+    /**
+     * Create new info about test run.
+     * @param workingDirectory working directory
+     * @param startFile start file (can be directory)
+     * @param testName test name, can be {@code null}
+     */
     public PhpUnitTestRunInfo(FileObject workingDirectory, FileObject startFile, String testName) {
         assert workingDirectory != null;
         assert startFile != null;
