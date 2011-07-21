@@ -96,4 +96,13 @@ public final class JaxRsStackSupport {
     public boolean extendsJerseyProjectClasspath( Project project  ){
         return impl.extendsJerseyProjectClasspath( project );
     }
+
+    /**
+     * Clear project classapth .
+     * I.e. removes all JaxRs libraries ( both JSR311 API and Jersey ) from project classpath .
+     * @param project project which classpath should be cleared
+     */
+    public void removeJaxRsLibraries(Project project) {
+        impl.removeJaxRsLibraries(project); 
+    }
 }
