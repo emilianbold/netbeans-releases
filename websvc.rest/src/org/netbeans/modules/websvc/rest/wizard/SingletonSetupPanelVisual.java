@@ -124,7 +124,7 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
         contentClassTextField = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
 
-        setName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_JSFPagesAndClasses")); // NOI18N
+        setName("");
 
         classLabel.setLabelFor(classTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wizard/Bundle"); // NOI18N
@@ -215,16 +215,16 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
                     .addComponent(packageLabel))
                 .addGap(7, 7, 7)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(classTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-                    .addComponent(medaTypeComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 417, Short.MAX_VALUE)
+                    .addComponent(classTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                    .addComponent(medaTypeComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 473, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(contentClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .addComponent(contentClassTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(selectClassButton))
-                    .addComponent(uriTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 417, Short.MAX_VALUE)
-                    .addComponent(packageComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 417, Short.MAX_VALUE)
-                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))
+                    .addComponent(uriTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                    .addComponent(locationComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 473, Short.MAX_VALUE)
+                    .addComponent(packageComboBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, 473, Short.MAX_VALUE)
+                    .addComponent(projectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE))
                 .addContainerGap())
             .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
         );

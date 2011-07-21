@@ -66,4 +66,10 @@ public interface JaxRsStackSupportImplementation {
      */
     boolean extendsJerseyProjectClasspath( Project project );
 
+    /**
+     * Clear project classapth .
+     * @param project project which classpath should be cleared
+     */
+    void removeJaxRsLibraries( Project project );
+
 }
