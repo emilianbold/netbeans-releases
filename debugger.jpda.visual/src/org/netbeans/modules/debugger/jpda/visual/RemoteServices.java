@@ -72,6 +72,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
@@ -90,7 +91,7 @@ public class RemoteServices {
     private static final String BASIC_REMOTE_CLASS = "RemoteService"; // NOI18N
     private static final String REMOTE_PACKAGE = "org.netbeans.modules.debugger.jpda.visual.remote"; // NOI18N
     
-    private static final Map<JPDAThreadImpl, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDAThreadImpl, ClassObjectReference>();
+    private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
 
     private RemoteServices() {}
     
@@ -157,7 +158,7 @@ public class RemoteServices {
             Method newInstance = theClass.concreteMethodByName("newInstance", "()Ljava/lang/Object;");
             ObjectReference newInstanceOfBasicClass = (ObjectReference) basicClass.invokeMethod(tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
             synchronized (remoteServiceClasses) {
-                remoteServiceClasses.put(t, basicClass);
+                remoteServiceClasses.put(t.getDebugger(), basicClass);
             }
         }
         return basicClass;
@@ -209,7 +210,7 @@ public class RemoteServices {
         VirtualMachine vm = ((JPDAThreadImpl) awtThread).getThreadReference().virtualMachine();
         ClassObjectReference serviceClassObject;
         synchronized (remoteServiceClasses) {
-            serviceClassObject = remoteServiceClasses.get((JPDAThreadImpl) awtThread);
+            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) awtThread).getDebugger());
         }
         ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
         Field awtAccess = serviceClass.fieldByName("awtAccess");
@@ -384,7 +385,7 @@ public class RemoteServices {
             VirtualMachine vm = t.virtualMachine();
             ClassObjectReference serviceClassObject;
             synchronized (remoteServiceClasses) {
-                serviceClassObject = remoteServiceClasses.get((JPDAThreadImpl) thread);
+                serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
             }
             ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
             Method addLoggingListener = serviceClass.concreteMethodByName("addLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;)Ljava/lang/Object;");
@@ -405,6 +406,13 @@ public class RemoteServices {
             l.unlock();
         }
         return null;
+    }
+    
+    static ClassObjectReference getServiceClass(JPDADebugger debugger) {
+        synchronized (remoteServiceClasses) {
+            return remoteServiceClasses.get(debugger);
+        }
+        
     }
     
     static ClassType getClass(VirtualMachine vm, String name) {
