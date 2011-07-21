@@ -82,7 +82,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     private TemplateDescriptor templateDescriptor = null;
     
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         // TODO what about explicite type in ast?
         this.name = NameCache.getManager().getString(name);
         templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, scope, global);

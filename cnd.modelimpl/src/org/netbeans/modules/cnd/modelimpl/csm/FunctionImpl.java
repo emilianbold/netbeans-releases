@@ -104,7 +104,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final boolean CHECK_SCOPE = false;
 
     protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         assert !CHECK_SCOPE || (scope != null);
 
         name = QualifiedNameCache.getManager().getString(nameHolder.getName());

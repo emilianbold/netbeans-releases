@@ -78,7 +78,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private final CsmUID<CsmNamespace> namespaceUID;
     
     private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
         name = NameCache.getManager().getString(AstUtil.getText(ast));

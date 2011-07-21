@@ -85,8 +85,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
     protected TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName) {
-
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
 
         if (UIDCsmConverter.isIdentifiable(container)) {
             this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
