@@ -660,8 +660,10 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
     private void pingNBRepository(File referenceFile) {
         FileObject fileObject = FileUtil.toFileObject(referenceFile);
-        Object attValue = fileObject.getAttribute(
-                                       "ProvidedExtensions.RemoteLocation");//NOI18N
+        if(fileObject == null) {
+            return;
+        }
+        Object attValue = fileObject.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
         if (attValue instanceof String) {
             String url = (String) attValue;
             if(BugtrackingUtil.isNbRepository(url)) {

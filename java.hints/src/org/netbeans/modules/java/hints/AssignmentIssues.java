@@ -66,6 +66,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 public class AssignmentIssues {
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToForLoopParameter") //NOI18N
+    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToForLoopParameter", options=Options.QUERY) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value = "for ($paramType $param = $init; $expr; $update) $statement;"), //NOI18N
         @TriggerPattern(value = "for ($paramType $param : $expr) $statement;") //NOI18N
@@ -100,7 +101,7 @@ public class AssignmentIssues {
         return ret;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToCatchBlockParameter") //NOI18N
+    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToCatchBlockParameter", options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.CATCH)
     public static List<ErrorDescription> assignmentToCatchBlockParameter(HintContext context) {
         final Trees trees = context.getInfo().getTrees();
@@ -119,7 +120,7 @@ public class AssignmentIssues {
         return ret;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToMethodParameter") //NOI18N
+    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "AssignmentToMethodParameter", options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Kind.ASSIGNMENT, Kind.AND_ASSIGNMENT, Kind.DIVIDE_ASSIGNMENT,
         Kind.LEFT_SHIFT_ASSIGNMENT, Kind.MINUS_ASSIGNMENT, Kind.MULTIPLY_ASSIGNMENT,
         Kind.OR_ASSIGNMENT, Kind.PLUS_ASSIGNMENT, Kind.REMAINDER_ASSIGNMENT, Kind.RIGHT_SHIFT_ASSIGNMENT,
@@ -147,7 +148,7 @@ public class AssignmentIssues {
         return null;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "NestedAssignment") //NOI18N
+    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "NestedAssignment", options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Kind.ASSIGNMENT, Kind.AND_ASSIGNMENT, Kind.DIVIDE_ASSIGNMENT,
         Kind.LEFT_SHIFT_ASSIGNMENT, Kind.MINUS_ASSIGNMENT, Kind.MULTIPLY_ASSIGNMENT,
         Kind.OR_ASSIGNMENT, Kind.PLUS_ASSIGNMENT, Kind.REMAINDER_ASSIGNMENT, Kind.RIGHT_SHIFT_ASSIGNMENT,

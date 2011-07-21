@@ -109,6 +109,7 @@ public class BreakpointModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint)node;
@@ -132,6 +133,7 @@ public class BreakpointModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
      */
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         synchronized( myCurrentBreakpoints ) {
             for ( AbstractBreakpoint breakpoint : myCurrentBreakpoints.values()) {
@@ -166,6 +168,7 @@ public class BreakpointModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
      */
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node instanceof LineBreakpoint) {
             return ((LineBreakpoint)node).getLine().getDisplayName();
@@ -249,6 +252,7 @@ public class BreakpointModel extends ViewModelSupport
             myLine = lineNumber;
         }
 
+        @Override
         public boolean accept( Breakpoint breakpoint ) {
             if ( !( breakpoint instanceof LineBreakpoint ) ) {
                 return false;
@@ -265,6 +269,7 @@ public class BreakpointModel extends ViewModelSupport
             myFunction = function; 
         }
         
+        @Override
         public boolean accept( Breakpoint breakpoint ) {
             if ( !( breakpoint instanceof FunctionBreakpoint )) {
                 return false;

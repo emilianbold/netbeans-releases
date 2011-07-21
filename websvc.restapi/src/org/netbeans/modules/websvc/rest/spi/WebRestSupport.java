@@ -46,37 +46,26 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
+
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
@@ -97,14 +86,6 @@ import org.openide.util.NbBundle;
  */
 public abstract class WebRestSupport extends RestSupport {
 
-    /*
-     *  TODO : this should be refactored along with finding server 
-     *  deployable libraries for Jersey. 
-     */
-    private static final String JERSEY = "jersey";                      //NOI18N
-    private static final String JSON = "json";                          //NOI18N
-    private static final String JETTISON ="jettison";                  //NOI18N
-    private static final String ROME ="rome";                           //NOI18N
     
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
@@ -250,76 +231,25 @@ public abstract class WebRestSupport extends RestSupport {
         }
     }
     
-    public boolean hasJerseyLibrary(){
-        Collection<ServerLibrary> libraries = getServerJerseyLibraries();
-        for ( ServerLibrary library : libraries){
-            String title = library.getImplementationTitle();
-            title = title.toLowerCase(Locale.ENGLISH);
-            if ( title.contains(JERSEY) ){
-                return true;
-            }
-        }
-        return false;
+    public boolean hasServerJerseyLibrary(){
+        return getJaxRsStackSupport() != null;
     }
     
-    public Collection<ServerLibrary> getServerJerseyLibraries(){
-        try {
-            J2eeModuleProvider provider = project.getLookup().lookup(
-                    J2eeModuleProvider.class);
-            if ( provider == null ){
-                return Collections.emptyList();
-            }
-            String id = provider.getServerInstanceID();
-            if ( id == null ){
-                return Collections.emptyList();
-            }
-            ServerInstance serverInstance =Deployment.getDefault().getServerInstance(id);
-            if ( serverInstance == null ){
-                return Collections.emptyList();
-            }
-            ServerInstance.LibraryManager libManager = serverInstance.getLibraryManager();
-            if ( libManager == null ){
-                return Collections.emptyList();
-            }
-            
-            LinkedList<ServerLibrary> libraries = new LinkedList<ServerLibrary>();
-            libraries.addAll(findJerseyLibraries(libManager.getDeployableLibraries()));
-            libraries.addAll(findJerseyLibraries(libManager.getDeployedLibraries()));
-            
-            return libraries;
-        } catch (InstanceRemovedException ex) {
-            Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO, null, ex);
-            return Collections.emptyList();
-        }
-    }
-    
-    public boolean addDeployableServerJerseyLibraries() {
-        J2eeModuleProvider provider = project.getLookup().lookup(
+    public JaxRsStackSupport getJaxRsStackSupport(){
+        J2eeModuleProvider moduleProvider = project.getLookup().lookup(
                 J2eeModuleProvider.class);
-        Collection<ServerLibrary> serverLibraries = getServerJerseyLibraries();
-        if (provider != null && serverLibraries.size()> 0) {
+        if ( moduleProvider != null ){
             try {
-                for (ServerLibrary serverLibrary : serverLibraries) {
-                    provider.getConfigSupport().configureLibrary(
-                            ServerLibraryDependency.minimalVersion(
-                                    serverLibrary.getName(),
-                                    serverLibrary.getSpecificationVersion(),
-                                    serverLibrary.getImplementationVersion()));
-                }
-                Preferences prefs = ProjectUtils.getPreferences(project,
-                        ProjectUtils.class, true);
-                prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT,
-                        Boolean.TRUE.toString());
-                return true;
-            } 
-            catch (ConfigurationException ex) {
-                Logger.getLogger(WebRestSupport.class.getName()).log(Level.WARNING, 
-                        "Exception during extending an web project", ex); //NOI18N
-                return false;
+                String id = moduleProvider.getServerInstanceID();
+                J2eePlatform j2eePlatform = Deployment.getDefault().
+                    getServerInstance(id).getJ2eePlatform();
+                return JaxRsStackSupport.getInstance(j2eePlatform);
+            } catch (InstanceRemovedException ex) {
+                return null;
             }
         }
-        else {
-            return false;
+        else{
+            return null;
         }
     }
 
@@ -495,7 +425,7 @@ public abstract class WebRestSupport extends RestSupport {
 
     protected RestConfig setApplicationConfigProperty(boolean annotationConfigAvailable) {
         ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
-                annotationConfigAvailable, hasJerseyLibrary());
+                annotationConfigAvailable, hasServerJerseyLibrary());
         DialogDescriptor desc = new DialogDescriptor(configPanel,
                 NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
         DialogDisplayer.getDefault().notify(desc);
@@ -562,23 +492,6 @@ public abstract class WebRestSupport extends RestSupport {
                 }
             }
         }
-    }
-    
-    private Collection<ServerLibrary> findJerseyLibraries(
-            Collection<ServerLibrary> collection)
-    {
-        Collection<ServerLibrary> result = new ArrayList<ServerLibrary>( collection.size());
-        for( Iterator<ServerLibrary> iterator = collection.iterator(); iterator.hasNext();){
-            ServerLibrary library = iterator.next();
-            String title = library.getImplementationTitle();
-            title = title.toLowerCase(Locale.ENGLISH);
-            if ( title.contains(JERSEY) || title.contains(JSON) || 
-                    title.contains(ROME) || title.contains( JETTISON) )
-            {
-                result.add( library );
-            }
-        }
-        return result;
     }
 
     @Override
