@@ -82,8 +82,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -211,16 +209,6 @@ public class MavenProjectRestSupport extends WebRestSupport {
         else {
             return super.getContextRootURL();
         }
-    }
-
-    private boolean platformHasRestLib(J2eePlatform j2eePlatform) {
-        if (j2eePlatform != null) {
-            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(j2eePlatform);
-            if (wsStack != null) {
-                return wsStack.isFeatureSupported(JaxRs.Feature.JAXRS);
-            }
-        }
-        return false;
     }
 
     @Override

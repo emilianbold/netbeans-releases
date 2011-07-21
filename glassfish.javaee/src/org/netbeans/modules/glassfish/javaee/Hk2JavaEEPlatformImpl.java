@@ -786,6 +786,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         
         private boolean versionTag;
-        private StringBuilder version;
+        private StringBuilder version = new StringBuilder();
     }
 }
