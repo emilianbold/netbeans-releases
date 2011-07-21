@@ -197,7 +197,7 @@ public class Utilities {
         }
 
         public void performChange() {
-            throw new IllegalStateException();
+            //throw new IllegalStateException();
         }
 
         public Lookup getLookup() {
