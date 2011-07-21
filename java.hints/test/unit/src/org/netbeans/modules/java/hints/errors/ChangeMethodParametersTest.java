@@ -105,6 +105,13 @@ public class ChangeMethodParametersTest extends HintsTestBase {
                 + "method(java.lang.String a)"
         )));
     }
+    
+    public void test200235() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.AbstractMethod",
+                    195,  new HashSet<String>(Arrays.asList(
+                "Change Method Signature from method(int i) to method(int i, java.lang.String hello_World)"
+        )));
+    }
 
     @Override
     protected boolean createCaches() {
