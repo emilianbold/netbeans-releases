@@ -56,11 +56,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
@@ -82,6 +88,9 @@ import org.openide.windows.TopComponent;
 public class ScreenshotComponent extends TopComponent {
     
     private static final Logger logger = Logger.getLogger(ScreenshotComponent.class.getName());
+    
+    private static final Map<DebuggerEngine, Set<ScreenshotComponent>> openedScreenshots =
+                         new HashMap<DebuggerEngine, Set<ScreenshotComponent>>();
     
     private RemoteScreenshot screenshot;
     private NavigatorLookupHint componentHierarchyNavigatorHint = new ComponentHierarchyNavigatorHint();
@@ -129,8 +138,50 @@ public class ScreenshotComponent extends TopComponent {
     }
 
     @Override
+    protected void componentOpened() {
+        synchronized (openedScreenshots) {
+            Set<ScreenshotComponent> components = openedScreenshots.get(screenshot.getDebuggerEngine());
+            if (components == null) {
+                components = new HashSet<ScreenshotComponent>();
+                openedScreenshots.put(screenshot.getDebuggerEngine(), components);
+            }
+            components.add(this);
+        }
+    }
+    
+    @Override
+    protected void componentClosed() {
+        synchronized (openedScreenshots) {
+            Set<ScreenshotComponent> components = openedScreenshots.get(screenshot.getDebuggerEngine());
+            if (components != null) {
+                components.remove(this);
+                if (components.isEmpty()) {
+                    openedScreenshots.remove(screenshot.getDebuggerEngine());
+                }
+            }
+        }
+    }
+
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
+    }
+    
+    public static void closeScreenshots(DebuggerEngine engine) {
+        synchronized (openedScreenshots) {
+            Set<ScreenshotComponent> components = openedScreenshots.get(engine);
+            if (components != null) {
+                final Set<ScreenshotComponent> theComponents = new HashSet<ScreenshotComponent>(components);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (ScreenshotComponent c : theComponents) {
+                            c.close();
+                        }
+                    }
+                });
+            }
+        }
     }
     
     private class ScreenshotCanvas extends JComponent {
