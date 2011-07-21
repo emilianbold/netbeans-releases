@@ -52,6 +52,7 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.projects.RestApplicationsPanel;
@@ -121,7 +122,7 @@ public class RestConfigurationAction extends NodeAction  {
                         isJerseyLib,
                         restSupport.getAntProjectHelper() != null 
                             && RestUtils.isAnnotationConfigAvailable(project),
-                        restSupport.hasJerseyLibrary());
+                        restSupport.hasServerJerseyLibrary());
 
                 DialogDescriptor desc = new DialogDescriptor(configPanel,
                     NbBundle.getMessage(RestConfigurationAction.class, "TTL_ApplicationConfigPanel"));
@@ -181,26 +182,13 @@ public class RestConfigurationAction extends NodeAction  {
                         // add jersey library
                         boolean added = false;
                         if ( configPanel.isServerJerseyLibSelected() ){
-                            added = restSupport.addDeployableServerJerseyLibraries();
+                            JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
+                            if ( support != null ){
+                                added = support.extendsJerseyProjectClasspath(project);
+                            }
                         }
                         if (!added || addJersey) {
-                            Library swdpLibrary = LibraryManager.getDefault()
-                                    .getLibrary(WebRestSupport.SWDP_LIBRARY);
-                            if (swdpLibrary != null) {
-                                FileObject srcRoot = WebRestSupport
-                                        .findSourceRoot(project);
-                                if (srcRoot != null) {
-                                    try {
-                                        ProjectClassPathModifier.addLibraries(
-                                                new Library[] { swdpLibrary },
-                                                srcRoot, ClassPath.COMPILE);
-                                    }
-                                    catch (UnsupportedOperationException ex) {
-                                        Logger.getLogger(getClass().getName())
-                                                .info("Can not add Jersey Library.");
-                                    }
-                                }
-                            }
+                            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
                         }
                     }
                  }

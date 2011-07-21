@@ -49,6 +49,7 @@ class ArrayVariableNode extends
         return type.toString();
     }
 
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.ARRAY );
     }

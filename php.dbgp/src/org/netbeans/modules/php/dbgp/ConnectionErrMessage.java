@@ -174,6 +174,7 @@ public class ConnectionErrMessage extends javax.swing.JPanel {
             super.addHyperlinkListener(listener);
         }
 
+        @Override
         public void hyperlinkUpdate(HyperlinkEvent hlevt) {
             if (HyperlinkEvent.EventType.ACTIVATED == hlevt.getEventType()) {
                 assert hlevt.getURL() != null;

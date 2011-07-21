@@ -870,7 +870,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             Set<WLServerLibrary> libraries = support.getDeployedLibraries();
             for (WLServerLibrary library : libraries) {
                 String title = library.getImplementationTitle();
-                if ( title.toLowerCase(Locale.ENGLISH).contains(JAX_RS) && 
+                if ( title!= null && title.toLowerCase(Locale.ENGLISH).contains(JAX_RS) && 
                         title.toLowerCase(Locale.ENGLISH).contains(API))
                 {
                     ServerLibrary apiLib = ServerLibraryFactory.
@@ -928,6 +928,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
         }
         
+        @Override
+        public void removeJaxRsLibraries(Project project) {
+            // TODO: is it possible to remove ServerLibrary from project classpath ?
+        }
+        
         private Collection<ServerLibrary> getServerJerseyLibraries() {
             WLServerLibraryManager manager = getLibraryManager();
             Collection<ServerLibrary> libraries = new LinkedList<ServerLibrary>();  
@@ -945,6 +950,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             {
                 ServerLibrary library = iterator.next();
                 String title = library.getImplementationTitle();
+                if ( title == null ){
+                    continue;
+                }
                 title = title.toLowerCase(Locale.ENGLISH);
                 if (title.contains(JERSEY) || title.contains(JSON)
                         || title.contains(ROME) || title.contains(JETTISON)) {
