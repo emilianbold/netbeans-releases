@@ -73,6 +73,8 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     /** generated Serialized Version UID */
     static final long serialVersionUID = 6305590675982925167L;
 
+    private static final String SFS_NAME = "SystemFileSystem"; // org.netbeans.core.startup.layers.SystemFileSystem.SYSTEM_NAME
+
     /** original data object */
     private DataObject original;
     /** Listener attached to original DataObject. */
@@ -409,7 +411,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             target = URLMapper.findFileObject(u.toURL());
         } else {
             FileSystem fs;
-            if ("SystemFileSystem".equals(fileAndFileSystem[1])) { // NOI18N
+            if (SFS_NAME.equals(fileAndFileSystem[1])) {
                 fs = FileUtil.getConfigRoot().getFileSystem();
             } else {
                 // Even if it is specified, we no longer have mounts, so we can no longer find it.
@@ -436,7 +438,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             return u.toURL();
         } else {
             FileSystem fs;
-            if ("SystemFileSystem".equals(fileAndFileSystem[1])) { // NOI18N
+            if (SFS_NAME.equals(fileAndFileSystem[1])) {
                 fs = FileUtil.getConfigRoot().getFileSystem();
             } else {
                 fs = fileObject.getFileSystem();
