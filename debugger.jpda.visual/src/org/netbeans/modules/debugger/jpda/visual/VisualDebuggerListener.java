@@ -54,8 +54,10 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -105,10 +107,14 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     }
 
     private void initDebuggerRemoteService(JPDAThread thread) {
-        logger.fine("initDebuggerRemoteService("+thread+")");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("initDebuggerRemoteService("+thread+")");
+        }
         ClassObjectReference cor = null;
         try {
             cor = RemoteServices.uploadBasicClasses((JPDAThreadImpl) thread);
+        } catch (PropertyVetoException pvex) {
+            Exceptions.printStackTrace(pvex);
         } catch (InvalidTypeException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotLoadedException ex) {
@@ -127,23 +133,30 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        logger.fine("Uploaded class = "+cor);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Uploaded class = "+cor);
+        }
         if (cor == null) {
             return ;
         }
-        ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
+        JPDAThreadImpl t = (JPDAThreadImpl) thread;
+        ThreadReference tr = t.getThreadReference();
         VirtualMachine vm = tr.virtualMachine();
         ClassType serviceClass = (ClassType) cor.reflectedType();//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
         
         Method startMethod = serviceClass.concreteMethodByName("startAWTAccessLoop", "()V");
         try {
+            t.notifyMethodInvoking();
             serviceClass.invokeMethod(tr, startMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         } finally {
+            t.notifyMethodInvokeDone();
             cor.enableCollection(); // While AWTAccessLoop is running, it should not be collected.
         }
-        logger.fine("The RemoteServiceClass is there: "+RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("The RemoteServiceClass is there: "+RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService"));
+        }
     }
     
     @Override
@@ -162,10 +175,11 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (serviceClass == null) {
             return ;
         }
-        ReferenceType serviceType =serviceClass.reflectedType();
+        ReferenceType serviceType = serviceClass.reflectedType();
         Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
         try {
             ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
+            serviceClass.enableCollection();
         } catch (VMDisconnectedException vdex) {
             // Ignore
         } catch (Exception ex) {
