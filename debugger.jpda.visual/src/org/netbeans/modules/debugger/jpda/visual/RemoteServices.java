@@ -60,6 +60,9 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -69,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -79,6 +83,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -86,12 +91,16 @@ import org.openide.util.Exceptions;
  */
 public class RemoteServices {
     
+    private static final Logger logger = Logger.getLogger(RemoteServices.class.getName());
+    
     private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/visual/resources/debugger-remote.zip";
     private static final String[] BASIC_REMOTE_CLASSES = new String[] { "RemoteService", "RemoteService$AWTAccessLoop" };
     private static final String BASIC_REMOTE_CLASS = "RemoteService"; // NOI18N
     private static final String REMOTE_PACKAGE = "org.netbeans.modules.debugger.jpda.visual.remote"; // NOI18N
     
     private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
+    
+    private static final RequestProcessor AUTORESUME_AFTER_SUSPEND_RP = new RequestProcessor("Autoresume after suspend", 1);
 
     private RemoteServices() {}
     
@@ -116,66 +125,71 @@ public class RemoteServices {
     }
      */
     
-    public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException {
+    public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException {
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
         ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
         Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-        ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        List<RemoteClass> remoteClasses = getRemoteClasses(BASIC_REMOTE_CLASS, true);
-        ClassObjectReference basicClass = null;
-        for (RemoteClass rc : remoteClasses) {
-            ClassObjectReference theUploadedClass = null;
-            ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-            StringReference nameMirror = null;
-            try {
-                Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-                boolean uploaded = false;
-                while (!uploaded) {
-                    nameMirror = vm.mirrorOf(rc.name);
-                    try {
-                        nameMirror.disableCollection();
-                        uploaded = true;
-                    } catch (ObjectCollectedException ocex) {
-                        // Just collected, try again...
-                    }
-                }
-                uploaded = false;
-                while (!uploaded) {
-                    theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith(BASIC_REMOTE_CLASS)) {
+        t.notifyMethodInvoking();
+        try {
+            ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            List<RemoteClass> remoteClasses = getRemoteClasses(BASIC_REMOTE_CLASS, true);
+            ClassObjectReference basicClass = null;
+            for (RemoteClass rc : remoteClasses) {
+                ClassObjectReference theUploadedClass = null;
+                ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+                StringReference nameMirror = null;
+                try {
+                    Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                    boolean uploaded = false;
+                    while (!uploaded) {
+                        nameMirror = vm.mirrorOf(rc.name);
                         try {
-                            // Disable collection only of the basic class
-                            theUploadedClass.disableCollection();
-                            basicClass = theUploadedClass;
+                            nameMirror.disableCollection();
                             uploaded = true;
                         } catch (ObjectCollectedException ocex) {
                             // Just collected, try again...
                         }
-                    } else {
-                        uploaded = true;
+                    }
+                    uploaded = false;
+                    while (!uploaded) {
+                        theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                        if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith(BASIC_REMOTE_CLASS)) {
+                            try {
+                                // Disable collection only of the basic class
+                                theUploadedClass.disableCollection();
+                                basicClass = theUploadedClass;
+                                uploaded = true;
+                            } catch (ObjectCollectedException ocex) {
+                                // Just collected, try again...
+                            }
+                        } else {
+                            uploaded = true;
+                        }
+                    }
+                } finally {
+                    byteArray.enableCollection(); // We can dispose it now
+                    if (nameMirror != null) {
+                        nameMirror.enableCollection();
                     }
                 }
-            } finally {
-                byteArray.enableCollection(); // We can dispose it now
-                if (nameMirror != null) {
-                    nameMirror.enableCollection();
+                //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
+                //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
+            }
+            if (basicClass != null) {
+                // Initialize the class:
+                ClassType theClass = getClass(vm, Class.class.getName());
+                // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
+                Method newInstance = theClass.concreteMethodByName("newInstance", "()Ljava/lang/Object;");
+                ObjectReference newInstanceOfBasicClass = (ObjectReference) basicClass.invokeMethod(tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                synchronized (remoteServiceClasses) {
+                    remoteServiceClasses.put(t.getDebugger(), basicClass);
                 }
             }
-            //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
-            //systemClassLoader.invokeMethod(tawt, resolveClass, Arrays.asList(theUploadedClass), ObjectReference.INVOKE_SINGLE_THREADED);
+            return basicClass;
+        } finally {
+            t.notifyMethodInvokeDone();
         }
-        if (basicClass != null) {
-            // Initialize the class:
-            ClassType theClass = getClass(vm, Class.class.getName());
-            // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-            Method newInstance = theClass.concreteMethodByName("newInstance", "()Ljava/lang/Object;");
-            ObjectReference newInstanceOfBasicClass = (ObjectReference) basicClass.invokeMethod(tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-            synchronized (remoteServiceClasses) {
-                remoteServiceClasses.put(t.getDebugger(), basicClass);
-            }
-        }
-        return basicClass;
         /*
         // l = c.newInstance();
         ClassType theClass = getClass(vm, Class.class.getName());
@@ -244,54 +258,121 @@ public class RemoteServices {
         return awtThread;
     }
     
-    public static List<RemoteListener> getAttachedListeners(RemoteScreenshot.ComponentInfo ci) {
-        JPDAThreadImpl thread = ci.getAWTThread();
-        ThreadReference t = thread.getThreadReference();
-        ObjectReference component = ci.getComponent();
-        ReferenceType clazz = component.referenceType();
-        List<Method> visibleMethods = clazz.visibleMethods();
-        List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
-        Lock l = thread.accessLock.writeLock();
-        l.lock();
+    private static final Map<JPDAThread, RequestProcessor.Task> tasksByThreads = new WeakHashMap<JPDAThread, RequestProcessor.Task> ();
+    
+    /**
+     * Run the provided runnable after the thread is assured to be stopped on an event.
+     * If the thread was initially running, it's resumed with some delay
+     * (to allow another execution of runOnStoppedThread() without the expensive thread preparation).
+     * It's assumed that the runnable will invoke methods on the thread.
+     * Therefore method invoke notification methods are executed automatically.
+     * @param thread The remote thread.
+     * @param run The Runnable that is executed when the thread is assured to be stopped on an event.
+     * @throws PropertyVetoException when can not invoke methods.
+     */
+    public static void runOnStoppedThread(JPDAThread thread, Runnable run) throws PropertyVetoException {
+        JPDAThreadImpl t = (JPDAThreadImpl) thread;
+        boolean wasSuspended = true;
+        Lock threadLock = t.accessLock.writeLock();
+        threadLock.lock();
         try {
-            for (Method m : visibleMethods) {
-                String name = m.name();
-                if (!name.startsWith("get") || !name.endsWith("Listeners")) {
-                    continue;
-                }
-                if (m.argumentTypeNames().size() > 0) {
-                    continue;
-                }
-                Value result;
-                try {
-                    result = component.invokeMethod(t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                    continue;
-                }
-                String listenerType = null;
-                try {
-                    Type returnType = m.returnType();
-                    if (returnType instanceof ArrayType) {
-                        ArrayType art = (ArrayType) returnType;
-                        listenerType = art.componentTypeName();
+            ThreadReference threadReference = t.getThreadReference();
+            wasSuspended = t.isSuspended();
+            if (t.isSuspended() && !threadReference.isAtBreakpoint()) {
+                // TODO: Suspended, but will not be able to invoke methods
+                
+            }
+            if (!t.isSuspended()) {
+                threadLock.unlock();
+                threadLock = null;
+                RemoteServices.makeAWTThreadStopOnEvent(thread);
+                threadLock = t.accessLock.writeLock();
+                threadLock.lock();
+            }
+            if (thread.isSuspended()) {
+                RequestProcessor.Task autoresumeTask;
+                if (!wasSuspended) {
+                    AutoresumeTask resumeTask = new AutoresumeTask(t);
+                    autoresumeTask = AUTORESUME_AFTER_SUSPEND_RP.create(resumeTask);
+                    synchronized (tasksByThreads) {
+                        tasksByThreads.put(thread, autoresumeTask);
                     }
-                } catch (ClassNotLoadedException ex) {
-                    continue;
+                } else {
+                    synchronized (tasksByThreads) {
+                        autoresumeTask = tasksByThreads.get(thread);
+                    }
                 }
-                if (listenerType == null) {
-                    continue;
+                t.notifyMethodInvoking();
+                if (autoresumeTask != null) {
+                    autoresumeTask.schedule(Integer.MAX_VALUE); // wait for run.run() to finish...
                 }
-                ArrayReference array = (ArrayReference) result;
-                List<Value> listeners = array.getValues();
-                for (Value v : listeners) {
-                    RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
-                    rlisteners.add(rl);
+                try {
+                    run.run();
+                } finally {
+                    t.notifyMethodInvokeDone();
+                    if (autoresumeTask != null) {
+                        autoresumeTask.schedule(AutoresumeTask.WAIT_TIME);
+                    }
                 }
             }
-            return rlisteners;
         } finally {
-            l.unlock();
+            if (threadLock != null) {
+                threadLock.unlock();
+            }
+        }
+    }
+    
+    public static List<RemoteListener> getAttachedListeners(RemoteScreenshot.ComponentInfo ci) throws PropertyVetoException {
+        final List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
+        final JPDAThreadImpl thread = ci.getAWTThread();
+        final ObjectReference component = ci.getComponent();
+        runOnStoppedThread(thread, new Runnable() {
+            @Override
+            public void run() {
+                retrieveAttachedListeners(thread, component, rlisteners);
+            }
+        });
+        return rlisteners;
+    }
+        
+    private static void retrieveAttachedListeners(JPDAThreadImpl thread, ObjectReference component, List<RemoteListener> rlisteners) {
+        ThreadReference t = thread.getThreadReference();
+        ReferenceType clazz = component.referenceType();
+        List<Method> visibleMethods = clazz.visibleMethods();
+        for (Method m : visibleMethods) {
+            String name = m.name();
+            if (!name.startsWith("get") || !name.endsWith("Listeners")) {
+                continue;
+            }
+            if (m.argumentTypeNames().size() > 0) {
+                continue;
+            }
+            Value result;
+            try {
+                result = component.invokeMethod(t, m, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+                continue;
+            }
+            String listenerType = null;
+            try {
+                Type returnType = m.returnType();
+                if (returnType instanceof ArrayType) {
+                    ArrayType art = (ArrayType) returnType;
+                    listenerType = art.componentTypeName();
+                }
+            } catch (ClassNotLoadedException ex) {
+                continue;
+            }
+            if (listenerType == null) {
+                continue;
+            }
+            ArrayReference array = (ArrayReference) result;
+            List<Value> listeners = array.getValues();
+            for (Value v : listeners) {
+                RemoteListener rl = new RemoteListener(listenerType, (ObjectReference) v);
+                rlisteners.add(rl);
+            }
         }
     }
     
@@ -337,89 +418,89 @@ public class RemoteServices {
     }
     
     public static ObjectReference attachLoggingListener(final RemoteScreenshot.ComponentInfo ci,
-                                                        ClassObjectReference listenerClass,
-                                                        final LoggingListenerCallBack listener) {
-        JPDAThreadImpl thread = ci.getAWTThread();
-        ThreadReference t = thread.getThreadReference();
-        ObjectReference component = ci.getComponent();
-        Lock l = thread.accessLock.writeLock();
-        l.lock();
-        try {
-            final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteService", "calledWithEventsData");
-            mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
-            mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
-            mb.setHidden(true);
-            //final Object bpLock = new Object();
-            mb.addJPDABreakpointListener(new JPDABreakpointListener() {
-                @Override
-                public void breakpointReached(JPDABreakpointEvent event) {
-                    //synchronized (bpLock) {
-                        //DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
-                    try {
-                        ThreadReference tr = ((JPDAThreadImpl) event.getThread()).getThreadReference();
-                        StackFrame topFrame;
+                                                        final ClassObjectReference listenerClass,
+                                                        final LoggingListenerCallBack listener) throws PropertyVetoException {
+        final JPDAThreadImpl thread = ci.getAWTThread();
+        final ObjectReference[] listenerPtr = new ObjectReference[] { null };
+        runOnStoppedThread(thread, new Runnable() {
+            @Override
+            public void run() {
+                ThreadReference t = thread.getThreadReference();
+                ObjectReference component = ci.getComponent();
+                final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteService", "calledWithEventsData");
+                mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
+                mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
+                mb.setHidden(true);
+                //final Object bpLock = new Object();
+                mb.addJPDABreakpointListener(new JPDABreakpointListener() {
+                    @Override
+                    public void breakpointReached(JPDABreakpointEvent event) {
+                        //synchronized (bpLock) {
+                            //DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
                         try {
-                            topFrame = tr.frame(0);
-                        } catch (IncompatibleThreadStateException ex) {
-                            Exceptions.printStackTrace(ex);
-                            return;
-                        }
-                        List<Value> argumentValues = topFrame.getArgumentValues();
-                        //System.err.println("LoggingListener breakpoint reached: argumentValues = "+argumentValues);
-                        if (argumentValues.size() < 2) {  // ERROR: BP is hit somehere else
-                            return;
-                        }
-                        if (!ci.getComponent().equals(argumentValues.get(0))) {
-                            // Reported for some other component
-                            return;
-                        }
-                        ArrayReference allDataArray = (ArrayReference) argumentValues.get(1);
-                        int totalLength = allDataArray.length();
-                        List<Value> dataValues = allDataArray.getValues();
-                        for (int i = 0; i < totalLength; ) {
-                            StringReference sr = (StringReference) dataValues.get(i);
-                            String dataLengthStr = sr.value();
-                            //System.err.println("  data["+i+"] = "+dataLengthStr);
-                            int dataLength = Integer.parseInt(dataLengthStr);
-                            String[] data = new String[dataLength];
-                            i++;
-                            for (int j = 0; j < dataLength; j++, i++) {
-                                sr = (StringReference) dataValues.get(i);
-                                data[j] = sr.value();
-                                //System.err.println("  data["+i+"] = "+data[j]);
+                            ThreadReference tr = ((JPDAThreadImpl) event.getThread()).getThreadReference();
+                            StackFrame topFrame;
+                            try {
+                                topFrame = tr.frame(0);
+                            } catch (IncompatibleThreadStateException ex) {
+                                Exceptions.printStackTrace(ex);
+                                return;
                             }
-                            listener.eventsData(ci, data);
+                            List<Value> argumentValues = topFrame.getArgumentValues();
+                            //System.err.println("LoggingListener breakpoint reached: argumentValues = "+argumentValues);
+                            if (argumentValues.size() < 2) {  // ERROR: BP is hit somehere else
+                                return;
+                            }
+                            if (!ci.getComponent().equals(argumentValues.get(0))) {
+                                // Reported for some other component
+                                return;
+                            }
+                            ArrayReference allDataArray = (ArrayReference) argumentValues.get(1);
+                            int totalLength = allDataArray.length();
+                            List<Value> dataValues = allDataArray.getValues();
+                            for (int i = 0; i < totalLength; ) {
+                                StringReference sr = (StringReference) dataValues.get(i);
+                                String dataLengthStr = sr.value();
+                                //System.err.println("  data["+i+"] = "+dataLengthStr);
+                                int dataLength = Integer.parseInt(dataLengthStr);
+                                String[] data = new String[dataLength];
+                                i++;
+                                for (int j = 0; j < dataLength; j++, i++) {
+                                    sr = (StringReference) dataValues.get(i);
+                                    data[j] = sr.value();
+                                    //System.err.println("  data["+i+"] = "+data[j]);
+                                }
+                                listener.eventsData(ci, data);
+                            }
+                        } finally {
+                            event.resume();
                         }
-                    } finally {
-                        event.resume();
                     }
+                });
+                DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+                VirtualMachine vm = t.virtualMachine();
+                ClassObjectReference serviceClassObject;
+                synchronized (remoteServiceClasses) {
+                    serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
                 }
-            });
-            DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-            VirtualMachine vm = t.virtualMachine();
-            ClassObjectReference serviceClassObject;
-            synchronized (remoteServiceClasses) {
-                serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
+                ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+                Method addLoggingListener = serviceClass.concreteMethodByName("addLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;)Ljava/lang/Object;");
+                try {
+                    ObjectReference theListener = (ObjectReference)
+                            serviceClass.invokeMethod(t, addLoggingListener, Arrays.asList(component, listenerClass), ObjectReference.INVOKE_SINGLE_THREADED);
+                    listenerPtr[0] = theListener;
+                } catch (InvalidTypeException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ClassNotLoadedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IncompatibleThreadStateException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-            ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
-            Method addLoggingListener = serviceClass.concreteMethodByName("addLoggingListener", "(Ljava/awt/Component;Ljava/lang/Class;)Ljava/lang/Object;");
-            try {
-                ObjectReference theListener = (ObjectReference)
-                        serviceClass.invokeMethod(t, addLoggingListener, Arrays.asList(component, listenerClass), ObjectReference.INVOKE_SINGLE_THREADED);
-                return theListener;
-            } catch (InvalidTypeException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ClassNotLoadedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IncompatibleThreadStateException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } finally {
-            l.unlock();
-        }
-        return null;
+        });
+        return listenerPtr[0];
     }
     
     static ClassObjectReference getServiceClass(JPDADebugger debugger) {
@@ -549,4 +630,42 @@ public class RemoteServices {
         
     }
     
+    private static class AutoresumeTask implements Runnable, PropertyChangeListener {
+        
+        private static final int WAIT_TIME = 500;
+        
+        private volatile JPDAThreadImpl t;
+
+        public AutoresumeTask(JPDAThreadImpl t) {
+            this.t = t;
+            t.addPropertyChangeListener(this);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            JPDAThreadImpl thread = this.t;
+            if (thread == null) return ;
+            if (JPDAThread.PROP_SUSPENDED.equals(evt.getPropertyName()) &&
+                !"methodInvoke".equals(evt.getPropagationId())) {               // NOI18N
+                
+                thread.removePropertyChangeListener(this);
+                logger.fine("AutoresumeTask: autoresume canceled, thread changed suspended state: suspended = "+thread.isSuspended());
+                synchronized (tasksByThreads) {
+                    tasksByThreads.remove(thread);
+                }
+                t = null;
+            }
+        }
+        
+        @Override
+        public void run() {
+            JPDAThreadImpl thread = this.t;
+            this.t = null;
+            if (thread != null) {
+                thread.removePropertyChangeListener(this);
+                thread.resume();
+            }
+        }
+    }
+
 }
