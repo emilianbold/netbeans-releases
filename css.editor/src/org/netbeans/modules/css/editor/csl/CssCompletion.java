@@ -295,7 +295,7 @@ public class CssCompletion implements CodeCompletionHandler {
         } else if (
                 node.type() == NodeType.bodylist /* somewhere between rules */
                 || node.type() == NodeType.root /* in an empty file */
-                ) {
+                || node.type() == NodeType.styleSheet) {
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
             all.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, caretOffset).getItems());
@@ -539,7 +539,8 @@ public class CssCompletion implements CodeCompletionHandler {
                     extendedItemsOnly);
 
 
-        } else if (node.type() == NodeType.elementName) {
+        } else if (node.type() == NodeType.elementName
+                || node.type() == NodeType.typeSelector) {
             //complete selector's element name
             List<CompletionProposal> proposals = completeHtmlSelectors(prefix, snapshot.getOriginalOffset(node.from()));
             if (proposals.size() > 0) {
@@ -547,7 +548,8 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         } else if (node.type() == NodeType.selectorsGroup ||
                 node.type() == NodeType.combinator ||
-                node.type() == NodeType.selector) {
+                node.type() == NodeType.selector ||
+                node.type() == NodeType.bodyset) {
             //complete selector list without prefix in selector list e.g. BODY, | { ... }
 //            assert prefix.length() == 0;
 

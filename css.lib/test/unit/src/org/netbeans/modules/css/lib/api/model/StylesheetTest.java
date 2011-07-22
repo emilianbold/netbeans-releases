@@ -113,9 +113,8 @@ public class StylesheetTest extends NbTestCase {
         Item property = item.getProperty();
         assertNotNull(property);
 
-        //whitespace between the property name and the semicolon must not be present
-        //in the property name
-        assertEquals("color", property.image().toString());
+        //ws included to the node
+        assertEquals("color ", property.image().toString());
         assertEquals(5, property.offset());
 
     }

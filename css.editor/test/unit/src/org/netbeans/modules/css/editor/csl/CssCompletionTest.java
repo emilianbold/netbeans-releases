@@ -177,7 +177,7 @@ public class CssCompletionTest extends TestBase {
     }
 
     public void testHtmlSelectorsInContent() throws ParseException {
-        checkCC("h1 {} | h2 {}", arr("html"), Match.CONTAINS);
+        checkCC("h1 { color:red; } | h2 { color:red; }", arr("html"), Match.CONTAINS);
     }
     
     public void testSystemColors() throws ParseException {

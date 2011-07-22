@@ -54,7 +54,7 @@ public enum NodeType {
         page, selector, attrib, attrvalue, esPred, pseudo, simpleSelectorSequence, 
         ruleSet, function_name, bodyset, synpred2_Css3, operator, 
         attrname, selectorsGroup, typeSelector, nsPred, elementName, 
-        function, imports,
+        function, imports, mediaList,
         
 //        syncToIdent,
         

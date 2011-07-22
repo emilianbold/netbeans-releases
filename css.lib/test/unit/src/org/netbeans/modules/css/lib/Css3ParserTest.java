@@ -43,6 +43,9 @@ package org.netbeans.modules.css.lib;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
@@ -50,6 +53,7 @@ import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -104,8 +108,6 @@ public class Css3ParserTest extends CslTestBase {
     public void testErrorRecoveryGargabeBeforeDeclaration() throws ParseException, BadLocationException {
         //recovery before entering declaration rule, the Parser.syncToIdent() is used to skip until ident is found
         
-        //the presence of the @ char is a lexical error so the parser won't be affected at all since
-        //the lexer simply ignores such chars
         String code = "a {\n"
                         + " @ color: red; \n"
                         + " background: red; \n"
@@ -122,6 +124,20 @@ public class Css3ParserTest extends CslTestBase {
         
     }
     
+    public void testSimpleValidCode() throws ParseException, BadLocationException {
+        String code = "a {"
+                        + "color : black;"
+                      + "}";
+        
+        CssParserResult res = TestUtil.parse(code);
+        TestUtil.dumpResult(res);
+        
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
+        
+        assertEquals(0, res.getDiagnostics().size());
+    }
+    
     public void testValidCode() throws ParseException, BadLocationException {
         String code = "a {\n"
                         + "color : black; \n"
@@ -131,12 +147,14 @@ public class Css3ParserTest extends CslTestBase {
                 +      "#id { }";
         
         CssParserResult res = TestUtil.parse(code);
-//        dumpResult(res);
+//        TestUtil.dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
+        
+        assertEquals(0, res.getDiagnostics().size());
     }
     
     public void testParseTreeOffsets() throws ParseException, BadLocationException {
@@ -145,7 +163,7 @@ public class Css3ParserTest extends CslTestBase {
         //             0         1
         
         CssParserResult res = TestUtil.parse(code);
-//        dumpResult(res);
+        TestUtil.dumpResult(res);
         
         Node aNode = NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName/body");
@@ -190,8 +208,8 @@ public class Css3ParserTest extends CslTestBase {
     }
     
     public void testNodeImages() throws ParseException, BadLocationException {
-        String selectors = "#id .class body";
-        String code = selectors + " { color: red}";
+        String selectors = "#id .class body ";
+        String code = selectors + "{ color: red}";
         CssParserResult res = TestUtil.parse(code);
 //        dumpResult(res);
         
@@ -251,7 +269,7 @@ public class Css3ParserTest extends CslTestBase {
          code = "@import url(\"file.css\");";
         res = TestUtil.parse(code);
         
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
         imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports"); 
         assertNotNull(imports);
         
@@ -264,14 +282,57 @@ public class Css3ParserTest extends CslTestBase {
         //Test whether all the nodes are properly intialized - just dump the tree.
         //There used to be a bug that error token caused some rule
         //nodes not having first token set properly by the NbParseTreeBuilder
-//        NodeUtil.dumpTree(res.getParseTree(), new PrintWriter(new StringWriter()));
+        NodeUtil.dumpTree(res.getParseTree(), new PrintWriter(new StringWriter()));
         
         
+//        NodeUtil.dumpTree(res.getParseTree());
+    }
+    
+    public void testErrorCase2() throws BadLocationException, ParseException, FileNotFoundException {
+        String code = "a { color: red; } ";
+        
+        CssParserResult res = TestUtil.parse(code);
+        
+//        NodeUtil.dumpTree(res.getParseTree());
+        
+        assertResult(res, 0);
+        
+    }
+    
+    public void testErrorCase_emptyDeclarations() throws BadLocationException, ParseException, FileNotFoundException {
+        String code = "h1 {}";
+        
+        CssParserResult res = TestUtil.parse(code);
+        
+        //syncToIdent bug - it cannot sync to ident since there isn't one - but the case is valid
+        //=> reconsider putting syncToIdent back to the declarations rule, but then I need 
+        //to resolve why it is not called even in proper cases!!!
         NodeUtil.dumpTree(res.getParseTree());
+        AtomicBoolean recoveryNodeFound = new AtomicBoolean(false);
+        NodeVisitor<AtomicBoolean> visitor = new NodeVisitor<AtomicBoolean>(recoveryNodeFound) {
+
+            @Override
+            public boolean visit(Node node) {
+                if(node.type() == NodeType.recovery) {
+                    getResult().set(true);
+                    return true;
+                } 
+                return false;
+            }
+        };
+        
+        visitor.visitChildren(res.getParseTree());
+        
+        assertResult(res, 0);
+        
+        assertFalse(recoveryNodeFound.get());
+        
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
-        assertResult(TestUtil.parse(getTestFile("testfiles/netbeans.css")), 3);
+        CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
+//        TestUtil.dumpResult(result);
+        assertResult(result, 3);
     }
 
     private CssParserResult assertResultOK(CssParserResult result) {

@@ -129,8 +129,9 @@ grammar Css3;
 // of imports, and then the main body of style rules.
 //
 styleSheet  
-    :   charSet
-        imports*
+    :   charSet?
+    	WS*
+        (imports WS*)*  
         bodylist
      EOF
     ;
@@ -139,15 +140,14 @@ styleSheet
 // Character set.   Picks up the user specified character set, should it be present.
 //
 charSet
-    :   CHARSET_SYM STRING SEMI
-    |
+    :   CHARSET_SYM WS STRING WS? SEMI
     ;
 
 // ---------
 // Import.  Location of an external style sheet to include in the ruleset.
 //
 imports
-    :   IMPORT_SYM (STRING|URI) (medium (COMMA medium)*)? SEMI
+    :   IMPORT_SYM WS (STRING|URI) WS* mediaList? SEMI
     ;
 
 // ---------
@@ -155,17 +155,21 @@ imports
 //          it belongs to the signified medium.
 //
 media
-    : MEDIA_SYM medium (COMMA medium)*
-        LBRACE
+    : MEDIA_SYM WS* mediaList
+        LBRACE WS*
             ruleSet
         RBRACE
     ;
+
+mediaList
+        : medium (COMMA WS* medium)*
+	;
 
 // ---------    
 // Medium.  The name of a medim that are particulare set of rules applies to.
 //
 medium
-    : IDENT 
+    : ( IDENT | GEN ) WS*
     ;
     
 
@@ -174,14 +178,17 @@ bodylist
     ;
     
 bodyset
-    : ruleSet
-    | media
-    | page
+    : (
+    	ruleSet
+        | media
+        | page
+      )
+      WS*
     ;   
     
 page
-    : PAGE_SYM pseudoPage?
-        LBRACE
+    : PAGE_SYM WS? (pseudoPage WS*)?
+        LBRACE WS*
             declaration SEMI (declaration SEMI)*
         RBRACE
     ;
@@ -191,15 +198,15 @@ pseudoPage
     ;
     
 operator
-    : SOLIDUS
-    | COMMA
+    : SOLIDUS WS*
+    | COMMA WS*
     |
     ;
     
 combinator
-    : PLUS
-    | GREATER
-    | TILDE //use this rule preferably
+    : PLUS WS*
+    | GREATER WS*
+    | TILDE WS*//use this rule preferably
     | 
     ;
     
@@ -209,13 +216,12 @@ unaryOperator
     ;  
     
 property
-    : IDENT
+    : (IDENT | GEN) WS*
     ;
     
 ruleSet 
     :   selectorsGroup
-        LBRACE
-            syncToIdent //skip any garbage betweem the { and property identifier.
+        LBRACE WS* syncToIdent
             declarations
         RBRACE
     ;
@@ -223,17 +229,17 @@ ruleSet
 declarations
     :
         //Allow empty rule. Allows multiple semicolons
-        declaration? (SEMI declaration?)*
+        declaration? (SEMI WS* declaration?)*
     ;
     
 selectorsGroup
-    :	selector (COMMA selector)*
+    :	selector (COMMA WS* selector)*
     ;
     
 selector
     : simpleSelectorSequence (combinator simpleSelectorSequence)*
     ;
-
+ 
 
 simpleSelectorSequence
 	/* typeSelector and universal are ambiguous for lookahead==1 since namespace name and element name both starts with IDENT */
@@ -256,7 +262,7 @@ simpleSelectorSequence
    
 typeSelector 
 	options { k = 2; }
- 	:  ((nsPred)=>namespacePrefix)? ( elementName )
+ 	:  ((nsPred)=>namespacePrefix)? ( elementName WS* )
  	;
  	 	 
 /* universal
@@ -271,7 +277,7 @@ typeSelector
  	;
     
  namespacePrefix
-  : ( namespaceName)? '|'
+  : ( namespaceName WS*)?  '|'
   ;
         
  namespaceName
@@ -283,10 +289,14 @@ esPred
     ;
     
 elementSubsequent
-    : cssId
-    | cssClass
-    | attrib
-    | pseudo
+    : 
+    (
+    	cssId
+    	| cssClass
+        | attrib
+        | pseudo
+    )
+    WS*
     ;
     
 cssId
@@ -304,8 +314,8 @@ elementName
     
 attrib
     : LBRACKET
-    	namespacePrefix?
-        IDENT
+    	namespacePrefix? WS*
+        IDENT WS*
         
             (
                 (
@@ -313,10 +323,12 @@ attrib
                     | INCLUDES
                     | DASHMATCH
                 )
+                WS*
                 (
                       IDENT
                     | STRING
-                )       
+                )
+                WS*
             )?
     
       RBRACKET
@@ -324,18 +336,16 @@ attrib
 
 pseudo
     : COLON 
-            IDENT
+            IDENT 
                 ( // Function
-                
-                    LPAREN IDENT? RPAREN
+                    WS* LPAREN WS* (IDENT WS*)? RPAREN
                 )?
     ;
 
 declaration
     : 
-    //moved to the ruleSet
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    property COLON expr prio?
+    property COLON WS* expr prio?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -365,6 +375,7 @@ expr
 term
     : unaryOperator?
         (
+        (
               NUMBER
             | PERCENTAGE
             | LENGTH
@@ -379,11 +390,13 @@ term
     | URI
     | hexColor
     | function
+    )
+    WS*
     ;
 
 function
-	: 	function_name 
-		LPAREN 
+	: 	function_name WS*
+		LPAREN
 		( 
 			expr 
 		| 
@@ -457,6 +470,8 @@ hexColor
 // token number, or by calling them to match a certain portion of
 // the token string.
 //
+
+GEN                     : '@@@';
 
 fragment    HEXCHAR     : ('a'..'f'|'A'..'F'|'0'..'9')  ;
 
@@ -861,7 +876,8 @@ URI :   U R L
 //              that process the whitespace within the parser, ANTLR does not
 //              need to deal with the whitespace directly in the parser.
 //
-WS      : (' '|'\t')+           { $channel = HIDDEN;    }   ;
+//WS      : (' '|'\t')+           { $channel = HIDDEN;    }   ;
+WS      : (' '|'\t')+;
 NL      : ('\r' '\n'? | '\n')   { $channel = HIDDEN;    }   ;
 
 

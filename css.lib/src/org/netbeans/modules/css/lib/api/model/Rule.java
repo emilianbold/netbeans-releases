@@ -93,8 +93,9 @@ public class Rule extends Item {
     }
     
     /** @return the css rule name */
+    @Override
     public String name() {
-        return getSelectorsGroup().image().toString();
+        return getSelectorsGroup().image().toString().trim();
     }
 
     /** @return offset of the rule name in the model's document. */
