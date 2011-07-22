@@ -51,6 +51,8 @@ import org.netbeans.modules.php.project.api.PhpOptions;
 public class DebuggerOptions {
     private static final DebuggerOptions GLOBAL_INSTANCE = new DefaultGlobal();
     int port = -1;
+    int maxChildren = -1;
+    int maxStructureDepth = -1;
     Boolean debugForFirstPageOnly;
     Boolean debuggerStoppedAtTheFirstLine;
     String phpInterpreter;
@@ -77,7 +79,14 @@ public class DebuggerOptions {
     public int getPort() {
         return (port != -1) ? port :  getGlobalInstance().getPort();
     }
-
+    
+    public int getMaxChildren() {
+        return (maxChildren != -1) ? maxChildren : getGlobalInstance().getMaxChildren();
+    }
+    
+    public int getMaxStructuresDepth() {
+        return (maxStructureDepth != -1) ? maxStructureDepth : getGlobalInstance().getMaxStructuresDepth();
+    }
 
     public boolean isDebugForFirstPageOnly() {
         return (debugForFirstPageOnly != null) ? debugForFirstPageOnly :
@@ -105,6 +114,16 @@ public class DebuggerOptions {
         @Override
         public int getPort() {
             return PhpOptions.getInstance().getDebuggerPort();
+        }
+
+        @Override
+        public int getMaxChildren() {
+            return PhpOptions.getInstance().getDebuggerMaxChildren();
+        }
+
+        @Override
+        public int getMaxStructuresDepth() {
+            return PhpOptions.getInstance().getDebuggerMaxStructuresDepth();
         }
 
         @Override
