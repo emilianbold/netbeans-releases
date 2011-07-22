@@ -97,6 +97,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.builder.ElementsService;
 import org.netbeans.modules.java.source.JavadocEnv;
 
@@ -111,14 +113,21 @@ public final class ElementUtilities {
     private final CompilationInfo info;
     
     /** Creates a new instance of ElementUtilities */
-    ElementUtilities(final CompilationInfo info) {
-        assert info != null;
-        JavacTask task = info.impl.getJavacTask();
-        this.info = info;
-        this.ctx = ((JavacTaskImpl)task).getContext();
-        this.delegate = ElementsService.instance(ctx);
+    ElementUtilities(@NonNull final CompilationInfo info) {
+        this((JavacTaskImpl)info.impl.getJavacTask(),info);
     }
-    
+
+    ElementUtilities(@NonNull final JavacTaskImpl jt) {
+        this(jt,null);
+    }
+
+    private ElementUtilities(
+        @NonNull final JavacTaskImpl jt,
+        @NullAllowed final CompilationInfo info) {
+        this.ctx = jt.getContext();
+        this.delegate = ElementsService.instance(ctx);
+        this.info = info;
+    }
     /**
      * Returns the type element within which this member or constructor
      * is declared. Does not accept packages

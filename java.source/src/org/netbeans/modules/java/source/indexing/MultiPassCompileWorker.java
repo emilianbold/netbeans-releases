@@ -267,10 +267,10 @@ final class MultiPassCompileWorker extends CompileWorker {
                 javaContext.fqn2Files.set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.sa.analyse(trees, jt, fileManager, active, previous.addedTypes, main);
+                    javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.sa.analyse(trees, jt, fileManager, active, aTypes, main);
+                    javaContext.analyze(trees, jt, fileManager, active, aTypes, main);
                     previous.addedTypes.addAll(aTypes);
                     previous.modifiedTypes.addAll(aTypes);
                 }
@@ -282,7 +282,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         // presumably should not happen
                     }
                 }
-                JavaCustomIndexer.setErrors(context, active, diagnosticListener);
+                JavaCustomIndexer.setErrors(context, javaContext, active, diagnosticListener);
                 Log.instance(jt.getContext()).nerrors = 0;
                 previous.finishedFiles.add(active.indexable);
                 active = null;

@@ -66,7 +66,6 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,12 +81,6 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
     }
 
 
-    @NbBundle.Messages(value={
-        "ERR_BlackListed_Call=Invocation of {0} is prohibited by white list",
-        "ERR_BlackListed_Ref=Usage of {0} is prohibited by white list",
-        "ERR_BlackListed_Sub=Subclassing of {0} is prohibited by white list",
-        "ERR_BlackListed_Override=Overriding of {0} is prohibited by white list"
-    })
     @Override
     public void run(
             final Result result,
@@ -124,26 +117,9 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
             final int start = (int) sp.getStartPosition(cu, problem.tree);
             final int end = (int) sp.getEndPosition(cu, problem.tree);
             if (start >= 0 && end >= 0) {
-                final String msg;
-                switch (problem.kind) {
-                    case REFERENCE:
-                        msg = Bundle.ERR_BlackListed_Ref(problem.element.toString());
-                        break;
-                    case INVOKE:
-                        msg = Bundle.ERR_BlackListed_Call(problem.element.toString());
-                        break;
-                    case SUBCLASS:
-                        msg = Bundle.ERR_BlackListed_Sub(problem.element.toString());
-                        break;
-                    case OVERRIDE:
-                        msg = Bundle.ERR_BlackListed_Override(problem.element.toString());
-                        break;
-                    default:
-                        throw new IllegalStateException("Unknown problem kind: " + problem.kind);   //NOI18N
-                }
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.ERROR,
-                        msg,
+                        WhiteListScanner.getErrorMessage(problem),
                         file,
                         start,
                         end));

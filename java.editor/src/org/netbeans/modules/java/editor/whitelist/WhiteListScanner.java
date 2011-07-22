@@ -60,6 +60,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.whitelist.WhiteListQuery.WhiteList;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -213,6 +214,27 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
     }
 
     static final class Cancel extends RuntimeException {
+    }
+
+    @NbBundle.Messages(value={
+        "ERR_BlackListed_Call=Invocation of {0} is prohibited by white list",
+        "ERR_BlackListed_Ref=Usage of {0} is prohibited by white list",
+        "ERR_BlackListed_Sub=Subclassing of {0} is prohibited by white list",
+        "ERR_BlackListed_Override=Overriding of {0} is prohibited by white list"
+    })
+    static String getErrorMessage(final Problem problem) {
+        switch (problem.kind) {
+            case REFERENCE:
+                return Bundle.ERR_BlackListed_Ref(problem.element.toString());
+            case INVOKE:
+                return Bundle.ERR_BlackListed_Call(problem.element.toString());
+            case SUBCLASS:
+                return Bundle.ERR_BlackListed_Sub(problem.element.toString());
+            case OVERRIDE:
+                return Bundle.ERR_BlackListed_Override(problem.element.toString());
+            default:
+                throw new IllegalStateException("Unknown problem kind: " + problem.kind);   //NOI18N
+        }
     }
 
 }
