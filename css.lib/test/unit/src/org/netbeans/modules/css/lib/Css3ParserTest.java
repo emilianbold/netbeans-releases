@@ -43,12 +43,9 @@ package org.netbeans.modules.css.lib;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.lib.TokenNode;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -274,7 +271,7 @@ public class Css3ParserTest extends CslTestBase {
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
-        assertResult(TestUtil.parse(getTestFile("testfiles/netbeans.css")), 2);
+        assertResult(TestUtil.parse(getTestFile("testfiles/netbeans.css")), 3);
     }
 
     private CssParserResult assertResultOK(CssParserResult result) {

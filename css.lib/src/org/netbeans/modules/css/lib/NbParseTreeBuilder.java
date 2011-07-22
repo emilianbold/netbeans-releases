@@ -43,7 +43,6 @@ package org.netbeans.modules.css.lib;
 
 import java.util.Collection;
 import java.util.List;
-import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -51,6 +50,7 @@ import org.antlr.runtime.debug.BlankDebugEventListener;
 
 import java.util.Stack;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
@@ -64,15 +64,22 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
  */
 public class NbParseTreeBuilder extends BlankDebugEventListener {
 
+    //ignore 'syncToIdent' rule - the DBG.enter/exit/Rule calls are generated
+    //automatically by ANTLR but we do not care about them since 
+    //the error recovery implementation in syncToSet(...)
+    //calls DBG.enter/exit/Rule("recovery") itself.
+    private String[] IGNORED_RULES = new String[]{"syncToIdent"}; //must be sorted alphabetically!
+    
     Stack<RuleNode> callStack = new Stack<RuleNode>();
     List<CommonToken> hiddenTokens = new ArrayList<CommonToken>();
     private int backtracking = 0;
     private CommonToken lastConsumedToken;
-    private Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
     private boolean resyncing;
     private CharSequence source;
     static boolean debug_tokens = false; //testing 
 
+    private List<ErrorNode> errorNodes = new ArrayList<ErrorNode>();
+    
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
         callStack.push(new RootNode(source));
@@ -93,20 +100,17 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         backtracking--;
     }
 
+    private boolean isIgnoredRule(String ruleName) {
+        return Arrays.binarySearch(IGNORED_RULES, ruleName) >= 0;
+    }
+    
     @Override
     public void enterRule(String filename, String ruleName) {
         if (backtracking > 0) {
             return;
         }
-
-        //ignore 'syncToIdent' rule - the DBG.enter/exit/Rule calls are generated
-        //automatically by ANTLR but we do not care about them since 
-        //the error recovery implementation in syncToSet(...)
-        //calls DBG.enter/exit/Rule("recovery") itself.
-        //
-        //TODO - possibly remove the syncToIdent rule and use the syncToSet(BitSet.of(IDENT)) directly
-        if ("syncToIdent".equals(ruleName)) {
-            return;
+        if(isIgnoredRule(ruleName)) {
+            return ;
         }
 
         AbstractParseTreeNode parentRuleNode = callStack.peek();
@@ -121,20 +125,11 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
-        if ("syncToIdent".equals(ruleName)) {
-            return;
+        if(isIgnoredRule(ruleName)) {
+            return ;
         }
 
         RuleNode ruleNode = callStack.pop();
-        //error nodes handling - since the error node is pushed by the recognitionException method
-        //it must be popped explicitly since the exitRule rule is not called
-        if(ruleNode.type() == NodeType.error) {
-            if (lastConsumedToken != null) {
-                ruleNode.setLastToken(lastConsumedToken);
-            }
-            ruleNode = callStack.pop(); //pop next rule
-        }
-        
         if (ruleNode.getChildCount() == 0) {
             RuleNode parent = (RuleNode) ruleNode.getParent();
             if (parent != null) {
@@ -150,8 +145,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
     @Override
     public void consumeToken(Token token) {
-
-//        System.err.println("consume token " + token);
         if (backtracking > 0) {
             return;
         }
@@ -168,6 +161,12 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             return;
         }
 
+        //also ignore error tokens - they are added as children of ErrorNode-s in the recognitionException(...) method
+        if(token.getType() == Token.INVALID_TOKEN_TYPE) {
+            return ;
+        }
+        
+        
         lastConsumedToken = (CommonToken) token;
 
         RuleNode ruleNode = callStack.peek();
@@ -189,8 +188,8 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     //set first token for all RuleNode-s in the stack without the first token set
     private void updateFirstTokens(RuleNode ruleNode, CommonToken token) {
         while (true) {
-            CommonToken bound = ruleNode.getFirstToken();
-            if (bound != null) {
+            
+            if (ruleNode.from() != -1) {
                 break;
             }
             ruleNode.setFirstToken(token);
@@ -201,24 +200,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         }
     }
     
-    //in case of recognition error the ancestor of the error node needs to
-    //be updated so they have the same node range
-    private void updateErrorNodeAncestorRanges(ErrorNode errorNode) {
-        RuleNode node = errorNode;
-        while (true) {
-            node = (RuleNode)node.parent();
-            if (node == null) {
-                break;
-            }
-            if(node.from() == -1 && node.to() == -1) {
-                node.from = errorNode.from();
-                node.to = errorNode.to();
-            } else {
-                break;
-            }
-        }
-    }
-
     @Override
     public void consumeHiddenToken(Token token) {
         if (backtracking > 0) {
@@ -251,31 +232,37 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
     @Override
     public void recognitionException(RecognitionException e) {
-//        System.err.println("recognition exception " + e);
-
         if (backtracking > 0) {
             return;
         }
-        //add error node
         RuleNode ruleNode = callStack.peek();
 
-        final String message;
-        final int from, to;
+        String message;
+        int from, to;
 
         assert e.token != null;
 
         //invalid token found int the stream
-        CommonToken token = (CommonToken) e.token;
+        CommonToken unexpectedToken = (CommonToken) e.token;
         int unexpectedTokenCode = e.getUnexpectedType();
         CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
 
+        
         //let the error range be the area between last consumed token end and the error token end
         from = lastConsumedToken != null
                 ? CommonTokenUtil.getCommonTokenOffsetRange(lastConsumedToken)[1]
                 : 0;
 
-        to = CommonTokenUtil.getCommonTokenOffsetRange(token)[1];
+        to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; //beginning of the unexpected token
 
+        if(uneexpectedToken == CssTokenId.ERROR) {
+            //for error tokens always include them to the error node range,
+            //they won't be matched by any other rule. Otherwise 
+            //limit the error node to the beginning of the unexpected token
+            //since the token may be matched later
+            to++;
+        }
+        
         if (uneexpectedToken == CssTokenId.EOF) {
             message = String.format("Premature end of file");
         } else {
@@ -294,22 +281,52 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
                 ProblemDescription.Keys.PARSING.name(),
                 ProblemDescription.Type.ERROR);
         
-        problems.add(problemDescription);
-
         //create an error node and add it to the parse tree
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
         ruleNode.addChild(errorNode);
         errorNode.setParent(ruleNode);
+
+        if(uneexpectedToken == CssTokenId.ERROR) {
+            //if the unexpected token is error token, add the token as a child of the error node
+            TokenNode tokenNode = new TokenNode(unexpectedToken);
+            errorNode.addChild(tokenNode);
+            tokenNode.setParent(errorNode);
+        }
         
-        updateErrorNodeAncestorRanges(errorNode);
-        
-        //push the error node so the subsequent consumeToken will add the error node to the error rule
-        //the error node must be explicitly pop-ed!
-        callStack.push(errorNode); 
+        errorNodes.add(errorNode);
  
     }
 
+    @Override
+    public void terminate() {
+        //Finally after the parsing is done fix the error nodes and their predecessors.
+        //This fixes the problem with rules where RecognitionException happened
+        //but the errorneous or missing token has been matched in somewhere further
+        super.terminate();
+        
+        for(ErrorNode en : errorNodes) {
+            RuleNode n = en;
+            for(;;) {
+                if(n == null) {
+                    break;
+                }
+                if(n.from() == -1 || n.to() == -1) {
+                    //set the node range to the same range as the error node
+                    n.from = en.from();
+                    n.to = en.to();
+                }
+                n = (RuleNode)n.parent();
+            }
+            
+        }
+        
+    }
+    
     public Collection<ProblemDescription> getProblems() {
+        Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+        for(ErrorNode errorNode : errorNodes) {
+            problems.add(errorNode.getProblemDescription());
+        }
         return problems;
     }
 }

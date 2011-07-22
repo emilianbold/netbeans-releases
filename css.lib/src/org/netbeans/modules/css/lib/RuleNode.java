@@ -51,9 +51,7 @@ import org.netbeans.modules.css.lib.api.NodeType;
 public class RuleNode extends AbstractParseTreeNode {
     
     private NodeType rule;
-    private CommonToken first, last;
-    int from = -1;
-    int to = -1;
+    int from = -1, to = -1;
     
     RuleNode(NodeType rule, CharSequence source) {
         super(source);
@@ -63,46 +61,22 @@ public class RuleNode extends AbstractParseTreeNode {
     //used by NbParseTreeBuilder
     void setFirstToken(CommonToken token) {
         assert token != null : "Attempting to set null first token in rule " + name();
-        this.first = token;
-        from = -1;
+        this.from = CommonTokenUtil.getCommonTokenOffsetRange(token)[0];
     }
     
     void setLastToken(CommonToken token) {
         assert token != null : "Attempting to set null last token in rule " + name();
-        this.last = token;
-        to = -1;
+        this.to = CommonTokenUtil.getCommonTokenOffsetRange(token)[1];
     }
 
-    CommonToken getFirstToken() {
-        return first;
-    }
-
-    CommonToken getLastToken() {
-        return last;
-    }
-    
     @Override
     public int from() {
-        if(from != -1) {
-            return from; //override in case of errors
-        }
-        if(first == null) {
-            System.err.println(String.format("Called RuleNode.from() before setting first token on RuleNode %s", type())) ;//NOI18N
-            return -1;
-        } 
-        return CommonTokenUtil.getCommonTokenOffsetRange(first)[0];
+        return from;
     }
 
     @Override
     public int to() {
-        if(to != -1) {
-            return to;
-        }
-        if(last == null) {
-            System.err.println(String.format("Called RuleNode.to() before setting last token on RuleNode %s", type())) ;//NOI18N
-            return -1;
-        } 
-        return CommonTokenUtil.getCommonTokenOffsetRange(last)[1];
+        return to;
     }
 
     @Override
