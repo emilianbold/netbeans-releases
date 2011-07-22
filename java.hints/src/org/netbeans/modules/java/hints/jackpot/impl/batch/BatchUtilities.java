@@ -330,7 +330,7 @@ public class BatchUtilities {
 //        }
     }
 
-    public static void recursive(FileObject root, FileObject file, Collection<FileObject> collected, ProgressHandleWrapper progress, int depth, Properties timeStamps, Set<String> removedFiles) {
+    public static void recursive(FileObject root, FileObject file, Collection<FileObject> collected, ProgressHandleWrapper progress, int depth, Properties timeStamps, Set<String> removedFiles, boolean recursive) {
         if (!VisibilityQuery.getDefault().isVisible(file)) return;
 
         if (file.isData()) {
@@ -364,10 +364,11 @@ public class BatchUtilities {
             }
 
             for (FileObject c : children) {
-                recursive(root, c, collected, inner, depth + 1, timeStamps, removedFiles);
+                if (recursive || c.isData())
+                    recursive(root, c, collected, inner, depth + 1, timeStamps, removedFiles, recursive);
 
                 if (progress != null) progress.tick();
             }
         }
-    }
+    }    
 }
