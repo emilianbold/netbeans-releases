@@ -76,10 +76,12 @@ class UndefinedVariableNode extends
         return UNDEF_VARIABLE_ICON;
     }
     
+    @Override
     public String getType() {
         return NbBundle.getMessage( UndefinedVariableNode.class, TYPE_UNDEF);
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.UNINIT );
     }

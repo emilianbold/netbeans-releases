@@ -82,4 +82,9 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         assertEquals(Arrays.asList(tsrc, gtsrc), Arrays.asList(SourceForBinaryQuery.findSourceRoots(new URL(d.getURL(), "target/test-classes/")).getRoots()));
     }
 
+    public void testJarify() throws Exception {
+        assertEquals("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar", MavenForBinaryQueryImpl.jarify("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar"));
+        assertEquals("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar", MavenForBinaryQueryImpl.jarify("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.hpi"));
+    }
+
 }

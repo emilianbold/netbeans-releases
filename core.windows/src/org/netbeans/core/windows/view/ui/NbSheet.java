@@ -86,6 +86,7 @@ import org.openide.windows.WindowManager;
  * Default view for properties.
  */
 public final class NbSheet extends TopComponent {
+    private static final Logger LOG = Logger.getLogger(NbSheet.class.getName());
     
     /**
      * Name of a property that can be passed in a Node instance. The value
@@ -291,25 +292,34 @@ public final class NbSheet extends TopComponent {
     /** Nodes to display.
     */
     public void setNodes (Node[] nodes) {
-        setNodesWithoutReattaching(nodes);
-        // re-attach to listen to new nodes
-        snListener.detach();
-        snListener.attach(nodes);
+        setNodes(nodes, true, "setNodes"); // NOI18N
     }
-    
-    final Node[] getNodes() {
-        return nodes;
-    }
-
-    /** Helper method, called from SheetNodesListener inner class */
-    private void setNodesWithoutReattaching (Node[] nodes) {
+    final void setNodes(Node[] nodes, boolean reattach, String from) {
+        LOG.log(
+            Level.FINE, "setNodes({0}, {1}, {2})",
+            new Object[] { Arrays.asList(nodes), reattach, from }
+        );
         this.nodes = nodes;
         propertySheet.setNodes(nodes);
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 updateTitle();
             }
         });
+        if (reattach) {
+            // re-attach to listen to new nodes
+            snListener.detach();
+            snListener.attach(nodes);
+        }
+        LOG.log(
+            Level.FINE, "finished setNodes({0}, {1}, {2})",
+            new Object[]{Arrays.asList(nodes), reattach, from}
+        );
+    }
+    
+    final Node[] getNodes() {
+        return nodes;
     }
 
     /** Serialize this property sheet */
@@ -367,7 +377,7 @@ public final class NbSheet extends TopComponent {
 
             global = in.readBoolean ();
 
-            setNodes (ns);
+            setNodes(ns, true, "readExternal"); // NOI18N
         }
 
         /*
@@ -443,7 +453,7 @@ public final class NbSheet extends TopComponent {
     @Override
     protected void componentClosed() {
         updateGlobalListening (false);
-        setNodes(new Node[0]);
+        setNodes(new Node[0], true, "componentClosed"); // NOI18N
     }
     
     @Override
@@ -478,8 +488,10 @@ public final class NbSheet extends TopComponent {
         }
 
         public void activate () {
+            TopComponent tc = TopComponent.getRegistry().getActivated();
             Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
-            setNodes (arr);
+            LOG.log(Level.FINE, "Active component {0}", tc);
+            setNodes (arr, true, "activate"); // NOI18N
         }
 
     }
@@ -526,8 +538,8 @@ public final class NbSheet extends TopComponent {
                 close();
                 //fix #39251 end
             } else {
-                setNodesWithoutReattaching(
-                    (listenerMap.keySet().toArray(new Node[listenerMap.size()]))
+                setNodes(
+                    (listenerMap.keySet().toArray(new Node[listenerMap.size()])), false, "handleNodeDestroyed" // NOI18N
                 );
             }
         }

@@ -45,65 +45,46 @@ made subject to such option by the copyright holder.
             }
             -->
         </style>
-        <title>New PHP Project without Previously Developed Sources: Run Configurations</title>
+        <title>New PHP Application with Existing Sources: Name and Location</title>
     </head>
     <body>
-        <h1>
-            Importing Previously Developed Source Files into a New Project
-        </h1>
-        <p>
-            <small><a href="#seealso">See Also</a></small>
-        </p>
-        <ol>
+        <h2>
+            New PHP Project with Existing Sources: Name and Location
+        </h2>
+        
+        <ul>
             <li>
-                In the Project Name text field, enter the name of the project.
+                <b>Sources Folder:</b> Folder containing the existing PHP sources.
+                <ul>
+                    <li><b>Browse...</b> Browse your file system for the folder
+                    containing the existing PHP sources.</li>
+                </ul>
             </li>
             <li>
-                In the Sources Folder field, specify the folder from where you want to import the source
-                files.<br>
-                <strong>Note:</strong> If you are going to run the project on a <a href=
-                                                                                   "new-project-run-configuration.html">local web server</a>, do not forget to specify copying
-                the source files to it.
+                <b>Project Name:</b> Arbitrary name you give your project.
             </li>
+            <li<b>PHP Version:</b> The PHP version that your project uses. Note that
+            you do not affect your PHP code by your choice in this field. Only 
+            the IDE's code completion feature uses the value in this field.</li>
             <li>
-                From the Default Encoding dropdown list, choose the default encoding for your project.
+                <b>Default Encoding.</b> Encoding for the files in your project. 
+                Select encoding from the drop-down list.
             </li>
-            <li>
-                To store the project internal files separately from the source files, select the Put
-                NetBeans metadata into a separate directory checkbox. In the Metadata Folder text field,
-                specify the folder where you want to create a subfolder for storing the internal files for
-                your project. Use the Browse button if necessary.<br>
+            <li><b>Put NetBeans metadata into a separate directory.</b>
+                Tick to store the NetBeans project metadata separately from the source files.
+                <ul>
+                    <li><b>Metadata folder:</b> The location where you want to store
+                    the project's metadata.</li>
+                    <li><b>Browse...</b> Click to browse your file system for a location
+                    in which to store the project's metadata.</li>
+                </ul>
             </li>
-            <li>
-                Click Next. The <a href="new-project-run-configuration.html">Run Configuration</a> panel
-                opens.
-            </li>
-        </ol>
-        <dl>
-            <dt>
-                <a name="seealso">See Also</a>
-            </dt>
-            <dd>
-                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://www.netbeans.org/kb/trails/php.html">
-                    <param name="text" value="<html><u>PHP Learning Trail (Web document)</u></html>">
-                    <param name="textFontSize" value="medium">
-                    <param name="textColor" value="blue">
-                </object>
-            </dd>
-            <dd>
-                <a href="new-project-configure_no_sources.html" title=
-                   "Configurinag a New PHP Project withough Previously Developed Sources">New PHP Project
-                    without Previously Developed Sources</a>
-            </dd>
-            <dd>
-                <a href="new-project-run-configuration.html" title="Run Configurations">Run
-                    Configuration</a>
-            </dd>
-        </dl>
+            
+        </ul>
+        
         <hr>
         <p>
-            <small><a href="credits.html">Legal Notices</a></small>
+            <small><a href="../credits.html">Legal Notices</a></small>
         </p>
         <table border="0" cellpadding="150">
             <tr>

@@ -74,7 +74,6 @@ import org.openide.util.lookup.Lookups;
 public class ActiveConfigActionTest extends NbTestCase {
     
     static {
-        new ActiveConfigAction.DynLayer();
          TimedWeakReference.TIMEOUT = 10;
     }
     

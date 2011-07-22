@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.repository;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.event.ChangeEvent;
@@ -74,7 +75,7 @@ public class GroupListChildren extends ChildFactory.Detachable<String> implement
     }
 
     protected @Override boolean createKeys(List<String> toPopulate) {
-        toPopulate.addAll(RepositoryQueries.getGroups(info));
+        toPopulate.addAll(RepositoryQueries.getGroups(Collections.singletonList(info)));
         return true;
     }
     

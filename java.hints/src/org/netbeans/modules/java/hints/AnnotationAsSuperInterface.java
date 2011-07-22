@@ -41,6 +41,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -49,7 +50,7 @@ import org.openide.util.NbBundle;
  *
  * @author phrebejk
  */
-@Hint(category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface")
+@Hint(category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface", options=Options.QUERY)
 public class AnnotationAsSuperInterface {
 
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})

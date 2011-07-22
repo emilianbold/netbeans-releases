@@ -478,6 +478,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 // after all, we still cannot determine the form base class
                 String annotation;
                 if (declaredSuperclassName != null) {
+                    if (declaredSuperclassName.startsWith("org.jdesktop.application")) { // NOI18N
+                        swingappEncountered();
+                    }
                     // the class from java source at least can be loaded, but
                     // cannot be used as the form type; no substitute available
                     annotation = FormUtils.getFormattedBundleString(
@@ -1968,9 +1971,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void loadComponentProperties(org.w3c.dom.Node node,
-                                         RADComponent metacomp,
-                                         String propCategory)
-    {
+            RADComponent metacomp, String propCategory) throws PersistenceException {
 	FormProperty[] properties;                        
         org.w3c.dom.Node[] propNodes = findSubNodes(node, XML_PROPERTY);
         String[] propNames = getPropertyAttributes(propNodes, ATTR_PROPERTY_NAME);
@@ -1993,7 +1994,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property) {
+    /**
+     * Invoked when a reference to Swing Application Framework
+     * has been encountered in the form being loaded.
+     * 
+     * @throws PersistenceException with explanation for the user.
+     */
+    private void swingappEncountered() throws PersistenceException {
+        String msg = FormUtils.getBundleString("MSG_ERR_SwingAppEncountered"); // NOI18N
+        throw new PersistenceException(msg);
+    }
+
+    private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property)
+            throws PersistenceException {
 	Throwable t = null;
 	org.w3c.dom.Node valueNode = null;
 	
@@ -2020,6 +2033,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	String editorStr = getAttribute(propNode, ATTR_PROPERTY_EDITOR);
 	String valueStr = getAttribute(propNode, ATTR_PROPERTY_VALUE);
         String resourceKey = getAttribute(propNode, ATTR_PROPERTY_RES_KEY);
+        if (resourceKey != null) {
+            swingappEncountered();
+        }
 
 	// get the type of stored property value
 	Class propertyType = getPropertyType(typeStr, property, propNode);
@@ -2268,7 +2284,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         nonfatalErrors.add(ex); 
     }
     
-    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode, boolean reportFailure) {
+    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode, boolean reportFailure)
+            throws PersistenceException {
 	// load the property editor class and create an instance of it
 	PropertyEditor prEd = null;
 	Throwable t = null;	
@@ -2290,6 +2307,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     return prEd;
 
                 if (reportFailure) {
+                    if ("org.netbeans.modules.swingapp.ActionEditor".equals(editorStr)) {
+                        swingappEncountered();
+                    }
                     String msg = createLoadingErrorMessage(
                         FormUtils.getFormattedBundleString(
                             "FMT_ERR_CannotLoadClass3", // NOI18N
@@ -2388,7 +2408,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	
     }
     
-    private void loadBeanProperty(BeanPropertyEditor beanPropertyEditor, org.w3c.dom.Node valueNode) {	
+    private void loadBeanProperty(BeanPropertyEditor beanPropertyEditor, org.w3c.dom.Node valueNode)
+            throws PersistenceException {	
 	if(beanPropertyEditor.valueIsBeanProperty()) {
 	    org.w3c.dom.NodeList children = valueNode.getChildNodes();	
 	    Node.Property[] allBeanProperties = beanPropertyEditor.getProperties();
@@ -2504,9 +2525,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return null;
     }
     
-    private void loadBindingProperties(org.w3c.dom.Node node,
-                                         RADComponent metacomp)
-    {
+    private void loadBindingProperties(org.w3c.dom.Node node, RADComponent metacomp)
+            throws PersistenceException {
         org.w3c.dom.Node[] propNodes = findSubNodes(node, XML_BINDING_PROPERTY);
         for (int i=0; i < propNodes.length; i++) {
             org.w3c.dom.Node propNode = propNodes[i];
@@ -2996,7 +3016,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     if (autoResSetting instanceof Integer && ((Integer)autoResSetting).intValue() == ResourceSupport.AUTO_OFF) {
                         formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }                    
+                }
+                if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)) {
+                    if (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value) {
+                        // Swing Application Framework support has been discontinued
+                        // => changing the setting to I18N. It is just a fallback
+                        // in case the resourcing was not used at all. If it was used
+                        // then we refuse to open the form (this is implemented
+                        // on another place in this class).
+                        formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }
+                }
             } else {
                 // we have a valid name / value pair
                 comp.setAuxValue(name, value);

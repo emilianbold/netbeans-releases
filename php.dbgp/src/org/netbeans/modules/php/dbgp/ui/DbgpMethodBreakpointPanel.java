@@ -83,6 +83,7 @@ public class DbgpMethodBreakpointPanel extends JPanel implements Controller {
     /* (non-Javadoc)
      * @see org.netbeans.spi.debugger.ui.Controller#cancel()
      */
+    @Override
     public boolean cancel() {
         return true;
     }
@@ -90,6 +91,7 @@ public class DbgpMethodBreakpointPanel extends JPanel implements Controller {
     /* (non-Javadoc)
      * @see org.netbeans.spi.debugger.ui.Controller#ok()
      */
+    @Override
     public boolean ok() {
         String methodName = myMethodName.getText();
         if ( methodName == null || methodName.trim().length() ==0 ) {

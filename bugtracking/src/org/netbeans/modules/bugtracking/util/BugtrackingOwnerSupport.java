@@ -52,6 +52,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -543,6 +545,9 @@ public abstract class BugtrackingOwnerSupport {
                         OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(file);
                         if(ownerInfo != null) {
                             repository = KenaiUtil.getRepository(url, ownerInfo.getOwner());
+                        }
+                        if(repository == null) {
+                            repository = KenaiUtil.findNBRepository();
                         }
                     }
                 }

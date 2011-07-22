@@ -215,6 +215,7 @@ public class Operator {
                      int suspendPolicy = EventSetWrapper.suspendPolicy(eventSet);
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
+                     boolean threadWasInitiallySuspended = false;
                      Lock eventAccessLock = null;
                      try {
                      ThreadReference thref = null;
@@ -292,6 +293,7 @@ public class Operator {
                                     logger.fine(" event thread "+thref.name()+" is suspended = "+thref.isSuspended());
                                 } catch (Exception ex) {}
                             }
+                            threadWasInitiallySuspended = suspendedThread.isSuspended();
                             suspendedThread.notifySuspendedNoFire();
                          }
                      }
@@ -456,7 +458,7 @@ public class Operator {
                              debugger.notifyToBeResumedAllNoFire();
                          }
                          if (!silent && suspendedThread != null) {
-                             resume = resume & suspendedThread.notifyToBeResumedNoFire();
+                             resume = resume && suspendedThread.notifyToBeResumedNoFire();
                          }
                      }
                      if (!resume) { // notify about the suspend if not resumed.
@@ -512,6 +514,9 @@ public class Operator {
                          if (eventAccessLock != null) {
                              logger.finer("Write access lock RELEASED:"+eventAccessLock);
                              eventAccessLock.unlock();
+                         }
+                         if (resume && threadWasInitiallySuspended) {
+                             suspendedThread.fireAfterNotifyToBeResumedNoFire();
                          }
                      }
                      /* We check for multiple-suspension when event is received

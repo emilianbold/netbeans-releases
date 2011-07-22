@@ -1410,6 +1410,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             while (ThreadReferenceWrapper.suspendCount(t) > 1) {
                                 ThreadReferenceWrapper.resume(t);
                             }
+                            if (ThreadReferenceWrapper.name(t).contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN)) {
+                                // Do not suspend filtered threads, they might not be resumed.
+                                ThreadReferenceWrapper.resume(t);
+                            }
                         } catch (IllegalThreadStateExceptionWrapper e) {
                         } catch (ObjectCollectedExceptionWrapper e) {
                         } catch (InternalExceptionWrapper e) {

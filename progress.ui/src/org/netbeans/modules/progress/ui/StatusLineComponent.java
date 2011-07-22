@@ -234,7 +234,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
     private void setCloseButtonNameAndTooltip() {
         closeButton.setName(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.name"));
         closeButton.setToolTipText(NbBundle.getMessage(ListComponent.class, "ListComponent.btnClose.tooltip"));
-	}
+    }
     
     private void discardCloseButton() {
         closeButton = null;

@@ -79,6 +79,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.ImageUtilities;
@@ -603,6 +604,13 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 if (!parametersPanel.isCanceledDialog()) {
                     // close tab in case the refactoring is bypassed but it has been open before
                     close();
+                }
+                return;
+            } else if (tempSession.getRefactoringElements().isEmpty()) {
+                if (ui.isQuery()) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"));
+                } else {
+                    JOptionPane.showMessageDialog(parametersPanel, NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"), ui.getName(), JOptionPane.INFORMATION_MESSAGE);
                 }
                 return;
             }

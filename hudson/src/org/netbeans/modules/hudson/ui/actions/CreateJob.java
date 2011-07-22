@@ -64,7 +64,7 @@ import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

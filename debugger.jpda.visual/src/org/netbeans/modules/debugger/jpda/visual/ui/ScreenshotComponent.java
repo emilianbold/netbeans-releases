@@ -44,18 +44,29 @@ package org.netbeans.modules.debugger.jpda.visual.ui;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.ImageObserver;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
@@ -64,6 +75,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -77,17 +89,24 @@ public class ScreenshotComponent extends TopComponent {
     
     private static final Logger logger = Logger.getLogger(ScreenshotComponent.class.getName());
     
+    private static final Map<DebuggerEngine, Set<ScreenshotComponent>> openedScreenshots =
+                         new HashMap<DebuggerEngine, Set<ScreenshotComponent>>();
+    
     private RemoteScreenshot screenshot;
     private NavigatorLookupHint componentHierarchyNavigatorHint = new ComponentHierarchyNavigatorHint();
     private ComponentNode componentNodes;
     private ScreenshotCanvas canvas;
+    private JScrollPane scrollPane;
     
     public ScreenshotComponent(RemoteScreenshot screenshot) {
         this.screenshot = screenshot;
         screenshot.getImage();
         ScreenshotCanvas c = new ScreenshotCanvas(screenshot.getImage());
+        scrollPane = new JScrollPane(c);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         setLayout(new BorderLayout());
-        add(c, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         this.canvas = c;
         String title = screenshot.getTitle();
         title = (title == null) ? NbBundle.getMessage(ScreenshotComponent.class, "LBL_DebuggerSnapshot") :
@@ -106,7 +125,7 @@ public class ScreenshotComponent extends TopComponent {
 
     @Override
     protected void componentActivated() {
-        logger.severe("componentActivated() root = "+componentNodes+", ci = "+componentNodes.getLookup().lookup(ComponentInfo.class));
+        logger.fine("componentActivated() root = "+componentNodes+", ci = "+componentNodes.getLookup().lookup(ComponentInfo.class));
         ComponentHierarchy.getInstance().getExplorerManager().setRootContext(componentNodes);
         ComponentHierarchy.getInstance().getExplorerManager().setExploredContext(componentNodes);
         canvas.activated();
@@ -119,11 +138,53 @@ public class ScreenshotComponent extends TopComponent {
     }
 
     @Override
+    protected void componentOpened() {
+        synchronized (openedScreenshots) {
+            Set<ScreenshotComponent> components = openedScreenshots.get(screenshot.getDebuggerEngine());
+            if (components == null) {
+                components = new HashSet<ScreenshotComponent>();
+                openedScreenshots.put(screenshot.getDebuggerEngine(), components);
+            }
+            components.add(this);
+        }
+    }
+    
+    @Override
+    protected void componentClosed() {
+        synchronized (openedScreenshots) {
+            Set<ScreenshotComponent> components = openedScreenshots.get(screenshot.getDebuggerEngine());
+            if (components != null) {
+                components.remove(this);
+                if (components.isEmpty()) {
+                    openedScreenshots.remove(screenshot.getDebuggerEngine());
+                }
+            }
+        }
+    }
+
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
     
-    private class ScreenshotCanvas extends Canvas {
+    public static void closeScreenshots(DebuggerEngine engine) {
+        synchronized (openedScreenshots) {
+            Set<ScreenshotComponent> components = openedScreenshots.get(engine);
+            if (components != null) {
+                final Set<ScreenshotComponent> theComponents = new HashSet<ScreenshotComponent>(components);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (ScreenshotComponent c : theComponents) {
+                            c.close();
+                        }
+                    }
+                });
+            }
+        }
+    }
+    
+    private class ScreenshotCanvas extends JComponent {
         
         private Image image;
         private Rectangle selection;
@@ -133,11 +194,33 @@ public class ScreenshotComponent extends TopComponent {
         public ScreenshotCanvas(Image image) {
             this.image = image;
             listener = new Listener();
+            initSize();
+        }
+        
+        private void initSize() {
+            ImageObserver io = new ImageObserver() {
+                @Override
+                public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+                    boolean hasHeight = (infoflags & ImageObserver.HEIGHT) > 0;
+                    boolean hasWidth = (infoflags & ImageObserver.WIDTH) > 0;
+                    if (!hasHeight || !hasWidth) {
+                        return true;
+                    }
+                    ScreenshotCanvas.this.setSize(width, height);
+                    ScreenshotCanvas.this.setPreferredSize(ScreenshotCanvas.this.getSize());
+                    return false;
+                }
+            };
+            int width = image.getWidth(io);
+            int height = image.getHeight(io);
+            if (width > 0 && height > 0) {
+                setSize(width, height);
+                setPreferredSize(getSize());
+            }
         }
 
         @Override
-        public void paint(Graphics g) {
-            super.paint(g);
+        public void paintComponent(Graphics g) {
             g.drawImage(image, 1, 1, null);
             g.drawRect(0, 0, image.getWidth(null) + 2, image.getHeight(null) + 2);
             if (selection != null) {
@@ -198,15 +281,15 @@ public class ScreenshotComponent extends TopComponent {
             private void showPopupMenu(int x, int y) {
                 Node[] activatedNodes = getActivatedNodes();
                 if (activatedNodes.length == 1) {
-                    JPopupMenu contextMenu = activatedNodes[0].getContextMenu();
-                    contextMenu.show(ScreenshotComponent.this, x, y);
-                    //showPopup(e.getX(), e.getY(), activatedNodes[0].getActions(true));
+                    Action[] actions = activatedNodes[0].getActions(true);
+                    JPopupMenu contextMenu = Utilities.actionsToPopup(actions, ScreenshotComponent.this);
+                    contextMenu.show(ScreenshotComponent.this.canvas, x, y);
                 }
             }
             
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                logger.severe("propertyChange("+evt+") propertyName = "+evt.getPropertyName());
+                logger.fine("propertyChange("+evt+") propertyName = "+evt.getPropertyName());
                 String propertyName = evt.getPropertyName();
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(propertyName)) {
                     Node[] nodes = ComponentHierarchy.getInstance().getExplorerManager().getSelectedNodes();
@@ -214,7 +297,7 @@ public class ScreenshotComponent extends TopComponent {
                     if (nodes.length > 0) {
                         ci = nodes[0].getLookup().lookup(ComponentInfo.class);
                     }
-                    logger.severe("nodes = "+Arrays.toString(nodes)+" => selectComponent("+ci+")");
+                    logger.fine("nodes = "+Arrays.toString(nodes)+" => selectComponent("+ci+")");
                     selectComponent(ci);
                 } else if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName)) {
                     deactivated();
@@ -225,8 +308,7 @@ public class ScreenshotComponent extends TopComponent {
                 x -= 1;
                 y -= 1;
                 RemoteScreenshot.ComponentInfo ci = screenshot.getComponentInfo().findAt(x, y);
-                System.err.println("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
-                logger.severe("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
+                logger.fine("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
                 selectComponent(ci);
             }
             
@@ -245,9 +327,9 @@ public class ScreenshotComponent extends TopComponent {
                         repaint(oldSelection.x, oldSelection.y, oldSelection.width + 3, oldSelection.height + 3);
                     }
                     repaint(selection.x, selection.y, selection.width + 3, selection.height + 3);
-                    logger.severe("New selection = "+selection);
+                    logger.fine("New selection = "+selection);
                     node = componentNodes.findNodeFor(ci);
-                    logger.severe("FindNodeFor("+ci+") on '"+componentNodes+"' gives: "+node);
+                    logger.fine("FindNodeFor("+ci+") on '"+componentNodes+"' gives: "+node);
                 }
                 Node[] nodes;
                 if (node != null) {
@@ -255,24 +337,13 @@ public class ScreenshotComponent extends TopComponent {
                 } else {
                     nodes = new Node[] {};
                 }
-                logger.severe("setActivated/SelectedNodes("+Arrays.toString(nodes)+")");
+                logger.fine("setActivated/SelectedNodes("+Arrays.toString(nodes)+")");
                 setActivatedNodes(nodes);
                 try {
                     ComponentHierarchy.getInstance().getExplorerManager().setSelectedNodes(nodes);
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-            }
-
-            private void showPopup(int x, int y, Action[] actions) {
-                if (actions.length == 0) {
-                    return ;
-                }
-                JPopupMenu menu = new JPopupMenu();
-                for (Action a : actions) {
-                    
-                }
-                menu.show(canvas, x, y);
             }
 
         }

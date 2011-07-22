@@ -83,6 +83,8 @@ import org.openide.filesystems.URLMapper;
 
 public class AppClientImpl implements J2eeModuleImplementation2, ModuleChangeReporter {
     
+    public static final String PLUGIN_APPCLIENT = "maven-acr-plugin";//NOI18N
+
     private Project project;
     private List versionListeners;
     
@@ -183,7 +185,7 @@ public class AppClientImpl implements J2eeModuleImplementation2, ModuleChangeRep
         }
 //        //look in pom's config.
 //        String version = PluginPropertyUtils.getPluginProperty(project,
-//                "org.apache.maven.plugins", "maven-acr-plugin",
+//                Constants.GROUP_APACHE_PLUGINS, PLUGIN_APPCLIENT,
 //                "????", "????"); //NOI18N
 //        if (version != null) {
 //            return version.trim();
@@ -212,7 +214,7 @@ public class AppClientImpl implements J2eeModuleImplementation2, ModuleChangeRep
     @Override
     public FileObject getArchive() throws IOException {
         String jarfile = PluginPropertyUtils.getPluginProperty(project,
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_APPCLIENT, 
+                    Constants.GROUP_APACHE_PLUGINS, PLUGIN_APPCLIENT, 
                     "jarName", "acr"); //NOI18N
         MavenProject proj = mavenproject.getMavenProject();
         if (jarfile == null) {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -155,9 +156,12 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
                     ChangeParametersRefactoring.ParameterInfo[] newParameterInfo = new ChangeParametersRefactoring.ParameterInfo[invocation.getArguments().size()];
 
                     MethodTree methodTree = (MethodTree) path.getLeaf();
-                    TreePath bodyPath = new TreePath(path, methodTree.getBody());
-                    Scope scope = info.getTrees().getScope(bodyPath);
-                        
+                    BlockTree methodBody = methodTree.getBody();
+                    Scope scope =  null;
+                    if(methodBody != null) {
+                        TreePath bodyPath = new TreePath(path, methodBody);
+                        scope = info.getTrees().getScope(bodyPath);
+                    }
                     int i = 0;
                     for (ExpressionTree argument : invocation.getArguments()) {
                         if(cancel) return Collections.<Fix>emptyList();
@@ -208,11 +212,13 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
             
             cont = false;
             
-            for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new Utilities.VariablesFilter())) {
-                if (proposedName.equals(e.getSimpleName().toString())) {
-                    counter++;
-                    cont = true;
-                    break;
+            if (s != null) {
+                for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new Utilities.VariablesFilter())) {
+                    if (proposedName.equals(e.getSimpleName().toString())) {
+                        counter++;
+                        cont = true;
+                        break;
+                    }
                 }
             }
             for (int i = 0; i < parameters.length; i++) {

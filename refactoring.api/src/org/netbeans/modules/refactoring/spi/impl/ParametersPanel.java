@@ -433,10 +433,14 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
                     try {
                         if (!previewAll && session != null) {
-                            UndoWatcher.watch(session, ParametersPanel.this);
-                            session.addProgressListener(ParametersPanel.this);
-                            session.doRefactoring(true);
-                            UndoWatcher.stopWatching(ParametersPanel.this);
+                            if (session.getRefactoringElements().isEmpty()) {
+                                JOptionPane.showMessageDialog(ParametersPanel.this, NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"), rui.getName(), JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                UndoWatcher.watch(session, ParametersPanel.this);
+                                session.addProgressListener(ParametersPanel.this);
+                                session.doRefactoring(true);
+                                UndoWatcher.stopWatching(ParametersPanel.this);
+                            }
                         }
                     } finally {
                         if (!previewAll) {
@@ -748,6 +752,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (progressPanel.isVisible()) {
+                    LOGGER.log(Level.INFO, event.getSource() + " called start multiple times");
+                    return;
+                }
                 progressPanel.remove(innerPanel);
                 progressBar = ProgressBar.create(progressHandle = ProgressHandleFactory.createHandle("")); //NOI18N
                 progressPanel.add(progressBar, BorderLayout.CENTER);

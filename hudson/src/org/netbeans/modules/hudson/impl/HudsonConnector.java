@@ -73,7 +73,7 @@ import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;

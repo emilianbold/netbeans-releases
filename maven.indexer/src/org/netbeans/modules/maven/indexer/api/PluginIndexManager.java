@@ -81,11 +81,10 @@ public class PluginIndexManager {
      */
     public static Set<String> getPluginGoalNames(Set<String> groups) throws Exception {
         Set<String> result = new TreeSet<String>();
-        RepositoryInfo[] infos = RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]);
         // XXX rather use ArtifactInfo.PLUGIN_GOALS
         for (String groupId : groups) {
-            for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", infos)) {
-                for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, infos)) {
+            for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", null)) {
+                for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
                     if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals("local")) {
                         continue;
                     }
@@ -133,7 +132,7 @@ public class PluginIndexManager {
      */
     public static Set<String> getPluginGoals(String groupId, String artifactId, String version) throws Exception {
         assert groupId != null && artifactId != null && version != null;
-        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]))) {
+        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
             if (!v.getVersion().equals(version)) {
                 continue;
             }
@@ -176,7 +175,7 @@ public class PluginIndexManager {
      */
     public static @CheckForNull Set<ParameterDetail> getPluginParameters(String groupId, String artifactId, String version, @NullAllowed String mojo) throws Exception {
         assert groupId != null && artifactId != null && version != null;
-        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]))) {
+        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
             if (!v.getVersion().equals(version)) {
                 continue;
             }
@@ -265,14 +264,13 @@ public class PluginIndexManager {
     public static Set<String> getPluginsForGoalPrefix(String prefix) throws Exception {
         assert prefix != null;
         Set<String> result = new TreeSet<String>();
-        RepositoryInfo[] infos = RepositoryQueries.getLoadedContexts().toArray(new RepositoryInfo[0]);
         // XXX MINDEXER-34 means that this will not work reliably for remote indices:
         QueryField qf = new QueryField();
         qf.setField(ArtifactInfo.PLUGIN_PREFIX);
         qf.setValue(prefix);
         qf.setOccur(QueryField.OCCUR_MUST);
         qf.setMatch(QueryField.MATCH_EXACT);
-        for (NBVersionInfo v : RepositoryQueries.find(Collections.singletonList(qf), infos)) {
+        for (NBVersionInfo v : RepositoryQueries.find(Collections.singletonList(qf), null)) {
             result.add(v.getGroupId() + '|' + v.getArtifactId() + '|' + v.getVersion());
         }
         // This is more complete but much too slow:
