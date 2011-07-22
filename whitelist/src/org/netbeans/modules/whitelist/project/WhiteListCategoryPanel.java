@@ -47,8 +47,6 @@
  */
 package org.netbeans.modules.whitelist.project;
 
-import com.sun.istack.internal.NotNull;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -59,9 +57,7 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JTable;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -143,7 +139,7 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
     public static final String PROP_WHITELIST_ENABLED = "whitelist-enabled";
     public static final String PROP_WHITELIST = "whitelist-";
     
-    public static boolean isWhiteListPanelEnabled(@NotNull Project p) {
+    public static boolean isWhiteListPanelEnabled(@NonNull Project p) {
         Preferences prefs = ProjectUtils.getPreferences(p, WhiteListQuery.class, true);
         return prefs.getBoolean(PROP_WHITELIST_ENABLED, false);
     }
