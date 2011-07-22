@@ -3999,6 +3999,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * version of the given string otherwise.
      */
     private static String encodeInvalidXMLChars(String xml) {
+        if (xml == null) {
+            return null;
+        }
         boolean containsInvalidXMLChar = false;
         StringBuilder sb = new StringBuilder();
         for (int i=0; i<xml.length(); i++) {

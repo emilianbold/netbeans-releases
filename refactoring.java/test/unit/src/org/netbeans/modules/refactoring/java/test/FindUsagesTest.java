@@ -61,6 +61,7 @@ import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 
@@ -224,6 +225,7 @@ public class FindUsagesTest extends NbTestCase {
                 Element field = klass.getEnclosedElements().get(4);
                 TreePathHandle element = TreePathHandle.create(field, controller);
                 wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+                wuq[0].getContext().add(RetoucheUtils.getClasspathInfoFor(element));
             }
         }, false).get();
         setScope(wuq, true, true, false, false, false, false);
@@ -259,7 +261,7 @@ public class FindUsagesTest extends NbTestCase {
     }
     
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().addTest(FindUsagesTest.class, "test200230")
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(FindUsagesTest.class)
                 .clusters(".*").enableModules(".*")
                 .gui(false));
     }

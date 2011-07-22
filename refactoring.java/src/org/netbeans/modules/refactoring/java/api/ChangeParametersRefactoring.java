@@ -45,6 +45,8 @@ package org.netbeans.modules.refactoring.java.api;
 
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
@@ -61,6 +63,7 @@ import org.openide.util.lookup.Lookups;
  * @author  Pavel Flaska
  * @author  Tomas Hurka
  * @author  Jan Becicka
+ * @author  Ralph Ruijs
  */
 public final class ChangeParametersRefactoring extends AbstractRefactoring {
     
@@ -70,6 +73,8 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     private ParameterInfo[] paramTable;
     // new modifier
     private Set<Modifier> modifiers;
+    private String methodName;
+    private String returnType;
     
     /**
      * Creates a new instance of change parameters refactoring.
@@ -97,6 +102,26 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
     }
     
     /**
+     * Get the new return type.
+     * 
+     * @return returnType, null if it will not change
+     * @since 1.25
+     */
+    public @CheckForNull String getReturnType() {
+        return returnType;
+    }
+
+    /**
+     * Get the new method name.
+     * 
+     * @return methodName, null if it will no change
+     * @since 1.25
+     */
+    public @CheckForNull String getMethodName() {
+        return methodName;
+    }
+
+    /**
      * Sets new parameters for a method
      * @param paramTable new parameters
      */
@@ -110,6 +135,26 @@ public final class ChangeParametersRefactoring extends AbstractRefactoring {
      */
     public void setModifiers(Set<Modifier> modifiers) {
         this.modifiers = modifiers;
+    }
+    
+    /**
+     * Sets the new method name.
+     * 
+     * @param methodName the new method name, null if it does not change
+     * @since 1.25
+     */
+    public void setMethodName(@NullAllowed String methodName) {
+        this.methodName = methodName;
+    }
+
+    /**
+     * Sets the new return type for the method.
+     * 
+     * @param returnType the return type to set, null if it does not change
+     * @since 1.25
+     */
+    public void setReturnType(@NullAllowed String returnType) {
+        this.returnType = returnType;
     }
     
     ////////////////////////////////////////////////////////////////////////////

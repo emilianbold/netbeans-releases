@@ -139,6 +139,8 @@ public class ChangeParametersUI implements RefactoringUI {
         refactoring.setParameterInfo(paramList);
         refactoring.setModifiers(modifier);
         refactoring.getContext().add(panel.getJavadoc());
+        refactoring.setMethodName(panel.getMethodName());
+        refactoring.setReturnType(panel.getReturnType());
         if (checkOnly) {
             problem = refactoring.fastCheckParameters();
         } else {
