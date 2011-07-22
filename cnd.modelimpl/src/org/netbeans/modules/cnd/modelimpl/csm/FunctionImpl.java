@@ -181,53 +181,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return functionImpl;
     }
 
-    public static<T> FunctionImpl<T> create(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, int startOffset, int endOffset) {
-        FunctionImpl<T> functionImpl = new FunctionImpl<T>(file, type, scope, name, parameterList, isStatic, isConst, register, startOffset, endOffset);
-        postObjectCreateRegistration(register, functionImpl);
-        return functionImpl;
-    }
-
-    private FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean global, int startOffset, int endOffset) {
-        super(file, startOffset, endOffset);
-        assert !CHECK_SCOPE || (scope != null);
-
-        this.name = QualifiedNameCache.getManager().getString(name);
-        rawName = null;
-        setStatic(isStatic);
-
-        // change scope to file for static methods, but only to prevent
-        // registration in global  namespace
-        if(scope instanceof CsmNamespace) {
-            if( !NamespaceImpl.isNamespaceScope(this) ) {
-                    scope = file;
-            }
-        }
-
-        _setScope(scope);
-        setFlags(FLAGS_CONST, isConst);
-        if (name.toString().startsWith(OPERATOR) &&
-                (name.length() > OPERATOR.length()) &&
-                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
-            setFlags(FLAGS_OPERATOR, true);
-        }
-
-        temporaryRepositoryRegistration(global, this);
-        // TODO
-        templateDescriptor = null;
-        // TODO
-        classTemplateSuffix = null;
-        returnType = type;
-
-        // set parameters, do it in constructor to have final fields
-        this.parameterList = parameterList;
-        if (this.parameterList.isEmpty()) {
-            // TODO
-            //setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
-        } else {
-            setFlags(FLAGS_VOID_PARMLIST, false);
-        }
-    }
-
     public void setScope(CsmScope scope) {
         unregisterInProject();
         _setScope(scope);
