@@ -97,7 +97,7 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
 
     private List<MessageImpl> performSearchForPattern(final RefactoringElementsBag refactoringElements) {
         ProgressHandleWrapper w = new ProgressHandleWrapper(this, 50, 50);
-        BatchResult candidates = BatchSearch.findOccurrences(refactoring.getPattern(), refactoring.getScope(), w);
+        BatchResult candidates = BatchSearch.findOccurrences(filterQueries(refactoring.getPattern(), true), refactoring.getScope(), w);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
 
         prepareElements(candidates, w, refactoringElements, refactoring.isVerify(), problems);
