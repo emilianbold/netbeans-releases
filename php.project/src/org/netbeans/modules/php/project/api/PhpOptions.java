@@ -133,6 +133,26 @@ public final class PhpOptions {
     }
 
     /**
+     * Get the maximum number of structures to be retrieved from PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_STRUCTURES}</code>.
+     * @return the maximum number of structures to be retrieved from PHP debugger.
+     * @since 2.33
+     */
+    public int getDebuggerMaxStructures() {
+        return getPhpOptions().getDebuggerMaxStructures();
+    }
+
+    /**
+     * Get the maximum number of children to be retrieved from PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_CHILDREN}</code>.
+     * @return the maximum number of children to be retrieved from PHP debugger.
+     * @since 2.33
+     */
+    public int getDebuggerMaxChildren() {
+        return getPhpOptions().getDebuggerMaxChildren();
+    }
+
+    /**
      * Check whether debugger stops at the first line of a PHP script. The default value is
      * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE}</code>.
      * @return <code>true</code> if the debugger stops at the first line of a PHP script, <code>false</code> otherwise.
