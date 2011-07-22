@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  * Action that inserts a new (default) column before or after the focused column.
  *
  * @author Jan Stola
+ * @author Petr Somol
  */
 public class InsertColumnAction extends AbstractGridAction {
     private String name;
@@ -78,6 +79,7 @@ public class InsertColumnAction extends AbstractGridAction {
     @Override
     public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
         GridInfoProvider gridInfo = gridManager.getGridInfo();
+        boolean gapSupport = gridInfo.hasGaps();
         int[] originalColumnBounds = gridInfo.getColumnBounds();
         int[] originalRowBounds = gridInfo.getRowBounds();
 
@@ -85,19 +87,33 @@ public class InsertColumnAction extends AbstractGridAction {
 
         int column = context.getFocusedColumn();
         if (insertAfter) {
-            column++;
+            column += (gapSupport ? 2 : 1);
         }
         gridManager.insertColumn(column);
 
-        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length, originalRowBounds.length-1);
+        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length - 1 + (gapSupport ? 2 : 1), originalRowBounds.length - 1);
         GridUtils.revalidateGrid(gridManager);
 
         int[] newColumnBounds = gridInfo.getColumnBounds();
         int[] newRowBounds = gridInfo.getRowBounds();
-        int[] oldColumnBounds = new int[originalColumnBounds.length+1];
-        System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column+1);
-        oldColumnBounds[column+1]=oldColumnBounds[column];
-        System.arraycopy(originalColumnBounds, column+1, oldColumnBounds, column+2, originalColumnBounds.length-column-1);
+        int[] oldColumnBounds = new int[originalColumnBounds.length + (gapSupport ? 2 : 1)];
+        if(gapSupport) {
+            if(originalColumnBounds.length == column) {
+                // inserting after rightmost column
+                System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column);
+                oldColumnBounds[column] = oldColumnBounds[column - 1];
+                oldColumnBounds[column + 1] = oldColumnBounds[column - 1];
+            } else {
+                System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column + 1);
+                oldColumnBounds[column + 1] = oldColumnBounds[column];
+                oldColumnBounds[column + 2] = oldColumnBounds[column];
+                System.arraycopy(originalColumnBounds, column + 1, oldColumnBounds, column + 3, originalColumnBounds.length - column - 1);
+            }
+        } else {
+            System.arraycopy(originalColumnBounds, 0, oldColumnBounds, 0, column + 1);
+            oldColumnBounds[column + 1] = oldColumnBounds[column];
+            System.arraycopy(originalColumnBounds, column + 1, oldColumnBounds, column + 2, originalColumnBounds.length - column - 1);
+        }
         return new GridBoundsChange(oldColumnBounds, originalRowBounds, newColumnBounds, newRowBounds);
     }
 

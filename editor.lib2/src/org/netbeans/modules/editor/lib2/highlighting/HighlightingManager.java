@@ -47,23 +47,24 @@ package org.netbeans.modules.editor.lib2.highlighting;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -77,46 +78,88 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
+ * Highlighting manager maintains all the highlighting layers instances.
+ * <br/>
+ * It divides them into two groups according to their z-order and fixedSize attributes.
+ * Top layers that have fixedSize set to true are one group. The rest is the other group.
+ * <br/>
+ * View hierarchy only rebuilds views if the second group of layers (bottom ones) changes.
+ * If the top group changes the view hierarchy only triggers repaint of affected part.
  *
- * @author Vita Stejskal
+ * @author Vita Stejskal, Miloslav Metelka
  */
 public final class HighlightingManager {
 
-    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.HighlightingManager.level=300
+    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.HighlightingManager.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightingManager.class.getName());
     
-    public static final boolean LINEWRAP_ENABLED;
-    static {
-        String value = System.getProperty("org.netbeans.editor.linewrap"); //NOI18N
-        LINEWRAP_ENABLED = (value != null)
-                ? !value.equalsIgnoreCase("false") //NOI18N
-                : true; // For 7.0 turned on by default
+    private final Highlighting highlighting;
+    
+    public static synchronized HighlightingManager getInstance(JTextComponent pane) {
+        HighlightingManager highlightingManager = (HighlightingManager) pane.getClientProperty(HighlightingManager.class);
+        if (highlightingManager == null) {
+            highlightingManager = new HighlightingManager(pane);
+            pane.putClientProperty(HighlightingManager.class, highlightingManager);
+        }
+        return highlightingManager;
+    }
+    
+    /**
+     * Get bottom highlighting layers (according to z-order) that are generally assumed to change the metrics
+     * and so the views must be rebuilt when these highlights get changed.
+     * @param pane non-null pane.
+     * @return non-null highlights container.
+     */
+    public HighlightsContainer getBottomHighlights() {
+        return highlighting.bottomHighlights();
+    }
+    
+    /**
+     * Get top highlighting layers (they are above the bottom layers according to z-order)
+     * that must not change the metrics and so the views do not need to be rebuilt
+     * when these highlights get changed (the affected area just gets repainted).
+     * @param pane non-null pane.
+     * @return non-null highlights container.
+     */
+    public HighlightsContainer getTopHighlights() {
+        return highlighting.topHighlights();
+    }
+    
+    /**
+     * Find highlighting layer that uses a given container.
+     *
+     * @param container non-null container.
+     * @return layer that uses the container or null if none does.
+     */
+    public HighlightsLayer findLayer(HighlightsContainer container) {
+        return highlighting.findLayer(container);
     }
 
-    public static synchronized HighlightingManager getInstance() {
-        if (instance == null) {
-            instance = new HighlightingManager();
-        }
-        return instance;
+    /**
+     * This is primarily for testing purposes - the resulting container is not cached.
+     * 
+     * @param filter valid filter or null.
+     * @return 
+     */
+    HighlightsContainer getHighlights(HighlightsLayerFilter filter) {
+        return highlighting.filteredHighlights(filter);
     }
     
-    public synchronized HighlightsContainer getHighlights(JTextComponent pane, HighlightsLayerFilter filter) {
-        Highlighting h = (Highlighting) pane.getClientProperty(Highlighting.class);
-        if (h == null) {
-            h = new Highlighting(pane);
-            pane.putClientProperty(Highlighting.class, h);
-        }
-        return h.getContainer(filter == null ? HighlightsLayerFilter.IDENTITY : filter);
+    public void addChangeListener(ChangeListener listener) {
+        highlighting.changeListeners.add(listener);
     }
     
+    public void removeChangeListener(ChangeListener listener) {
+        highlighting.changeListeners.remove(listener);
+    }
+
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
-    private static HighlightingManager instance;
-    
     /** Creates a new instance of HighlightingManager */
-    private HighlightingManager() {
+    private HighlightingManager(JTextComponent pane) {
+        highlighting = new Highlighting(this, pane);
     }
     
     private static final class Highlighting implements PropertyChangeListener {
@@ -145,43 +188,61 @@ public final class HighlightingManager {
         };
         private LookupListener weakSettingsTracker = null;
 
+        private final HighlightingManager manager; // For proper change firing
         private final JTextComponent pane;
         private HighlightsLayerFilter paneFilter;
         private Reference<Document> lastKnownDocumentRef;
         private MimePath [] lastKnownMimePaths = null;
         private boolean inRebuildAllLayers = false;
         
-        // all layers (sorted, but without filtering) and their HighlightsContainers
-        private List<? extends HighlightsLayer> allLayers = null;
-        private List<HighlightsContainer> allLayerContainers = null;
+        private List<? extends HighlightsLayer> sortedLayers;
+        private DirectMergeContainer bottomHighlights;
+        private DirectMergeContainer topHighlights;
+        List<ChangeListener> changeListeners = new CopyOnWriteArrayList<ChangeListener>();
         
-        // CompoundHighlightsContainers with containers from filtered layers
-        private final WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>> containers =
-            new WeakHashMap<HighlightsLayerFilter, WeakReference<MultiLayerContainer>>();
-
+        
         @SuppressWarnings("LeakingThisInConstructor")
-        public Highlighting(JTextComponent pane) {
+        public Highlighting(HighlightingManager manager, JTextComponent pane) {
+            this.manager = manager;
             this.pane = pane;
             this.paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
             this.pane.addPropertyChangeListener(WeakListeners.propertyChange(this, pane));
-            
             rebuildAll();
         }
-
-        public synchronized HighlightsContainer getContainer(HighlightsLayerFilter filter) {
-            WeakReference<MultiLayerContainer> ref = containers.get(filter);
-            MultiLayerContainer container = ref == null ? null : ref.get();
-
-            if (container == null) {
-                container = LINEWRAP_ENABLED ? new ProxyHighlightsContainer() : new CompoundHighlightsContainer();
-                rebuildContainer(pane.getDocument(), filter, container);
-                
-                containers.put(filter, new WeakReference<MultiLayerContainer>(container));
-            }
-
-            return container;
+        
+        synchronized HighlightsContainer bottomHighlights() {
+            return bottomHighlights;
         }
         
+        synchronized HighlightsContainer topHighlights() {
+            return topHighlights;
+        }
+        
+        synchronized HighlightsContainer filteredHighlights(HighlightsLayerFilter filter) {
+            // Get the containers
+            List<? extends HighlightsLayer> layers = (filter == null)
+                    ? sortedLayers
+                    : filter.filterLayers(sortedLayers);
+            ArrayList<HighlightsContainer> containers = new ArrayList<HighlightsContainer>(layers.size());
+            for (HighlightsLayer layer : layers) {
+                HighlightsLayerAccessor layerAccessor =
+                        HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+
+                containers.add(layerAccessor.getContainer());
+            }
+            return new DirectMergeContainer(containers.toArray(new HighlightsContainer[containers.size()]));
+                
+        }
+        
+        synchronized HighlightsLayer findLayer(HighlightsContainer container) {
+            for (HighlightsLayer layer : sortedLayers) {
+                if (HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer).getContainer() == container) {
+                    return layer;
+                }
+            }
+            return null;
+        }
+
         // ----------------------------------------------------------------------
         //  PropertyChangeListener implementation
         // ----------------------------------------------------------------------
@@ -205,10 +266,7 @@ public final class HighlightingManager {
                     doc.render(new Runnable() {
                         @Override
                         public void run() {
-                            synchronized (this) {
-                                paneFilter = new RegExpFilter(pane.getClientProperty(PROP_HL_INCLUDES), pane.getClientProperty(PROP_HL_EXCLUDES));
-                                rebuildAllContainers(pane.getDocument());
-                            }
+                            rebuildAllLayers();
                         }
                     });
                 }
@@ -247,7 +305,7 @@ public final class HighlightingManager {
                     LOG.fine("rebuildAll: lastKnownDocument = " + simpleToString(lastKnownDocument) + //NOI18N
                             ", document = " + simpleToString(pane.getDocument()) + //NOI18N
                             ", lastKnownMimePaths = " + mimePathsToString(lastKnownMimePaths) + //NOI18N
-                            ", mimePaths = " + mimePathsToString(mimePaths)); //NOI18N
+                            ", mimePaths = " + mimePathsToString(mimePaths) + "\n"); //NOI18N
                 }
                 
                 // Unregister listeners
@@ -293,127 +351,96 @@ public final class HighlightingManager {
             }
         }
         
-//        private synchronized void resetAllContainers() {
-//            for(HighlightsLayerFilter filter : containers.keySet()) {
-//                WeakReference<CompoundHighlightsContainer> ref = containers.get(filter);
-//                CompoundHighlightsContainer container = ref == null ? null : ref.get();
-//
-//                if (container != null) {
-//                    container.resetCache();
-//                }
-//            }
-//        }
-
+        private void fireChangeListeners() {
+            ChangeEvent evt = new ChangeEvent(manager);
+            for (ChangeListener l : changeListeners) {
+                l.stateChanged(evt);
+            }
+        }
+        
         private synchronized void rebuildAllLayers() {
             if (inRebuildAllLayers) {
                 return;
             }
-            
             inRebuildAllLayers = true;
             try {
                 Document doc = pane.getDocument();
-                if (factories != null) {
-                    Collection<? extends HighlightsLayerFactory> all = factories.allInstances();
-                    HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
+                Collection<? extends HighlightsLayerFactory> all = factories.allInstances();
+                HashMap<String, HighlightsLayer> layers = new HashMap<String, HighlightsLayer>();
 
-                    HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
+                HighlightsLayerFactory.Context context = HighlightingSpiPackageAccessor.get().createFactoryContext(doc, pane);
 
-                    for(HighlightsLayerFactory factory : all) {
-                        HighlightsLayer [] factoryLayers = factory.createLayers(context);
-                        if (factoryLayers == null) {
-                            continue;
-                        }
-
-                        for(HighlightsLayer layer : factoryLayers) {
-                            HighlightsLayerAccessor layerAccessor = 
-                                HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
-
-                            String layerTypeId = layerAccessor.getLayerTypeId();
-                            if (!layers.containsKey(layerTypeId)) {
-                                layers.put(layerTypeId, layer);
-                            }
-                        }
+                for(HighlightsLayerFactory factory : all) {
+                    HighlightsLayer [] factoryLayers = factory.createLayers(context);
+                    if (factoryLayers == null) {
+                        continue;
                     }
 
-                    // Sort the layers by their z-order
-                    List<? extends HighlightsLayer> sortedLayers;
-                    try {
-                        sortedLayers = HighlightingSpiPackageAccessor.get().sort(layers.values());
-                    } catch (TopologicalSortException tse) {
-                        ErrorManager.getDefault().notify(tse);
-                        @SuppressWarnings("unchecked") //NOI18N
-                        List<? extends HighlightsLayer> sl
-                                = (List<? extends HighlightsLayer>)tse.partialSort();
-                        sortedLayers = sl;
-                    }
-
-                    // Get the containers
-                    ArrayList<HighlightsContainer> layerContainers = new ArrayList<HighlightsContainer>();
-                    for(HighlightsLayer layer : sortedLayers) {
+                    for(HighlightsLayer layer : factoryLayers) {
                         HighlightsLayerAccessor layerAccessor = 
                             HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
 
-                        layerContainers.add(layerAccessor.getContainer());
+                        String layerTypeId = layerAccessor.getLayerTypeId();
+                        if (!layers.containsKey(layerTypeId)) {
+                            layers.put(layerTypeId, layer);
+                        }
                     }
-
-                    allLayers = sortedLayers;
-                    allLayerContainers = layerContainers;
-                } else {
-                    allLayers = null;
-                    allLayerContainers = null;
                 }
 
-                rebuildAllContainers(doc);
+                // Sort the layers by their z-order
+                try {
+                    sortedLayers = HighlightingSpiPackageAccessor.get().sort(layers.values());
+                } catch (TopologicalSortException tse) {
+                    ErrorManager.getDefault().notify(tse);
+                    @SuppressWarnings("unchecked") //NOI18N
+                    List<? extends HighlightsLayer> sl
+                            = (List<? extends HighlightsLayer>)tse.partialSort();
+                    sortedLayers = sl;
+                }
+                // Filter layers by pane's filter - retains order
+                sortedLayers = paneFilter.filterLayers(sortedLayers);
+
+                int topStartIndex = 0;
+                for (int i = 0; i < sortedLayers.size(); i++) {
+                    HighlightsLayer layer = sortedLayers.get(i);
+                    HighlightsLayerAccessor layerAccessor =
+                            HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+                    if (!layerAccessor.isFixedSize()) {
+                        topStartIndex = i + 1; // Top layers can only be above this one
+                    }
+                }
+
+                // Get the containers
+                ArrayList<HighlightsContainer> layerContainers = new ArrayList<HighlightsContainer>();
+                for(HighlightsLayer layer : sortedLayers) {
+                    HighlightsLayerAccessor layerAccessor = 
+                        HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
+
+                    layerContainers.add(layerAccessor.getContainer());
+                }
+                List<? extends HighlightsContainer> bottomContainers = layerContainers.subList(0, topStartIndex);
+                List<? extends HighlightsContainer> topContainers = layerContainers.subList(topStartIndex, sortedLayers.size());
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    StringBuilder sb = new StringBuilder(300);
+                    dumpInfo(sb, doc, lastKnownMimePaths);
+                    dumpLayers(sb, "Bottom", sortedLayers.subList(0, topStartIndex));
+                    dumpLayers(sb, "Top", sortedLayers.subList(topStartIndex, sortedLayers.size()));
+                    LOG.finer(sb.toString());
+                }
+                
+                bottomHighlights = new DirectMergeContainer(bottomContainers.toArray(
+                        new HighlightsContainer[bottomContainers.size()]));
+                topHighlights = new DirectMergeContainer(topContainers.toArray(
+                        new HighlightsContainer[topContainers.size()]));
             } finally {
                 inRebuildAllLayers = false;
             }
+            fireChangeListeners();
         }
         
-        private synchronized void rebuildAllContainers(Document document) {
-            if (LOG.isLoggable(Level.FINE)) {
-                Document lastKnownDocument = lastKnownDocumentRef == null ? null : lastKnownDocumentRef.get();
-                LOG.fine("rebuildAllContainers: lastKnownDocument = " + simpleToString(lastKnownDocument) + //NOI18N
-                        ", lastKnownMimePaths = " + mimePathsToString(lastKnownMimePaths)); //NOI18N
-            }
-
-            for(HighlightsLayerFilter filter : containers.keySet()) {
-                WeakReference<MultiLayerContainer> ref = containers.get(filter);
-                MultiLayerContainer container = ref == null ? null : ref.get();
-
-                if (container != null) {
-                    rebuildContainer(document, filter, container);
-                }
-            }
-        }
-
-        private synchronized void rebuildContainer(Document doc, HighlightsLayerFilter filter, MultiLayerContainer container) {
-            if (allLayers != null) {
-                List<? extends HighlightsLayer> filteredLayers = paneFilter.filterLayers(Collections.unmodifiableList(allLayers));
-                filteredLayers = filter.filterLayers(Collections.unmodifiableList(filteredLayers));
-
-                // Get the containers
-                ArrayList<HighlightsContainer> hcs = new ArrayList<HighlightsContainer>();
-                for(HighlightsLayer layer : filteredLayers) {
-                    int idx = allLayers.indexOf(layer);
-                    HighlightsContainer c = allLayerContainers.get(idx);
-                    hcs.add(c);
-                }
-                
-                if (LOG.isLoggable(Level.FINEST)) {
-                    logLayers(pane.getDocument(), lastKnownMimePaths, filteredLayers, Level.FINEST);
-                }
-                
-                container.setLayers(doc, hcs.toArray(new HighlightsContainer[hcs.size()]));
-            } else {
-                container.setLayers(null, null);
-            }
-        }
-
-        private static void logLayers(Document doc, MimePath [] mimePaths, List<? extends HighlightsLayer> layers, Level logLevel) {
-            StringBuilder sb = new StringBuilder();
-            
-            sb.append("HighlighsLayers {\n"); //NOI18N
-            
+        private static void dumpInfo(StringBuilder sb, Document doc, MimePath [] mimePaths) {
+            sb.append(" HighlighsLayers:\n"); //NOI18N
             sb.append(" * document : "); //NOI18N
             sb.append(doc.getClass().getName()).append('@').append(Integer.toHexString(System.identityHashCode(doc)));
             Object streamDescriptor = doc.getProperty(Document.StreamDescriptionProperty);
@@ -426,27 +453,29 @@ public final class HighlightingManager {
                 sb.append(mimePath.getPath());
                 sb.append("\n"); //NOI18N
             }
+        }
             
-            sb.append(" * layers : \n"); //NOI18N
-            for(HighlightsLayer layer : layers) {
+        private static void dumpLayers(StringBuilder sb, String prefix, List<? extends HighlightsLayer> layers) {
+            sb.append(prefix).append(" layers:\n"); //NOI18N
+            int digitCount = ArrayUtilities.digitCount(layers.size());
+            for (int i = 0; i < layers.size(); i++) {
+                HighlightsLayer layer = layers.get(i);
                 HighlightsLayerAccessor layerAccessor = 
                     HighlightingSpiPackageAccessor.get().getHighlightsLayerAccessor(layer);
 
-                sb.append("    "); //NOI18N
+                sb.append("  ");
+                ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
                 sb.append(layerAccessor.getLayerTypeId());
                 sb.append('['); //NOI18N
                 sb.append(layerAccessor.getZOrder().toString()); //NOI18N
+                sb.append(layerAccessor.isFixedSize() ? ",Fixed" : ",NonFixed");
                 sb.append(']'); //NOI18N
                 sb.append('@'); //NOI18N
                 sb.append(Integer.toHexString(System.identityHashCode(layer)));
                 sb.append("\n"); //NOI18N
             }
-            
-            sb.append("}\n"); //NOI18N
-            
-            LOG.log(logLevel, sb.toString());
         }
-        
+
     } // End of Highlighting class
     
     private static final class RegExpFilter implements HighlightsLayerFilter {

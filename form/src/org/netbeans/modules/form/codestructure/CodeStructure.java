@@ -477,6 +477,10 @@ public class CodeStructure {
         return namesToVariables.get(name) != null || javaSource.containsField(name, true);
     }
 
+    public String findFreeVariableName(String baseName) {
+        return getFreeVariableName(baseName, 0);
+    }
+
     public CodeVariable createVariableForExpression(CodeExpression expression,
                                                     int type,
                                                     String name) {
@@ -560,15 +564,27 @@ public class CodeStructure {
                            + typeName.substring(i+2);
             }
 
-	    javaSource.refresh();
-            do { // find a free name
-                name = baseName + (++n);
-            }
-	    while ( namesToVariables.get(name) != null || javaSource.containsField(name, false) );
+            name = getFreeVariableName(baseName, ++n);
         }	
 	return name;
     }        
     
+    private String getFreeVariableName(String baseName, int index) {
+        assert index >= 0;
+        boolean refresh = true;
+        do {
+            String name = index > 0 ? (baseName + index) : baseName;
+            if (namesToVariables.get(name) == null) {
+                if (!javaSource.containsField(name, refresh)) {
+                    return name;
+                } else {
+                    refresh = false;
+                }
+            }
+            index++;
+        } while (true);
+    }
+
     public String getExternalVariableName(Class type, String suggestedName, boolean register) {
 	String name = getFreeVariableName(suggestedName, type);
         if (register) {

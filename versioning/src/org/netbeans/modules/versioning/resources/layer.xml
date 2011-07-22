@@ -113,5 +113,9 @@ made subject to such option by the copyright holder.
         </folder>
         
     </folder>
-    
+    <folder name="VersioningOptionsDialog">
+        <file name="General.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.options.GeneralAdvancedOption"/>
+        </file>
+    </folder>   
 </filesystem>

@@ -558,8 +558,13 @@ public class AbstractLookup extends Lookup implements Serializable {
                 } else {
                     ll.resultChanged(ev);
                 }
+            } catch (CycleError err) {
+                err.add(evAndListeners);
+                throw err;
             } catch (StackOverflowError err) {
-                throw new CycleError(evAndListeners); // NOI18N
+                CycleError cycle = new CycleError(err.getMessage());
+                cycle.add(evAndListeners);
+                throw cycle;
             } catch (RuntimeException e) {
                 // Such as e.g. occurred in #32040. Do not halt other things.
                 e.printStackTrace();
@@ -568,24 +573,33 @@ public class AbstractLookup extends Lookup implements Serializable {
     }
 
     private static class CycleError extends StackOverflowError {
-        private final Collection<Object> print;
-        public CycleError(Collection<Object> evAndListeners) {
-            this.print = evAndListeners;
+        private final Set<Collection<Object>> print = new HashSet<Collection<Object>>();
+
+        public CycleError(String s) {
+            super(s);
+        }
+        
+        public void add(Collection<Object> evAndListeners) {
+            this.print.add(evAndListeners);
         }
 
         @Override
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
-            sb.append("StackOverflowError, here are the listeners:\n"); // NOI18N
-            if (print != null) {
-                for (Object o : print) {
-                    sb.append('\n').append(o);
-                    if (sb.length() > 10000) {
-                        break;
+            sb.append("StackOverflowError. There is ").append(print.size()).append(" listeners:"); // NOI18N
+            int round = 0;
+            for (Collection<Object> list : print) {
+                sb.append("\nRound ").append(++round).append("\n"); // NOI18N
+                if (list != null) {
+                    for (Object o : list) {
+                        sb.append("\n  ").append(o); // NOI18N
+                        if (sb.length() > 10000) {
+                            break;
+                        }
                     }
+                } else {
+                    sb.append("listeners are null"); // NOI18N
                 }
-            } else {
-                sb.append("listeners are null"); // NOI18N
             }
             return sb.toString();
         }

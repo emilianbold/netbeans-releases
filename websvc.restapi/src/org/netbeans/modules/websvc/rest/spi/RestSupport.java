@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
@@ -568,107 +569,12 @@ public abstract class RestSupport {
         }
     }
     
-    /**
-     *  Add SWDP library for given source file on specified class path types.
-     * 
-     *  @param classPathTypes types of class path to add ("javac.compile",...)
-     *  @param addJersey add REST Jersey Library or not.
-     *  @param jaxRsClassName jsr311 class name that should be checked for presence on classpath, e.g. "javax/ws/rs/ApplicationPath.class".
-     */
-    protected void addSwdpLibrary(String[] classPathTypes, boolean addJersey, String jaxRsClassName) throws IOException {
-
-        FileObject srcRoot = findSourceRoot();
-        if (srcRoot != null) {
-            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
-            if (cp.findResource(jaxRsClassName) == null) {
-                Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-                if (restapiLibrary == null) {
-                    return;
-                }
-                addSwdpLibrary(classPathTypes, restapiLibrary);
-            }
-
-
-            if (addJersey) {
-                Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-                if (swdpLibrary == null) {
-                    return;
-                }
-                addSwdpLibrary(classPathTypes, swdpLibrary);
-            }
-        }
-        
-    }
-
-    /**
-     *  Add SWDP library for given source file on specified class path types.
-     *
-     *  @param source source file object for which the libraries is added.
-     *  @param classPathTypes types of class path to add ("javac.compile",...)
-     */
-    protected void addSwdpLibrary(String[] classPathTypes, Library lib) throws IOException {
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs == null || sgs.length < 1) {
-            throw new IOException("Project has no Java sources"); //NOI18N
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        for (String type : classPathTypes) {
-            try {
-                ProjectClassPathModifier.addLibraries(new Library[] {lib}, sourceRoot, type);
-            } catch(UnsupportedOperationException ex) {
-                Logger.getLogger(getClass().getName()).info(type+" not supported.");
-            }
-        }
-    }
-    
-    protected void addSwdpLibrary(String[] classPathTypes, URL[] urls) throws IOException {
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs == null || sgs.length < 1) {
-            throw new IOException("Project has no Java sources"); //NOI18N
-        }
-        ClassPath classPath = getCompileClassPath(sgs);
-        URL[] roots = urls;
-        if ( classPath != null ){
-            List<URL> toAdd = new ArrayList<URL>(urls.length);
-            for (URL url : urls) {
-                if ( !contains(classPath, url)){
-                    toAdd.add( url );
-                }
-            }
-            roots = toAdd.toArray( new URL[toAdd.size()] );
-        }
-        
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        for (String type : classPathTypes) {
-            try {
-                ProjectClassPathModifier.addRoots(roots, sourceRoot, type);
-            } catch(UnsupportedOperationException ex) {
-                Logger.getLogger(getClass().getName()).info(type+" not supported.");
-            }
-        }
-    }
-    
     public void removeSwdpLibrary(String[] classPathTypes) throws IOException {
-        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (swdpLibrary == null) {
-            return;
+        JaxRsStackSupport support = JaxRsStackSupport.getDefault();
+        if ( support != null ){
+            support.removeJaxRsLibraries( project );
         }
-
-         
-        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-        if (restapiLibrary == null) {
-            
-        }
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        for (String type : classPathTypes) {
-            try {
-                ProjectClassPathModifier.removeLibraries(new Library[] {restapiLibrary, swdpLibrary }, sourceRoot, type);
-            } catch(UnsupportedOperationException ex) {
-                Logger.getLogger(getClass().getName()).info(type+" not supported.");
-            }
-        }
+        JaxRsStackSupport.getDefault().removeJaxRsLibraries( project );
     }
     
     public Project getProject() {
@@ -687,7 +593,8 @@ public abstract class RestSupport {
      */
     private static boolean needsSwdpLibrary(Project restEnableProject) {
         // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(restEnableProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] sgs = ProjectUtils.getSources(restEnableProject).
+                getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs.length < 1) {
             return false;
         }

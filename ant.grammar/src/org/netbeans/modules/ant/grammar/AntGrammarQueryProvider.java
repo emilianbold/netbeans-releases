@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -61,14 +62,16 @@ import org.w3c.dom.Element;
 public final class AntGrammarQueryProvider extends GrammarQueryManager {
     
     public Enumeration enabled(GrammarEnvironment ctx) {
+        FileObject f = ctx.getFileObject();
+        if (f != null && !f.getMIMEType().equals("text/x-ant+xml")) {
+            return null;
+        }
         Enumeration en = ctx.getDocumentChildren();
         while (en.hasMoreElements()) {
             Node next = (Node) en.nextElement();
             if (next.getNodeType() == next.ELEMENT_NODE) {
                 Element root = (Element) next;                
-                // XXX should also check for any root <project> in NS "antlib:org.apache.tools.ant"
-                // (but no NS support in HintContext impl anyway: #38340)
-                if ("project".equals(root.getNodeName()) && (root.getAttributeNode("default") != null || root.getAttributeNode("basedir") != null)) { // NOI18N
+                if ("project".equals(root.getNodeName())) { // NOI18N
                     return Enumerations.singleton (next);
                 }
             }

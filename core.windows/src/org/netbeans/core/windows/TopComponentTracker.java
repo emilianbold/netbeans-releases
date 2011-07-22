@@ -59,7 +59,7 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht
  * @since 2.33
  */
-class TopComponentTracker {
+public final class TopComponentTracker {
     
     private final Set<String> viewIds = new HashSet<String>(30);
     private final Set<String> editorIds = new HashSet<String>(30);
@@ -73,7 +73,7 @@ class TopComponentTracker {
     /**
      * @return The one and only instance.
      */
-    synchronized static TopComponentTracker getDefault() {
+    public synchronized static TopComponentTracker getDefault() {
         if( null == theInstance ) {
             theInstance = new TopComponentTracker();
         }

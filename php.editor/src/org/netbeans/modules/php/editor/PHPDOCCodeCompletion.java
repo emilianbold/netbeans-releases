@@ -101,7 +101,7 @@ public class PHPDOCCodeCompletion {
         File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
         if (file != null) {
             try {
-                URL urll = file.toURL();
+                URL urll = file.toURI().toURL();
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {
@@ -201,7 +201,7 @@ public class PHPDOCCodeCompletion {
             File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
             if (file != null) {
                 try {
-                    URL urll = file.toURL();
+                    URL urll = file.toURI().toURL();
                     urll = FileUtil.getArchiveRoot(urll);
                     docURLBase = urll.toString();
                 } catch (java.net.MalformedURLException e) {

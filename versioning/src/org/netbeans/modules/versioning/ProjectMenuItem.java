@@ -49,7 +49,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.awt.Mnemonics;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -149,15 +148,32 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return owners;
     }
     
-    private JComponent [] createVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
+    private JComponent [] createVersioningSystemItems (VersioningSystem owner, Node[] nodes, boolean displayConnectAction) {
         VCSContext ctx = VCSContext.forNodes(nodes);
         Action [] actions = null;
-        if(owner instanceof DelegatingVCS) {
-            actions = ((DelegatingVCS) owner).getInitActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
-        } else {
-            VCSAnnotator an = owner.getVCSAnnotator();
-            if (an == null) return null; 
-            actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+        if (displayConnectAction && ctx.getRootFiles().size() == 1) {
+            // we have only one root. If it's disconnected, display only the Connect action instead of other actions (import, init etc. do not make sense)
+            File root = owner.getTopmostManagedAncestor(ctx.getRootFiles().iterator().next());
+            if (root != null) {
+                VersioningSystem vs = owner instanceof DelegatingVCS ? ((DelegatingVCS) owner).getDelegate() : owner;
+                if (VersioningConfig.getDefault().isDisconnected(vs, root)) {
+                    // repository is indeed disconnected, display only Connect action
+                    String displayName = Utils.getMenuLabel((owner instanceof DelegatingVCS ? ((DelegatingVCS) owner).getDelegate() : owner));
+                    actions = new Action[] { new VersioningMainMenu.ConnectAction(vs, root, NbBundle.getMessage(ProjectMenuItem.class, "CTL_ConnectAction.name.vcs", displayName)) }; //NOI18N
+                }
+            }
+        }
+        if (actions == null) {
+            // repository is connected or the context not yet versioned
+            if (owner instanceof DelegatingVCS) {
+                actions = ((DelegatingVCS) owner).getInitActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+            } else {
+                if (actions == null) {
+                    VCSAnnotator an = owner.getVCSAnnotator();
+                    if (an == null) return null; 
+                    actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
+                }
+            }
         }
         JComponent [] items = new JComponent[actions.length];
         int i = 0;
@@ -251,21 +267,21 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                         if (vs.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null) {
                             continue;
                         }
-                        addVersioningSystemItems(vs, nodes);
+                        addVersioningSystemItems(vs, nodes, true);
                     }
                     addSeparator();
                     add(createmenuItem(SystemAction.get(PatchAction.class)));
                 } else {
                     // specific versioning system menu
-                    addVersioningSystemItems(owner, nodes);
+                    addVersioningSystemItems(owner, nodes, false);
                 }
                 initialized = true;
             }
             return super.getPopupMenu();
         }
 
-        private void addVersioningSystemItems(VersioningSystem owner, Node[] nodes) {
-            JComponent[] items = createVersioningSystemItems(owner, nodes);
+        private void addVersioningSystemItems (VersioningSystem owner, Node[] nodes, boolean displayConnectAction) {
+            JComponent[] items = createVersioningSystemItems(owner, nodes, displayConnectAction);
             if (items != null) {
                 for (JComponent item : items) {
                     add(item);

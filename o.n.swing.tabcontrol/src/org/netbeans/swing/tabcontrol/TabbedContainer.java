@@ -218,6 +218,20 @@ public class TabbedContainer extends JComponent implements Accessible {
     public static final String COMMAND_DISABLE_AUTO_HIDE = "disableAutoHide"; //NOI18N
     
     public static final String COMMAND_TOGGLE_TRANSPARENCY = "toggleTransparency"; //NOI18N
+    /**
+     * @since 1.27
+     */
+    public static final String COMMAND_MINIMIZE_GROUP = "minimizeGroup"; //NOI18N
+    
+    /**
+     * @since 1.27
+     */
+    public static final String COMMAND_RESTORE_GROUP = "restoreGroup"; //NOI18N
+    
+    /**
+     * @since 1.27
+     */
+    public static final String COMMAND_CLOSE_GROUP = "closeGroup"; //NOI18N
     
     //XXX support supressing close buttons
     

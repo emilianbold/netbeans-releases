@@ -86,6 +86,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 
 /** Special subclass of TopComponent which shows and handles set of
@@ -96,10 +97,18 @@ import org.openide.windows.TopComponent;
  * @author Dafe Simonek, Milos Kleint
  */
 public final class MultiViewPeer  {
-
     static final String MULTIVIEW_ID = "MultiView-"; //NOI18N
 
     private static final String TOOLBAR_VISIBLE_PROP = /* org.netbeans.api.editor.settings.SimpleValueNames.TOOLBAR_VISIBLE_PROP */ "toolbarVisible"; // NOI18N
+    private static final Preferences editorSettingsPreferences; 
+    static {
+        Preferences p = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        String n;
+        if (p == null && (n = System.getProperty("test.multiview.toolbar.settings")) != null) { // NOI18N
+            p = NbPreferences.root().node(n);
+        }
+        editorSettingsPreferences = p;
+    }
 
     private Lookup.Provider context;
     private String mimeType;
@@ -113,18 +122,7 @@ public final class MultiViewPeer  {
     private ActionRequestObserverFactory factory;
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
-    private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListener() {
-        public @Override void preferenceChange(PreferenceChangeEvent evt) {
-            if (TOOLBAR_VISIBLE_PROP.equals(evt.getKey())) {
-                EventQueue.invokeLater(new Runnable() {
-                    public @Override void run() {
-                        tabs.setToolbarBarVisible(isToolbarVisible());
-                    }
-                });
-            }
-        }
-    };
-    private final Preferences editorSettingsPreferences = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+    private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListenerImpl();
     private DelegateUndoRedo delegateUndoRedo;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
@@ -414,25 +412,27 @@ public final class MultiViewPeer  {
         // no need to serialize the tc when the element that want to be serialized, was not 
         // even opened?!? but maybe handle this during the serialization proceess, avoid creating
         // the element when serializing.
-        MultiViewDescription[] descs = model.getDescriptions();
         int type = TopComponent.PERSISTENCE_NEVER;
-        for (int i = 0; i < descs.length; i++) {
-            if (context == null && !(descs[i] instanceof Serializable)) {
-                Logger.getLogger(MultiViewTopComponent.class.getName()).warning(
-                        "The MultiviewDescription instance " + descs[i].getClass() + " is not serializable. Cannot persist TopComponent.");
-                type = TopComponent.PERSISTENCE_NEVER;
-                break;
+        if( null != model ) {
+            MultiViewDescription[] descs = model.getDescriptions();
+            for (int i = 0; i < descs.length; i++) {
+                if (context == null && !(descs[i] instanceof Serializable)) {
+                    Logger.getLogger(MultiViewTopComponent.class.getName()).warning(
+                            "The MultiviewDescription instance " + descs[i].getClass() + " is not serializable. Cannot persist TopComponent.");
+                    type = TopComponent.PERSISTENCE_NEVER;
+                    break;
+                }
+                if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ALWAYS) {
+                    type = descs[i].getPersistenceType();
+                    // cannot ge any better than that.
+                }
+                if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED &&
+                     type != TopComponent.PERSISTENCE_ALWAYS) {
+                    type = descs[i].getPersistenceType();
+                    // go on searching..
+                }
+
             }
-            if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ALWAYS) {
-                type = descs[i].getPersistenceType();
-                // cannot ge any better than that.
-            }
-            if (descs[i].getPersistenceType() == TopComponent.PERSISTENCE_ONLY_OPENED &&
-                 type != TopComponent.PERSISTENCE_ALWAYS) {
-                type = descs[i].getPersistenceType();
-                // go on searching..
-            }
-        
         }
         return type;
     }  
@@ -671,24 +671,7 @@ public final class MultiViewPeer  {
     
     
     private boolean isToolbarVisible() {
-        //TODO need some way to restrict the validity of this swicth only to multiviews that contain
-        // sources in some form..
-        // Only permit hiding of the editor toolbar in case there's just the editor component
-        // Otherwise it may happen that the toolbar would not be visible and could not be used
-        // for e.g. Design <-> Source switching
-        JEditorPane pane = getEditorPane();
-        if (pane != null && model.getCreatedElements().size() == 1) {
-              Object obj = pane.getActionMap().get("toggle-toolbar");
-              if (obj == null) {
-                  return true;
-              }
-        } else {
-            return true;
-        }
-        if (editorSettingsPreferences == null) {
-            return true;
-        }
-        return editorSettingsPreferences.getBoolean(TOOLBAR_VISIBLE_PROP, true);
+        return editorSettingsPreferences == null || editorSettingsPreferences.getBoolean(TOOLBAR_VISIBLE_PROP, true);
     }
 
     
@@ -828,6 +811,21 @@ public final class MultiViewPeer  {
             fireElementChange();
         }
         
+    }
+
+    private class PreferenceChangeListenerImpl 
+    implements PreferenceChangeListener, Runnable {
+        public PreferenceChangeListenerImpl() {
+        }
+
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
+            if (TOOLBAR_VISIBLE_PROP.equals(evt.getKey())) {
+                EventQueue.invokeLater(this);
+            }
+        }
+        public @Override void run() {
+            tabs.setToolbarBarVisible(isToolbarVisible());
+        }
     }
     
 }

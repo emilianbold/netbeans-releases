@@ -39,98 +39,40 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.indexer.api;
 
-import org.codehaus.plexus.util.Base64;
-import org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.StringUtils;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.store.FSDirectory;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.index.ArtifactInfo;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /**
  * Provides information about available plugins, including their goals and parameters.
- * @author mkleint
  */
 public class PluginIndexManager {
 
-    private static final String ZIP_LOCATION = "org/netbeans/modules/maven/indexer/pluginz.zip"; //NOI18N
-
-    private static final String INDEX_PATH = "maven-plugins-index"; //NOI18N
-    private static IndexReader indexReader;
-    
-    /**
-     * groupId + "|" + artifactId + "|" + version;
-     */
-    private static String FIELD_ID = "id";//NOI18N
-    /**
-     * 2.0.x or similar name of maven core. a document has either this or id field.
-     */
-    private static String FIELD_MVN_VERSION = "mvn";//NOI18N
-    /**
-     * space separated list of goal names
-     */
-    private static String FIELD_GOALS = "gls";//NOI18N
-    /**
-     * goal prefix
-     */
-    private static String FIELD_PREFIX = "prfx";//NOI18N
-    
-    /**
-     * | is the separator
-     * [0] - name
-     * [1] - editable
-     * [2] - required
-     * [3] - expression or "null"
-     * [4] - default value or "null"
-     */
-    private static String PREFIX_FIELD_GOAL = "mj_";//NOI18N
-    /**
-     * space separated list of lifecycles/packagings
-     */
-    private static String FIELD_CYCLES = "ccls";//NOI18N
-    private static String PREFIX_FIELD_CYCLE = "ccl_";//NOI18N
-
-
-    final static int BUFFER = 2048;
-
-    private static synchronized IndexSearcher getIndexSearcher() throws Exception {
-        if (indexReader == null) {
-            FSDirectory dir = FSDirectory.open(getDefaultIndexLocation());
-            indexReader = IndexReader.open(dir);
-        }
-        //TODO shall the searcher be stored as field??
-        return new IndexSearcher(indexReader);
-    }
+    private static final Logger LOG = Logger.getLogger(PluginIndexManager.class.getName());
 
     /**
      * Gets available goals from known plugins.
@@ -138,27 +80,47 @@ public class PluginIndexManager {
      * @return e.g. {@code [..., dependency:copy, ..., release:perform, ...]}
      */
     public static Set<String> getPluginGoalNames(Set<String> groups) throws Exception {
-        IndexSearcher searcher = getIndexSearcher();
-        BooleanQuery bq = new BooleanQuery();
-        for (String grp : groups) {
-            PrefixQuery pq = new PrefixQuery(new Term(FIELD_ID, grp));
-            bq.add(new BooleanClause(pq, BooleanClause.Occur.SHOULD));
-        }
-        final BitSetCollector searchRes = new BitSetCollector();
-        searcher.search(bq, searchRes);
-        final BitSet bitSet = searchRes.getMatchedDocs();
-        TreeSet<String> toRet = new TreeSet<String>();
-        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
-            Document doc = searcher.getIndexReader().document(docNum);
-            //TODO shall we somehow pick just one version fom a given plugin here? how?
-            String prefix = doc.getField(FIELD_PREFIX).stringValue();
-            String goals = doc.getField(FIELD_GOALS).stringValue();
-            String[] gls = StringUtils.split(goals, " ");//NOI18N
-            for (String goal : gls) {
-                toRet.add(prefix + ":" + goal); //NOI18N
+        Set<String> result = new TreeSet<String>();
+        // XXX rather use ArtifactInfo.PLUGIN_GOALS
+        for (String groupId : groups) {
+            for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", null)) {
+                for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
+                    if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals("local")) {
+                        continue;
+                    }
+                    File jar = RepositoryUtil.downloadArtifact(v);
+                    Document pluginXml = loadPluginXml(jar);
+                    if (pluginXml == null) {
+                        continue;
+                    }
+                    Element root = pluginXml.getDocumentElement();
+                    Element goalPrefix = XMLUtil.findElement(root, "goalPrefix", null);
+                    if (goalPrefix == null) {
+                        LOG.log(Level.WARNING, "no goalPrefix in {0}", jar);
+                        continue;
+                    }
+                    Element mojos = XMLUtil.findElement(root, "mojos", null);
+                    if (mojos == null) {
+                        LOG.log(Level.WARNING, "no mojos in {0}", jar);
+                        continue;
+                    }
+                    for (Element mojo : XMLUtil.findSubElements(mojos)) {
+                        if (!mojo.getTagName().equals("mojo")) {
+                            continue;
+                        }
+                        Element goal = XMLUtil.findElement(mojo, "goal", null);
+                        if (goal == null) {
+                            LOG.log(Level.WARNING, "mojo missing goal in {0}", jar);
+                            continue;
+                        }
+                        result.add(XMLUtil.findText(goalPrefix).trim() + ':' + XMLUtil.findText(goal).trim());
+                    }
+                    break;
+                }
             }
         }
-        return toRet;
+        LOG.log(Level.FINE, "found goal names: {0}", result);
+        return result;
     }
 
     /**
@@ -170,25 +132,37 @@ public class PluginIndexManager {
      */
     public static Set<String> getPluginGoals(String groupId, String artifactId, String version) throws Exception {
         assert groupId != null && artifactId != null && version != null;
-        IndexSearcher searcher = getIndexSearcher();
-        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
-        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
-        final BitSetCollector searchRes = new BitSetCollector();
-        searcher.search(tq, searchRes);
-        final BitSet bitSet = searchRes.getMatchedDocs();
-        if (bitSet.isEmpty()) {
-            return null;
-        }
-        TreeSet<String> toRet = new TreeSet<String>();
-        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
-            Document doc = searcher.getIndexReader().document(docNum);
-            String goals = doc.getField(FIELD_GOALS).stringValue();
-            String[] gls = StringUtils.split(goals, " "); //NOI18N
-            for (String goal : gls) {
-                toRet.add(goal);
+        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
+            if (!v.getVersion().equals(version)) {
+                continue;
             }
+            File jar = RepositoryUtil.downloadArtifact(v);
+            Document pluginXml = loadPluginXml(jar);
+            if (pluginXml == null) {
+                continue;
+            }
+            Element root = pluginXml.getDocumentElement();
+            Element mojos = XMLUtil.findElement(root, "mojos", null);
+            if (mojos == null) {
+                LOG.log(Level.WARNING, "no mojos in {0}", jar);
+                continue;
+            }
+            Set<String> goals = new TreeSet<String>();
+            for (Element mojo : XMLUtil.findSubElements(mojos)) {
+                if (!mojo.getTagName().equals("mojo")) {
+                    continue;
+                }
+                Element goal = XMLUtil.findElement(mojo, "goal", null);
+                if (goal == null) {
+                    LOG.log(Level.WARNING, "mojo missing goal in {0}", jar);
+                    continue;
+                }
+                goals.add(XMLUtil.findText(goal).trim());
+            }
+            LOG.log(Level.FINE, "found goals: {0}", goals);
+            return goals;
         }
-        return toRet;
+        return Collections.emptySet();
     }
 
     /**
@@ -199,57 +173,85 @@ public class PluginIndexManager {
      * @param mojo e.g. {@code "compile"}
      * @return null if not found, else e.g. {@code [..., <verbose>${maven.compiler.verbose}=false</>, ...]}
      */
-    public static Set<ParameterDetail> getPluginParameters(String groupId, String artifactId, String version, String mojo) throws Exception {
+    public static @CheckForNull Set<ParameterDetail> getPluginParameters(String groupId, String artifactId, String version, @NullAllowed String mojo) throws Exception {
         assert groupId != null && artifactId != null && version != null;
-        IndexSearcher searcher = getIndexSearcher();
-        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
-        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
-        final BitSetCollector searchRes = new BitSetCollector();
-        searcher.search(tq, searchRes);
-        final BitSet bitSet = searchRes.getMatchedDocs();
-        if (bitSet.isEmpty()) {
-            return null;
-        }        
-        TreeSet<ParameterDetail> toRet = new TreeSet<ParameterDetail>(new PComparator());
-        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
-            Document doc = searcher.getIndexReader().document(docNum);
-            String goals = doc.getField(FIELD_GOALS).stringValue();
-            String[] gls = StringUtils.split(goals, " "); //NOI18N
-            for (String goal : gls) {
-                if (mojo == null || mojo.equals(goal)) {
-                    String params = doc.getField(PREFIX_FIELD_GOAL + goal).stringValue();
-                    String[] lines = StringUtils.split(params, "\n"); //NOI18N
-                    for (String line : lines) {
-                        String[] paramDet = StringUtils.split(line, "|"); //NOI18N
-                        String name = paramDet[0];
-                        String editable = paramDet[1];
-                        String required = paramDet[2];
-                        boolean req = "true".equals(required); //NOI18N
-                        if ("true".equals(editable)) { //NOI18N
-                            String expr = paramDet[3];
-                            if (expr != null && "null".equals(expr)) { //NOI18N
-                                expr = null;
-                            }
-                            String defVal = paramDet[4];
-                            if (defVal != null && "null".equals(defVal)) { //NOI18N
-                                defVal = null;
-                            }
-                            String desc;
-                            if (paramDet.length > 5) {
-                                desc = paramDet[5];
-                                byte[] dec = Base64.decodeBase64(desc.getBytes());
-                                desc =  new String(dec, "UTF-8"); //NOI18N
-                            } else {
-                                desc = null;
-                            }
-                            ParameterDetail pm = new ParameterDetail(name, expr, defVal, req, desc);
-                            toRet.add(pm);
+        for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, null)) {
+            if (!v.getVersion().equals(version)) {
+                continue;
+            }
+            File jar = RepositoryUtil.downloadArtifact(v);
+            Document pluginXml = loadPluginXml(jar);
+            if (pluginXml == null) {
+                continue;
+            }
+            Element root = pluginXml.getDocumentElement();
+            Element mojos = XMLUtil.findElement(root, "mojos", null);
+            if (mojos == null) {
+                LOG.log(Level.WARNING, "no mojos in {0}", jar);
+                continue;
+            }
+            Set<ParameterDetail> params = new TreeSet<ParameterDetail>(new Comparator<ParameterDetail>() {
+                @Override public int compare(ParameterDetail o1, ParameterDetail o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+            for (Element mojoEl : XMLUtil.findSubElements(mojos)) {
+                if (!mojoEl.getTagName().equals("mojo")) {
+                    continue;
+                }
+                Element goal = XMLUtil.findElement(mojoEl, "goal", null);
+                if (goal == null) {
+                    LOG.log(Level.WARNING, "mojo missing goal in {0}", jar);
+                    continue;
+                }
+                if (mojo != null && !mojo.equals(XMLUtil.findText(goal).trim())) {
+                    continue;
+                }
+                Element parameters = XMLUtil.findElement(mojoEl, "parameters", null);
+                Element configuration = XMLUtil.findElement(mojoEl, "configuration", null);
+                if (parameters != null) {
+                    for (Element parameter : XMLUtil.findSubElements(parameters)) {
+                        if (!parameter.getTagName().equals("parameter")) {
+                            continue;
                         }
+                        Element name = XMLUtil.findElement(parameter, "name", null);
+                        if (name == null) {
+                            LOG.log(Level.WARNING, "parameter missing name in {0}", jar);
+                            continue;
+                        }
+                        Element description = XMLUtil.findElement(parameter, "description", null);
+                        if (description == null) {
+                            LOG.log(Level.WARNING, "parameter missing description in {0}", jar);
+                            continue;
+                        }
+                        Element required = XMLUtil.findElement(parameter, "required", null);
+                        if (required == null) {
+                            LOG.log(Level.WARNING, "parameter missing required in {0}", jar);
+                            continue;
+                        }
+                        String defaultValue = null;
+                        String expression = null;
+                        if (configuration != null) {
+                            Element sample = XMLUtil.findElement(configuration, XMLUtil.findText(name), null);
+                            if (sample != null) {
+                                defaultValue = sample.getAttribute("default-value");
+                                if (defaultValue.isEmpty()) {
+                                    defaultValue = null;
+                                }
+                                String expressionWithSheBraces = XMLUtil.findText(sample);
+                                if (expressionWithSheBraces != null && expressionWithSheBraces.matches("[$][{].+[}]")) {
+                                    expression = expressionWithSheBraces.substring(2, expressionWithSheBraces.length() - 1);
+                                }
+                            }
+                        }
+                        params.add(new ParameterDetail(XMLUtil.findText(name), expression, defaultValue, Boolean.parseBoolean(XMLUtil.findText(required)), XMLUtil.findText(description)));
                     }
                 }
             }
+            LOG.log(Level.FINE, "for mojo {0} found params {1}", new Object[] {mojo, params});
+            return params;
         }
-        return toRet;
+        return null;
     }
 
 
@@ -261,188 +263,133 @@ public class PluginIndexManager {
      */
     public static Set<String> getPluginsForGoalPrefix(String prefix) throws Exception {
         assert prefix != null;
-        IndexSearcher searcher = getIndexSearcher();
-        TermQuery tq = new TermQuery(new Term(FIELD_PREFIX, prefix));
-        final BitSetCollector searchRes = new BitSetCollector();
-        searcher.search(tq, searchRes);
-        final BitSet bitSet = searchRes.getMatchedDocs();
-        if (bitSet.isEmpty()) {
-            return null;
+        Set<String> result = new TreeSet<String>();
+        // XXX MINDEXER-34 means that this will not work reliably for remote indices:
+        QueryField qf = new QueryField();
+        qf.setField(ArtifactInfo.PLUGIN_PREFIX);
+        qf.setValue(prefix);
+        qf.setOccur(QueryField.OCCUR_MUST);
+        qf.setMatch(QueryField.MATCH_EXACT);
+        for (NBVersionInfo v : RepositoryQueries.find(Collections.singletonList(qf), null)) {
+            result.add(v.getGroupId() + '|' + v.getArtifactId() + '|' + v.getVersion());
         }
-        TreeSet<String> toRet = new TreeSet<String>();
-        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
-            Document doc = searcher.getIndexReader().document(docNum);
-            String id = doc.getField(FIELD_ID).stringValue();
-            toRet.add(id);
+        // This is more complete but much too slow:
+        /*
+        for (String groupId : RepositoryQueries.filterPluginGroupIds("", infos)) {
+            for (String artifactId : RepositoryQueries.filterPluginArtifactIds(groupId, "", infos)) {
+                for (NBVersionInfo v : RepositoryQueries.getVersions(groupId, artifactId, infos)) {
+                    if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals("local")) {
+                        continue;
+                    }
+                    File jar = RepositoryUtil.downloadArtifact(v);
+                    Document pluginXml = loadPluginXml(jar);
+                    if (pluginXml == null) {
+                        continue;
+                    }
+                    Element root = pluginXml.getDocumentElement();
+                    Element goalPrefix = XMLUtil.findElement(root, "goalPrefix", null);
+                    if (goalPrefix == null) {
+                        LOG.log(Level.WARNING, "no goalPrefix in {0}", jar);
+                        continue;
+                    }
+                    if (!prefix.equals(XMLUtil.findText(goalPrefix))) {
+                        continue;
+                    }
+                    result.add(v.getGroupId() + '|' + v.getArtifactId() + '|' + v.getVersion());
+                }
+            }
         }
-        return toRet;
+        */
+        LOG.log(Level.FINE, "found plugins {0}", result);
+        return result;
     }
 
     /**
      * find the phase associations for the given packaging
      * @param packaging e.g. {@code "nbm"}
-     * @param mvnVersion e.g. {@code "2.2.1"}
-     * @param extensionPlugins ignored??
+     * @param mvnVersion e.g. {@code "2.2.1"} (currently ignored)
+     * @param extensionPlugins e.g. {@code ["org.codehaus.mojo:nbm-maven-plugin:3.5"]}
      * @return key= phase name, value - Set of Strings, where Strings are in format groupId:artifactId:mojo; e.g. {@code ..., package=[org.apache.maven.plugins:maven-jar-plugin:jar, org.codehaus.mojo:nbm-maven-plugin:nbm], ...}
      */
-    public static Map<String, List<String>> getLifecyclePlugins(String packaging, String mvnVersion, String[] extensionPlugins) throws Exception {
+    public static Map<String,List<String>> getLifecyclePlugins(String packaging, @NullAllowed String mvnVersion, String[] extensionPlugins) throws Exception {
         assert packaging != null;
-        IndexSearcher searcher = getIndexSearcher();
-        BooleanQuery bq = new BooleanQuery();
-        TermQuery tq = new TermQuery(new Term(FIELD_CYCLES, packaging));
-        bq.add(tq, BooleanClause.Occur.MUST);
-        if (mvnVersion == null) {
-            mvnVersion = "2.0.9"; //oh well we need something.. //NOI18N
+        URL standard = MavenEmbedder.class.getClassLoader().getResource("META-INF/plexus/artifact-handlers.xml");
+        if (standard != null) {
+            Map<String,List<String>> phases = parsePhases(standard.toString(), packaging);
+            if (phases != null) {
+                return phases;
+            }
         }
-        BooleanQuery bq2 = new BooleanQuery();
-        tq = new TermQuery(new Term(FIELD_MVN_VERSION, mvnVersion));
-        bq2.add(tq, BooleanClause.Occur.SHOULD);
-
-        for (String ext : extensionPlugins) {
-            tq = new TermQuery(new Term(FIELD_ID, ext));
-            bq2.add(tq, BooleanClause.Occur.SHOULD);
+        for (String extensionPlugin : extensionPlugins) {
+            String[] gav = extensionPlugin.split(":", 3);
+            MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+            Artifact art = online.createArtifact(gav[0], gav[1], gav[2], "maven-plugin");
+            online.resolve(art, Collections.<ArtifactRepository>emptyList(), online.getLocalRepository());
+            File jar = art.getFile();
+            if (jar.isFile()) {
+                Map<String, List<String>> phases = parsePhases("jar:" + jar.toURI() + "!/META-INF/plexus/components.xml", packaging);
+                if (phases != null) {
+                    return phases;
+                }
+            }
         }
-        bq.add(bq2, BooleanClause.Occur.SHOULD); //why doesn't MUST work?
+        return Collections.emptyMap();
+    }
+    private static Map<String,List<String>> parsePhases(String u, String packaging) throws Exception {
+        Document doc = XMLUtil.parse(new InputSource(u), false, false, XMLUtil.defaultErrorHandler(), null);
+        for (Element componentsEl : XMLUtil.findSubElements(doc.getDocumentElement())) {
+            for (Element componentEl : XMLUtil.findSubElements(componentsEl)) {
+                if (XMLUtil.findText(XMLUtil.findElement(componentEl, "role", null)).trim().equals("org.apache.maven.lifecycle.mapping.LifecycleMapping")
+                        && XMLUtil.findText(XMLUtil.findElement(componentEl, "implementation", null)).trim().equals("org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping")
+                        && XMLUtil.findText(XMLUtil.findElement(componentEl, "role-hint", null)).trim().equals(packaging)) {
+                    for (Element configurationEl : XMLUtil.findSubElements(componentEl)) {
+                        if (!configurationEl.getTagName().equals("configuration")) {
+                            continue;
+                        }
+                        Element phases = XMLUtil.findElement(configurationEl, "phases", null);
+                        if (phases == null) {
+                            for (Element lifecyclesEl : XMLUtil.findSubElements(configurationEl)) {
+                                if (!lifecyclesEl.getTagName().equals("lifecycles")) {
+                                    continue;
+                                }
+                                for (Element lifecycleEl : XMLUtil.findSubElements(lifecyclesEl)) {
+                                    if (XMLUtil.findText(XMLUtil.findElement(lifecycleEl, "id", null)).trim().equals("default")) {
+                                        phases = XMLUtil.findElement(lifecycleEl, "phases", null);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (phases != null) {
+                            Map<String,List<String>> result = new LinkedHashMap<String,List<String>>();
+                            for (Element phase : XMLUtil.findSubElements(phases)) {
+                                List<String> plugins = new ArrayList<String>();
+                                for (String plugin : XMLUtil.findText(phase).split(",")) {
+                                    String[] gavMojo = plugin.trim().split(":", 4);
+                                    plugins.add(gavMojo[0] + ':' + gavMojo[1] + ':' + (gavMojo.length == 4 ? gavMojo[3] : gavMojo[2])); // version is not used here
+                                }
+                                result.put(phase.getTagName(), plugins);
+                            }
+                            LOG.log(Level.FINE, "for {0} found in {1}: {2}", new Object[] {packaging, u, result});
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
-        final BitSetCollector searchRes = new BitSetCollector();
-        searcher.search(bq, searchRes);
-        final BitSet bitSet = searchRes.getMatchedDocs();
-        if (bitSet.isEmpty()) {
+    private static @CheckForNull Document loadPluginXml(File jar) {
+        if (!jar.isFile() || !jar.getName().endsWith(".jar")) {
             return null;
         }
-        LinkedHashMap<String, List<String>> toRet = new LinkedHashMap<String, List<String>>();
-        for (int docNum = bitSet.nextSetBit(0); docNum >= 0; docNum = bitSet.nextSetBit(docNum+1)) {
-            Document doc = searcher.getIndexReader().document(docNum);
-            Field prefixed = doc.getField(PREFIX_FIELD_CYCLE + packaging);
-            if (prefixed != null) {
-                String mapping = prefixed.stringValue();
-                String[] phases = StringUtils.split(mapping, "\n"); //NOI18N
-                for (String phase : phases) {
-                    String[] ph = StringUtils.split(phase, "="); //NOI18N
-                    String[] plugins = StringUtils.split(ph[1], ","); //NOI18N
-                    List<String> plgs = new ArrayList<String>(Arrays.asList(plugins));
-                    toRet.put(ph[0], plgs);
-                }
-            }
-        }
-        return toRet;
-    }
-
-
-    private static int checkLocalVersion(File[] fls) {
-        for (File fl : fls) {
+        LOG.log(Level.FINER, "parsing plugin.xml from {0}", jar);
             try {
-                int intVersion = Integer.parseInt(fl.getName());
-                return intVersion;
-            } catch (NumberFormatException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        //if there is a folder, but not a number, return max value to be sure
-        //we don't overwrite stuff..
-        return fls.length > 0 ? Integer.MAX_VALUE : 0;
-    }
-
-    private static int checkZipVersion(File cacheDir) {
-        InputStream is = null;
-        try {
-            is = PluginIndexManager.class.getClassLoader().getResourceAsStream(ZIP_LOCATION); //NOI18N
-            ZipInputStream zis = new ZipInputStream(is);
-            ZipEntry entry = zis.getNextEntry();
-            if (entry != null) {
-                File fl = new File(cacheDir, entry.getName());
-                if (!fl.getParentFile().equals(cacheDir)) {
-                    String version = fl.getParentFile().getName();
-                    try {
-                        int intVersion = Integer.parseInt(version);
-                        return intVersion;
-                    } catch (NumberFormatException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            }
-        } catch (IOException io) {
-            Exceptions.printStackTrace(io);
-        } finally {
-            IOUtil.close(is);
-        }
-        return 0; //a fallback
-    }
-
-    private static File getDefaultIndexLocation() {
-        String userdir = System.getProperty("netbeans.user"); //NOI18N
-        File cacheDir;
-        if (userdir != null) {
-            cacheDir = new File(new File(new File(userdir, "var"), "cache"), INDEX_PATH);//NOI18N
-        } else {
-            File root = FileUtil.toFile(FileUtil.getConfigRoot());
-            cacheDir = new File(root, INDEX_PATH);//NOI18N
-        }
-        cacheDir.mkdirs();
-        File[] fls = cacheDir.listFiles();
-        if (fls == null || fls.length == 0) {
-            //copy the preexisting index in module into place..
-            InputStream is = null;
-            try {
-                is = PluginIndexManager.class.getClassLoader().getResourceAsStream(ZIP_LOCATION); //NOI18N
-                ZipInputStream zis = new ZipInputStream(is);
-                unzip(zis, cacheDir);
-            } finally {
-                IOUtil.close(is);
-            }
-        } else {
-            int zipped = checkZipVersion(cacheDir);
-            int local = checkLocalVersion(fls);
-            if (zipped > local && local > 0) {
-                try {
-                    FileUtils.deleteDirectory(new File(cacheDir, "" + local));
-                    //copy the preexisting index in module into place..
-                    InputStream is = null;
-                    try {
-                        is = PluginIndexManager.class.getClassLoader().getResourceAsStream(ZIP_LOCATION); //NOI18N
-                        ZipInputStream zis = new ZipInputStream(is);
-                        unzip(zis, cacheDir);
-                    } finally {
-                        IOUtil.close(is);
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        File[] files = cacheDir.listFiles();
-        assert files != null && files.length == 1;
-        cacheDir = files[0];
-        return cacheDir;
-    }
-
-    private static void unzip(ZipInputStream zis, File cacheDir) {
-        try {
-            BufferedOutputStream dest = null;
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                int count;
-                byte data[] = new byte[BUFFER];
-                File fl = new File(cacheDir, entry.getName());
-                fl.getParentFile().mkdirs();
-                FileOutputStream fos = new FileOutputStream(fl);
-                dest = new BufferedOutputStream(fos, BUFFER);
-                while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                    dest.write(data, 0, count);
-                }
-                dest.flush();
-                dest.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            IOUtil.close(zis);
-        }
-    }
-
-    private static class PComparator implements Comparator<ParameterDetail> {
-        public int compare(ParameterDetail o1, ParameterDetail o2) {
-            return o1.getName().compareTo(o2.getName());
+            return XMLUtil.parse(new InputSource("jar:" + jar.toURI() + "!/META-INF/maven/plugin.xml"), false, false, XMLUtil.defaultErrorHandler(), null);
+        } catch (Exception x) {
+            LOG.log(Level.FINE, "could not parse " + jar, x.toString());
+            return null;
         }
     }
 
@@ -451,12 +398,12 @@ public class PluginIndexManager {
      */
     public static class ParameterDetail {
         private String name;
-        private String expression;
-        private String defaultValue;
+        private @NullAllowed String expression;
+        private @NullAllowed String defaultValue;
         private boolean required;
         private String description;
 
-        private ParameterDetail(String name, String expression, String defaultValue, boolean required, String description) {
+        private ParameterDetail(String name, @NullAllowed String expression, @NullAllowed String defaultValue, boolean required, String description) {
             this.name = name;
             this.expression = expression;
             this.defaultValue = defaultValue;
@@ -467,7 +414,7 @@ public class PluginIndexManager {
         /**
          * @return null, or e.g. {@code false}
          */
-        public String getDefaultValue() {
+        @CheckForNull public String getDefaultValue() {
             return defaultValue;
         }
 
@@ -478,12 +425,12 @@ public class PluginIndexManager {
         /**
          * @return null, or e.g. {@code maven.compiler.verbose}
          */
-        public String getExpression() {
+        @CheckForNull public String getExpression() {
             return expression;
         }
 
         /**
-         * @return null, or e.g. {@code verbose}
+         * e.g. {@code verbose}
          */
         public String getName() {
             return name;
@@ -506,39 +453,6 @@ public class PluginIndexManager {
 
     }
 
-
-    private static final class BitSetCollector extends Collector {
-
-        private int docBase;
-        private final BitSet bits = new BitSet();
-
-        public BitSet getMatchedDocs() {
-            return this.bits;
-        }
-
-        
-        @Override
-        public void setScorer(Scorer scorer) {
-            //Todo: ignoring scorer for now, if ordering accoring to score needed
-            // this will need to be implemented
-        }
-
-        // accept docs out of order (for a BitSet it doesn't matter)
-        @Override
-        public boolean acceptsDocsOutOfOrder() {
-          return true;
-        }
-
-        @Override
-        public void collect(int doc) {
-          bits.set(doc + docBase);
-        }
-
-        @Override
-        public void setNextReader(IndexReader reader, int docBase) {
-          this.docBase = docBase;
-        }
-
-    }
+    private PluginIndexManager() {}
 
 }

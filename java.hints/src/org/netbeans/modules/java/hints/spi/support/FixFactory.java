@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.impl.SyntheticFix;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -203,7 +204,7 @@ public final class FixFactory {
         return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
     
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl implements Fix, SyntheticFix {
 
         private String keys[];
         private TreePathHandle handle;

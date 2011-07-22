@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+-->
+<html>
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Adding Tasks to the Task List</title>
+    <link rel="StyleSheet" href="../ide.css" type="text/css">
+</head>
+<body>
+    <h2>Adding Tasks to the Task List</h2>
+    <p>You can create a Task List that is a list of things that you need to resolve in your various files
+        by adding a comment containing a specific ToDo character pattern to the file.
+        The IDE will automatically scan your projects for the pattern
+        and display a list of the tasks in the Task List window.</p>
+    
+    <p><strong>To open the Task List window</strong></p>
+    <ul>
+        <li>Choose Window &gt; Tasks</li>
+    </ul>
+    
+    <p>You can click an entry in the Task List window to jump to the line of the file where
+    the task needs to be resolved.</p>
+    
+
+    <h3>Specifying a Task Entry in a File</h3>
+    <p>Task List window entries are created by some types of errors and by 
+    the occurrence of specific character patterns in the file.</p>
+    
+    <p>By default, you can create task list entries by adding comments that contain the following patterns to a file.</p>
+    <ul>
+        <li><tt>TODO</tt></li>
+        <li><tt>XXX</tt></li>
+        <li><tt>FIXME</tt></li>
+        <li>Javadoc comments that contain the <tt>@todo</tt> keyword (Java projects)</li>
+    </ul>
+    
+    
+    <p>The following patterns are automatically added as Task List entries.</p>
+    <ul>
+        <li>The pattern <tt>&lt;&lt;&lt;&lt;&lt;&lt;</tt>, which denotes merge conflicts in CVS and other 
+        version control systems</li>
+        <li>Lines where compiler errors are registered (Java projects)</li>
+    </ul>
+
+    <p>You can add and modify the ToDo patterns in the 
+        <a href="../configure/options_todo_settings.html">To Do Settings tab</a> of the Options Window.</p>
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="../configure/options_todo_settings.html">Options Window: To Do Settings</a></dd>
+    </dl>
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table cellpadding="50" border="0">
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+    </table>
+</body>

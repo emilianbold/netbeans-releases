@@ -72,12 +72,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public final class CustomizerPhpUnit extends JPanel {
+public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 2171421712032630826L;
 
     private final Category category;
@@ -104,6 +105,11 @@ public final class CustomizerPhpUnit extends JPanel {
 
         addListeners();
         validateData();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerPhpUnit.class);
     }
 
     void enableFile(boolean enabled, JComponent... components) {

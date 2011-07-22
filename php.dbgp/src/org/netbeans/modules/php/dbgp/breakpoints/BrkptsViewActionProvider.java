@@ -62,6 +62,7 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
     private static final String GO_TO_SOURCE_LABEL 
         = "CTL_Breakpoint_GoToSource_Label";            // NOI18N
 
+    @Override
     public Action[] getActions (NodeActionsProvider original, Object node)
             throws UnknownTypeException 
     {
@@ -77,6 +78,7 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         return actions;
     }
 
+    @Override
     public void performDefaultAction(NodeActionsProvider original, Object node) 
         throws UnknownTypeException 
     {
@@ -106,6 +108,7 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         /* (non-Javadoc)
          * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#isEnabled(java.lang.Object)
          */
+        @Override
         public boolean isEnabled( Object arg ) {
             return true;
         }
@@ -113,6 +116,7 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         /* (non-Javadoc)
          * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#perform(java.lang.Object[])
          */
+        @Override
         public void perform( Object[] nodes ) {
             goToSource((LineBreakpoint) nodes [0]);            
         }

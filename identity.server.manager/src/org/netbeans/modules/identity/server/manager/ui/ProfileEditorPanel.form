@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -26,9 +26,11 @@
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -49,7 +51,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="certSettingsLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="316" max="32767" attributes="0"/>
+                              <EmptySpace pref="309" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
@@ -61,10 +63,10 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="keyPasswordTF" pref="346" max="32767" attributes="0"/>
-                                  <Component id="keyAliasTF" alignment="0" pref="346" max="32767" attributes="0"/>
-                                  <Component id="keystorePasswordTF" alignment="0" pref="346" max="32767" attributes="0"/>
-                                  <Component id="keystoreLocationTF" alignment="1" pref="346" max="32767" attributes="0"/>
+                                  <Component id="keyPasswordTF" pref="354" max="32767" attributes="0"/>
+                                  <Component id="keyAliasTF" alignment="0" pref="354" max="32767" attributes="0"/>
+                                  <Component id="keystorePasswordTF" alignment="0" pref="354" max="32767" attributes="0"/>
+                                  <Component id="keystoreLocationTF" alignment="1" pref="354" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
                           </Group>
@@ -80,8 +82,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="usernameInfoDescLabel" alignment="0" pref="558" max="32767" attributes="0"/>
-                  <Component id="userNameTableScrollPane" alignment="1" pref="558" max="32767" attributes="0"/>
+                  <Component id="usernameInfoDescLabel" alignment="0" pref="614" max="32767" attributes="0"/>
+                  <Component id="userNameTableScrollPane" alignment="1" pref="614" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

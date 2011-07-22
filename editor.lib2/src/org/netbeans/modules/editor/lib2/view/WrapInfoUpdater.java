@@ -68,9 +68,9 @@ final class WrapInfoUpdater {
 
     private final WrapInfo wrapInfo;
 
-    private final ParagraphView paragraphView;
+    private final ParagraphView pView;
 
-    private final DocumentView documentView;
+    private final DocumentView docView;
 
     private List<WrapLine> wrapLines;
 
@@ -117,20 +117,20 @@ final class WrapInfoUpdater {
     
     WrapInfoUpdater(WrapInfo wrapInfo, ParagraphView paragraphView) {
         this.wrapInfo = wrapInfo;
-        this.paragraphView = paragraphView;
-        this.documentView = paragraphView.getDocumentView();
-        assert (this.documentView != null) : "Null documentView"; // NOI18N
+        this.pView = paragraphView;
+        this.docView = paragraphView.getDocumentView();
+        assert (this.docView != null) : "Null documentView"; // NOI18N
     }
 
-    float initWrapInfo() {
+    void initWrapInfo() {
         this.wrapLines = new ArrayList<WrapLine>(2);
-        wrapTypeWords = (documentView.getLineWrapType() == DocumentView.LineWrapType.WORD_BOUND);
-        float visibleWidth = documentView.getVisibleWidth();
-        TextLayout lineContinuationTextLayout = documentView.getLineContinuationCharTextLayout();
+        wrapTypeWords = (docView.getLineWrapType() == DocumentView.LineWrapType.WORD_BOUND);
+        float visibleWidth = docView.getVisibleRect().width;
+        TextLayout lineContinuationTextLayout = docView.getLineContinuationCharTextLayout();
         // Make reasonable minimum width so that the number of visual lines does not double suddenly
         // when user would minimize the width too much. Also have enough space for line continuation mark
         availableWidth = Math.max(visibleWidth - TextLayoutUtils.getWidth(lineContinuationTextLayout),
-                documentView.getDefaultCharWidth() * 4);
+                docView.getDefaultCharWidth() * 4);
         logMsgBuilder = LOG.isLoggable(Level.FINE) ? new StringBuilder(100) : null;
         if (logMsgBuilder != null) {
             logMsgBuilder.append("availableWidth:").append(availableWidth); // NOI18N
@@ -190,7 +190,7 @@ final class WrapInfoUpdater {
                         }
                     }
                 }
-            } while (childIndex < paragraphView.getViewCount());
+            } while (childIndex < pView.getViewCount());
             finishWrapLine();
         } finally {
             if (logMsgBuilder != null) {
@@ -200,18 +200,18 @@ final class WrapInfoUpdater {
         }
 
         wrapInfo.addAll(wrapLines);
-        wrapInfo.checkIntegrity(paragraphView);
+        wrapInfo.checkIntegrity(pView);
         if (logMsgBuilder != null) {
-            LOG.fine("Resulting wrapInfo:" + wrapInfo.toString(paragraphView) + "\n");
+            LOG.fine("Resulting wrapInfo:" + wrapInfo.toString(pView) + "\n");
         }
-        return maxLineWidth;
+        wrapInfo.setWidth(maxLineWidth);
     }
     
     private void initChildVars(int childIndex, double visualOffset) {
         this.childIndex = childIndex;
         this.visualOffset = visualOffset;
-        nextVisualOffset = paragraphView.getViewVisualOffset(childIndex + 1);
-        childView = paragraphView.getEditorView(childIndex);
+        nextVisualOffset = pView.children.startVisualOffset(childIndex + 1);
+        childView = pView.getEditorView(childIndex);
         childViewPart = null;
         if (logMsgBuilder != null) {
             logMsgBuilder.append("child[").append(childIndex).append("]:").append(childView);
@@ -223,10 +223,10 @@ final class WrapInfoUpdater {
     private boolean fetchNextChild() {
         childViewPart = null;
         childIndex++; // Possibly get >view-count for multiple calls but does not matter
-        if (childIndex < paragraphView.getViewCount()) {
+        if (childIndex < pView.getViewCount()) {
             visualOffset = nextVisualOffset;
-            nextVisualOffset = paragraphView.getViewVisualOffset(childIndex + 1);
-            childView = paragraphView.getEditorView(childIndex);
+            nextVisualOffset = pView.children.startVisualOffset(childIndex + 1);
+            childView = pView.getEditorView(childIndex);
             if (logMsgBuilder != null) {
                 logMsgBuilder.append("child[").append(childIndex).append("]:").append(childView);
                 logMsgBuilder.append(",W=").append(width()); // NOI18N
@@ -272,7 +272,7 @@ final class WrapInfoUpdater {
             double childWidth = nextVisualOffset - visualOffset;
             WrapLine wl = wrapLine();
             if (!wl.hasFullViews()) {
-                wl.startViewIndex = childIndex;
+                wl.firstViewIndex = childIndex;
             }
             wl.endViewIndex = childIndex + 1;
             wrapLineNonEmpty = true;
@@ -308,27 +308,27 @@ final class WrapInfoUpdater {
     
     private void removeChildren(int startIndex) {
         assert (wrapLine.hasFullViews()) : "No full views"; // NOI18N
-        assert (wrapLine.endViewPart == null);
-        assert (wrapLine.startViewIndex <= startIndex && startIndex < wrapLine.endViewIndex)
+        assert (wrapLine.endPart == null);
+        assert (wrapLine.firstViewIndex <= startIndex && startIndex < wrapLine.endViewIndex)
                 : "startIndex=" + startIndex + " not in WL " + wrapLine;
-        double startVisualOffset = paragraphView.getViewVisualOffset(startIndex);
+        double startVisualOffset = pView.children.startVisualOffset(startIndex);
         x -= (visualOffset - startVisualOffset);
         wrapLine.endViewIndex = startIndex;
         if (!wrapLine.hasFullViews()) {
-            if (wrapLine.startViewPart == null) {
+            if (wrapLine.startPart == null) {
                 wrapLineNonEmpty = false;
             }
         }
         initChildVars(startIndex, startVisualOffset);
     }
     
-    private void addStartPart(EditorView startPart) {
+    private void addStartPart(EditorView newStartPart) {
         assert (!wrapLineNonEmpty);
-        assert (wrapLine().startViewPart == null);
+        assert (wrapLine().startPart == null);
         assert !wrapLine().hasFullViews();
         assert (x == 0f);
-        wrapLine().startViewPart = startPart;
-        wrapLine().startViewX = childViewPartWidth;
+        wrapLine().startPart = newStartPart;
+        wrapLine().firstViewX = childViewPartWidth;
         x += childViewPartWidth;
         visualOffsetPartShift += childViewPartWidth;
         wrapLineNonEmpty = true;
@@ -339,24 +339,24 @@ final class WrapInfoUpdater {
     }
     
     private void removeStartPart() {
-        assert (wrapLine.startViewPart != null);
+        assert (wrapLine.startPart != null);
         assert (!wrapLine.hasFullViews());
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  Removed startViewPart x=" + x + " => 0."); // NOI18N
             logWrapLineAndX(0f, x);
         }
-        childViewPart = wrapLine.startViewPart;
-        childViewPartWidth = wrapLine.startViewX;
-        visualOffsetPartShift -= wrapLine.startViewX;
-        wrapLine.startViewPart = null;
-        wrapLine.startViewX = 0f;
+        childViewPart = wrapLine.startPart;
+        childViewPartWidth = wrapLine.firstViewX;
+        visualOffsetPartShift -= wrapLine.firstViewX;
+        wrapLine.startPart = null;
+        wrapLine.firstViewX = 0f;
         x = 0f;
         wrapLineNonEmpty = false;
     }
     
     private void addEndPart(EditorView endPart) {
-        assert (wrapLine().endViewPart == null);
-        wrapLine().endViewPart = endPart;
+        assert (wrapLine().endPart == null);
+        wrapLine().endPart = endPart;
         float oldX = x;
         x += childViewPartWidth;
         visualOffsetPartShift += childViewPartWidth;
@@ -373,12 +373,12 @@ final class WrapInfoUpdater {
      */
     private void removeViewsToWordStart(int wordStartOffset) {
         assert (wrapLineNonEmpty) : "Empty wrap line"; // NOI18N
-        assert (wrapLine.endViewPart == null);
+        assert (wrapLine.endPart == null);
         boolean removeInStartPart = false;
         if (wrapLine.hasFullViews()) {
-            for (int i = wrapLine.endViewIndex - 1; i >= wrapLine.startViewIndex; i--) {
+            for (int i = wrapLine.endViewIndex - 1; i >= wrapLine.firstViewIndex; i--) {
                 // Reuse the removeInStartPart flag
-                int viewStartOffset = paragraphView.getEditorView(i).getStartOffset();
+                int viewStartOffset = pView.getEditorView(i).getStartOffset();
                 removeInStartPart = (wordStartOffset < viewStartOffset);
                 if (!removeInStartPart) {
                     removeChildren(i);
@@ -413,9 +413,9 @@ final class WrapInfoUpdater {
     
     private EditorView wrapLineStartView() {
         EditorView startView = (wrapLine != null)
-            ? ((wrapLine.startViewPart != null)
-                ? wrapLine.startViewPart
-                : paragraphView.getEditorView(wrapLine.startViewIndex))
+            ? ((wrapLine.startPart != null)
+                ? wrapLine.startPart
+                : pView.getEditorView(wrapLine.firstViewIndex))
             : currentView();
         return startView;
     }
@@ -511,7 +511,7 @@ final class WrapInfoUpdater {
      * @return word info or null.
      */
     private WordInfo getWordInfo(int boundaryOffset, int startOffset) {
-        CharSequence docText = DocumentUtilities.getText(documentView.getDocument());
+        CharSequence docText = DocumentUtilities.getText(docView.getDocument());
         boolean prevCharIsWordPart = (boundaryOffset > startOffset)
                 && Character.isLetterOrDigit(docText.charAt(boundaryOffset - 1));
         if (prevCharIsWordPart) {

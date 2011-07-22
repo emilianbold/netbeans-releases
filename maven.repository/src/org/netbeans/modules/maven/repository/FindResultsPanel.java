@@ -119,7 +119,7 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
             }
         });
 
-        queryRequest = new QueryRequest(fields,null,this);
+        queryRequest = new QueryRequest(fields, RepositoryPreferences.getInstance().getRepositoryInfos(), this);
         
         queryRP.post(new Runnable() {
 

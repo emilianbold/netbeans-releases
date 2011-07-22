@@ -94,7 +94,7 @@ public class MergeRevisionsPanel extends ChangesetPickerPanel {
         protected HgLogMessage[] getMessageInfo(File repository, Set<File> setRoots, int fetchRevisionLimit, OutputLogger logger) {
             HgLogMessage[] messages;
             try {
-                messages = HgCommand.getHeadRevisionsInfo(repository, logger);
+                messages = HgCommand.getHeadRevisionsInfo(repository, true, logger);
             } catch (HgException ex) {
                 Logger.getLogger(MergeRevisionsPanel.class.getName()).log(Level.INFO, null, ex);
                 messages = new HgLogMessage[0];

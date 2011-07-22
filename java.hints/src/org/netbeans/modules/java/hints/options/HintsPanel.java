@@ -47,6 +47,7 @@ package org.netbeans.modules.java.hints.options;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -65,16 +66,23 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Configuration;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.ConfigurationRenderer;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.ConfigurationsComboModel;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
@@ -82,7 +90,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 
-final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
+public final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
     
@@ -108,7 +116,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter);
+                        HintsPanel.this.init(filter, true);
+                        buttonsPanel.setVisible(false);
+                        searchPanel.setVisible(false);
+                        configurationsPanel.setVisible(false);
                     }
                 });
             }
@@ -118,8 +129,35 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         add(new JLabel(Bundle.LBL_Loading()), new GridBagConstraints());
     }
 
-    private void init(@NullAllowed OptionsFilter filter) {
+    public HintsPanel(Configuration preselected) {
+        init(null, false);
+        configCombo.setSelectedItem(preselected);
+    }
+    public HintsPanel(HintMetadata preselected) {
+        init(null, false);
+        select(preselected);
+    }
+    
+
+    private void init(@NullAllowed OptionsFilter filter, boolean allHints) {
         initComponents();
+        org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter f = null;
+        if (!allHints && filter==null) {
+            f = new org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter(
+                    searchTextField.getDocument(), new Runnable() {
+        
+                @Override
+                public void run() {
+                }
+
+            }
+            ); 
+        }
+        configCombo.setModel(new ConfigurationsComboModel(true));
+        configCombo.setRenderer(new ConfigurationRenderer());
+        if (allHints) {
+            configCombo.setSelectedItem(null);
+        }
         
         descriptionTextArea.setContentType("text/html"); // NOI18N
 
@@ -133,10 +171,12 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
         toProblemCheckBox.setVisible(false);
         
-        errorTreeModel = constructTM(RulesManager.getInstance().allHints.keySet());
+        errorTreeModel = constructTM(allHints?RulesManager.getInstance().allHints.keySet():Utilities.getSupportedHints(), allHints);
 
         if (filter != null) {
-            filter.installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
+             ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
+        } else if (f!=null) {
+                ((org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter) f).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
         } else {
             errorTree.setModel(errorTreeModel);
         }
@@ -149,6 +189,11 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             
             toSelect = null;
         }
+        
+        newButton.setVisible(false);
+        importButton.setVisible(false);
+        exportButton.setVisible(false);
+        editScriptButton.setVisible(false);
     }
     
     /** This method is called from within the constructor to
@@ -174,6 +219,19 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         jScrollPane2 = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JEditorPane();
         descriptionLabel = new javax.swing.JLabel();
+        buttonsPanel = new javax.swing.JPanel();
+        newButton = new javax.swing.JButton();
+        importButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
+        editScriptButton = new javax.swing.JButton();
+        configurationsPanel = new javax.swing.JPanel();
+        configLabel = new javax.swing.JLabel();
+        configCombo = new javax.swing.JComboBox();
+        searchPanel = new javax.swing.JPanel();
+        refactoringsLabel = new javax.swing.JLabel();
+        searchLabel = new javax.swing.JLabel();
+        searchTextField = new javax.swing.JTextField();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         setLayout(new java.awt.GridBagLayout());
@@ -211,12 +269,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         severityLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.severityLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         severityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        optionsPanel.add(severityComboBox, gridBagConstraints);
+        optionsPanel.add(severityComboBox, new java.awt.GridBagConstraints());
         severityComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AN_Show_As_Combo")); // NOI18N
         severityComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "AD_Show_As_Combo")); // NOI18N
 
@@ -250,7 +303,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.7;
+        gridBagConstraints.weighty = 0.3;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         detailsPanel.add(optionsPanel, gridBagConstraints);
 
@@ -258,6 +311,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         descriptionPanel.setLayout(new java.awt.GridBagLayout());
 
         descriptionTextArea.setEditable(false);
+        descriptionTextArea.setPreferredSize(new java.awt.Dimension(100, 50));
         jScrollPane2.setViewportView(descriptionTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -284,23 +338,144 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.3;
+        gridBagConstraints.weighty = 0.7;
         detailsPanel.add(descriptionPanel, gridBagConstraints);
 
         jSplitPane1.setRightComponent(detailsPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jSplitPane1, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.newButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(importButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.importButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(exportButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.exportButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(editScriptButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.editScriptButton.text")); // NOI18N
+
+        javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
+        buttonsPanel.setLayout(buttonsPanelLayout);
+        buttonsPanelLayout.setHorizontalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
+                .addGap(214, 214, 214)
+                .addComponent(newButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(importButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(exportButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addComponent(editScriptButton)
+                .addGap(18, 18, 18)
+                .addComponent(cancelButton))
+        );
+        buttonsPanelLayout.setVerticalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cancelButton)
+                    .addComponent(editScriptButton)
+                    .addComponent(newButton)
+                    .addComponent(importButton)
+                    .addComponent(exportButton)))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(buttonsPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.configLabel.text")); // NOI18N
+
+        configCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configComboActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout configurationsPanelLayout = new javax.swing.GroupLayout(configurationsPanel);
+        configurationsPanel.setLayout(configurationsPanelLayout);
+        configurationsPanelLayout.setHorizontalGroup(
+            configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configurationsPanelLayout.createSequentialGroup()
+                .addComponent(configLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(configCombo, 0, 658, Short.MAX_VALUE))
+        );
+        configurationsPanelLayout.setVerticalGroup(
+            configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(configLabel)
+                .addComponent(configCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(configurationsPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(refactoringsLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.refactoringsLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(searchLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.searchLabel.text")); // NOI18N
+
+        javax.swing.GroupLayout searchPanelLayout = new javax.swing.GroupLayout(searchPanel);
+        searchPanel.setLayout(searchPanelLayout);
+        searchPanelLayout.setHorizontalGroup(
+            searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
+                .addComponent(refactoringsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 502, Short.MAX_VALUE)
+                .addComponent(searchLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        searchPanelLayout.setVerticalGroup(
+            searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(searchPanelLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchLabel)
+                    .addComponent(refactoringsLabel)))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(searchPanel, gridBagConstraints);
+
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+    
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        applyChanges();
+        getRootPane().getParent().setVisible(false);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+        
+    private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
+        if (configCombo.getSelectedItem() instanceof ActionListener) {
+            ((ActionListener) configCombo.getSelectedItem()).actionPerformed(evt);
+        }
+    }//GEN-LAST:event_configComboActionPerformed
     
         
     synchronized void update() {
@@ -309,7 +484,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo);
     }
     
     void cancel() {
@@ -380,16 +555,29 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     // Variables declaration - do not modify                     
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel buttonsPanel;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JComboBox configCombo;
+    private javax.swing.JLabel configLabel;
+    private javax.swing.JPanel configurationsPanel;
     private javax.swing.JPanel customizerPanel;
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JPanel descriptionPanel;
     private javax.swing.JEditorPane descriptionTextArea;
     private javax.swing.JPanel detailsPanel;
+    private javax.swing.JButton editScriptButton;
     private javax.swing.JTree errorTree;
+    private javax.swing.JButton exportButton;
+    private javax.swing.JButton importButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JButton newButton;
     private javax.swing.JPanel optionsPanel;
+    private javax.swing.JLabel refactoringsLabel;
+    private javax.swing.JLabel searchLabel;
+    private javax.swing.JPanel searchPanel;
+    private javax.swing.JTextField searchTextField;
     private javax.swing.JComboBox severityComboBox;
     private javax.swing.JLabel severityLabel;
     private javax.swing.JCheckBox toProblemCheckBox;
@@ -398,7 +586,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
 
     private final Map<HintMetadata, TreePath> hint2Path =  new HashMap<HintMetadata, TreePath>();
 
-    private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata) {
+    private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata, boolean allHints) {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         Map<HintCategory, Collection<HintMetadata>> cat2Hints = new TreeMap<HintCategory, Collection<HintMetadata>>(new Comparator<HintCategory>() {
             public int compare(HintCategory o1, HintCategory o2) {
@@ -408,7 +596,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         Map<String, HintCategory> cat2CatDesc =  new HashMap<String, HintCategory>();
 
         for (HintMetadata m : metadata) {
-            if (m.kind != HintMetadata.Kind.HINT && m.kind != HintMetadata.Kind.SUGGESTION) continue;
+            if (m.options.contains(Options.NON_GUI)) continue;
 
             HintCategory cat = cat2CatDesc.get(m.category);
 
@@ -442,6 +630,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
             root.add(catNode);
         }
 
+        if (allHints)
         root.add(extraNode);
         
         return new DefaultTreeModel(root);
@@ -476,7 +665,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         return sb.toString();
     }
 
-    private static final class AcceptorImpl implements Acceptor {
+    private static final class AcceptorImpl implements Acceptor, org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter.Acceptor {
 
         public boolean accept(Object originalTreeNode, String filterText) {
             if (filterText.isEmpty()) return true;
@@ -502,7 +691,21 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
 
             return false;
         }
+    }
 
+    public Configuration getSelectedConfiguration() {
+        return (Configuration) configCombo.getSelectedItem();
+    }
+    
+    public HintMetadata getSelectedHint() {
+        TreePath selectionPath = errorTree.getSelectionModel().getSelectionPath();
+        if (selectionPath==null) {
+            return null;
+}
+        DefaultMutableTreeNode lastPathComponent = (DefaultMutableTreeNode) (MutableTreeNode) (TreeNode) selectionPath.getLastPathComponent();
+        if (lastPathComponent!= null && lastPathComponent.getUserObject() instanceof HintMetadata)
+            return (HintMetadata) lastPathComponent.getUserObject();
+        return null;
     }
     
 }

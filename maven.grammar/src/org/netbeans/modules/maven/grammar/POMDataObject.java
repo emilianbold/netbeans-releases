@@ -45,6 +45,9 @@ package org.netbeans.modules.maven.grammar;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.cookies.CloseCookie;
@@ -59,22 +62,24 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.TopComponent;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class POMDataObject extends MultiDataObject {
+
+    public static final String MIME_TYPE = "text/x-maven-pom+xml";
 
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
 
@@ -85,12 +90,21 @@ public class POMDataObject extends MultiDataObject {
         cookies.add(new ValidateXMLSupport(DataObjectAdapters.inputSource(this)));
     }
 
-    protected @Override Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/xml/resources/xmlObject.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="maven.pom",
+        mimeType=MIME_TYPE,
+        position=1
+    )
+    @Messages("CTL_SourceTabCaption=&Source")
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
-
-    public @Override Lookup getLookup() {
-        return getCookieSet().getLookup();
+        
+    @Override protected int associateLookup() {
+        return 1;
     }
 
     private class POMDataEditor extends DataEditorSupport implements EditorCookie.Observable, OpenCookie, EditCookie, PrintCookie, CloseCookie {
@@ -108,8 +122,12 @@ public class POMDataObject extends MultiDataObject {
         };
 
         POMDataEditor() {
-            super(POMDataObject.this, new POMEnv(POMDataObject.this));
+            super(POMDataObject.this, null, new POMEnv(POMDataObject.this));
             getPrimaryFile().addFileChangeListener(FileUtil.weakFileChangeListener(listener, getPrimaryFile()));
+        }
+
+        @Override protected Pane createPane() {
+            return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(MIME_TYPE, getDataObject());
         }
 
         protected @Override boolean notifyModified() {

@@ -51,12 +51,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -381,9 +382,13 @@ final class NewOptionsIterator extends BasicWizardIterator {
             assert isSuccessCode(checkFirstPanel()) || isWarningCode(checkFirstPanel());
             assert isSuccessCode(checkFinalPanel());
             files = new CreatedModifiedFiles(getProject());
-            boolean useAnnotations = new SpecificationVersion(LayerUtils.getPlatformForProject(getProject()).
-                    getModule("org.netbeans.modules.options.api").getSpecificationVersion()).
-                    compareTo(new SpecificationVersion("1.14")) >= 0;
+            boolean useAnnotations = true;
+            try {
+                SpecificationVersion apiVersion = getModuleInfo().getDependencyVersion("org.netbeans.modules.options.api");
+                useAnnotations = apiVersion == null || apiVersion.compareTo(new SpecificationVersion("1.14")) >= 0;
+            } catch (IOException x) {
+                Logger.getLogger(NewOptionsIterator.class.getName()).log(Level.INFO, null, x);
+            }
             generateDependencies();
             if (useAnnotations && isAdvancedCategory()) {
                 generatePackageInfo();
