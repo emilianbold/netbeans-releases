@@ -46,6 +46,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -128,7 +130,13 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             ComponentInfo ci = selectedCI;
             if (ci != null) {
                 //ObjectReference component = ci.getComponent();
-                List<RemoteListener> componentListeners = RemoteServices.getAttachedListeners(ci);
+                List<RemoteListener> componentListeners;
+                try {
+                    componentListeners = RemoteServices.getAttachedListeners(ci);
+                } catch (PropertyVetoException pvex) {
+                    Exceptions.printStackTrace(pvex);
+                    return new Object[] {};
+                }
                 Map<String, ListenerCategory> listenerCategories = new TreeMap<String, ListenerCategory>();
                 for (RemoteListener rl : componentListeners) {
                     String type = rl.getType();
@@ -323,7 +331,13 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             ci.getAWTThread().getDebugger().getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
-                    ObjectReference l = RemoteServices.attachLoggingListener(ci, rt.classObject(), new LoggingEventListener());
+                    ObjectReference l;
+                    try {
+                        l = RemoteServices.attachLoggingListener(ci, rt.classObject(), new LoggingEventListener());
+                    } catch (PropertyVetoException pvex) {
+                        Exceptions.printStackTrace(pvex);
+                        return ;
+                    }
                     if (l != null) {
                         if (lc != null) {
                             lc.addListener(new RemoteListener(l.referenceType().name(), l));

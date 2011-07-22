@@ -171,7 +171,8 @@ Other names may be trademarks of their respective owners.
 <!--Task List window -->
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
 
-
+<!--Java and PHP shared Project Properties: Formatting panel -->
+<mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />
 
 
 <!-- Projects window nodes -->

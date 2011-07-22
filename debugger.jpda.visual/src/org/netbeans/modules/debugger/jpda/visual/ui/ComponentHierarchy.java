@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.visual.ui;
 
 import java.awt.BorderLayout;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -107,9 +108,11 @@ public class ComponentHierarchy extends JPanel implements NavigatorPanel, Explor
     @Override
     public void panelActivated(Lookup context) {
         ComponentInfo ci = context.lookup(ComponentInfo.class);
-        logger.severe("panelActivated("+context+") ci = "+ci+", tc = "+context.lookup(ScreenshotComponent.class));
-        if (ci != null) {
-            logger.severe("  ci name = "+ci.getName()+", type = "+ci.getType());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("panelActivated("+context+") ci = "+ci+", tc = "+context.lookup(ScreenshotComponent.class));
+            if (ci != null) {
+                logger.fine("  ci name = "+ci.getName()+", type = "+ci.getType());
+            }
         }
         ExplorerUtils.activateActions(explorerManager, true);
     }
