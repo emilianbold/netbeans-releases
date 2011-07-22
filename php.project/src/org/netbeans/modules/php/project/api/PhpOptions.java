@@ -133,9 +133,9 @@ public final class PhpOptions {
     }
 
     /**
-     * Get the maximum number of structure depth to be retrieved from PHP debugger, the default is
+     * Get the maximum depth of structures to be retrieved from PHP debugger, the default is
      * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH}</code>.
-     * @return the maximum number of structure depth to be retrieved from PHP debugger.
+     * @return the maximum depth of structures to be retrieved from PHP debugger.
      * @since 2.33
      */
     public int getDebuggerMaxStructuresDepth() {
