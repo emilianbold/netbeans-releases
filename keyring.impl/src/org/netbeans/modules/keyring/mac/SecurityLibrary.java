@@ -79,4 +79,24 @@ public interface SecurityLibrary extends Library {
             Pointer itemRef
             );
 
+    Pointer/*CFString*/ SecCopyErrorMessageString(
+            int status,
+            Pointer reserved
+            );
+
+    // http://developer.apple.com/library/mac/#documentation/CoreFoundation/Reference/CFStringRef/Reference/reference.html
+
+    long/*CFIndex*/ CFStringGetLength(
+            Pointer/*CFStringRef*/ theString
+    );
+
+    char/*UniChar*/ CFStringGetCharacterAtIndex(
+            Pointer/*CFStringRef*/ theString,
+            long/*CFIndex*/ idx
+    );
+
+    void CFRelease(
+            Pointer/*CFTypeRef*/ cf
+    );
+
 }
