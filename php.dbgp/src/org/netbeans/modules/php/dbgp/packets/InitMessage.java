@@ -130,10 +130,10 @@ public class InitMessage extends DbgpMessage {
         setFeature(session, Feature.SHOW_HIDDEN, "1");//NOI18N
     }
     private void setMaxDepth(DebugSession session) {
-        setFeature(session, Feature.MAX_DEPTH, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxStructuresDepth()));//NOI18N
+        setFeature(session, Feature.MAX_DEPTH, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxStructuresDepth()));
     }
     private void setMaxChildren(DebugSession session) {
-        setFeature(session, Feature.MAX_CHILDREN, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxChildren()));//NOI18N
+        setFeature(session, Feature.MAX_CHILDREN, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxChildren()));
     }
     private void setFeature(DebugSession session, Feature feature, String value) {
         FeatureSetCommand setCommand = new FeatureSetCommand(
