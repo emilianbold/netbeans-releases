@@ -171,11 +171,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         VariablesFormatter[] formatters = getFormatters();
         List<String> types = new ArrayList<String>();
         for (int i = 0; i < formatters.length; i++) {
-            if (!formatters[i].isIncludeSubTypes()) {
-                String[] ts = formatters[i].getClassTypes();
-                for (String t : ts) {
-                    types.add(t);
-                }
+            String[] ts = formatters[i].getClassTypes();
+            for (String t : ts) {
+                types.add(t);
             }
         }
         return types.toArray(new String[] {});
