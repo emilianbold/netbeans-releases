@@ -114,7 +114,7 @@ public class AddRemoveV3InstanceMethods extends NbTestCase {
             inst.initialize(wizard);
             inst.instantiate();
             
-            ServerRegistry.getInstance().checkInstanceExists(inst.formatUri("localhost", 4848)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
+            ServerRegistry.getInstance().checkInstanceExists(inst.formatUri("localhost", 4848, null)); //"[/export/home/vkraemer/GlassFiah_v3_Prelude/glassfish]deployer:gfv3:localhost:4848");
             
             Util.sleep(SLEEP);
     }
