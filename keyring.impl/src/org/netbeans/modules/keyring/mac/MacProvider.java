@@ -114,8 +114,19 @@ public class MacProvider implements KeyringProvider {
 
     private static void error(String msg, int code) {
         if (code != 0 && code != /* errSecItemNotFound, always returned from find it seems */-25300) {
-            // XXX translate, but SecCopyErrorMessageString returns weird CFStringRef
-            LOG.warning(msg + ": " + code);
+            Pointer translated = SecurityLibrary.LIBRARY.SecCopyErrorMessageString(code, null);
+            String str;
+            if (translated == null) {
+                str = String.valueOf(code);
+            } else {
+                char[] buf = new char[(int) SecurityLibrary.LIBRARY.CFStringGetLength(translated)];
+                for (int i = 0; i < buf.length; i++) {
+                    buf[i] = SecurityLibrary.LIBRARY.CFStringGetCharacterAtIndex(translated, i);
+                }
+                SecurityLibrary.LIBRARY.CFRelease(translated);
+                str = new String(buf) + " (" + code + ")";
+            }
+            LOG.log(Level.WARNING, "{0}: {1}", new Object[] {msg, str});
         }
     }
 
