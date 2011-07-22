@@ -429,6 +429,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             String guessedName = Utilities.guessName(info, resolved);
             Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
             Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
+            Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
             Fix field = null;
             Fix methodFix = null;
 
@@ -503,6 +504,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 fixesMap.put(IntroduceKind.CREATE_CONSTANT, constant);
                 fixesMap.put(IntroduceKind.CREATE_FIELD, field);
                 fixesMap.put(IntroduceKind.CREATE_METHOD, methodFix);
+                fixesMap.put(IntroduceKind.CREATE_PARAMETER, parameter);
             }
 
 
@@ -521,6 +523,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (methodFix != null) {
                 fixes.add(methodFix);
             }
+            if (parameter != null) {
+                fixes.add(parameter);
+            } 
         }
 
         Fix introduceMethod = computeIntroduceMethod(info, start, end, fixesMap, errorMessage, cancel);

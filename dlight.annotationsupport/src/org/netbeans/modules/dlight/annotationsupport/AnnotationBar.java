@@ -8,7 +8,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -35,7 +38,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Style;
@@ -190,12 +192,12 @@ public class AnnotationBar extends JComponent implements Accessible,
 
     /**
      * Components created by SibeBarFactory are positioned
-     * using a Layout manager that determines componnet size
-     * by retireving preferred size.
+     * using a Layout manager that determines component size
+     * by retrieving preferred size.
      *
-     * <p>Once componnet needs resizing it simply calls
-     * {@link #revalidate} that triggers new layouting
-     * that consults prefered size.
+     * <p>Once component needs resizing it simply calls
+     * {@link #revalidate} that triggers new layout
+     * that consults preferred size.
      */
     @Override
     public Dimension getPreferredSize() {
@@ -224,7 +226,7 @@ public class AnnotationBar extends JComponent implements Accessible,
         int cwidth = graphics.getFontMetrics().charWidth('X');
         graphics.setFont(getBarBoldFont());
         cwidth = graphics.getFontMetrics().charWidth('X');
-        return annotationLength * cwidth + 7; // thp: controls bar width
+        return (1 + annotationLength) * cwidth; // thp: controls bar width
     }
 
     /**
@@ -323,16 +325,17 @@ public class AnnotationBar extends JComponent implements Accessible,
     }
 
     /**
-     * GlyphGutter copy pasted bolerplate method.
+     * GlyphGutter copy pasted boilerplate method.
      * It invokes {@link #paintView} that contains
      * actual business logic.
      */
     @Override
     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
         if (!annotated || getFileAnnotationInfo() == null) {
             return;
         }
-        super.paintComponent(g);
 
         Rectangle clip = g.getClipBounds();
 
@@ -360,15 +363,15 @@ public class AnnotationBar extends JComponent implements Accessible,
                 int rootViewCount = rootView.getViewCount();
 
                 if (startViewIndex >= 0 && startViewIndex < rootViewCount) {
-                    // find the nearest visible line with an annotation
-                    Rectangle rec = textUI.modelToView(component, rootView.getView(startViewIndex).getStartOffset());
-                    int y = (rec == null) ? 0 : rec.y;
-
                     int clipEndY = clip.y + clip.height;
                     for (int i = startViewIndex; i < rootViewCount; i++) {
                         View view = rootView.getView(i);
+                        Rectangle rec = component.modelToView(view.getStartOffset());
+                        if (rec == null) {
+                            break;
+                        }
+                        int y = rec.y;
                         paintView(view, g, y);
-                        y += editorUI.getLineHeight();
                         if (y >= clipEndY) {
                             break;
                         }
@@ -379,11 +382,27 @@ public class AnnotationBar extends JComponent implements Accessible,
                 foldHierarchy.unlock();
             }
         } catch (BadLocationException ble) {
-            System.out.println("ble: " + ble.getMessage());
-            ble.printStackTrace();
+            // Exceptions.printStackTrace(ble);
         } finally {
             adoc.readUnlock();
         }
+    }
+
+    private void drawAnnotation(Graphics2D g2d, int x, int y, LineAnnotationInfo annotationInfo) {
+        if (annotationInfo == null) {
+            return;
+        }
+
+        Shape clip = g2d.getClip();
+        g2d.setColor(backgroundColor());
+        g2d.fill(clip);
+
+        String annotation = annotationInfo.getAnnotation();
+        g2d.setFont(getBarFont());
+        g2d.setColor(foregroundColor());
+        g2d.drawString(annotation, x, y);
+
+        annotationInfo.setBounds(clip.getBounds());
     }
 
     /**
@@ -395,49 +414,27 @@ public class AnnotationBar extends JComponent implements Accessible,
         if (component == null) {
             return;
         }
-        BaseTextUI textUI = (BaseTextUI) component.getUI();
-        Element rootElem = textUI.getRootView(component).getElement();
-        int offset = view.getStartOffset();
-//        int line = rootElem.getElementIndex(offset);
-//        LineAnnotationInfo lineAnnotationInfo = fileAnnotationInfo.getLineAnnotationInfoByLine(line + 1);
-        LineAnnotationInfo lineAnnotationInfo = getFileAnnotationInfo().getLineAnnotationInfoByLineOffset(offset);
-        if (lineAnnotationInfo != null) {
-            // paint line annotation
-            Rectangle clip = g.getClipBounds();
-            int x1 = clip.x;
-            int x2 = clip.width - 1;
-            int y1 = yBase;
-            int y2 = editorUI.getLineHeight();
-            // paint background
-            g.setColor(backgroundColor());
-            g.fillRect(x1, y1 + 1, x2, y2 - 1);
-            // paint text
-            String annotation = lineAnnotationInfo.getAnnotation();
-            g.setFont(getBarFont());
-            g.setColor(foregroundColor());
-            g.drawString(annotation, 4, yBase + editorUI.getLineAscent());
-            lineAnnotationInfo.setY(yBase, yBase + editorUI.getLineHeight());
+
+        FileAnnotationInfo info = getFileAnnotationInfo();
+
+        if (info == null) {
+            return;
         }
-        lineAnnotationInfo = getFileAnnotationInfo().getBlockAnnotationInfoByLineOffset(offset);
-        if (lineAnnotationInfo != null) {
-            // paint block annotation
-            Rectangle clip = g.getClipBounds();
-            int x1 = clip.x;
-            int x2 = clip.width - 1;
-            int y1 = yBase;
-            int y2 = editorUI.getLineHeight();
-            // paint background
-            g.setColor(backgroundColor());
-            g.fillRect(x1, y1 + 1, x2, y2 - 2);
-            // paint text
-            String annotation = lineAnnotationInfo.getAnnotation();
-            g.setFont(getBarBoldFont());
-            g.setColor(foregroundColor());
-            g.drawString(annotation, 4, yBase + editorUI.getLineAscent());
-            lineAnnotationInfo.setY(yBase, yBase + editorUI.getLineHeight());
-        }
+        
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        Rectangle bounds = g.getClipBounds();
+
+        int y = yBase + editorUI.getLineAscent();
+
+        g.setClip(bounds.x, yBase, bounds.width - 1, editorUI.getLineHeight() - 1);
+        drawAnnotation(g2d, 2, y, info.getLineAnnotationInfoByLineOffset(view.getStartOffset()));
+        drawAnnotation(g2d, 2, y, info.getBlockAnnotationInfoByLineOffset(view.getStartOffset()));
+        g.setClip(bounds);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt == null) {
             return;
@@ -502,34 +499,44 @@ public class AnnotationBar extends JComponent implements Accessible,
         //}
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
     }
 
+    @Override
     public void componentResized(ComponentEvent e) {
         revalidate();
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         String tooltip = getFileAnnotationInfo().getTooltip();
         LineAnnotationInfo lineAnnotationInfo = getFileAnnotationInfo().getLineAnnotationInfoByYCoordinate(e.getY());
@@ -542,6 +549,7 @@ public class AnnotationBar extends JComponent implements Accessible,
         setToolTipText(tooltip);
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
     }
 }

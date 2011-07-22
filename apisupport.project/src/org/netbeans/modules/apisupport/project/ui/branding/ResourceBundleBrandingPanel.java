@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.branding;
 
+import org.netbeans.modules.apisupport.project.spi.BrandingSupport;
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -54,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -68,11 +71,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.EditAction;
@@ -122,10 +123,10 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     private RequestProcessor.Task searchTask = null;
     private RequestProcessor RPforSearch = new RequestProcessor(ResourceBundleBrandingPanel.class.getName() + " - search", 1); // NOI18N
 
-    private BasicBrandingModel branding;
+    private BrandingModel branding;
     private Project prj;
 
-    public ResourceBundleBrandingPanel(BasicBrandingModel model) {
+    public ResourceBundleBrandingPanel(BrandingModel model) {
         super(getMessage("LBL_ResourceBundleTab"), model); //NOI18N
         
         initComponents();
@@ -225,12 +226,14 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
     private void prepareTree() {
         List<BundleNode> resourcebundlenodes = new LinkedList<BundleNode>();
 
-        Set<File> jars;
-        if (prj instanceof SuiteProject) {
-            SuiteProject suite = (SuiteProject) prj;
-            jars = LayerUtils.getPlatformJarsForSuiteComponentProject(suite);
-        } else {
-            jars = LayerUtils.getPlatformJarsForStandaloneProject(prj);
+        Set<File> jars = new HashSet<File>();
+        PlatformJarProvider pjp = prj.getLookup().lookup(PlatformJarProvider.class);
+        if (pjp != null) {
+            try {
+                jars.addAll(pjp.getPlatformJars());
+            } catch (IOException x) {
+                LOG.log(Level.INFO, null, x);
+            }
         }
         Set<File> brandableJars = branding.getBrandableJars();
         jars.retainAll(brandableJars);
@@ -742,7 +745,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
 
         public WaitNode() {
             super(Children.LEAF);
-            setDisplayName(CustomizerComponentFactory.WAIT_VALUE);
+            setDisplayName(UIUtil.WAIT_VALUE);
             setIconBaseWithExtension(WAIT_ICON_PATH);
         }
     }

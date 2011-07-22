@@ -116,6 +116,8 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     private FileObject wsdlFileObject;
     boolean modelGenerationFinished;
     
+    public static final String CONTEXT = "context";         // NOI18N
+    
     public JaxWsClientNode(JaxWsModel jaxWsModel, Client client, FileObject srcRoot) {
         this(jaxWsModel, client, srcRoot, new InstanceContent());
     }
@@ -354,6 +356,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
      * refresh service information obtained from wsdl (when wsdl file was changed)
      */
     public void refreshService(boolean downloadWsdl) {
+        setValue(CONTEXT, null);
         if (downloadWsdl) {
             String result = RefreshClientDialog.open(client.getWsdlUrl());
             if (RefreshClientDialog.CLOSE.equals(result)) return;

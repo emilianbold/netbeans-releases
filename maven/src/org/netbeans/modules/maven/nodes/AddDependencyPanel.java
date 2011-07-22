@@ -89,6 +89,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDescriptor;
@@ -622,7 +623,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     private void populateGroupId() {
         assert !SwingUtilities.isEventDispatchThread();
-        final List<String> lst = new ArrayList<String>(RepositoryQueries.getGroups());
+        final List<String> lst = new ArrayList<String>(RepositoryQueries.getGroups(RepositoryPreferences.getInstance().getRepositoryInfos()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 groupCompleter.setValueList(lst);
@@ -634,7 +635,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private void populateArtifact() {
         assert !SwingUtilities.isEventDispatchThread();
 
-        final List<String> lst = new ArrayList<String>(RepositoryQueries.getArtifacts(txtGroupId.getText().trim()));
+        final List<String> lst = new ArrayList<String>(RepositoryQueries.getArtifacts(txtGroupId.getText().trim(), RepositoryPreferences.getInstance().getRepositoryInfos()));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 artifactCompleter.setValueList(lst);
@@ -646,7 +647,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private void populateVersion() {
         assert !SwingUtilities.isEventDispatchThread();
 
-        List<NBVersionInfo> lst = RepositoryQueries.getVersions(txtGroupId.getText().trim(), txtArtifactId.getText().trim());
+        List<NBVersionInfo> lst = RepositoryQueries.getVersions(txtGroupId.getText().trim(), txtArtifactId.getText().trim(), RepositoryPreferences.getInstance().getRepositoryInfos());
         final List<String> vers = new ArrayList<String>();
         for (NBVersionInfo rec : lst) {
             if (!vers.contains(rec.getVersion())) {
@@ -971,7 +972,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             
-            queryRequest = new QueryRequest(fields, null, this);
+            queryRequest = new QueryRequest(fields, RepositoryPreferences.getInstance().getRepositoryInfos(), this);
 
             Task t = RPofQueryPanel.post(new Runnable() {
 
@@ -1136,7 +1137,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     qf.setValue(NbMavenProject.TYPE_NBM);
                     qf.setMatch(QueryField.MATCH_EXACT);
                     qf.setOccur(QueryField.OCCUR_MUST);
-                    for (NBVersionInfo alt : RepositoryQueries.find(Collections.singletonList(qf))) {
+                    for (NBVersionInfo alt : RepositoryQueries.find(Collections.singletonList(qf), RepositoryPreferences.getInstance().getRepositoryInfos())) {
                         String key = key(alt);
                         if (check.contains(key) && !found.contains(key)) {
                             refined.add(alt);

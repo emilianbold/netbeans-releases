@@ -51,7 +51,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.modules.mercurial.AbstractHgTest;
+import org.netbeans.modules.mercurial.AbstractHgTestCase;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
@@ -62,7 +62,7 @@ import org.openide.util.Exceptions;
  *
  * @author ondra
  */
-public class MergeTest extends AbstractHgTest {
+public class MergeTest extends AbstractHgTestCase {
 
     public MergeTest(String arg0) {
         super(arg0);

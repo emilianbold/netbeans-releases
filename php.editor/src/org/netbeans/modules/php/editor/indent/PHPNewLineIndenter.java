@@ -193,7 +193,6 @@ public class PHPNewLineIndenter {
 				    if (Utilities.getRowStart(doc, casePosition) != caretLineStart) {
 					// check that case is not on the same line, where enter was pressed
 					newIndent -= indentSize;
-					System.out.println("odecitam");
 				    }
                                     break;
                                 }

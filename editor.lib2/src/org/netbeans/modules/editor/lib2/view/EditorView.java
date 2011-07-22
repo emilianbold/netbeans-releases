@@ -49,7 +49,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
-import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +58,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.View;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * Base class for views in editor view hierarchy.
@@ -90,33 +88,33 @@ public abstract class EditorView extends View {
     private static final Logger LOG = Logger.getLogger(EditorView.class.getName());
 
     /**
-     * Raw offset along the parent's major axis (axis along which the children are laid out).
+     * Raw visual offset of view's end along the parent's major axis (axis along which the children are laid out).
      */
-    private double rawVisualOffset; // 16 + 8 = 24 bytes
+    private double rawEndVisualOffset; // 16=super + 8 = 24 bytes
 
     public EditorView(Element element) {
         super(element);
     }
 
     /**
-     * Get raw start offset of the view which may transform to real start offset
+     * Get raw end offset of the view which may transform to real end offset
      * when post-processed by parent view.
      * <br/>
      * <b>Note:</b> Typical clients should NOT call this method (they should call
-     * {@link #getStartOffset()} method instead).
+     * {@link #getEndOffset()} method instead).
      *
-     * @return raw start offset of the view or -1 if the view does not support
+     * @return raw end offset of the view or -1 if the view does not support
      * storage of the raw offsets (e.g. a ParagraphView).
      */
-    public abstract int getRawOffset();
+    public abstract int getRawEndOffset();
 
     /**
-     * Set raw start offset of the view.
+     * Set raw end offset of the view.
      *
-     * @param rawOffset raw start offset of the view. This method will not be called
+     * @param rawEndOffset raw start offset of the view. This method will not be called
      *  if {@link #getRawOffset()} returns -1.
      */
-    public abstract void setRawOffset(int rawOffset);
+    public abstract void setRawEndOffset(int rawEndOffset);
 
     /**
      * Textual length of the view.
@@ -128,22 +126,22 @@ public abstract class EditorView extends View {
     }
 
     /**
-     * @return raw visual offset along parent's major axis. It must be post-processed
-     *   by parent (if it uses gap-based storage) to become a real visual offset.
+     * @return raw end visual offset along parent's major axis. It must be post-processed
+     *   by parent (if it uses gap-based storage) to become a real end visual offset.
      */
-    public final double getRawVisualOffset() {
-        return rawVisualOffset;
+    public final double getRawEndVisualOffset() {
+        return rawEndVisualOffset;
     }
     
     /**
-     * Parent can set the view's raw offset along the parent view's
+     * Parent view can set the view's raw end visual offset along the parent view's
      * major axis (axis along which the children are laid out) by using this method.
      *
-     * @param rawVisualOffset raw offset value along the major axis of parent view.
+     * @param rawEndVisualOffset raw offset value along the major axis of parent view.
      *  It is not particularly useful without postprocessing by the parent.
      */
-    public final void setRawVisualOffset(double rawVisualOffset) {
-        this.rawVisualOffset = rawVisualOffset;
+    public final void setRawEndVisualOffset(double rawEndVisualOffset) {
+        this.rawEndVisualOffset = rawEndVisualOffset;
     }
 
     /**
@@ -280,9 +278,7 @@ public abstract class EditorView extends View {
      *		by the first and last character positions.
      * @see View#viewToModel
      */
-    public Shape modelToViewChecked(int offset0, Position.Bias bias0, int offset1, Position.Bias bias1,
-            Shape alloc)
-    {
+    public Shape modelToViewChecked(int offset0, Position.Bias bias0, int offset1, Position.Bias bias1, Shape alloc) {
         Shape start = modelToViewChecked(offset0, alloc, bias0);
         Shape end = modelToViewChecked(offset1, alloc, bias1);
         Rectangle2D.Double mutableBounds = null;
@@ -373,7 +369,6 @@ public abstract class EditorView extends View {
      * @param alloc current allocation of the View.
      * @return  index of the view representing the given location, or
      *   -1 if no view represents that position
-     * @since 1.4
      */
     public int getViewIndexChecked(double x, double y, Shape alloc) {
         return -1; // No subviews by default
@@ -502,36 +497,7 @@ public abstract class EditorView extends View {
         sb.append('<').append(startOffset);
         sb.append(',');
         sb.append(endOffset).append('>');
-        View parent = getParent();
-        if (parent instanceof EditorBoxView) {
-            @SuppressWarnings("unchecked")
-            EditorBoxView<EditorView> boxView = (EditorBoxView<EditorView>) parent;
-            String axis = (boxView.getMajorAxis() == X_AXIS) ? "X" : "Y";
-            sb.append(' ').append(axis).append('=').append(boxView.getViewVisualOffset(this));
-            // Also append raw visual offset value
-            sb.append("(R").append(getRawVisualOffset()).append(')');
-            // First few chars of view's text
-            Document doc = getDocument();
-            if (doc != null) {
-                CharSequence docText = DocumentUtilities.getText(doc);
-                if (endOffset <= docText.length() && DocumentView.LOG_SOURCE_TEXT) {
-                    int endTextOffset = Math.min(endOffset, startOffset + 7);
-                    sb.append(" \"");
-                    CharSequenceUtilities.debugText(sb, docText.subSequence(startOffset, endTextOffset));
-                    if (endTextOffset < endOffset) {
-                        // Display last three chars with possibly "..." inside
-                        int lastCharsOffset = Math.max(endTextOffset, endOffset - 3);
-                        if (lastCharsOffset != endTextOffset) {
-                            sb.append("...");
-                        }
-                        CharSequenceUtilities.debugText(sb, docText.subSequence(lastCharsOffset, endOffset));
-                    }
-                    sb.append('"');
-                }
-            } else {
-                sb.append(" NULL-doc");
-            }
-        }
+//        sb.append(";REVO=").append(getRawEndVisualOffset());
         // Do not getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
         return sb;
     }
@@ -553,17 +519,72 @@ public abstract class EditorView extends View {
 
         /**
          * Get start offset of a child view based on view's raw offset.
-         * @param rawOffset relative child's raw offset.
+         * @param rawChildEndOffset relative child's raw offset.
          * @return real offset.
          */
-        int getViewOffset(int rawOffset);
+        int getViewEndOffset(int rawChildEndOffset);
 
         /**
          * Get font rendering context that for example may be used for text layout creation.
          * @return font rendering context.
          */
         FontRenderContext getFontRenderContext();
+        
+        /**
+         * Get special highlighting sequence that is a merge of attributes
+         * of the view with top painting highlights.
+         * <br/>
+         * It's only allowed to call this method (and use the returned value)
+         * during view's paint() methods execution.
+         *
+         * @param view non-null child editor view.
+         * @param shift &gt;=0 shift inside the view (first highlight will start at view.getStartOffset() + shift).
+         * @return special highlights sequence that covers whole requested area (has getAttributes() == null
+         *  in areas without highlights).
+         */
+        HighlightsSequence getPaintHighlights(EditorView view, int shift);
 
+        /**
+         * Notify the parent that the X preferred span of a child has changed
+         * during one of modelToView(), viewToModel(), paint(), getNextVisualPositionFrom(),
+         * getToolTipText(), getToolTip().
+         * The parent view will mandatorily check the new x span of the affected child view
+         * after the particular operation was finished on the child.
+         * <br/>
+         * Since the parent's operation knows to which child it delegated the particular call
+         * it should be able to reconstruct what was really changed.
+         */
+        void notifyChildWidthChange();
+
+        /**
+         * Notify the parent that the X preferred span of a child has changed
+         * during one of modelToView(), viewToModel(), paint(), getNextVisualPositionFrom(),
+         * getToolTipText(), getToolTip().
+         * The parent view will mandatorily check the new x span of the affected child view
+         * after the particular operation was finished on the child.
+         * <br/>
+         * Since the parent's operation knows to which child it delegated the particular call
+         * it should be able to reconstruct what was really changed.
+         */
+        void notifyChildHeightChange();
+        
+        /**
+         * Notify parent about repainting request
+         * during one of modelToView(), viewToModel(), paint(), getNextVisualPositionFrom(),
+         * getToolTipText(), getToolTip().
+         * Coordinates are related to underlying component start since the view
+         * gets its location due to 'alloc' parameters passed to the mentioned methods.
+         * The parent view will mandatorily check the repainting bounds
+         * after the particular operation was finished on the child
+         * and possibly trigger a repaint.
+         *
+         * @param x
+         * @param y
+         * @param width
+         * @param height 
+         */
+        void notifyRepaint(double x0, double y0, double x1, double y1);
+        
     }
 
 }

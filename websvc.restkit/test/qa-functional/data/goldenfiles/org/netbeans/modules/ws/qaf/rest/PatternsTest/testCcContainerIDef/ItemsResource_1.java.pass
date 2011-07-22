@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
@@ -17,9 +16,9 @@ import javax.ws.rs.Produces;
  *
  * @author lukas
  */
-
 @Path("/Items")
 public class ItemsResource_1 {
+
     @Context
     private UriInfo context;
 
@@ -42,8 +41,7 @@ public class ItemsResource_1 {
      * Sub-resource locator method for {name}
      */
     @Path("{name}")
-    public ItemResource_1 getItemResource_1(@PathParam("name")
-    String name) {
+    public ItemResource_1 getItemResource_1(@PathParam("name") String name) {
         return ItemResource_1.getInstance(name);
     }
 }

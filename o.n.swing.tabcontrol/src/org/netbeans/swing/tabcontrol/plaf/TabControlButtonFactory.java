@@ -45,27 +45,23 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Component;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import javax.swing.plaf.ButtonUI;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 import org.netbeans.swing.tabcontrol.TabListPopupAction;
-import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.openide.util.ImageUtilities;
 
 /**
  * A factory to create tab control buttons.
@@ -75,15 +71,11 @@ import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
  */
 public class TabControlButtonFactory {
     
-    private static IconLoader iconCache;
-    
     private TabControlButtonFactory() {
     }
     
     public static Icon getIcon( String iconPath ) {
-        if( null == iconCache )
-            iconCache = new IconLoader();
-        return iconCache.obtainIcon( iconPath );
+        return ImageUtilities.loadImageIcon( iconPath, true );
     }
     
     /**
@@ -94,11 +86,40 @@ public class TabControlButtonFactory {
     }
     
     /**
+     * Create button to close the whole window group.
+     * @since 1.27
+     */
+    public static TabControlButton createCloseGroupButton( TabDisplayer displayer ) {
+        return new CloseGroupButton( displayer );
+    }
+    
+    /**
      * Create default auto-hide/pin button. The button changes icons depending
      * on the state of tab component.
      */
     public static TabControlButton createSlidePinButton( TabDisplayer displayer ) {
         return new SlidePinButton( displayer );
+    }
+    
+    /**
+     * Create default minimize window group button.
+     * @since 1.27
+     */
+    public static TabControlButton createSlideGroupButton( TabDisplayer displayer ) {
+        return new SlideGroupButton( displayer );
+    }
+    
+    /**
+     * Create button to restore a group of windows from minimized state.
+     * @param displayer 
+     * @param groupName Name of the group of windows to un-minimize. When the default
+     * window system implementation is being used then the group name is the name
+     * of TopComponent Mode.
+     * @see org.openide.windows.Mode#getName() 
+     * @since 1.27
+     */
+    public static TabControlButton createRestoreGroupButton( TabDisplayer displayer, String groupName ) {
+        return new RestoreGroupButton( displayer, groupName );
     }
     
     /**
@@ -132,12 +153,26 @@ public class TabControlButtonFactory {
             setToolTipText( java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Close_Window") );
         }
         
+        @Override
         protected String getTabActionCommand( ActionEvent e ) {
 //            if( (e.getModifiers() & ActionEvent.SHIFT_MASK) > 0 )
 //                return TabDisplayer.COMMAND_CLOSE_ALL;
 //            else if( (e.getModifiers() & ActionEvent.ALT_MASK) > 0 )
 //                return TabDisplayer.COMMAND_CLOSE_ALL_BUT_THIS;
             return TabDisplayer.COMMAND_CLOSE;
+        }
+    }
+    
+    private static class CloseGroupButton extends TabControlButton {
+        
+        public CloseGroupButton( TabDisplayer displayer ) {
+            super( TabControlButton.ID_CLOSE_BUTTON, displayer );
+            setToolTipText( java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Close_Window_Group") );
+        }
+        
+        @Override
+        protected String getTabActionCommand( ActionEvent e ) {
+            return TabDisplayer.COMMAND_CLOSE_GROUP;
         }
     }
     
@@ -149,6 +184,7 @@ public class TabControlButtonFactory {
             toolTipManager.registerComponent( this );
         }
         
+        @Override
         protected String getTabActionCommand( ActionEvent e ) {
             if( getButtonId() == TabControlButton.ID_PIN_BUTTON )
                 return TabDisplayer.COMMAND_DISABLE_AUTO_HIDE;
@@ -175,6 +211,7 @@ public class TabControlButtonFactory {
             return retValue;
         }
 
+        @Override
         public String getToolTipText() {
             if( getButtonId() == TabControlButton.ID_PIN_BUTTON )
                 return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Pin");
@@ -182,6 +219,94 @@ public class TabControlButtonFactory {
         }
     }
     
+    
+    private static class SlideGroupButton extends TabControlButton {
+        
+        public SlideGroupButton( TabDisplayer displayer ) {
+            super( displayer );
+            ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+            toolTipManager.registerComponent( this );
+        }
+        
+        @Override
+        protected String getTabActionCommand( ActionEvent e ) {
+            return TabDisplayer.COMMAND_MINIMIZE_GROUP;
+        }
+
+        @Override
+        protected int getButtonId() {
+            return TabControlButton.ID_SLIDE_GROUP_BUTTON;
+        }
+
+        @Override
+        public String getToolTipText() {
+            return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Minimize_Window_Group"); //NOI18N
+        }
+    }
+    
+    private static class RestoreGroupButton extends TabControlButton {
+        
+        private final String groupName;
+        private static boolean useCustomUI = true;
+        
+        public RestoreGroupButton( TabDisplayer displayer, String groupName ) {
+            super( displayer );
+            assert null != groupName;
+            this.groupName = groupName;
+            ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+            toolTipManager.registerComponent( this );
+        }
+        
+        @Override
+        protected String getTabActionCommand( ActionEvent e ) {
+            return TabDisplayer.COMMAND_RESTORE_GROUP;
+        }
+
+        @Override
+        protected int getButtonId() {
+            return TabControlButton.ID_RESTORE_GROUP_BUTTON;
+        }
+
+        @Override
+        protected TabActionEvent createTabActionEvent( ActionEvent e ) {
+            TabActionEvent res = super.createTabActionEvent( e );
+            res.setGroupName( groupName );
+            return res;
+        }
+
+        @Override
+        public String getToolTipText() {
+            return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Restore_Window_Group"); //NOI18N
+        }
+
+        /**
+         * @since 1.28
+         * @return 
+         */
+        @Override
+        public String getUIClassID() {
+            return useCustomUI ? "RestoreGroupButtonUI" : super.getUIClassID(); //NOI18N
+        }
+        
+        /**
+         * @since 1.28
+         */
+        @Override
+        public void updateUI () {
+            ButtonUI customUI = null;
+            Class uiClass = UIManager.getDefaults().getUIClass( getUIClassID() );
+            if( null != uiClass ) {
+                customUI = (ButtonUI)UIManager.getUI(this);
+            }
+            if (customUI != null) {
+                setUI (customUI);
+            } else {
+                useCustomUI = false;
+                super.updateUI();
+            }
+        }
+    }
+
     private static class MaximizeRestoreButton extends TabControlButton {
         
         public MaximizeRestoreButton( TabDisplayer displayer, boolean showBorder ) {
@@ -190,6 +315,7 @@ public class TabControlButtonFactory {
             toolTipManager.registerComponent( this );
         }
         
+        @Override
         protected String getTabActionCommand( ActionEvent e ) {
             return TabDisplayer.COMMAND_MAXIMIZE;
         }
@@ -210,6 +336,7 @@ public class TabControlButtonFactory {
             return retValue;
         }
 
+        @Override
         public String getToolTipText() {
             if( getButtonId() == TabControlButton.ID_MAXIMIZE_BUTTON )
                 return java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Maximize_Window");
@@ -251,6 +378,7 @@ public class TabControlButtonFactory {
 
         int count = 0;
 
+        @Override
         public void actionPerformed( ActionEvent e ) {
             count++;
             if (count > 2) {
@@ -291,6 +419,7 @@ public class TabControlButtonFactory {
             count = 0;
         }
 
+        @Override
         protected void processMouseEvent(MouseEvent me) {
             if (isEnabled() && me.getID() == me.MOUSE_PRESSED) {
                 startTimer();
@@ -300,6 +429,7 @@ public class TabControlButtonFactory {
             super.processMouseEvent(me);
         }
 
+        @Override
         protected void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
             if (fe.getID() == fe.FOCUS_LOST) {
@@ -307,6 +437,7 @@ public class TabControlButtonFactory {
             }
         }
 
+        @Override
         protected String getTabActionCommand(ActionEvent e) {
             return null;
         }
@@ -325,6 +456,7 @@ public class TabControlButtonFactory {
             setToolTipText( java.util.ResourceBundle.getBundle("org/netbeans/swing/tabcontrol/plaf/Bundle").getString("Tip_Show_Opened_Documents_List") );
         }
 
+        @Override
         protected void processMouseEvent(MouseEvent me) {
             super.processMouseEvent(me);
             if (isEnabled() && me.getID() == me.MOUSE_PRESSED) {
@@ -339,13 +471,16 @@ public class TabControlButtonFactory {
             }
         }
 
+        @Override
         protected String getTabActionCommand(ActionEvent e) {
             return null;
         }
         
+        @Override
         void performAction( ActionEvent e ) {
         }
 
+        @Override
         public Icon getRolloverIcon() {
             if( forcePressedIcon )
                 return getPressedIcon();
@@ -353,58 +488,12 @@ public class TabControlButtonFactory {
             return super.getRolloverIcon();
         }
 
+        @Override
         public Icon getIcon() {
             if( forcePressedIcon )
                 return getPressedIcon();
             
             return super.getIcon();
-        }
-    }
-
-
-    /**
-     * Loader for icons. Caches loaded icons using hash map.
-     */
-    final private static class IconLoader {
-        /* mapping <String, Icon> from resource paths to icon objects, used as cache */
-        private Map<String,Icon> paths2Icons;
-
-        /**
-         * Finds and returns icon instance from cache, if present. Otherwise
-         * loads icon using given resource path and stores icon into cache for
-         * next access.
-         *
-         * @return icon image
-         */
-        public Icon obtainIcon(String iconPath) {
-            if (paths2Icons == null) {
-                paths2Icons = new HashMap<String,Icon>(6);
-            }
-            Icon icon = paths2Icons.get(iconPath);
-            if (icon == null) {
-                // not yet in cache, load and store
-                Image image = loadImage(iconPath);
-                if (image == null) {
-                    throw new IllegalArgumentException("Icon with resource path: "
-                                                       + iconPath
-                                                       + " can't be loaded, probably wrong path.");
-                }
-                icon = new ImageIcon(image);
-                paths2Icons.put(iconPath, icon);
-            }
-            return icon;
-        }
-
-    } // end of IconLoader
-
-    private static Image loadImage(String path) {
-        try {
-            URL url = TabControlButtonFactory.class.getResource("/"+path);
-            return ImageIO.read(url);
-        } catch (Exception e) {
-            Logger.getLogger(TabControlButtonFactory.class.getName()).
-                    log(Level.WARNING, "Cannot load image", e);
-            return null;
         }
     }
 }

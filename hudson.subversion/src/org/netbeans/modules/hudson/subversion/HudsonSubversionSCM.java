@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
@@ -149,7 +150,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
     }
 
     public @Override List<? extends HudsonJobChangeItem> parseChangeSet(final HudsonJob job, final Element changeSet) {
-        if (!"svn".equals(Helper.xpath("kind", changeSet))) { // NOI18N
+        if (!"svn".equals(Utilities.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
         class SubversionItem implements HudsonJobChangeItem {
@@ -158,10 +159,10 @@ public class HudsonSubversionSCM implements HudsonSCM {
                 this.itemXML = xml;
             }
             public @Override String getUser() {
-                return Helper.xpath("user", itemXML); // NOI18N
+                return Utilities.xpath("user", itemXML); // NOI18N
             }
             public @Override String getMessage() {
-                return Helper.xpath("msg", itemXML); // NOI18N
+                return Utilities.xpath("msg", itemXML); // NOI18N
             }
             public @Override Collection<? extends HudsonJobChangeFile> getFiles() {
                 class SubversionFile implements HudsonJobChangeFile {
@@ -170,14 +171,14 @@ public class HudsonSubversionSCM implements HudsonSCM {
                         this.fileXML = xml;
                     }
                     public @Override String getName() {
-                        return Helper.xpath("file", fileXML); // NOI18N
+                        return Utilities.xpath("file", fileXML); // NOI18N
                     }
                     public @Override EditType getEditType() {
-                        return EditType.valueOf(Helper.xpath("editType", fileXML)); // NOI18N
+                        return EditType.valueOf(Utilities.xpath("editType", fileXML)); // NOI18N
                     }
                     public @Override OutputListener hyperlink() {
-                        String module = Helper.xpath("revision/module", changeSet); // NOI18N
-                        String rev = Helper.xpath("revision", itemXML); // NOI18N
+                        String module = Utilities.xpath("revision/module", changeSet); // NOI18N
+                        String rev = Utilities.xpath("revision", itemXML); // NOI18N
                         if (module == null || !module.startsWith("http") || rev == null) { // NOI18N
                             return null;
                         }

@@ -49,6 +49,7 @@ import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitRepositoryState;
@@ -56,8 +57,9 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitVCS;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -72,7 +74,9 @@ public class RepositoryInfoTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            GitVCS.class});
         System.setProperty("versioning.git.handleExternalEvents", "false");
     }
 

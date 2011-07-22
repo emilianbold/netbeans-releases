@@ -30,9 +30,9 @@
     that the contents of the folder has changed and
     updates the user interface to reflect the changes.
 
-    <p>If you created your module using a <a href="../create_plugin/projectlevel_create/create_module.html">module project template</a>,
-    you may already have an XML layer in your module, and
-    you can expand the node for it under
+    <p>New modules created using a <a href="../create_plugin/projectlevel_create/create_module.html">module project template</a>
+    do not have an XML layer, but you can add one with the New File wizard.
+    You can then expand the node for it under
     Important Files in your module project to see and modify its contents.
     The way it is declared is simple: 
 
@@ -40,11 +40,9 @@
     <li>In your module's manifest, include the following line somewhere in the top section:
     <p><tt>OpenIDE-Module-Layer: com/foo/mymodule/resources/layer.xml</tt></ul>
 
-    <p>Just as the <a href="../create_plugin/projectlevel_create/create_module.html">module project template</a>
-    provides a <tt>layer.xml</tt> file, so the <a href="../create_plugin/filelevel_create/about_file_wizards.html">module file templates</a>
-    provide the layer files's entries. For example, when you use a file template to
-    create a new action or to have the IDE recognize a new file type, the IDE automatically registers the
-    new items in the layer file.
+    <p>Just as the new layer wizard
+    creates an empty <tt>layer.xml</tt> file, so some <a href="../create_plugin/filelevel_create/about_file_wizards.html">module file templates</a>
+    may add entries, creating a new layer if necessary. Other templates just add Java annotations and so do not need an XML layer.
 
     <p>You can use the System Filesystem Browser to tweak the <tt>layer.xml</tt> file, or you
     can do so manually using code completion in the Source Editor.

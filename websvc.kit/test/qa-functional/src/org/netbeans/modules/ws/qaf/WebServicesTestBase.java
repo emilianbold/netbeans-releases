@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import javax.swing.JMenuItem;
+import javax.swing.MenuElement;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -77,6 +79,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -91,27 +94,12 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class WebServicesTestBase extends J2eeTestCase {
 
-    protected static final ServerType REGISTERED_SERVER;
+    protected static ServerType REGISTERED_SERVER;
     private static final Logger LOGGER = Logger.getLogger(WebServicesTestBase.class.getName());
     private Project project;
     private String projectName;
     private ProjectType projectType;
     private JavaEEVersion javaEEversion;
-
-    static {
-        //First found server will be used by tests
-        if (ServerType.GLASSFISH_V3.isAutoRegistered()) {
-            REGISTERED_SERVER = ServerType.GLASSFISH_V3;
-        } else if (ServerType.GLASSFISH.isAutoRegistered()) {
-            REGISTERED_SERVER = ServerType.GLASSFISH;
-        } else if (ServerType.TOMCAT.isAutoRegistered()) {
-            REGISTERED_SERVER = ServerType.TOMCAT;
-        } else if (ServerType.JBOSS.isAutoRegistered()) {
-            REGISTERED_SERVER = ServerType.JBOSS;
-        } else {
-            REGISTERED_SERVER = null;
-        }
-    }
 
     /**
      * Enum type to hold project specific settings (like ie. project category
@@ -273,50 +261,29 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         GLASSFISH_V3,
         TOMCAT,
         JBOSS;
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case SJSAS:
-                    //Sun Java System Application Server
-                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.dm.Bundle", "FACTORY_DISPLAYNAME");
-                case GLASSFISH:
-                    //GlassFish V2
-                    String label = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle", "LBL_GLASSFISH_V2");
-                    //Need only "GlassFish" to be able to handle both versions (v1, v2)
-                    return label.substring(0, label.length() - 3);
-                case GLASSFISH_V3:
-                    //GlassFish V3
-                    return Bundle.getStringTrimmed("org.netbeans.modules.glassfish.javaee.Bundle", "TXT_DisplayName");
-                case TOMCAT:
-                    //Tomcat
-                    return Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.util.Bundle", "LBL_DefaultDisplayName");
-                case JBOSS:
-                    //JBoss Application Server
-                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.jboss4.Bundle", "SERVER_NAME");
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Check if given server is present in the IDE
-         *
-         * @return true if server is registered in the IDE, false otherwise
-         */
-        public boolean isAutoRegistered() {
-            switch (this) {
-                case SJSAS:
-                case GLASSFISH:
-                    return System.getProperty("com.sun.aas.installRoot") != null; //NOI18N
-                case GLASSFISH_V3:
-                    return System.getProperty("org.glassfish.v3ee6.installRoot") != null; //NOI18N
-                case TOMCAT:
-                    return System.getProperty("tomcat.home") != null; //NOI18N
-                case JBOSS:
-                    return System.getProperty("jboss.home") != null; //NOI18N
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
+//        @Override
+//        public String toString() {
+//            switch (this) {
+//                case SJSAS:
+//                    //Sun Java System Application Server
+//                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.dm.Bundle", "FACTORY_DISPLAYNAME");
+//                case GLASSFISH:
+//                    //GlassFish V2
+//                    String label = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.Bundle", "LBL_GLASSFISH_V2");
+//                    //Need only "GlassFish" to be able to handle both versions (v1, v2)
+//                    return label.substring(0, label.length() - 3);
+//                case GLASSFISH_V3:
+//                    //GlassFish V3
+//                    return Bundle.getStringTrimmed("org.netbeans.modules.glassfish.javaee.Bundle", "TXT_DisplayName");
+//                case TOMCAT:
+//                    //Tomcat
+//                    return Bundle.getStringTrimmed("org.netbeans.modules.tomcat5.util.Bundle", "LBL_DefaultDisplayName");
+//                case JBOSS:
+//                    //JBoss Application Server
+//                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.jboss4.Bundle", "SERVER_NAME");
+//            }
+//            throw new AssertionError("Unknown type: " + this); //NOI18N
+//        }
     }
 
     /**
@@ -331,8 +298,31 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         setJavaEEversion(getJavaEEversion());
     }
 
+    /**
+     * Default constructor.
+     *
+     * @param testName name of particular test case
+     * @param server type of server to be used
+     */
+    public WebServicesTestBase(String name, Server server) {
+        super(name);
+        String serverString = server.toString();
+        if (serverString.equalsIgnoreCase("tomcat")) {
+            REGISTERED_SERVER = ServerType.TOMCAT;
+        } else if (serverString.equalsIgnoreCase("glassfish")) {
+            REGISTERED_SERVER = ServerType.GLASSFISH;
+        } else if (serverString.equalsIgnoreCase("jboss")) {
+            REGISTERED_SERVER = ServerType.JBOSS;
+        } else {
+            REGISTERED_SERVER = null;
+        }
+        setProjectName(getProjectName());
+        setProjectType(getProjectType());
+        setJavaEEversion(getJavaEEversion());
+    }
+
     public void assertServerRunning() {
-        if (!(REGISTERED_SERVER.equals(ServerType.GLASSFISH) || REGISTERED_SERVER.equals(ServerType.GLASSFISH_V3))) {
+        if (!(REGISTERED_SERVER.equals(ServerType.GLASSFISH))) {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
             return;
         }
@@ -464,7 +454,14 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                         NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
                         // select "Run" category
                         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
-                        new JComboBoxOperator(propertiesDialogOper).selectItem(REGISTERED_SERVER.toString());
+                        JComboBoxOperator comboBox = new JComboBoxOperator(propertiesDialogOper);
+                        int numberOfItems = comboBox.getItemCount();
+                        for (int q = 0; q < numberOfItems; q++) {
+                            if (((String) comboBox.getItemAt(q)).toLowerCase().contains(REGISTERED_SERVER.toString().toLowerCase())) {
+                                comboBox.selectItem(q);
+                                break;
+                            }
+                        }
                         // confirm properties dialog
                         propertiesDialogOper.ok();
                     }
@@ -830,7 +827,21 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         }
         // Set as Main Project
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
-        new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(project));
+        String unsetAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_UnSetAsMainProjectAction_Name");
+
+        JPopupMenuOperator jpmo = ProjectsTabOperator.invoke().getProjectRootNode(project).callPopup();
+        MenuElement[] mel = jpmo.getSubElements();
+        MenuElement me;
+        boolean alreadySetAsMain = false;
+        for (int q = 0; q < mel.length; q++) {
+            me = mel[q];
+            if (me instanceof JMenuItem && ((JMenuItem) me).getText().equals(unsetAsMainProjectItem)) {
+                alreadySetAsMain = true;
+            }
+        }
+        if (!alreadySetAsMain) {
+            new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(project));
+        }
         if (needToSetServer) {
             // open project properties
             ProjectsTabOperator.invoke().getProjectRootNode(project).properties();
@@ -870,8 +881,6 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     protected J2eeServerNode getServerNode() {
         switch (REGISTERED_SERVER) {
             case GLASSFISH:
-                return getServerNode(Server.GLASSFISH);
-            case GLASSFISH_V3:
                 return getServerNode(Server.GLASSFISH);
             case JBOSS:
                 return getServerNode(Server.JBOSS);

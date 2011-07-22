@@ -12,6 +12,7 @@ api.java,\
 api.java.classpath,\
 api.progress,\
 api.visual,\
+apisupport.ant,\
 apisupport.crudsample,\
 apisupport.feedreader,\
 apisupport.harness,\

@@ -76,7 +76,7 @@ import org.openide.windows.TopComponentGroup;
 public class ResetWindowsAction implements ActionListener {
     @ActionID(id = "org.netbeans.core.windows.actions.ResetWindowsAction", category = "Window")
     @ActionRegistration(displayName = "#CTL_ResetWindows")
-    @ActionReference(position = 3000, path = "Menu/Window")
+    @ActionReference(position = 2200, path = "Menu/Window")
     public static ActionListener reset() {
         return new ResetWindowsAction(true);
     }

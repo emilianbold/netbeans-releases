@@ -61,8 +61,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -169,7 +169,12 @@ final class NewLoaderIterator extends BasicWizardIterator {
                 if (v == null) {
                     return false;
                 }
-                return v.compareTo(new SpecificationVersion("1.24")) >= 0; // NOI18N
+                SpecificationVersion l = getModuleInfo().getDependencyVersion("org.openide.loaders"); // NOI18N
+                if (l == null) {
+                    return false;
+                }
+                return v.compareTo(new SpecificationVersion("1.24")) >= 0 // NOI18N
+                  && l.compareTo(new SpecificationVersion("7.26")) >= 0; // NOI18N
             } catch (IOException ex) {
                 return false;
             }

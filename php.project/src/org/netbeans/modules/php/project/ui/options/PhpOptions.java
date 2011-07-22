@@ -66,6 +66,8 @@ public final class PhpOptions {
     // these constants are used in API javadoc so therefore public modifier
     public static final int DEFAULT_DEBUGGER_PORT = 9000;
     public static final String DEFAULT_DEBUGGER_SESSION_ID = "netbeans-xdebug"; // NOI18N
+    public static final int DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH = 3;
+    public static final int DEFAULT_DEBUGGER_MAX_CHILDREN = 30;
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
     public static final boolean DEFAULT_DEBUGGER_WATCHES_AND_EVAL = false;
 
@@ -78,6 +80,8 @@ public final class PhpOptions {
     // debugger
     public static final String PHP_DEBUGGER_PORT = "phpDebuggerPort"; // NOI18N
     public static final String PHP_DEBUGGER_SESSION_ID = "phpDebuggerSessionId"; // NOI18N
+    public static final String PHP_DEBUGGER_MAX_STRUCTURES_DEPTH = "phpDebuggerMaxStructuresDepth"; // NOI18N
+    public static final String PHP_DEBUGGER_MAX_CHILDREN = "phpDebuggerMaxChildren"; // NOI18N
     public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
     public static final String PHP_DEBUGGER_WATCHES_AND_EVAL = "phpDebuggerWatchesAndEval"; // NOI18N
 
@@ -181,6 +185,22 @@ public final class PhpOptions {
 
     public void setDebuggerSessionId(String sessionId) {
         getPreferences().put(PHP_DEBUGGER_SESSION_ID, sessionId);
+    }
+
+    public int getDebuggerMaxStructuresDepth() {
+        return getPreferences().getInt(PHP_DEBUGGER_MAX_STRUCTURES_DEPTH, DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH);
+    }
+
+    public void setDebuggerMaxStructuresDepth(int debuggerMaxStructuresDepth) {
+        getPreferences().putInt(PHP_DEBUGGER_MAX_STRUCTURES_DEPTH, debuggerMaxStructuresDepth);
+    }
+
+    public int getDebuggerMaxChildren() {
+        return getPreferences().getInt(PHP_DEBUGGER_MAX_CHILDREN, DEFAULT_DEBUGGER_MAX_CHILDREN);
+    }
+
+    public void setDebuggerMaxChildren(int debuggerMaxChildren) {
+        getPreferences().putInt(PHP_DEBUGGER_MAX_CHILDREN, debuggerMaxChildren);
     }
 
     public boolean isDebuggerStoppedAtTheFirstLine() {

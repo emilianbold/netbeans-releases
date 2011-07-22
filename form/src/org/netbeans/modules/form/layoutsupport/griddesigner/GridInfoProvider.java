@@ -49,6 +49,7 @@ import java.awt.Graphics;
  * Provider of information about a specific grid.
  *
  * @author Jan Stola
+ * @author Petr Somol
  */
 public interface GridInfoProvider {
 
@@ -144,6 +145,57 @@ public interface GridInfoProvider {
      */
     int getGridHeight(Component component);
 
+    /**
+     * Returns true if gaps between rows/columns are enabled and present.
+     *
+     * @returns true if gaps are present.
+     */
+    boolean hasGaps();
+    
+    /**
+     * Returns the width of gap columns.
+     *
+     * @returns gap column width if gap support is enabled, -1 otherwise.
+     */
+    int getGapWidth();
+    
+    /**
+     * Returns the height of gap rows.
+     *
+     * @returns gap row height if gap support is enabled, -1 otherwise.
+     */
+    int getGapHeight();
+    
+    /**
+     * Returns true if {@code columnIndex} is index of a gap column.
+     *
+     * @param columnIndex index.
+     * @returns true if {@code columnIndex} is index of gap column.
+     */
+    boolean isGapColumn(int columnIndex);
+    
+    /**
+     * Returns true if {@code rowIndex} is index of a gap row.
+     *
+     * @param rowIndex index.
+     * @returns true if {@code rowIndex} is index of gap row.
+     */
+    boolean isGapRow(int rowIndex);
+    
+    /**
+     * Returns the index of the last (right-most) gap column, indexed over all gap/non-gap columns.
+     *
+     * @returns last gap column index if gap support is enabled, -1 otherwise.
+     */
+    int getLastGapColumn();
+    
+    /**
+     * Returns the index of the last (bottom-most) gap row, indexed over all gap/non-gap rows.
+     *
+     * @returns last gap row index if gap support is enabled, -1 otherwise.
+     */
+    int getLastGapRow();
+    
     /**
      * Paints additional information about component constraints.
      * The origin of the graphics coordinate system is at the top left

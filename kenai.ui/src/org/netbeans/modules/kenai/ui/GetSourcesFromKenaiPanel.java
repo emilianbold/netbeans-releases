@@ -207,7 +207,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 12, 0);
         add(loggedInLabel, gridBagConstraints);
-
         loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetFromKenaiPanel.notLoggedIn"));
         gridBagConstraints = new GridBagConstraints();
@@ -216,7 +215,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.EAST;
         gridBagConstraints.insets = new Insets(0, 0, 12, 0);
         add(usernameLabel, gridBagConstraints);
-
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.loginButton.text"));
@@ -241,8 +239,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(kenaiRepoLabel, gridBagConstraints);
-
         kenaiRepoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         kenaiRepoComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 kenaiRepoComboBoxActionPerformed(evt);
@@ -255,7 +253,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(kenaiRepoComboBox, gridBagConstraints);
-
         kenaiRepoComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoComboBox.AccessibleContext.accessibleName")); // NOI18N
         kenaiRepoComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.kenaiRepoComboBox.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(browseKenaiButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseKenaiButton.text"));
@@ -270,7 +267,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseKenaiButton, gridBagConstraints);
-
         browseKenaiButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseKenaiButton.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(projectPreviewLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.projectPreviewLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -290,8 +286,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(repoFolderLabel, gridBagConstraints);
-
         repoFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         repoFolderTextField.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderTextField.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -300,7 +296,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(repoFolderTextField, gridBagConstraints);
-
         repoFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         repoFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.repoFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(browseRepoButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseRepoButton.text"));
@@ -315,7 +310,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseRepoButton, gridBagConstraints);
-
         browseRepoButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseRepoButton.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(localFolderDescLabel, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderDescLabel.svnText"));
         gridBagConstraints = new GridBagConstraints();
@@ -336,8 +330,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 0, 4);
         add(localFolderLabel, gridBagConstraints);
-
         localFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         localFolderTextField.setText(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.text")); // NOI18N
         localFolderTextField.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent evt) {
@@ -351,7 +345,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(localFolderTextField, gridBagConstraints);
-
         localFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         localFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.localFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(browseLocalButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseLocalButton.text"));
@@ -366,7 +359,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(browseLocalButton, gridBagConstraints);
-
         browseLocalButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.browseLocalButton.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(proxyConfigButton, NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.proxyConfigButton.text"));
         proxyConfigButton.addActionListener(new ActionListener() {
@@ -380,8 +372,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
         add(proxyConfigButton, gridBagConstraints);
-
         proxyConfigButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromKenaiPanel.class, "GetSourcesFromKenaiPanel.proxyConfigButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;

@@ -1,11 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <Properties>
-    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_JSFPagesAndClasses" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-    </Property>
-  </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_Specify_Resource_Class" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -20,7 +15,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -31,13 +26,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="containerUriLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="501" max="32767" attributes="0"/>
+              <EmptySpace pref="585" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mediaTypeLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="529" max="32767" attributes="0"/>
+              <EmptySpace pref="604" max="32767" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="600" max="32767" attributes="1"/>
+          <Component id="jSeparator1" alignment="0" pref="661" max="32767" attributes="1"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -49,12 +44,12 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="packageComboBox" alignment="0" pref="441" max="32767" attributes="1"/>
-                  <Component id="resourceNameTextField" alignment="0" pref="441" max="32767" attributes="1"/>
-                  <Component id="classTextField" alignment="0" pref="441" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="441" max="32767" attributes="1"/>
-                  <Component id="locationComboBox" alignment="0" pref="441" max="32767" attributes="1"/>
-                  <Component id="containerTextField" alignment="1" pref="441" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="0" pref="548" max="32767" attributes="1"/>
+                  <Component id="resourceNameTextField" alignment="0" pref="548" max="32767" attributes="1"/>
+                  <Component id="classTextField" alignment="0" pref="548" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="548" max="32767" attributes="1"/>
+                  <Component id="locationComboBox" alignment="0" pref="548" max="32767" attributes="1"/>
+                  <Component id="containerTextField" alignment="1" pref="548" max="32767" attributes="1"/>
               </Group>
           </Group>
           <Group type="102" alignment="1" attributes="0">
@@ -65,11 +60,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="uriTextField" alignment="0" pref="315" max="32767" attributes="1"/>
-                  <Component id="representationClassTextField" alignment="0" pref="315" max="32767" attributes="0"/>
-                  <Component id="containerRepresentationClassTextField" alignment="0" pref="315" max="32767" attributes="1"/>
-                  <Component id="containerUriTextField" alignment="0" pref="315" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="315" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="0" pref="422" max="32767" attributes="1"/>
+                  <Component id="representationClassTextField" alignment="0" pref="422" max="32767" attributes="0"/>
+                  <Component id="containerRepresentationClassTextField" alignment="0" pref="422" max="32767" attributes="1"/>
+                  <Component id="containerUriTextField" alignment="0" pref="422" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="422" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">

@@ -582,6 +582,40 @@ public class GotoDeclarationTest extends TestBase {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo AA::LETT^ER22;", "const ^LETTER22 = 'a';");
     }
+    
+    public void testMixedTypes200156_01() throws Exception {
+        checkDeclaration(getTestPath(), "* @property F^oo|Bar $property", "class ^Foo {");
+    }
+    
+    public void testMixedTypes200156_02() throws Exception {
+        checkDeclaration(getTestPath(), "* @property Foo|B^ar $property", "class ^Bar {");
+    }
+    
+    public void testMixedTypes200156_03() throws Exception {
+        checkDeclaration(getTestPath(), "     * @var Fo^o|Bar", "class ^Foo {");
+    }
+    
+    public void testMixedTypes200156_04() throws Exception {
+        checkDeclaration(getTestPath(), "     * @var Foo|Ba^r", "class ^Bar {");
+    }
+    
+    // uncomment when issue #200161 will be fixed
+//    public void testMixedTypes200156_05() throws Exception {
+//        checkDeclaration(getTestPath(), "* @method Fo^o|Bar m1() m1(Foo|Bar $param) a magic method declaration", "class ^Foo {");
+//    }
+//    
+//    public void testMixedTypes200156_06() throws Exception {
+//        checkDeclaration(getTestPath(), "* @method Foo|B^ar m1() m1(Foo|Bar $param) a magic method declaration", "class ^Bar {");
+//    }
+    
+    public void testMixedTypes200156_07() throws Exception {
+        checkDeclaration(getTestPath(), "* @method Foo|Bar m1() m1(F^oo|Bar $param) a magic method declaration", "class ^Foo {");
+    }
+    
+    public void testMixedTypes200156_08() throws Exception {
+        checkDeclaration(getTestPath(), "* @method Foo|Bar m1() m1(Foo|B^ar $param) a magic method declaration", "class ^Bar {");
+    }
+     
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

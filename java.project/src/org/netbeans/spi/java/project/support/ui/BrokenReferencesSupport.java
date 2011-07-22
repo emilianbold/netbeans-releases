@@ -244,8 +244,13 @@ public class BrokenReferencesSupport {
 
             final Runnable task = new Runnable() {
                 public @Override void run() {
+                    final BrokenReferencesModel.Context ctx;
                     synchronized (BrokenReferencesSupport.class) {
                         rpTask = null;
+                        ctx = context;
+                    }
+                    if (ctx == null) {
+                        return;
                     }
                     try {
                         final JButton resolveOption = new JButton(CTL_Broken_References_Resolve());
@@ -261,15 +266,15 @@ public class BrokenReferencesSupport {
                             null,
                             null);
                         dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-                        context.addChangeListener(new ChangeListener() {
+                        ctx.addChangeListener(new ChangeListener() {
                             @Override
                             public void stateChanged(ChangeEvent e) {
-                                resolveOption.setVisible(!context.isEmpty());
+                                resolveOption.setVisible(!ctx.isEmpty());
                             }
                         });
-                        resolveOption.setVisible(!context.isEmpty());
+                        resolveOption.setVisible(!ctx.isEmpty());
                         if (DialogDisplayer.getDefault().notify(dd) == resolveOption) {
-                            final BrokenReferencesModel model = new BrokenReferencesModel(context, true);
+                            final BrokenReferencesModel model = new BrokenReferencesModel(ctx, true);
                             final BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
                             JButton close = new JButton (Bundle.LBL_Broken_References_Resolve_Panel_Close());
                             close.getAccessibleContext ().setAccessibleDescription (Bundle.AD_Broken_References_Resolve_Panel_Close());
@@ -294,7 +299,6 @@ public class BrokenReferencesSupport {
                     } finally {
                         synchronized (BrokenReferencesSupport.class) {
                             //Clean seen references and start from empty list
-                            //Is it what we good from UI point of view?
                             context = null;
                         }
                     }

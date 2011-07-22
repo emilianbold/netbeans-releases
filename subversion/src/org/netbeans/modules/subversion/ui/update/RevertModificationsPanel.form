@@ -14,7 +14,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -30,7 +30,7 @@
                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
                       <Component id="jLabel4" min="-2" pref="112" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="oneRevisionTextField" pref="164" max="32767" attributes="2"/>
+                      <Component id="oneRevisionTextField" pref="165" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="oneRevisionSearchButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -45,8 +45,8 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="endRevisionTextField" alignment="0" pref="164" max="32767" attributes="2"/>
-                          <Component id="startRevisionTextField" alignment="0" pref="164" max="32767" attributes="2"/>
+                          <Component id="endRevisionTextField" alignment="0" pref="165" max="32767" attributes="2"/>
+                          <Component id="startRevisionTextField" alignment="0" pref="165" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
