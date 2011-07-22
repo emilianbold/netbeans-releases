@@ -54,7 +54,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.spi.LoadGenPlugin;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -113,9 +113,20 @@ public class LoadGenPanel extends javax.swing.JPanel {
   }
   
   /** Creates new form LoadGenPanel */
-  public LoadGenPanel() {
+  private LoadGenPanel() {
     initComponents();
   }
+  
+  // Singleton model to allow easy access from both J2EEProjectTypeProfiler and J2EEProfilingSettingsSupportProvider
+  private static LoadGenPanel INSTANCE = null;
+  public static synchronized LoadGenPanel instance() {
+      if (!hasInstance()) INSTANCE = new LoadGenPanel();
+      return INSTANCE;
+  }
+  public static synchronized boolean hasInstance() {
+      return INSTANCE != null;
+  }
+  //
   
   /** This method is called from within the constructor to
    * initialize the form.
