@@ -70,6 +70,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
@@ -81,9 +82,11 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -101,9 +104,28 @@ public class RemoteServices {
     private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
     
     private static final RequestProcessor AUTORESUME_AFTER_SUSPEND_RP = new RequestProcessor("Autoresume after suspend", 1);
+    
+    private static final Set<PropertyChangeListener> serviceListeners = new WeakSet<PropertyChangeListener>();
 
     private RemoteServices() {}
     
+    public static void addServiceListener(PropertyChangeListener listener) {
+        synchronized (serviceListeners) {
+            serviceListeners.add(listener);
+        }
+    }
+
+    private static void fireServiceClass(JPDADebuggerImpl debugger) {
+        PropertyChangeEvent pche = new PropertyChangeEvent(RemoteServices.class, "serviceClass", null, debugger);
+        PropertyChangeListener[] listeners;
+        synchronized (serviceListeners) {
+            listeners = serviceListeners.toArray(new PropertyChangeListener[]{});
+        }
+        for (PropertyChangeListener l : listeners) {
+            l.propertyChange(pche);
+        }
+    }
+
     /*
     public static void uploadClass(JPDAThreadImpl t, String className) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException {
         ThreadReference tawt = t.getThreadReference();
@@ -185,6 +207,7 @@ public class RemoteServices {
                 synchronized (remoteServiceClasses) {
                     remoteServiceClasses.put(t.getDebugger(), basicClass);
                 }
+                fireServiceClass(t.getDebugger());
             }
             return basicClass;
         } finally {
@@ -503,7 +526,7 @@ public class RemoteServices {
         return listenerPtr[0];
     }
     
-    static ClassObjectReference getServiceClass(JPDADebugger debugger) {
+    public static ClassObjectReference getServiceClass(JPDADebugger debugger) {
         synchronized (remoteServiceClasses) {
             return remoteServiceClasses.get(debugger);
         }
