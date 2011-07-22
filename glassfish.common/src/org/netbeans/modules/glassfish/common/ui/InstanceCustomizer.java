@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -73,7 +73,11 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
     private void initFields() {
         Map<String, String> ip = commonSupport.getInstanceProperties();
-        textLocation.setText(ip.get(GlassfishModule.HOSTNAME_ATTR) + ":" + 
+        String host = ip.get(GlassfishModule.HTTPHOST_ATTR);
+        if (null == host) {
+            host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+        }
+        textLocation.setText(host + ":" +
                 ip.get(GlassfishModule.HTTPPORT_ATTR));
         textDomainsFolder.setText(ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR)); // NOI18N
         textDomainName.setText(ip.get(GlassfishModule.DOMAIN_NAME_ATTR)); // NOI18N
