@@ -49,7 +49,7 @@ public class FindDuplicatesRefactoring extends AbstractRefactoring {
     private final boolean query;
     private Iterable<? extends HintDescription> patterns;
     private Scope scope;
-    private boolean verify;
+    private boolean verify = true;
 
     public FindDuplicatesRefactoring(boolean query) {
         super(Lookup.EMPTY);
