@@ -106,9 +106,9 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="maxStructuresLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="maxStructuresDepthLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="maxStructuresTextField" linkSize="4" min="-2" max="-2" attributes="1"/>
+              <Component id="maxStructuresDepthTextField" linkSize="4" min="-2" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="maxChildrenLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -152,8 +152,8 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="maxStructuresLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="maxStructuresTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="maxStructuresDepthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="maxStructuresDepthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="maxChildrenLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="maxChildrenTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -425,13 +425,13 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="maxStructuresLabel">
+    <Component class="javax.swing.JLabel" name="maxStructuresDepthLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="maxStructuresTextField"/>
+          <ComponentRef name="maxStructuresDepthTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.maxStructuresLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.maxStructuresDepthLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -443,7 +443,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextField" name="maxStructuresTextField">
+    <Component class="javax.swing.JTextField" name="maxStructuresDepthTextField">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

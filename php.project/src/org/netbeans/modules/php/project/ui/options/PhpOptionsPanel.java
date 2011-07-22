@@ -98,7 +98,7 @@ public class PhpOptionsPanel extends JPanel {
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
         debuggerPortTextField.getDocument().addDocumentListener(documentListener);
         debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
-        maxStructuresTextField.getDocument().addDocumentListener(documentListener);
+        maxStructuresDepthTextField.getDocument().addDocumentListener(documentListener);
         maxChildrenTextField.getDocument().addDocumentListener(documentListener);
         watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
@@ -175,12 +175,12 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdTextField.setText(sessionId);
     }
 
-    public Integer getDebuggerMaxStructures() {
-        return parseInteger(maxStructuresTextField.getText());
+    public Integer getDebuggerMaxStructuresDepth() {
+        return parseInteger(maxStructuresDepthTextField.getText());
     }
 
-    public void setDebuggerMaxStructures(int maxStructures) {
-        maxStructuresTextField.setText(String.valueOf(maxStructures));
+    public void setDebuggerMaxStructuresDepth(int maxStructuresDepth) {
+        maxStructuresDepthTextField.setText(String.valueOf(maxStructuresDepth));
     }
 
     public Integer getDebuggerMaxChildren() {
@@ -278,8 +278,8 @@ public class PhpOptionsPanel extends JPanel {
         debuggerPortTextField = new JTextField();
         debuggerSessionIdLabel = new JLabel();
         debuggerSessionIdTextField = new JTextField();
-        maxStructuresLabel = new JLabel();
-        maxStructuresTextField = new JTextField();
+        maxStructuresDepthLabel = new JLabel();
+        maxStructuresDepthTextField = new JTextField();
         maxChildrenLabel = new JLabel();
         maxChildrenTextField = new JTextField();
         stopAtTheFirstLineCheckBox = new JCheckBox();
@@ -329,8 +329,8 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdLabel.setLabelFor(debuggerSessionIdTextField);
         Mnemonics.setLocalizedText(debuggerSessionIdLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.text")); // NOI18N
 
-        maxStructuresLabel.setLabelFor(maxStructuresTextField);
-        Mnemonics.setLocalizedText(maxStructuresLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.text")); // NOI18N
+        maxStructuresDepthLabel.setLabelFor(maxStructuresDepthTextField);
+        Mnemonics.setLocalizedText(maxStructuresDepthLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresDepthLabel.text")); // NOI18N
 
         maxChildrenLabel.setLabelFor(maxChildrenTextField);
 
@@ -421,9 +421,9 @@ public class PhpOptionsPanel extends JPanel {
                 .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(maxStructuresLabel)
+                .addComponent(maxStructuresDepthLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(maxStructuresTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(maxStructuresDepthTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(maxChildrenLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -435,7 +435,7 @@ public class PhpOptionsPanel extends JPanel {
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpInterpreterBrowseButton, phpInterpreterSearchButton});
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxStructuresTextField});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxStructuresDepthTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -467,8 +467,8 @@ public class PhpOptionsPanel extends JPanel {
                     .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(maxStructuresLabel)
-                    .addComponent(maxStructuresTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(maxStructuresDepthLabel)
+                    .addComponent(maxStructuresDepthTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(maxChildrenLabel)
                     .addComponent(maxChildrenTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -528,10 +528,10 @@ public class PhpOptionsPanel extends JPanel {
         debuggerSessionIdLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.AccessibleContext.accessibleDescription")); // NOI18N
         debuggerSessionIdTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleName")); // NOI18N
         debuggerSessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        maxStructuresLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.AccessibleContext.accessibleName")); // NOI18N
-        maxStructuresLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        maxStructuresTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleName")); // NOI18N
-        maxStructuresTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        maxStructuresDepthLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.AccessibleContext.accessibleName")); // NOI18N
+        maxStructuresDepthLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        maxStructuresDepthTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleName")); // NOI18N
+        maxStructuresDepthTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleDescription")); // NOI18N
         maxChildrenLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenLabel.AccessibleContext.accessibleName")); // NOI18N
         maxChildrenLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenLabel.AccessibleContext.accessibleDescription")); // NOI18N
         maxChildrenTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenTextField.AccessibleContext.accessibleName")); // NOI18N
@@ -618,8 +618,8 @@ public class PhpOptionsPanel extends JPanel {
     private JScrollPane includePathScrollPane;
     private JLabel maxChildrenLabel;
     private JTextField maxChildrenTextField;
-    private JLabel maxStructuresLabel;
-    private JTextField maxStructuresTextField;
+    private JLabel maxStructuresDepthLabel;
+    private JTextField maxStructuresDepthTextField;
     private JButton moveDownButton;
     private JButton moveUpButton;
     private JLabel openResultInLabel;

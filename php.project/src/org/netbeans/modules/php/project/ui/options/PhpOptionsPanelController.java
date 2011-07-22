@@ -81,7 +81,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
         phpOptionsPanel.setDebuggerPort(getPhpOptions().getDebuggerPort());
         phpOptionsPanel.setDebuggerSessionId(getPhpOptions().getDebuggerSessionId());
-        phpOptionsPanel.setDebuggerMaxStructures(getPhpOptions().getDebuggerMaxStructures());
+        phpOptionsPanel.setDebuggerMaxStructuresDepth(getPhpOptions().getDebuggerMaxStructuresDepth());
         phpOptionsPanel.setDebuggerMaxChildren(getPhpOptions().getDebuggerMaxChildren());
         phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
         phpOptionsPanel.setDebuggerWatchesAndEval(getPhpOptions().isDebuggerWatchesAndEval());
@@ -98,7 +98,7 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
         getPhpOptions().setDebuggerPort(phpOptionsPanel.getDebuggerPort());
         getPhpOptions().setDebuggerSessionId(phpOptionsPanel.getDebuggerSessionId());
-        getPhpOptions().setDebuggerMaxStructures(phpOptionsPanel.getDebuggerMaxStructures());
+        getPhpOptions().setDebuggerMaxStructuresDepth(phpOptionsPanel.getDebuggerMaxStructuresDepth());
         getPhpOptions().setDebuggerMaxChildren(phpOptionsPanel.getDebuggerMaxChildren());
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
         getPhpOptions().setDebuggerWatchesAndEval(phpOptionsPanel.isDebuggerWatchesAndEval());
@@ -169,9 +169,9 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
             phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidSessionId"));
             return false;
         }
-        Integer maxStructures = phpOptionsPanel.getDebuggerMaxStructures();
-        if (maxStructures == null || maxStructures < 1) {
-            phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidMaxStructures"));
+        Integer maxStructuresDepth = phpOptionsPanel.getDebuggerMaxStructuresDepth();
+        if (maxStructuresDepth == null || maxStructuresDepth < 1) {
+            phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidMaxStructuresDepth"));
             return false;
         }
         Integer maxChildren = phpOptionsPanel.getDebuggerMaxChildren();
