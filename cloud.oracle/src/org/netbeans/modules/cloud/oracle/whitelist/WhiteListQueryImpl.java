@@ -43,12 +43,15 @@ package org.netbeans.modules.cloud.oracle.whitelist;
 
 import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  */
-public class WhiteListQueryImpl implements WhiteListQueryImplementation {
+@ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class)
+public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
     @Override
     public WhiteListImplementation getWhiteList(FileObject file) {
@@ -79,4 +82,44 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation {
 //            }
 //        };
     }
+
+    @Override
+    public String getDisplayName() {
+        return "Oracle Cloud-9";
+    }
+
+    @Override
+    public String getId() {
+        return "cloud-9"; // or should it be rather "cloud-9-version-1.0"
+    }
+    
+    
+    @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class)
+    public static class TestingWhitelist implements WhiteListQueryImplementation.UserSelectable {
+
+        private WhiteListImplementation test;
+
+        public TestingWhitelist() {
+            test = WhiteListImplementationBuilder.create().
+                    addCheckedPackage("java.rmi").
+                    addInvocableClass("java.rmi.Naming").build();
+        }
+        
+        @Override
+        public String getDisplayName() {
+            return "Testing Whitelist";
+        }
+
+        @Override
+        public String getId() {
+            return "test-whitelist";
+        }
+
+        @Override
+        public WhiteListImplementation getWhiteList(FileObject file) {
+            return test;
+        }
+        
+    }
+    
 }

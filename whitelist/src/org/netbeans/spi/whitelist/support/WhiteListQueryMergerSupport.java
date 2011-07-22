@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation.Result;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
@@ -108,24 +109,35 @@ public class WhiteListQueryMergerSupport {
             this.list = list;
         }
 
-        @Override
-        public boolean canInvoke(ElementHandle<?> element) {
-            for (WhiteListImplementation impl : list) {
-                if (!impl.canInvoke(element)) {
-                    return false;
-                }
-            }
-            return true;
-        }
+//        @Override
+//        public boolean canInvoke(ElementHandle<?> element) {
+//            for (WhiteListImplementation impl : list) {
+//                if (!impl.canInvoke(element)) {
+//                    return false;
+//                }
+//            }
+//            return true;
+//        }
+//
+//        @Override
+//        public boolean canOverride(ElementHandle<?> element) {
+//            for (WhiteListImplementation impl : list) {
+//                if (!impl.canOverride(element)) {
+//                    return false;
+//                }
+//            }
+//            return true;
+//        }
 
         @Override
-        public boolean canOverride(ElementHandle<?> element) {
+        public Result check(ElementHandle<?> element) {
             for (WhiteListImplementation impl : list) {
-                if (!impl.canOverride(element)) {
-                    return false;
+                Result r = impl.check(element);
+                if (r != null) {
+                    return r;
                 }
             }
-            return true;
+            return null;
         }
     }
     

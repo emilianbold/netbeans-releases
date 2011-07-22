@@ -84,25 +84,25 @@ public final class WhiteListConfigReader {
     public synchronized static WhiteListImplementation getDefault() {
         if (reader == null) {
             
-            // XXX: whitelist files are read in separate thread; negative
-            // side effect is that first code completio will not contain
-            // any whitelisting
-            
-            reader = new WhiteListImplementation() {
-                @Override
-                public boolean canInvoke(ElementHandle<?> element) {
-                    return true;
-                }
-
-                @Override
-                public boolean canOverride(ElementHandle<?> element) {
-                    return true;
-                }
-            };
-            RequestProcessor.getDefault().post(new Runnable() {
-
-                @Override
-                public void run() {
+//            // XXX: whitelist files are read in separate thread; negative
+//            // side effect is that first code completio will not contain
+//            // any whitelisting
+//            
+//            reader = new WhiteListImplementation() {
+//                @Override
+//                public boolean canInvoke(ElementHandle<?> element) {
+//                    return true;
+//                }
+//
+//                @Override
+//                public boolean canOverride(ElementHandle<?> element) {
+//                    return true;
+//                }
+//            };
+//            RequestProcessor.getDefault().post(new Runnable() {
+//
+//                @Override
+//                public void run() {
                     try {
                         readXMLs();
                     } catch (ParserConfigurationException ex) {
@@ -113,8 +113,8 @@ public final class WhiteListConfigReader {
                         Exceptions.printStackTrace(ex);
                     }
                     setRealReader(getBuilder().build());
-                }
-            });
+//                }
+//            });
         }
         return reader;
     }

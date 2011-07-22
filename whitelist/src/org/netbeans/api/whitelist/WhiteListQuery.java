@@ -44,6 +44,8 @@ package org.netbeans.api.whitelist;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.whitelist.project.WhiteListCategoryPanel;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.openide.filesystems.FileObject;
@@ -83,6 +85,14 @@ public final class WhiteListQuery {
     }
 
     /**
+     * At the moment assumption is that if a project want to automatically enable 
+     * some whitelist then they likely know whitelistId.
+     */
+    public static void enableWhiteListInProject(@NonNull Project p, @NonNull String whiteListId, boolean enable) {
+        WhiteListCategoryPanel.enableWhiteListInProject(p, whiteListId, enable);
+    }
+    
+    /**
      * The white list used to emit errors for usages of non allowed
      * types or methods.
      */
@@ -104,7 +114,7 @@ public final class WhiteListQuery {
         public final boolean canInvoke(
             @NonNull final ElementHandle<?> element) {
             Parameters.notNull("element", element); //NOI18N;
-            return impl.canInvoke(element);
+            return impl.check(element).isInvokable();
         }
 
         /**
@@ -114,8 +124,9 @@ public final class WhiteListQuery {
          */
         public final boolean canOverride(
              @NonNull final ElementHandle<?> element) {
-            Parameters.notNull("element", element); //NOI18N;
-            return impl.canOverride(element);
+//            Parameters.notNull("element", element); //NOI18N;
+//            return impl.canOverride(element);
+            return true;
         }
     }
 }

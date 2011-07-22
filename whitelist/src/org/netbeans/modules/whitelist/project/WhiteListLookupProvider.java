@@ -39,59 +39,33 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.whitelist;
+package org.netbeans.modules.whitelist.project;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.source.ElementHandle;
-import org.openide.filesystems.FileObject;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Tomas Zezula
  */
-public interface WhiteListQueryImplementation {
+public class WhiteListLookupProvider implements LookupProvider {
 
-    WhiteListImplementation getWhiteList(
-          @NonNull FileObject file);
-
-    /**
-     * All whitelists which should be displayed in UI for user should implement
-     * this interface. And on the other hand non-visible implementations like
-     * for example merging WhiteListQueryImplementation should not implement it.
-     */
-    public interface UserSelectable extends WhiteListQueryImplementation {
-        String getDisplayName();
-        String getId();
-    }
-
-    public interface WhiteListImplementation {
-        Result check(@NonNull ElementHandle<?> element);
+    
+    // XXX: change in selected whitelists should trigger lookup change
+    
+    
+    @Override
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        Project p = baseContext.lookup(Project.class);
+        assert p != null;
+        if (!WhiteListCategoryPanel.isWhiteListPanelEnabled(p)) {
+            return Lookup.EMPTY;
+        }
+        List<WhiteListQueryImplementation.UserSelectable> impls = WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
+        return Lookups.fixed(impls.toArray(new WhiteListQueryImplementation.UserSelectable[impls.size()]));
     }
     
-    public final class Result {
-        boolean invokable;
-        private String violatedRuleName;
-        private String violatedRuleDescription;
-        //boolean overridable; // this is going to be dropped from whitelist
-
-        public Result(boolean invokable, String violatedRuleName, String violatedRuleDescription) {
-            this.invokable = invokable;
-            this.violatedRuleName = violatedRuleName;
-            this.violatedRuleDescription = violatedRuleDescription;
-        }
-
-        public boolean isInvokable() {
-            return invokable;
-        }
-
-        public String getViolatedRuleDescription() {
-            return violatedRuleDescription;
-        }
-
-        public String getViolatedRuleName() {
-            return violatedRuleName;
-        }
-        
-    }
-
 }
