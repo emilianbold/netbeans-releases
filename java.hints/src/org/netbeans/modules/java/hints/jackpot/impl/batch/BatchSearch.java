@@ -352,7 +352,7 @@ public class BatchSearch {
             return false;
         }
 
-        public static Folder[] convert(FileObject[] files) {
+        public static Folder[] convert(FileObject... files) {
             Folder[] result = new Folder[files.length];
             for (int i=0;i<files.length;i++) {
                 result[i] = new Folder(files[i]);
