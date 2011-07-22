@@ -156,6 +156,7 @@ public class CodeHintProviderImpl implements HintProvider {
                                               .setKind(metadata.hintKind())
                                               .setCustomizerProvider(createCustomizerProvider(metadata))
                                               .addSuppressWarnings(metadata.suppressWarnings())
+                                              .addOptions(metadata.options())
                                               .build();
         return hm;
     }
