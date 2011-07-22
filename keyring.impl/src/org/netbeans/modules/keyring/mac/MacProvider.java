@@ -83,14 +83,20 @@ public class MacProvider implements KeyringProvider {
     }
 
     public void save(String key, char[] password, String description) {
-        delete(key); // XXX supposed to use SecKeychainItemModifyContent instead, but this seems like too much work
         try {
             byte[] serviceName = key.getBytes("UTF-8");
             byte[] accountName = "NetBeans".getBytes("UTF-8");
             // Keychain Access seems to expect UTF-8, so do not use Utils.chars2Bytes:
             byte[] data = new String(password).getBytes("UTF-8");
-            error("save", SecurityLibrary.LIBRARY.SecKeychainAddGenericPassword(null, serviceName.length, serviceName,
-                    accountName.length, accountName, data.length, data, null));
+            Pointer[] itemRef = new Pointer[1];
+            error("find (for save)", SecurityLibrary.LIBRARY.SecKeychainFindGenericPassword(null, serviceName.length, serviceName,
+                    accountName.length, accountName, null, null, itemRef));
+            if (itemRef[0] != null) {
+                error("save (update)", SecurityLibrary.LIBRARY.SecKeychainItemModifyContent(itemRef[0], null, data.length, data));
+            } else {
+                error("save (new)", SecurityLibrary.LIBRARY.SecKeychainAddGenericPassword(null, serviceName.length, serviceName,
+                        accountName.length, accountName, data.length, data, null));
+            }
         } catch (UnsupportedEncodingException x) {
             LOG.log(Level.WARNING, null, x);
         }
