@@ -752,6 +752,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (progressPanel.isVisible()) {
+                    LOGGER.log(Level.INFO, event.getSource() + " called start multiple times");
+                    return;
+                }
                 progressPanel.remove(innerPanel);
                 progressBar = ProgressBar.create(progressHandle = ProgressHandleFactory.createHandle("")); //NOI18N
                 progressPanel.add(progressBar, BorderLayout.CENTER);

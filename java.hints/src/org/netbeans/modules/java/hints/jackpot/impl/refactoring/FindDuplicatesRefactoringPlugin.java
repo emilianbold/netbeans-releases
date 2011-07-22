@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,6 +48,8 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext.MessageKind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
@@ -74,7 +77,11 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
      public Problem prepare(RefactoringElementsBag refactoringElements) {
         cancel.set(false);
 
-        Collection<MessageImpl> problems = refactoring.isQuery() ? performSearchForPattern(refactoringElements) : performApplyPattern(refactoringElements);
+        //Collection<MessageImpl> problems = refactoring.isQuery() ? performSearchForPattern(refactoringElements) : performApplyPattern(refactoringElements);
+        
+        Collection<MessageImpl> problems = performSearchForPattern(refactoringElements);
+        problems.addAll(performApplyPattern(refactoringElements));
+        
         Problem current = null;
 
         for (MessageImpl problem : problems) {
@@ -101,7 +108,16 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
      }
 
     private Collection<MessageImpl> performApplyPattern(RefactoringElementsBag refactoringElements) {
-        return performApplyPattern(refactoring.getPattern(), refactoring.getScope(), refactoringElements);
+        return performApplyPattern(filterQueries(refactoring.getPattern(), false), refactoring.getScope(), refactoringElements);
     }
 
+    private Iterable<? extends HintDescription> filterQueries(Iterable<? extends HintDescription> hints, boolean positive) {
+        ArrayList<HintDescription> result = new ArrayList<HintDescription>();
+        for (HintDescription hint: hints) {
+            if (positive ^ !hint.getMetadata().options.contains(Options.QUERY)) {
+                result.add(hint);
+            }
+        }
+        return result;
+    }
 }
