@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.jackpot.impl.batch;
 
+import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.TestUtils.File;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.BatchResult;
@@ -187,7 +188,7 @@ public class BatchSearchTest extends NbTestCase {
                                  new File("test/Test2.java", "package test; public class Test2 { public boolean isDirectory() {return false} }"));
 
         Iterable<? extends HintDescription> hints = prepareHints("$1.isDirectory()", "$1", "test.Test2");
-        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(src1, src3, empty));
+        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(src1, src3, empty)));
         Map<String, Iterable<String>> output = new HashMap<String, Iterable<String>>();
 
         for (Entry<FileObject, Collection<? extends Resource>> e : result.getResourcesWithRoots().entrySet()) {
@@ -231,7 +232,7 @@ public class BatchSearchTest extends NbTestCase {
         ClassPathProviderImpl.setSourceRoots(Arrays.asList(dataSrc1, dataSrc2));
 
         Iterable<? extends HintDescription> hints = prepareHints("$1.isDirectory()", "$1", "test.Test2");
-        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(data));
+        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(data)));
         Map<String, Iterable<String>> output = new HashMap<String, Iterable<String>>();
 
         for (Entry<FileObject, Collection<? extends Resource>> e : result.getResourcesWithRoots().entrySet()) {
@@ -295,7 +296,7 @@ public class BatchSearchTest extends NbTestCase {
                                  new File("test/Test2.java", "package test; public class Test2 { public boolean isDirectory() {return false} }"));
 
         Iterable<? extends HintDescription> hints = prepareHints("$1.isDirectory()");
-        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(data)); //XXX: should be a no-index variant!
+        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(data)))); //XXX: should be a no-index variant!
         Map<String, Iterable<String>> output = toDebugOutput(result);
         Map<String, Iterable<String>> golden = new HashMap<String, Iterable<String>>();
 

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.jackpot.impl.batch;
 
+import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.TestUtils.File;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.BatchResult;
@@ -118,7 +119,7 @@ public class BatchUtilitiesTest extends NbTestCase {
                                  new File("test/Test2.java", "package test; public class Test2 { public boolean isDirectory() {return false} }"));
 
         Iterable<? extends HintDescription> hints = prepareHints("$1.isDirectory() => !$1.isFile()", "$1", "java.io.File");
-        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(src1, src3, empty));
+        BatchResult result = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(src1, src3, empty)));
         List<MessageImpl> problems = new LinkedList<MessageImpl>();
         Collection<? extends ModificationResult> changes = BatchUtilities.applyFixes(result, new ProgressHandleWrapper(100), new AtomicBoolean(), problems);
 
