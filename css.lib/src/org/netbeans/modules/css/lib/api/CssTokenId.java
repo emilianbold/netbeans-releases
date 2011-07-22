@@ -78,6 +78,7 @@ public enum CssTokenId implements TokenId {
 
     EOF(-1, "others"),
     
+    ERROR(0, "error"),
     CHARSET_SYM(4, "keyword"),
     STRING(5, "string"),
     SEMI(6, "separator"),

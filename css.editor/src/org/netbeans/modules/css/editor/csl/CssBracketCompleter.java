@@ -293,7 +293,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
         if (root != null) {
             //find leaf at the position
-            Node node = NodeUtil.findDescendant(root, snapshot.getEmbeddedOffset(caretOffset));
+            Node node = NodeUtil.findNodeAtOffset(root, snapshot.getEmbeddedOffset(caretOffset));
             if (node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {

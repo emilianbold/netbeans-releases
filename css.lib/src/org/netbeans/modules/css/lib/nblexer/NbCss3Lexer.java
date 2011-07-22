@@ -45,6 +45,7 @@ package org.netbeans.modules.css.lib.nblexer;
 
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.css.lib.Css3Lexer;
+import org.netbeans.modules.css.lib.ExtCss3Lexer;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -68,7 +69,7 @@ public class NbCss3Lexer implements Lexer<CssTokenId> {
 
     public NbCss3Lexer(LexerRestartInfo<CssTokenId> info) {
         tokenFactory = info.tokenFactory();
-        antlrLexer = new Css3Lexer(new NbLexerCharStream(info));
+        antlrLexer = new ExtCss3Lexer(new NbLexerCharStream(info));
     }
 
     @Override

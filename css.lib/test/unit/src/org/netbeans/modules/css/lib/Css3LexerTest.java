@@ -7,9 +7,9 @@
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only (GPL) or the Common
- * Development and Distribution License(CDDL) (collectively, the
- * License). You may not use this file except in compliance with the
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
@@ -17,12 +17,12 @@
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
- * particular file as subject to the Classpath exception as provided
+ * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * Portions Copyrighted [year] [name of copyright owner]
+ * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -39,29 +39,32 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api;
+package org.netbeans.modules.css.lib;
+
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.Token;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public enum NodeType {
+public class Css3LexerTest extends NbTestCase {
+
+    public Css3LexerTest(String name) {
+        super(name);
+    }
+
+    public void testUnrecognizedTokenLexing() {
+        String source = "@";
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        
+        Token t = lexer.nextToken();
+        assertNotNull(t);
+        assertEquals(Token.INVALID_TOKEN_TYPE, t.getType());
+        
+    }
     
-        invalidRule, styleSheet, declaration, declarations, elementSubsequent, 
-        bodylist, hexColor, charSet, attribute, term, media, 
-        medium, expr, cssId, cssClass, pseudoPage, property, synpred3_Css3, 
-        prio, unaryOperator, namespacePrefix, namespaceName, synpred1_Css3, combinator, 
-        page, selector, attrib, attrvalue, esPred, pseudo, simpleSelectorSequence, 
-        ruleSet, function_name, bodyset, synpred2_Css3, operator, 
-        attrname, selectorsGroup, typeSelector, nsPred, elementName, 
-        function, imports,
-        
-//        syncToIdent,
-        
-        //following node types don't correspond to any of the grammar rules:
-        root, //an artificial root node of each parse tree
-        error, //an error node
-        recovery, //an error node, but for errors recovered - skipped (resynced) content by syncToBitSet(...)
-        token; //a token node
-        
 }

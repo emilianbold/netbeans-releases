@@ -48,6 +48,7 @@ import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.NoViableAltException;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
+import org.antlr.runtime.Token;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.api.ProblemDescription.Type;
@@ -63,7 +64,7 @@ import org.netbeans.modules.css.lib.api.ProblemDescription.Type;
 public class ExtCss3Lexer extends Css3Lexer {
 
     private List<ProblemDescription> problems = new ArrayList<ProblemDescription>();
-    
+
     public ExtCss3Lexer(CharStream input, RecognizerSharedState state) {
         super(input, state);
     }
@@ -73,26 +74,74 @@ public class ExtCss3Lexer extends Css3Lexer {
     }
 
     @Override
+    //overridden since we need to produce error tokens for unrecognized input,
+    //by default such content is only skipped and the resulting token sequence
+    //contains "holes".
+    //
+    //this way of solving the proble seems to be the official one:
+    //http://www.antlr.org/wiki/pages/viewpage.action?pageId=5341230
+    public Token nextToken() {
+        while (true) {
+            state.token = null;
+            state.channel = Token.DEFAULT_CHANNEL;
+            state.tokenStartCharIndex = input.index();
+            state.tokenStartCharPositionInLine = input.getCharPositionInLine();
+            state.tokenStartLine = input.getLine();
+            state.text = null;
+            if (input.LA(1) == CharStream.EOF) {
+                Token eof = new CommonToken((CharStream) input, Token.EOF,
+                        Token.DEFAULT_CHANNEL,
+                        input.index(), input.index());
+                eof.setLine(getLine());
+                eof.setCharPositionInLine(getCharPositionInLine());
+                return eof;
+            }
+            try {
+                mTokens();
+                if (state.token == null) {
+                    emit();
+                } else if (state.token == Token.SKIP_TOKEN) {
+                    continue;
+                }
+                return state.token;
+            } catch (RecognitionException re) {
+                reportError(re);
+                if (re instanceof NoViableAltException) {
+                    recover(re);
+                }
+                // create token that holds mismatched char
+                Token t = new CommonToken(input, Token.INVALID_TOKEN_TYPE,
+                        Token.DEFAULT_CHANNEL,
+                        state.tokenStartCharIndex,
+                        getCharIndex() - 1);
+                t.setLine(state.tokenStartLine);
+                t.setCharPositionInLine(state.tokenStartCharPositionInLine);
+                emit(t);
+                return state.token;
+            }
+        }
+    }
+
+    @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
         StringBuilder b = new StringBuilder();
         b.append(getErrorHeader(e));
         b.append(' ');
-        
-         if(e instanceof NoViableAltException) {
-             //lexing error - unexpected character in the char stream
-            char unexpectedChar = (char)input.LA(1);
+
+        if (e instanceof NoViableAltException) {
+            //lexing error - unexpected character in the char stream
+            char unexpectedChar = (char) input.LA(1);
             b.append(String.format("Unexpected character '%s' found.", unexpectedChar));
             ProblemDescription pp = new ProblemDescription(e.input.index(), e.input.index() + 1, b.toString(), ProblemDescription.Keys.LEXING.name(), Type.ERROR);
             problems.add(pp);
-         } else {
+        } else {
             b.append(getErrorHeader(e));
             b.append(getErrorMessage(e, tokenNames));
-         }
-        
+        }
+
     }
 
     public List<ProblemDescription> getProblems() {
         return problems;
     }
-
 }

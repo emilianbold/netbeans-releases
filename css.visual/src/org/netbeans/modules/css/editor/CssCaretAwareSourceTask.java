@@ -131,7 +131,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         Node root = result.getParseTree();
         if(root != null) {
             //find the rule scope and check if there is an error inside it
-            Node leaf = NodeUtil.findDescendant(root, caretOffset);
+            Node leaf = NodeUtil.findNodeAtOffset(root, caretOffset);
             if(leaf != null) {
                 Node ruleNode = leaf.type() == NodeType.ruleSet ?
                     leaf :

@@ -50,7 +50,7 @@ import org.netbeans.modules.css.lib.api.NodeType;
  * @author marekfukala
  */
 public class TokenNode extends AbstractParseTreeNode {
-    
+
     private CommonToken token;
 
     public TokenNode(CommonToken token) {
@@ -62,7 +62,7 @@ public class TokenNode extends AbstractParseTreeNode {
     public NodeType type() {
         return NodeType.token;
     }
-    
+
     /**
      * Gets the kind of the token encapsulated by this TokenNode. Please notice
      * that it's not possible to get the token itself since the parser source
@@ -91,7 +91,18 @@ public class TokenNode extends AbstractParseTreeNode {
     public CharSequence image() {
         return token.getText();
     }
-    
-    
-    
+
+    @Override
+    public String toString() {
+        return new StringBuilder(super.toString())
+                .append(' ')
+                .append('\'')
+                .append(image())
+                .append('\'')
+                .append(' ')
+                .append('[')
+                .append(getTokenId())
+                .append(']')
+                .toString();
+    }
 }

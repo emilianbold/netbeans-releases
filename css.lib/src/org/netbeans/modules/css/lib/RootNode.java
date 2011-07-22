@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.lib;
 
-import java.util.List;
-import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 
 /**
@@ -57,14 +55,12 @@ public class RootNode extends RuleNode {
     
     @Override
     public int from() {
-        List<Node> ch = children();
-        return ch.isEmpty() ? 0 : ch.get(0).from();
+        return 0;
     }
 
     @Override
     public int to() {
-        List<Node> ch = children();
-        return ch.isEmpty() ? 0 : ch.get(ch.size() - 1).to();
+        return getSource().length();
     }
     
 }

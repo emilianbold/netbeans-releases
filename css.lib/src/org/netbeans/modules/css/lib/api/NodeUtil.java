@@ -59,19 +59,19 @@ public final class NodeUtil {
 
     private NodeUtil() {
     }
-    
+
     public static int[] getTrimmedNodeRange(Node node) {
         CharSequence text = node.image();
         int from_diff;
         int to_diff;
-        for(from_diff = 0; from_diff < text.length(); from_diff++) {
-            if(!Character.isWhitespace(text.charAt(from_diff))) {
+        for (from_diff = 0; from_diff < text.length(); from_diff++) {
+            if (!Character.isWhitespace(text.charAt(from_diff))) {
                 break;
             }
         }
 
-        for(to_diff = 0; to_diff < text.length() - from_diff; to_diff++) {
-            if(!Character.isWhitespace(text.charAt(text.length() - 1 - to_diff))) {
+        for (to_diff = 0; to_diff < text.length() - from_diff; to_diff++) {
+            if (!Character.isWhitespace(text.charAt(text.length() - 1 - to_diff))) {
                 break;
             }
         }
@@ -79,11 +79,19 @@ public final class NodeUtil {
         return new int[]{node.from() + from_diff, node.to() - to_diff};
     }
 
-    public static Node findDescendant(Node node, int astOffset) {
+    public static Node findNonTokenNodeAtOffset(Node node, int offset) {
+        Node found = findNodeAtOffset(node, offset);
+        return found instanceof TokenNode
+                ? found.parent()
+                : found;
+
+    }
+
+    public static Node findNodeAtOffset(Node node, int astOffset) {
         int so = node.from();
         int eo = node.to();
-       
-        
+
+
         if (astOffset < so || astOffset > eo) {
             //we are out of the scope - may happen just with the first client call
             return null;
@@ -100,7 +108,7 @@ public final class NodeUtil {
             int ch_eo = child.to();
             if (astOffset >= ch_so && astOffset <= ch_eo) {
                 //the child is or contains the searched node
-                return findDescendant(child, astOffset);
+                return findNodeAtOffset(child, astOffset);
             }
 
         }
@@ -108,13 +116,12 @@ public final class NodeUtil {
         return node;
     }
 
-    
     /** @return first child of the node with the specified kind. */
     public static Node getChildByType(Node node, NodeType type) {
         Node[] children = getChildrenByType(node, type);
         return children.length == 0 ? null : children[0];
     }
-    
+
     /**
      * 
      * @param node
@@ -123,69 +130,66 @@ public final class NodeUtil {
      */
     public static Node getChildTokenNode(Node node, CssTokenId tokenId) {
         Node[] children = getChildrenByType(node, NodeType.token);
-        for(Node n : children) {
-            TokenNode tn = (TokenNode)n;
-            if(tn.getTokenId() == tokenId) {
+        for (Node n : children) {
+            TokenNode tn = (TokenNode) n;
+            if (tn.getTokenId() == tokenId) {
                 return n;
             }
         }
         return null;
     }
-    
+
     public static CssTokenId getTokenNodeTokenId(Node node) {
         //strange, possibly better expose TokenNode!
-        if(node.type() != NodeType.token) {
+        if (node.type() != NodeType.token) {
             throw new IllegalArgumentException(
                     String.format("The argument must by of NodeType.token type. The actual type is %s", node.type()));
         }
-        return ((TokenNode)node).getTokenId();
+        return ((TokenNode) node).getTokenId();
     }
 
-
     public static Node getAncestorByType(Node node, final NodeType type) {
-	AtomicReference<Node> found = new AtomicReference<Node>();
+        AtomicReference<Node> found = new AtomicReference<Node>();
         NodeVisitor visitor = new NodeVisitor<AtomicReference<Node>>(found) {
 
             @Override
             public boolean visit(Node node) {
-                if(node.type() == type) {
+                if (node.type() == type) {
                     getResult().set(node);
                     return true;
                 }
                 return false;
             }
-            
         };
         visitor.visitAncestors(node);
-	return found.get();
+        return found.get();
     }
-    
+
     /** @return list of children of the node with the specified kind. */
     public static Node[] getChildrenByType(Node node, NodeType type) {
         ArrayList<Node> list = new ArrayList<Node>(node.children().size() / 4);
-        for(Node child : node.children()) {
-            if(child.type() == type) {
+        for (Node child : node.children()) {
+            if (child.type() == type) {
                 list.add(child);
             }
         }
         return list.toArray(new Node[]{});
     }
-    
-    
-        /** @return A sibling node before or after the given node. */
+
+    /** @return A sibling node before or after the given node. */
     public static Node getSibling(Node node, boolean before) {
         Node parent = node.parent();
-        if(parent == null) {
+        if (parent == null) {
             return null;
         }
         Node sibling = null;
-        for(int i = 0; i < parent.children().size() ; i++) {
+        for (int i = 0; i < parent.children().size(); i++) {
             List<Node> children = parent.children();
             Node child = children.get(i);
-            if(child == node) {
+            if (child == node) {
                 //we found myself
-                if(before) {
-                    if(i == 0) {
+                if (before) {
+                    if (i == 0) {
                         //we are first node, no sibling before
                         return null;
                     } else {
@@ -193,7 +197,7 @@ public final class NodeUtil {
                     }
                 } else {
                     //after
-                    if(i == children.size() - 1) {
+                    if (i == children.size() - 1) {
                         //we are last node, no sibling after
                         return null;
                     } else {
@@ -205,7 +209,6 @@ public final class NodeUtil {
         return sibling;
     }
 
-     
     public static Node query(Node base, String path) {
         return query(base, path, false);
     }
@@ -252,28 +255,29 @@ public final class NodeUtil {
 
         return null;
     }
-    
+
     public static void dumpTree(Node node) {
         PrintWriter pw = new PrintWriter(System.out);
         dumpTree(node, pw);
         pw.flush();
     }
-    
+
     public static void dumpTree(Node node, PrintWriter pw) {
         dump(node, 0, pw);
-        
+
     }
 
     private static void dump(Node tree, int level, PrintWriter pw) {
         for (int i = 0; i < level; i++) {
             pw.print(INDENT);
         }
-        treeToString(tree, pw);
+        pw.print(tree.toString());
+        pw.println();
         for (Node c : tree.children()) {
             dump(c, level + 1, pw);
         }
     }
-    
+
     public static boolean isSelectorNode(Node node) {
         switch (node.type()) {
             case elementName:
@@ -285,36 +289,38 @@ public final class NodeUtil {
         }
 
     }
-    
+
     /**
      * finds the rule curly bracket range
      * @param node representing a rule node
      */
     public static int[] getRuleBodyRange(Node node) {
-        if(node.type() != NodeType.ruleSet) {
+        if (node.type() != NodeType.ruleSet) {
             throw new IllegalArgumentException("Only selector node is allowed as a parameter!"); //NOI18N
         }
-        
+
         Node lbrace = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
         Node rbrace = NodeUtil.getChildTokenNode(node, CssTokenId.RBRACE);
 
-        if(lbrace == null || rbrace == null) {
+        if (lbrace == null || rbrace == null) {
             return null;
         }
-        
+
         return new int[]{lbrace.from(), rbrace.to()};
     }
 
-    private static void treeToString(Node tree, PrintWriter b)  {
-        b.print(tree.name());
+    private static void nodeToString(Node node, PrintWriter b) {
+        b.print('\'');
+        b.print(node.image());
+        b.print('\'');
         b.print(' ');
         b.print('[');
-        b.print(tree.type().name());
+        b.print(node.type().name());
         b.print(']');
         b.print('(');
-        b.print(Integer.toString(tree.from()));
+        b.print(Integer.toString(node.from()));
         b.print('-');
-        b.print(Integer.toString(tree.to()));
+        b.print(Integer.toString(node.to()));
         b.print(')');
         b.println();
     }

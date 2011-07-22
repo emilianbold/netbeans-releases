@@ -90,14 +90,17 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
-                <package>org.antlr.runtime</package>
-                <package>org.antlr.runtime.debug</package>
-                <package>org.antlr.runtime.misc</package>
-                <package>org.antlr.runtime.tree</package>
+            <friend-packages>
+                <friend>org.netbeans.modules.css.editor</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
+                <friend>org.netbeans.modules.html.editor</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.smarty</friend>
+                
                 <package>org.netbeans.modules.css.lib.api</package>
                 <package>org.netbeans.modules.css.lib.api.model</package>
-            </public-packages>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/antlr3.3-runtime.jar</runtime-relative-path>
                 <binary-origin>external/antlr3.3-runtime.jar</binary-origin>

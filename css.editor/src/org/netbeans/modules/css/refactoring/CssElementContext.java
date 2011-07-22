@@ -136,7 +136,7 @@ public abstract class CssElementContext {
 	private Node findCurrentElement() {
 	    Node root = getParserResult().getParseTree();
 	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
-	    Node leaf = NodeUtil.findDescendant(root, astOffset);
+	    Node leaf = NodeUtil.findNodeAtOffset(root, astOffset);
             if(leaf != null) {
                 //we found token node, use its encolosing node - parent
                 leaf = leaf.parent();

@@ -67,6 +67,9 @@ grammar Css3;
     {
         int mark = -1;
 
+        //create error-recovery node
+        dbg.enterRule(getGrammarFileName(), "recovery");
+
         try {
 
             mark = input.mark();
@@ -101,6 +104,7 @@ grammar Css3;
           //
         }
         finally {
+            dbg.exitRule(getGrammarFileName(), "recovery");
 
             // Always release the mark we took
             //
@@ -211,6 +215,7 @@ property
 ruleSet 
     :   selectorsGroup
         LBRACE
+            syncToIdent //skip any garbage betweem the { and property identifier.
             declarations
         RBRACE
     ;
@@ -328,7 +333,8 @@ pseudo
 
 declaration
     : 
-    syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
+    //moved to the ruleSet
+    //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
     property COLON expr prio?
     ;
     catch[ RecognitionException rce] {

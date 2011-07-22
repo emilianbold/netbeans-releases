@@ -55,7 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
- * @author marek.fukala@sun.com
+ * @author mfukala@netbeans.org
  */
 public class CssCslParserResult extends ParserResult {
 

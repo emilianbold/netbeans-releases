@@ -169,7 +169,7 @@ public class DefaultCssModule extends CssModule {
         }
 
 
-        Node current = NodeUtil.findDescendant(context.getParseTreeRoot(), astCaretOffset);
+        Node current = NodeUtil.findNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
         if (current == null) {
             return null;
         }

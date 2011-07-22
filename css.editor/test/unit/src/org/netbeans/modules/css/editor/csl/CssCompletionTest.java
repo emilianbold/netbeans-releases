@@ -82,7 +82,7 @@ public class CssCompletionTest extends TestBase {
     }
 
     public void checkCC(String documentText, final String[] expectedItemsNames, final Match type) throws ParseException {
-        StringBuffer content = new StringBuffer(documentText);
+        StringBuilder content = new StringBuilder(documentText);
 
         final int pipeOffset = content.indexOf("|");
         assert pipeOffset >= 0;
@@ -115,6 +115,10 @@ public class CssCompletionTest extends TestBase {
         checkCC("|", AT_RULES, Match.CONTAINS);
         checkCC("@|", AT_RULES);
         checkCC("@pa|", new String[]{"@page"}, Match.CONTAINS);
+        
+        checkCC("|  h1 { }", AT_RULES, Match.CONTAINS);
+        checkCC("@| h1 { }", AT_RULES);
+        checkCC("@pa| h1 { }", new String[]{"@page"}, Match.CONTAINS);
     }
 
     public void testPropertyNames() throws ParseException {
@@ -172,13 +176,17 @@ public class CssCompletionTest extends TestBase {
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
 
+    public void testHtmlSelectorsInContent() throws ParseException {
+        checkCC("h1 {} | h2 {}", arr("html"), Match.CONTAINS);
+    }
+    
     public void testSystemColors() throws ParseException {
         checkCC("div { color: | }", arr("menu", "window"), Match.CONTAINS);
     }
 
     public void testHtmlSelectorsInMedia() throws ParseException {
-        checkCC("@media page {  |   } ", arr("html"), Match.CONTAINS);
-        checkCC("@media page {  |   } ", arr("@media"), Match.DOES_NOT_CONTAIN); //media not supported here
+//        checkCC("@media page {  |   } ", arr("html"), Match.CONTAINS);
+//        checkCC("@media page {  |   } ", arr("@media"), Match.DOES_NOT_CONTAIN); //media not supported here
         checkCC("@media page {  h1 { } |   } ", arr("html"), Match.CONTAINS); //media not supported here
 
 //        checkCC("@media page {  htm|   } ", arr("html"), Match.EXACT);
@@ -204,7 +212,7 @@ public class CssCompletionTest extends TestBase {
             assertEquals(exp, real);
         } else if(type == Match.CONTAINS) {
             exp.removeAll(real);
-            assertEquals(Collections.emptyList(), exp);
+            assertEquals(exp, Collections.emptyList());
         } else if(type == Match.EMPTY) {
             assertEquals(0, real.size());
         } else if(type == Match.NOT_EMPTY) {
@@ -218,7 +226,7 @@ public class CssCompletionTest extends TestBase {
     }
 
     private String arrayToString(String[] elements) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for(int i = 0; i < elements.length; i++) {
             buf.append(elements[i]);
             if(i < elements.length - 1) {

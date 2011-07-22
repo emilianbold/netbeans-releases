@@ -67,7 +67,7 @@ import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.csl.core.GsfParserFactory;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingProvider;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;

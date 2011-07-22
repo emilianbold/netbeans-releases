@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.css.lib;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.test.CslTestBase;
@@ -112,7 +115,7 @@ public class Css3ParserTest extends CslTestBase {
                       + "}";
         
         CssParserResult res = TestUtil.parse(code);
-//        dumpResult(res);
+//        TestUtil.dumpResult(res);
         
         //the garbage char @ is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(), 
@@ -216,9 +219,27 @@ public class Css3ParserTest extends CslTestBase {
     
     public void testCommon() throws ParseException, BadLocationException {
 //        String code = "body, head > #id {} .class {}";
-        String code = "#id .class body { color: red}";
+        String code = "#id .class body { color: red}     body {}";
         CssParserResult res = TestUtil.parse(code);
-//        dumpResult(res);
+//        TestUtil.dumpResult(res);
+    }
+    
+    public void testMedia() throws ParseException, BadLocationException {
+//        String code = "body, head > #id {} .class {}";
+        String code = "@media screen { h1 { color: red; } }";
+        CssParserResult res = TestUtil.parse(code);
+//        TestUtil.dumpResult(res);
+    }
+    
+    public void testRootNodeSpan() throws ParseException, BadLocationException {
+        String code = "   h1 { }    ";
+        //             012345678901234
+        CssParserResult res = TestUtil.parse(code);
+        TestUtil.dumpResult(res);
+        
+        Node root = res.getParseTree();
+        assertEquals(0, root.from());
+        assertEquals(code.length(), root.to());
     }
         
     public void testImport() throws ParseException, BadLocationException {
@@ -237,6 +258,19 @@ public class Css3ParserTest extends CslTestBase {
         imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports"); 
         assertNotNull(imports);
         
+    }
+    
+    public void testErrorCase1() throws BadLocationException, ParseException, FileNotFoundException {
+        String code = "h1 { color:  }";
+        CssParserResult res = TestUtil.parse(code);
+        
+        //Test whether all the nodes are properly intialized - just dump the tree.
+        //There used to be a bug that error token caused some rule
+        //nodes not having first token set properly by the NbParseTreeBuilder
+//        NodeUtil.dumpTree(res.getParseTree(), new PrintWriter(new StringWriter()));
+        
+        
+        NodeUtil.dumpTree(res.getParseTree());
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {

@@ -322,13 +322,10 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.css.devtools</friend>
+                <friend>org.netbeans.modules.css.devtools</friend> <!-- ??? -->
                 <friend>org.netbeans.modules.css.visual</friend>
-                <friend>org.netbeans.modules.editor.kit</friend>
-                <friend>org.netbeans.modules.html.editor</friend>
-                <friend>org.netbeans.modules.php.prado</friend>
-                <friend>org.netbeans.modules.php.smarty</friend>
-                <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.html.editor</friend> <!-- uses the refactoring.api -->
+
                 <package>org.netbeans.modules.css.editor.api</package>
                 <package>org.netbeans.modules.css.editor.api.model</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>

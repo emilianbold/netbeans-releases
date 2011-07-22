@@ -109,4 +109,26 @@ public class NodeUtilTest extends NbTestCase {
         
     }
     
+    
+    public void test_findNonTokenNodeAtOffset_on_error() throws BadLocationException, ParseException {
+        String code = "@";
+        //             01234567890123456789
+        CssParserResult result = TestUtil.parse(code);
+        
+        TestUtil.dumpResult(result);
+        
+        Node tokenNode = NodeUtil.findNodeAtOffset(result.getParseTree(), 1);
+        assertNotNull(tokenNode);
+        
+        assertEquals(NodeType.token, tokenNode.type());
+        
+        Node node = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), 1);
+        assertNotNull(node);
+        
+        assertEquals(node, tokenNode.parent());
+        
+        assertEquals("error", node.name());
+        
+    }
+        
 }

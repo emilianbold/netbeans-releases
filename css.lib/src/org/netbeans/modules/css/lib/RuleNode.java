@@ -52,6 +52,8 @@ public class RuleNode extends AbstractParseTreeNode {
     
     private NodeType rule;
     private CommonToken first, last;
+    int from = -1;
+    int to = -1;
     
     RuleNode(NodeType rule, CharSequence source) {
         super(source);
@@ -62,11 +64,13 @@ public class RuleNode extends AbstractParseTreeNode {
     void setFirstToken(CommonToken token) {
         assert token != null : "Attempting to set null first token in rule " + name();
         this.first = token;
+        from = -1;
     }
     
     void setLastToken(CommonToken token) {
         assert token != null : "Attempting to set null last token in rule " + name();
         this.last = token;
+        to = -1;
     }
 
     CommonToken getFirstToken() {
@@ -79,13 +83,25 @@ public class RuleNode extends AbstractParseTreeNode {
     
     @Override
     public int from() {
-        assert first != null : "Called RuleNode.from() before setting first token!" ; //NOI18N
+        if(from != -1) {
+            return from; //override in case of errors
+        }
+        if(first == null) {
+            System.err.println(String.format("Called RuleNode.from() before setting first token on RuleNode %s", type())) ;//NOI18N
+            return -1;
+        } 
         return CommonTokenUtil.getCommonTokenOffsetRange(first)[0];
     }
 
     @Override
     public int to() {
-        assert last != null : "Called RuleNode.to() before setting last token!" ; //NOI18N
+        if(to != -1) {
+            return to;
+        }
+        if(last == null) {
+            System.err.println(String.format("Called RuleNode.to() before setting last token on RuleNode %s", type())) ;//NOI18N
+            return -1;
+        } 
         return CommonTokenUtil.getCommonTokenOffsetRange(last)[1];
     }
 

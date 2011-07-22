@@ -64,6 +64,4 @@ public interface Node {
     
     public CharSequence image();
     
-    public Map<String, ?> metadata();
-    
 }

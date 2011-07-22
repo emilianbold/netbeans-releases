@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib.nblexer;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
@@ -78,6 +79,21 @@ public class NbCss3LexerTest extends NbTestCase {
         assertTrue(ts.moveNext());
         assertEquals(";", ts.token().text().toString());
         assertEquals(CssTokenId.SEMI, ts.token().id());
+    }
+    
+
+    public void testOnlyAtSymbolLexing() throws Exception {
+        String input = "@";
+        TokenHierarchy th = TokenHierarchy.create(input, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertTrue(ts.moveNext());
+        Token<CssTokenId> token = ts.token();
+        
+        assertNotNull(token);
+        assertEquals(CssTokenId.ERROR, token.id());
+        
     }
 
     public void testBasicLexing() throws Exception {

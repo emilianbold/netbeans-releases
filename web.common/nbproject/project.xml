@@ -154,6 +154,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
+                <friend>org.netbeans.modules.css.lib</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>

@@ -36,7 +36,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.css.editor._TO_BE_REMOVED.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.openide.filesystems.FileObject;
 
