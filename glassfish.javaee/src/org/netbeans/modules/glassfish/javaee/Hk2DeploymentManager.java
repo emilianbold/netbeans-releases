@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -132,7 +132,14 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
     private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
             throws IllegalStateException {
         String t = moduleArchive.getName();
-        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4));
+        final GlassfishModule commonSupport = getCommonServerSupport();
+        String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+        String targ = getTargetFromUri(url);
+        String nameSuffix = ""; // NOI18N
+        if (null != targ)
+            nameSuffix = "_"+targ; // NOI18N
+        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4)) +
+                nameSuffix;
         // 
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
                 null, moduleArchive.getAbsolutePath());
@@ -141,7 +148,6 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
         deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress, moduleId, getServerInstance(), true));
         MonitorProgressObject restartProgress = new MonitorProgressObject(this, moduleId);
 
-        final GlassfishModule commonSupport = this.getCommonServerSupport();
         final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
             (GlassfishModule2)commonSupport : null);
         boolean restart = false;
@@ -622,5 +628,15 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
         return result;
     }
 
-    
+    public static String getTargetFromUri(String uri) {
+        String target = null;
+            int lastColon = uri.lastIndexOf(':');
+            if (lastColon != -1) {
+                String candidate = uri.substring(lastColon+1);
+                if (!Character.isDigit(candidate.charAt(0))) {
+                    target = candidate;
+                }
+            }
+        return target;
+    }
 }

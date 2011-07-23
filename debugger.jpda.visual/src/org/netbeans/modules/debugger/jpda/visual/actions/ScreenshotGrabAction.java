@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.RetrievalException;
+import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -74,7 +75,7 @@ import org.openide.util.actions.Presenter;
 @ActionReference(path = "Menu/RunProject", position = 1850)
 public class ScreenshotGrabAction extends AbstractAction implements Runnable, Presenter.Popup, Presenter.Menu {
     
-    private static boolean isVisualDBG = Boolean.getBoolean("visualDebugger");
+    private static boolean isVisualDBG = !"false".equalsIgnoreCase(System.getProperty("visualDebugger"));    // NOI18N
     
     private RequestProcessor rp = new RequestProcessor(ScreenshotGrabAction.class.getName(), 1);
 
@@ -92,7 +93,7 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            return debugger != null;
+            return debugger != null && RemoteServices.getServiceClass(debugger) != null;
         } else {
             return false;
         }
@@ -154,16 +155,24 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
         }
     }
     
+    private DebuggerManagerAdapter enableListener = null;
+    
     private void addEngineListener() {
+        if (enableListener != null) {
+            return ;
+        }
+        
+        enableListener = 
+            new DebuggerManagerAdapter() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    firePropertyChange("enabled", null, null);
+                }
+            };
+        
         DebuggerManager.getDebuggerManager().addDebuggerListener(
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                new DebuggerManagerAdapter() {
-                    
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        firePropertyChange("enabled", null, null);
-                    }
-                });
+                DebuggerManager.PROP_CURRENT_ENGINE, enableListener);
+        RemoteServices.addServiceListener(enableListener);
     }
     
 }
