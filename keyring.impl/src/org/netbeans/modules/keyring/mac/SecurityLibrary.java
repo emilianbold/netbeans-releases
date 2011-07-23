@@ -64,6 +64,13 @@ public interface SecurityLibrary extends Library {
             Pointer itemRef
             );
 
+    int SecKeychainItemModifyContent(
+            Pointer/*SecKeychainItemRef*/ itemRef,
+            Pointer/*SecKeychainAttributeList**/ attrList,
+            int length,
+            byte[] data
+    );
+
     int SecKeychainFindGenericPassword(
             Pointer keychainOrArray,
             int serviceNameLength,
@@ -72,7 +79,7 @@ public interface SecurityLibrary extends Library {
             byte[] accountName,
             int[] passwordLength,
             Pointer[] passwordData,
-            Pointer[] itemRef
+            Pointer/*SecKeychainItemRef*/[] itemRef
             );
 
     int SecKeychainItemDelete(
