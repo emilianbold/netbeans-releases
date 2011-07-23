@@ -117,7 +117,14 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
 
 
     private ProgressObject initialDeploy(Target target, J2eeModule module, final File dir, final File[] requiredLibraries) {
-        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(module, dir, Integer.toString(hashCode())));
+        final GlassfishModule commonSupport = dm.getCommonServerSupport();
+        String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+        String targ = Hk2DeploymentManager.getTargetFromUri(url);
+        String nameSuffix = ""; // NOI18N
+        if (null != targ)
+            nameSuffix = "_"+targ;  // NOI18N
+        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(module, dir, Integer.toString(hashCode()))) +
+                nameSuffix;
         String contextRoot = null;
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
@@ -134,7 +141,6 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress,moduleId, dm.getServerInstance(), J2eeModule.Type.WAR.equals(module.getType())));
         MonitorProgressObject restartProgress = new MonitorProgressObject(dm, moduleId);
 
-        final GlassfishModule commonSupport = dm.getCommonServerSupport();
         final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
             (GlassfishModule2)commonSupport : null);
         boolean restart = false;
@@ -323,6 +329,12 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
             return false;
         }
 
+        final GlassfishModule commonSupport = dm.getCommonServerSupport();
+        String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+
+        if (!url.trim().matches(".*:[0-9]+$"))  // NOI18N
+            return false;
+
         return true;
     }
     
@@ -419,6 +431,11 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
 
     @Override
     public boolean isDeployOnSaveSupported() {
+        final GlassfishModule commonSupport = dm.getCommonServerSupport();
+        String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+
+        if (!url.trim().matches(".*:[0-9]+$")) // NOI18N
+            return false;
         return !"false".equals(System.getProperty("glassfish.javaee.deployonsave"));
     }
 

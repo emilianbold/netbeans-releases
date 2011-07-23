@@ -70,6 +70,7 @@ public abstract class ServerCommand {
     protected String query = null;
     protected boolean retry = false;
     private String serverMessage = "";
+    protected boolean silentFailureAllowed = false;
 
     public String getServerMessage() {
         return serverMessage;
@@ -273,12 +274,18 @@ public abstract class ServerCommand {
         private Manifest info;
         private Map<String,String> propertyMap;
 
-        public GetPropertyCommand(final String property) {
+        public GetPropertyCommand(final String property, boolean allowSilentFail) {
             super("get"); // NOI18N
             
             this.query = "pattern=" + property; // NOI18N
             this.propertyMap = new HashMap<String, String>();
+            this.silentFailureAllowed = allowSilentFail;
         }
+
+        public GetPropertyCommand(final String property) {
+            this(property,false);
+        }
+
 
         @Override
         public void readManifest(Manifest manifest) throws IOException {
@@ -364,4 +371,10 @@ public abstract class ServerCommand {
         }
     }
 
+    /** Allow commands to fail without a big message
+     *
+     */
+     public boolean isSilentFailureAllowed() {
+         return silentFailureAllowed;
+     }
 }

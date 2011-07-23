@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,7 +70,10 @@ public class Hk2ApplicationNode extends Hk2ItemNode {
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
                         Map<String, String> ip = commonModule.getInstanceProperties();
-                        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+                        String host = ip.get(GlassfishModule.HTTPHOST_ATTR);
+                        if (null == host) {
+                            host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+                        }
                         String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
                         String url = ip.get(GlassfishModule.URL_ATTR);
                         if (url == null || !url.contains("ee6wc")) {
