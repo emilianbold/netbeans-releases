@@ -54,6 +54,7 @@ import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -61,10 +62,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Jaroslav Bachorik
  */
 @ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
-    "org-netbeans-modules-j2ee-earproject",
-    "org-netbeans-modules-web-project",
-    "org-netbeans-modules-maven/ear",
-    "org-netbeans-modules-maven/war"
+    "org-netbeans-modules-j2ee-earproject", // NOI18N
+    "org-netbeans-modules-web-project", // NOI18N
+    "org-netbeans-modules-maven/ear", // NOI18N
+    "org-netbeans-modules-maven/war" // NOI18N
 })
 public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     public PlainWebSelectionTreeBuilder(Project project) {
@@ -72,7 +73,8 @@ public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     }
     
     public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
-        super(new Type("web-application", "Web Applications View"), isPreferred, project);
+        super(new Type("web-application", NbBundle.getMessage(PlainWebSelectionTreeBuilder.class, // NOI18N
+                "PlainWebSelectionTreeBuilder_DisplayName")), isPreferred, project); // NOI18N
     }
 
     public List<SelectorNode> buildSelectionTree() {
