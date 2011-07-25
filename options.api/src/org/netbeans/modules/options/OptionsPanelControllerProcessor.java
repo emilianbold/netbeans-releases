@@ -44,6 +44,7 @@ package org.netbeans.modules.options;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,26 +84,26 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(TopLevelRegistration.class)) {
             TopLevelRegistration r = e.getAnnotation(TopLevelRegistration.class);
-            File file = layer(e).instanceFile("OptionsDialog", r.id().length() > 0 ? r.id() : null).
+            File file = layer(e).instanceFile("OptionsDialog", r.id().length() > 0 ? r.id() : null, r, null).
                     methodvalue("instanceCreate", OptionsCategory.class.getName(), "createCategory").
                     instanceAttribute("controller", OptionsPanelController.class).
                     bundlevalue("categoryName", r.categoryName()).
                     position(r.position());
-            iconBase(e, r.iconBase(), file);
-            keywords(e, r.keywords(), r.keywordsCategory(), file);
+            iconBase(e, r.iconBase(), r, file);
+            keywords(e, r.keywords(), r.keywordsCategory(), r, file);
             file.write();
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(SubRegistration.class)) {
             SubRegistration r = e.getAnnotation(SubRegistration.class);
             if (r.position() != Integer.MAX_VALUE && r.location().equals("Advanced")) {
-                throw new LayerGenerationException("position ignored for Advanced subpanels", e);
+                throw new LayerGenerationException("position ignored for Advanced subpanels", e, processingEnv, r, "position");
             }
-            File file = layer(e).instanceFile("OptionsDialog/" + r.location(), r.id().length() > 0 ? r.id() : null).
+            File file = layer(e).instanceFile("OptionsDialog/" + r.location(), r.id().length() > 0 ? r.id() : null, r, null).
                     methodvalue("instanceCreate", AdvancedOption.class.getName(), "createSubCategory").
                     instanceAttribute("controller", OptionsPanelController.class).
                     bundlevalue("displayName", r.displayName()).
                     position(r.position());
-            keywords(e, r.keywords(), r.keywordsCategory(), file);
+            keywords(e, r.keywords(), r.keywordsCategory(), r, file);
             file.write();
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ContainerRegistration.class)) {
@@ -112,15 +113,15 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
                     stringvalue("advancedOptionsFolder", "OptionsDialog/" + r.id()).
                     bundlevalue("categoryName", r.categoryName()).
                     position(r.position());
-            iconBase(e, r.iconBase(), file);
-            keywords(e, r.keywords(), r.keywordsCategory(), file);
+            iconBase(e, r.iconBase(), r, file);
+            keywords(e, r.keywords(), r.keywordsCategory(), r, file);
             file.write();
             layer(e).folder("OptionsDialog/" + r.id()).position(0).write();
         }
         return true;
     }
 
-    private void iconBase(Element e, String iconBase, File file) throws LayerGenerationException {
+    private void iconBase(Element e, String iconBase, Annotation r, File file) throws LayerGenerationException {
         try { // XXX should probably be made a utility method in LayerBuilder
             try {
                 processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", iconBase).openInputStream().close();
@@ -132,20 +133,20 @@ public class OptionsPanelControllerProcessor extends LayerGeneratingProcessor {
                 }
             }
         } catch (IOException x) {
-            throw new LayerGenerationException("Could not open " + iconBase + ": " + x, e);
+            throw new LayerGenerationException("Could not open " + iconBase + ": " + x, e, processingEnv, r, "iconBase");
         }
         file.stringvalue("iconBase", iconBase);
     }
 
-    private void keywords(Element e, String keywords, String keywordsCategory, File file) throws LayerGenerationException {
+    private void keywords(Element e, String keywords, String keywordsCategory, Annotation r, File file) throws LayerGenerationException {
         if (keywords.length() > 0) {
             if (keywordsCategory.length() == 0) {
-                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", e);
+                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", e, processingEnv, r, "keywordsCategory");
             }
-            file.bundlevalue("keywords", keywords).bundlevalue("keywordsCategory", keywordsCategory);
+            file.bundlevalue("keywords", keywords, r, "keywords").bundlevalue("keywordsCategory", keywordsCategory, r, "keywordsCategory");
         } else {
             if (keywordsCategory.length() > 0) {
-                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", e);
+                throw new LayerGenerationException("Must specify both keywords and keywordsCategory", e, processingEnv, r, "keywords");
             }
         }
     }

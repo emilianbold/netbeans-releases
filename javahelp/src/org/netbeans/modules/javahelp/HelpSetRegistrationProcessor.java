@@ -126,9 +126,9 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
                     }
                 });
             } catch (IOException x) {
-                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e);
+                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e, processingEnv, r, "helpSet");
             } catch (SAXException x) {
-                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e);
+                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e, processingEnv, r, "helpSet");
             }
             String searchDir = null;
             for (Element view : XMLUtil.findSubElements(doc.getDocumentElement())) {
