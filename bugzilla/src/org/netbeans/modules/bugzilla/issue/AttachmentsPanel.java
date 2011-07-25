@@ -236,7 +236,7 @@ public class AttachmentsPanel extends JPanel {
             int groupWidth = 0;
             if (maxMethod != null) {
                 try {
-                    groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 1);
+                    groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 0);
                 } catch (Exception ex) {
                     Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
@@ -250,7 +250,7 @@ public class AttachmentsPanel extends JPanel {
                 .addGap(0, 0, Short.MAX_VALUE));
         verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         verticalGroup.addComponent(noAttachments ? dummyLabel : createNewButton);
-
+        
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
