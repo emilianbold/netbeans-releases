@@ -43,6 +43,7 @@ package org.netbeans.spi.whitelist;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,33 +66,7 @@ public interface WhiteListQueryImplementation {
     }
 
     public interface WhiteListImplementation {
-        Result check(@NonNull ElementHandle<?> element);
-    }
-    
-    public final class Result {
-        boolean invokable;
-        private String violatedRuleName;
-        private String violatedRuleDescription;
-        //boolean overridable; // this is going to be dropped from whitelist
-
-        public Result(boolean invokable, String violatedRuleName, String violatedRuleDescription) {
-            this.invokable = invokable;
-            this.violatedRuleName = violatedRuleName;
-            this.violatedRuleDescription = violatedRuleDescription;
-        }
-
-        public boolean isInvokable() {
-            return invokable;
-        }
-
-        public String getViolatedRuleDescription() {
-            return violatedRuleDescription;
-        }
-
-        public String getViolatedRuleName() {
-            return violatedRuleName;
-        }
-        
+        WhiteListQuery.Result check(@NonNull ElementHandle<?> element, @NonNull WhiteListQuery.Operation operation);
     }
 
 }

@@ -44,9 +44,10 @@ package org.netbeans.spi.whitelist.support;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
-import org.netbeans.spi.whitelist.WhiteListQueryImplementation.Result;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.filesystems.FileObject;
@@ -109,30 +110,13 @@ public class WhiteListQueryMergerSupport {
             this.list = list;
         }
 
-//        @Override
-//        public boolean canInvoke(ElementHandle<?> element) {
-//            for (WhiteListImplementation impl : list) {
-//                if (!impl.canInvoke(element)) {
-//                    return false;
-//                }
-//            }
-//            return true;
-//        }
-//
-//        @Override
-//        public boolean canOverride(ElementHandle<?> element) {
-//            for (WhiteListImplementation impl : list) {
-//                if (!impl.canOverride(element)) {
-//                    return false;
-//                }
-//            }
-//            return true;
-//        }
-
         @Override
-        public Result check(ElementHandle<?> element) {
+        @NonNull
+        public WhiteListQuery.Result check(
+                @NonNull final ElementHandle<?> element,
+                @NonNull final WhiteListQuery.Operation operation) {
             for (WhiteListImplementation impl : list) {
-                Result r = impl.check(element);
+                WhiteListQuery.Result r = impl.check(element, operation);
                 if (r != null) {
                     return r;
                 }

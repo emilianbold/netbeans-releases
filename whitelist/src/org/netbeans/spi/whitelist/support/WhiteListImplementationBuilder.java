@@ -51,8 +51,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
-import org.netbeans.spi.whitelist.WhiteListQueryImplementation.Result;
 import org.openide.util.Parameters;
 import org.openide.util.Union2;
 
@@ -151,23 +151,13 @@ public final class WhiteListImplementationBuilder {
             this.model = model;
         }
 
-//        @Override
-//        public boolean canInvoke(@NonNull ElementHandle<?> element) {
-//            assert element != null;
-//            return model.isAllowed(element,INVOKE);
-//        }
-//
-//        @Override
-//        public boolean canOverride(@NonNull ElementHandle<?> element) {
-//            assert element != null;
-//            return model.isAllowed(element,OVERRIDE);
-//        }
-
         @Override
-        public Result check(ElementHandle<?> element) {
+        public WhiteListQuery.Result check(
+                @NonNull final ElementHandle<?> element,
+                @NonNull final WhiteListQuery.Operation operation) {
             assert element != null;
             boolean b = model.isAllowed(element,INVOKE);
-            return new WhiteListQueryImplementation.Result(b, null, null);
+            return new WhiteListQuery.Result(b, null, null);
         }
     }
 

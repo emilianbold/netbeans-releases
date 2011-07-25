@@ -114,7 +114,7 @@ public final class WhiteListQuery {
         public final boolean canInvoke(
             @NonNull final ElementHandle<?> element) {
             Parameters.notNull("element", element); //NOI18N;
-            return impl.check(element).isInvokable();
+            return impl.check(element, Operation.USAGE).isAllowed();
         }
 
         /**
@@ -127,6 +127,35 @@ public final class WhiteListQuery {
 //            Parameters.notNull("element", element); //NOI18N;
 //            return impl.canOverride(element);
             return true;
+        }
+    }
+
+    public enum Operation {
+        USAGE
+    }
+
+    public static final class Result {
+        private final boolean allowed;
+        private final String violatedRuleName;
+        private final String violatedRuleDescription;
+
+        //Todo: Make private
+        public Result(boolean allowed, String violatedRuleName, String violatedRuleDescription) {
+            this.allowed = allowed;
+            this.violatedRuleName = violatedRuleName;
+            this.violatedRuleDescription = violatedRuleDescription;
+        }
+
+        public boolean isAllowed() {
+            return allowed;
+        }
+
+        public String getViolatedRuleDescription() {
+            return violatedRuleDescription;
+        }
+
+        public String getViolatedRuleName() {
+            return violatedRuleName;
         }
     }
 }
