@@ -1127,7 +1127,14 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
                 authorName = nameAttr != null ? nameAttr.getValue() : null;
             } else {
-                author = authorName = null;
+                authorAttr = data.getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
+                if(authorAttr != null) {
+                    author = authorAttr.getValue();
+                    TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                    authorName = nameAttr != null ? nameAttr.getValue() : null;
+                } else {
+                    author = authorName = null;
+                }
             }
             contentType = getMappedValue(ta, TaskAttribute.ATTACHMENT_CONTENT_TYPE);
             isDeprected = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);
