@@ -1045,7 +1045,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return thrown;
     }
 
-    private static final OffsetsBag introduceBag(Document doc) {
+    static final OffsetsBag introduceBag(Document doc) {
         OffsetsBag bag = (OffsetsBag) doc.getProperty(IntroduceHint.class);
 
         if (bag == null) {
@@ -1793,7 +1793,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
-    private static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
+    static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
     
     private static final class IntroduceMethodFix implements Fix {
 
@@ -2328,7 +2328,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[] {
-                HighlightsLayer.create(IntroduceHint.class.getName(), ZOrder.CARET_RACK, true, introduceBag(context.getDocument())),
+                HighlightsLayer.create(IntroduceHint.class.getName(), ZOrder.TOP_RACK.forPosition(500), true, introduceBag(context.getDocument())),
             };
         }
 

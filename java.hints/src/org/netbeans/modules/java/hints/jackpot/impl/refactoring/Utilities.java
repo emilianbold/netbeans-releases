@@ -56,6 +56,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
@@ -149,10 +150,10 @@ public class Utilities {
         }
     }
     
-    public static ArrayList<HintMetadata> getSupportedHints() {
+    public static ArrayList<HintMetadata> getBatchSupportedHints() {
         HashSet hintSet = new HashSet();
         for (Map.Entry<HintMetadata, Collection<? extends HintDescription>> entry: RulesManager.getInstance().allHints.entrySet()) {
-
+            if (entry.getKey().options.contains(Options.NO_BATCH)) continue;
             for (HintDescription hd : entry.getValue()) {
                 if (!(hd.getTrigger() instanceof PatternDescription)) continue; //TODO: only pattern based hints are currently supported
                 hintSet.add(entry.getKey());
