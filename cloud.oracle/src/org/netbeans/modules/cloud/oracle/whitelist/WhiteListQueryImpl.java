@@ -50,37 +50,13 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class)
+@ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
+    path="org-netbeans-api-java/whitelists/")
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
     @Override
     public WhiteListImplementation getWhiteList(FileObject file) {
-        
         return WhiteListQuerySupport.createBuilder();
-        
-//        WhiteListImplementationBuilder builder = WhiteListImplementationBuilder.create();
-//        builder.addInvocableClass("java/lang/Object");
-//        builder.addInvocableClass("java/lang/Class");
-//        builder.addInvocableClass("java/lang/Exception");
-//        builder.addInvocableClass("java/lang/String");
-//        builder.addSubclassableClass("java/lang/Object");
-//        builder.addSubclassableClass("java/lang/Exception");
-//        builder.addInvocableMethod("java/io/File", "renameTo", "java/io/File");
-//        return builder.build();
-        
-        
-//        return new WhiteListImplementation() {
-//
-//            @Override
-//            public boolean canInvoke(ElementHandle<?> element) {
-//                return true;
-//            }
-//
-//            @Override
-//            public boolean canOverride(ElementHandle<?> element) {
-//                return true;
-//            }
-//        };
     }
 
     @Override
@@ -94,7 +70,8 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
     }
     
     
-    @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class)
+    @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
+        path="org-netbeans-api-java/whitelists/")
     public static class TestingWhitelist implements WhiteListQueryImplementation.UserSelectable {
 
         private WhiteListImplementation test;

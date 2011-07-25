@@ -49,10 +49,13 @@ package org.netbeans.modules.whitelist.project;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
@@ -69,6 +72,8 @@ import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.UserSelectable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -76,8 +81,13 @@ import org.openide.util.NbBundle;
  */
 public class WhiteListCategoryPanel extends javax.swing.JPanel implements ActionListener {
 
+    private static final String WHITELISTS_PATH = "org-netbeans-api-java/whitelists/";  //NOI18N
+
+    private static Map<Project,Reference<WhiteListLookup>> lookupCache =
+            new WeakHashMap<Project, Reference<WhiteListLookup>>();
+
     private Project p;
-    
+
     /** Creates new form WhiteListCategoryPanel */
     public WhiteListCategoryPanel(Project p) {
         this.p = p;
@@ -160,23 +170,30 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
                 }
             }
         });
+        synchronized (WhiteListCategoryPanel.class) {
+            final Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
+            final WhiteListLookup lkp;
+            if (lkpRef != null && (lkp=lkpRef.get())!=null) {
+                lkp.updateLookup(p);
+            }
+        }
     }
 
     public static Collection<? extends WhiteListQueryImplementation.UserSelectable> getUserSelectableWhiteLists() {
-        return Lookup.getDefault().lookupResult(WhiteListQueryImplementation.UserSelectable.class).allInstances();
+        return Lookups.forPath(WHITELISTS_PATH).lookupResult(WhiteListQueryImplementation.UserSelectable.class).allInstances();
     }
-    
-    public static List<WhiteListQueryImplementation.UserSelectable> getEnabledUserSelectableWhiteLists(@NonNull Project p) {
-        Collection<? extends WhiteListQueryImplementation.UserSelectable> q = Lookup.getDefault().lookupResult(WhiteListQueryImplementation.UserSelectable.class).allInstances();
-        List<WhiteListQueryImplementation.UserSelectable> impls = new ArrayList<WhiteListQueryImplementation.UserSelectable>();
-        for (WhiteListQueryImplementation.UserSelectable w : q) {
-            if (WhiteListCategoryPanel.isWhiteListEnabledInProject(p, w.getId())) {
-                impls.add(w);
-            }
+
+    public static Lookup getEnabledUserSelectableWhiteLists(@NonNull Project p) {
+        Reference<WhiteListLookup> lkpRef = lookupCache.get(p);
+        WhiteListLookup lkp;
+        if (lkpRef == null || (lkp=lkpRef.get())==null) {
+            lkp = new WhiteListLookup();
+            lkp.updateLookup(p);
+            lookupCache.put(p,new WeakReference<WhiteListLookup>(lkp));
         }
-        return impls;
-    }    
-    
+        return lkp;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -294,5 +311,18 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         }
         
     }
-    
+
+    private static class WhiteListLookup extends ProxyLookup {
+
+        public void updateLookup(final Project p) {
+            final List<WhiteListQueryImplementation.UserSelectable> impls = new ArrayList<WhiteListQueryImplementation.UserSelectable>();
+            for (WhiteListQueryImplementation.UserSelectable w :
+                    Lookups.forPath(WHITELISTS_PATH).lookupAll(WhiteListQueryImplementation.UserSelectable.class)) {
+                if (WhiteListCategoryPanel.isWhiteListEnabledInProject(p, w.getId())) {
+                    impls.add(w);
+                }
+            }
+            setLookups(Lookups.fixed((UserSelectable[])impls.toArray(new UserSelectable[impls.size()])));
+        }
+    }
 }

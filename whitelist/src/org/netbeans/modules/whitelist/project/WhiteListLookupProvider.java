@@ -41,31 +41,20 @@
  */
 package org.netbeans.modules.whitelist.project;
 
-import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
  */
 public class WhiteListLookupProvider implements LookupProvider {
 
-    
-    // XXX: change in selected whitelists should trigger lookup change
-    
-    
+
     @Override
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project p = baseContext.lookup(Project.class);
         assert p != null;
-        if (!WhiteListCategoryPanel.isWhiteListPanelEnabled(p)) {
-            return Lookup.EMPTY;
-        }
-        List<WhiteListQueryImplementation.UserSelectable> impls = WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
-        return Lookups.fixed(impls.toArray(new WhiteListQueryImplementation.UserSelectable[impls.size()]));
+        return WhiteListCategoryPanel.getEnabledUserSelectableWhiteLists(p);
     }
-    
 }
