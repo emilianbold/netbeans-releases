@@ -156,6 +156,7 @@ public final class WhiteListImplementationBuilder {
                 @NonNull final ElementHandle<?> element,
                 @NonNull final WhiteListQuery.Operation operation) {
             assert element != null;
+            assert operation != null;
             boolean b = model.isAllowed(element,INVOKE);
             return new WhiteListQuery.Result(b, null, null);
         }
