@@ -443,7 +443,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reportedField.setVisible(!isNew);
         modifiedLabel.setVisible(!isNew);
         modifiedField.setVisible(!isNew);
-        assignToDefaultCheckBox.setVisible(!isNew);
+        assignToDefaultCheckBox.setVisible(!isNew && issue.canAssignToDefault());
         assignToDefaultCheckBox.setSelected(false);        
         statusLabel.setVisible(!isNew);
         statusCombo.setVisible(!isNew);
