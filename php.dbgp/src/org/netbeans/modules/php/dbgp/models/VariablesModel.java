@@ -223,49 +223,41 @@ public class VariablesModel extends ViewModelSupport
     public boolean isReadOnly(Object node, String string) 
         throws UnknownTypeException 
     {
-        if (node instanceof ModelNode && 
-                Constants.LOCALS_VALUE_COLUMN_ID.equals(string)) 
-        {
-            return ((ModelNode)node).isReadOnly();
-        }
-        
-        return true;
+        return false;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
     @Override
-    public void setValueAt(Object node, String string, Object value) 
+    public void setValueAt(Object node, String columnID, Object value) 
         throws UnknownTypeException 
     {
         assert value instanceof String;
         
-        if (!Constants.LOCALS_VALUE_COLUMN_ID.equals(string)) {
-            throw new UnknownTypeException(node);
-        }
-        
-        if (!(node instanceof VariableNode)) {
-            throw new UnknownTypeException(node);
-        }
-        
-        ModelNode modelNode = (ModelNode)node;
-        
-        if ( modelNode.isReadOnly()) {
-            throw new UnknownTypeException(node);
-        }
-        
-        DebugSession session = getSession();
-        if ( session == null ){
-            // TODO : need signal to user about inability to set value
-            return;
-        }
-        PropertySetCommand command = new PropertySetCommand( 
-                session.getTransactionId() );
-        command.setData( (String)value );
-        assert node instanceof AbstractVariableNode;
-        ((AbstractVariableNode)node).setupCommand( command );
-        session.sendCommandLater(command);
+        if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+            if (!(node instanceof VariableNode)) {
+                throw new UnknownTypeException(node);
+            }
+
+            ModelNode modelNode = (ModelNode)node;
+
+            if ( modelNode.isReadOnly()) {
+                throw new UnknownTypeException(node);
+            }
+
+            DebugSession session = getSession();
+            if ( session == null ){
+                // TODO : need signal to user about inability to set value
+                return;
+            }
+            PropertySetCommand command = new PropertySetCommand( 
+                    session.getTransactionId() );
+            command.setData( (String)value );
+            assert node instanceof AbstractVariableNode;
+            ((AbstractVariableNode)node).setupCommand( command );
+            session.sendCommandLater(command);
+        } 
     }
 
     /* (non-Javadoc)
