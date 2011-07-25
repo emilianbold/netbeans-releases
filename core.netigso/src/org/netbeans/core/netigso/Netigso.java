@@ -96,6 +96,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     private static final String[] EMPTY = {};
 
     private Framework framework;
+    private ClassLoader frameworkLoader;
     private NetigsoActivator activator;
 
     Framework getFramework() {
@@ -103,9 +104,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
     @Override
     protected ClassLoader findFrameworkClassLoader() {
+        ClassLoader l = frameworkLoader;
+        if (l != null) {
+            return l;
+        }
         Framework f = framework;
         if (f != null) {
-            return f.getClass().getClassLoader();
+            return frameworkLoader = f.getClass().getClassLoader();
         }
         return getClass().getClassLoader();
     }
@@ -202,6 +207,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             framework.stop();
             framework.waitForStop(10000);
             framework = null;
+            frameworkLoader = null;
         } catch (InterruptedException ex) {
             LOG.log(Level.WARNING, "Wait for shutdown failed" + framework, ex);
         } catch (BundleException ex) {
