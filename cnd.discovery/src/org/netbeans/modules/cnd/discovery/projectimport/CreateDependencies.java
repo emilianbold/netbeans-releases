@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -116,24 +117,64 @@ public class CreateDependencies implements PropertyChangeListener {
             if (dependencies == null || dependencies.isEmpty()) {
                 return;
             }
+            Set<String> checkedDll = new HashSet<String>();
+            checkedDll.add(binary);
             Map<String,String> dllPaths = new HashMap<String, String>();
             String root = ImportExecutable.findFolderPath(mainConfigurationDescriptor, ImportExecutable.getRoot(mainConfigurationDescriptor));
             if (root != null) {
                 MakeConfiguration activeConfiguration = mainConfigurationDescriptor.getActiveConfiguration();
                 String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
                 ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
-                boolean search = false;
                 for(String dll : dependencies) {
-                    String p = ImportExecutable.findLocation(dll, ldLibPath);
-                    if (p != null) {
-                        dllPaths.put(dll, p);
-                    } else {
-                        search = true;
-                        dllPaths.put(dll, null);
-                    }
+                    dllPaths.put(dll, ImportExecutable.findLocation(dll, ldLibPath));
                 }
-                if (search && root.length() > 1) {
-                    ImportExecutable.gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
+                while(true) {
+                    List<String> secondary = new ArrayList<String>();
+                    for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                        if (entry.getValue() != null) {
+                            if (!checkedDll.contains(entry.getValue())) {
+                                checkedDll.add(entry.getValue());
+                                final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                                final Map<String, Object> extMap = new HashMap<String, Object>();
+                                extMap.put("DW:buildResult", entry.getValue()); // NOI18N
+                                if (extension != null) {
+                                    extension.discoverArtifacts(extMap);
+                                    @SuppressWarnings("unchecked")
+                                    List<String> dlls = (List<String>) extMap.get("DW:dependencies"); // NOI18N
+                                    if (dlls != null) {
+                                        for(String so : dlls) {
+                                            if (!dllPaths.containsKey(so)) {
+                                                secondary.add(so);
+                                            }
+                                        }
+                                        //@SuppressWarnings("unchecked")
+                                        //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for(String so : secondary) {
+                        dllPaths.put(so, ImportExecutable.findLocation(so, ldLibPath));
+                    }
+                    int search = 0;
+                    for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                        if (entry.getValue() == null) {
+                            search++;
+                        }
+                    }
+                    if (search > 0 && root.length() > 1) {
+                        ImportExecutable.gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
+                    }
+                    int newSearch = 0;
+                    for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                        if (entry.getValue() == null) {
+                            newSearch++;
+                        }
+                    }
+                    if (newSearch == search && secondary.isEmpty()) {
+                        break;
+                    }
                 }
             }
             paths = new ArrayList<String>();
@@ -235,7 +276,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 try {
                     ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                    Applicable applicable = extension.isApplicable(map, lastSelectedProject);
+                    Applicable applicable = extension.isApplicable(map, lastSelectedProject, false);
                     if (applicable.isApplicable()) {
                         ImportExecutable.resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                         if (extension.canApply(map, lastSelectedProject)) {
