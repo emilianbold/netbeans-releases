@@ -102,6 +102,9 @@ public abstract class PhpUnit extends PhpProgram {
     public static final String PARAM_FILTER = "--filter"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    public static final String PARAM_LIST_GROUPS = "--list-groups"; // NOI18N
+    public static final String PARAM_GROUP = "--group"; // NOI18N
+
     // for older PHP Unit versions
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
     // bootstrap & config
