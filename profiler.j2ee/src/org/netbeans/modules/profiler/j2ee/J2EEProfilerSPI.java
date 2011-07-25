@@ -748,15 +748,11 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
 
         lastServerInstanceProperties = InstanceProperties.getInstanceProperties(J2EEProjectProfilingSupportProvider.getServerInstanceID(projectToUse));
 
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    ((NetBeansProfiler) Profiler.getDefault()).setProfiledProject(projectToUse, null);
+        ((NetBeansProfiler) Profiler.getDefault()).setProfiledProject(projectToUse, null);
 
-                    if (!Profiler.getDefault().connectToStartedApp(ps, ss)) {
-                        ProfilerLogger.severe("Error connecting to started app"); // NOI18N
-                    }
-                }
-            });
+        if (!Profiler.getDefault().connectToStartedApp(ps, ss)) {
+            ProfilerLogger.severe("Error connecting to started app"); // NOI18N
+        }
 
         return true;
     }
