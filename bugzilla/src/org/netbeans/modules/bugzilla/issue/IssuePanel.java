@@ -1615,6 +1615,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(formListener);
 
+        assignToDefaultCheckBox.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
         org.openide.awt.Mnemonics.setLocalizedText(assignToDefaultCheckBox, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignToDefaultCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -1997,6 +1998,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == priorityCombo) {
                 IssuePanel.this.priorityComboActionPerformed(evt);
             }
+            else if (evt.getSource() == urlLabel) {
+                IssuePanel.this.urlButtonActionPerformed(evt);
+            }
             else if (evt.getSource() == issueTypeCombo) {
                 IssuePanel.this.issueTypeComboActionPerformed(evt);
             }
@@ -2011,9 +2015,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == urlLabel) {
-                IssuePanel.this.urlButtonActionPerformed(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
