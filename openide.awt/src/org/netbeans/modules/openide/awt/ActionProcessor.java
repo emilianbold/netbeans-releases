@@ -40,7 +40,6 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -64,12 +63,12 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.tools.StandardLocation;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -186,7 +185,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 throw new LayerGenerationException("@ActionID id() must be valid fully qualified name", e, processingEnv, aid, "id");
             }
             String id = aid.id().replace('.', '-');
-            File f = layer(e).file("Actions/" + aid.category() + "/" + id + ".instance");
+            LayerBuilder builder = layer(e);
+            File f = builder.file("Actions/" + aid.category() + "/" + id + ".instance");
             f.bundlevalue("displayName", ar.displayName(), ar, "displayName");
             
             String menuText = ar.menuText();
@@ -228,7 +228,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 key = ar.key();
             } else {
                 assert e.getKind() == ElementKind.METHOD : e;
-                layer(e).instanceFile("dummy", null, ActionListener.class, ar, null);
+                builder.instanceFile("dummy", null, ActionListener.class, ar, null);
                 key = ar.key();
             }
 
@@ -263,23 +263,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     }
                 }
                 if (ar.iconBase().length() > 0) {
-                    boolean found = false;
-                    for (StandardLocation l : StandardLocation.values()) {
-                        try {
-                            processingEnv.getFiler().getResource(l, "", ar.iconBase());
-                            found = true;
-                            break;
-                        } catch (IOException ex) {
-                            continue;
-                        } catch (IllegalArgumentException x) {
-                            throw new LayerGenerationException("Problem with " + ar.iconBase() + " (should be resource path with no leading slash)", e, processingEnv, ar, "iconBase");
-                        }
-                    }
-                    if (!found) {
-                        throw new LayerGenerationException(
-                            "Cannot find iconBase file at " + ar.iconBase(), e, processingEnv, ar, "iconBase"
-                        );
-                    }
+                    builder.validateResource(ar.iconBase(), e, ar, "iconBase", true);
                     f.stringvalue("iconBase", ar.iconBase());
                 }
                 f.boolvalue("noIconInMenu", !ar.iconInMenu());

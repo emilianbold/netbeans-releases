@@ -45,8 +45,10 @@ package org.openide.filesystems.annotations;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -66,6 +68,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager.Location;
 import javax.tools.StandardLocation;
 import org.openide.util.NbBundle.Messages;
 import org.w3c.dom.Document;
@@ -308,6 +312,94 @@ public final class LayerBuilder {
         }
         return file(folder + "/" + name + ".shadow").stringvalue("originalFile", target);
     }
+
+    /**
+     * Validates a resource named in an annotation.
+     * <p>Note that resources found in the binary classpath (if permitted)
+     * cannot actually be located when running inside javac on JDK 6 (see #196933 for discussion), in which case
+     * no exception is thrown but the return value may not permit {@link FileObject#openInputStream}.
+     * <p>Also remember that the binary compilation classpath for an Ant-based NetBeans module does
+     * not include non-public packages.
+     * (As of the 7.1 harness it does include non-classfile resources from public packages of module dependencies.)
+     * The processorpath does contain all of these but it is not consulted.
+     * The classpath for a Maven-based module does contain all resources from dependencies.
+     * @param resource an absolute resource path with no leading slash (perhaps the output of {@link #absolutizeResource})
+     * @param originatingElement the annotated element; used both for error reporting, and (optionally) for its package
+     * @param annotation as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @param annotationMethod as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @param searchClasspath true to search in the binary classpath and not just source path (see caveat about JDK 6)
+     * @return the content of the resource, for further validation
+     * @throws LayerGenerationException if no such resource can be found
+     * @since 7.51
+     */
+    public FileObject validateResource(String resource, Element originatingElement, Annotation annotation, String annotationMethod, boolean searchClasspath) throws LayerGenerationException {
+        if (resource.startsWith("/")) {
+            throw new LayerGenerationException("do not use leading slashes on resource paths", originatingElement, processingEnv, annotation, annotationMethod);
+        }
+        if (searchClasspath) {
+            for (Location loc : new Location[] {StandardLocation.SOURCE_PATH, /* #181355 */StandardLocation.CLASS_OUTPUT, StandardLocation.CLASS_PATH, StandardLocation.PLATFORM_CLASS_PATH}) {
+                try {
+                    return processingEnv.getFiler().getResource(loc, "", resource);
+                } catch (IOException ex) {
+                    continue;
+                }
+            }
+            throw new LayerGenerationException("Cannot find resource " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+        } else {
+            try {
+                try {
+                    FileObject f = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource);
+                    f.openInputStream().close();
+                    return f;
+                } catch (FileNotFoundException x) {
+                    try {
+                        FileObject f = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource);
+                        f.openInputStream().close();
+                        return f;
+                    } catch (IOException x2) {
+                        throw x;
+                    }
+                }
+            } catch (IOException x) {
+                throw new LayerGenerationException("Cannot find resource " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+            }
+        }
+    }
+
+    /**
+     * Allows a processor to accept relative resource paths.
+     * For example, to produce the output value {@code net/nowhere/lib/icon.png}
+     * given an element in the package {@code net.nowhere.app}, the following inputs are permitted:
+     * <ul>
+     * <li>{@code ../lib/icon.png}
+     * <li>{@code /net/nowhere/lib/icon.png}
+     * </ul>
+     * @param originatingElement the annotated element, used for its package
+     * @param resource a possibly relative resource path
+     * @return an absolute resource path (with no leading slash)
+     * @throws LayerGenerationException in case the resource path is malformed
+     * @since 7.51
+     */
+    public static String absolutizeResource(Element originatingElement, String resource) throws LayerGenerationException {
+        if (resource.startsWith("/")) {
+            return resource.substring(1);
+        } else {
+            try {
+                return new URI(null, findPackage(originatingElement).replace('.', '/') + "/", null).resolve(new URI(null, resource, null)).getPath();
+            } catch (URISyntaxException x) {
+                throw new LayerGenerationException(x.toString(), originatingElement);
+            }
+        }
+    }
+    private static String findPackage(Element e) {
+        switch (e.getKind()) {
+        case PACKAGE:
+            return ((PackageElement) e).getQualifiedName().toString();
+        default:
+            return findPackage(e.getEnclosingElement());
+        }
+    }
+
 
     /**
      * Builder for creating a single file entry.
@@ -627,29 +719,19 @@ public final class LayerBuilder {
                     }
                 }
             }
-            String resource = bundle.replace('.', '/') + ".properties";
             try {
-                InputStream is;
-                try {
-                    is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
-                } catch (FileNotFoundException x) { // #181355
-                    try {
-                        is = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource).openInputStream();
-                    } catch (IOException x2) {
-                        throw x;
-                    }
-                }
+                InputStream is = validateResource(bundle.replace('.', '/') + ".properties", originatingElement, null, null, false).openInputStream();
                 try {
                     Properties p = new Properties();
                     p.load(is);
                     if (p.getProperty(key) == null) {
-                        throw new LayerGenerationException("No key '" + key + "' found in " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+                        throw new LayerGenerationException("No key '" + key + "' found in " + bundle, originatingElement, processingEnv, annotation, annotationMethod);
                     }
                 } finally {
                     is.close();
                 }
             } catch (IOException x) {
-                throw new LayerGenerationException("Could not open " + resource + ": " + x, originatingElement, processingEnv, annotation, annotationMethod);
+                throw new LayerGenerationException("Could not open " + bundle + ": " + x, originatingElement, processingEnv, annotation, annotationMethod);
             }
         }
 
