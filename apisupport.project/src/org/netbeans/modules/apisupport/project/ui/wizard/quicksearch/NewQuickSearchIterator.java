@@ -51,6 +51,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedF
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wizard for creating new providers for QuickSearch SPI
@@ -80,6 +81,7 @@ public class NewQuickSearchIterator extends BasicWizardIterator {
      * layer.xml entrypoint
      * @return instance
      */
+    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 800, displayName = "#Templates/NetBeansModuleDevelopment/newQuickSearch", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newQuickSearch.html", category = "nbm-specific")
     public static NewQuickSearchIterator createIterator() {
         return new NewQuickSearchIterator();
     }

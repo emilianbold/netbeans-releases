@@ -51,19 +51,26 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedF
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Wizard for creating new update catalog.
  *
  * @author Jiri Rechtacek
  */
-final class NewUpdateCenterIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=600,
+    displayName="#template",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.png",
+    description="../../resources/newUpdateCenter.html",
+    category="nbm-specific"
+)
+@Messages("template=Update Center")
+public final class NewUpdateCenterIterator extends BasicWizardIterator {
 
     private DataModel data;
-    
-    public static NewUpdateCenterIterator createIterator() {
-        return new NewUpdateCenterIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.refreshCreatedModifiedFiles();

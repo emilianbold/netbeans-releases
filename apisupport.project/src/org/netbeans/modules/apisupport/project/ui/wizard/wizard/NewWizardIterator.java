@@ -49,22 +49,27 @@ import java.util.Set;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Wizard for creating new Wizards.
  *
  * @author Martin Krauskopf
  */
-final class NewWizardIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=300,
+    displayName="#template",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newWizard.png",
+    description="../../resources/newWizard.html",
+    category="nbm-specific"
+)
+@Messages("template=Wizard")
+public final class NewWizardIterator extends BasicWizardIterator {
 
     private DataModel data;
 
-    private NewWizardIterator() {}
-
-    public static NewWizardIterator createIterator() {
-        return new NewWizardIterator();
-    }
-    
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();

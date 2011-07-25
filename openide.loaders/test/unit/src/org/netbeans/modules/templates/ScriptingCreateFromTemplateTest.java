@@ -89,7 +89,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         assertEquals("content/unknown", fo.getMIMEType());
         fo.setAttribute ("template", Boolean.TRUE);
         assertEquals("content/unknown", fo.getMIMEType());
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         DataObject obj = DataObject.find(fo);
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
@@ -118,7 +118,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         os.write("println('#!/usr/bin/perl'); print('# ');println(license);print('# ');print(name);print(' in ');println(nameAndExt);".getBytes());
         os.close();
         template.setAttribute("template", true);
-        template.setAttribute("javax.script.ScriptEngine", "js");
+        template.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("license", "GPL");
         parameters.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
@@ -163,7 +163,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         os.write("test".getBytes());
         os.close();
         fo.setAttribute ("template", Boolean.TRUE);
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
 
         MockServices.setServices(MockMimeLookup.class);
         MockMimeLookup.setInstances(MimePath.parse("content/unknown"), new TestEditorKit());

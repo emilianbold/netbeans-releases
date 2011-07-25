@@ -1,11 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * <p/>
+ *
  * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
- * <p/>
+ *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
- * <p/>
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development and
  * Distribution License("CDDL") (collectively, the "License"). You may not use
@@ -20,7 +20,7 @@
  * this code. If applicable, add the following below the License Header, with
  * the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * <p/>
+ *
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
@@ -30,51 +30,17 @@
  * licensees as provided above. However, if you add GPL Version 2 code and
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
- * <p/>
+ *
  * Contributor(s):
- * <p/>
+ *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.ui.wizard.layer;
+@TemplateRegistrations({
+    @TemplateRegistration(folder="Other", position=100, displayName="#Templates/Other/html.html", content="templates/html.html", scriptEngine="freemarker", category="simple-files", description="TemplateHelp.html"),
+    @TemplateRegistration(folder="Other", position=200, displayName="#Templates/Other/xhtml.xhtml", content="templates/xhtml.xhtml", scriptEngine="freemarker", category="simple-files", description="XhtmlTemplateHelp.html"),
+})
+package org.netbeans.modules.html;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.apisupport.project.api.LayerHandle;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.netbeans.api.templates.TemplateRegistration;
-
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1300, displayName = "#template_label", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/newLayer.html", category = "nbm-specific")
-public class NewLayerIterator extends BasicWizardIterator {
-
-    private BasicDataModel data;
-    private CreatedModifiedFiles cmf;
-
-    @Override protected Panel[] createPanels(WizardDescriptor wiz) {
-        data = new BasicDataModel(wiz);
-        cmf = new CreatedModifiedFiles(data.getProject());
-        cmf.add(cmf.layerModifications(new CreatedModifiedFiles.LayerOperation() {
-            @Override public void run(FileSystem layer) throws IOException {
-                // do nothing - just make sure it exists
-            }
-        }, Collections.<String>emptySet()));
-        return new Panel[] {new LayerPanel(wiz, data, cmf)};
-    }
-
-    @Override public Set<?> instantiate() throws IOException {
-        cmf.run();
-        FileObject layerFile = LayerHandle.forProject(data.getProject()).getLayerFile();
-        return layerFile != null ? Collections.singleton(layerFile) : Collections.emptySet();
-    }
-
-    @Override public void uninitialize(WizardDescriptor wiz) {
-        super.uninitialize(wiz);
-        data = null;
-    }
-
-}
+import org.netbeans.api.templates.TemplateRegistrations;

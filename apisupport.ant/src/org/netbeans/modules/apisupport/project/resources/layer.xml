@@ -43,38 +43,6 @@
             <folder name="APISupport">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport"/>
                 <attr name="position" intvalue="900"/>
-                <file name="emptyModule">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/emptyModule"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/resources/module.png"/>
-                    <attr name="position" intvalue="100"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createModuleIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/emptyModule.html"/>
-                </file>
-                <file name="emptySuite">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/emptySuite"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/suite/resources/suite.png"/>
-                    <attr name="position" intvalue="200"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createSuiteIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/emptySuite.html"/>
-                </file>
-                <file name="libraryModule">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/libraryModule"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/resources/module.png"/>
-                    <attr name="position" intvalue="300"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createLibraryModuleIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/libraryModule.html"/>
-                </file>
-                <file name="emptyApplication">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle#Templates/Project/APISupport/emptyApplication"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/apisupport/project/suite/resources/suite.png"/>
-                    <attr name="position" intvalue="400"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createApplicationIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/resources/emptyApplication.html"/>
-                </file>
             </folder>
         </folder>
     </folder>

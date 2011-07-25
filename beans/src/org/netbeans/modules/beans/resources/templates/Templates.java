@@ -1,11 +1,11 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * <p/>
+ *
  * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
- * <p/>
+ *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
- * <p/>
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development and
  * Distribution License("CDDL") (collectively, the "License"). You may not use
@@ -20,7 +20,7 @@
  * this code. If applicable, add the following below the License Header, with
  * the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * <p/>
+ *
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
@@ -30,51 +30,32 @@
  * licensees as provided above. However, if you add GPL Version 2 code and
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
- * <p/>
+ *
  * Contributor(s):
- * <p/>
+ *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.apisupport.project.ui.wizard.layer;
+package org.netbeans.modules.beans.resources.templates;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.apisupport.project.api.LayerHandle;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
-import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
+import org.openide.WizardDescriptor;
 
-@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1300, displayName = "#template_label", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/newLayer.html", category = "nbm-specific")
-public class NewLayerIterator extends BasicWizardIterator {
+public class Templates {
 
-    private BasicDataModel data;
-    private CreatedModifiedFiles cmf;
-
-    @Override protected Panel[] createPanels(WizardDescriptor wiz) {
-        data = new BasicDataModel(wiz);
-        cmf = new CreatedModifiedFiles(data.getProject());
-        cmf.add(cmf.layerModifications(new CreatedModifiedFiles.LayerOperation() {
-            @Override public void run(FileSystem layer) throws IOException {
-                // do nothing - just make sure it exists
-            }
-        }, Collections.<String>emptySet()));
-        return new Panel[] {new LayerPanel(wiz, data, cmf)};
+    @TemplateRegistrations({
+        @TemplateRegistration(folder="Beans", position=100, content="Bean.java.template", displayName="org.netbeans.modules.beans.Bundle#Templates/Beans/Bean.java", iconBase=JavaTemplates.JAVA_ICON, description="Bean.html", category="java-beans", scriptEngine="freemarker"),
+        @TemplateRegistration(folder="Beans", position=200, content="BeanInfo.java.template", displayName="org.netbeans.modules.beans.Bundle#Templates/Beans/BeanInfo.java", iconBase=JavaTemplates.JAVA_ICON, description="BeanInfo.html", category="java-beans", scriptEngine="freemarker"),
+        @TemplateRegistration(folder="Beans", position=300, content="NoIconBeanInfo.java.template", displayName="org.netbeans.modules.beans.Bundle#Templates/Beans/NoIconBeanInfo.java", iconBase=JavaTemplates.JAVA_ICON, description="BeanInfo.html", category="java-beans", scriptEngine="freemarker"),
+        @TemplateRegistration(folder="Beans", position=400, content={"Customizer.java.template", "Customizer.form.template"}, displayName="org.netbeans.modules.beans.Bundle#Templates/Beans/Customizer.java", description="Customizer.html", category="java-beans", scriptEngine="freemarker"),
+        @TemplateRegistration(folder="Beans", position=600, content="PropertyEditor.java.template", displayName="org.netbeans.modules.beans.Bundle#Templates/Beans/PropertyEditor.java", iconBase=JavaTemplates.JAVA_ICON, description="PropertyEditor.html", category="java-beans", scriptEngine="freemarker")
+    })
+    public static WizardDescriptor.InstantiatingIterator<?> wizard() {
+        return JavaTemplates.createJavaTemplateIterator();
     }
 
-    @Override public Set<?> instantiate() throws IOException {
-        cmf.run();
-        FileObject layerFile = LayerHandle.forProject(data.getProject()).getLayerFile();
-        return layerFile != null ? Collections.singleton(layerFile) : Collections.emptySet();
-    }
-
-    @Override public void uninitialize(WizardDescriptor wiz) {
-        super.uninitialize(wiz);
-        data = null;
-    }
+    private Templates() {}
 
 }
