@@ -515,7 +515,7 @@ public final class WLPluginProperties {
         return properties;
     }
     
-    
+    @CheckForNull
     public static String getDefaultPlatformHome() {
         Collection<FileObject> instFolders = JavaPlatformManager.getDefault().
                 getDefaultPlatform().getInstallFolders();
