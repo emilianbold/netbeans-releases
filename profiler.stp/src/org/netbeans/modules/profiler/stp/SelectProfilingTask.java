@@ -484,7 +484,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
     
     boolean isPredefinedFilter(Object filter) {
-        return predefinedInstrFilterKeys.indexOf(filter) != -1;
+        return predefinedInstrFilterKeys != null && predefinedInstrFilterKeys.indexOf(filter) != -1;
     }
 
     SimpleFilter getResolvedPredefinedFilter(SimpleFilter key) {

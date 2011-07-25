@@ -539,6 +539,8 @@ public class ProjectUtilities {
     }
 
     public static boolean hasSubprojects(Project project) {
+        if (project == null) return false;
+        
         SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
 
         if (spp == null) {
