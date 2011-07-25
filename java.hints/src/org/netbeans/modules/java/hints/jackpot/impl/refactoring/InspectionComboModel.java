@@ -55,7 +55,7 @@ public final class InspectionComboModel extends AbstractListModel implements Com
     private final ArrayList<HintMetadata> hintsList;
 
     public InspectionComboModel() {
-        hintsList = Utilities.getSupportedHints();
+        hintsList = Utilities.getBatchSupportedHints();
         selected = getElementAt(0);
     }
     

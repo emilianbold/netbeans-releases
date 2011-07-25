@@ -75,6 +75,7 @@ import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -149,7 +150,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"NoopMethodInAbstractClass"}) //NOI18N
+    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"NoopMethodInAbstractClass"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription noopMethodInAbstractClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -219,7 +220,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}) //NOI18N
+    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription markerInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
@@ -243,7 +244,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}) //NOI18N
+    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription multipleTopLevelClassesInFile(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();

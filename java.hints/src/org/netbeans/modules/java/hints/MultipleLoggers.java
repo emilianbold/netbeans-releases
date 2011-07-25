@@ -58,6 +58,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -68,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging", suppressWarnings={"ClassWithMultipleLoggers"}) //NOI18N
+@Hint(category="logging", suppressWarnings={"ClassWithMultipleLoggers"}, options=Options.QUERY) //NOI18N
 public final class MultipleLoggers {
 
     public MultipleLoggers() {

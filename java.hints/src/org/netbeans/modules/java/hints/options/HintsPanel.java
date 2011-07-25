@@ -171,7 +171,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         
         toProblemCheckBox.setVisible(false);
         
-        errorTreeModel = constructTM(allHints?RulesManager.getInstance().allHints.keySet():Utilities.getSupportedHints(), allHints);
+        errorTreeModel = constructTM(allHints?RulesManager.getInstance().allHints.keySet():Utilities.getBatchSupportedHints(), allHints);
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
