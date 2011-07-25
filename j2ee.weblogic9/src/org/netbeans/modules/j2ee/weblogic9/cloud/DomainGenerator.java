@@ -82,12 +82,18 @@ public class DomainGenerator {
             throw new FileNotFoundException("Middleware home not found");
         }
         
+        String javaHome = WLPluginProperties.getDefaultPlatformHome();
         ExternalProcessBuilder builder = new ExternalProcessBuilder(unpack.getAbsolutePath())
                 .addArgument("-template=" + template.getAbsolutePath()) // NOI18N
                 .addArgument("-domain=" + domainDir.getAbsolutePath()) // NOI18N
                 .addEnvironmentVariable("MW_HOME", mwHome.getAbsolutePath()) // NOI18N
                 .redirectErrorStream(true)
                 .workingDirectory(serverDir);
+        if (javaHome != null) {
+            // we have to configure this because it is not configured for
+            // zip distributions
+            builder = builder.addEnvironmentVariable("JAVA_HOME", javaHome); // NOI18N
+        }
 
         ExecutionService service = ExecutionService.newService(builder,
                 TOOL_DESCRIPTOR, NbBundle.getMessage(WhiteListTool.class, "MSG_DomainGeneratorOutput"));
