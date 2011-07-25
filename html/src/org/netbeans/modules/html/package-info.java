@@ -38,7 +38,7 @@
 
 @TemplateRegistrations({
     @TemplateRegistration(folder="Other", position=100, displayName="#Templates/Other/html.html", content="templates/html.html", scriptEngine="freemarker", category="simple-files", description="TemplateHelp.html"),
-    @TemplateRegistration(folder="Other", position=200, displayName="#Templates/Other/xhtml.xhtml", content="templates/xhtml.xhtml", scriptEngine="freemarker", category="simple-files", description="XhtmlTemplateHelp.html"),
+    @TemplateRegistration(folder="Other", position=200, displayName="#Templates/Other/xhtml.xhtml", content="templates/xhtml.xhtml", scriptEngine="freemarker", category="simple-files", description="XhtmlTemplateHelp.html")
 })
 package org.netbeans.modules.html;
 
