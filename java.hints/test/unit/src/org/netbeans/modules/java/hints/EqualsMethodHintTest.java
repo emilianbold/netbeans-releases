@@ -108,4 +108,15 @@ public class EqualsMethodHintTest extends TestBase {
                              
     }
     
+    public void testAnnotations() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    @SuppressWarnings(\"a\") public boolean equals(Object o) {\n" +
+                            "        return true;" +
+                            "    }" +
+                            "}\n",
+                            "2:42-2:48:verifier:ENC");
+
+    }
 }

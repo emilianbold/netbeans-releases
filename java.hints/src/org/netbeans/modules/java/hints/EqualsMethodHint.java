@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 @Hint(category="general", id="org.netbeans.modules.java.hints.EqualsMethodHint", suppressWarnings="EqualsWhichDoesntCheckParameterClass", options=Options.QUERY)
 public class EqualsMethodHint {
 
-    @TriggerPattern(value="public boolean equals(java.lang.Object $param) { $statements$; }")
+    @TriggerPattern(value="$mods$ boolean equals(java.lang.Object $param) { $statements$; }")
     public static ErrorDescription run(HintContext ctx) {
         TreePath paramPath = ctx.getVariables().get("$param");
 
