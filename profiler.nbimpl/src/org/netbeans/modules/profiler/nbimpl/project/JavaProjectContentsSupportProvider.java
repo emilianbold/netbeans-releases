@@ -46,6 +46,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.project.ProjectContentsSupportProvider;
@@ -89,11 +90,11 @@ public class JavaProjectContentsSupportProvider extends ProjectContentsSupportPr
         } else {
             JavaProfilerSource src = JavaProfilerSource.createFrom(profiledClassFile);
             if (src != null) {
-                Set<JavaProfilerSource.ClassInfo> clzs = src.getClasses();
+                Set<SourceClassInfo> clzs = src.getClasses();
                 SourceCodeSelection[] rslt = new SourceCodeSelection[clzs.size()];
                 
                 int index = 0;
-                for(JavaProfilerSource.ClassInfo ci : clzs) {
+                for(SourceClassInfo ci : clzs) {
                     rslt[index++] = new SourceCodeSelection(ci.getQualifiedName(), "<all>", ""); // NOI18N
                 }
                 return rslt;

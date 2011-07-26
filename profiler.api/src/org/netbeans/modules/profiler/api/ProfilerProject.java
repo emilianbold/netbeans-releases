@@ -66,9 +66,11 @@ abstract public class ProfilerProject implements Lookup.Provider {
     public Lookup getLookup() {
         synchronized(lkpLock) {
             if (lkp == null) {
-                lkp = new ProxyLookup(provider.getLookup(), Lookups.fixed(provider, this));
+                lkp = new ProxyLookup(provider.getLookup(), Lookups.fixed(provider, this), additionalLookup());
             }
             return lkp;
         }
     }
+    
+    abstract protected Lookup additionalLookup();
 }

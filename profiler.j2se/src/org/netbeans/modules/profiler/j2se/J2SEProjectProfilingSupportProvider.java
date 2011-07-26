@@ -141,7 +141,7 @@ public final class J2SEProjectProfilingSupportProvider extends JavaProjectProfil
             String profiledClass = pp.getProperty("main.class"); // NOI18N
 
             if ((profiledClass == null) || "".equals(profiledClass)
-                    || (ElementUtilitiesEx.resolveClassByName(profiledClass, project) == null)) { // NOI18N
+                    || (ElementUtilitiesEx.resolveClassByName(profiledClass, project, false) == null)) { // NOI18N
                 mainClassSetManually = ProjectUtilities.selectMainClass(project, null, ProjectUtilities.getProjectName(project),
                                                                         -1);
 

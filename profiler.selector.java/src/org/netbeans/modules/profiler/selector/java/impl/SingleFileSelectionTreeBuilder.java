@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.selector.java;
+package org.netbeans.modules.profiler.selector.java.impl;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreePathScanner;

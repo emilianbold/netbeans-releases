@@ -41,29 +41,23 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
+import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
+import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.ClassMarker;
 import org.netbeans.lib.profiler.marker.CompositeMarker;
@@ -72,15 +66,16 @@ import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.marker.PackageMarker;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
+import org.netbeans.modules.profiler.api.java.JavaProfilerProject;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.categorization.api.definitions.CustomCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.PackageCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SingleTypeCategoryDefinition;
 import org.netbeans.modules.profiler.categorization.api.definitions.SubtypeCategoryDefinition;
-import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -101,12 +96,12 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
     private ClassMarker cMarker = new ClassMarker();
     private PackageMarker pMarker = new PackageMarker();
     private CompositeMarker cmMarker = new CompositeMarker();
-    private ClasspathInfo cpInfo;
-    private JavaSource js;
+    private JavaSource associatedParser;
+    private JavaProfilerProject pp;
 
     public MarkerProcessor(final Project prj) {
-        this.cpInfo = ClasspathInfoFactory.infoFor(prj, true);
-        this.js = cpInfo != null ? JavaSource.create(cpInfo, new FileObject[0]) : null;
+        associatedParser = ElementUtilitiesEx.getSources(prj);
+        pp = JavaProfilerProject.createFrom(prj);
     }
 
     @Override
@@ -165,221 +160,76 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
         return marks.toArray(new Mark[marks.size()]);
     }
 
-    protected void addInterfaceMarker(MethodMarker marker, String interfaceName, Mark mark) {
+    private void addInterfaceMarker(MethodMarker marker, String interfaceName, Mark mark) {
         addInterfaceMarker(marker, interfaceName, null, false, mark);
     }
 
-    protected void addInterfaceMarker(final MethodMarker marker, final String interfaceName,
+    private void addInterfaceMarker(final MethodMarker marker, final String interfaceName,
             final String[] methodNameRestriction, final boolean inclusive, final Mark mark) {
-
-        try {
-            if (js != null) {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                            throws Exception {
-                        doAddInterfaceMarker(marker, interfaceName, methodNameRestriction, inclusive, mark, controller);
-                    }
-                }, true);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    protected void addInterfaceMarkers(final MethodMarker marker, final String[] interfaceNames, final Mark mark) {
-        try {
-            if (js != null) {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                            throws Exception {
-                        for (String interfaceName : interfaceNames) {
-                            doAddInterfaceMarker(marker, interfaceName, null, false, mark, controller);
-                        }
-                    }
-                }, true);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    protected void addInterfaceMarkers(final MethodMarker marker, final String[] interfaceNames,
-            final String[] methodNameRestriction, final boolean inclusive, final Mark mark) {
-        try {
-            if (js != null) {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                            throws Exception {
-                        for (String interfaceName : interfaceNames) {
-                            doAddInterfaceMarker(marker, interfaceName, methodNameRestriction, inclusive, mark, controller);
-                        }
-                    }
-                }, true);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    protected void addTypeMarker(final MethodMarker marker, final String type, final Mark mark) {
-        addTypeMarker(marker, type, new String[]{}, false, mark);
-    }
-
-    protected void addTypeMarker(final MethodMarker marker, final String type, final String[] methodNameRestriction,
-            final boolean inclusive, final Mark mark) {
-        final List<String> restrictors = (methodNameRestriction != null) ? Arrays.asList(methodNameRestriction) : new ArrayList();
-
-        try {
-            if (js != null) {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                            throws Exception {
-                        TypeElement typeElement = controller.getElements().getTypeElement(type);
-                        addTypeMethods(marker, typeElement, restrictors, inclusive, mark, controller);
-                    }
-                }, true);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void addImplementorMethods(final MethodMarker marker, final TypeElement superElement, final Collection<String> restrictors,
-            final boolean inclusive, final Mark mark, final CompilationController controller) {
-        try {
-            controller.toPhase(JavaSource.Phase.RESOLVED);
-            // get all implementors of the superclass and add their marker methods
-            final Set<ClassIndex.SearchKind> kind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-
-            //    final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>(Arrays.asList(new ClassIndex.SearchScope[]{ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES}));
-            final Set<ClassIndex.SearchScope> scope = EnumSet.allOf(ClassIndex.SearchScope.class);
-
-            Set<String> adjustedRestrictors = new HashSet<String>();
-
-            for (ExecutableElement method : ElementFilter.methodsIn(controller.getElements().getAllMembers(superElement))) {
-                if ( superElement.getKind() == ElementKind.INTERFACE ){
-                    if ( controller.getElementUtilities().
-                            enclosingTypeElement(method).equals( 
-                                    controller.getElements().getTypeElement(
-                                            Object.class.getCanonicalName())))
-                    {
-                        continue;
-                    }
-                    
-                }
-                if (!method.getModifiers().contains(Modifier.PRIVATE)) {
-                    String methodName = method.getSimpleName().toString();
-                    if (inclusive) {
-                        if (restrictors.contains(methodName)) {
-                            adjustedRestrictors.add(methodName);
-                        }
-                    } else {
-                        if (!restrictors.contains(methodName)) {
-                            adjustedRestrictors.add(methodName);
-                        }
-                    }
-                }
-            }
-
-            Set<ElementHandle<TypeElement>> allImplementors = new HashSet<ElementHandle<TypeElement>>();
-            Set<ElementHandle<TypeElement>> implementors = controller.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(superElement), kind, scope);
-
-            do {
-                Set<ElementHandle<TypeElement>> tmpImplementors = new HashSet<ElementHandle<TypeElement>>();
-                allImplementors.addAll(implementors);
-
-                for (ElementHandle<TypeElement> element : implementors) {
-                    tmpImplementors.addAll(controller.getClasspathInfo().getClassIndex().getElements(element, kind, scope));
-                }
-
-                implementors = tmpImplementors;
-            } while (!implementors.isEmpty());
-
-            for (ElementHandle<TypeElement> handle : allImplementors) {
-                // resolve the implementor's type element
-                TypeElement implementor = handle.resolve(controller);
-                addTypeMethods(marker, implementor, adjustedRestrictors, true, mark, controller);
-            }
-        } catch (IOException e) {
-            LOGGER.throwing(MarkerProcessor.class.getName(), "addImplementorMethods", e); // NOI18N
-        }
-    }
-
-    private void addTypeMethods(final MethodMarker marker, final TypeElement type, final Collection<String> restrictors,
-            final boolean inclusive, final Mark mark, final CompilationController controller) {
-        if ((marker == null) || (type == null) || (restrictors == null) || (mark == null) || (controller == null)) {
-            return;
-        }
-        try {
-            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-
-            // process all methods from the implementor
-            for (ExecutableElement method : ElementFilter.methodsIn(controller.getElements().getAllMembers(type))) {
-                if ((method.getKind() == ElementKind.METHOD) && !method.getModifiers().contains(Modifier.ABSTRACT)) {
-                    if ((inclusive && restrictors.contains(method.getSimpleName().toString())) || (!inclusive && !restrictors.contains(method.getSimpleName().toString()))) {
-                        try {
-                            ElementUtilities.getBinaryName(type);
-                            marker.addMethodMark(ElementUtilities.getBinaryName(type), method.getSimpleName().toString(),
-                                    ElementUtilitiesEx.getBinaryName(method, controller), mark);
-                        } catch (NullPointerException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.throwing(MarkerProcessor.class.getName(), "addTypeMethods", e); // NOI18N
-        }
-    }
-
-    private void doAddInterfaceMarker(final MethodMarker marker, final String interfaceName,
-            final String[] methodNameRestriction, final boolean inclusive, final Mark mark,
-            final CompilationController controller)
-            throws IllegalArgumentException {
-        // store restriction array in a list to ease the "contains" checks
-        List<String> restrictors = (methodNameRestriction != null) ? Arrays.asList(methodNameRestriction) : new ArrayList();
-
-        // resolve the type element for the interface/supertype
-        TypeElement superElement = controller.getElements().getTypeElement(interfaceName);
-
-        if (superElement == null) {
+                
+        final Set<String> restrictorSet = methodNameRestriction != null ? new HashSet<String>(Arrays.asList(methodNameRestriction)) : Collections.EMPTY_SET;
+        
+        
+        SourceClassInfo ci = pp.resolveClass(interfaceName);
+        
+        if (ci == null) {
             LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", interfaceName);
-
             return;
         }
-
-        switch (superElement.getKind()) {
-            case INTERFACE: {
-                addImplementorMethods(marker, superElement, restrictors, inclusive, mark, controller);
-
-                break;
+        
+        Set<SourceMethodInfo> applicableMethods = addTypeMarker(marker, ci, restrictorSet, inclusive, mark);
+        
+        for (SourceClassInfo sci : ci.getSubclasses()) {
+            for(SourceMethodInfo smi : applicableMethods) {
+                marker.addMethodMark(sci.getQualifiedName(), smi.getName(), smi.getSignature(), mark);
             }
-            case CLASS: {
-                // add all superclass methods
-                addTypeMethods(marker, superElement, restrictors, inclusive, mark, controller);
+//            addTypeMarker(marker, sci, restrictorSet, inclusive, mark);
+        }
+    }
 
-                if (!superElement.getModifiers().contains(Modifier.FINAL)) {
-                    addImplementorMethods(marker, superElement, restrictors, inclusive, mark, controller);
-                }
-
-                break;
+    private void addTypeMarker(final MethodMarker marker, final String type, final String[] methodNameRestriction,
+            final boolean inclusive, final Mark mark) {
+        final Set<String> restrictorSet = methodNameRestriction != null ? new HashSet<String>(Arrays.asList(methodNameRestriction)) : Collections.EMPTY_SET;
+        if (associatedParser != null) {
+            try {
+                associatedParser.runUserActionTask(new Task<CompilationController>() {
+                    
+                    @Override
+                    public void run(CompilationController cc) throws Exception {
+                        ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(type, cc.getClasspathInfo(), false);
+                        if (eh != null) {
+                            SourceClassInfo ci = new JavacClassInfo(eh, cc);
+                            if (ci == null) {
+                                LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", type);
+                                return;
+                            }
+                            addTypeMarker(marker, ci, restrictorSet, inclusive, mark);
+                        }
+                    }
+                }, true);
+            } catch (IOException e) {
             }
         }
+    }
+    
+    private Set<SourceMethodInfo> addTypeMarker(final MethodMarker marker, final SourceClassInfo classType, final Set<String> restrictors,
+            final boolean inclusive, final Mark mark) {
+        final Set<SourceMethodInfo> applicableMethods = new HashSet<SourceMethodInfo>();
+        for(SourceMethodInfo mi : classType.getMethods(true)) {
+            if (!mi.getModifiers().contains(Modifier.PRIVATE)) {
+                if ((inclusive && restrictors.contains(mi.getName())) || (!inclusive && !restrictors.contains(mi.getName()))) {
+                    if (!mi.getModifiers().contains(Modifier.FINAL)) {
+                        applicableMethods.add(mi);
+                    }
+                    if (!mi.getModifiers().contains(Modifier.ABSTRACT)) {
+                        marker.addMethodMark(mi.getClassName(), mi.getName(), mi.getSignature(), mark);
+                    }
+                }
+            }
+        }
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "added type marker for {0}", classType.getQualifiedName());
+        }
+        return applicableMethods;
     }
 }
