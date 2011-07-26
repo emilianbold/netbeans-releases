@@ -732,6 +732,17 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             return true;
         }
     }
+    
+    boolean canAssignToDefault() {
+        BugzillaConfiguration rc = getBugzillaRepository().getConfiguration();
+        final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
+        boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_0) <= 0 : false;
+        if(oldRepository) {
+            return data.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null;
+        } else {
+            return data.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()) != null;
+        }
+    }
 
     void reassign(String user) {
         setOperation(BugzillaOperation.reassign);
@@ -1127,7 +1138,14 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
                 authorName = nameAttr != null ? nameAttr.getValue() : null;
             } else {
-                author = authorName = null;
+                authorAttr = data.getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
+                if(authorAttr != null) {
+                    author = authorAttr.getValue();
+                    TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                    authorName = nameAttr != null ? nameAttr.getValue() : null;
+                } else {
+                    author = authorName = null;
+                }
             }
             contentType = getMappedValue(ta, TaskAttribute.ATTACHMENT_CONTENT_TYPE);
             isDeprected = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);

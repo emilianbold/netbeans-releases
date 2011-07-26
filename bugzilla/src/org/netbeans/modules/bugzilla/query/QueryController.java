@@ -691,11 +691,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onGotoIssue() {
-        final String id = panel.idTextField.getText().trim();
-        if(id == null || id.trim().equals("") ) {                               // NOI18N
+        String idText = panel.idTextField.getText().trim();
+        if(idText == null || idText.trim().equals("") ) {                       // NOI18N
             return;
         }
 
+        final String id = idText.replaceAll("\\s", "");                         // NOI18N
+        
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
             @Override
