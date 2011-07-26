@@ -59,6 +59,7 @@ import org.netbeans.modules.profiler.api.EditorContext;
 import org.netbeans.modules.profiler.spi.EditorSupportProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -200,7 +201,7 @@ public class ProjectEditorSupportImpl implements EditorSupportProvider {
     }
 
     @Override
-    public int getLineForOffset(FileObject file, final int offset) {
+    public int getLineForOffset(final FileObject file, final int offset) {
         try {
             return performOnAWT(new Callable<Integer>() {
 
@@ -210,10 +211,10 @@ public class ProjectEditorSupportImpl implements EditorSupportProvider {
                         return -1;
                     }
 
-                    TopComponent tc = TopComponent.getRegistry().getActivated();
+                    DataObject dobj = DataObject.find(file);
 
-                    if (tc != null) {
-                        EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
+                    if (dobj != null) {
+                        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
 
                         if (ec != null) {
                             return NbDocument.findLineNumber(ec.getDocument(), offset);
