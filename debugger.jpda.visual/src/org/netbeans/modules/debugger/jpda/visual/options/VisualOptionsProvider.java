@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.jpda.visual.options;
 
-package org.netbeans.modules.debugger.jpda.ui.options;
+import org.netbeans.modules.debugger.jpda.ui.options.StorablePanel;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin Entlicher
+ * @author martin
  */
-public abstract class StorablePanel extends javax.swing.JPanel {
-    
-    /**
-     * Read settings and initialize GUI
-     */
-    public abstract void load();
+public class VisualOptionsProvider implements StorablePanel.Provider {
 
-    /**
-     * Store modified settings
-     */
-    public abstract void store();
-    
-    
-    public static interface Provider {
-        
-        /**
-         * Provides the display name of the panel.
-         * @return The display name of the panel
-         */
-        public abstract String getPanelName();
-
-        public StorablePanel getPanel();
+    @Override
+    public String getPanelName() {
+        return NbBundle.getMessage(VisualOptionsProvider.class, "LBL_VisualDebugging");
     }
 
+    @Override
+    public StorablePanel getPanel() {
+        return new CategoryPanelVisual();
+    }
+    
 }

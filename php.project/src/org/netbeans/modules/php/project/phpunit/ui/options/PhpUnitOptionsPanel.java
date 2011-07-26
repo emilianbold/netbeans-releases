@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.phpunit;
+package org.netbeans.modules.php.project.phpunit.ui.options;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -164,48 +164,9 @@ public class PhpUnitOptionsPanel extends JPanel {
         learnMoreLabel = new JLabel();
         errorLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return phpUnitBrowseButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return phpUnitBrowseButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return phpUnitSearchButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  phpUnitBrowseButton){
-                    return phpUnitSearchButton;
-                }
-                if(aComponent ==  phpUnitTextField){
-                    return phpUnitBrowseButton;
-                }
-                return phpUnitBrowseButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  phpUnitSearchButton){
-                    return phpUnitBrowseButton;
-                }
-                if(aComponent ==  phpUnitBrowseButton){
-                    return phpUnitTextField;
-                }
-                return phpUnitSearchButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         phpUnitLabel.setLabelFor(phpUnitBrowseButton);
-
-
-
-
-
-
-
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.text"));
         Mnemonics.setLocalizedText(phpUnitBrowseButton, NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.text"));
         phpUnitBrowseButton.addActionListener(new ActionListener() {
@@ -234,9 +195,9 @@ public class PhpUnitOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -318,6 +279,7 @@ public class PhpUnitOptionsPanel extends JPanel {
         learnMoreLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription")); // NOI18N
         errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
         errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents

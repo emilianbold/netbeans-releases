@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -88,8 +89,10 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     public void engineAdded(DebuggerEngine engine) {
         // Create a BP in AWT and when hit, inject the remote service.
         JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-        logger.fine("engineAdded("+engine+"), debugger = "+debugger);
-        if (debugger != null) {
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA.visual");
+        boolean uploadAgent = p.getBoolean("UploadAgent", true);
+        logger.fine("engineAdded("+engine+"), debugger = "+debugger+", uploadAgent = "+uploadAgent);
+        if (debugger != null && uploadAgent) {
             final MethodBreakpoint mb = MethodBreakpoint.create("java.awt.EventQueue", "getNextEvent");
             mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
             mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
