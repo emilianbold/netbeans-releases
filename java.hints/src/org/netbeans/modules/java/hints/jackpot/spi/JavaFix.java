@@ -1245,6 +1245,9 @@ public abstract class JavaFix {
 
                     wc.rewrite(tryTree, newTry);
                     break;
+                default:
+                    wc.rewrite(tp.getLeaf(), make.Block(Collections.<StatementTree>emptyList(), false));
+                    break;
             }
         }
 

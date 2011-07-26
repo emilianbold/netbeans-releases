@@ -110,6 +110,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     /** Table model for table with row information. */
     private TableModelEditor.NbTableModel rowTableModel;
 
+    /** Binding support for the corresponding form model. */
+    private BindingDesignSupport bindingSupport;
+
     /**
      * Creates new <code>TableCustomizer</code>.
      */
@@ -1306,6 +1309,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnModelProperty = (RADProperty)comp.getPropertyByName("columnModel"); // NOI18N
         columnSelectionAllowedProperty = (FormProperty)comp.getPropertyByName("columnSelectionAllowed"); // NOI18N
 
+        // Obtain binding support
+        bindingSupport = FormEditor.getBindingSupport(formModel);
+
         // Determine type of model
         try {
             Object value = modelProperty.getValue();
@@ -1528,9 +1534,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                                     columnName = model.getColumnName(index);
                                 } else {
                                     String name = subBinding.getSourcePath();
-                                    if (BindingDesignSupport.isSimpleExpression(name)) {
-                                        columnName = BindingDesignSupport.unwrapSimpleExpression(name);
-                                        columnName = BindingDesignSupport.capitalize(columnName);
+                                    if (bindingSupport.isSimpleExpression(name)) {
+                                        columnName = bindingSupport.unwrapSimpleExpression(name);
+                                        columnName = bindingSupport.capitalize(columnName);
                                     }
                                 }
                             }

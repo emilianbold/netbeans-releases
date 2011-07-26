@@ -86,7 +86,8 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
         this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
         this.element = handle;
         Element el = handle.resolveElement(info);
-        elementHandle = ElementHandle.create(el);
+        if (!(el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.PARAMETER))
+            elementHandle = ElementHandle.create(el);
         if (el!=null) {
             name = ElementHeaders.getHeader(el, info, ElementHeaders.NAME);
             kind = el.getKind();
@@ -226,7 +227,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
 
     @Override
     public void open() {
-        ElementOpen.open(element.getFileObject(), elementHandle);
+        if (elementHandle!=null) {
+            ElementOpen.open(element.getFileObject(), elementHandle);
+        }
     }
     
 }

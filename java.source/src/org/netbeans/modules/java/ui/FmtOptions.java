@@ -497,7 +497,7 @@ public class FmtOptions {
             { blankLineAfterJavadocDescription, TRUE}, //NOI18N
             { blankLineAfterJavadocParameterDescriptions, FALSE}, //NOI18N
             { blankLineAfterJavadocReturnTag, FALSE}, //NOI18N
-            { generateParagraphTagOnBlankLines, TRUE}, //NOI18N
+            { generateParagraphTagOnBlankLines, FALSE}, //NOI18N
             { alignJavadocParameterDescriptions, FALSE}, //NOI18N
             { alignJavadocReturnDescription, FALSE}, //NOI18N
             { alignJavadocExceptionDescriptions, FALSE}, //NOI18N                        

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
 <library version="1.0">
     <name>beans-binding</name>
     <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
+    <localizing-bundle>org.netbeans.modules.form.binding.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.jdesktop.beansbinding/modules/ext/beansbinding-1.2.1.jar!/</resource>
