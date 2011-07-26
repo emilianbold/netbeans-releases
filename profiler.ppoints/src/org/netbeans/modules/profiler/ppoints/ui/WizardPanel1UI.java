@@ -186,8 +186,8 @@ public class WizardPanel1UI extends ValidityAwarePanel implements HelpCtx.Provid
         if (project != null) {
             ppointProjectCombo.setSelectedItem(project);
         }
-
-        if ((ppointProjectCombo.getSelectedItem() != project) && (ppointProjectCombo.getItemAt(0) != SELECT_PROJECT_STRING)) {
+        
+        if ((project == null || !project.equals(ppointProjectCombo.getSelectedItem())) && (ppointProjectCombo.getItemAt(0) != SELECT_PROJECT_STRING)) {
             ppointProjectCombo.insertItemAt(SELECT_PROJECT_STRING, 0);
             ppointProjectCombo.setSelectedItem(SELECT_PROJECT_STRING);
         }
