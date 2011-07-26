@@ -1263,7 +1263,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
 
-    private static void writeSubProjectCleanTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
+    public static void writeSubProjectCleanTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".clean-subprojects:" + "\n"); // NOI18N
