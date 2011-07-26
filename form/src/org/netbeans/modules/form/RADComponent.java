@@ -700,7 +700,7 @@ public class RADComponent {
         return null;
     }
 
-    synchronized BindingProperty[] getKnownBindingProperties() {
+    public synchronized BindingProperty[] getKnownBindingProperties() {
         return bindingProperties != null ? getAllBindingProperties() : NO_BINDINGS;
     }
 
