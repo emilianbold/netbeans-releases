@@ -200,7 +200,7 @@ public class VisualReplicator {
             boolean restrictions = getDesignRestrictions();
             for (String id : mapToClones.keySet()) {
                 RADComponent rc = formModel.getMetaComponent(id);
-                if (rc != null) {
+                if ((rc != null) && (rc.getKnownBindingProperties().length != 0)) {
                     if (restrictions) { // this is an updated view (designer)
                         getBindingReplicator().establishUpdatedBindings(
                                 rc, false, mapToClones, false);
