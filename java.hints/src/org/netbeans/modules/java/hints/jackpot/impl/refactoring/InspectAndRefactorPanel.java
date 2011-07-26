@@ -91,6 +91,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -98,6 +99,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
@@ -110,6 +112,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -156,14 +159,13 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         
         customScope = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CustomScope"), prj , SwingConstants.LEFT); //NOI18N
         if (fileObject!=null) {
-            currentFile = new JLabel(fileObject.getNameExt(), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
-            //currentPackage = new JLabel(getPackageName(fileObject), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
+            currentFile = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentFile", fileObject.getNameExt()), new ImageIcon(dob.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_32x32)), SwingConstants.LEFT);
+            currentPackage = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentPackage", getPackageName(fileObject)), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT);
             currentProject = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_CurrentProject",pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT);
         }
         allProjects = new JLabel(NbBundle.getMessage(InspectAndRefactorPanel.class, "LBL_AllProjects"), prj, SwingConstants.LEFT); //NOI18N
-        //scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
         if (currentProject!=null)
-            scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, customScope }));
+            scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
         else
             scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, customScope }));
         scopeCombo.setRenderer(new JLabelRenderer());
@@ -337,6 +339,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private void customScopeButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_customScopeButtonActionPerformed
         switch (scopeCombo.getSelectedIndex()) {
             case 0:
+                //all projects
                 Set<FileObject> todo = new HashSet<FileObject>();
 
                 for (ClassPath source : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
@@ -346,9 +349,29 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(todo, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
                 break;
             case 1:
+                //current project
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(Arrays.asList(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
                 break;
+            case 2:
+                //current package
+                if (fileObject != null) {
+                    Collection col = Collections.singleton(new NonRecursiveFolder() {
+
+                        @Override
+                        public FileObject getFolder() {
+                            return fileObject.getParent();
+                        }
+                    });
+                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, col, Collections.EMPTY_LIST);
+                    break;
+                }
+            case 3:
+                if (fileObject != null) {
+                    customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.singleton(fileObject), Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                    break;
+                }
             default:
+                //custom
                 customScope = org.netbeans.modules.refactoring.api.Scope.create(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
         }
         org.netbeans.modules.refactoring.api.Scope s = JavaScopeBuilder.open(NbBundle.getMessage(InspectAndRefactorPanel.class, "CTL_CustomScope"), customScope);
@@ -395,10 +418,18 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     public Scope getScope() {
         switch (scopeCombo.getSelectedIndex()) {
             case 0:
+                //all projects
                 return Scopes.allOpenedProjectsScope();
             case 1:
-                return getThisProjectScope();
+                if (fileObject!=null) 
+                    return getThisProjectScope();
+                else 
+                    return getCustomScope();
             case 2:
+                return getThisPackageScope();
+            case 3:
+                return getThisFileScope();
+            case 4:
                 return getCustomScope();
             default:
                 return Scopes.allOpenedProjectsScope();
@@ -406,11 +437,28 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private Scope getCustomScope() {
-        return Scopes.allOpenedProjectsScope();
+        if (customScope==null) {
+            return Scopes.specifiedFoldersScope(new Folder[0]);
+        }
+        LinkedList list = new LinkedList();
+        list.addAll(customScope.getFiles());
+        list.addAll(customScope.getFolders());
+        list.addAll(customScope.getSourceRoots());
+        
+        return Scopes.specifiedFoldersScope(Folder.convert(list));
     }
+    
 
     private Scope getThisProjectScope() {
-        return Scopes.specifiedFoldersScope(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots());
+        return Scopes.specifiedFoldersScope(Folder.convert(ClassPath.getClassPath(fileObject, ClassPath.SOURCE).getRoots()));
+    }
+
+    private Scope getThisPackageScope() {
+        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.getParent())));
+    }
+
+    private Scope getThisFileScope() {
+        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject)));
     }
 
     private void manageRefactorings(boolean single) {

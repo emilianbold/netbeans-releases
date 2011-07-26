@@ -101,7 +101,8 @@ public class HintMetadata {
 
     public enum Options {
         NON_GUI,
-        QUERY;
+        QUERY,
+        NO_BATCH;
     }
 
     public static final class Builder {

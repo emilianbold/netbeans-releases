@@ -228,7 +228,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return false;
     }
     
-    protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls){
+    protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls, boolean findMain){
         int res = 0;
         int sunStudio = 0;
         Dwarf dump = null;
@@ -309,7 +309,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (DwarfSource.isSunStudioCompiler(cu)) {
                         sunStudio++;
                     }
-                    if (position == null) {
+                    if (findMain && position == null) {
                         List<DwarfEntry> topLevelEntries = cu.getTopLevelEntries();
                         for(DwarfEntry entry : topLevelEntries) {
                             if (entry.getKind() == TAG.DW_TAG_subprogram) {

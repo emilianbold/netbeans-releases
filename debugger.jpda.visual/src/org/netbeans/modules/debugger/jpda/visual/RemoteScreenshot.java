@@ -178,220 +178,207 @@ public class RemoteScreenshot {
         return NO_SCREENSHOTS;
     }
     
-    public static RemoteScreenshot[] take(JPDAThread t, DebuggerEngine engine) throws RetrievalException {//throws ClassNotLoadedException, IncompatibleThreadStateException, InvalidTypeException, InvocationException {
+    public static RemoteScreenshot[] take(final JPDAThread t, final DebuggerEngine engine) throws RetrievalException {//throws ClassNotLoadedException, IncompatibleThreadStateException, InvalidTypeException, InvocationException {
         //RemoteScreenshot[] screenshots = NO_SCREENSHOTS;
-        List<RemoteScreenshot> screenshots = new ArrayList<RemoteScreenshot>();
-        boolean methodInvoking = false;
-        Lock threadLock = ((JPDAThreadImpl) t).accessLock.writeLock();
-        threadLock.lock();
+        final ThreadReference tawt = ((JPDAThreadImpl) t).getThreadReference();
+        final VirtualMachine vm = tawt.virtualMachine();
+        final ClassType windowClass = RemoteServices.getClass(vm, "java.awt.Window");
+        if (windowClass == null) {
+            logger.fine("No Window");
+            return NO_SCREENSHOTS;
+        }
+
+        //Method getWindows = null;//windowClass.concreteMethodByName("getOwnerlessWindows", "()[Ljava/awt/Window;");
+        final Method getWindows = windowClass.concreteMethodByName("getWindows", "()[Ljava/awt/Window;");
+        if (getWindows == null) {
+            logger.fine("No getWindows() method!");
+            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
+            throw new RetrievalException(msg);
+        }
+
+        final List<RemoteScreenshot> screenshots = new ArrayList<RemoteScreenshot>();
+        final RetrievalException[] retrievalExceptionPtr = new RetrievalException[] { null };
         try {
-            
-            logger.fine("RemoteScreenshot.take("+t+"), is suspended = "+t.isSuspended());
-            if (!t.isSuspended()) {
-                threadLock.unlock();
-                threadLock = null;
-                t = RemoteServices.makeAWTThreadStopOnEvent(t);
-                threadLock = ((JPDAThreadImpl) t).accessLock.writeLock();
-                threadLock.lock();
-            }
-            logger.fine("  after remote service BP hit: "+t+" is suspended = "+t.isSuspended());
-            if (t.isSuspended()) {
-                /*
-                 * Run following code in the target VM:
-                   Window[] windows = Window.getWindows();
-                   for (Window w : windows) {
-                       if (!w.isVisible()) {
-                           continue;
-                       }
-                       Dimension d = w.getSize();
-                       BufferedImage bi = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
-                       Graphics g = bi.createGraphics();
-                       w.paint(g);
-                       Raster raster = bi.getData();
-                       Object data = raster.getDataElements(0, 0, d.width, d.height, null);
-                   }
-                 */
-                
-                ThreadReference tawt = ((JPDAThreadImpl) t).getThreadReference();
-                VirtualMachine vm = tawt.virtualMachine();
-                ClassType windowClass = RemoteServices.getClass(vm, "java.awt.Window");
-                if (windowClass == null) {
-                    logger.fine("No Window");
-                    return NO_SCREENSHOTS;
-                }
-                
-                Method getWindows = null;//windowClass.concreteMethodByName("getOwnerlessWindows", "()[Ljava/awt/Window;");
-                if (getWindows == null) {
-                    getWindows = windowClass.concreteMethodByName("getWindows", "()[Ljava/awt/Window;");
-                    if (getWindows == null) {
-                        logger.fine("No getWindows() method!");
-                        String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
-                        throw new RetrievalException(msg);
-                    }
-                }
-                
-                methodInvoking = true;
-                ((JPDAThreadImpl) t).notifyMethodInvoking();
-                
-                ArrayReference windowsArray = (ArrayReference) ((ClassType) windowClass).invokeMethod(tawt, getWindows, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                List<Value> windows = windowsArray.getValues();
-                logger.fine("Have "+windows.size()+" window(s).");
-                
-                Method isVisible = windowClass.concreteMethodByName("isVisible", "()Z");
-                if (isVisible == null) {
-                    logger.fine("No isVisible() method!");
-                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.isVisible()");
-                    throw new RetrievalException(msg);
-                }
-                Method getOwner = windowClass.concreteMethodByName("getOwner", "()Ljava/awt/Window;");
-                if (getOwner == null) {
-                    logger.fine("No getOwner() method!");
-                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getOwner()");
-                    throw new RetrievalException(msg);
-                }
-                Method getSize = windowClass.concreteMethodByName("getSize", "()Ljava/awt/Dimension;");
-                if (getSize == null) {
-                    logger.fine("No getSize() method!");
-                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getSize()");
-                    throw new RetrievalException(msg);
-                }
-                ClassType dimensionClass = RemoteServices.getClass(vm, "java.awt.Dimension");
-                if (dimensionClass == null) {
-                    logger.fine("No Dimension");
-                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.Dimension");
-                    throw new RetrievalException(msg);
-                }
-                ClassType bufferedImageClass = RemoteServices.getClass(vm, "java.awt.image.BufferedImage");
-                if (bufferedImageClass == null) {
-                    logger.fine("No BufferedImage class.");
-                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.image.BufferedImage");
-                    throw new RetrievalException(msg);
-                }
-                Method bufferedImageConstructor = bufferedImageClass.concreteMethodByName("<init>", "(III)V");
-                Method createGraphics = bufferedImageClass.concreteMethodByName("createGraphics", "()Ljava/awt/Graphics2D;");
-                if (createGraphics == null) {
-                    logger.fine("createGraphics() method is not found!");
-                    String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.image.BufferedImage.createGraphics()");
-                    throw new RetrievalException(msg);
-                }
-                
-                ClassType frameClass = RemoteServices.getClass(vm, "java.awt.Frame");
-                Method getFrameTitle = null;
-                if (frameClass != null) {
-                    getFrameTitle = frameClass.concreteMethodByName("getTitle", "()Ljava/lang/String;");
-                }
-                ClassType dialogClass = RemoteServices.getClass(vm, "java.awt.Dialog");
-                Method getDialogTitle = null;
-                if (dialogClass != null) {
-                    getDialogTitle = dialogClass.concreteMethodByName("getTitle", "()Ljava/lang/String;");
-                }
-                
-                for (Value windowValue : windows) {
-                    ObjectReference window = (ObjectReference) windowValue;
-                    //dumpHierarchy(window);
-                    
-                    BooleanValue visible = (BooleanValue) window.invokeMethod(tawt, isVisible, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (!visible.value()) {
-                        // Ignore windows that are not visible.
-                        // TODO: mark them as not visible.
-                        //continue;
-                    }
-                    Object owner = window.invokeMethod(tawt, getOwner, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    if (owner != null) {
-                        // An owned window
-                        //continue;
-                    }
-                    
-                    ObjectReference sizeDimension = (ObjectReference) window.invokeMethod(tawt, getSize, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    Field field = dimensionClass.fieldByName("width");
-                    IntegerValue widthValue = (IntegerValue) sizeDimension.getValue(field);
-                    int width = widthValue.value();
-                    field = dimensionClass.fieldByName("height");
-                    IntegerValue heightValue = (IntegerValue) sizeDimension.getValue(field);
-                    int height = heightValue.value();
-                    logger.fine("The size is "+width+" x "+height+"");
-                    
-                    List<? extends Value> args = Arrays.asList(widthValue, heightValue, vm.mirrorOf(BufferedImage.TYPE_INT_ARGB));
-                    ObjectReference bufferedImage = bufferedImageClass.newInstance(tawt, bufferedImageConstructor, args, ObjectReference.INVOKE_SINGLE_THREADED);
-                    ObjectReference graphics = (ObjectReference) bufferedImage.invokeMethod(tawt, createGraphics, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    
-                    
-                    Method paint = windowClass.concreteMethodByName("paint", "(Ljava/awt/Graphics;)V");
-                    window.invokeMethod(tawt, paint, Arrays.asList(graphics), ObjectReference.INVOKE_SINGLE_THREADED);
-                    
+            RemoteServices.runOnStoppedThread(t, new Runnable() {
+                @Override
+                public void run() {
+                    logger.fine("RemoteScreenshot.take("+t+")");
                     /*
-                    // getPeer() - java.awt.peer.ComponentPeer, ComponentPeer.paint()
-                    Method getPeer = windowClass.concreteMethodByName("getPeer", "()Ljava/awt/peer/ComponentPeer;");
-                    ObjectReference peer = (ObjectReference) window.invokeMethod(tawt, getPeer, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    Method paint = ((ClassType) peer.referenceType()).concreteMethodByName("paint", "(Ljava/awt/Graphics;)V");
-                    peer.invokeMethod(tawt, paint, Arrays.asList(graphics), ObjectReference.INVOKE_SINGLE_THREADED);
-                    - paints nothing! */
-                    
-                    Method getData = bufferedImageClass.concreteMethodByName("getData", "()Ljava/awt/image/Raster;");
-                    ObjectReference raster = (ObjectReference) bufferedImage.invokeMethod(tawt, getData, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                    
-                    Method getDataElements = ((ClassType) raster.referenceType()).concreteMethodByName("getDataElements", "(IIIILjava/lang/Object;)Ljava/lang/Object;");
-                    IntegerValue zero = vm.mirrorOf(0);
-                    ArrayReference data = (ArrayReference) raster.invokeMethod(tawt, getDataElements, Arrays.asList(zero, zero, widthValue, heightValue, null), ObjectReference.INVOKE_SINGLE_THREADED);
-                    
-                    logger.fine("Image data length = "+data.length());
-                    
-                    List<Value> dataValues = data.getValues();
-                    int[] dataArray = new int[data.length()];
-                    int i = 0;
-                    for (Value v : dataValues) {
-                        dataArray[i++] = ((IntegerValue) v).value();
-                    }
-                    
-                    String title = null;
-                    if (frameClass != null && EvaluatorVisitor.instanceOf(window.referenceType(), frameClass)) {
-                        Value v = window.invokeMethod(tawt, getFrameTitle, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                        if (v instanceof StringReference) {
-                            StringReference sr = (StringReference) v;
-                            title = sr.value();
+                     * Run following code in the target VM:
+                       Window[] windows = Window.getWindows();
+                       for (Window w : windows) {
+                           if (!w.isVisible()) {
+                               continue;
+                           }
+                           Dimension d = w.getSize();
+                           BufferedImage bi = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
+                           Graphics g = bi.createGraphics();
+                           w.paint(g);
+                           Raster raster = bi.getData();
+                           Object data = raster.getDataElements(0, 0, d.width, d.height, null);
+                       }
+                     */
+                    try {
+                        ArrayReference windowsArray = (ArrayReference) ((ClassType) windowClass).invokeMethod(tawt, getWindows, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        List<Value> windows = windowsArray.getValues();
+                        logger.fine("Have "+windows.size()+" window(s).");
+
+                        Method isVisible = windowClass.concreteMethodByName("isVisible", "()Z");
+                        if (isVisible == null) {
+                            logger.fine("No isVisible() method!");
+                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.isVisible()");
+                            throw new RetrievalException(msg);
                         }
-                    }
-                    if (dialogClass != null && EvaluatorVisitor.instanceOf(window.referenceType(), dialogClass)) {
-                        Value v = window.invokeMethod(tawt, getDialogTitle, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                        if (v instanceof StringReference) {
-                            StringReference sr = (StringReference) v;
-                            title = sr.value();
+                        Method getOwner = windowClass.concreteMethodByName("getOwner", "()Ljava/awt/Window;");
+                        if (getOwner == null) {
+                            logger.fine("No getOwner() method!");
+                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getOwner()");
+                            throw new RetrievalException(msg);
                         }
+                        Method getSize = windowClass.concreteMethodByName("getSize", "()Ljava/awt/Dimension;");
+                        if (getSize == null) {
+                            logger.fine("No getSize() method!");
+                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getSize()");
+                            throw new RetrievalException(msg);
+                        }
+                        ClassType dimensionClass = RemoteServices.getClass(vm, "java.awt.Dimension");
+                        if (dimensionClass == null) {
+                            logger.fine("No Dimension");
+                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.Dimension");
+                            throw new RetrievalException(msg);
+                        }
+                        ClassType bufferedImageClass = RemoteServices.getClass(vm, "java.awt.image.BufferedImage");
+                        if (bufferedImageClass == null) {
+                            logger.fine("No BufferedImage class.");
+                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.image.BufferedImage");
+                            throw new RetrievalException(msg);
+                        }
+                        Method bufferedImageConstructor = bufferedImageClass.concreteMethodByName("<init>", "(III)V");
+                        Method createGraphics = bufferedImageClass.concreteMethodByName("createGraphics", "()Ljava/awt/Graphics2D;");
+                        if (createGraphics == null) {
+                            logger.fine("createGraphics() method is not found!");
+                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.image.BufferedImage.createGraphics()");
+                            throw new RetrievalException(msg);
+                        }
+
+                        ClassType frameClass = RemoteServices.getClass(vm, "java.awt.Frame");
+                        Method getFrameTitle = null;
+                        if (frameClass != null) {
+                            getFrameTitle = frameClass.concreteMethodByName("getTitle", "()Ljava/lang/String;");
+                        }
+                        ClassType dialogClass = RemoteServices.getClass(vm, "java.awt.Dialog");
+                        Method getDialogTitle = null;
+                        if (dialogClass != null) {
+                            getDialogTitle = dialogClass.concreteMethodByName("getTitle", "()Ljava/lang/String;");
+                        }
+
+                        for (Value windowValue : windows) {
+                            ObjectReference window = (ObjectReference) windowValue;
+                            //dumpHierarchy(window);
+
+                            BooleanValue visible = (BooleanValue) window.invokeMethod(tawt, isVisible, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            if (!visible.value()) {
+                                // Ignore windows that are not visible.
+                                // TODO: mark them as not visible.
+                                //continue;
+                            }
+                            Object owner = window.invokeMethod(tawt, getOwner, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            if (owner != null) {
+                                // An owned window
+                                //continue;
+                            }
+
+                            ObjectReference sizeDimension = (ObjectReference) window.invokeMethod(tawt, getSize, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            Field field = dimensionClass.fieldByName("width");
+                            IntegerValue widthValue = (IntegerValue) sizeDimension.getValue(field);
+                            int width = widthValue.value();
+                            field = dimensionClass.fieldByName("height");
+                            IntegerValue heightValue = (IntegerValue) sizeDimension.getValue(field);
+                            int height = heightValue.value();
+                            logger.fine("The size is "+width+" x "+height+"");
+
+                            List<? extends Value> args = Arrays.asList(widthValue, heightValue, vm.mirrorOf(BufferedImage.TYPE_INT_ARGB));
+                            ObjectReference bufferedImage = bufferedImageClass.newInstance(tawt, bufferedImageConstructor, args, ObjectReference.INVOKE_SINGLE_THREADED);
+                            ObjectReference graphics = (ObjectReference) bufferedImage.invokeMethod(tawt, createGraphics, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+
+
+                            Method paint = windowClass.concreteMethodByName("paint", "(Ljava/awt/Graphics;)V");
+                            window.invokeMethod(tawt, paint, Arrays.asList(graphics), ObjectReference.INVOKE_SINGLE_THREADED);
+
+                            /*
+                            // getPeer() - java.awt.peer.ComponentPeer, ComponentPeer.paint()
+                            Method getPeer = windowClass.concreteMethodByName("getPeer", "()Ljava/awt/peer/ComponentPeer;");
+                            ObjectReference peer = (ObjectReference) window.invokeMethod(tawt, getPeer, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                            Method paint = ((ClassType) peer.referenceType()).concreteMethodByName("paint", "(Ljava/awt/Graphics;)V");
+                            peer.invokeMethod(tawt, paint, Arrays.asList(graphics), ObjectReference.INVOKE_SINGLE_THREADED);
+                            - paints nothing! */
+
+                            Method getData = bufferedImageClass.concreteMethodByName("getData", "()Ljava/awt/image/Raster;");
+                            ObjectReference raster = (ObjectReference) bufferedImage.invokeMethod(tawt, getData, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+
+                            Method getDataElements = ((ClassType) raster.referenceType()).concreteMethodByName("getDataElements", "(IIIILjava/lang/Object;)Ljava/lang/Object;");
+                            IntegerValue zero = vm.mirrorOf(0);
+                            ArrayReference data = (ArrayReference) raster.invokeMethod(tawt, getDataElements, Arrays.asList(zero, zero, widthValue, heightValue, null), ObjectReference.INVOKE_SINGLE_THREADED);
+
+                            logger.fine("Image data length = "+data.length());
+
+                            List<Value> dataValues = data.getValues();
+                            int[] dataArray = new int[data.length()];
+                            int i = 0;
+                            for (Value v : dataValues) {
+                                dataArray[i++] = ((IntegerValue) v).value();
+                            }
+
+                            String title = null;
+                            if (frameClass != null && EvaluatorVisitor.instanceOf(window.referenceType(), frameClass)) {
+                                Value v = window.invokeMethod(tawt, getFrameTitle, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                if (v instanceof StringReference) {
+                                    StringReference sr = (StringReference) v;
+                                    title = sr.value();
+                                }
+                            }
+                            if (dialogClass != null && EvaluatorVisitor.instanceOf(window.referenceType(), dialogClass)) {
+                                Value v = window.invokeMethod(tawt, getDialogTitle, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                if (v instanceof StringReference) {
+                                    StringReference sr = (StringReference) v;
+                                    title = sr.value();
+                                }
+                            }
+
+                            ClassType containerClass = RemoteServices.getClass(vm, "java.awt.Container");
+                            ComponentInfo componentInfo = retrieveComponentTree((JPDAThreadImpl) t, containerClass, window);
+
+                            screenshots.add(new RemoteScreenshot(engine, title, width, height, dataArray, componentInfo));
+                        }
+                    } catch (RetrievalException rex) {
+                        retrievalExceptionPtr[0] = rex;
+                    } catch (InvocationException iex) {
+                        //Exceptions.printStackTrace(iex);
+
+                        final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) t).getDebugger());
+                        // Initialize the translated exception:
+                        iextr.setPreferredThread((JPDAThreadImpl) t);
+                        iextr.getMessage();
+                        iextr.getLocalizedMessage();
+                        iextr.getCause();
+                        iextr.getStackTrace();
+                        retrievalExceptionPtr[0] =  new RetrievalException(iex.getMessage(), iextr);
+                    } catch (InvalidTypeException itex) {
+                        retrievalExceptionPtr[0] = new RetrievalException(itex.getMessage(), itex);
+                    } catch (ClassNotLoadedException cnlex) {
+                        return ;//NO_SCREENSHOTS;
+                    } catch (IncompatibleThreadStateException itsex) {
+                        retrievalExceptionPtr[0] =  new RetrievalException(itsex.getMessage(), itsex);
                     }
-                    
-                    ClassType containerClass = RemoteServices.getClass(vm, "java.awt.Container");
-                    ComponentInfo componentInfo = retrieveComponentTree((JPDAThreadImpl) t, containerClass, window);
-                    
-                    screenshots.add(new RemoteScreenshot(engine, title, width, height, dataArray, componentInfo));
                 }
-            }
+            });
+            
         } catch (PropertyVetoException pvex) {
             // Can not invoke methods
             throw new RetrievalException(pvex.getMessage(), pvex);
-        } catch (InvocationException iex) {
-            //Exceptions.printStackTrace(iex);
-
-            final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) t).getDebugger());
-            // Initialize the translated exception:
-            iextr.setPreferredThread((JPDAThreadImpl) t);
-            iextr.getMessage();
-            iextr.getLocalizedMessage();
-            iextr.getCause();
-            iextr.getStackTrace();
-            throw new RetrievalException(iex.getMessage(), iextr);
-        } catch (InvalidTypeException itex) {
-            throw new RetrievalException(itex.getMessage(), itex);
-        } catch (ClassNotLoadedException cnlex) {
-            return NO_SCREENSHOTS;
-        } catch (IncompatibleThreadStateException itsex) {
-            throw new RetrievalException(itsex.getMessage(), itsex);
-        } finally {
-            if (methodInvoking) {
-                ((JPDAThreadImpl) t).notifyMethodInvokeDone();
-            }
-            if (threadLock != null) {
-                threadLock.unlock();
-            }
+        }
+        if (retrievalExceptionPtr[0] != null) {
+            throw retrievalExceptionPtr[0];
         }
         return screenshots.toArray(new RemoteScreenshot[] {});
     }
@@ -603,11 +590,20 @@ public class RemoteScreenshot {
                     debugger.getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            String v = getValueLazy();
-                            synchronized (valueLock) {
-                                value = v;
+                            try {
+                                RemoteServices.runOnStoppedThread(t, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        String v = getValueLazy();
+                                        synchronized (valueLock) {
+                                            value = v;
+                                        }
+                                        ci.firePropertyChange(propertyName, null, v);
+                                    }
+                                });
+                            } catch (PropertyVetoException ex) {
+                                value = ex.getLocalizedMessage();
                             }
-                            ci.firePropertyChange(propertyName, null, v);
                         }
                     });
                 }

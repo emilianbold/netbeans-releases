@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
@@ -51,23 +51,16 @@ import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,69 +96,45 @@ public class StringBuilderAppend {
 
         if (sorted.size() > 1) {
             String error = NbBundle.getMessage(StringBuilderAppend.class, "ERR_StringBuilderAppend", clazzName);
-            return ErrorDescriptionFactory.forTree(ctx, param, error, new FixImpl(info.getSnapshot().getSource(), TreePathHandle.create(ctx.getPath(), info)));
+            return ErrorDescriptionFactory.forTree(ctx, param, error, JavaFix.toEditorFix(new FixImpl(info, ctx.getPath())));
         }
 
         return null;
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
 
-        private final Source source;
-        private final TreePathHandle tph;
-
-        public FixImpl(Source source, TreePathHandle tph) {
-            this.source = source;
-            this.tph = tph;
+        public FixImpl(CompilationInfo info, TreePath tp) {
+            super(info, tp);
         }
 
         public String getText() {
             return NbBundle.getMessage(StringBuilderAppend.class, "FIX_StringBuilderAppend");
         }
 
-        public ChangeInfo implement() throws Exception {
-            ModificationResult.runModificationTask(Collections.singletonList(source), new UserTask() {
-                public void run (ResultIterator it) throws Exception {
-                    WorkingCopy copy = WorkingCopy.get(it.getParserResult());//XXX: resolve in a correct position
+        @Override
+        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
+            MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
+            ExpressionTree param = mit.getArguments().get(0);
+            List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(copy, new TreePath(tp, param));
+            ExpressionTree site = ((MemberSelectTree) mit.getMethodSelect()).getExpression();
+            TreeMaker make = copy.getTreeMaker();
 
-                    if (copy == null) {
-                        //XXX: log
-                        return ;
-                    }
-                    
-                    copy.toPhase(Phase.RESOLVED);
+            for (List<TreePath> cluster : sorted) {
+                ExpressionTree arg = (ExpressionTree) cluster.remove(0).getLeaf();
 
-                    TreePath tp = tph.resolve(copy);
-
-                    if (tp == null) {
-                        return ;
-                    }
-
-                    MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
-                    ExpressionTree param = mit.getArguments().get(0);
-                    List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(copy, new TreePath(tp, param));
-                    ExpressionTree site = ((MemberSelectTree) mit.getMethodSelect()).getExpression();
-                    TreeMaker make = copy.getTreeMaker();
-
-                    for (List<TreePath> cluster : sorted) {
-                        ExpressionTree arg = (ExpressionTree) cluster.remove(0).getLeaf();
-
-                        while (!cluster.isEmpty()) {
-                            arg = make.Binary(Kind.PLUS, arg, (ExpressionTree) cluster.remove(0).getLeaf());
-                        }
-
-                        while (arg.getKind() == Kind.PARENTHESIZED) {
-                            arg = ((ParenthesizedTree) arg).getExpression();
-                        }
-                        
-                        site = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(site, "append"), Collections.singletonList(arg));
-                    }
-
-                    copy.rewrite(mit, site);
+                while (!cluster.isEmpty()) {
+                    arg = make.Binary(Kind.PLUS, arg, (ExpressionTree) cluster.remove(0).getLeaf());
                 }
-            }).commit();
 
-            return null;
+                while (arg.getKind() == Kind.PARENTHESIZED) {
+                    arg = ((ParenthesizedTree) arg).getExpression();
+                }
+
+                site = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(site, "append"), Collections.singletonList(arg));
+            }
+
+            copy.rewrite(mit, site);
         }
         
     }

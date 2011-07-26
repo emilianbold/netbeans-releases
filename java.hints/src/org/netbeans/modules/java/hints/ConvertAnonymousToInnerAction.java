@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,13 +26,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -53,7 +52,7 @@ public class ConvertAnonymousToInnerAction extends HintAction {
         putValue(NAME, NbBundle.getMessage(ConvertAnonymousToInnerAction.class, "CTL_ConvertAnonymousToInner"));
     }
 
-    protected void perform(JavaSource js,final int[] selection) {
+    protected void perform(JavaSource js, JTextComponent pane, final int[] selection) {
         final Fix[] f = new Fix[1];
         String error = null;
         

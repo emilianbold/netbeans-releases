@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -62,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@Hint(category="initialization", suppressWarnings="StaticNonFinalUsedInInitialization")
+@Hint(category="initialization", suppressWarnings="StaticNonFinalUsedInInitialization", options=Options.QUERY)
 public class StaticNonFinalUsedInInitialization {
     public StaticNonFinalUsedInInitialization() {
     }

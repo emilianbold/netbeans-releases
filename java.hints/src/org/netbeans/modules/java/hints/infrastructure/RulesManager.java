@@ -267,6 +267,7 @@ public class RulesManager implements FileChangeListener {
                     hmb = hmb.setSeverity(HintsSettings.HINTS_ACCESSOR.severiryDefault(h));
                     hmb = hmb.setCustomizerProvider(new CustomizerProviderImpl(h));
                     hmb = hmb.addSuppressWarnings(HintsSettings.HINTS_ACCESSOR.getSuppressBy(h));
+                    if (!HintsSettings.HINTS_ACCESSOR.isShowInTaskListDefault(h)) hmb = hmb.addOptions(Options.NO_BATCH);
                 } else {
                     hmb = hmb.setDescription(toGui ? tr.getDisplayName() : "", toGui ? tr.getDisplayName() : "");
                     hmb = hmb.setSeverity(AbstractHint.HintSeverity.WARNING);

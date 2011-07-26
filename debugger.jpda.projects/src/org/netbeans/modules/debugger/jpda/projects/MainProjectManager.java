@@ -108,7 +108,7 @@ public class MainProjectManager implements ProjectActionPerformer, PropertyChang
         });
     }
 
-    public synchronized Project getMainProject () {
+    public Project getMainProject () {
         final Project lastSelectedProject;
         final Project current;
         final boolean isMain;
