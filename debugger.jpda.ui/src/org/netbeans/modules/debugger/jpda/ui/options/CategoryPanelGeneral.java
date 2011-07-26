@@ -151,7 +151,7 @@ class CategoryPanelGeneral extends StorablePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
-    void load() {
+    public void load() {
         //Preferences p = NbPreferences.root().node("Debugger/JPDA");
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         applyCodeChangesCheckBox.setSelected(p.getBoolean("ApplyCodeChangesOnSave", false));
@@ -163,7 +163,7 @@ class CategoryPanelGeneral extends StorablePanel {
     }
 
     @Override
-    void store() {
+    public void store() {
         //Preferences p = NbPreferences.root().node("Debugger/JPDA");
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         p.setBoolean("ApplyCodeChangesOnSave", applyCodeChangesCheckBox.isSelected());
