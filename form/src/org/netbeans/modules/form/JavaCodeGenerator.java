@@ -169,7 +169,6 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private Map<String,String> repeatedCodeVariables;
 
-    private static Class bindingGroupClass = org.jdesktop.beansbinding.BindingGroup.class;
     private String bindingGroupVariable;
     private Map<String,String> bindingVariables;
     private static String variablesHeader;
@@ -1067,7 +1066,7 @@ class JavaCodeGenerator extends CodeGenerator {
             addLocalVariables(writer);
 
             if (bindingGroupVariable != null) {
-                initCodeWriter.write(bindingGroupVariable + " = new " + bindingGroupClass.getName() + "();\n\n"); // NOI18N
+                initCodeWriter.write(bindingGroupVariable + " = new " + getBindingGroupClass().getName() + "();\n\n"); // NOI18N
             }
 
             emptyLineRequest++;
@@ -1138,6 +1137,10 @@ class JavaCodeGenerator extends CodeGenerator {
         cleanup();
     }
 
+    private Class getBindingGroupClass() {
+        return formEditor.getBindingSupport().getBindingGroupClass();
+    }
+
     private void cleanup() {
         emptyLineCounter = 0;
         emptyLineRequest = 0;
@@ -1153,7 +1156,7 @@ class JavaCodeGenerator extends CodeGenerator {
         bindingVariables = null;
         if (bindingGroupVariable != null) { // we need to keep this variable registered
             bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                    bindingGroupClass, bindingGroupVariable, true);
+                    getBindingGroupClass(), bindingGroupVariable, true);
         }
     }
 
@@ -1707,11 +1710,11 @@ class JavaCodeGenerator extends CodeGenerator {
                     anyBinding = true;
                     if (bindingGroupVariable == null) { // Should happen only for Code Customizer
                         bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                            bindingGroupClass, "bindingGroup", true); // NOI18N
+                            getBindingGroupClass(), "bindingGroup", true); // NOI18N
                     }
                 }
                 StringBuilder buf = new StringBuilder();
-                String variable = BindingDesignSupport.generateBinding(prop, buf);
+                String variable = formEditor.getBindingSupport().generateBinding(prop, buf, getBindingContext());
                 initCodeWriter.write(buf.toString());
 
                 if (bindingDef.isNullValueSpecified()) {
@@ -1735,6 +1738,24 @@ class JavaCodeGenerator extends CodeGenerator {
         if (anyBinding) {
             initCodeWriter.write("\n"); // NOI18N
         }
+    }
+
+    BindingDesignSupport.CodeGeneratorContext bindingContext;
+    private BindingDesignSupport.CodeGeneratorContext getBindingContext() {
+        if (bindingContext == null) {
+            bindingContext = new BindingDesignSupport.CodeGeneratorContext() {
+                @Override
+                public String getBindingDescriptionVariable(Class descriptionType, StringBuilder buf, boolean create) {
+                    return JavaCodeGenerator.this.getBindingDescriptionVariable(descriptionType, buf, create);
+                }
+
+                @Override
+                public String getExpressionJavaString(CodeExpression exp, String thisStr) {
+                    return JavaCodeGenerator.getExpressionJavaString(exp, thisStr);
+                }
+            };
+        }
+        return bindingContext;
     }
 
     private void generateComponentBinding0(CodeWriter initCodeWriter, FormProperty property, String method) throws IOException {
@@ -2592,9 +2613,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 anyBinding = true;
                 if (bindingGroupVariable == null) {
                     bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                            bindingGroupClass, "bindingGroup", true); // NOI18N
+                            getBindingGroupClass(), "bindingGroup", true); // NOI18N
                 }
-                variablesWriter.write("private " + bindingGroupClass.getName() + " " + bindingGroupVariable + ";\n"); // NOI18N
+                variablesWriter.write("private " + getBindingGroupClass().getName() + " " + bindingGroupVariable + ";\n"); // NOI18N
                 variableNames.add(bindingGroupVariable);
                 break;
             }

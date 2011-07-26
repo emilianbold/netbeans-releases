@@ -427,7 +427,7 @@ public class BindingCustomizer extends JPanel {
                     List<String> selected = new LinkedList<String>();
                     for (MetaBinding subBinding : binding.getSubBindings()) {
                         String column = subBinding.getSourcePath();
-                        column = BindingDesignSupport.unwrapSimpleExpression(column);
+                        column = designSupport.unwrapSimpleExpression(column);
                         if (available.contains(column)) {
                             selected.add(column);
                             available.remove(column);
@@ -581,7 +581,7 @@ public class BindingCustomizer extends JPanel {
                     List items = columnSelector.getSelectedItems();
                     for (int i=0; i<items.size(); i++) {
                         String item = items.get(i).toString();
-                        MetaBinding subBinding = binding.addSubBinding(BindingDesignSupport.elWrap(item), null);
+                        MetaBinding subBinding = binding.addSubBinding(designSupport.elWrap(item), null);
                         String columnType = columnToType.get(item);
                         if ((columnType != null) && (!columnType.equals("java.lang.Object"))) { // NOI18N
                             String clazz = FormUtils.autobox(columnType);
@@ -1212,11 +1212,11 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if (selectedComponent != null) {
             Object value = expressionCombo.getSelectedItem();
             if ((value == null) || ("null".equals(value))) { // NOI18N
-                type = BindingDesignSupport.determineType(selectedComponent);
+                type = designSupport.determineType(selectedComponent);
             } else {
                 String path = value.toString();
-                if (BindingDesignSupport.isSimpleExpression(path)) {
-                    type = designSupport.determineType(selectedComponent, BindingDesignSupport.unwrapSimpleExpression(path));
+                if (designSupport.isSimpleExpression(path)) {
+                    type = designSupport.determineType(selectedComponent, designSupport.unwrapSimpleExpression(path));
                 } else {
                     type = new TypeHelper(String.class);
                 }
@@ -1234,7 +1234,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         if (!showDisplayExpression && (columnSelector == null)) return;
         TypeHelper type = getSelectedType();
         if ((type != null) && Collection.class.isAssignableFrom(FormUtils.typeToClass(type))) {
-            TypeHelper elemType = BindingDesignSupport.typeOfElement(type);
+            TypeHelper elemType = type.typeOfElement();
             if ((elemType != null) && elemType.equals(lastElemType)) return;
             lastElemType = elemType;
             if (columnSelector != null) {
@@ -1287,7 +1287,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        private TypeHelper type;
        
        ExpressionNode(RADComponent comp) {
-           this(BindingDesignSupport.determineType(comp));
+           this(designSupport.determineType(comp));
            this.comp = comp;
        }
        
@@ -1374,7 +1374,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
        
    }
 
-   private static class Converter implements ComboBoxWithTree.Converter {
+   private class Converter implements ComboBoxWithTree.Converter {
        private DefaultTreeModel treeModel;
 
        Converter(DefaultTreeModel treeModel) {
@@ -1392,14 +1392,14 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 sb.deleteCharAt(sb.length()-1);
             }
             String value = sb.toString().trim();
-            return "null".equals(value) ? "null" : BindingDesignSupport.elWrap(sb.toString()); // NOI18N
+            return "null".equals(value) ? "null" : designSupport.elWrap(sb.toString()); // NOI18N
         }
         
         @Override
         public TreePath stringToPath(String value) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)treeModel.getRoot();
-            if (BindingDesignSupport.isSimpleExpression(value)) {
-                value = BindingDesignSupport.unwrapSimpleExpression(value);
+            if (designSupport.isSimpleExpression(value)) {
+                value = designSupport.unwrapSimpleExpression(value);
             } else {
                 if ("null".equals(value)) { // NOI18N
                     return new TreePath(new Object[] {node, node.getChildAt(0)});
