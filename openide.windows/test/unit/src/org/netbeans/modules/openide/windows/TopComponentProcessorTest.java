@@ -181,9 +181,11 @@ public class TopComponentProcessorTest extends  NbTestCase {
         mode="explorer",
         openAtStartup=true
     )
-    @TopComponent.Description(
-        preferredID="factory.tc", iconBase="any/iconbase.png"
-    )
+    public static TC factory() {
+        return new TC();
+    }
+    
+    @TopComponent.Description(preferredID = "factory.tc", iconBase = "any/iconbase.png")
     public static class TC extends TopComponent {
         static int cnt;
         static int cnt2;

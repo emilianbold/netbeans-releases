@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
@@ -56,6 +57,7 @@ import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
+import org.netbeans.jellytools.modules.form.actions.InspectorAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.properties.DimensionProperty;
@@ -88,7 +90,7 @@ public class actionsTest extends JellyTestCase {
     public String workdirpath;
     public Node formnode;
     private ProjectsTabOperator pto;
-    private ComponentInspectorOperator inspector;
+    private NavigatorOperator inspector;
     private PropertySheetOperator properties;
     ProjectRootNode prn;
 
@@ -165,9 +167,9 @@ public class actionsTest extends JellyTestCase {
 
         Thread.sleep(1000);
 
-        inspector = new ComponentInspectorOperator();
+        inspector = new NavigatorOperator();
 
-        Node inspectorRootNode = new Node(inspector.treeComponents(), FRAME_ROOT);
+        Node inspectorRootNode = new Node(inspector.getTree(), FRAME_ROOT);
         inspectorRootNode.select();
         inspectorRootNode.expand();
 
@@ -227,24 +229,52 @@ public class actionsTest extends JellyTestCase {
         formnode.select();
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
+        Thread.sleep(2000);
 
-        inspector = new ComponentInspectorOperator();
+        inspector = new NavigatorOperator();
 
-        Node inspectorRootNode = new Node(inspector.treeComponents(), FRAME_ROOT);
+        Thread.sleep(2000);
+        Node inspectorRootNode = new Node(inspector.getTree(), FRAME_ROOT);
         Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
         panelNode.select();
 
         new Action(null, "Design This Container").performPopup(panelNode);
 
+        
+        FormDesignerOperator opDesigner = new FormDesignerOperator(FILE_NAME);
+        opDesigner.source();
+        opDesigner.design();
+        
+        formnode.select();
+        openAction.perform(formnode);
         Thread.sleep(2000);
 
-        Node buttonNode = new Node(panelNode, "jButton1 [JButton]");
-        buttonNode.select();
-        new Action(null, "Design Parent|[Top Parent]").performPopup(buttonNode);
-
+        inspector = new NavigatorOperator();
+        
+        Node inspectorRootNode1 = new Node(inspector.getTree(), FRAME_ROOT);
+        Node panelNode1 = new Node(inspectorRootNode1, "jPanel1 [JPanel]");
+        panelNode1.select();                
+        Node buttonNode1 = new Node(panelNode1, "jButton1 [JButton]");
+        
+        
         Thread.sleep(2000);
-        buttonNode.select();
-        new Action(null, "Enclose In|Scroll Pane").performPopup(buttonNode);
+       
+        new Action(null, "Design Parent|[Top Parent]").performPopup(buttonNode1);
+
+        //Thread.sleep(2000);
+        opDesigner.source();
+        opDesigner.design();
+        
+        formnode.select();
+        openAction.perform(formnode);
+        Thread.sleep(2000);
+
+        inspector = new NavigatorOperator();
+        Node inspectorRootNode2 = new Node(inspector.getTree(), FRAME_ROOT);
+        Node panelNode2 = new Node(inspectorRootNode2, "jPanel1 [JPanel]");
+        panelNode2.select();
+        Node buttonNode2 = new Node(panelNode2, "jButton1 [JButton]");
+        new Action(null, "Enclose In|Scroll Pane").performPopup(buttonNode2);
 
         //Thread.sleep(1000);
 
@@ -267,14 +297,14 @@ public class actionsTest extends JellyTestCase {
     public void testResizing() throws InterruptedException {
         createForm("JFrame Form", "MyJFrame");
 
-        inspector = new ComponentInspectorOperator();
+        inspector = new NavigatorOperator();
 
-        Node inspectorRootNode = new Node(inspector.treeComponents(), FRAME_ROOT);
+        Node inspectorRootNode = new Node(inspector.getTree(), FRAME_ROOT);
         inspectorRootNode.select();
         inspectorRootNode.expand();
         Thread.sleep(1000);
 
-        new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
+        new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.getTree(), "[JFrame]"));
 
         Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
         panelNode.select();
@@ -287,7 +317,7 @@ public class actionsTest extends JellyTestCase {
         btn1Node.select();
 
         properties = new PropertySheetOperator();
-        
+        FormDesignerOperator opDesigner = new FormDesignerOperator("MyJFrame");
         selectPropertiesTab(properties);
         new DimensionProperty(properties, "preferredSize").setValue("100,50");
         
@@ -296,6 +326,9 @@ public class actionsTest extends JellyTestCase {
         btn1Node.select();
         btn2Node.addSelectionPath();
 
+        Thread.sleep(2000);
+        opDesigner.design();
+        
         Node[] nodes = {btn1Node, btn2Node};
         new Action(null, "Same Size|Same Width").performPopup(nodes);
 
@@ -303,7 +336,7 @@ public class actionsTest extends JellyTestCase {
 
         //verify, that source code contains the "grouping" of two JButtons
         String line = "new java.awt.Component[] {jButton1, jButton2}";
-        FormDesignerOperator opDesigner = new FormDesignerOperator("MyJFrame");
+        
 
         findInCode(line, opDesigner);
 

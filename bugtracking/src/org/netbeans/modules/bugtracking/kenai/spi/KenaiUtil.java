@@ -52,10 +52,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -255,6 +257,17 @@ public class KenaiUtil {
     public static KenaiProject[] getDashboardProjects() {
         KenaiAccessor ka = getKenaiAccessor();
         return ka != null? ka.getDashboardProjects() : new KenaiProject[0];
+    }
+
+    public static Repository findNBRepository() {
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+        for (BugtrackingConnector c : connectors) {
+            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
+            if (support != null && support.getType() == KenaiSupport.BugtrackingType.BUGZILLA) {
+                return support.findNBRepository(); // ensure repository exists
+            }
+        }
+        return null;
     }
 
 }

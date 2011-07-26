@@ -48,7 +48,6 @@ package org.netbeans.core.windows.actions;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.awt.Actions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -60,25 +59,34 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.core.windows.Switches;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Mutex;
+import org.openide.util.actions.Presenter;
+import org.openide.windows.WindowManager;
 
 
 /** An action that can toggle maximized window system mode for specific window.
  *
  * @author   Peter Zavadsky
  */
-public class MaximizeWindowAction extends AbstractAction {
+public final class MaximizeWindowAction extends AbstractAction implements Presenter.Popup, Presenter.Menu {
 
     private final PropertyChangeListener propListener;
     private Reference<TopComponent> topComponent;
-    private boolean isPopup;
+    
+    private JCheckBoxMenuItem menuItem;
+    private boolean state = true;
     
     public MaximizeWindowAction() {
+        String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
+        putValue(Action.NAME, label);
         propListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if(WindowManagerImpl.PROP_MAXIMIZED_MODE.equals(propName)
                 || WindowManagerImpl.PROP_EDITOR_AREA_STATE.equals(evt.getPropertyName())
+                || WindowManager.PROP_MODES.equals(evt.getPropertyName())
                 || WindowManagerImpl.PROP_ACTIVE_MODE.equals(evt.getPropertyName())) {
                     updateState();
                 }
@@ -103,14 +111,19 @@ public class MaximizeWindowAction extends AbstractAction {
      * see #38801 for details
      */
     public MaximizeWindowAction (TopComponent tc) {
+        String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
+        putValue(Action.NAME, label);
         topComponent = new WeakReference<TopComponent>(tc);
         propListener = null;
-        isPopup = true;
         updateState();
     }
     
     /** Perform the action. Sets/unsets maximzed mode. */
+    @Override
     public void actionPerformed (java.awt.event.ActionEvent ev) {
+        state = !state;
+        getMenuItem().setSelected(state);
+        
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent curTC = getTCToWorkWith();
         
@@ -156,6 +169,7 @@ public class MaximizeWindowAction extends AbstractAction {
      */
     private void updateState() {
         Mutex.EVENT.readAccess( new Runnable() {
+            @Override
             public void run() {
                 doUpdateState();
             }
@@ -169,9 +183,10 @@ public class MaximizeWindowAction extends AbstractAction {
         TopComponent active = getTCToWorkWith();
         boolean maximize;
         ModeImpl activeMode = (ModeImpl)wm.findMode(active);
-        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)) {
-            String label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction"); //NOI18N
-            putValue(Action.NAME, label);
+        if (activeMode == null || !Switches.isTopComponentMaximizationEnabled() || !Switches.isMaximizationEnabled(active)
+                || activeMode.getState() == Constants.MODE_STATE_SEPARATED ) {
+            getMenuPresenter().setSelected( false );
+            getPopupPresenter().setSelected( false );
             setEnabled(false);
             return;
         }
@@ -186,13 +201,9 @@ public class MaximizeWindowAction extends AbstractAction {
             maximize = null != active && !wm.isTopComponentMaximizedWhenSlidedIn( wm.findTopComponentID( active ) );
         }
 
-        String label;
-        if(maximize) {
-            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction");
-        } else {
-            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction");
-        }
-        putValue(Action.NAME, label);
+        state = !maximize;
+        getMenuPresenter().setSelected( state );
+        getPopupPresenter().setSelected( state );
         
         setEnabled(activeMode != null /*&& activeMode.getKind() != Constants.MODE_KIND_SLIDING*/);
     }
@@ -220,12 +231,32 @@ public class MaximizeWindowAction extends AbstractAction {
 
     /** Overriden to share accelerator between instances of this action.
      */ 
+    @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             return ActionUtils.getSharedAccelerator("MaximizeWindow");
         } else {
             return super.getValue(key);
         }
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        return getMenuItem();
+    }
+
+    @Override
+    public JMenuItem getMenuPresenter() {
+        return getMenuItem();
+    }
+    
+    private JMenuItem getMenuItem() {
+        if (menuItem == null) {
+            menuItem = new JCheckBoxMenuItem( this );
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+            menuItem.setState( state );
+        }
+        return menuItem;
     }
     
 }

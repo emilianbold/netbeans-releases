@@ -223,7 +223,7 @@ public class JpaControllerUtil {
         return name.toString();
     } 
     
-    private static TypeElement getSuperclassTypeElement(TypeElement typeElement) {
+    public static TypeElement getSuperclassTypeElement(TypeElement typeElement) {
         TypeElement superclass = null;
         TypeMirror superclassMirror = typeElement.getSuperclass();
         if (superclassMirror.getKind() == TypeKind.DECLARED) {
@@ -590,6 +590,11 @@ public class JpaControllerUtil {
         return null;
     }
 
+    /**
+     * TODO: actually it's guess setter from setter, need to review if it's a problem of expected
+     * @param setter
+     * @return 
+     */
     public static VariableElement guessGetter(ExecutableElement setter) {
         String name = setter.getSimpleName().toString().substring(3);
         String guessGetterName = "set" + name;

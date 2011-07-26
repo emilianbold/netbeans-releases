@@ -64,6 +64,13 @@ public interface SecurityLibrary extends Library {
             Pointer itemRef
             );
 
+    int SecKeychainItemModifyContent(
+            Pointer/*SecKeychainItemRef*/ itemRef,
+            Pointer/*SecKeychainAttributeList**/ attrList,
+            int length,
+            byte[] data
+    );
+
     int SecKeychainFindGenericPassword(
             Pointer keychainOrArray,
             int serviceNameLength,
@@ -72,11 +79,31 @@ public interface SecurityLibrary extends Library {
             byte[] accountName,
             int[] passwordLength,
             Pointer[] passwordData,
-            Pointer[] itemRef
+            Pointer/*SecKeychainItemRef*/[] itemRef
             );
 
     int SecKeychainItemDelete(
             Pointer itemRef
             );
+
+    Pointer/*CFString*/ SecCopyErrorMessageString(
+            int status,
+            Pointer reserved
+            );
+
+    // http://developer.apple.com/library/mac/#documentation/CoreFoundation/Reference/CFStringRef/Reference/reference.html
+
+    long/*CFIndex*/ CFStringGetLength(
+            Pointer/*CFStringRef*/ theString
+    );
+
+    char/*UniChar*/ CFStringGetCharacterAtIndex(
+            Pointer/*CFStringRef*/ theString,
+            long/*CFIndex*/ idx
+    );
+
+    void CFRelease(
+            Pointer/*CFTypeRef*/ cf
+    );
 
 }

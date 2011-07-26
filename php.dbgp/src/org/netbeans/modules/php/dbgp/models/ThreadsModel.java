@@ -114,6 +114,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getRoot()
      */
+    @Override
     public Object getRoot() {
         return ROOT;
     }
@@ -129,6 +130,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
+    @Override
     public Object[] getChildren(Object parent, int from, int to) 
         throws UnknownTypeException 
     {
@@ -159,6 +161,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#isLeaf(java.lang.Object)
      */
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return false;
@@ -173,6 +176,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildrenCount(java.lang.Object)
      */
+    @Override
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             SessionId id = getSessionId();
@@ -188,6 +192,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof DebugSession ) {
             DebugSession session = (DebugSession) node;
@@ -206,6 +211,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
      */
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof DebugSession) {
             DebugSession session = (DebugSession)node;
@@ -231,6 +237,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
      */
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return null;
@@ -244,6 +251,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeActionsProvider#performDefaultAction(java.lang.Object)
      */
+    @Override
     public void performDefaultAction(Object node) throws UnknownTypeException {
         if (node instanceof DebugSession) {
             DebugSession session = (DebugSession) node;
@@ -269,6 +277,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeActionsProvider#getActions(java.lang.Object)
      */
+    @Override
     public Action[] getActions(Object node) throws UnknownTypeException {
         return new Action [] {};
     }
@@ -276,6 +285,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
+    @Override
     public Object getValueAt(Object node, String columnID) 
         throws UnknownTypeException 
     {
@@ -306,6 +316,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
+    @Override
     public boolean isReadOnly(Object node, String columnID) 
         throws UnknownTypeException 
     {
@@ -319,6 +330,7 @@ public class ThreadsModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
+    @Override
     public void setValueAt(Object node, String columnID, Object value) 
         throws UnknownTypeException 
     {

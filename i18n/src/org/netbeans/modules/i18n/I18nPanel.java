@@ -46,6 +46,7 @@
 package org.netbeans.modules.i18n;
 
 
+import javax.swing.GroupLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -58,8 +59,8 @@ import java.util.Enumeration;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.filesystems.FileObject;
@@ -70,9 +71,9 @@ import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Enumerations;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.TRAILING;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 
 /**
@@ -394,47 +395,46 @@ public class I18nPanel extends JPanel {
         GroupLayout.SequentialGroup horizGroup = layout.createSequentialGroup();
         horizGroup.addContainerGap();
         if (withButtons) {
-            horizGroup.add(
+            horizGroup.addGroup(
                     layout.createParallelGroup(TRAILING)
-                    .add(contentsPanelPlaceholder)
-                    .add(layout.createSequentialGroup()
-                        .add(replaceButton)
+                    .addComponent(contentsPanelPlaceholder)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(replaceButton)
                         .addPreferredGap(RELATED)
-                        .add(skipButton)
+                        .addComponent(skipButton)
                         .addPreferredGap(RELATED)
-                        .add(ignoreButton)
+                        .addComponent(ignoreButton)
                         .addPreferredGap(RELATED)
-                        .add(infoButton)
+                        .addComponent(infoButton)
                         .addPreferredGap(RELATED)
-                        .add(cancelButton)
+                        .addComponent(cancelButton)
                         .addPreferredGap(RELATED)
-                        .add(helpButton)));
-            layout.linkSize(new Component[] {cancelButton,
+                        .addComponent(helpButton)));
+            layout.linkSize(SwingConstants.HORIZONTAL, cancelButton,
                                              helpButton,
                                              infoButton,
                                              replaceButton,
                                              ignoreButton,
-                                             skipButton},
-                            GroupLayout.HORIZONTAL);
+                                             skipButton);
         } else {
-            horizGroup.add(contentsPanelPlaceholder);
+            horizGroup.addComponent(contentsPanelPlaceholder);
         }
         horizGroup.addContainerGap();
         layout.setHorizontalGroup(horizGroup);
 
         GroupLayout.SequentialGroup vertGroup = layout.createSequentialGroup();
         vertGroup.addContainerGap();
-        vertGroup.add(contentsPanelPlaceholder);
+        vertGroup.addComponent(contentsPanelPlaceholder);
         if (withButtons) {
             vertGroup
-            .add(18, 18, 18)
-            .add(layout.createParallelGroup(BASELINE)
-                .add(helpButton)
-                .add(cancelButton)
-                .add(infoButton)
-                .add(skipButton)
-                .add(ignoreButton)
-                .add(replaceButton));
+            .addGap(18, 18, 18)
+            .addGroup(layout.createParallelGroup(BASELINE)
+                .addComponent(helpButton)
+                .addComponent(cancelButton)
+                .addComponent(infoButton)
+                .addComponent(skipButton)
+                .addComponent(ignoreButton)
+                .addComponent(replaceButton));
         }
         vertGroup.addContainerGap();
         layout.setVerticalGroup(vertGroup);

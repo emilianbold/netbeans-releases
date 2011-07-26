@@ -48,14 +48,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
@@ -124,8 +124,6 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
         errorLabel = new JLabel();
         infoLabel = new JLabel();
         downloadButton = new JButton();
@@ -143,30 +141,30 @@ public class FakeWebFrameworkConfigurationPanel extends JPanel {
 
         progressPanel.setLayout(new BoxLayout(progressPanel, BoxLayout.PAGE_AXIS));
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(progressPanel, GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
-                    .add(infoLabel)
-                    .add(downloadButton)
-                    .add(errorLabel))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(progressPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 374, Short.MAX_VALUE)
+                    .addComponent(infoLabel)
+                    .addComponent(downloadButton)
+                    .addComponent(errorLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(errorLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(infoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(downloadButton)
-                .add(18, 18, 18)
-                .add(progressPanel, GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                .addComponent(errorLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(infoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(downloadButton)
+                .addGap(18, 18, 18)
+                .addComponent(progressPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

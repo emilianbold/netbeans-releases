@@ -551,6 +551,7 @@ final class AbstractFileObject extends AbstractFolder {
                 String oe = getExt();
 
                 getAbstractFileSystem().change.rename(oldFullName, newFullName);
+                MIMESupport.freeCaches();
 
                 String oldName = this.name;
                 this.name = name;

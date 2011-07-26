@@ -574,7 +574,7 @@ class SftpSupport {
             try {
                 Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
                 List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
-                result = new ArrayList<StatInfo>(entries.size() - 2);
+                result = new ArrayList<StatInfo>(Math.max(1, entries.size() - 2));
                 int i = 0;
                 for (LsEntry entry : entries) {
                     String name = entry.getFilename();

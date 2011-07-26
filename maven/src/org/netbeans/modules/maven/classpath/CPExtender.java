@@ -69,6 +69,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -175,7 +176,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
             throw new UnsupportedOperationException("removing JARs not yet supported");
         }
         NBVersionInfo dep = null;
-        for (NBVersionInfo _dep : RepositoryQueries.findBySHA1(jar)) {
+        for (NBVersionInfo _dep : RepositoryQueries.findBySHA1(jar, RepositoryPreferences.getInstance().getRepositoryInfos())) {
             if (!"unknown.binary".equals(_dep.getGroupId())) {
                 dep = _dep;
                 break;

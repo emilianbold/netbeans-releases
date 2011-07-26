@@ -128,7 +128,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
                             List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS);
                             for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
-                                if (typeTagInfo.getKind().equals(Kind.CLASS)) {
+                                if (typeTagInfo.getKind().equals(Kind.CLASS)
+                                        && typeTagInfo.getRange().containsInclusive(caretOffset)) {
                                     node = typeTagInfo;
                                     break;
                                 }

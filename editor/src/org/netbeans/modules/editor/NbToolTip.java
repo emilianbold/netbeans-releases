@@ -184,6 +184,7 @@ public class NbToolTip extends FileChangeAdapter {
             }
 
             assert (tts.getLastMouseEvent().getSource() == target);
+            // TODO create ViewHierarchy.getToolTip()
             org.netbeans.modules.editor.lib2.view.DocumentView docView =
                     org.netbeans.modules.editor.lib2.view.DocumentView.get(target);
             Shape alloc;
@@ -227,16 +228,18 @@ public class NbToolTip extends FileChangeAdapter {
                                 Annotation [] tooltipAnnotations = null;
                                 AnnotationDesc annoDesc = null;
 
-                                // Get the highlighting layers stuff
-                                HighlightsContainer highlights = (HighlightsContainer) target.getClientProperty("TooltipHighlightsContainer");
-                                if (highlights == null) {
-                                    highlights = HighlightingManager.getInstance().getHighlights(target, null);
-                                    target.putClientProperty("TooltipHighlightsContainer", highlights);
-                                }
-                                HighlightsSequence seq = highlights.getHighlights(offset, offset + 1);
-                                if (seq.moveNext()) {
-                                    tooltipAttributeValue = seq.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
-                                }
+                                // Get the highlighting layers stuff - first bottom highlights and then possibly top ones
+                                boolean tops = false;
+                                do {
+                                    HighlightsContainer highlights = tops
+                                            ? HighlightingManager.getInstance(target).getBottomHighlights()
+                                            : HighlightingManager.getInstance(target).getTopHighlights();
+                                    HighlightsSequence seq = highlights.getHighlights(offset, offset + 1);
+                                    if (seq.moveNext()) {
+                                        tooltipAttributeValue = seq.getAttributes().getAttribute(EditorStyleConstants.Tooltip);
+                                    }
+                                    tops = !tops;
+                                } while (tooltipAttributeValue == null && tops);
 
                                 if (annos != null) {
                                     // Get the annotations stuff

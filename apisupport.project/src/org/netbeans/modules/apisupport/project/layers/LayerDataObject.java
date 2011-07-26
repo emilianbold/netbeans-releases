@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -54,13 +56,14 @@ import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 public class LayerDataObject extends MultiDataObject {
 
@@ -82,7 +85,7 @@ public class LayerDataObject extends MultiDataObject {
                 }
             }
         };
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        registerEditor("text/x-netbeans-layer+xml", true);
         cookies.add(new ValidateXMLSupport(DataObjectAdapters.inputSource(this)));
     }
     
@@ -94,6 +97,23 @@ public class LayerDataObject extends MultiDataObject {
     
     public @Override Lookup getLookup() {
         return lkp;
+    }
+
+    @Override protected int associateLookup() {
+        return 1;
+    }
+
+    @Messages("Source=&Source")
+    @MultiViewElement.Registration(
+        displayName = "#Source",
+        iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif",
+        mimeType = "text/x-netbeans-layer+xml",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID = "source",
+        position = 1
+    )
+    public static MultiViewEditorElement createEditor(Lookup lkp) {
+        return new MultiViewEditorElement(lkp);
     }
 
 }

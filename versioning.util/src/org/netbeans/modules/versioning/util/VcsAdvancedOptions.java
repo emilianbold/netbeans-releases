@@ -87,21 +87,26 @@ public class VcsAdvancedOptions extends OptionsPanelController {
             Lookup lookup = Lookups.forPath("VersioningOptionsDialog"); // NOI18N
             Iterator<? extends AdvancedOption> it = lookup.lookup(new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
                     allInstances().iterator();
+            AdvancedOption generalOption = null;
             while (it.hasNext()) {
                 AdvancedOption option = it.next();
-                String category = option.getDisplayName();
-//                categoriesOrdered.add(category);
-//                categoryToOption.put(category, option);
-                OptionsPanelController controller = option.create();
-                categoryToController.put(category, controller);
-                
-//                JPanel panel = new JPanel();
-//                panel.setBorder(BorderFactory.createTitledBorder(category));
-//                panel.setLayout(new BorderLayout());
-                panel.addPanel(category, controller.getComponent(masterLookup));
-//                categoryToPanel.put(category, panel);
+                if ("org.netbeans.modules.versioning.options.GeneralAdvancedOption".equals(option.getClass().getName())) {
+                    generalOption = option;
+                } else {
+                    registerOption(option, masterLookup);
+                }
+            }
+            if (generalOption != null) {
+                registerOption(generalOption, masterLookup);
             }
         }
+
+    private void registerOption (AdvancedOption option, Lookup masterLookup) {
+        String category = option.getDisplayName();
+        OptionsPanelController controller = option.create();
+        categoryToController.put(category, controller);
+        panel.addPanel(category, controller.getComponent(masterLookup));
+    }
         
         public JComponent getComponent(Lookup masterLookup) {
             init(masterLookup);

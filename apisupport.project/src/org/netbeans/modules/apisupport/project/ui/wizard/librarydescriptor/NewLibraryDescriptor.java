@@ -49,10 +49,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileSystem;
 

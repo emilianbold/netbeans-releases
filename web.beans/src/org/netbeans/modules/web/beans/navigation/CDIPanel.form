@@ -13,7 +13,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -25,15 +25,15 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="mySplitPane" alignment="1" pref="643" max="32767" attributes="0"/>
+                  <Component id="mySplitPane" alignment="1" pref="715" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="myFilterLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="myFilterTextField" pref="518" max="32767" attributes="0"/>
+                      <Component id="myFilterTextField" pref="532" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="myCaseSensitiveFilterCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="mySeparator" alignment="0" pref="643" max="32767" attributes="0"/>
+                  <Component id="mySeparator" alignment="0" pref="715" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="myBindingLbl" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -55,13 +55,13 @@
                       <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="myFiltersToolbar" pref="487" max="32767" attributes="0"/>
+                              <Component id="myFiltersToolbar" pref="513" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="myCloseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="mySelectedBindings" alignment="0" pref="552" max="32767" attributes="0"/>
-                          <Component id="myScope" alignment="1" pref="552" max="32767" attributes="0"/>
-                          <Component id="myStereotypes" alignment="1" pref="552" max="32767" attributes="0"/>
+                          <Component id="mySelectedBindings" alignment="0" pref="592" max="32767" attributes="0"/>
+                          <Component id="myScope" alignment="1" pref="592" max="32767" attributes="0"/>
+                          <Component id="myStereotypes" alignment="1" pref="592" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

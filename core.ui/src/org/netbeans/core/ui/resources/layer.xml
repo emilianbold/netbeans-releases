@@ -522,6 +522,9 @@ made subject to such option by the copyright holder.
         <file name="bottomSlidingSide.wsmode" url="windowmanager/bottomside.wsmode"/>
         <folder name="bottomSlidingSide"/>
 
+        <file name="topSlidingSide.wsmode" url="windowmanager/topside.wsmode"/>
+        <folder name="topSlidingSide"/>
+
         </folder>
 
         <folder name="Groups">

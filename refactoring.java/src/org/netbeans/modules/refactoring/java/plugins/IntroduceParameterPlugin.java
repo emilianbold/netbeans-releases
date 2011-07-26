@@ -45,16 +45,13 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
@@ -124,7 +121,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     final ElementUtilities elmUtils = info.getElementUtilities();
 
                     //add all references of overriding methods
-                    Element el = treePathHandle.resolveElement(info);
+                    Element el = getMethodElement(treePathHandle, info);
                     ElementHandle<TypeElement> enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
                     allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                     allMethods.add(ElementHandle.create((ExecutableElement) el));
@@ -523,8 +520,16 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         if (preCheckProblem != null) {
             return preCheckProblem;
         }
-        Element el = treePathHandle.resolveElement(info);
-        if (!(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
+        
+        TreePath tp = treePathHandle.resolve(info);
+        TreePath method = getMethod(tp);
+        if (method==null) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType"));
+            return preCheckProblem;
+        }
+        
+        Element el = info.getTrees().getElement(method);
+        if (el==null && !(el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceParameterPlugin.class, "ERR_ChangeParamsWrongType"));
             return preCheckProblem;
         }
@@ -547,5 +552,16 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
         fireProgressListenerStop();
         return preCheckProblem;
+    }
+    
+    private TreePath getMethod(TreePath treePath) {
+        while (treePath!=null && treePath.getLeaf().getKind()!=Tree.Kind.METHOD) {
+            treePath = treePath.getParentPath();
+        }
+        return treePath;
+    }
+    
+    private ExecutableElement getMethodElement(TreePathHandle handle, CompilationInfo info) {
+        return (ExecutableElement) info.getTrees().getElement(getMethod(handle.resolve(info)));
     }
 }

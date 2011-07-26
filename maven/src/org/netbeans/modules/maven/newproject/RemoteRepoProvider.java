@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.newproject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -64,7 +65,7 @@ public class RemoteRepoProvider implements ArchetypeProvider {
             if (RepositoryPreferences.LOCAL_REPO_ID.equals(info.getId())) {
                 continue;
             }
-            List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(info);
+            List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(Collections.singletonList(info));
             if (archs == null) {
                 continue;
             }

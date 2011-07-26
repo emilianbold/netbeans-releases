@@ -79,6 +79,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.ImageUtilities;
@@ -605,6 +606,13 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     close();
                 }
                 return;
+            } else if (tempSession.getRefactoringElements().isEmpty()) {
+                if (ui.isQuery()) {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"));
+                } else {
+                    JOptionPane.showMessageDialog(parametersPanel, NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"), ui.getName(), JOptionPane.INFORMATION_MESSAGE);
+                }
+                return;
             }
             
             session = tempSession;
@@ -764,7 +772,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
             cont.open();
             cont.requestActive();
-            if (isQuery && !parametersPanel.isCreateNewTab()) {
+            if (isQuery && parametersPanel!=null && !parametersPanel.isCreateNewTab()) {
                 cont.removePanel(null);
             }
             cont.addPanel(this);

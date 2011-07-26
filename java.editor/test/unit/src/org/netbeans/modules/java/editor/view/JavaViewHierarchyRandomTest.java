@@ -145,7 +145,6 @@ public class JavaViewHierarchyRandomTest extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.lib2.view.EditorBoxViewChildren").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseDocument.EDT").setLevel(Level.FINE);
         Logger.getLogger("org.netbeans.editor.BaseCaret.EDT").setLevel(Level.FINE);
-        ViewHierarchyRandomTesting.setDirectViewRebuild(true);
     }
 
     @Override

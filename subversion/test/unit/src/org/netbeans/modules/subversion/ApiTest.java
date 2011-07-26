@@ -88,7 +88,7 @@ public class ApiTest extends NbTestCase {
         TestKit.initRepo(repoDir, workDir);
 
         System.setProperty("svnClientAdapterFactory", "commandline");
-        System.setProperty("netbeans.user", dataRootDir.getAbsolutePath());
+        System.setProperty("netbeans.user", getDataDir().getAbsolutePath());
         
         BufferedReader br = null;
         try {

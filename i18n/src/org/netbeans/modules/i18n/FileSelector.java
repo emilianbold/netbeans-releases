@@ -53,6 +53,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,7 +62,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
@@ -303,21 +303,21 @@ public class FileSelector extends JPanel implements PropertyChangeListener, Expl
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
-        layout.setAutocreateGaps(true);
-        layout.setAutocreateContainerGaps(true);
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
 
         layout.setHorizontalGroup(layout.createParallelGroup()
-            .add(treeViewLabel)
-            .add(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(label)
-                .add(fileNameTextField)));
+            .addComponent(treeViewLabel)
+            .addComponent(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(label)
+                .addComponent(fileNameTextField)));
         layout.setVerticalGroup(layout.createSequentialGroup()
-            .add(treeViewLabel)
-            .add(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                .add(label)
-                .add(fileNameTextField)));
+            .addComponent(treeViewLabel)
+            .addComponent(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(label)
+                .addComponent(fileNameTextField)));
     }
 
     private static String getLocMessage(String bundleKey) {

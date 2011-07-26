@@ -55,6 +55,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -63,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@Hint(category="initialization", suppressWarnings="LeakingThisInConstructor")
+@Hint(category="initialization", suppressWarnings="LeakingThisInConstructor", options=Options.QUERY)
 public class LeakingThisInConstructor {
     private static final String THIS_KEYWORD = "this"; // NOI18N
     public LeakingThisInConstructor() {

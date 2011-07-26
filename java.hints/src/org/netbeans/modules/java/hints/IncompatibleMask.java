@@ -42,22 +42,15 @@
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
 import java.text.MessageFormat;
 import java.util.Map;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.VariableElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -67,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation")
+@Hint(category="bitwise_operations", suppressWarnings="IncompatibleBitwiseMaskOperation", options=Options.QUERY)
 public class IncompatibleMask {
 
     @TriggerPatterns ({

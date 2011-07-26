@@ -49,11 +49,24 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.*;
 import javax.swing.event.*;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
+import org.openide.cookies.CloseCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
+import org.openide.nodes.Node.Cookie;
+import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditorSupport.Pane;
+import org.openide.text.DataEditorSupport;
 import org.openide.util.*;
 
 /** Provides support for handling of data objects with multiple files.
@@ -235,6 +248,9 @@ public class MultiDataObject extends DataObject {
     */
     @Override
     protected Node createNodeDelegate () {
+        if (associateLookup() >= 1) {
+            return new DataNode(this, Children.LEAF, getLookup());
+        }
         DataNode dataNode = (DataNode) super.createNodeDelegate ();
         return dataNode;
     }
@@ -922,6 +938,57 @@ public class MultiDataObject extends DataObject {
         return super.getCookie (type);
     }
 
+    @Override
+    public Lookup getLookup() {
+        int version = associateLookup();
+        assert version <= 1;
+        if (version >= 1) {
+            return getCookieSet().getLookup();
+        }
+        return super.getLookup();
+    }
+    
+    /** Influences behavior of {@link #getLookup()} method. Depending on the
+     * returned integer, one can get different, better and more modern  content 
+     * of the {@link Lookup}:
+     * <ul>
+     * <li><b>version 0</b> - delegates to <code>getNodeDelegate().getLookup()</code>.</li>
+     * <li><b>version 1</b> - delegates to <code>getCookieSet().getLookup()</code>
+     *   and makes sure {@link FileObject}, <code>this</code> and 
+     *   {@link Node} are in the lookup. The {@link Node} is created lazily
+     *   by calling {@link #getNodeDelegate()}.
+     * </li>
+     * </ul>
+     * General suggestion is to always return the highest supported version
+     * when creating new objects and to stick with certain version when backward
+     * compatibility is requested.
+     * 
+     * @return version identifying content of the lookup (currently 0 or 1)
+     * @since 7.27
+     */
+    protected int associateLookup() {
+        return 0;
+    }
+    
+    /** Utility method to register editor for this {@link DataObject}.
+     * Call it from constructor with appropriate mimeType. The system will
+     * make sure that appropriate cookies ({@link Openable}, {@link Editable},
+     * {@link CloseCookie}, {@link EditorCookie}, {@link SaveAsCapable},
+     * {@link LineCookie} are registered into {@link #getCookieSet()}.
+     * <p>
+     * The selected editor is <a href="@org-netbeans-core-multiview@/org/netbeans/core/api/multiview/MultiViews.html">
+     * MultiView component</a>, if requested (this requires presence of
+     * the <a href="@org-netbeans-core-multiview@/overview-summary.html">MultiView API</a>
+     * in the system. Otherwise it is plain {@link CloneableEditor}.
+     * 
+     * @param mimeType mime type to associate with
+     * @param useMultiview should the used component be multiview?
+     * @since 7.27
+     */
+    protected final void registerEditor(final String mimeType, boolean useMultiview) {
+        MultiDOEditor.registerEditor(this, mimeType, useMultiview);
+    }
+
     /** Fires cookie change.
     */
     final void fireCookieChange () {
@@ -1336,19 +1403,33 @@ public class MultiDataObject extends DataObject {
         }
     }
 
+    final void updateNodeInCookieSet() {
+        if (associateLookup() >= 1) {
+            CookieSet set = getCookieSet(false);
+            if (set != null) {
+                set.assign(Node.class, getNodeDelegate());
+            }
+        }
+    }
+
     void checkCookieSet(Class<?> c) {
     }
     
     /** Change listener and implementation of before.
      */
     private final class ChangeAndBefore implements ChangeListener, CookieSet.Before {
+        @Override
         public void stateChanged (ChangeEvent ev) {
             fireCookieChange ();
         }
 
+        @Override
         public void beforeLookup(Class<?> clazz) {
             if (clazz.isAssignableFrom(FileObject.class)) {
                 updateFilesInCookieSet();
+            }
+            if (clazz.isAssignableFrom(Node.class)) {
+                updateNodeInCookieSet();
             }
             checkCookieSet(clazz);
         }

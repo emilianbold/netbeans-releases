@@ -67,6 +67,8 @@ import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.modules.refactoring.java.ui.tree.FileTreeElement;
 import org.netbeans.modules.refactoring.spi.impl.CheckNode;
+import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
+import org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -84,11 +86,11 @@ public class RefactoringResultOperator extends TopComponentOperator{
     private JButton cancel;
     private JButton doRefactor;
     
-    public RefactoringResultOperator() {
+    private RefactoringResultOperator() {
         super(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
     }
     
-    public RefactoringResultOperator(String windowTitle) {
+    private RefactoringResultOperator(String windowTitle) {
         super(windowTitle);
     }
     
@@ -129,6 +131,7 @@ public class RefactoringResultOperator extends TopComponentOperator{
         JComponent content = getContent();
         
         if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) return (JPanel) content;
+        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer".equals(content.getClass().getName())) return ((RefactoringPanelContainer) content).getCurrentPanel();
         if(content instanceof JTabbedPane) {
             JTabbedPane tab = (JTabbedPane) content;
             return (JPanel) tab.getSelectedComponent();
@@ -177,7 +180,7 @@ public class RefactoringResultOperator extends TopComponentOperator{
         ContainerOperator ct = new ContainerOperator(refactoringPanel);
         JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JToolBar toolbar = (JToolBar) leftComponent.getComponent(1);
+        JToolBar toolbar = (JToolBar) leftComponent.getComponent(0);
         return toolbar;                        
     }
 
@@ -205,7 +208,12 @@ public class RefactoringResultOperator extends TopComponentOperator{
         ContainerOperator ct = new ContainerOperator(refactoringPanel);
         JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JScrollPane jScrollPane = (JScrollPane) leftComponent.getComponent(2);
+        JScrollPane jScrollPane = null;
+        for (Component component : leftComponent.getComponents()) {
+            if (component instanceof JScrollPane) {
+                jScrollPane = (JScrollPane) component;
+            }
+        }
         JViewport viewport = jScrollPane.getViewport();        
         return (JTree) viewport.getComponent(0);        
     }

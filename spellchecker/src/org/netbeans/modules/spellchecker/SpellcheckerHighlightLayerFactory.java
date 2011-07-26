@@ -44,7 +44,6 @@
 package org.netbeans.modules.spellchecker;
 
 import javax.swing.text.JTextComponent;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -63,7 +62,7 @@ public class SpellcheckerHighlightLayerFactory implements HighlightsLayerFactory
     public HighlightsLayer[] createLayers(Context ctx) {
         OffsetsBag bag = getBag(ctx.getComponent());
         return new HighlightsLayer[] {
-            HighlightsLayer.create(SpellcheckerHighlightLayerFactory.class.getName(), ZOrder.SYNTAX_RACK, false, bag),
+            HighlightsLayer.create(SpellcheckerHighlightLayerFactory.class.getName(), ZOrder.CARET_RACK.forPosition(30), true, bag),
         };
     }
     

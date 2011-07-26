@@ -64,7 +64,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author tomas
  */
-public class InterceptorTest extends AbstractHgTest {
+public class InterceptorTest extends AbstractHgTestCase {
 
     public InterceptorTest(String arg0) {
         super(arg0);
@@ -72,11 +72,11 @@ public class InterceptorTest extends AbstractHgTest {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
         MockLookup.setLayersAndInstances();
         // create
         FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
-        System.setProperty("netbeans.user", "/tmp/hgtest");
     }
 
     public void testGetAttributeRefreh() throws HgException, IOException {

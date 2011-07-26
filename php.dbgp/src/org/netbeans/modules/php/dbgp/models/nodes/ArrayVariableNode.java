@@ -33,17 +33,23 @@ class ArrayVariableNode extends
     org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode 
 {
 
-    private static final String TYPE_ARRAY = "TYPE_Array";      // NOI18N
+    static final String TYPE_ARRAY = "TYPE_Array"; // NOI18N
 
     ArrayVariableNode( Property property , AbstractModelNode parent ) {
         super(property , parent );
     }
-    
+
     @Override
     public String getType() {
-        return NbBundle.getMessage( ArrayVariableNode.class, TYPE_ARRAY);
+        Property property = getProperty();
+        StringBuilder type = new StringBuilder(NbBundle.getMessage(ArrayVariableNode.class, TYPE_ARRAY));
+        if (property != null) {
+            type.append("[").append(property.getChildrenSize()).append("]"); // NOI18N
+        }
+        return type.toString();
     }
-    
+
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.ARRAY );
     }

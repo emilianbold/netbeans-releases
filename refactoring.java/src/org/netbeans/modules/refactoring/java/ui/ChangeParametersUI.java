@@ -72,14 +72,16 @@ public class ChangeParametersUI implements RefactoringUI {
     TreePathHandle refactoredObj;
     ChangeParametersPanel panel;
     ChangeParametersRefactoring refactoring;
+    private final ChangeParametersRefactoring.ParameterInfo[] preConfiguration;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info) {
+    private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
         this.refactoring = new ChangeParametersRefactoring(refactoredObj);
         this.refactoredObj = refactoredObj;
+        this.preConfiguration = preConfiguration;
     }
     
-    public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info) {
+    public static ChangeParametersUI create(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
         TreePath path = refactoredObj.resolve(info);
         Kind kind;
         while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION) {
@@ -87,7 +89,7 @@ public class ChangeParametersUI implements RefactoringUI {
         }
         
         return path != null
-                ? new ChangeParametersUI(TreePathHandle.create(path, info), info)
+                ? new ChangeParametersUI(TreePathHandle.create(path, info), info, preConfiguration)
                 : null;
     }
     
@@ -107,7 +109,7 @@ public class ChangeParametersUI implements RefactoringUI {
         if (panel == null) {
             //TODO:
             //parent.setPreviewEnabled(true);
-            panel = new ChangeParametersPanel(refactoredObj, parent);
+            panel = new ChangeParametersPanel(refactoredObj, parent, preConfiguration);
         }
         return panel;
     }
@@ -137,6 +139,8 @@ public class ChangeParametersUI implements RefactoringUI {
         refactoring.setParameterInfo(paramList);
         refactoring.setModifiers(modifier);
         refactoring.getContext().add(panel.getJavadoc());
+        refactoring.setMethodName(panel.getMethodName());
+        refactoring.setReturnType(panel.getReturnType());
         if (checkOnly) {
             problem = refactoring.fastCheckParameters();
         } else {

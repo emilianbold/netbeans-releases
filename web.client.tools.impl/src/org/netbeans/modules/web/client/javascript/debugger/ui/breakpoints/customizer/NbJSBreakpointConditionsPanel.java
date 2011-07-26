@@ -259,7 +259,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
         add(classIncludeFilterLabel, gridBagConstraints);
-        classIncludeFilterLabel.getAccessibleContext().setAccessibleDescription("null");
+        classIncludeFilterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_IncludeClasses_LBL")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(conditionCheckBox, org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_L_Line_Breakpoint_Condition")); // NOI18N
         conditionCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "TTT_CB_ConditionsPanel_Condition")); // NOI18N

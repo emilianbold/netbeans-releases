@@ -87,6 +87,7 @@ import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl.Accessor;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
+import org.netbeans.modules.java.hints.jackpot.impl.SyntheticFix;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Resource;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext.MessageKind;
@@ -213,23 +214,31 @@ public class BatchUtilities {
                 throw new IllegalStateException();//TODO: should be problem
             }
 
-            if (ed.getFixes().getFixes().size() != 1) {
-                if (ed.getFixes().getFixes().isEmpty()) {
+            Fix toApply = null;
+
+            for (Fix f : ed.getFixes().getFixes()) {
+                if (f instanceof SyntheticFix) continue;
+                if (toApply == null) toApply = f;
+                else problems.add(new MessageImpl(MessageKind.WARNING, "More than one fix for: " + ed.getDescription() + " at " + positionToString(ed) + ", only the first one will be used."));
+            }
+
+            if (toApply == null) {
+                //TODO: currently giving a warning so that the hints can be augmented with "Options.QUERY", but that should be removed
+                //if a non-query hint cannot produce any fix, it is likely Ok - if not, the hint should produce a warning itself
+                boolean doWarning = false;
+                assert doWarning = true;
+                if (doWarning) {
                     problems.add(new MessageImpl(MessageKind.WARNING, "No fix for: " + ed.getDescription() + " at " + positionToString(ed) + "."));
-                    continue;
                 }
-
-                problems.add(new MessageImpl(MessageKind.WARNING, "More than one fix for: " + ed.getDescription() + " at " + positionToString(ed) + ", only the first one will be used."));
+                continue;
             }
 
-            Fix f = ed.getFixes().getFixes().get(0);
-
-            if (!(f instanceof JavaFixImpl)) {
-                throw new IllegalStateException();//TODO: should be problem
+            if (!(toApply instanceof JavaFixImpl)) {
+                throw new IllegalStateException();//XXX: hints need to provide JavaFixes
             }
 
 
-            fixes.add(((JavaFixImpl) f).jf);
+            fixes.add(((JavaFixImpl) toApply).jf);
         }
         if (fixDependencies(copy.getFileObject(), fixes, processedDependencyChanges)) {
             return true;
@@ -321,7 +330,7 @@ public class BatchUtilities {
 //        }
     }
 
-    public static void recursive(FileObject root, FileObject file, Collection<FileObject> collected, ProgressHandleWrapper progress, int depth, Properties timeStamps, Set<String> removedFiles) {
+    public static void recursive(FileObject root, FileObject file, Collection<FileObject> collected, ProgressHandleWrapper progress, int depth, Properties timeStamps, Set<String> removedFiles, boolean recursive) {
         if (!VisibilityQuery.getDefault().isVisible(file)) return;
 
         if (file.isData()) {
@@ -355,10 +364,11 @@ public class BatchUtilities {
             }
 
             for (FileObject c : children) {
-                recursive(root, c, collected, inner, depth + 1, timeStamps, removedFiles);
+                if (recursive || c.isData())
+                    recursive(root, c, collected, inner, depth + 1, timeStamps, removedFiles, recursive);
 
                 if (progress != null) progress.tick();
             }
         }
-    }
+    }    
 }

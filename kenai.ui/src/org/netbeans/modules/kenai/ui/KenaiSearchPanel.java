@@ -434,7 +434,6 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         searchButtonPanel.add(searchLabel, gridBagConstraints);
-
         searchLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.text"));
         searchButton.addActionListener(new ActionListener() {
@@ -448,8 +447,8 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         searchButtonPanel.add(searchButton, gridBagConstraints);
-
         searchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         searchInfoLabel.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchInfoLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -468,8 +467,8 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(6, 0, 4, 0);
         searchButtonPanel.add(projectsLabel, gridBagConstraints);
-
         projectsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.projectsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         add(searchButtonPanel, BorderLayout.NORTH);
 
         createButtonPanel.setLayout(new GridBagLayout());
@@ -484,20 +483,20 @@ public class KenaiSearchPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         createButtonPanel.add(createNewProjectButton, gridBagConstraints);
-
-
-
         createNewProjectButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.createNewProjectButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         add(createButtonPanel, BorderLayout.SOUTH);
 
         featuredProjectPanel.setLayout(new BorderLayout());
         featuredProjectPanel.add(scrollPaneFeatured, BorderLayout.CENTER);
 
         kenaiProjectsTabPane.addTab(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.featuredProjectPanel.TabConstraints.tabTitle"), featuredProjectPanel); // NOI18N
+
         recentProjectPanel.setLayout(new BorderLayout());
         recentProjectPanel.add(scrollPaneRecent, BorderLayout.CENTER);
 
         kenaiProjectsTabPane.addTab(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.recentProjectPanel.TabConstraints.tabTitle"), recentProjectPanel); // NOI18N
+
         searchResultsPanel.setLayout(new BorderLayout());
 
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -506,17 +505,17 @@ public class KenaiSearchPanel extends JPanel {
         kenaiProjectsList.setSelectionMode(getListSelMode());
         kenaiProjectsList.setCellRenderer(new KenaiProjectsListRenderer2());
         scrollPane.setViewportView(kenaiProjectsList);
-
-
-
         kenaiProjectsList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleName")); // NOI18N
         kenaiProjectsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsList.AccessibleContext.accessibleDescription")); // NOI18N
+
         searchResultsPanel.add(scrollPane, BorderLayout.CENTER);
 
         kenaiProjectsTabPane.addTab(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchResultsPanel.TabConstraints.tabTitle"), searchResultsPanel); // NOI18N
+
         add(kenaiProjectsTabPane, BorderLayout.CENTER);
         kenaiProjectsTabPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsTabPane.AccessibleContext.accessibleName")); // NOI18N
         kenaiProjectsTabPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.kenaiProjectsTabPane.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
