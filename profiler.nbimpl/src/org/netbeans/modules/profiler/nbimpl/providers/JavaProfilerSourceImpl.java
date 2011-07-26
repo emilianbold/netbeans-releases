@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
+import org.netbeans.modules.profiler.nbimpl.javac.JavacMethodInfo;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -53,6 +54,7 @@ import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,21 +72,23 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource.ClassInfo;
-import org.netbeans.modules.profiler.api.java.JavaProfilerSource.MethodInfo;
-import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
 import org.netbeans.modules.profiler.spi.java.AbstractJavaProfilerSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,68 +99,6 @@ import org.openide.filesystems.FileUtil;
  */
 @MimeRegistration(mimeType = "text/x-java", service = AbstractJavaProfilerSource.class)
 public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
-    private static class ClassInfoImpl implements ClassInfo {
-        final private String simpleName, qualifiedName, vmName;
-        
-        private ClassInfoImpl(String simpleName, String qualifiedName, String vmName) {
-            this.simpleName = simpleName;
-            this.qualifiedName = qualifiedName;
-            this.vmName = vmName;
-        }
-        
-        @Override
-        public String getQualifiedName() {
-            return qualifiedName;
-        }
-
-        @Override
-        public String getSimpleName() {
-            return simpleName;
-        }
-
-        @Override
-        public String getVMName() {
-            return vmName;
-        }
-        
-    }
-    private static class MethodInfoImpl implements MethodInfo {
-        private String className, name, signature, vmName;
-        private boolean execFlag;
-
-        private MethodInfoImpl(String className, String name, String signature, String vmName, boolean execFlag) {
-            this.className = className;
-            this.name = name;
-            this.signature = signature;
-            this.vmName = vmName;
-            this.execFlag = execFlag;
-        }
-        
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getClassName() {
-            return className;
-        }        
-
-        @Override
-        public String getSignature() {
-            return signature; 
-        }
-
-        @Override
-        public String getVMName() {
-            return vmName;
-        }
-        
-        @Override
-        public boolean isExecutable() {
-            return execFlag;
-        }        
-    }
     
     private static final String JUNIT_SUITE = "junit.framework.TestSuite"; // NOI18N
     private static final String JUNIT_TEST = "junit.framework.Test"; // NOI18N
@@ -165,31 +107,31 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     private static final String[] TEST_ANNOTATIONS = new String[]{"org.junit.Test", "org.junit.runners.Suite", "org.testng.annotations.Test"}; // NOI18N
     
     @Override
-    public ClassInfo getEnclosingClass(FileObject fo, final int position) {
-        final ClassInfo[] result = new ClassInfo[1];
+    public SourceClassInfo getEnclosingClass(FileObject fo, final int position) {
+        final SourceClassInfo[] result = new SourceClassInfo[1];
 
         JavaSource js = JavaSource.forFileObject(fo);
 
         if (js == null) {
             return null; // not java source
         }
-
+        
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
 
                 public void cancel() {
                 }
 
-                public void run(final CompilationController controller)
+                public void run(final CompilationController cc)
                         throws Exception {
-                    if (controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                    if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
                         return;
                     }
 
-                    TypeElement parentClass = controller.getTreeUtilities().scopeFor(position).getEnclosingClass();
+                    TypeElement parentClass = cc.getTreeUtilities().scopeFor(position).getEnclosingClass();
 
                     if (parentClass != null) {
-                        result[0] = new ClassInfoImpl(parentClass.getSimpleName().toString(), parentClass.getQualifiedName().toString(), ElementUtilities.getBinaryName(parentClass));
+                        result[0] = new JavacClassInfo(ElementHandle.create(parentClass), cc);
                     }
                 }
             }, true);
@@ -201,8 +143,8 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }
 
     @Override
-    public MethodInfo getEnclosingMethod(FileObject fo, final int position) {
-        final MethodInfo[] result = new MethodInfo[1];
+    public SourceMethodInfo getEnclosingMethod(FileObject fo, final int position) {
+        final SourceMethodInfo[] result = new SourceMethodInfo[1];
 
         JavaSource js = JavaSource.forFileObject(fo);
 
@@ -225,7 +167,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                     ExecutableElement parentMethod = cc.getTreeUtilities().scopeFor(position).getEnclosingMethod();
 
                     if (parentMethod != null) {
-                        result[0] = new MethodInfoImpl(ElementUtilities.getBinaryName((TypeElement)parentMethod.getEnclosingElement()), parentMethod.getSimpleName().toString(), ElementUtilitiesEx.getBinaryName(parentMethod, cc), getVMMethodName(parentMethod), isExecutable(parentMethod));
+                        result[0] = new JavacMethodInfo(parentMethod, cc);
                     }
                 }
             }, true);
@@ -237,19 +179,26 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }
 
     @Override
-    public Set<ClassInfo> getMainClasses(final FileObject fo) {
-        final Set<ClassInfo> mainClasses = new HashSet<ClassInfo>();
+    public Set<SourceClassInfo> getMainClasses(final FileObject fo) {
+        final Set<SourceClassInfo> mainClasses = new HashSet<SourceClassInfo>();
         
+        Project p = FileOwnerQuery.getOwner(fo);
+        if (p == null) {
+            return Collections.EMPTY_SET;
+        }
+        
+        ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(p);
         for(ElementHandle<TypeElement> handle : SourceUtils.getMainClasses(fo)) {
-            mainClasses.add(new ClassInfoImpl(getSimpleClassName(handle.getQualifiedName()), handle.getQualifiedName(), handle.getBinaryName()));
+            mainClasses.add(new JavacClassInfo(handle, cpInfo));
+            
         }        
         
         return mainClasses;
     }
 
     @Override
-    public Set<MethodInfo> getConstructors(FileObject fo) {
-        Set<MethodInfo> constructors = new HashSet<MethodInfo>();
+    public Set<SourceMethodInfo> getConstructors(FileObject fo) {
+        final Set<SourceMethodInfo> constructors = new HashSet<SourceMethodInfo>();
         JavaSource js = JavaSource.forFileObject(fo);
 
         if (js == null) {
@@ -262,10 +211,10 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                 public void cancel() {
                 }
 
-                public void run(final CompilationController controller)
+                public void run(final CompilationController cc)
                         throws Exception {
                     // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    if (cc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;
                     }
 
@@ -273,14 +222,15 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
 
                         public Void visitMethod(MethodTree node, Void p) {
                             Void retValue;
-                            ExecutableElement method = (ExecutableElement) controller.getTrees().getElement(getCurrentPath());
+                            ExecutableElement method = (ExecutableElement) cc.getTrees().getElement(getCurrentPath());
+                            constructors.add(new JavacMethodInfo(method, cc));
                             retValue = super.visitMethod(node, p);
 
                             return retValue;
                         }
                     };
 
-                    scanner.scan(controller.getCompilationUnit(), null);
+                    scanner.scan(cc.getCompilationUnit(), null);
                 }
             }, true);
         } catch (IOException e) {
@@ -291,9 +241,9 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }
 
     @Override
-    public Set<ClassInfo> getClasses(FileObject fo) {
-        final Set<ClassInfo> result = new HashSet<ClassInfo>();
-
+    public Set<SourceClassInfo> getClasses(FileObject fo) {
+        final Set<SourceClassInfo> result = new HashSet<SourceClassInfo>();
+        
         JavaSource js = JavaSource.forFileObject(fo);
 
         if (js == null) {
@@ -303,22 +253,25 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                @Override
                 public void cancel() {
                 }
 
-                public void run(final CompilationController controller)
+                @Override
+                public void run(final CompilationController cc)
                         throws Exception {
                     // Controller has to be in some advanced phase, otherwise controller.getCompilationUnit() == null
-                    if (controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                    if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo(JavaSource.Phase.ELEMENTS_RESOLVED) < 0) {
                         return;
                     }
 
                     TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
 
-                        public Void visitClass(ClassTree node, Void p) {
+                        @Override
+                        public Void visitClass(ClassTree node, Void param) {
                             try {
-                                TypeElement te = (TypeElement)controller.getTrees().getElement(getCurrentPath());
-                                result.add(new ClassInfoImpl(te.getSimpleName().toString(), te.getQualifiedName().toString(), ElementUtilities.getBinaryName(te)));
+                                TypeElement te = (TypeElement)cc.getTrees().getElement(getCurrentPath());
+                                result.add(new JavacClassInfo(ElementHandle.create(te), cc));
                             } catch (NullPointerException e) {
                                 ProfilerLogger.log(e);
                             }
@@ -326,7 +279,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                         }
                     };
 
-                    scanner.scan(controller.getCompilationUnit(), null);
+                    scanner.scan(cc.getCompilationUnit(), null);
                 }
             }, true);
         } catch (IOException ex) {
@@ -337,9 +290,9 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }    
     
     @Override
-    public ClassInfo getTopLevelClass(FileObject fo) {
+    public SourceClassInfo getTopLevelClass(FileObject fo) {
         String fName = fo.getName();
-        for(ClassInfo ci : getClasses(fo)) {
+        for(SourceClassInfo ci : getClasses(fo)) {
             if (ci.getSimpleName().equals(fName)) {
                 return ci;
             }
@@ -559,7 +512,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }
 
     @Override
-    public MethodInfo resolveMethodAtPosition(FileObject fo, final int position) {
+    public SourceMethodInfo resolveMethodAtPosition(FileObject fo, final int position) {
         JavaSource js = JavaSource.forFileObject(fo);
 
         if (js == null) {
@@ -567,7 +520,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
         }
 
         // Final holder of resolved method
-        final MethodInfo[] resolvedMethod = new MethodInfo[1];
+        final SourceMethodInfo[] resolvedMethod = new SourceMethodInfo[1];
 
         // Resolve the method
         try {
@@ -576,13 +529,13 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                 public void cancel() {
                 }
 
-                public void run(CompilationController ci)
+                public void run(CompilationController cc)
                         throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    if (cc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;
                     }
 
-                    TreePath path = ci.getTreeUtilities().pathFor(position);
+                    TreePath path = cc.getTreeUtilities().pathFor(position);
 
                     if (path == null) {
                         return;
@@ -598,14 +551,11 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
 //                        path = path.getParentPath();
 //                    }
 
-                    Element element = ci.getTrees().getElement(path);
+                    Element element = cc.getTrees().getElement(path);
 
                     if ((element != null) && ((element.getKind() == ElementKind.METHOD) || (element.getKind() == ElementKind.CONSTRUCTOR) || (element.getKind() == ElementKind.STATIC_INIT))) {
                         ExecutableElement method = (ExecutableElement) element;
-                        String vmClassName = ElementUtilities.getBinaryName((TypeElement) method.getEnclosingElement());
-                        String vmMethodName = getVMMethodName(method);
-                        String vmMethodSignature = ElementUtilitiesEx.getBinaryName(method, ci);
-                        resolvedMethod[0] = new MethodInfoImpl(vmClassName, method.getSimpleName().toString(), vmMethodName, vmMethodSignature, isExecutable(method));
+                        resolvedMethod[0] = new JavacMethodInfo(method, cc);
                     }
 
                 }
@@ -619,16 +569,16 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
     }
 
     @Override
-    public ClassInfo resolveClassAtPosition(FileObject fo, final int position, final boolean resolveField) {
+    public SourceClassInfo resolveClassAtPosition(FileObject fo, final int position, final boolean resolveField) {
         // Get JavaSource for given FileObject
         JavaSource js = JavaSource.forFileObject(fo);
-
+        
         if (js == null) {
             return null; // not java source
         }
-
+        
         // Final holder of resolved method
-        final ClassInfo[] resolvedClass = new ClassInfo[1];
+        final SourceClassInfo[] resolvedClass = new SourceClassInfo[1];
 
         // Resolve the method
         try {
@@ -637,19 +587,19 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                 public void cancel() {
                 }
 
-                public void run(CompilationController ci)
+                public void run(CompilationController cc)
                         throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    if (cc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;
                     }
 
-                    TreePath path = ci.getTreeUtilities().pathFor(position);
+                    TreePath path = cc.getTreeUtilities().pathFor(position);
 
                     if (path == null) {
                         return;
                     }
 
-                    Element element = ci.getTrees().getElement(path);
+                    Element element = cc.getTrees().getElement(path);
 
                     if (element == null) {
                         return;
@@ -658,9 +608,7 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                     // resolve class/enum at cursor
                     if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.ENUM)) {
                         TypeElement jclass = (TypeElement) element;
-                        String vmClassName = ElementUtilities.getBinaryName(jclass);
-                        resolvedClass[0] = new ClassInfoImpl(jclass.getSimpleName().toString(), jclass.getQualifiedName().toString(), vmClassName);
-
+                        resolvedClass[0] = new JavacClassInfo(ElementHandle.create(jclass), cc);
                         return;
 
                     }
@@ -668,10 +616,9 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                     // resolve field at cursor
 
                     if (resolveField && ((element.getKind() == ElementKind.FIELD) || (element.getKind() == ElementKind.LOCAL_VARIABLE)) && (element.asType().getKind() == TypeKind.DECLARED)) {
-                        TypeMirror jclassMirror = ci.getTypes().erasure(element.asType());
-                        TypeElement jclass = (TypeElement)ci.getTypes().asElement(jclassMirror);
-                        String vmClassName = ElementUtilities.getBinaryName(jclass);
-                        resolvedClass[0] = new ClassInfoImpl(jclass.getSimpleName().toString(), jclass.getQualifiedName().toString(), vmClassName);
+                        TypeMirror jclassMirror = cc.getTypes().erasure(element.asType());
+                        TypeElement jclass = (TypeElement)cc.getTypes().asElement(jclassMirror);
+                        resolvedClass[0] = new JavacClassInfo(ElementHandle.create(jclass), cc);
                         return;
 
                     }
@@ -687,37 +634,6 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
         }
 
         return resolvedClass[0];
-    }
-
-    private static String getVMMethodName(ExecutableElement method) {
-        // Constructor returns <init>
-        // Static initializer returns <clinit>
-        // Method returns its simple name
-        return method.getSimpleName().toString();
-    }
-    
-    private static String getSimpleClassName(String qualifiedName) {
-        int lastDot = qualifiedName.lastIndexOf(".");
-        if (lastDot == -1) {
-            return qualifiedName;
-        }
-        String simple = qualifiedName.substring(lastDot + 1);
-        simple = simple.replace("$", ".");
-        return simple;
-    }
-    
-    private static boolean isExecutable(ExecutableElement method) {
-        if (method == null) {
-            return false;
-        }
-
-        Set<Modifier> modifiers = method.getModifiers();
-
-        if (modifiers.contains(Modifier.ABSTRACT) || modifiers.contains(Modifier.NATIVE)) {
-            return false;
-        }
-
-        return true;
     }
     
     private static boolean isJunit3TestSuite(FileObject fo) {

@@ -41,26 +41,22 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.ProfilerLogger;
+import org.netbeans.modules.profiler.api.java.JavaProfilerProject;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup.Provider;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -69,68 +65,27 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProfilerTypeUtilsProvider.class)
 public class ProfilerTypeUtilsImpl implements ProfilerTypeUtilsProvider {
-
     @Override
-    public String[] getSubclasses(String className, Provider project) {
-        Set<TypeElement> subclasses = ElementUtilitiesEx.getSubclasses(className, project.getLookup().lookup(Project.class));
-        int index = 0;
-        String[] subclassesNames = new String[subclasses.size()];
-
-        Iterator it = subclasses.iterator();
-
-        while (it.hasNext()) {
-            TypeElement subclass = (TypeElement) it.next();
-            subclassesNames[index++] = ElementUtilities.getBinaryName(subclass);
-        }
-
-        return subclassesNames;
-    }
-
-    @Override
-    public Collection<String> getMainClasses(Provider project) {
-        List<String> classNames = new ArrayList<String>();
+    public Collection<SourceClassInfo> getMainClasses(JavaProfilerProject project) {
+        List<SourceClassInfo> classes = new ArrayList<SourceClassInfo>();
         Project nbproject = project.getLookup().lookup(Project.class);
         FileObject[] srcRoots = ProjectUtilities.getSourceRoots(nbproject, false);
         for(ElementHandle<TypeElement> handle : SourceUtils.getMainClasses(srcRoots)) {
-            classNames.add(handle.getQualifiedName());
+            classes.add(resolveClass(handle.getBinaryName(), project));
         }
         
-        return classNames;
+        return classes;
     }
 
     @Override
-    public FileObject findFile(final String className, final Provider project) {
-        if (className == null) {
-            return null;
+    public SourceClassInfo resolveClass(final String className, JavaProfilerProject project) {
+        Project p = project.getLookup().lookup(Project.class);
+        if (p != null) {
+            ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(p);
+            ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
+            return eh != null ? new JavacClassInfo(eh, cpInfo) : null;
         }
-
-        final FileObject[] resolvedFileObject = new FileObject[1];
-
-        final JavaSource js = ElementUtilitiesEx.getSources(project.getLookup().lookup(Project.class));
-
-        try {
-            // use the prepared javasource repository and perform a task
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
-                }
-
-                public void run(CompilationController controller)
-                        throws Exception {
-                    TypeElement resolvedClass = ElementUtilitiesEx.resolveClassByName(className, controller);
-
-                    if (resolvedClass != null) {
-                        resolvedFileObject[0] = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(resolvedClass),
-                                controller.getClasspathInfo());
-                    }
-                }
-            }, false);
-        } catch (IOException ex) {
-            ProfilerLogger.log(ex);
-        }
-
-        return resolvedFileObject[0];
+        return null;
     }
-    
-    
 }
+ 

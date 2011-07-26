@@ -360,15 +360,9 @@ public final class NBProfileDirectTask extends Task {
         // 6. invoke profiling with constructed profiling and session settings
         final ProfilingSettings ps1 = ps;
         final FileObject singleFO1 = singleFO;
-        //    SwingUtilities.invokeLater(
-        //        new Runnable() {
-        //          public void run() {
+
         NetBeansProfiler.getDefaultNB().setProfiledProject(projectToUse, singleFO1);
         Profiler.getDefault().connectToStartedApp(ps1, ss);
-
-        //          }
-        //        }
-        //    );
     }
 
     private void addPackagesForArchive(ArrayList list, String s, File f) {

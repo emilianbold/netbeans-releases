@@ -59,14 +59,33 @@ import org.openide.filesystems.FileObject;
  * @author Jaroslav Bachorik
  */
 public class ClasspathInfoFactory {
+    /**
+     * Creates a {@linkplain ClasspathInfo} instance for the given project and all its subprojects, including sources and binaries
+     * @param prj The project to create {@linkplain ClasspathInfo} instance for
+     * @return Returns a {@linkplain ClasspathInfo} instance for the given project and all its subprojects, including sources and binaries
+     */
     public static ClasspathInfo infoFor(Project prj) {
         return infoFor(prj, true);
     }
     
+    /**
+     * Creates a {@linkplain ClasspathInfo} instance for the given project, including sources and binaries
+     * @param prj The project to create {@linkplain ClasspathInfo} instance for
+     * @param includeSubprojects Should the subprojects be included as well?
+     * @return Returns a {@linkplain ClasspathInfo} instance for the given project, including sources and binaries
+     */
     public static ClasspathInfo infoFor(Project prj, final boolean includeSubprojects) {
         return infoFor(prj, includeSubprojects, true, true);
     }
 
+    /**
+     * Creates a {@linkplain ClasspathInfo} instance for the given project
+     * @param prj The project to create {@linkplain ClasspathInfo} instance for
+     * @param includeSubprojects Should the subprojects be included
+     * @param includeSources Should the source be included
+     * @param includeLibraries Should the binaries be included
+     * @return Returns a {@linkplain ClasspathInfo} instance for the given project
+     */
     public static ClasspathInfo infoFor(Project prj, final boolean includeSubprojects,
                                         final boolean includeSources, final boolean includeLibraries) {
         FileObject[] sourceRoots = ProjectUtilities.getSourceRoots(prj, includeSubprojects);

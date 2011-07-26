@@ -42,6 +42,7 @@
 package org.netbeans.modules.profiler.nbimpl.javac;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.Collections;
@@ -50,10 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -70,6 +68,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
@@ -114,84 +113,74 @@ public class ElementUtilitiesEx {
     /**
      * Resolves a class by its name
      * @param className The name of the class to be resolved
+     * @param cpInfo The classpath info used to resolve the class
+     * @param fuzzy Indicates whether in case of an unresolvable anonymous inner class the parent class should be returned instead
+     * @return Returns a handle representing the resolved class or NULL
+     */
+    public static ElementHandle<TypeElement> resolveClassByName(
+            final String className, final ClasspathInfo cpInfo, final boolean fuzzy) {
+        if (className == null || cpInfo == null) {
+            return null;
+        }
+        
+        final ElementHandle<TypeElement>[] rslt = new ElementHandle[1];
+        
+        JavaSource js = JavaSource.create(cpInfo);
+        
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+                
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    TypeElement te = resolveClassByName(className, cc, fuzzy);
+                    if (te != null) {
+                        rslt[0] = ElementHandle.create(te);
+                    }
+                }
+            }, true);
+        } catch (IOException e) {
+        }
+        
+        return rslt[0];
+    }
+    
+    /**
+     * Resolves a class by its name
+     * @param className The name of the class to be resolved
      * @param controller The compilation controller to be used to resolve the class
+     * @param fuzzy Indicates whether in case of an unresolvable anonymous inner class the parent class should be returned instead
      * @return Returns a TypeElement representing the resolved class or NULL
      */
     public static TypeElement resolveClassByName(
-            String className, final CompilationController controller) {
+            final String className, final CompilationController controller, final boolean fuzzy) {
         if ((className == null) || (controller == null)) {
             return null;
         }
 
         // 1. try to resolve the class
         TypeElement mainClass = controller.getElements().getTypeElement(className.replace('$', '.')); // NOI18N
-
+        
         if (mainClass == null) {
-            // 2. probably an anonymous inner class; try to move to the "ELEMENTS_RESOLVED" phase
+            // 2. probably an anonymous inner class; use a pinch of black magic to resolve it
             try {
-                controller.toPhase(Phase.RESOLVED);
-
-                int innerSeparatorIndex = className.indexOf('$'); // NOI18N
-
-                if (innerSeparatorIndex > 0) {
-                    final String origClassName = className;
-                    className =
-                            className.substring(0, innerSeparatorIndex);
-                    mainClass =
-                            controller.getElements().getTypeElement(className);
+                int innerIndex = className.lastIndexOf("$");
+                if (innerIndex > -1) {
+                    FileObject fo = null;
+                    String topClassName = className.substring(0, innerIndex); // NOI18N
+                    mainClass = controller.getElements().getTypeElement(topClassName);
 
                     if (mainClass != null) {
-                        FileObject fo = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(mainClass),
-                                controller.getClasspathInfo());
-                        final TypeElement[] mainClassElement = new TypeElement[]{mainClass};
-
-                        try {
-                            JavaSource.forFileObject(fo).runUserActionTask(new CancellableTask<CompilationController>() {
-
-                                private volatile boolean isCancelled = false;
-
-                                public void cancel() {
-                                    isCancelled = true;
-                                }
-
-                                public void run(final CompilationController cc)
-                                        throws Exception {
-                                    cc.toPhase(Phase.RESOLVED);
-
-                                    TreePathScanner<Void, String> scanner = new TreePathScanner<Void, String>() {
-
-                                        public Void visitClass(
-                                                ClassTree node, String p) {
-                                            if (isCancelled) {
-                                                return null;
-                                            }
-
-                                            Element classElement = cc.getTrees().getElement(getCurrentPath());
-
-                                            if ((classElement != null) && (classElement.getKind() == ElementKind.CLASS)) {
-                                                if (ElementUtilities.getBinaryName((TypeElement) classElement).equals(p)) {
-                                                    mainClassElement[0] = (TypeElement) classElement;
-
-                                                    return null;
-                                                }
-
-                                            }
-                                            ;
-
-                                            return super.visitClass(node, p);
-                                        }
-                                    };
-
-                                    scanner.scan(cc.getCompilationUnit(), origClassName);
-                                }
-                            }, false);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        mainClass = mainClassElement[0];
+                        fo = SourceUtils.getFile(ElementHandle.create(mainClass), controller.getClasspathInfo());
                     }
-
+                    TypeElement anon = null;
+                    if (fo != null) {
+                        anon = getAnonymousFromSource(fo, className);
+                        
+                    } else {
+                        anon = getAnonymousFromBinary(controller, className);
+                        mainClass = (anon );
+                    }
+                    mainClass = (anon == null && fuzzy) ? mainClass : anon;
                 }
             } catch (IOException e) {
                 ProfilerLogger.log(e);
@@ -205,23 +194,79 @@ public class ElementUtilitiesEx {
             ProfilerLogger.debug("Could not resolve: " + className); // NOI18N
         }
 
-
-
-
         if (mainClass == null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ElementUtilitiesEx.class, "MDRUtils_ClassNotResolvedMessage", className)); // notify user
         }
 
         return mainClass;
     }
+
+    private static TypeElement getAnonymousFromSource(FileObject fo, final String className) throws IllegalArgumentException, IOException {
+        final TypeElement[] resolvedClassElement = new TypeElement[1];
+        JavaSource js = JavaSource.forFileObject(fo);
+        js.runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(final CompilationController cc) throws Exception {
+                cc.toPhase(Phase.RESOLVED);
+                new TreePathScanner<Void, Void>() {
+
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        TypeElement te = (TypeElement)cc.getTrees().getElement(getCurrentPath());
+                        if (te != null) {
+                            if (className.equals(ElementUtilities.getBinaryName(te))) {
+                                resolvedClassElement[0] = te;
+                            }
+                        }
+                        return super.visitClass(node, p);
+                    }
+
+                }.scan(cc.getCompilationUnit(), null);
+            }
+        }, true);
+        return resolvedClassElement[0];
+    }
+
+    private static TypeElement getAnonymousFromBinary(CompilationController controller, final String className) throws IOException {
+        String resPath = className.replace('.', '/') + ".class"; // NOI18N
+        FileObject fo = controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT).findResource(resPath);
+        if (fo == null) {
+            fo = controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(resPath);
+        }
+        if (fo == null) {
+            fo = controller.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE).findResource(resPath);
+        }
+        if (fo != null) {
+            final TypeElement[] resolvedClassElement = new TypeElement[1];
+            JavaSource js = JavaSource.forFileObject(fo);
+
+            js.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    for(TypeElement te : cc.getTopLevelElements()) {
+                        if (ElementUtilities.getBinaryName(te).equals(className)) {
+                            resolvedClassElement[0] = te;
+                            break;
+                        }
+                    }
+                }
+            }, true);
+            return resolvedClassElement[0];
+        }
+        return null;
+    }
+
     
     /**
      * Resolves a class by its name
      * @param className The name of the class to be resolved
      * @param project A project to start the resolution process in
+     * @param fuzzy Indicates whether in case of an unresolvable anonymous inner class the parent class should be returned instead
      * @return Returns a TypeElement representing the resolved class or NULL
      */
-    public static TypeElement resolveClassByName(final String className, final Project project) {
+    public static TypeElement resolveClassByName(final String className, final Project project, final boolean fuzzy) {
         if (className == null || project == null) {
             return null;
         }
@@ -235,9 +280,9 @@ public class ElementUtilitiesEx {
                     
                     @Override
                     public void run(CompilationController cc) throws Exception {
-                        rslt[0] = resolveClassByName(className, cc);
+                        rslt[0] = resolveClassByName(className, cc, fuzzy);
                     }
-                }, false);
+                }, true);
             } catch (IOException e) {
                 ProfilerLogger.log(e);
             }
@@ -246,68 +291,55 @@ public class ElementUtilitiesEx {
         return rslt[0];
     }
     
-    public static Set<ElementHandle<TypeElement>> findImplementors(ClasspathInfo cpInfo, final String superType) {
+    public static Set<ElementHandle<TypeElement>> findImplementors(ClasspathInfo cpInfo, final ElementHandle<TypeElement> baseType) {
         final Set<ClassIndex.SearchKind> kind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-        final Set<ClassIndex.SearchScope> scope = EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES);
+        final Set<ClassIndex.SearchScope> scope = EnumSet.allOf(ClassIndex.SearchScope.class);
+        
+        Set<ElementHandle<TypeElement>> allImplementors = new HashSet<ElementHandle<TypeElement>>();
+        Set<ElementHandle<TypeElement>> implementors = cpInfo.getClassIndex().getElements(baseType, kind, scope);
 
-        final Set<ElementHandle<TypeElement>>[] implementors = new Set[]{new HashSet<ElementHandle<TypeElement>>()};
+        do {
+            Set<ElementHandle<TypeElement>> tmpImplementors = new HashSet<ElementHandle<TypeElement>>();
+            allImplementors.addAll(implementors);
 
-        JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
+            for (ElementHandle<TypeElement> element : implementors) {
+                tmpImplementors.addAll(cpInfo.getClassIndex().getElements(element, kind, scope));
+            }
 
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
-                }
-
-                public void run(CompilationController controller)
-                        throws Exception {
-                    TypeElement superElement = controller.getElements().getTypeElement(superType);
-
-                    if (!superElement.getModifiers().contains(Modifier.FINAL)) {
-                        implementors[0] = controller.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(superElement), kind, scope);
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        return implementors[0];
+            implementors = tmpImplementors;
+        } while (!implementors.isEmpty());
+        
+        return allImplementors;
     }
 
-    public static Set<TypeElement> findImplementorsResolved(ClasspathInfo cpInfo, final String superType) {
-        final Set<ClassIndex.SearchKind> kind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-        final Set<ClassIndex.SearchScope> scope = EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES);
-
+    public static Set<TypeElement> findImplementorsResolved(final ClasspathInfo cpInfo, final ElementHandle<TypeElement> baseType) {
         final Set<TypeElement> implementors = new HashSet<TypeElement>();
+        final Set<ElementHandle<TypeElement>> implHandles = findImplementors(cpInfo, baseType);
+        
+        if (!implHandles.isEmpty()) {
+            JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
-        JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
+            try {
+                js.runUserActionTask(new CancellableTask<CompilationController>() {
 
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
-                }
-
-                public void run(CompilationController controller)
-                        throws Exception {
-                    if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
-                        return;
+                    public void cancel() {
                     }
 
-                    TypeElement superElement = controller.getElements().getTypeElement(superType);
-
-                    if (!superElement.getModifiers().contains(Modifier.FINAL)) {
-                        for (ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(superElement),
-                                kind, scope)) {
-                            implementors.add(handle.resolve(controller));
+                    public void run(CompilationController controller)
+                            throws Exception {
+                        if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
+                            return;
                         }
+
+                        for(ElementHandle<TypeElement> eh : implHandles) {
+                            implementors.add(eh.resolve(controller));
+                        }
+
                     }
-                }
-            }, true);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+                }, true);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
 
         return implementors;
@@ -315,37 +347,12 @@ public class ElementUtilitiesEx {
     
     // **** to be extracted
     
-    public static Set<TypeElement> getSubclasses(final String className, Project project) {
-        final Set<TypeElement> subclasses = new HashSet();
-
-        final JavaSource js = getSources(project);
-
-        try {
-            // use the prepared javasource repository and perform a task
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                public void cancel() {
-                }
-
-                public void run(CompilationController controller)
-                        throws Exception {
-                    if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
-                        return;
-                    }
-
-                    TypeElement superClass = resolveClassByName(className, controller);
-
-                    if (superClass != null) {
-                        if (superClass.getKind() == ElementKind.INTERFACE) {
-                            subclasses.addAll(findImplementorsResolved(js.getClasspathInfo(), className));
-                        }
-                    }
-                }
-            }, false);
-        } catch (IOException ex) {
-            ProfilerLogger.log(ex);
-        }
-        return subclasses;
+    public static Set<ElementHandle<TypeElement>> getSubclasses(final String className, Project project) {
+        ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
+        
+        ElementHandle<TypeElement> baseType = resolveClassByName(className, cpInfo, false);
+        
+        return findImplementors(cpInfo, baseType);
     }
     
     /**
@@ -421,8 +428,16 @@ public class ElementUtilitiesEx {
      * Returns the JavaSource repository for given source roots
      */
     private static JavaSource getSources(FileObject[] roots) {
-        //    findMainClasses(roots);
-        // prepare the classpath based on the source roots
+        // create the javasource repository for all the source files
+        return JavaSource.create(getClasspathInfo(roots), Collections.<FileObject>emptyList());
+    }
+    
+    /**
+     * Create ClassPathInfo for JavaSources only -> (bootPath, classPath, sourcePath)
+     * @param roots Source roots
+     * @return 
+     */
+    private static ClasspathInfo getClasspathInfo(FileObject[] roots) {
         ClassPath srcPath;
         ClassPath bootPath;
 
@@ -441,12 +456,8 @@ public class ElementUtilitiesEx {
             compilePath =
                     ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
         }
-
-        // create ClassPathInfo for JavaSources only -> (bootPath, classPath, sourcePath)
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
-
-        // create the javasource repository for all the source files
-        return JavaSource.create(cpInfo, Collections.<FileObject>emptyList());
+        
+        return ClasspathInfo.create(bootPath, compilePath, srcPath);
     }
     
     /**
