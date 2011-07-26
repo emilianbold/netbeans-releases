@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.debugger.jpda.ui.options;
 
+import java.util.Collection;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+
 final class JavaDebuggerPanel extends StorablePanel {
 
     private static final String SHOW_FORMATTERS_PROP_NAME = "org.netbeans.modules.debugger.jpda.ui.options.SHOW_FORMATTERS";
@@ -54,18 +58,23 @@ final class JavaDebuggerPanel extends StorablePanel {
     JavaDebuggerPanel(JavaDebuggerOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
-        categoryPanels = new StorablePanel[] {
-            new CategoryPanelGeneral(),
-            new CategoryPanelStepFilters(),
-            new CategoryPanelFormatters(),
-        };
+        Collection<? extends Provider> panelProviders = Lookups.forPath("debugger/jpda/options").lookupAll(StorablePanel.Provider.class);
+        categoryPanels = new StorablePanel[3 + panelProviders.size()];
+        final String[] panelNames = new String[3 + panelProviders.size()];
+        int i = 0;
+        categoryPanels[i] = new CategoryPanelGeneral();
+        panelNames[i++] = NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonGeneral.text");
+        categoryPanels[i] = new CategoryPanelStepFilters();
+        panelNames[i++] = NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonStepFilters.text");
+        categoryPanels[i] = new CategoryPanelFormatters();
+        panelNames[i++] = NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonFormatters.text");
+        for (Provider p : panelProviders) {
+            categoryPanels[i] = p.getPanel();
+            panelNames[i++] = p.getPanelName();
+        }
         categoriesList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonGeneral.text"),
-                                 org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonStepFilters.text"),
-                                 org.openide.util.NbBundle.getMessage(JavaDebuggerPanel.class, "JavaDebuggerPanel.categoryRadioButtonFormatters.text")
-                               };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
+            public int getSize() { return panelNames.length; }
+            public Object getElementAt(int i) { return panelNames[i]; }
         });
         String value = System.getProperty(SHOW_FORMATTERS_PROP_NAME);
         int index = value != null && "true".equals(value) ? FORMATTERS_INDEX : 0; // NOI18N
@@ -163,7 +172,7 @@ final class JavaDebuggerPanel extends StorablePanel {
         categoryPanel.repaint();
     }
 
-    void load() {
+    public void load() {
         for (StorablePanel p : categoryPanels) {
             p.load();
         }
@@ -182,7 +191,7 @@ final class JavaDebuggerPanel extends StorablePanel {
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
     }
 
-    void store() {
+    public void store() {
         for (StorablePanel p : categoryPanels) {
             p.store();
         }

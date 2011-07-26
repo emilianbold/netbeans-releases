@@ -74,6 +74,7 @@ import org.netbeans.modules.php.project.ui.codecoverage.PhpUnitCoverageLogParser
 import org.netbeans.modules.php.project.ui.testrunner.UnitTestRunner;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnit.ConfigFiles;
+import org.netbeans.modules.php.project.phpunit.PhpUnitTestGroupsFetcher;
 import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.filesystems.FileObject;
@@ -172,6 +173,19 @@ class ConfigActionTest extends ConfigAction {
     void run(PhpUnitTestRunInfo info) {
         if (info == null) {
             return;
+        }
+
+        // test groups
+        if (ProjectPropertiesSupport.askForTestGroups(project)) {
+            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+            ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
+
+            PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
+            testGroupsFetcher.fetch(phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(info.getWorkingDirectory())));
+            if (testGroupsFetcher.wasInterrupted()) {
+                return;
+            }
+            testGroupsFetcher.saveSelectedTestGroups();
         }
 
         new RunScript(new RunScriptProvider(info)).run();
@@ -308,6 +322,12 @@ class ConfigActionTest extends ConfigAction {
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_COVERAGE_LOG)
                         .addArgument(PhpUnit.COVERAGE_LOG.getAbsolutePath());
+            }
+
+            if (ProjectPropertiesSupport.askForTestGroups(project)) {
+                externalProcessBuilder = externalProcessBuilder
+                        .addArgument(PhpUnit.PARAM_GROUP)
+                        .addArgument(ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project));
             }
 
             List<Testcase> customTests = info.getCustomTests();

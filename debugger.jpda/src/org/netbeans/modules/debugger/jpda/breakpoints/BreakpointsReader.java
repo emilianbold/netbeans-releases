@@ -235,7 +235,7 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             b = fb;
         }
         if (typeID.equals (ThreadBreakpoint.class.getName ()) ||
-                typeID.equals (ThreadBreakpoint.class.getName ()+"ThreadBreakpoint$Impl")) {
+                typeID.equals (ThreadBreakpoint.class.getName ()+"$ThreadBreakpointImpl")) {
             ThreadBreakpoint tb = ThreadBreakpoint.create (
             );
             tb.setBreakpointType (
@@ -246,7 +246,9 @@ public class BreakpointsReader implements Properties.Reader, PropertyChangeListe
             );
             b = tb;
         }
-        assert b != null: "Unknown breakpoint type: \""+typeID+"\"";
+        if (b == null) {
+            throw new IllegalStateException("Unknown breakpoint type: \""+typeID+"\"");
+        }
         b.setPrintText (
             properties.getString (JPDABreakpoint.PROP_PRINT_TEXT, "")
         );

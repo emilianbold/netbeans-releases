@@ -708,7 +708,7 @@ class CategoryPanelFormatters extends StorablePanel {
     }*/
     
     @Override
-    void load() {
+    public void load() {
         VariablesFormatter[] formatters = VariablesFormatter.loadFormatters();
         DefaultListModel filterClassesModel = (DefaultListModel) formattersList.getModel();
         filterClassesModel.clear();
@@ -723,7 +723,7 @@ class CategoryPanelFormatters extends StorablePanel {
     }
 
     @Override
-    void store() {
+    public void store() {
         /*if (selectedVariablesFormatter != null) {
             storeSelectedFormatter(selectedVariablesFormatter);
         }*/
