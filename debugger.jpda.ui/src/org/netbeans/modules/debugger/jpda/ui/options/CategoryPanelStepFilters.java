@@ -343,7 +343,7 @@ class CategoryPanelStepFilters extends StorablePanel {
     }//GEN-LAST:event_filtersUncheckAllButtonActionPerformed
 
     @Override
-    void load() {
+    public void load() {
         //Preferences p = NbPreferences.root().node("Debugger/JPDA");
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         useStepFiltersCheckBox.setSelected(p.getBoolean("UseStepFilters", true));
@@ -373,7 +373,7 @@ class CategoryPanelStepFilters extends StorablePanel {
     }
 
     @Override
-    void store() {
+    public void store() {
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         p.setBoolean("UseStepFilters", useStepFiltersCheckBox.isSelected());
         p.setBoolean("FilterSyntheticMethods", filterSyntheticCheckBox.isSelected());
