@@ -82,12 +82,12 @@ import org.openide.xml.XMLUtil;
 @TemplateRegistration(
     folder="NetBeansModuleDevelopment",
     position=500,
-    displayName="#template",
+    displayName="#template_loader",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLoader.png",
     description="../../resources/newLoader.html",
     category="nbm-specific"
 )
-@Messages("template=File Type")
+@Messages("template_loader=File Type")
 public final class NewLoaderIterator extends BasicWizardIterator {
     
     private NewLoaderIterator.DataModel data;

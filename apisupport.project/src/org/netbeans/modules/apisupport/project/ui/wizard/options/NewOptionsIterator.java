@@ -76,12 +76,12 @@ import org.openide.util.NbBundle;
 @TemplateRegistration(
     folder="NetBeansModuleDevelopment",
     position=400,
-    displayName="#template",
+    displayName="#template_options",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newOptions.png",
     description="../../resources/newOptions.html",
     category="nbm-specific"
 )
-@Messages("template=Options Panel")
+@Messages("template_options=Options Panel")
 public final class NewOptionsIterator extends BasicWizardIterator {
     
     private NewOptionsIterator.DataModel data;

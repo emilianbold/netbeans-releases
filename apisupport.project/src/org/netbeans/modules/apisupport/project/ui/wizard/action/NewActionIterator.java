@@ -57,8 +57,8 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Martin Krauskopf
  */
-@TemplateRegistration(folder="NetBeansModuleDevelopment", displayName="#template", iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png", position=100, description="../../resources/newAction.html", category="nbm-specific")
-@Messages("template=Action")
+@TemplateRegistration(folder="NetBeansModuleDevelopment", displayName="#template_action", iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png", position=100, description="../../resources/newAction.html", category="nbm-specific")
+@Messages("template_action=Action")
 public final class NewActionIterator extends BasicWizardIterator {
 
     private DataModel data;

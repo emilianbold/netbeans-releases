@@ -75,12 +75,12 @@ import org.openide.windows.WindowManager;
 @TemplateRegistration(
     folder="NetBeansModuleDevelopment",
     position=200,
-    displayName="#template",
+    displayName="#template_winsys",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newTC.png", 
     description="../../resources/newTC.html",
     category="nbm-specific"
 )
-@Messages("template=Window")
+@Messages("template_winsys=Window")
 public final class NewTCIterator extends BasicWizardIterator {
 
     private NewTCIterator.DataModel data;

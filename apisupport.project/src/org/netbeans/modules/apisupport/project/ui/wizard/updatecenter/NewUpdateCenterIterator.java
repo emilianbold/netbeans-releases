@@ -62,12 +62,12 @@ import org.openide.util.NbBundle.Messages;
 @TemplateRegistration(
     folder="NetBeansModuleDevelopment",
     position=600,
-    displayName="#template",
+    displayName="#template_updatecenter",
     iconBase="org/netbeans/modules/apisupport/project/ui/resources/newUpdateCenter.png",
     description="../../resources/newUpdateCenter.html",
     category="nbm-specific"
 )
-@Messages("template=Update Center")
+@Messages("template_updatecenter=Update Center")
 public final class NewUpdateCenterIterator extends BasicWizardIterator {
 
     private DataModel data;
