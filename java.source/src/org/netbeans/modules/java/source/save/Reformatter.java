@@ -3277,7 +3277,6 @@ public class Reformatter implements ReformatTask {
             LinkedList<Pair<Integer, Integer>> marks = new LinkedList<Pair<Integer, Integer>>();
             int maxParamNameLength = 0;
             int maxExcNameLength = 0;
-            boolean afterPTag = false;
             if (javadocTokens != null) {
                 int state = 0; // 0 - initial text, 1 - after param tag, 2 - param description, 3 - return description,
                                // 4 - after throws tag, 5 - exception description, 6 - after pre tag, 7 - after other tag
@@ -3354,7 +3353,7 @@ public class Reformatter implements ReformatTask {
                                 if (lastWSOffset >= 0) {
                                     marks.add(Pair.of(lastWSOffset, 1));
                                 }
-                                afterPTag = true;
+                                afterText = false;
                             } else if (PRE_TAG.equalsIgnoreCase(tokenText)) {
                                 if (lastWSOffset >= 0) {
                                     marks.add(Pair.of(lastWSOffset, 1));
