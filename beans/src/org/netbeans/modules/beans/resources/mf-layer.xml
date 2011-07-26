@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Beans">
             <attr name="displayName" bundlevalue="org.netbeans.modules.beans.Bundle#Templates/Beans"/>
-            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Beans.html"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/templates/Beans.html"/>
             <attr name="position" intvalue="1052"/>
             <file name="Package.shadow">
                 <attr name="position" intvalue="700"/>
