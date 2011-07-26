@@ -228,7 +228,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     @Override
     public void open() {
         if (elementHandle!=null) {
-            ElementOpen.open(handle.getFileObject(), elementHandle);
+            ElementOpen.open(element.getFileObject(), elementHandle);
         }
     }
     
