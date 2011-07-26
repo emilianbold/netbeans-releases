@@ -1179,6 +1179,6 @@ public class WebFlatProfileTest extends FlatProfileTestBase {
     
     @Override
     protected String getProjectName() {
-        return BaseMarkTest.APP_NAME;
+        return TestBase.APP_NAME;
     }
 }

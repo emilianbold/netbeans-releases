@@ -903,7 +903,7 @@ public class FlatProfileTest extends TestBase {
     
     @Override
     protected String getProjectName() {
-        return BaseMarkTest.APP_NAME;
+        return TestBase.APP_NAME;
     }
     
     private class TestDrillDownFactory implements CCTResultsFilter.EvaluatorProvider {

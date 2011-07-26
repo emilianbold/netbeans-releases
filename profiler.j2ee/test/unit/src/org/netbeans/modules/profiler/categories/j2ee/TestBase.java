@@ -65,6 +65,7 @@ import org.openide.filesystems.Repository;
  *
  */
 public class TestBase extends NbTestCase {
+    static final String APP_NAME = "WebApp";
     
     private static final Repository REPOSITORY;
 

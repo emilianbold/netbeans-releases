@@ -55,11 +55,8 @@ made subject to such option by the copyright holder.
                         <folder name="java.io.FileOutputStream">
                             <attr name="includes" stringvalue="write,flush"/>
                         </folder>
-                        <folder name="java.io.FileReader">
+                        <folder name="java.io.FileInputStream">
                             <attr name="includes" stringvalue="read,reset,skip"/>
-                        </folder>
-                        <folder name="java.io.FileWriter">
-                            <attr name="includes" stringvalue="write,flush"/>
                         </folder>
                     </folder>
                 </folder>

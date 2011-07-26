@@ -50,6 +50,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
+import org.netbeans.lib.profiler.results.cpu.FlatProfileContainer;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -140,5 +142,14 @@ public class TestBase extends NbTestCase {
     
     private Project myJavaApp;
     private Categorization myCategorization;
+    
+    protected void dumpFlatProfile(FlatProfileContainer flatProfile, ProfilingSessionStatus status) {
+        System.out.println("FlatProfilerContainer:");
+        System.out.println("======================");
+        for(int i=0;i<flatProfile.getNRows();i++) {
+            int methodId = flatProfile.getMethodIdAtRow(i);
+            System.out.println(status.getInstrMethodClasses()[methodId] + "." + status.getInstrMethodNames()[methodId] + status.getInstrMethodSignatures()[methodId]);
+        }
+    }
     
 }

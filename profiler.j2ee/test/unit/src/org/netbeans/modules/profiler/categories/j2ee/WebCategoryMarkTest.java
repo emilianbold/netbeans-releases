@@ -581,7 +581,7 @@ public class WebCategoryMarkTest extends CategoryMarkTestBase {
     
     @Override
     protected String getProjectName() {
-        return BaseMarkTest.APP_NAME;
+        return TestBase.APP_NAME;
     }
 
 }

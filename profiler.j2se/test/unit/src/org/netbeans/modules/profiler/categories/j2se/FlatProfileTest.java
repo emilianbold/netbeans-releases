@@ -218,8 +218,8 @@ public class FlatProfileTest extends TestBase {
                 "<init>", "()V");
         builder.methodEntry( 2 , 0, 1, 0, 0);
         
-        status.updateInstrMethodsInfo("java.io.FileReader", 0, 
-                "reset", "()V");
+        status.updateInstrMethodsInfo("java.io.FileInputStream", 0, 
+                "read", "()I");
         builder.methodEntry( 3 , 0, 3, 0, 0);
         filesIds.add( 3 );
         
@@ -306,8 +306,8 @@ public class FlatProfileTest extends TestBase {
         builder.methodEntry( 2 , 0, 3, 0, 0);
         java2DIds.add(2);
         
-        status.updateInstrMethodsInfo("java.io.FileReader", 0, 
-                "reset", "()V");
+        status.updateInstrMethodsInfo("java.io.FileInputStream", 0, 
+                "read", "()I");
         builder.methodEntry( 3 , 0, 3, 0, 0);
         filesIds.add( 3 );
         
@@ -369,12 +369,12 @@ public class FlatProfileTest extends TestBase {
         drillDown.drillup();
         drillDown.drillup();
         drillDown.drilldown( getCategoryId("UI"));
-        drillDown.drilldown( getCategoryId("Java 2D"));
+        drillDown.drilldown( getCategoryId("Java2D"));
         
         flatProfile = flatProfileBuilder.createFlatProfile();
         assertEquals(java2DIds.size()+" method expected in Java 2D category",
                 java2DIds.size() ,  flatProfile.getNRows());
-        checkCategory(status, flatProfile, "Java 2D", java2DIds);
+        checkCategory(status, flatProfile, "Java2D", java2DIds);
     }
     
     public void testSocketCategory(){
@@ -410,7 +410,7 @@ public class FlatProfileTest extends TestBase {
         builder.methodEntry( 1 , 0, 2, 0, 0);
         
         status.updateInstrMethodsInfo("socket.TestSocketChanel", 0, 
-                "read", "([Ljava/nio/ByteBuffer;)J");
+                "read", "(Ljava/nio/ByteBuffer;)I");
         builder.methodEntry( 2 , 0, 3, 0, 0);
         socketIds.add( 2 );
         
@@ -438,7 +438,7 @@ public class FlatProfileTest extends TestBase {
         builder.methodExit( 6, 1, 1, 0, 0);
         
         status.updateInstrMethodsInfo("socket.TestSocketChanel", 0, 
-                "write", "([Ljava/nio/ByteBuffer;)J");
+                "write", "(Ljava/nio/ByteBuffer;)I");
         builder.methodEntry( 7, 1, 3, 0, 0);
         socketIds.add(7);
         
@@ -860,8 +860,8 @@ public class FlatProfileTest extends TestBase {
         java2DIds.add(3);
         uiIds.add(3);
         
-        status.updateInstrMethodsInfo("java.io.FileReader", 0, 
-                "reset", "()V");
+        status.updateInstrMethodsInfo("java.io.FileInputStream", 0, 
+                "skip", "(J)J");
         builder.methodEntry( 4 , 0, 3, 0, 0);
         filesIds.add( 4 );
         ioIds.add(4);
@@ -876,7 +876,7 @@ public class FlatProfileTest extends TestBase {
         builder.methodExit( 5 , 0, 1, 0, 0);
         
         status.updateInstrMethodsInfo("socket.TestSocketChanel", 0, 
-                "read", "([Ljava/nio/ByteBuffer;)J");
+                "read", "(Ljava/nio/ByteBuffer;)I");
         builder.methodEntry( 6 , 0, 3, 0, 0);
         socketIds.add( 6 );
         ioIds.add(6);
@@ -890,9 +890,10 @@ public class FlatProfileTest extends TestBase {
         
         builder.methodExit( 7 , 0, 3, 0, 0);
         
-        status.updateInstrMethodsInfo("java.io.OutputStreamWriter", 0, 
-                "write", "([CII)V");
+        status.updateInstrMethodsInfo("java.io.FileOutputStream", 0, 
+                "write", "([BII)V");
         builder.methodEntry( 8 , 0, 3, 0, 0);
+        filesIds.add(8);
         ioIds.add(8);
         
         builder.methodExit( 8 , 0, 3, 0, 0);
@@ -963,14 +964,14 @@ public class FlatProfileTest extends TestBase {
         checkCategory(status, flatProfile, "Painters", paintersIds);
         
         drillDown.drillup();
-        drillDown.drilldown( getCategoryId("Java 2D"));
+        drillDown.drilldown( getCategoryId("Java2D"));
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
         
         assertEquals(java2DIds.size()+" method expected in Java 2D category",
                 java2DIds.size() ,  flatProfile.getNRows());
-        checkCategory(status, flatProfile, "Java 2D", java2DIds);
+        checkCategory(status, flatProfile, "Java2D", java2DIds);
         
         drillDown.drillup();
         drillDown.drillup();
@@ -1053,8 +1054,8 @@ public class FlatProfileTest extends TestBase {
         java2DIds.add(3);
         uiIds.add(3);
         
-        status.updateInstrMethodsInfo("java.io.FileReader", 0, 
-                "reset", "()V");
+        status.updateInstrMethodsInfo("java.io.FileInputStream", 0, 
+                "skip", "(J)J");
         builder.methodEntry( 4 , 0, 3, 0, 0);
         filesIds.add( 4 );
         ioIds.add(4);
@@ -1070,7 +1071,7 @@ public class FlatProfileTest extends TestBase {
         builder.methodExit( 5 , 0, 1, 0, 0);
         
         status.updateInstrMethodsInfo("socket.TestSocketChanel", 0, 
-                "read", "([Ljava/nio/ByteBuffer;)J");
+                "read", "(Ljava/nio/ByteBuffer;)I");
         builder.methodEntry( 6 , 0, 3, 0, 0);
         socketIds.add( 6 );
         ioIds.add(6);
@@ -1084,9 +1085,10 @@ public class FlatProfileTest extends TestBase {
         
         builder.methodExit( 7 , 0, 3, 0, 0);
         
-        status.updateInstrMethodsInfo("java.io.OutputStreamWriter", 0, 
-                "write", "([CII)V");
+        status.updateInstrMethodsInfo("java.io.FileOutputStream", 0, 
+                "write", "([BII)V");
         builder.methodEntry( 8 , 0, 3, 0, 0);
+        filesIds.add(8);
         ioIds.add(8);
         
         builder.methodExit( 8 , 0, 3, 0, 0);
@@ -1130,7 +1132,7 @@ public class FlatProfileTest extends TestBase {
         builder.newThread( 2 , "Thread-1", "java.lang.Thread");
         
         status.updateInstrMethodsInfo("streams.TestInputStream", 0, 
-                "skip", "(J)J");
+                "read", "()I");
         builder.methodEntry( 14, 2, 2, 0, 0);
         ioIds.add(14);
         
@@ -1153,7 +1155,7 @@ public class FlatProfileTest extends TestBase {
         ioIds.add(17 );
         
         status.updateInstrMethodsInfo("files.TestFileReader", 0, 
-                "reset", "()V");
+                "skip", "(J)J");
         builder.methodEntry( 18 , 2, 3, 0, 0);
         filesIds.add( 18 );
         ioIds.add(18);
@@ -1221,14 +1223,14 @@ public class FlatProfileTest extends TestBase {
         checkCategory(status, flatProfile, "Painters", paintersIds);
         
         drillDown.drillup();
-        drillDown.drilldown( getCategoryId("Java 2D"));
+        drillDown.drilldown( getCategoryId("Java2D"));
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
         
         assertEquals(java2DIds.size()+" method expected in Java 2D category",
                 java2DIds.size() ,  flatProfile.getNRows());
-        checkCategory(status, flatProfile, "Java 2D", java2DIds);
+        checkCategory(status, flatProfile, "Java2D", java2DIds);
         
         drillDown.drillup();
         drillDown.drillup();
@@ -1324,5 +1326,4 @@ public class FlatProfileTest extends TestBase {
         
         private DrillDown myDrillDown;
     }
-
 }
