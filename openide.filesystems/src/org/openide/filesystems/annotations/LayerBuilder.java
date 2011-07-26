@@ -46,7 +46,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -66,6 +68,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.FileObject;
+import javax.tools.JavaFileManager.Location;
 import javax.tools.StandardLocation;
 import org.openide.util.NbBundle.Messages;
 import org.w3c.dom.Document;
@@ -146,8 +150,27 @@ public final class LayerBuilder {
      *                                  {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
      * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type
      */
-    public File instanceFile(String path, String name, Class type) throws IllegalArgumentException, LayerGenerationException {
-        String[] clazzOrMethod = instantiableClassOrMethod(type);
+    public File instanceFile(String path, String name, Class<?> type) throws IllegalArgumentException, LayerGenerationException {
+        return instanceFile(path, name, type, null, null);
+    }
+    /**
+     * Generates an instance file whose {@code InstanceCookie} would load the associated class or method.
+     * Useful for {@link LayerGeneratingProcessor}s which define layer fragments which instantiate Java objects from the annotated code.
+     * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
+     * as using the generated name will help avoid accidental name collisions between annotations.
+     * @param path path to folder of instance file, e.g. {@code "Menu/File"}
+     * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
+     * @param type a type to which the instance ought to be assignable, or null to skip this check
+     * @param annotation as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @param annotationMethod as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @return an instance file (call {@link File#write} to finalize)
+     * @throws IllegalArgumentException if the builder is not associated with exactly one
+     *                                  {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+     * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type
+     * @since 7.50
+     */
+    public File instanceFile(String path, String name, Class<?> type, Annotation annotation, String annotationMethod) throws IllegalArgumentException, LayerGenerationException {
+        String[] clazzOrMethod = instantiableClassOrMethod(type, annotation, annotationMethod);
         String clazz = clazzOrMethod[0];
         String method = clazzOrMethod[1];
         String basename;
@@ -185,7 +208,28 @@ public final class LayerBuilder {
      * @since org.openide.filesystems 7.27
      */
     public File instanceFile(String path, String name) throws IllegalArgumentException, LayerGenerationException {
-        String[] clazzOrMethod = instantiableClassOrMethod(null);
+        return instanceFile(path, name, null, null);
+    }
+    /**
+     * Generates an instance file that is <em>not initialized</em> with an instance.
+     * Useful for {@link LayerGeneratingProcessor}s which define layer fragments
+     * which indirectly instantiate Java objects from the annotated code via a generic factory method.
+     * Invoke the factory using {@link File#methodvalue} on {@code instanceCreate}
+     * and configure it with a {@link File#instanceAttribute} appropriate to the factory.
+     * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
+     * as using the generated name will help avoid accidental name collisions between annotations.
+     * @param path path to folder of instance file, e.g. {@code "Menu/File"}
+     * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
+     * @param annotation as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @param annotationMethod as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @return an instance file (call {@link File#write} to finalize)
+     * @throws IllegalArgumentException if the builder is not associated with exactly one
+     *                                  {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+     * @throws LayerGenerationException if the associated element would not be loadable as an instance
+     * @since org.openide.filesystems 7.50
+     */
+    public File instanceFile(String path, String name, Annotation annotation, String annotationMethod) throws IllegalArgumentException, LayerGenerationException {
+        String[] clazzOrMethod = instantiableClassOrMethod(null, annotation, annotationMethod);
         String clazz = clazzOrMethod[0];
         String method = clazzOrMethod[1];
         String basename;
@@ -200,7 +244,7 @@ public final class LayerBuilder {
         return file(path + "/" + basename + ".instance");
     }
 
-    private String[] instantiableClassOrMethod(Class type) throws IllegalArgumentException, LayerGenerationException {
+    private String[] instantiableClassOrMethod(Class<?> type, Annotation annotation, String annotationMethod) throws IllegalArgumentException, LayerGenerationException {
         if (originatingElement == null) {
             throw new IllegalArgumentException("Only applicable to builders with exactly one associated element");
         }
@@ -212,7 +256,7 @@ public final class LayerBuilder {
             case CLASS: {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) originatingElement).toString();
                 if (originatingElement.getModifiers().contains(Modifier.ABSTRACT)) {
-                    throw new LayerGenerationException(clazz + " must not be abstract", originatingElement);
+                    throw new LayerGenerationException(clazz + " must not be abstract", originatingElement, processingEnv, annotation, annotationMethod);
                 }
                 {
                     boolean hasDefaultCtor = false;
@@ -223,14 +267,14 @@ public final class LayerBuilder {
                         }
                     }
                     if (!hasDefaultCtor) {
-                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", originatingElement);
+                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", originatingElement, processingEnv, annotation, annotationMethod);
                     }
                 }
                 if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(originatingElement.asType(), typeMirror)) {
-                    throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, originatingElement);
+                    throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, originatingElement, processingEnv, annotation, annotationMethod);
                 }
                 if (!originatingElement.getModifiers().contains(Modifier.PUBLIC)) {
-                    throw new LayerGenerationException(clazz + " is not public", originatingElement);
+                    throw new LayerGenerationException(clazz + " is not public", originatingElement, processingEnv, annotation, annotationMethod);
                 }
                 return new String[] {clazz, null};
             }
@@ -238,13 +282,13 @@ public final class LayerBuilder {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) originatingElement.getEnclosingElement()).toString();
                 String method = originatingElement.getSimpleName().toString();
                 if (!originatingElement.getModifiers().contains(Modifier.STATIC)) {
-                    throw new LayerGenerationException(clazz + "." + method + " must be static", originatingElement);
+                    throw new LayerGenerationException(clazz + "." + method + " must be static", originatingElement, processingEnv, annotation, annotationMethod);
                 }
                 if (!((ExecutableElement) originatingElement).getParameters().isEmpty()) {
-                    throw new LayerGenerationException(clazz + "." + method + " must not take arguments", originatingElement);
+                    throw new LayerGenerationException(clazz + "." + method + " must not take arguments", originatingElement, processingEnv, annotation, annotationMethod);
                 }
                 if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement) originatingElement).getReturnType(), typeMirror)) {
-                    throw new LayerGenerationException(clazz + "." + method + " is not assignable to " + typeMirror, originatingElement);
+                    throw new LayerGenerationException(clazz + "." + method + " is not assignable to " + typeMirror, originatingElement, processingEnv, annotation, annotationMethod);
                 }
                 return new String[] {clazz, method};
             }
@@ -268,6 +312,94 @@ public final class LayerBuilder {
         }
         return file(folder + "/" + name + ".shadow").stringvalue("originalFile", target);
     }
+
+    /**
+     * Validates a resource named in an annotation.
+     * <p>Note that resources found in the binary classpath (if permitted)
+     * cannot actually be located when running inside javac on JDK 6 (see #196933 for discussion), in which case
+     * no exception is thrown but the return value may not permit {@link FileObject#openInputStream}.
+     * <p>Also remember that the binary compilation classpath for an Ant-based NetBeans module does
+     * not include non-public packages.
+     * (As of the 7.1 harness it does include non-classfile resources from public packages of module dependencies.)
+     * The processorpath does contain all of these but it is not consulted.
+     * The classpath for a Maven-based module does contain all resources from dependencies.
+     * @param resource an absolute resource path with no leading slash (perhaps the output of {@link #absolutizeResource})
+     * @param originatingElement the annotated element; used both for error reporting, and (optionally) for its package
+     * @param annotation as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @param annotationMethod as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+     * @param searchClasspath true to search in the binary classpath and not just source path (see caveat about JDK 6)
+     * @return the content of the resource, for further validation
+     * @throws LayerGenerationException if no such resource can be found
+     * @since 7.51
+     */
+    public FileObject validateResource(String resource, Element originatingElement, Annotation annotation, String annotationMethod, boolean searchClasspath) throws LayerGenerationException {
+        if (resource.startsWith("/")) {
+            throw new LayerGenerationException("do not use leading slashes on resource paths", originatingElement, processingEnv, annotation, annotationMethod);
+        }
+        if (searchClasspath) {
+            for (Location loc : new Location[] {StandardLocation.SOURCE_PATH, /* #181355 */StandardLocation.CLASS_OUTPUT, StandardLocation.CLASS_PATH, StandardLocation.PLATFORM_CLASS_PATH}) {
+                try {
+                    return processingEnv.getFiler().getResource(loc, "", resource);
+                } catch (IOException ex) {
+                    continue;
+                }
+            }
+            throw new LayerGenerationException("Cannot find resource " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+        } else {
+            try {
+                try {
+                    FileObject f = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource);
+                    f.openInputStream().close();
+                    return f;
+                } catch (FileNotFoundException x) {
+                    try {
+                        FileObject f = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource);
+                        f.openInputStream().close();
+                        return f;
+                    } catch (IOException x2) {
+                        throw x;
+                    }
+                }
+            } catch (IOException x) {
+                throw new LayerGenerationException("Cannot find resource " + resource, originatingElement, processingEnv, annotation, annotationMethod);
+            }
+        }
+    }
+
+    /**
+     * Allows a processor to accept relative resource paths.
+     * For example, to produce the output value {@code net/nowhere/lib/icon.png}
+     * given an element in the package {@code net.nowhere.app}, the following inputs are permitted:
+     * <ul>
+     * <li>{@code ../lib/icon.png}
+     * <li>{@code /net/nowhere/lib/icon.png}
+     * </ul>
+     * @param originatingElement the annotated element, used for its package
+     * @param resource a possibly relative resource path
+     * @return an absolute resource path (with no leading slash)
+     * @throws LayerGenerationException in case the resource path is malformed
+     * @since 7.51
+     */
+    public static String absolutizeResource(Element originatingElement, String resource) throws LayerGenerationException {
+        if (resource.startsWith("/")) {
+            return resource.substring(1);
+        } else {
+            try {
+                return new URI(null, findPackage(originatingElement).replace('.', '/') + "/", null).resolve(new URI(null, resource, null)).getPath();
+            } catch (URISyntaxException x) {
+                throw new LayerGenerationException(x.toString(), originatingElement);
+            }
+        }
+    }
+    private static String findPackage(Element e) {
+        switch (e.getKind()) {
+        case PACKAGE:
+            return ((PackageElement) e).getQualifiedName().toString();
+        default:
+            return findPackage(e.getEnclosingElement());
+        }
+    }
+
 
     /**
      * Builder for creating a single file entry.
@@ -485,8 +617,23 @@ public final class LayerBuilder {
          * @throws IllegalArgumentException if the associated element is not a {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
          * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type
          */
-        public File instanceAttribute(String attr, Class type) throws IllegalArgumentException, LayerGenerationException {
-            String[] clazzOrMethod = instantiableClassOrMethod(type);
+        public File instanceAttribute(String attr, Class<?> type) throws IllegalArgumentException, LayerGenerationException {
+            return instanceAttribute(attr, type, null, null);
+        }
+        /**
+         * Adds an attribute to load the associated class or method.
+         * Useful for {@link LayerGeneratingProcessor}s which define layer fragments which instantiate Java objects from the annotated code.
+         * @param attr the attribute name
+         * @param type a type to which the instance ought to be assignable, or null to skip this check
+         * @param annotation as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+         * @param annotationMethod as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+         * @return this builder
+         * @throws IllegalArgumentException if the associated element is not a {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+         * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type
+         * @since 7.50
+         */
+        public File instanceAttribute(String attr, Class<?> type, Annotation annotation, String annotationMethod) throws IllegalArgumentException, LayerGenerationException {
+            String[] clazzOrMethod = instantiableClassOrMethod(type, annotation, annotationMethod);
             if (clazzOrMethod[1] == null) {
                 newvalue(attr, clazzOrMethod[0]);
             } else {
@@ -518,6 +665,22 @@ public final class LayerBuilder {
          * @throws LayerGenerationException if a bundle key is requested but it cannot be found in sources
          */
         public File bundlevalue(String attr, String label) throws LayerGenerationException {
+            return bundlevalue(attr, label, null, null);
+        }
+        /**
+         * Adds an attribute for a possibly localized string.
+         * @param attr the attribute name
+         * @param label either a general string to store as is, or a resource bundle reference
+         *              such as {@code "my.module.Bundle#some_key"},
+         *              or just {@code "#some_key"} to load from a {@code "Bundle"}
+         *              in the same package as the element associated with this builder (if exactly one)
+         * @param annotation as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+         * @param annotationMethod as in {@link LayerGenerationException#LayerGenerationException(String,Element,ProcessingEnvironment,Annotation,String)}
+         * @return this builder
+         * @throws LayerGenerationException if a bundle key is requested but it cannot be found in sources
+         * @since 7.50
+         */
+        public File bundlevalue(String attr, String label, Annotation annotation, String annotationMethod) throws LayerGenerationException {
             String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)";
             Matcher m = Pattern.compile("((?:" + javaIdentifier + "\\.)+[^\\s.#]+)?#(\\S*)").matcher(label);
             if (m.matches()) {
@@ -533,14 +696,14 @@ public final class LayerBuilder {
                     }
                     bundle = ((PackageElement) referenceElement).getQualifiedName() + ".Bundle";
                 }
-                verifyBundleKey(bundle, key, m.group(1) == null);
+                verifyBundleKey(bundle, key, m.group(1) == null, annotation, annotationMethod);
                 bundlevalue(attr, bundle, key);
             } else {
                 stringvalue(attr, label);
             }
             return this;
         }
-        private void verifyBundleKey(String bundle, String key, boolean samePackage) throws LayerGenerationException {
+        private void verifyBundleKey(String bundle, String key, boolean samePackage, Annotation annotation, String annotationMethod) throws LayerGenerationException {
             if (processingEnv == null) {
                 return;
             }
@@ -556,29 +719,19 @@ public final class LayerBuilder {
                     }
                 }
             }
-            String resource = bundle.replace('.', '/') + ".properties";
             try {
-                InputStream is;
-                try {
-                    is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
-                } catch (FileNotFoundException x) { // #181355
-                    try {
-                        is = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", resource).openInputStream();
-                    } catch (IOException x2) {
-                        throw x;
-                    }
-                }
+                InputStream is = validateResource(bundle.replace('.', '/') + ".properties", originatingElement, null, null, false).openInputStream();
                 try {
                     Properties p = new Properties();
                     p.load(is);
                     if (p.getProperty(key) == null) {
-                        throw new LayerGenerationException("No key '" + key + "' found in " + resource, originatingElement);
+                        throw new LayerGenerationException("No key '" + key + "' found in " + bundle, originatingElement, processingEnv, annotation, annotationMethod);
                     }
                 } finally {
                     is.close();
                 }
             } catch (IOException x) {
-                throw new LayerGenerationException("Could not open " + resource + ": " + x, originatingElement);
+                throw new LayerGenerationException("Could not open " + bundle + ": " + x, originatingElement, processingEnv, annotation, annotationMethod);
             }
         }
 

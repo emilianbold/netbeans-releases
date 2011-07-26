@@ -47,7 +47,9 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedF
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.netbeans.api.templates.TemplateRegistration;
 
+@TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1300, displayName = "#template_label", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/newLayer.html", category = "nbm-specific")
 public class NewLayerIterator extends BasicWizardIterator {
 
     private BasicDataModel data;

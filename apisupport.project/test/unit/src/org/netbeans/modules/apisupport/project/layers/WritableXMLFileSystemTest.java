@@ -114,12 +114,15 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
     }
     
     public void testExternalFileReads() throws Exception {
-        FileSystem fs = new Layer("<file name='x' url='x.txt'/>", Collections.singletonMap("x.txt", "stuff")).read();
+        Layer l = new Layer("<file name='x' url='x.txt'/>", Collections.singletonMap("x.txt", "stuff"));
+        FileSystem fs = l.read();
         FileObject x = fs.findResource("x");
         assertNotNull(x);
         assertTrue(x.isData());
         assertEquals(5L, x.getSize());
         assertEquals("stuff", x.asText("UTF-8"));
+        assertEquals("x.txt", x.getAttribute("WritableXMLFileSystem.url"));
+        assertEquals("[" + l.f.getURL() + "]", Arrays.toString((URL[]) x.getAttribute("layers")));
         fs = new Layer("<file name='x' url='subdir/x.txt'/>", Collections.singletonMap("subdir/x.txt", "more stuff")).read();
         x = fs.findResource("x");
         assertNotNull(x);
@@ -533,7 +536,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "    <folder name=\"f\"/>\n" +
                 "    <file name=\"y\"/>\n",
                 l.write());
-        assertEquals("no external files left", Collections.EMPTY_MAP, l.files());
+        assertEquals("kept external file", Collections.singletonMap("x", "stuff"), l.files());
         f.delete();
         assertEquals("one file left",
                 "    <file name=\"y\"/>\n",
@@ -547,7 +550,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         TestUtil.dump(x, "stuff");
         f.delete();
         assertEquals("layer empty again", "", l.write());
-        assertEquals("no external files left even after only implicitly deleting file", Collections.EMPTY_MAP, l.files());
+        assertEquals("kept external files after implicitly deleting file", Collections.singletonMap("x", "stuff"), l.files());
         // XXX should any associated ordering attrs also be deleted? not acc. to spec, but often handy...
         l = new Layer("");
         fs = l.read();

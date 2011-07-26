@@ -524,6 +524,7 @@
     <mapID target="hibernate_hql" url="hibernate/hibernate_hql.html" />
     <mapID target="hibernate_map" url="hibernate/hibernate_mapping.html" />
     <mapID target="hibernate_workingwith" url="hibernate/hibernate_workingwith.html" />
+    <mapID target="hibernate_uninstall" url="hibernate/hibernate_uninstall.html" />
 
 <!-- Hibernate topics CSH -->
     

@@ -44,8 +44,11 @@ package org.openide.filesystems.annotations;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -61,7 +64,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.ToolProvider;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.openide.util.test.TestFileUtils;
@@ -290,6 +297,87 @@ public class LayerBuilderTest extends NbTestCase {
             for (Element e : roundEnv.getElementsAnnotatedWith(A.class)) {
                 A a = e.getAnnotation(A.class);
                 layer(e).instanceFile("whatever", null).bundlevalue("displayName", a.displayName()).write();
+            }
+            return true;
+        }
+    }
+
+    public void testAbsolutizeAndValidateResourcesExistent() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "dest");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"other/x1\", r2=\"resources/x2\") public class C {}");
+        File j = TestFileUtils.writeZipFile(new File(getWorkDir(), "cp.jar"), "other/x1:x1");
+        TestFileUtils.writeFile(new File(src, "p/resources/x2"), "x2");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
+        String msgs = err.toString();
+        assertTrue(msgs, status);
+        // JDK 7: assertTrue(msgs, msgs.contains("r1=x1"));
+        assertTrue(msgs, msgs.contains("r2=x2"));
+        FileObject f = new XMLFileSystem(new File(dest, "META-INF/generated-layer.xml").toURI().toURL()).findResource("f");
+        assertNotNull(f);
+        assertEquals("other/x1", f.getAttribute("r1"));
+        assertEquals("p/resources/x2", f.getAttribute("r2"));
+    }
+
+    public void testValidateResourceNonexistent() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "dest");
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"other/x1\", r2=\"resourcez/x2\") public class C {}");
+        File j = TestFileUtils.writeZipFile(new File(getWorkDir(), "cp.jar"), "other/x1:x1");
+        TestFileUtils.writeFile(new File(src, "p/resources/x2"), "x2");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
+        String msgs = err.toString();
+        assertFalse(msgs, status);
+        assertTrue(msgs, msgs.contains("resourcez"));
+        if (new URLClassLoader(new URL[] {ToolProvider.getSystemJavaCompiler().getClass().getProtectionDomain().getCodeSource().getLocation()}).findResource("com/sun/tools/javac/util/Filter.class") == null) {
+            System.err.println("#196933: second half of testValidateResourceNonexistent will only pass when using JDK 7 javac, skipping");
+            return;
+        }
+        assertTrue(msgs, msgs.contains("r1=x1"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"othr/x1\", r2=\"resources/x2\") public class C {}");
+        err = new ByteArrayOutputStream();
+        status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
+        msgs = err.toString();
+        assertFalse(msgs, status);
+        assertTrue(msgs, msgs.contains("othr"));
+    }
+
+    // XXX verify that CLASS_OUTPUT may be used as well
+
+    public @interface V {
+        /** absolute, may be in classpath */ String r1();
+        /** relative, must be in sourcepath */ String r2();
+    }
+    @ServiceProvider(service=Processor.class)
+    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    public static class VP extends LayerGeneratingProcessor {
+        public @Override Set<String> getSupportedAnnotationTypes() {
+            return Collections.singleton(V.class.getCanonicalName());
+        }
+        protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+            if (roundEnv.processingOver()) {
+                return false;
+            }
+            for (Element e : roundEnv.getElementsAnnotatedWith(V.class)) {
+                V v = e.getAnnotation(V.class);
+                LayerBuilder b = layer(e);
+                LayerBuilder.File f = b.file("f");
+                String r2 = LayerBuilder.absolutizeResource(e, v.r2());
+                try {
+                    try {
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "r1=" + b.validateResource(v.r1(), e, v, "r1", true).getCharContent(true));
+                    } catch (FileNotFoundException x) {
+                        // OK, JDK 6, ignore
+                    }
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "r2=" + b.validateResource(r2, e, v, "r2", false).getCharContent(true));
+                } catch (IOException x) {
+                    throw new LayerGenerationException(x.toString(), e, processingEnv, v);
+                }
+                f.stringvalue("r1", v.r1());
+                f.stringvalue("r2", r2);
+                f.write();
             }
             return true;
         }

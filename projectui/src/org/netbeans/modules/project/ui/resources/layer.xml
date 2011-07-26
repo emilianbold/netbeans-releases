@@ -207,13 +207,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         
-        <folder name="Privileged">
-	    <file name="Folder.shadow">
-                <attr name="originalFile" stringvalue="Templates/Other/Folder"/>
-                <attr name="position" intvalue="2000"/>
-            </file>
-	</folder>
-
         <!-- Licenses folder -->
         <folder name="Licenses">
             <attr name="templateCategory" stringvalue="invisible"/>
