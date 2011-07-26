@@ -251,7 +251,10 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.debugger.jpda.visual</friend>
+                <package>org.netbeans.modules.debugger.jpda.ui.options</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
