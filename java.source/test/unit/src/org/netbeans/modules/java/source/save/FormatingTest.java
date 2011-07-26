@@ -3080,6 +3080,7 @@ public class FormatingTest extends NbTestCase {
 
         Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putInt("text-limit-width", 45);
+        preferences.putBoolean("generateParagraphTagOnBlankLines", true);
 
         String golden =
                 "package hierbas.del.litoral;\n"
@@ -3360,7 +3361,7 @@ public class FormatingTest extends NbTestCase {
         preferences.putBoolean("addLeadingStarInComment", false);
         reformat(doc, content, golden);
         preferences.remove("addLeadingStarInComment");
-        preferences.remove("generateParagraphTagOnBlankLines");
+        preferences.putBoolean("generateParagraphTagOnBlankLines", true);
         
         golden =
                 "package hierbas.del.litoral;\n"
@@ -3544,7 +3545,26 @@ public class FormatingTest extends NbTestCase {
                 + "    }\n"
                 + "}\n";        
         reformat(doc, content, golden);
-        
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * @author XYZ\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * @author XYZ\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+
+        preferences.remove("generateParagraphTagOnBlankLines");        
         preferences.remove("text-limit-width");
     }
 
