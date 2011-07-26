@@ -421,8 +421,7 @@ public class Utils {
 
         String fileName = currentFile.getAbsolutePath();
 
-        int lineNumber = NbDocument.findLineNumber((StyledDocument) mostActiveContext.getDocument(),
-                                                   mostActiveContext.getTextComponent().getCaret().getDot()) + 1; // Line is 0-based, needs to be 1-based for CodeProfilingPoint.Location
+        int lineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveContext.getTextComponent().getCaret().getDot()) + 1;
 
         if (lineNumber == -1) {
             lineNumber = 1;
@@ -462,8 +461,7 @@ public class Utils {
         }
 
         String fileName = FileUtil.toFile(mostActiveJavaSource).getAbsolutePath();
-        int lineNumber = NbDocument.findLineNumber((StyledDocument) mostActiveContext.getDocument(),
-                                                   mostActiveTextComponent.getSelectionEnd()) + 1; // Line is 0-based, needs to be 1-based for CodeProfilingPoint.Location
+        int lineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveTextComponent.getSelectionEnd()) + 1;
 
         if (lineNumber == -1) {
             lineNumber = 1;
@@ -500,15 +498,13 @@ public class Utils {
 
         String fileName = file.getAbsolutePath();
 
-        int startLineNumber = NbDocument.findLineNumber((StyledDocument) mostActiveContext.getDocument(),
-                                                        mostActiveTextComponent.getSelectionStart()) + 1; // Line is 0-based, needs to be 1-based for CodeProfilingPoint.Location
+        int startLineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveTextComponent.getSelectionStart()) + 1;
 
         if (startLineNumber == -1) {
             startLineNumber = 1;
         }
 
-        int endLineNumber = NbDocument.findLineNumber((StyledDocument) mostActiveContext.getDocument(),
-                                                      mostActiveTextComponent.getSelectionEnd()) + 1; // Line is 0-based, needs to be 1-based for CodeProfilingPoint.Location
+        int endLineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveTextComponent.getSelectionEnd()) + 1;
 
         if (endLineNumber == -1) {
             endLineNumber = 1;
@@ -542,8 +538,7 @@ public class Utils {
         }
 
         String fileName = FileUtil.toFile(mostActiveJavaSource).getAbsolutePath();
-        int lineNumber = NbDocument.findLineNumber((StyledDocument) mostActiveContext.getDocument(),
-                                                   mostActiveTextComponent.getSelectionStart()) + 1; // Line is 0-based, needs to be 1-based for CodeProfilingPoint.Location
+        int lineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveTextComponent.getSelectionStart()) + 1;
 
         if (lineNumber == -1) {
             lineNumber = 1;
