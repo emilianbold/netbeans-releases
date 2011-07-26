@@ -238,7 +238,7 @@ public class ProjectUtilities {
             if ("".equals(projectPackagesDescr[1][i])) { //NOI18N
                 ret[i] = new ClientUtils.SourceCodeSelection("", "", ""); //NOI18N
             } else {
-                ret[i] = new ClientUtils.SourceCodeSelection(projectPackagesDescr[1][i] + ".", "", ""); //NOI18N
+                ret[i] = new ClientUtils.SourceCodeSelection(projectPackagesDescr[1][i] + ".**", "", ""); //NOI18N
             }
         }
 
