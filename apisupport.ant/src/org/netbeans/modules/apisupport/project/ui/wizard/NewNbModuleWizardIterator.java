@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -68,7 +67,9 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Wizard to create a new NetBeans Module project.
@@ -76,6 +77,10 @@ import org.openide.util.NbBundle;
  * @author Martin Krauskopf
  */
 public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
+    
+    private static final String FOLDER = "Project/APISupport";
+    private static final String MODULE_ICON = "org/netbeans/modules/apisupport/project/resources/module.png";
+    private static final String SUITE_ICON = "org/netbeans/modules/apisupport/project/suite/resources/suite.png";
 
     enum Type {
         /** Either standalone module, suite component or NB.org module. */
@@ -119,7 +124,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
      * Returns wizard for creating NetBeans module in general - i.e. either
      * standalone module, suite component or NB.org module.
      */
-    public static NewNbModuleWizardIterator createModuleIterator(Map m) {
+    @TemplateRegistration(folder = FOLDER, position = 100, displayName = "#template_module", iconBase = MODULE_ICON, description = "../../resources/emptyModule.html")
+    @Messages("template_module=Module")
+    public static NewNbModuleWizardIterator createModuleIterator() {
         return new NewNbModuleWizardIterator(Type.MODULE);
     }
     
@@ -133,10 +140,14 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         return iterator;
     }
     
+    @TemplateRegistration(folder = FOLDER, position = 200, displayName = "#template_suite", iconBase = SUITE_ICON, description = "../../resources/emptySuite.html")
+    @Messages("template_suite=Module Suite")
     public static NewNbModuleWizardIterator createSuiteIterator() {
         return new NewNbModuleWizardIterator(Type.SUITE);
     }
     
+    @TemplateRegistration(folder = FOLDER, position = 400, displayName = "#template_application", iconBase = SUITE_ICON, description = "../../resources/emptyApplication.html")
+    @Messages("template_application=NetBeans Platform Application")
     public static NewNbModuleWizardIterator createApplicationIterator() {
         return new NewNbModuleWizardIterator(Type.APPLICATION);
     }
@@ -154,6 +165,8 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         return iterator;
     }
     
+    @TemplateRegistration(folder = FOLDER, position = 300, displayName = "#template_library_module", iconBase = MODULE_ICON, description = "../../resources/libraryModule.html")
+    @Messages("template_library_module=Library Wrapper Module")
     public static NewNbModuleWizardIterator createLibraryModuleIterator() {
         return new NewNbModuleWizardIterator(Type.LIBRARY_MODULE);
     }

@@ -45,6 +45,8 @@ package org.netbeans.modules.bugtracking.ui.issue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.tree.TreeSelectionModel;
@@ -84,6 +86,20 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
                 nodes.add(node);
             }
         }
+        Collections.sort(nodes, new Comparator<Node>() {
+            @Override public int compare(Node n1, Node n2) {
+                if(n1 == null && n2 == null) {
+                    return 0;
+                }
+                if(n1 == null) {
+                    return -1;
+                }
+                if(n2 == null) {
+                    return 1;
+                }
+                return n1.getDisplayName().compareTo(n2.getDisplayName());
+            }
+        });
         Children.Array children = new Children.Array();
         children.add(nodes.toArray(new Node[nodes.size()]));
         AbstractNode root = new AbstractNode(children);

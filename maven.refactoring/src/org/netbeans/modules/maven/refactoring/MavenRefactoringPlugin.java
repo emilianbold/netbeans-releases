@@ -91,7 +91,7 @@ class MavenRefactoringPlugin implements RefactoringPlugin {
                     fqn.set(info.getElements().getBinaryName((TypeElement) e).toString());
                     break;
                 default:
-                    LOG.log(Level.WARNING, "unexpected element {0}", e);
+                    LOG.log(Level.FINE, "unexpected element {0}", e);
                 }
             }
             @Override public void cancel() {}

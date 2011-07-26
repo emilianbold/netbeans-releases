@@ -109,6 +109,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="Template">
+          <api name="loaders"/>
+          <summary>Introduced <code>Template</code></summary>
+          <version major="7" minor="29"/>
+          <date day="25" month="7" year="2011"/>
+          <author login="jglick"/>
+          <compatibility addition="yes"/>
+          <description>
+              <p>
+                  Introduced a new annotation for registering (file or project) templates.
+              </p>
+          </description>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <class package="org.netbeans.api.templates" name="TemplateRegistrations"/>
+          <issue number="200175"/>
+      </change>
     <change id="DataEditorSupport.constr3">
           <api name="editor"/>
           <summary>DataEditorSupport constructor with Lookup parameter</summary>

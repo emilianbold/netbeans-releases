@@ -43,7 +43,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import org.netbeans.modules.apisupport.project.api.BasicVisualPanel;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.apisupport.project.ui.wizard.Bundle.*;
 
 abstract class NewTemplateVisualPanel extends BasicVisualPanel {
 
@@ -52,27 +52,27 @@ abstract class NewTemplateVisualPanel extends BasicVisualPanel {
     NewTemplateVisualPanel(final NewModuleProjectData data) {
         super(data.getSettings());
         this.data = data;
-        String resource;
+        String title;
         switch (data.getWizardType()) {
             case SUITE:
-                resource = "emptySuite"; // NOI18N
+                title = template_suite();
                 break;
             case APPLICATION:
-                resource = "emptyApplication"; // NOI18N
+                title = template_application();
                 break;
             case MODULE:
             case SUITE_COMPONENT:
-                resource = "emptyModule"; // NOI18N
+                title = template_module();
                 break;
             case LIBRARY_MODULE:
-                resource = "libraryModule"; // NOI18N
+                title = template_library_module();
                 break;
             default:
                 assert false : "Unknown wizard type = " + data.getWizardType();
-                resource = "";
+                title = "";
         }
         data.getSettings().putProperty("NewProjectWizard_Title", // NOI18N
-                NbBundle.getMessage(NewTemplateVisualPanel.class, "Templates/Project/APISupport/" + resource));
+                title);
     }
 
     protected NewModuleProjectData getData() {

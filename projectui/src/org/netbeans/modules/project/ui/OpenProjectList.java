@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.EventQueue;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -82,7 +81,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
@@ -100,8 +98,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -113,6 +109,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -551,8 +548,7 @@ public final class OpenProjectList {
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously) {
         open(projects, openSubprojects, asynchronously, null);
     }
-    
-    @Messages("LBL_Opening_Projects_Progress=Opening Projects")
+
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously, final Project/*|null*/ mainProject) {
         if (projects.length == 0) {
             //nothing to do:
@@ -561,56 +557,35 @@ public final class OpenProjectList {
         
         long start = System.currentTimeMillis();
         
-	if (asynchronously) {
-            if (!EventQueue.isDispatchThread()) { // #89935
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        open(projects, openSubprojects, asynchronously, mainProject);
+        if (asynchronously) {
+            class Cancellation extends AtomicBoolean implements Cancellable {
+                Thread t;
+                @Override public boolean cancel() {
+                    if (t != null) {
+                        t.interrupt();
                     }
-                });
-                return;
+                    return compareAndSet(false, true);
+                }
             }
-	    final ProgressHandle handle = ProgressHandleFactory.createHandle(CAP_Opening_Projects());
-        final OpeningProjectPanel panel = new OpeningProjectPanel();
-        panel.setProjectName(projects[0].getProjectDirectory().getNameExt());
-        final DialogDescriptor dd = new DialogDescriptor(panel, LBL_Opening_Projects_Progress(), true, null);
-        dd.setLeaf(true);
-        dd.setOptions(new Object[0]);
-	    final JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(
-            dd);
-	    dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-	    
-	    OPENING_RP.post(new Runnable() {
-		public void run() {
-		    try {
-			doOpen(projects, openSubprojects, handle, panel);
-                        if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
-                            setMainProject(mainProject);
-                        }
-		    } finally {
-			SwingUtilities.invokeLater(new Runnable() {
-			    public void run() {
-                                //fix for #67114:
-                                try {
-                                    Thread.sleep(50);
-                                } catch (InterruptedException e) {
-                                    // ignored
-                                }
-                                dialog.setVisible(false);
-                                dialog.dispose();
-			    }
-			});
-		    }
-		}
-	    });
-	    
-	    dialog.setVisible(true);
-	} else {
-	    doOpen(projects, openSubprojects, null, null);
+            final Cancellation cancellation = new Cancellation();
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(CAP_Opening_Projects(), cancellation);
+            handle.start();
+            handle.progress(projects[0].getProjectDirectory().getNameExt());
+            OPENING_RP.post(new Runnable() {
+                @Override public void run() {
+                    cancellation.t = Thread.currentThread();
+                    doOpen(projects, openSubprojects, handle, cancellation);
+                    if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                        setMainProject(mainProject);
+                    }
+                }
+            });
+        } else {
+            doOpen(projects, openSubprojects, null, null);
             if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
                 setMainProject(mainProject);
             }
-	}
+        }
         
         long end = System.currentTimeMillis();
         
@@ -618,8 +593,9 @@ public final class OpenProjectList {
             log(Level.FINE, "opening projects took: " + (end - start) + "ms");
         }
     }
-    
-    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, OpeningProjectPanel panel) {
+
+    @Messages({"# {0} - project display name", "OpenProjectList.finding_subprojects=Finding required projects of {0}"})
+    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
@@ -633,21 +609,19 @@ public final class OpenProjectList {
         Collection<Project> projectsToOpen = new LinkedHashSet<Project>();
         
 	if (handle != null) {
-	    handle.start(maxWork);
+	    handle.switchToDeterminate(maxWork);
 	    handle.progress(0);
 	}
-        
-        if (panel != null) {
-            assert projects.length > 0 : "at least one project to open";
-            
-            panel.setProjectName(ProjectUtils.getInformation(projects[0]).getDisplayName());
-        }
         
         Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
 
         List<Project> toHandle = new LinkedList<Project>(Arrays.asList(projects));
         
         while (!toHandle.isEmpty()) {
+            if (canceled != null && canceled.get()) {
+                break;
+            }
+
             Project p = toHandle.remove(0);
             assert p != null;
             Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
@@ -655,6 +629,9 @@ public final class OpenProjectList {
             if (subprojects == null) {
                 SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                 if (spp != null) {
+                    if (handle != null) {
+                        handle.progress(OpenProjectList_finding_subprojects(ProjectUtils.getInformation(p).getDisplayName()));
+                    }
                     subprojects = spp.getSubprojects();
                 } else {
                     subprojects = Collections.emptySet();
@@ -693,9 +670,11 @@ public final class OpenProjectList {
         });
         
         for (Project p: projectsToOpen) {
-            
-            if (panel != null) {
-                panel.setProjectName(ProjectUtils.getInformation(p).getDisplayName());
+            if (canceled != null && canceled.get()) {
+                break;
+            }
+            if (handle != null) {
+                handle.progress(ProjectUtils.getInformation(p).getDisplayName());
             }
             
             recentProjectsChanged |= doOpenProject(p);
@@ -708,6 +687,8 @@ public final class OpenProjectList {
                 handle.progress((int) currentWork);
             }
         }
+
+        Thread.interrupted(); // just to clear status
 
         final boolean _recentProjectsChanged = recentProjectsChanged;
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {

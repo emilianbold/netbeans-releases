@@ -458,13 +458,6 @@ made subject to such option by the copyright holder.
         </folder>
 
     <folder name="Templates">
-	<folder name="Privileged">
-            <file name="JFrame.shadow">
-                <attr name="originalFile" stringvalue="Templates/GUIForms/JFrame.java"/>
-                <attr name="position" intvalue="400"/>
-            </file>
-	</folder>
-
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Forms.html"/>
