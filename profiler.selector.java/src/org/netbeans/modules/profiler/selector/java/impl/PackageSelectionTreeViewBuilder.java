@@ -50,20 +50,21 @@ import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
 @ProjectServiceProvider(service=SelectionTreeBuilder.class,
-    projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject"),
-                    @ProjectType(id="org-netbeans-modules-j2ee-earproject"),
-                    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),
-                    @ProjectType(id="org-netbeans-modules-web-project"),
-                    @ProjectType(id="org-netbeans-modules-apisupport-project"),
-                    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"),
-                    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1200),
-                    @ProjectType(id="org-netbeans-modules-maven")
+    projectTypes={@ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-j2ee-earproject"), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-web-project"), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1200), // NOI18N
+                    @ProjectType(id="org-netbeans-modules-maven") // NOI18N
     }
 )
 public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder {
@@ -73,7 +74,8 @@ public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder
     }
 
     public PackageSelectionTreeViewBuilder(Project project, boolean isPreferred) {
-        super(new Type("package-view", "Package View"), isPreferred, project);
+        super(new Type("package-view", NbBundle.getMessage(PackageSelectionTreeViewBuilder.class, // NOI18N
+                "PackageSelectionTreeViewBuilder_PackageView")), isPreferred, project); // NOI18N
     }
 
     @Override
