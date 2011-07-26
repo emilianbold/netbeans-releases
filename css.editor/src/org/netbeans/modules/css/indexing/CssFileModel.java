@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
 /**
  * Instances of this class represents a css model associated with a snapshot of the file content.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssFileModel {
 

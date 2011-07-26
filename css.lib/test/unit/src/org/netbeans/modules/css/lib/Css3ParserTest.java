@@ -98,6 +98,8 @@ public class Css3ParserTest extends CslTestBase {
         
         CssParserResult res = TestUtil.parse(code);
         
+        assertResult(res, 1);
+        
         //the background: red; declaration is properly parsed even if the previous declaration is broken
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
@@ -116,6 +118,8 @@ public class Css3ParserTest extends CslTestBase {
         CssParserResult res = TestUtil.parse(code);
 //        TestUtil.dumpResult(res);
         
+        assertResult(res, 1); 
+        
         //the garbage char @ is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
@@ -130,12 +134,12 @@ public class Css3ParserTest extends CslTestBase {
                       + "}";
         
         CssParserResult res = TestUtil.parse(code);
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
+        assertResult(res, 0);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
         
-        assertEquals(0, res.getDiagnostics().size());
     }
     
     public void testValidCode() throws ParseException, BadLocationException {
@@ -147,14 +151,13 @@ public class Css3ParserTest extends CslTestBase {
                 +      "#id { }";
         
         CssParserResult res = TestUtil.parse(code);
-//        TestUtil.dumpResult(res);
+        assertResult(res, 0);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/declarations/declaration|1/property/background"));
         
-        assertEquals(0, res.getDiagnostics().size());
     }
     
     public void testParseTreeOffsets() throws ParseException, BadLocationException {
@@ -163,7 +166,8 @@ public class Css3ParserTest extends CslTestBase {
         //             0         1
         
         CssParserResult res = TestUtil.parse(code);
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
+        assertResult(res, 0);
         
         Node aNode = NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/elementName/body");
@@ -233,17 +237,17 @@ public class Css3ParserTest extends CslTestBase {
     }
     
     public void testCommon() throws ParseException, BadLocationException {
-//        String code = "body, head > #id {} .class {}";
         String code = "#id .class body { color: red}     body {}";
         CssParserResult res = TestUtil.parse(code);
 //        TestUtil.dumpResult(res);
+        assertResult(res, 0);
     }
     
     public void testMedia() throws ParseException, BadLocationException {
-//        String code = "body, head > #id {} .class {}";
         String code = "@media screen { h1 { color: red; } }";
         CssParserResult res = TestUtil.parse(code);
 //        TestUtil.dumpResult(res);
+        assertResult(res, 0);
     }
     
     public void testRootNodeSpan() throws ParseException, BadLocationException {
@@ -327,6 +331,68 @@ public class Css3ParserTest extends CslTestBase {
         
         assertFalse(recoveryNodeFound.get());
         
+        //this doesn't work actually, the resyncing to ident doesn't work naturally
+        
+    }
+    
+     //issue #160780
+    public void testFatalParserError() throws ParseException, BadLocationException {
+        //fatal parse error on such input
+        String content = "@charset";
+        
+        CssParserResult result = TestUtil.parse(content);        
+        assertNotNull(result.getParseTree());
+        assertEquals(1, result.getDiagnostics().size());
+    }
+    
+    public void testCharsetParsing() throws ParseException, BadLocationException {
+        String content = "@charset \"iso-8859-1\";\n h1 { color: red; }";
+        
+        CssParserResult result = TestUtil.parse(content);        
+        assertResult(result, 0);
+    }
+    
+    
+    public void testErrorCase4() throws ParseException, BadLocationException {
+        String content = "h1 { color: ;}";
+        
+        CssParserResult result = TestUtil.parse(content);        
+        assertResult(result, 1);
+    }
+    
+    public void testIdParsing() throws ParseException, BadLocationException {
+        String content = "h1 #myid { color: red }";
+        
+        CssParserResult result = TestUtil.parse(content);        
+        assertResult(result, 0);
+        TestUtil.dumpResult(result);
+        
+        Node id = NodeUtil.query(result.getParseTree(), TestUtil.bodysetPath + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId"); 
+        assertNotNull(id);
+        
+        assertEquals(NodeType.cssId, id.type());
+        
+    }
+    
+    public void testErrorRecoveryBetweenRuleSets() throws ParseException, BadLocationException {
+        String content = "h1 { color: red} ; h2 { color: blue }";
+        //                                 ^ -- semicolon not allowed here
+        
+        CssParserResult result = TestUtil.parse(content);        
+        TestUtil.dumpResult(result);
+        
+        assertResult(result, 0);
+    }
+    
+    public void testErrorCase5() throws ParseException, BadLocationException {
+        String content = "a { }   m { }";
+        
+        CssParserResult result = TestUtil.parse(content);        
+        TestUtil.dumpResult(result);
+        
+        assertResult(result, 0);
+        
+        //fails - recovery in declarations eats the closing right curly bracket
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
@@ -342,6 +408,10 @@ public class Css3ParserTest extends CslTestBase {
     private CssParserResult assertResult(CssParserResult result, int problems) {
         assertNotNull(result);
         assertNotNull(result.getParseTree());
+        
+        if(problems != result.getDiagnostics().size()) {
+            TestUtil.dumpResult(result);
+        }
         assertEquals(problems, result.getDiagnostics().size());
         
         return result;

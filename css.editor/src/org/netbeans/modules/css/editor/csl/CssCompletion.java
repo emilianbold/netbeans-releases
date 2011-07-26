@@ -183,13 +183,13 @@ public class CssCompletion implements CodeCompletionHandler {
                 return CodeCompletionResult.NONE;
             }
         }
-        System.out.println("------------------");
-        NodeUtil.dumpTree(root);    
-        System.out.println("------------------");
-        System.out.println("ast caret offset=" + astCaretOffset);
-        System.out.println("current token node: type=" + tokenNode.type() + ", name=" + tokenNode.name() + " (" + tokenNode.from() + "-" + tokenNode.to() + ")");
-        System.out.println("current node: type=" + node.type() + ", name=" + node.name() + " (" + node.from() + "-" + node.to() + ")");
-        
+//        System.out.println("------------------");
+//        NodeUtil.dumpTree(root);    
+//        System.out.println("------------------");
+//        System.out.println("ast caret offset=" + astCaretOffset);
+//        System.out.println("current token node: type=" + tokenNode.type() + ", name=" + tokenNode.name() + " (" + tokenNode.from() + "-" + tokenNode.to() + ")");
+//        System.out.println("current node: type=" + node.type() + ", name=" + node.name() + " (" + node.from() + "-" + node.to() + ")");
+//        
 
         //Why we need the (prefix.length() > 0 || astCaretOffset == node.from())???
         //

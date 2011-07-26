@@ -140,14 +140,14 @@ styleSheet
 // Character set.   Picks up the user specified character set, should it be present.
 //
 charSet
-    :   CHARSET_SYM WS STRING WS? SEMI
+    :   CHARSET_SYM WS* STRING WS* SEMI
     ;
 
 // ---------
 // Import.  Location of an external style sheet to include in the ruleset.
 //
 imports
-    :   IMPORT_SYM WS (STRING|URI) WS* mediaList? SEMI
+    :   IMPORT_SYM WS* (STRING|URI) WS* mediaList? SEMI
     ;
 
 // ---------
@@ -158,7 +158,7 @@ media
     : MEDIA_SYM WS* mediaList
         LBRACE WS*
             ruleSet
-        RBRACE
+        WS* RBRACE
     ;
 
 mediaList
@@ -184,7 +184,7 @@ bodyset
         | page
       )
       WS*
-    ;   
+    ;
     
 page
     : PAGE_SYM WS? (pseudoPage WS*)?
@@ -221,7 +221,7 @@ property
     
 ruleSet 
     :   selectorsGroup
-        LBRACE WS* syncToIdent
+        LBRACE WS* syncTo_IDENT_RBRACE
             declarations
         RBRACE
     ;
@@ -304,12 +304,12 @@ cssId
     ;
 
 cssClass
-    : DOT IDENT
+    : DOT ( IDENT | GEN  )
     ;
     
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : IDENT | '*'
+    : ( IDENT | GEN ) | '*'
     ;
     
 attrib
@@ -336,9 +336,9 @@ attrib
 
 pseudo
     : COLON 
-            IDENT 
+            ( IDENT | GEN )
                 ( // Function
-                    WS* LPAREN WS* (IDENT WS*)? RPAREN
+                    WS* LPAREN WS* (( IDENT | GEN ) WS*)? RPAREN
                 )?
     ;
 
@@ -354,15 +354,23 @@ declaration
         consumeUntil(input, BitSet.of(SEMI, RBRACE)); 
     }
 
-//recovery: syncs the parser to the first identifier in the token input stream
+//recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
 //since the rule matches epsilon it will always be entered
-syncToIdent
+syncTo_IDENT_RBRACE
     @init {
-        syncToSet(BitSet.of(IDENT));
+        syncToSet(BitSet.of(IDENT, RBRACE));
     }
     	:	
-    	//match nothing so the rule is always entered
     	;
+
+//synct to computed follow set in the rule
+syncToFollow
+    @init {
+        syncToSet();
+    }
+    	:	
+    	;
+    
     
 prio
     : IMPORTANT_SYM
@@ -387,6 +395,7 @@ term
         )
     | STRING
     | IDENT
+    | GEN
     | URI
     | hexColor
     | function

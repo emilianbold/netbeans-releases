@@ -309,19 +309,4 @@ public final class NodeUtil {
         return new int[]{lbrace.from(), rbrace.to()};
     }
 
-    private static void nodeToString(Node node, PrintWriter b) {
-        b.print('\'');
-        b.print(node.image());
-        b.print('\'');
-        b.print(' ');
-        b.print('[');
-        b.print(node.type().name());
-        b.print(']');
-        b.print('(');
-        b.print(Integer.toString(node.from()));
-        b.print('-');
-        b.print(Integer.toString(node.to()));
-        b.print(')');
-        b.println();
-    }
 }

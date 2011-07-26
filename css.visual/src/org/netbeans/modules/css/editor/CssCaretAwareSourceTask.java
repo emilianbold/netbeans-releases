@@ -166,8 +166,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             return ;
         }
 
-        //some error
-        CssEditorSupport.getDefault().parsedWithError(result);
+        //out of rule, lets notify the editor support anyway
+        CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
 
     }
 }

@@ -130,5 +130,19 @@ public class NodeUtilTest extends NbTestCase {
         assertEquals("error", node.name());
         
     }
+    
+    public void test_findNodeAtOffset() throws BadLocationException, ParseException {
+        String code = "h1 { color: red; }";
+        //             01234567890123456789
+        CssParserResult result = TestUtil.parse(code);
+        
+        TestUtil.dumpResult(result);
+        
+        Node tokenNode = NodeUtil.findNodeAtOffset(result.getParseTree(), 1);
+        assertNotNull(tokenNode);
+        
+        assertEquals(NodeType.token, tokenNode.type());
+        assertEquals("h1", tokenNode.image().toString());
+    }
         
 }
