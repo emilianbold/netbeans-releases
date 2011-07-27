@@ -109,6 +109,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JAVA_ICON">
+            <api name="general"/>
+            <summary>Added <code>JavaTemplates.JAVA_ICON</code></summary>
+            <version major="1" minor="40"/>
+            <date day="25" month="7" year="2011"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a constant for a Java template icon.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
+            <issue number="200175"/>
+        </change>
         <change id="BrokenReferencesSupport-showAlert">
             <api name="general"/>
             <summary>Added <code>showAlert</code> method into the<code>BrokenReferencesSupport</code></summary>

@@ -46,16 +46,28 @@ package org.netbeans.modules.debugger.jpda.ui.options;
  *
  * @author Martin Entlicher
  */
-abstract class StorablePanel extends javax.swing.JPanel {
-
+public abstract class StorablePanel extends javax.swing.JPanel {
+    
     /**
      * Read settings and initialize GUI
      */
-    abstract void load();
+    public abstract void load();
 
     /**
      * Store modified settings
      */
-    abstract void store();
+    public abstract void store();
+    
+    
+    public static interface Provider {
+        
+        /**
+         * Provides the display name of the panel.
+         * @return The display name of the panel
+         */
+        public abstract String getPanelName();
+
+        public StorablePanel getPanel();
+    }
 
 }

@@ -54,9 +54,6 @@ made subject to such option by the copyright holder.
             <file name="absolutelayout.xml" url="absolutelayout.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#absolutelayout"/>
             </file>
-            <file name="beans_binding.xml" url="beans_binding.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.form.resources.Bundle#beans-binding"/>
-            </file>
         </folder>
     </folder>
   <folder name="Loaders">
@@ -458,13 +455,6 @@ made subject to such option by the copyright holder.
         </folder>
 
     <folder name="Templates">
-	<folder name="Privileged">
-            <file name="JFrame.shadow">
-                <attr name="originalFile" stringvalue="Templates/GUIForms/JFrame.java"/>
-                <attr name="position" intvalue="400"/>
-            </file>
-	</folder>
-
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Forms.html"/>

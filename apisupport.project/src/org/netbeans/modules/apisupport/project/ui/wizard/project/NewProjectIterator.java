@@ -73,6 +73,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wizard for creating new project templates.
@@ -93,8 +95,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         "org.openide.awt", // NOI18N
     };
     
-    private NewProjectIterator() { /* Use factory method. */ };
-    
+    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1000, displayName = "#Templates/NetBeansModuleDevelopment/newProject", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newProject.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newProject.html", category = "nbm-specific")
     public static NewProjectIterator createIterator() {
         return new NewProjectIterator();
     }

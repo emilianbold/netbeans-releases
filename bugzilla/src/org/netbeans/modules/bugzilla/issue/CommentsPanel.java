@@ -82,6 +82,8 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.Element;
+import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
@@ -465,14 +467,18 @@ public class CommentsPanel extends JPanel {
         public void setVisible(boolean b) {
             if (b) {
                 JTextPane pane = (JTextPane) getInvoker();
-                BugzillaIssue.Attachment attachment = getAttachment(pane);
-                if (attachment != null) {
-                    add(new JMenuItem(attachment.new DefaultAttachmentAction()));
-                    add(new JMenuItem(attachment.new SaveAttachmentAction()));
-                    if ("1".equals(attachment.getIsPatch())) { // NOI18N
-                        add(attachment.new ApplyPatchAction());
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
+                if (elem.getAttributes().getAttribute(HyperlinkSupport.LINK_ATTRIBUTE) != null) {
+                    BugzillaIssue.Attachment attachment = getAttachment(pane);
+                    if (attachment != null) {
+                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
+                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
+                            add(attachment.new ApplyPatchAction());
+                        }
+                        super.setVisible(true);
                     }
-                    super.setVisible(true);
                 }
             } else {
                 super.setVisible(false);

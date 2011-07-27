@@ -611,7 +611,8 @@ public class FormDesigner {
             new Mutex.ExceptionAction () {
                 @Override
                 public Object run() throws Exception {
-                    VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), null);
+                    FormModel formModel = metacomp.getFormModel();
+                    VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), FormEditor.getBindingSupport(formModel));
                     r.setTopMetaComponent(metacomp);
                     Object container = r.createClone();
                     if (container instanceof RootPaneContainer) {

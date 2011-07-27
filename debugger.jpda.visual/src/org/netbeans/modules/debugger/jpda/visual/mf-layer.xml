@@ -78,5 +78,16 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="debugger">
+        <folder name="jpda">
+            <folder name="options">
+                <file name="org-netbeans-modules-debugger-jpda-visual-options-VisualOptionsProvider.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.jpda.visual.options.VisualOptionsProvider"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.debugger.jpda.ui.options.StorablePanel$Provider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>

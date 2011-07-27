@@ -70,7 +70,7 @@ public final class HyperlinkSupport {
     final static String STACKTRACE_ATTRIBUTE = "attribute.stacktrace.link";     // NOI18N
     final static String TYPE_ATTRIBUTE = "attribute.type.link";                 // NOI18N
     final static String URL_ATTRIBUTE = "attribute.url.link";                   // NOI18N
-    final static String LINK_ATTRIBUTE = "attribute.simple.link";               // NOI18N
+    public final static String LINK_ATTRIBUTE = "attribute.simple.link";               // NOI18N
     private final MotionListener motionListener;
     private final java.awt.event.MouseListener mouseListener;
     

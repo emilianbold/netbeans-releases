@@ -341,8 +341,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            TokenSequence<JavaTokenId> ts = TokenHierarchy.get(component.getDocument()).tokenSequence(JavaTokenId.language());
-                            if (ts.move(offset) == 0 && ts.moveNext()) {
+                            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
+                            if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
                                 int len = newOffset - offset;
                                 if (len >= 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
                                         ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N

@@ -76,6 +76,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -241,13 +242,13 @@ public class UnusedAssignmentOrBranch implements CancellableTask<CompilationInfo
         return p.getBoolean(ENABLED_KEY, true);
     }
 
-    @Hint(category="bugs", id=UNUSED_ASSIGNMENT_ID)
+    @Hint(category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.NO_BATCH, Options.QUERY})
     @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
     public static ErrorDescription unusedAssignment(HintContext ctx) {
         return null;
     }
 
-    @Hint(category="bugs", id=DEAD_BRANCH_ID)
+    @Hint(category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY})
     @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
     public static ErrorDescription deadBranch(HintContext ctx) {
         return null;

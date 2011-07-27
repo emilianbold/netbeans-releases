@@ -58,6 +58,8 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedF
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -71,15 +73,20 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  * @author Max Sauer
  */
-final class NewOptionsIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=400,
+    displayName="#template_options",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newOptions.png",
+    description="../../resources/newOptions.html",
+    category="nbm-specific"
+)
+@Messages("template_options=Options Panel")
+public final class NewOptionsIterator extends BasicWizardIterator {
     
     private NewOptionsIterator.DataModel data;
     
     private NewOptionsIterator() {  /* Use factory method. */ }
-    
-    public static NewOptionsIterator createIterator() {
-        return new NewOptionsIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();

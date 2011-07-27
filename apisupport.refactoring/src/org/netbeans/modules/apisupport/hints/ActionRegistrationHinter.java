@@ -178,7 +178,7 @@ public class ActionRegistrationHinter implements Hinter {
             FileObject file = ctx.file();
             params.put("category", file.getParent().getPath().substring("Actions/".length()));
             params.put("id", file.getName().replace('-', '.'));
-            ModifiersTree nue = ctx.addAnnotation(wc, modifiers, "org.openide.awt.ActionID", params);
+            ModifiersTree nue = ctx.addAnnotation(wc, modifiers, "org.openide.awt.ActionID", null, params);
             params.clear();
             String displayName = ctx.bundlevalue(file.getAttribute("literal:displayName"), declaration);
             if (displayName == null) {
@@ -192,7 +192,7 @@ public class ActionRegistrationHinter implements Hinter {
                 params.put("iconInMenu", !((Boolean) noIconInMenu));
             }
             params.put("asynchronous", file.getAttribute("asynchronous"));
-            nue = ctx.addAnnotation(wc, nue, "org.openide.awt.ActionRegistration", params);
+            nue = ctx.addAnnotation(wc, nue, "org.openide.awt.ActionRegistration", null, params);
             ctx.delete(file);
             TreeMaker make = wc.getTreeMaker();
             List<AnnotationTree> anns = new ArrayList<AnnotationTree>();

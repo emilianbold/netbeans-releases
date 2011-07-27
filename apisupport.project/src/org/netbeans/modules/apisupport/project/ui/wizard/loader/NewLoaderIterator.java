@@ -69,7 +69,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -77,15 +79,18 @@ import org.openide.xml.XMLUtil;
  *
  * @author Milos Kleint
  */
-final class NewLoaderIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=500,
+    displayName="#template_loader",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLoader.png",
+    description="../../resources/newLoader.html",
+    category="nbm-specific"
+)
+@Messages("template_loader=File Type")
+public final class NewLoaderIterator extends BasicWizardIterator {
     
     private NewLoaderIterator.DataModel data;
-    
-    private NewLoaderIterator() { /* Use factory method. */ };
-    
-    public static NewLoaderIterator createIterator() {
-        return new NewLoaderIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();

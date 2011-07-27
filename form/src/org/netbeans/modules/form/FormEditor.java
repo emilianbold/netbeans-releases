@@ -77,6 +77,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Form editor.
@@ -108,6 +109,7 @@ public class FormEditor {
     private ResourceSupport resourceSupport;
 
     /** Instance of binding support for the form.*/
+    private boolean bindingSupportInitialized;
     private BindingDesignSupport bindingSupport;
 
     /** List of exceptions occurred during the last persistence operation */
@@ -227,8 +229,11 @@ public class FormEditor {
     }
 
     BindingDesignSupport getBindingSupport() {
-        if (bindingSupport == null && formModel != null) {
-            bindingSupport = new BindingDesignSupport(formModel);
+        if (!bindingSupportInitialized && formModel != null) {
+            BindingDesignSupportProvider provider = Lookup.getDefault().lookup(BindingDesignSupportProvider.class);
+            if (provider != null) {
+                bindingSupport = provider.create(formModel);
+            }
         }
         return bindingSupport;
     }
@@ -1208,20 +1213,8 @@ public class FormEditor {
      */
     public static boolean updateProjectForBeansBinding(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
-        if (formEditor != null
-                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.beansbinding.Binding.class.getName())) {
-            try {
-                Library lib = LibraryManager.getDefault().getLibrary("beans-binding"); // NOI18N
-                if (lib == null) {
-                    return false;
-                }
-                ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                                                 new ClassSource.LibraryEntry(lib));
-                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
-            }
-            catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
+        if (formEditor != null) {
+            return formEditor.getBindingSupport().updateProjectForBeansBinding();
         }
         return false;
     }

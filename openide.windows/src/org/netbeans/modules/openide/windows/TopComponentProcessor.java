@@ -83,7 +83,7 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             
             Description info = findInfo(e);
             if (info == null) {
-                throw new LayerGenerationException("Cannot find TopComponent.Description for this element", e);
+                throw new LayerGenerationException("Cannot find TopComponent.Description for this element", e, processingEnv, reg);
             }
             String id = info.preferredID().replace('.', '-');
             
@@ -112,11 +112,11 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
                 File actionFile = layer(e).
                     file("Actions/" + aid.category() + "/" + aid.id().replace('.', '-') + ".instance").
                     methodvalue("instanceCreate", "org.openide.windows.TopComponent", "openAction");
-                actionFile.instanceAttribute("component", TopComponent.class);
+                actionFile.instanceAttribute("component", TopComponent.class, reg, null);
                 if (reg.preferredID().length() > 0) {
                     actionFile.stringvalue("preferredID", reg.preferredID());
                 }
-                actionFile.bundlevalue("displayName", reg.displayName());
+                actionFile.bundlevalue("displayName", reg.displayName(), reg, "displayName");
                 if (info != null && info.iconBase().length() > 0) {
                     actionFile.stringvalue("iconBase", info.iconBase());
                 }
