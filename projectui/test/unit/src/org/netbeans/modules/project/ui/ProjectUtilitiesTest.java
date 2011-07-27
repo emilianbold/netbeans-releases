@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.cookies.EditorCookie;
@@ -249,7 +250,8 @@ public class ProjectUtilitiesTest extends NbTestCase {
             }
         }
     }
-    
+
+    @RandomlyFails // in NB-Core-Build #6826, and reproducibly if testSavingModifiedNotOpenedFiles67526 is not run first
     public void testCloseAndOpenProjectAndClosedWithoutOpenFiles () {
         closeProjectWithOpenedFiles ();
 
