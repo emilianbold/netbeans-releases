@@ -42,7 +42,6 @@
 package org.netbeans.modules.profiler.nbimpl.javac;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.Collections;
@@ -257,39 +256,6 @@ public class ElementUtilitiesEx {
         }
         return null;
     }
-
-    
-    /**
-     * Resolves a class by its name
-     * @param className The name of the class to be resolved
-     * @param project A project to start the resolution process in
-     * @param fuzzy Indicates whether in case of an unresolvable anonymous inner class the parent class should be returned instead
-     * @return Returns a TypeElement representing the resolved class or NULL
-     */
-    public static TypeElement resolveClassByName(final String className, final Project project, final boolean fuzzy) {
-        if (className == null || project == null) {
-            return null;
-        }
-        JavaSource js = getSources(project);
-        
-        final TypeElement[] rslt = new TypeElement[1];
-        
-        if (js != null) {
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
-                    
-                    @Override
-                    public void run(CompilationController cc) throws Exception {
-                        rslt[0] = resolveClassByName(className, cc, fuzzy);
-                    }
-                }, true);
-            } catch (IOException e) {
-                ProfilerLogger.log(e);
-            }
-        }
-        
-        return rslt[0];
-    }
     
     public static Set<ElementHandle<TypeElement>> findImplementors(ClasspathInfo cpInfo, final ElementHandle<TypeElement> baseType) {
         final Set<ClassIndex.SearchKind> kind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
@@ -343,16 +309,6 @@ public class ElementUtilitiesEx {
         }
 
         return implementors;
-    }
-    
-    // **** to be extracted
-    
-    public static Set<ElementHandle<TypeElement>> getSubclasses(final String className, Project project) {
-        ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
-        
-        ElementHandle<TypeElement> baseType = resolveClassByName(className, cpInfo, false);
-        
-        return findImplementors(cpInfo, baseType);
     }
     
     /**

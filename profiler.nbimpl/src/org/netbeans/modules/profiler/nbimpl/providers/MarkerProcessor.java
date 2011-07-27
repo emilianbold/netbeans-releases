@@ -66,7 +66,7 @@ import org.netbeans.lib.profiler.marker.MethodMarker;
 import org.netbeans.lib.profiler.marker.PackageMarker;
 import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
-import org.netbeans.modules.profiler.api.java.JavaProfilerProject;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.categorization.api.definitions.CustomCategoryDefinition;
@@ -97,11 +97,11 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
     private PackageMarker pMarker = new PackageMarker();
     private CompositeMarker cmMarker = new CompositeMarker();
     private JavaSource associatedParser;
-    private JavaProfilerProject pp;
+    private Project pp;
 
     public MarkerProcessor(final Project prj) {
         associatedParser = ElementUtilitiesEx.getSources(prj);
-        pp = JavaProfilerProject.createFrom(prj);
+        pp = prj;
     }
 
     @Override
@@ -169,8 +169,7 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
                 
         final Set<String> restrictorSet = methodNameRestriction != null ? new HashSet<String>(Arrays.asList(methodNameRestriction)) : Collections.EMPTY_SET;
         
-        
-        SourceClassInfo ci = pp.resolveClass(interfaceName);
+        SourceClassInfo ci = ProfilerTypeUtils.resolveClass(interfaceName, pp);
         
         if (ci == null) {
             LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", interfaceName);

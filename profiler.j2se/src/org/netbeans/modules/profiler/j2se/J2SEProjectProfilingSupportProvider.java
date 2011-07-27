@@ -60,7 +60,7 @@ import java.util.Properties;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
-import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.nbimpl.project.JavaProjectProfilingSupportProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
@@ -136,13 +136,13 @@ public final class J2SEProjectProfilingSupportProvider extends JavaProjectProfil
     @Override
     public boolean checkProjectCanBeProfiled(final FileObject profiledClassFile) {
         if (profiledClassFile == null) {
-            Project project = getProject();
-            final PropertyEvaluator pp = getProjectProperties(project);
+            Project p = getProject();
+            final PropertyEvaluator pp = getProjectProperties(p);
             String profiledClass = pp.getProperty("main.class"); // NOI18N
 
             if ((profiledClass == null) || "".equals(profiledClass)
-                    || (ElementUtilitiesEx.resolveClassByName(profiledClass, project, false) == null)) { // NOI18N
-                mainClassSetManually = ProjectUtilities.selectMainClass(project, null, ProjectUtilities.getProjectName(project),
+                    || (ProfilerTypeUtils.resolveClass(profiledClass, p) == null)) { // NOI18N
+                mainClassSetManually = ProjectUtilities.selectMainClass(p, null, ProjectUtilities.getProjectName(p),
                                                                         -1);
 
                 //        Profiler.getDefault().displayError("No class to profile. To set up main class for a Project, go to \n" +

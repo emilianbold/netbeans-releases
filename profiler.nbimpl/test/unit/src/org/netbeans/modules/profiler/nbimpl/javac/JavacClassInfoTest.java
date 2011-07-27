@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.javac;
 
-import org.netbeans.modules.profiler.api.java.JavaProfilerProject;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.netbeans.modules.profiler.nbimpl.BaseProjectTest;
@@ -52,7 +52,6 @@ import org.netbeans.modules.profiler.nbimpl.BaseProjectTest;
  */
 public class JavacClassInfoTest extends BaseProjectTest {
     private SourceClassInfo ci;
-    private JavaProfilerProject jpp;
     
     public JavacClassInfoTest(String name) {
         super(name);
@@ -61,14 +60,12 @@ public class JavacClassInfoTest extends BaseProjectTest {
     @Override
     public void setUp() throws Exception{
         super.setUp(); 
-        jpp = JavaProfilerProject.createFrom(getProject());
-        ci = jpp.resolveClass("classinfo.ClassInfoTest");
+        ci = ProfilerTypeUtils.resolveClass("classinfo.ClassInfoTest", getProject());
     }
     
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        jpp = null;
         ci = null;
     }
 

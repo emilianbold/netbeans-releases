@@ -93,7 +93,7 @@ public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSu
     @Override
     public boolean startProfilingSession(final FileObject profiledClassFile, final boolean isTest, final Properties properties) {
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run() { startMaven(getProject(), profiledClassFile, isTest, properties); }
+            public void run() { startMaven(getProject().getLookup().lookup(Project.class), profiledClassFile, isTest, properties); }
         });
         
         return true;

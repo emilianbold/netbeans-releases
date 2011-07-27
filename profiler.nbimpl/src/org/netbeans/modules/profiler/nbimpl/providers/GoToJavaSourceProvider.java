@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.modules.profiler.api.java.JavaProfilerProject;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.spi.java.GoToSourceProvider;
@@ -67,6 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -75,10 +76,10 @@ import org.openide.text.NbDocument;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.profiler.spi.java.GoToSourceProvider.class)
 public final class GoToJavaSourceProvider extends GoToSourceProvider {
     @Override
-    public boolean openSource(final JavaProfilerProject project, final String className, final String methodName, final String signature, final int line) {
+    public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {
         final AtomicBoolean result = new AtomicBoolean(false);
 
-        SourceClassInfo ci = project.resolveClass(className);
+        SourceClassInfo ci = ProfilerTypeUtils.resolveClass(className, project);
         FileObject sourceFile = ci != null ? ci.getFile() : null;
 
         if (sourceFile == null) {

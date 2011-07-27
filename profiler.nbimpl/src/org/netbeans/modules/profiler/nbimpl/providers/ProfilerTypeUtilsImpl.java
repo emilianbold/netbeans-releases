@@ -49,39 +49,54 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.api.java.JavaProfilerProject;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@ServiceProvider(service=ProfilerTypeUtilsProvider.class)
-public class ProfilerTypeUtilsImpl implements ProfilerTypeUtilsProvider {
+@ProjectServiceProvider(service=ProfilerTypeUtilsProvider.class, projectTypes={
+    @ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),  // NOI18N
+    @ProjectType(id="org-netbeans-modules-j2ee-earproject"),  // NOI18N
+    @ProjectType(id="org-netbeans-modules-web-project"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-ant-freeform", position=1230), // NOI18N, 
+    @ProjectType(id="org-netbeans-modules-maven/jar"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-maven/war"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-maven/ejb"), // NOI18N
+    @ProjectType(id="org-netbeans-modules-maven/nbm") // NOI18N
+})
+
+public class ProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvider {
+    private Project project;
+    
+    public ProfilerTypeUtilsImpl(Project prj) {
+        this.project = prj;
+    }
+    
     @Override
-    public Collection<SourceClassInfo> getMainClasses(JavaProfilerProject project) {
+    public Collection<SourceClassInfo> getMainClasses() {
         List<SourceClassInfo> classes = new ArrayList<SourceClassInfo>();
-        Project nbproject = project.getLookup().lookup(Project.class);
-        FileObject[] srcRoots = ProjectUtilities.getSourceRoots(nbproject, false);
+        FileObject[] srcRoots = ProjectUtilities.getSourceRoots(project, false);
         for(ElementHandle<TypeElement> handle : SourceUtils.getMainClasses(srcRoots)) {
-            classes.add(resolveClass(handle.getBinaryName(), project));
+            classes.add(resolveClass(handle.getBinaryName()));
         }
         
         return classes;
     }
 
     @Override
-    public SourceClassInfo resolveClass(final String className, JavaProfilerProject project) {
-        Project p = project.getLookup().lookup(Project.class);
-        if (p != null) {
-            ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(p);
+    public SourceClassInfo resolveClass(final String className) {
+        if (project != null) {
+            ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
             ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
             return eh != null ? new JavacClassInfo(eh, cpInfo) : null;
         }
