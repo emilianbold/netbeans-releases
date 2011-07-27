@@ -317,6 +317,10 @@ public class BugzillaConfiguration {
             fields.add(IssueField.REMOVECC);
             fields.add(IssueField.COMMENT_COUNT);
             fields.add(IssueField.ATTACHEMENT_COUNT);
+            fields.add(IssueField.ESTIMATED_TIME);
+            fields.add(IssueField.WORK_TIME);
+            fields.add(IssueField.REMAINING_TIME);
+            fields.add(IssueField.DEADLINE);
             
             if(rc != null) {
                 // Custom fields
