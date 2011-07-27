@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
@@ -251,9 +250,8 @@ public class ProjectUtilitiesTest extends NbTestCase {
 
         OpenProjectList.getDefault ().open (project1, false);
 
-        Iterator/*<TopComponent>*/ openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
-        while (openTCs.hasNext ()) {
-            assertTrue ("TopComponent has been closed successfully.", ((TopComponent)openTCs.next ()).close ());
+        for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
+            assertTrue("TopComponent has been closed successfully.", tc.close());
         }
         
         if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false)) {
