@@ -66,6 +66,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.RestrictThreadCreation;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -139,6 +140,10 @@ public class ProjectUtilitiesTest extends NbTestCase {
         (tc1_1_navigator = new SimpleTopComponent2 (do1_1_open, NAVIGATOR_MODE)).open ();
         
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
+
+        RestrictThreadCreation.permitStandard();
+        RestrictThreadCreation.permit(OpenProjectList.class.getName() + "$LoadOpenProjects.waitFinished");
+        RestrictThreadCreation.forbidNewThreads(false);
     }
     
     @SuppressWarnings("deprecation")
