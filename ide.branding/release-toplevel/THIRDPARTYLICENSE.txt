@@ -167,8 +167,7 @@ php/docs/phpdocdesc.zip                                      LGPL-2.1
 php/modules/ext/java-cup-11a.jar                             Based on Standard ML of New Jersey
 platform/docs/swing-layout-1.0.4-doc.zip                     LGPL-2.1
 platform/docs/swing-layout-1.0.4-src.zip                     LGPL-2.1
-platform/modules/ext/felix-2.0.3.jar                         Apache-2.0
-platform/modules/ext/felix-main-2.0.2.jar                    Apache-2.0
+platform/modules/ext/felix-3.2.2.jar                         Apache-2.0
 platform/modules/ext/jna-3.2.7.jar                           LGPL-2.1
 platform/modules/ext/nsProxyAutoConfig.js                    LGPL-2.1
 platform/modules/ext/osgi.cmpn-4.2.jar                       Apache-2.0
