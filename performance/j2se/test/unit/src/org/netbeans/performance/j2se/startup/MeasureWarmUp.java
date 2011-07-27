@@ -149,7 +149,14 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         }
 
         // construct command line
-        StringBuffer cmd = new StringBuffer((new File(ideBinDir,executor)).getAbsolutePath());
+        StringBuffer cmd = new StringBuffer();
+        String execDir = System.getProperty("netbeans.performance.exec.dir");
+        if (execDir==null) {
+            cmd.append((new File(ideBinDir,executor)).getAbsolutePath());
+        } else {
+            cmd.append(execDir);
+        }
+        
 
         // add other argumens
         // guiltracker lib
