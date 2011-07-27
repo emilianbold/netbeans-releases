@@ -80,7 +80,6 @@ class TabsComponent extends JPanel {
     private CardLayout cardLayout;
     private Set<MultiViewElement> alreadyAddedElements;
     private JToolBar bar;
-    private JLabel spacer = new JLabel();
     
     private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
@@ -177,16 +176,10 @@ class TabsComponent extends JPanel {
         GridBagConstraints cons = new GridBagConstraints();
         cons.anchor = GridBagConstraints.EAST;
         cons.fill = GridBagConstraints.BOTH;
+        cons.gridwidth = GridBagConstraints.REMAINDER;
         cons.weightx = 1;
 
         bar.add(toolbarPanel, cons);
-
-        cons = new GridBagConstraints();
-        cons.anchor = GridBagConstraints.EAST;
-        cons.fill = GridBagConstraints.BOTH;
-        cons.weightx = 1;
-
-        bar.add(spacer, cons);
     }
 
     
@@ -269,7 +262,6 @@ class TabsComponent extends JPanel {
             if (toolbarPanel != null) {
                 bar.remove(toolbarPanel);
             }
-            bar.remove(spacer);
             if (innerbar == null) {
                 innerbar = getEmptyInnerToolBar();
             }
@@ -284,17 +276,13 @@ class TabsComponent extends JPanel {
             GridBagConstraints cons = new GridBagConstraints();
             cons.anchor = GridBagConstraints.EAST;
             cons.fill = GridBagConstraints.BOTH;
+            cons.gridwidth = GridBagConstraints.REMAINDER;
             cons.weightx = 1;
             toolbarPanel.setMinimumSize(new Dimension(10, 10));
 //            cons.gridwidth = GridBagConstraints.REMAINDER;
 
             bar.add(toolbarPanel, cons);
 
-            cons = new GridBagConstraints();
-            cons.anchor = GridBagConstraints.EAST;
-            cons.fill = GridBagConstraints.BOTH;
-            cons.weightx = 1;
-            bar.add(spacer, cons);
             // rootcycle is the tabscomponent..
 //            toolbarPanel.setFocusCycleRoot(false);
             bar.revalidate();

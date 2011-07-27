@@ -43,6 +43,9 @@ public final class PhpUnitTestRunInfo {
     private final String testName;
     private final List<Testcase> customTests = new CopyOnWriteArrayList<Testcase>();
 
+    private volatile boolean rerun = false;
+    private volatile String testGroups;
+
 
     /**
      * Create new info about test run.
@@ -115,6 +118,38 @@ public final class PhpUnitTestRunInfo {
     public void setCustomTests(Collection<Testcase> tests) {
         resetCustomTests();
         customTests.addAll(tests);
+    }
+
+    /**
+     * Check whether this test run is rerun.
+     * @return {@code true} if this test run is rerun
+     */
+    public boolean isRerun() {
+        return rerun;
+    }
+
+    /**
+     * Set whether this test run is rerun.
+     * @param rerun {@code true} for rerun, {@code false} otherwise
+     */
+    public void setRerun(boolean rerun) {
+        this.rerun = rerun;
+    }
+
+    /**
+     * Get test groups of this test run.
+     * @return test groups of this test run, can be {@code null}
+     */
+    public String getTestGroups() {
+        return testGroups;
+    }
+
+    /**
+     * Set test groups of this test run.
+     * @param testGroups test groups of this test run, can be {@code null}
+     */
+    public void setTestGroups(String testGroups) {
+        this.testGroups = testGroups;
     }
 
 }

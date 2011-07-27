@@ -35,7 +35,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="assignedComboActionPerformed"/>
       </Events>
     </Component>
-    <Container class="javax.swing.JPanel" name="workHoursPanel">
+    <Container class="javax.swing.JPanel" name="timetrackingPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="ff" green="ff" id="EditorPane.background" palette="3" red="ff" type="palette"/>
@@ -344,16 +344,16 @@
                           <Component id="statusWhiteboardLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="dummyLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="dummyLabel4" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyTimetrackingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="workLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="timetrackingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="customFieldsPanelLeft" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dummyWorkPanel" alignment="0" pref="556" max="32767" attributes="0"/>
+                          <Component id="dummyTimetrackingPanel" alignment="0" pref="556" max="32767" attributes="0"/>
                           <Component id="dummyAttachmentsPanel" pref="556" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -602,11 +602,11 @@
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="workLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="timetrackingLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="dummyLabel4" linkSize="8" min="-2" max="-2" attributes="0"/>
+                      <Component id="dummyTimetrackingLabel" linkSize="8" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="dummyWorkPanel" min="-2" max="-2" attributes="0"/>
+                  <Component id="dummyTimetrackingPanel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -688,14 +688,14 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
-    <Container class="javax.swing.JPanel" name="dummyWorkPanel">
+    <Container class="javax.swing.JPanel" name="dummyTimetrackingPanel">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
-    <Component class="javax.swing.JLabel" name="workLabel">
+    <Component class="javax.swing.JLabel" name="timetrackingLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.workLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.timetrackingLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -1319,7 +1319,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="issueTypeComboActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="dummyLabel4">
+    <Component class="javax.swing.JLabel" name="dummyTimetrackingLabel">
     </Component>
     <Component class="javax.swing.JLabel" name="dummyLabel3">
     </Component>

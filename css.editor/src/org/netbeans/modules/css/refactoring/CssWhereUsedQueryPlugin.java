@@ -50,12 +50,11 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
-import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -105,10 +104,10 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
             }
             CssIndex index = sup.getIndex();
 
-            SimpleNode element = econtext.getElement();
-            if (element.kind() == CssParserTreeConstants.JJT_CLASS
-                    || element.kind() == CssParserTreeConstants.JJTHASH
-                    || element.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
+            Node element = econtext.getElement();
+            if (element.type() == NodeType.cssClass
+                    || element.type() == NodeType.cssId
+                    || element.type() == NodeType.hexColor) {
                 //find usages of: 
                 //1.class or id selector
                 //2.hash color
@@ -116,20 +115,20 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                 ElementKind kind;
                 String elementImage = econtext.getElementName();
                 RefactoringElementType type;
-                switch(element.kind()) {
-                    case CssParserTreeConstants.JJT_CLASS:
+                switch(element.type()) {
+                    case cssClass:
                         elementImage = elementImage.substring(1); //cut off the dot
                         files = index.findClasses(elementImage);
                         kind = ElementKind.CLASS;
                         type = RefactoringElementType.CLASS;
                         break;
-                    case CssParserTreeConstants.JJTHASH:
+                    case cssId:
                         elementImage = elementImage.substring(1); //cut off the hash
                         files = index.findIds(elementImage);
                         kind = ElementKind.ATTRIBUTE;
                         type = RefactoringElementType.ID;
                         break;
-                    case CssParserTreeConstants.JJTHEXCOLOR:
+                    case hexColor:
                         files = index.findColor(elementImage);
                         kind = ElementKind.FIELD;
                         type = RefactoringElementType.COLOR;
@@ -204,7 +203,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
 
             //find only files directly importing the base file
             String baseFileName = base.getNameExt();
-            for (Node referingNode : deps.getSourceNode().getReferingNodes()) {
+            for (org.netbeans.modules.web.common.api.DependenciesGraph.Node referingNode : deps.getSourceNode().getReferingNodes()) {
                 try {
                     FileObject file = referingNode.getFile();
                     CssFileModel model = CssFileModel.create(Source.create(file));

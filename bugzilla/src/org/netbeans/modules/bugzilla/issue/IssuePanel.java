@@ -213,7 +213,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         GroupLayout layout = (GroupLayout)getLayout();
         layout.replace(dummyCommentsPanel, commentsPanel);
         layout.replace(dummyAttachmentsPanel, attachmentsPanel);
-        layout.replace(dummyWorkPanel, workHoursPanel);
+        layout.replace(dummyTimetrackingPanel, timetrackingPanel);
         attachmentsLabel.setLabelFor(attachmentsPanel);
         initSpellChecker();
         initDefaultButton();
@@ -345,7 +345,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             swap(layout, severityCombo, issueTypeCombo, temp);
             swap(layout, severityWarning, issueTypeWarning, temp);
         }
-
+                
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
@@ -428,6 +428,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
         boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean hasTimeTracking = !isNew && issue.hasTimeTracking();
         GroupLayout layout = (GroupLayout)getLayout();
         if (showProductCombo) {
             if (productCombo.getParent() == null) {
@@ -451,12 +452,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         statusLabel.setVisible(!isNew);
         statusCombo.setVisible(!isNew);
         resolutionLabel.setVisible(!isNew);
-        workLabel.setVisible(!isNew);
-        workHoursPanel.setVisible(!isNew);
+        timetrackingLabel.setVisible(hasTimeTracking);
+        timetrackingPanel.setVisible(hasTimeTracking);
+        dummyTimetrackingLabel.setVisible(hasTimeTracking);
         separator.setVisible(!isNew);
         commentsPanel.setVisible(!isNew);
         attachmentsLabel.setVisible(!isNew);
         attachmentsPanel.setVisible(!isNew);
+        dummyLabel3.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
@@ -546,29 +549,31 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
                 
-                // work hours
-                reloadField(force, estimatedField, IssueField.ESTIMATED_TIME, estimatedWarning, estimatedLabel);
-                reloadField(force, workedField, IssueField.WORK_TIME, workedWarning, workedLabel);
-                reloadField(force, remainingField, IssueField.REMAINING_TIME, remainingWarning, remainingLabel);
-                reloadField(force, deadlineField, IssueField.DEADLINE, deadlineWarning, deadlineLabel);
-                if("".equals(deadlineField.getText().trim())) {
-                    deadlineField.setText(YYYY_MM_DD); // NOI18N
-                    deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
-                }
+                // time tracking
+                if(hasTimeTracking) {
+                    reloadField(force, estimatedField, IssueField.ESTIMATED_TIME, estimatedWarning, estimatedLabel);
+                    reloadField(force, workedField, IssueField.WORK_TIME, workedWarning, workedLabel);
+                    reloadField(force, remainingField, IssueField.REMAINING_TIME, remainingWarning, remainingLabel);
+                    reloadField(force, deadlineField, IssueField.DEADLINE, deadlineWarning, deadlineLabel);
+                    if("".equals(deadlineField.getText().trim())) {
+                        deadlineField.setText(YYYY_MM_DD); // NOI18N
+                        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
+                    }
 
-                String actualString = issue.getFieldValue(IssueField.ACTUAL_TIME);
-                if(actualString.trim().equals("")) {                            // NOI18N    
-                    actualString = "0";                                         // NOI18N
-                }                                                         
-                actualField.setText(String.valueOf(Double.parseDouble(actualString) + getDoubleValue(remainingField)));
-                double worked = 0;
-                Comment[] comments = issue.getComments();
-                for (Comment comment : comments) {
-                    worked += comment.getWorked();
+                    String actualString = issue.getFieldValue(IssueField.ACTUAL_TIME);
+                    if(actualString.trim().equals("")) {                            // NOI18N    
+                        actualString = "0";                                         // NOI18N
+                    }                                                         
+                    actualField.setText(String.valueOf(Double.parseDouble(actualString) + getDoubleValue(remainingField)));
+                    double worked = 0;
+                    Comment[] comments = issue.getComments();
+                    for (Comment comment : comments) {
+                        worked += comment.getWorked();
+                    }
+                    workedSumField.setText(String.valueOf(worked));
+                    gainField.setText(String.valueOf(getDoubleValue(estimatedField) - getDoubleValue(remainingField)));
+                    completeField.setText(String.valueOf((int)Math.floor(getDoubleValue(workedSumField) / getDoubleValue(actualField) * 100)));
                 }
-                workedSumField.setText(String.valueOf(worked));
-                gainField.setText(String.valueOf(getDoubleValue(estimatedField) - getDoubleValue(remainingField)));
-                completeField.setText(String.valueOf((int)Math.floor(getDoubleValue(workedSumField) / getDoubleValue(actualField) * 100)));
             }
 
             String assignee = issue.getFieldValue(IssueField.ASSIGNED_TO);
@@ -929,7 +934,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatus(IssueField.BLOCKS, blocksLabel);
         updateFieldStatus(IssueField.ESTIMATED_TIME, estimatedLabel);
         updateFieldStatus(IssueField.REMAINING_TIME, remainingLabel);
-        updateFieldStatus(IssueField.WORK_TIME, workLabel);
+        updateFieldStatus(IssueField.WORK_TIME, timetrackingLabel);
         updateFieldStatus(IssueField.DEADLINE, deadlineLabel);
         if (BugzillaUtil.isNbRepository(issue.getRepository())) {
             updateFieldStatus(IssueField.ISSUE_TYPE, issueTypeLabel);
@@ -1361,7 +1366,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         productField = new javax.swing.JTextField();
         resolutionCombo = new javax.swing.JComboBox();
         assignedCombo = new javax.swing.JComboBox();
-        workHoursPanel = new javax.swing.JPanel();
+        timetrackingPanel = new javax.swing.JPanel();
         estimatedLabel = new javax.swing.JLabel();
         estimatedField = new javax.swing.JTextField();
         estimatedWarning = new javax.swing.JLabel();
@@ -1391,8 +1396,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         messagePanel = new javax.swing.JPanel();
         ccWarning = new javax.swing.JLabel();
         dummyAttachmentsPanel = new javax.swing.JPanel();
-        dummyWorkPanel = new javax.swing.JPanel();
-        workLabel = new javax.swing.JLabel();
+        dummyTimetrackingPanel = new javax.swing.JPanel();
+        timetrackingLabel = new javax.swing.JLabel();
         qaContactWarning = new javax.swing.JLabel();
         assignedToWarning = new javax.swing.JLabel();
         reportedStatusLabel = new javax.swing.JLabel();
@@ -1468,7 +1473,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         statusWhiteboardField = new javax.swing.JTextField();
         issueTypeLabel = new javax.swing.JLabel();
         issueTypeCombo = new javax.swing.JComboBox();
-        dummyLabel4 = new javax.swing.JLabel();
+        dummyTimetrackingLabel = new javax.swing.JLabel();
         dummyLabel3 = new javax.swing.JLabel();
         summaryField = new javax.swing.JTextField();
         urlWarning = new javax.swing.JLabel();
@@ -1508,7 +1513,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedCombo.setEditable(true);
         assignedCombo.addActionListener(formListener);
 
-        workHoursPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
+        timetrackingPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(estimatedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.estimatedLabel.text")); // NOI18N
 
@@ -1548,25 +1553,25 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         deadlineField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.deadlineField.text")); // NOI18N
         deadlineField.addFocusListener(formListener);
 
-        javax.swing.GroupLayout workHoursPanelLayout = new javax.swing.GroupLayout(workHoursPanel);
-        workHoursPanel.setLayout(workHoursPanelLayout);
-        workHoursPanelLayout.setHorizontalGroup(
-            workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(workHoursPanelLayout.createSequentialGroup()
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout timetrackingPanelLayout = new javax.swing.GroupLayout(timetrackingPanel);
+        timetrackingPanel.setLayout(timetrackingPanelLayout);
+        timetrackingPanelLayout.setHorizontalGroup(
+            timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(timetrackingPanelLayout.createSequentialGroup()
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(estimatedLabel)
                     .addComponent(estimatedField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(estimatedWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(actualLabel)
                     .addComponent(actualField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(actualWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(workHoursPanelLayout.createSequentialGroup()
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(timetrackingPanelLayout.createSequentialGroup()
                         .addComponent(workedSumField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel7)
@@ -1576,49 +1581,49 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(workedWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(remainingLabel)
-                    .addGroup(workHoursPanelLayout.createSequentialGroup()
+                    .addGroup(timetrackingPanelLayout.createSequentialGroup()
                         .addComponent(remainingField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(6, 6, 6)
                         .addComponent(remainingWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(completeLabel)
                     .addComponent(completeField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(gainLabel)
                     .addComponent(gainField, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(workHoursPanelLayout.createSequentialGroup()
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(timetrackingPanelLayout.createSequentialGroup()
                         .addComponent(deadlineField, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(1, 1, 1)
                         .addComponent(deadlineWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(deadlineLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        workHoursPanelLayout.setVerticalGroup(
-            workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(workHoursPanelLayout.createSequentialGroup()
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        timetrackingPanelLayout.setVerticalGroup(
+            timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(timetrackingPanelLayout.createSequentialGroup()
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(deadlineLabel)
                     .addComponent(gainLabel)
                     .addComponent(completeLabel)
-                    .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, workHoursPanelLayout.createSequentialGroup()
+                    .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, timetrackingPanelLayout.createSequentialGroup()
                             .addComponent(actualLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                        .addGroup(workHoursPanelLayout.createSequentialGroup()
+                        .addGroup(timetrackingPanelLayout.createSequentialGroup()
                             .addComponent(estimatedLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                        .addGroup(workHoursPanelLayout.createSequentialGroup()
+                        .addGroup(timetrackingPanelLayout.createSequentialGroup()
                             .addComponent(remainingLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                     .addComponent(workedLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(workHoursPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                .addGroup(timetrackingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(actualWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(remainingField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(workedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1642,7 +1647,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        org.openide.awt.Mnemonics.setLocalizedText(workLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.workLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(timetrackingLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.timetrackingLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(blocksButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.text")); // NOI18N
         blocksButton.setFocusPainted(false);
@@ -1845,15 +1850,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .addComponent(statusWhiteboardLabel)
                             .addComponent(issueTypeLabel)
                             .addComponent(dummyLabel3)
-                            .addComponent(dummyLabel4)
+                            .addComponent(dummyTimetrackingLabel)
                             .addComponent(summaryLabel)
-                            .addComponent(workLabel)
+                            .addComponent(timetrackingLabel)
                             .addComponent(attachmentsLabel)
                             .addComponent(addCommentLabel)
                             .addComponent(customFieldsPanelLeft, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dummyWorkPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
+                            .addComponent(dummyTimetrackingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
                             .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -2070,10 +2075,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(workLabel)
+                        .addComponent(timetrackingLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dummyLabel4))
-                    .addComponent(dummyWorkPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(dummyTimetrackingLabel))
+                    .addComponent(dummyTimetrackingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -2108,7 +2113,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2, separatorLabel3, showInBrowserButton});
 
-        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, dummyLabel4, priorityCombo});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, dummyTimetrackingLabel, priorityCombo});
 
         reportedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedField.AccessibleContext.accessibleDescription")); // NOI18N
         blocksButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -2222,11 +2227,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
 
         public void focusLost(java.awt.event.FocusEvent evt) {
-            if (evt.getSource() == deadlineField) {
-                IssuePanel.this.deadlineFieldFocusLost(evt);
-            }
-            else if (evt.getSource() == workedField) {
+            if (evt.getSource() == workedField) {
                 IssuePanel.this.workedFieldFocusLost(evt);
+            }
+            else if (evt.getSource() == deadlineField) {
+                IssuePanel.this.deadlineFieldFocusLost(evt);
             }
         }
     }// </editor-fold>//GEN-END:initComponents
@@ -2381,11 +2386,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
-        if (!isNew) {
+        if (!isNew && issue.hasTimeTracking()) {
             storeFieldValue(IssueField.ESTIMATED_TIME, estimatedField);
             storeFieldValue(IssueField.WORK_TIME, workedField);
             storeFieldValue(IssueField.REMAINING_TIME, remainingField);
-            if(!deadlineField.getText().trim().equals(YYYY_MM_DD)) { // NOI18N
+            if(!deadlineField.getText().trim().equals(YYYY_MM_DD)) { 
                 storeFieldValue(IssueField.DEADLINE, deadlineField);
             }
         }
@@ -2815,8 +2820,8 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
     private javax.swing.JLabel dummyLabel3;
-    private javax.swing.JLabel dummyLabel4;
-    private javax.swing.JPanel dummyWorkPanel;
+    private javax.swing.JLabel dummyTimetrackingLabel;
+    private javax.swing.JPanel dummyTimetrackingPanel;
     private javax.swing.JButton duplicateButton;
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
@@ -2886,14 +2891,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JComboBox targetMilestoneCombo;
     private javax.swing.JLabel targetMilestoneLabel;
     private org.netbeans.modules.bugtracking.util.LinkButton tasklistButton;
+    private javax.swing.JLabel timetrackingLabel;
+    private javax.swing.JPanel timetrackingPanel;
     private javax.swing.JTextField urlField;
     private org.netbeans.modules.bugtracking.util.LinkButton urlLabel;
     private javax.swing.JLabel urlWarning;
     private javax.swing.JComboBox versionCombo;
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
-    private javax.swing.JPanel workHoursPanel;
-    private javax.swing.JLabel workLabel;
     private javax.swing.JTextField workedField;
     private javax.swing.JLabel workedLabel;
     private javax.swing.JLabel workedSumField;
