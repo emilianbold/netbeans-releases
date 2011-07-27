@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author marek.fukala@sun.com
+ * @author mfukala@netbeans.org
  */
 public class CssHelpResolver {
 

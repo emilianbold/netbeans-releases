@@ -62,7 +62,7 @@ import org.netbeans.modules.css.editor.properties.KeywordUtil;
 
 /**
  *
- * @author marek.fukala@sun.com
+ * @author mfukala@netbeans.org
  */
 public class CssPropertyValue {
 

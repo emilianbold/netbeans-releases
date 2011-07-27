@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @todo fix minimum multiplicity, now we always anticipate 1-sg.
  * 
- * @author marek
+ * @author mfukala@netbeans.org
  */
 public class PropertyModel {
 
