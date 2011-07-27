@@ -169,7 +169,8 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         // close the IDE after warmup
         cmd.append(" -J-Dnetbeans.warm.close=true");
         // wait after startup, need to set longer time for complex startup because rescan rises
-        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup="+timeout);
+//        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup="+timeout);
+        cmd.append(" -J-Dnetbeans.logger.console=false");
         // disable rescaning after startup
 //        cmd.append(" -J-Dnetbeans.javacore.noscan=true");
         // test command line suffix

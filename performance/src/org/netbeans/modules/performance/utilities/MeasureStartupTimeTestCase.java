@@ -303,7 +303,8 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // use faster but more consistent random generator
         cmd.append(" -J-Dorg.netbeans.CLIHandler.fast.random=true");
         // wait after startup, need to set longer time for complex startup because rescan rises
-        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup=").append(timeout);
+//        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup=").append(timeout);
+        cmd.append(" -J-Dnetbeans.logger.console=false");
         // disable rescaning after startup
         //        cmd.append(" -J-Dnetbeans.javacore.noscan=true";
         // disable status line displayer - issue 90542
