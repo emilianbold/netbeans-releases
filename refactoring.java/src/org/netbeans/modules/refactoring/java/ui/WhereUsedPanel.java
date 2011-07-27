@@ -113,31 +113,25 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private static final int SCOPE_COMBOBOX_COLUMNS = 14;
     public static final String ELLIPSIS = "\u2026"; //NOI18N
     private Scope customScope;
+    private boolean enableScope;
     
     /** Creates new form WhereUsedPanel */
     public WhereUsedPanel(String name, TreePathHandle e, ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class,"LBL_WhereUsed")); // NOI18N
         this.element = e;
         this.parent = parent;
+        this.enableScope = true;
         initComponents();
         btnCustomScope.setAction(new ScopeAction(scope));
-    }
-    
-    public boolean findAll() {
-        switch(scope.getSelectedIndex()) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-                return false;
-            default:
-                return true;
-        }
     }
     
     public Scope getCustomScope() {
         FileObject file = RetoucheUtils.getFileObject(element);
         Scope value = null;
+        
+        if(!enableScope) {
+            return Scope.create(null, null, Arrays.asList(file));
+        }
 
         switch (scope.getSelectedIndex()) {
             case 1:
@@ -290,7 +284,12 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             c_usages.setVisible(false);
                             c_directOnly.setVisible(false);
                         }
-                        if (currentProject!=null) {
+                        ElementKind kind = element.getKind();
+                        if((kind.equals(ElementKind.LOCAL_VARIABLE) || kind.equals(ElementKind.PARAMETER))
+                                || element.getModifiers().contains(Modifier.PRIVATE)) {
+                            enableScope = false;
+                        }
+                        if(enableScope && currentProject!=null) {
                             scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
                             int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
                             scope.setSelectedIndex(defaultItem);
