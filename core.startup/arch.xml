@@ -586,6 +586,8 @@ Microsystems, Inc. All Rights Reserved.
           times of various start operations are printed to console. If the value is
           <code>-J-Dorg.netbeans.log.startup=file</code> then the values are printed into
           file specified by <code>-J-Dorg.netbeans.log.startup.logfile=filename</code>.
+          Since NetBeans 7.1 one can also fill in the file by standard XML format
+          of log messages by using <code>-J-Dorg.netbeans.log.startup=xml</code>.
           </p>
           
           <p>
