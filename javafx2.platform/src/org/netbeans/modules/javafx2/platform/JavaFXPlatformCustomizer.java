@@ -42,11 +42,16 @@
 
 package org.netbeans.modules.javafx2.platform;
 
+import java.beans.Customizer;
+import org.netbeans.api.java.platform.JavaPlatform;
+
 /**
  *
  * @author Anton Chechel
  */
-public class JavaFXPlatformCustomizer extends javax.swing.JPanel {
+public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Customizer {
+    
+    private JavaPlatform platform;
 
     public JavaFXPlatformCustomizer() {
         initComponents();
@@ -74,6 +79,11 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel {
 
         enableCheckBox.setSelected(true);
         enableCheckBox.setText(org.openide.util.NbBundle.getMessage(JavaFXPlatformCustomizer.class, "JavaFXPlatformCustomizer.enableCheckBox.text")); // NOI18N
+        enableCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                enableCheckBoxItemStateChanged(evt);
+            }
+        });
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(JavaFXPlatformCustomizer.class, "JavaFXPlatformCustomizer.jLabel1.text")); // NOI18N
 
@@ -108,14 +118,10 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel {
                             .addComponent(javadocTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE))
                         .addGap(6, 6, 6)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(browseFolderButton)
-                                    .addComponent(browseSourcesButton)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(browseJavadocButton)))))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(browseFolderButton)
+                                .addComponent(browseSourcesButton))
+                            .addComponent(browseJavadocButton))))
                 .addContainerGap())
         );
 
@@ -145,6 +151,15 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void enableCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_enableCheckBoxItemStateChanged
+        folderTextField.setEnabled(enableCheckBox.isSelected());
+        javadocTextField.setEnabled(enableCheckBox.isSelected());
+        sourcesTextField.setEnabled(enableCheckBox.isSelected());
+        browseFolderButton.setEnabled(enableCheckBox.isSelected());
+        browseJavadocButton.setEnabled(enableCheckBox.isSelected());
+        browseSourcesButton.setEnabled(enableCheckBox.isSelected());
+    }//GEN-LAST:event_enableCheckBoxItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseFolderButton;
     private javax.swing.JButton browseJavadocButton;
@@ -157,4 +172,9 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel {
     private javax.swing.JTextField javadocTextField;
     private javax.swing.JTextField sourcesTextField;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void setObject(Object bean) {
+        this.platform = (JavaPlatform) bean;
+    }
 }
