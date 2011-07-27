@@ -345,7 +345,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             swap(layout, severityCombo, issueTypeCombo, temp);
             swap(layout, severityWarning, issueTypeWarning, temp);
         }
-
+                
         tasklistButton.setEnabled(false);
         reloadForm(true);
 
@@ -428,6 +428,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
         boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean hasTimeTracking = !isNew && issue.hasTimeTracking();
         GroupLayout layout = (GroupLayout)getLayout();
         if (showProductCombo) {
             if (productCombo.getParent() == null) {
@@ -451,12 +452,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         statusLabel.setVisible(!isNew);
         statusCombo.setVisible(!isNew);
         resolutionLabel.setVisible(!isNew);
-        workLabel.setVisible(!isNew);
-        workHoursPanel.setVisible(!isNew);
+        workLabel.setVisible(hasTimeTracking);
+        workHoursPanel.setVisible(hasTimeTracking);
+        dummyLabel4.setVisible(hasTimeTracking);
         separator.setVisible(!isNew);
         commentsPanel.setVisible(!isNew);
         attachmentsLabel.setVisible(!isNew);
         attachmentsPanel.setVisible(!isNew);
+        dummyLabel3.setVisible(!isNew);
         refreshButton.setVisible(!isNew);
         separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
@@ -546,29 +549,31 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
                 
-                // work hours
-                reloadField(force, estimatedField, IssueField.ESTIMATED_TIME, estimatedWarning, estimatedLabel);
-                reloadField(force, workedField, IssueField.WORK_TIME, workedWarning, workedLabel);
-                reloadField(force, remainingField, IssueField.REMAINING_TIME, remainingWarning, remainingLabel);
-                reloadField(force, deadlineField, IssueField.DEADLINE, deadlineWarning, deadlineLabel);
-                if("".equals(deadlineField.getText().trim())) {
-                    deadlineField.setText(YYYY_MM_DD); // NOI18N
-                    deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
-                }
+                // time tracking
+                if(hasTimeTracking) {
+                    reloadField(force, estimatedField, IssueField.ESTIMATED_TIME, estimatedWarning, estimatedLabel);
+                    reloadField(force, workedField, IssueField.WORK_TIME, workedWarning, workedLabel);
+                    reloadField(force, remainingField, IssueField.REMAINING_TIME, remainingWarning, remainingLabel);
+                    reloadField(force, deadlineField, IssueField.DEADLINE, deadlineWarning, deadlineLabel);
+                    if("".equals(deadlineField.getText().trim())) {
+                        deadlineField.setText(YYYY_MM_DD); // NOI18N
+                        deadlineField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveForeground")); // NOI18N
+                    }
 
-                String actualString = issue.getFieldValue(IssueField.ACTUAL_TIME);
-                if(actualString.trim().equals("")) {                            // NOI18N    
-                    actualString = "0";                                         // NOI18N
-                }                                                         
-                actualField.setText(String.valueOf(Double.parseDouble(actualString) + getDoubleValue(remainingField)));
-                double worked = 0;
-                Comment[] comments = issue.getComments();
-                for (Comment comment : comments) {
-                    worked += comment.getWorked();
+                    String actualString = issue.getFieldValue(IssueField.ACTUAL_TIME);
+                    if(actualString.trim().equals("")) {                            // NOI18N    
+                        actualString = "0";                                         // NOI18N
+                    }                                                         
+                    actualField.setText(String.valueOf(Double.parseDouble(actualString) + getDoubleValue(remainingField)));
+                    double worked = 0;
+                    Comment[] comments = issue.getComments();
+                    for (Comment comment : comments) {
+                        worked += comment.getWorked();
+                    }
+                    workedSumField.setText(String.valueOf(worked));
+                    gainField.setText(String.valueOf(getDoubleValue(estimatedField) - getDoubleValue(remainingField)));
+                    completeField.setText(String.valueOf((int)Math.floor(getDoubleValue(workedSumField) / getDoubleValue(actualField) * 100)));
                 }
-                workedSumField.setText(String.valueOf(worked));
-                gainField.setText(String.valueOf(getDoubleValue(estimatedField) - getDoubleValue(remainingField)));
-                completeField.setText(String.valueOf((int)Math.floor(getDoubleValue(workedSumField) / getDoubleValue(actualField) * 100)));
             }
 
             String assignee = issue.getFieldValue(IssueField.ASSIGNED_TO);
@@ -2381,11 +2386,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
-        if (!isNew) {
+        if (!isNew && issue.hasTimeTracking()) {
             storeFieldValue(IssueField.ESTIMATED_TIME, estimatedField);
             storeFieldValue(IssueField.WORK_TIME, workedField);
             storeFieldValue(IssueField.REMAINING_TIME, remainingField);
-            if(!deadlineField.getText().trim().equals(YYYY_MM_DD)) { // NOI18N
+            if(!deadlineField.getText().trim().equals(YYYY_MM_DD)) { 
                 storeFieldValue(IssueField.DEADLINE, deadlineField);
             }
         }
