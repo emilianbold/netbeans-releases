@@ -743,6 +743,10 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             return data.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()) != null;
         }
     }
+    
+    boolean hasTimeTracking() {
+        return data.getRoot().getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey()) != null; // XXX dummy
+    }
 
     void reassign(String user) {
         setOperation(BugzillaOperation.reassign);
