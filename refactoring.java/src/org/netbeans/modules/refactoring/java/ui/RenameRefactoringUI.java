@@ -206,6 +206,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
                 refactoring.getContext().add(properties);
             }
             properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            properties.setIsRenameTestClass(panel.isRenameTestClass());
             
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);

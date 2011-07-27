@@ -969,7 +969,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         boolean fromComponent = modelFromComponentChoice.isSelected();
         boolean hardcoded = modelHardcodedChoice.isSelected();
         boolean bound = modelBoundChoice.isSelected();
-        modelBoundCustomizer.getBindingPanel().setVisible(bound);
+        if (modelBoundCustomizer != null) {
+            modelBoundCustomizer.getBindingPanel().setVisible(bound);
+        }
         modelFromComponentCustomizer.setVisible(fromComponent);
         modelCustomCustomizer.setVisible(userCode);
         tabbedPane.setEnabledAt(2, hardcoded);
@@ -1007,7 +1009,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         widthPrefCombo.setVisible(!userCode);
         widthMaxLabel.setVisible(!userCode);
         widthMaxCombo.setVisible(!userCode);
-        expressionCombo.setVisible(bound);
+        if (expressionCombo != null) {
+            expressionCombo.setVisible(bound);
+        }
         columnExpressionLabel.setVisible(bound);
         boolean switch1 = bound != (columnExpressionLabel.getParent() != null);
         boolean switch2 = fromComponent != (dummyLabel1.getParent() != null);
@@ -1168,7 +1172,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             columnsTable.getCellEditor().stopCellEditing();
         }
         updateColumnSection();
-        if (!modelBoundChoice.isSelected() && !bindingProperty.isDefaultValue()) {
+        if (!modelBoundChoice.isSelected() && (bindingProperty != null) && !bindingProperty.isDefaultValue()) {
             bindingProperty.restoreDefaultValue();
         }
         if (modelFromComponentChoice.isSelected()) {
@@ -1311,6 +1315,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         // Obtain binding support
         bindingSupport = FormEditor.getBindingSupport(formModel);
+        modelBoundChoice.setVisible(bindingSupport != null);
+        modelBoundPanel.setVisible(bindingSupport != null);
 
         // Determine type of model
         try {
@@ -1329,45 +1335,48 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
-        bindingProperty = comp.getBindingProperty("elements"); // NOI18N
-        MetaBinding binding = bindingProperty.getValue();
-        modelBoundCustomizer = new BindingCustomizer(bindingProperty);
-        modelBoundCustomizer.setBinding(binding);
-        if (binding != null) {
-            modelBoundChoice.setSelected(true);
-        }
-        expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
-        expressionCombo.setEnabled(false);
-        expressionCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ColumnInfo info = columns.get(lastSelectedColumn);
-                Object expression = expressionCombo.getSelectedItem();
-                info.setExpression((expression == null) ? null : expression.toString());
-                String clazz = "Object"; // NOI18N
-                TreePath treePath = expressionCombo.getSelectedTreePath();
-                if (treePath != null) {
-                    Object pComp = treePath.getLastPathComponent();
-                    if (pComp instanceof BindingCustomizer.ExpressionNode) {
-                        clazz = ((BindingCustomizer.ExpressionNode)pComp).getTypeName();
-                        clazz = FormUtils.autobox(clazz);
-                        if (clazz.startsWith("java.lang.")) { // NOI18N
-                            clazz = clazz.substring(10);
+
+        if (bindingSupport != null) {
+            bindingProperty = comp.getBindingProperty("elements"); // NOI18N
+            MetaBinding binding = bindingProperty.getValue();
+            modelBoundCustomizer = new BindingCustomizer(bindingProperty);
+            modelBoundCustomizer.setBinding(binding);
+            if (binding != null) {
+                modelBoundChoice.setSelected(true);
+            }
+            expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
+            expressionCombo.setEnabled(false);
+            expressionCombo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ColumnInfo info = columns.get(lastSelectedColumn);
+                    Object expression = expressionCombo.getSelectedItem();
+                    info.setExpression((expression == null) ? null : expression.toString());
+                    String clazz = "Object"; // NOI18N
+                    TreePath treePath = expressionCombo.getSelectedTreePath();
+                    if (treePath != null) {
+                        Object pComp = treePath.getLastPathComponent();
+                        if (pComp instanceof BindingCustomizer.ExpressionNode) {
+                            clazz = ((BindingCustomizer.ExpressionNode)pComp).getTypeName();
+                            clazz = FormUtils.autobox(clazz);
+                            if (clazz.startsWith("java.lang.")) { // NOI18N
+                                clazz = clazz.substring(10);
+                            }
                         }
                     }
+                    columnTypeCombo.setSelectedItem(clazz);
+                    columnTableModel.fireTableRowsUpdated(lastSelectedColumn, lastSelectedColumn);
                 }
-                columnTypeCombo.setSelectedItem(clazz);
-                columnTableModel.fireTableRowsUpdated(lastSelectedColumn, lastSelectedColumn);
-            }
-        });
-        modelBoundCustomizer.addTypeChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (modelBoundChoice.isSelected()) {
-                    checkBindingType();
-                }
-            }            
-        });
+            });
+            modelBoundCustomizer.addTypeChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (modelBoundChoice.isSelected()) {
+                        checkBindingType();
+                    }
+                }            
+            });
+        }
 
         // Replace dummy panels by customizers
         GroupLayout layout = (GroupLayout)modelTab.getLayout();
@@ -1375,7 +1384,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         layout.replace(modelFromComponentPanel, modelFromComponentCustomizer);
         modelCustomCustomizer = modelCustomEd.getCustomEditor();
         layout.replace(modelCustomPanel, modelCustomCustomizer);
-        layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
+        if (modelBoundCustomizer != null) {
+            layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
+        }
         
         modelFromComponentEd.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -1732,8 +1743,10 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             } else {
                 info.setClazz(columnTypeCombo.getSelectedItem().toString());
             }
-            Object expression = expressionCombo.getSelectedItem();
-            info.setExpression((expression == null) ? "null" : expression.toString()); // NOI18N
+            if (expressionCombo != null) {
+                Object expression = expressionCombo.getSelectedItem();
+                info.setExpression((expression == null) ? "null" : expression.toString()); // NOI18N
+            }
             if (modelHardcodedChoice.isSelected()) {
                 Class oldClass = rowTableModel.getColumnClass(lastSelectedColumn);
                 Class newClass = indexToType(info.getType());
@@ -1777,7 +1790,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         widthMinCombo.setEnabled(single);
         widthPrefCombo.setEnabled(single);
         widthMaxCombo.setEnabled(single);
-        expressionCombo.setEnabled(single);
+        if (expressionCombo != null) {
+            expressionCombo.setEnabled(single);
+        }
         if (single) {
             lastSelectedColumn = index[0];
             ColumnInfo info = columns.get(index[0]);
