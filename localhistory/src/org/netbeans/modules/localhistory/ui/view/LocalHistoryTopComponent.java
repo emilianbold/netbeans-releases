@@ -43,8 +43,9 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -92,7 +93,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     private LocalHistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
-    private ToolBar toolBar;
+    private JPanel toolBar;
 
     public LocalHistoryTopComponent() {
         initComponents();
@@ -127,7 +128,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         return files;
     }        
 
-    public void init(final File... files) {                
+    public void init(final File... files) {   
         final LocalHistoryFileView fileView = new LocalHistoryFileView();                
         LocalHistoryDiffView diffView = new LocalHistoryDiffView(this); 
         fileView.getExplorerManager().addPropertyChangeListener(diffView); 
@@ -225,7 +226,53 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     @Override
     public JComponent getToolbarRepresentation() {
         if( toolBar == null ) { 
-            toolBar = new ToolBar();
+            toolBar = new JPanel();
+            toolBar.setBorder(new EmptyBorder(0, 0, 0, 0));
+            GridBagConstraints c = new GridBagConstraints();
+            toolBar.setLayout(new GridBagLayout());
+            
+            final JLabel label = new JLabel(NbBundle.getMessage(this.getClass(), "LBL_LocalHistory")); // NOI18N
+            Font f = label.getFont();
+            label.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
+            
+            c.anchor = GridBagConstraints.CENTER;
+            toolBar.add(label, c); 
+  
+//          XXX depends on issue 200436            
+//            LinkButton lb = new LinkButton("Show Versioning History >");
+//            lb.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            assert files != null;
+//                            if(files.length == 0) {
+//                                return; 
+//                            }
+//                            FileObject fo = FileUtil.toFileObject(files[0]);
+//                            if(fo == null) {
+//                                return;
+//                            }
+//                            Object attr = fo.getAttribute(SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY);
+//                            if(attr == null || !(attr instanceof SearchHistorySupport)) {
+//                                return;
+//                            }
+//                            try {
+//                                ((SearchHistorySupport)attr).searchHistory(-1);
+//                            } catch (IOException ex) {
+//                                LocalHistory.LOG.log(Level.WARNING, null, ex);
+//                            }
+//                        }
+//                    });
+//                }
+//            });
+//            
+//            c = new GridBagConstraints();
+//            c.anchor = GridBagConstraints.EAST;
+//            toolBar.add(lb, c); 
+            
+            toolBar.setOpaque(false);
         }
         return toolBar;
     }
@@ -266,25 +313,4 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     public void componentShowing() {
         super.componentShowing();
     }  
-    
-    private static class ToolBar extends JToolBar {
-        ToolBar() {
-            // Proper initialization of aqua toolbar ui, see commit dbd66075827a
-            super("editorToolbar"); // NOI18N
-            // the toolbar should have roll-over buttons and no handle for dragging
-            setFloatable(false);
-            setRollover(true);
-            setBorder(new EmptyBorder(0, 0, 0, 0));
-        }
-
-        @Override
-        public String getUIClassID() {
-            // For GTK and Aqua look and feels, we provide a custom toolbar UI
-            if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
-                return "Nb.Toolbar.ui"; // NOI18N
-            } else {
-                return super.getUIClassID();
-            }
-        }
-    }    
 }
