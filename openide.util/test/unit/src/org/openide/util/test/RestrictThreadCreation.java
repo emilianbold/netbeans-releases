@@ -73,6 +73,7 @@ public class RestrictThreadCreation {
      */
     public static void permitStandard() {
         permit(// Found experimentally:
+                "org.netbeans.junit.NbTestCase.runBare",
                 "sun.java2d.Disposer.<clinit>",
                 "java.awt.Toolkit.getDefaultToolkit",
                 "java.util.logging.LogManager$Cleaner.<init>",
