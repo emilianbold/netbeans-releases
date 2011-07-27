@@ -148,13 +148,13 @@ abstract public class StyleEditor extends JPanel {
 
     protected void startAggregatedEventsSession() {
         if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
-            CssEditorSupport.getDefault().firstAggregatedEventWillFire();
+//            CssEditorSupport.getDefault().firstAggregatedEventWillFire();
         }
     }
 
     protected void closeAggregatedEventsSession() {
         if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
-            CssEditorSupport.getDefault().lastAggregatedEventFired();
+//            CssEditorSupport.getDefault().lastAggregatedEventFired();
         }
     }
     

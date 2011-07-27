@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.lib.api.model.Rule;
 import org.netbeans.modules.css.visual.ui.StyleBuilderAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -95,7 +95,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
     }
 
     public void setContent(CssRuleContext content) {
-        CssRule rule = content.selectedRuleContent().rule();
+        Rule rule = content.selectedRuleContent().rule();
         setName((rule != null ? rule.name() + " - " : "") + DEFAULT_TC_NAME);//NOI18N
         styleBuilderPanel.setContent(content);
     }
