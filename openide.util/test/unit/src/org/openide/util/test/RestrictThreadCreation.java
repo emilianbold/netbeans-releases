@@ -84,7 +84,7 @@ public class RestrictThreadCreation {
                 "org.netbeans.modules.masterfs.filebasedfs.fileobjects.LockForFile.<clinit>",
                 "org.netbeans.api.java.source.JavaSource.<clinit>",
                 "org.netbeans.api.java.source.JavaSourceTaskFactory.fileObjectsChanged",
-                "org.netbeans.progress.module.Controller.resetTimer",
+                "org.netbeans.modules.progress.spi.Controller.resetTimer",
                 "org.netbeans.modules.timers.InstanceWatcher$FinalizingToken.finalize",
                 "org.openide.util.RequestProcessor$EnqueueTask.run",
                 "org.openide.util.Utilities$ActiveQueue.ping",
