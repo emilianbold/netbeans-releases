@@ -175,8 +175,8 @@ class ConfigActionTest extends ConfigAction {
             return;
         }
 
-        // test groups
-        if (ProjectPropertiesSupport.askForTestGroups(project)) {
+        // test groups, not for rerun
+        if (!info.isRerun() && ProjectPropertiesSupport.askForTestGroups(project)) {
             PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
             ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
 
@@ -325,9 +325,13 @@ class ConfigActionTest extends ConfigAction {
             }
 
             if (ProjectPropertiesSupport.askForTestGroups(project)) {
+                if (info.getTestGroups() == null) {
+                    // remember test groups for rerun
+                    info.setTestGroups(ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project));
+                }
                 externalProcessBuilder = externalProcessBuilder
                         .addArgument(PhpUnit.PARAM_GROUP)
-                        .addArgument(ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project));
+                        .addArgument(info.getTestGroups());
             }
 
             List<Testcase> customTests = info.getCustomTests();
@@ -452,6 +456,7 @@ class ConfigActionTest extends ConfigAction {
         public RerunUnitTestHandler(PhpUnitTestRunInfo info) {
             assert info != null;
             this.info = info;
+            info.setRerun(true);
         }
 
         @Override
