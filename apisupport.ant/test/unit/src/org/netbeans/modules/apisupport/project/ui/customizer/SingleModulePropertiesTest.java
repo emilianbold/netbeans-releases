@@ -60,15 +60,15 @@ import java.util.jar.Manifest;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.api.EditableManifest;
-import org.netbeans.modules.apisupport.project.api.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
 import org.netbeans.modules.apisupport.project.ModuleDependency;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory.PublicPackagesTableModel;
@@ -82,6 +82,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.test.RestrictThreadCreation;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -104,6 +105,9 @@ public class SingleModulePropertiesTest extends TestBase {
         noDataDir = true;
         clearWorkDir();
         super.setUp();
+        RestrictThreadCreation.permitStandard();
+        RestrictThreadCreation.permit("org.netbeans.modules.masterfs.GlobalVisibilityQueryImpl.getIgnoredFiles");
+        RestrictThreadCreation.forbidNewThreads(true);
     }
     
     /** Tests few basic properties to be sure that loading works. */
