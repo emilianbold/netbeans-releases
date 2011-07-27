@@ -47,10 +47,10 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.css.formatting.api.support.MarkupAbstractIndenter;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.support.IndenterContextData;
+import org.netbeans.modules.web.indent.api.support.MarkupAbstractIndenter;
 
 /**
  *

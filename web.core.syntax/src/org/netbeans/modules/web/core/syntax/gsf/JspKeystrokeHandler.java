@@ -55,9 +55,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 
 public class JspKeystrokeHandler implements KeystrokeHandler {
 

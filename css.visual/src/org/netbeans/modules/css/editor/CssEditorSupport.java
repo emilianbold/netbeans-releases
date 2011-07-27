@@ -50,13 +50,13 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.css.editor.model.CssModel;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.css.editor.model.CssRule;
+import org.netbeans.modules.css.lib.api.model.Rule;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
-import org.netbeans.modules.css.editor.model.CssRuleItem;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.model.Declaration;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewTopComponent;
@@ -64,8 +64,6 @@ import org.netbeans.modules.css.visual.ui.preview.CssPreviewable;
 import org.netbeans.modules.css.visual.ui.preview.CssPreviewable.Listener;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -87,14 +85,15 @@ public class CssEditorSupport {
     private static final boolean DEBUG = Boolean.getBoolean("issue_129209_debug");
 
     //current values
-    private CssParserResult result;
-    private CssModel model;
+    private CssCslParserResult result;
+    private Stylesheet model;
     
     public static synchronized CssEditorSupport getDefault() {
         return INSTANCE;
     }
     private PropertyChangeListener CSS_STYLE_DATA_LISTENER = new PropertyChangeListener() {
 
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             //detach myself from the source so next UI changes are not propagated to the 
             //document until the parser finishes. Then new listener will be added
@@ -107,9 +106,10 @@ public class CssEditorSupport {
             if (doc != null) {
                 doc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
-                        CssRuleItem oldRule = (CssRuleItem) evt.getOldValue();
-                        CssRuleItem newRule = (CssRuleItem) evt.getNewValue();
+                        Declaration oldRule = (Declaration) evt.getOldValue();
+                        Declaration newRule = (Declaration) evt.getNewValue();
 
                         if (selected == null) {
                             throw new IllegalStateException("CssRuleContent event fired, but selected rule is null!");
@@ -117,13 +117,13 @@ public class CssEditorSupport {
 
                         //remember the selected rule since it synchronously
                         //turns to null after each document modification
-                        CssRule myRule = selected.rule();
+                        Rule myRule = selected.rule();
 
                         try {
                             if (oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
-                                int start = oldRule.key().offset();
-                                int end = oldRule.value().offset() + oldRule.value().name().length();
+                                int start = oldRule.getProperty().offset();
+                                int end = oldRule.getValue().offset() + oldRule.getValue().name().length();
 
                                 //cut off also the semicolon if there is any
                                 end = oldRule.semicolonOffset() != -1 ? oldRule.semicolonOffset() + 1 : end;
@@ -141,32 +141,30 @@ public class CssEditorSupport {
 
                             } else if (oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:
-                                List<CssRuleItem> items = myRule.items();
+                                List<Declaration> items = myRule.items();
                                 final int INDENT = IndentUtils.indentLevelSize(document);
                                 int insertOffset = myRule.getRuleCloseBracketOffset();
 
                                 boolean initialNewLine = false;
                                 if (!items.isEmpty()) {
                                     //find latest rule and add the item behind
-                                    CssRuleItem last = items.get(items.size() - 1); 
+                                    Declaration last = items.get(items.size() - 1); 
 
                                     //check if the last item has semicolon
                                     //add it if there is no semicolon
                                     if (last.semicolonOffset() == -1) {
-                                        doc.insertString(last.value().offset() + last.value().name().trim().length(), ";", null); //NOI18N
+                                        doc.insertString(last.getValue().offset() + last.getValue().name().trim().length(), ";", null); //NOI18N
                                         insertOffset++; //shift the insert offset because of the added semicolon
                                     }
 
-                                    initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, last.key().offset());
+                                    initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, last.getProperty().offset());
                                 } else {
                                     initialNewLine = Utilities.getLineOffset(doc, myRule.getRuleCloseBracketOffset()) == Utilities.getLineOffset(doc, myRule.getRuleOpenBracketOffset());
                                 }
 
                                 String text = (initialNewLine ? LINE_SEPARATOR : "") +
-// XXX: see the method comment
-//                                        makeIndentString(INDENT) +
                                         IndentUtils.createIndentString(document, INDENT) +
-                                        newRule.key().name() + ": " + newRule.value().name() + ";" +
+                                        newRule.getProperty().name() + ": " + newRule.getValue().name() + ";" +
                                         LINE_SEPARATOR;
 
                                 doc.insertString(insertOffset, text, null);
@@ -174,19 +172,19 @@ public class CssEditorSupport {
                             } else if (oldRule != null && newRule != null) {
                                 //update the existing rule in document
                                 //replace attribute name
-                                doc.remove(oldRule.key().offset(), oldRule.key().name().length());
-                                doc.insertString(oldRule.key().offset(), newRule.key().name(), null);
+                                doc.remove(oldRule.getProperty().offset(), oldRule.getProperty().name().length());
+                                doc.insertString(oldRule.getProperty().offset(), newRule.getProperty().name(), null);
                                 //replace the attribute value
-                                int diff = newRule.key().name().length() - oldRule.key().name().length();
-                                doc.remove(oldRule.value().offset() + diff, oldRule.value().name().length());
-                                doc.insertString(oldRule.value().offset() + diff, newRule.value().name(), null);
+                                int diff = newRule.getProperty().name().length() - oldRule.getProperty().name().length();
+                                doc.remove(oldRule.getValue().offset() + diff, oldRule.getValue().name().length());
+                                doc.insertString(oldRule.getValue().offset() + diff, newRule.getValue().name(), null);
 
                             } else {
                                 //new rule and old rule is null
                                 throw new IllegalArgumentException("Invalid PropertyChangeEvent - both old and new values are null!");
                             }
                         } catch (Throwable e) {
-                            e.printStackTrace();
+                            //ignore
                         }
                     }
                 });
@@ -194,23 +192,13 @@ public class CssEditorSupport {
         }
     };
 
-    // XXX: This is most likely wrong! Unless CSS only allows spaces for indentation.
-    // But even then the same should be achieved by correctly setting the indentation
-    // settings. Otherwise a simple Reformat.get(doc).reformat(...) call on a CSS document
-    // could break its structure.
-//    private String makeIndentString(int level) {
-//        StringBuffer sb = new StringBuffer();
-//        for (int i = 0; i < level; i++) {
-//            sb.append(' ');
-//        }
-//        return sb.toString();
-//    }
 
-    void parsed(final CssParserResult result, final int caretOffset) {
+    void parsed(final CssCslParserResult result, final int caretOffset) {
         d("model updated");
 
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 d("model updated from AWT");
                 updateSelectedRule(result, caretOffset);
@@ -218,11 +206,12 @@ public class CssEditorSupport {
         });
     }
 
-    void parsedWithError(CssParserResult result) {
+    void parsedWithError(CssCslParserResult result) {
         d("model invalid");
         //disable editing on the StyleBuilder
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 //remove the CssStyleData listener to disallow StyleBuilder editing
                 //until the parser finishes parsing. If I do not do that, the parsed
@@ -240,17 +229,17 @@ public class CssEditorSupport {
         });
     }
 
-    private synchronized void updateSelectedRule(CssParserResult result, int dotPos) {
-        LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
+    private synchronized void updateSelectedRule(CssCslParserResult result, int dotPos) {
+        LOGGER.log(Level.FINE, "updateSelectedRule({0})", dotPos);
 
         if(this.result != result) {
             //parser result changed, need to rebuild model
-            model = CssModel.create(result);
+            model = Stylesheet.create(result.getWrappedCssParserResult());
             this.result = result;
         }
 
         //find rule on the offset
-        CssRule selectedRule = model.ruleForOffset(dotPos);
+        Rule selectedRule = model.ruleForOffset(dotPos);
 
         LOGGER.log(Level.FINE, selectedRule == null ? "NO rule" : "found a rule");
 
