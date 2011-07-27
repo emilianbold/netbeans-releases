@@ -149,18 +149,18 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                     if(RetoucheUtils.getElementKind(handle) == ElementKind.CLASS) {
                         final FileObject fileObject = handle.getFileObject();
                         Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
-                        for (TestLocator testLocator : testLocators) {
+                        for (final TestLocator testLocator : testLocators) {
                             if(testLocator.appliesTo(fileObject)) {
                                 if(testLocator.asynchronous()) {
                                     testLocator.findOpposite(fileObject, -1, new TestLocator.LocationListener() {
 
                                         @Override
                                         public void foundLocation(FileObject fo, LocationResult location) {
-                                            addTestFile(location);
+                                            addTestFile(location, testLocator);
                                         }
                                     });
                                 } else {
-                                    addTestFile(testLocator.findOpposite(fileObject, -1));
+                                    addTestFile(testLocator.findOpposite(fileObject, -1), testLocator);
                                 }
                             }
                         }
@@ -177,15 +177,17 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         initialized = true;
     }
     
-    private void addTestFile(LocationResult location) {
+    private void addTestFile(LocationResult location, TestLocator locator) {
         if (!renameTestClassCheckBox.isVisible()) {
             if (location != null && location.getFileObject() != null) {
-                SwingUtilities.invokeLater(new Runnable() {
+                if(locator.getFileType(location.getFileObject()) == TestLocator.FileType.TEST) {
+                    SwingUtilities.invokeLater(new Runnable() {
 
-                    public void run() {
-                        renameTestClassCheckBox.setVisible(true);
-                    }
-                });
+                        public void run() {
+                            renameTestClassCheckBox.setVisible(true);
+                        }
+                    });
+                }
             }
         }
     }
