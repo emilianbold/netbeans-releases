@@ -51,9 +51,9 @@ import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -244,11 +244,11 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
 	@Override
 	public void run(ResultIterator resultIterator) throws Exception {
-	    Collection<CssParserResult> results = new ArrayList<CssParserResult>();
+	    Collection<CssCslParserResult> results = new ArrayList<CssCslParserResult>();
 	    Snapshot snapshot = resultIterator.getSnapshot();
 	    try {
 		if (CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType())) {
-		    results.add((CssParserResult) resultIterator.getParserResult());
+		    results.add((CssCslParserResult) resultIterator.getParserResult());
 		    return;
 		}
 		for (Embedding e : resultIterator.getEmbeddings()) {
@@ -307,11 +307,11 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    ResultIterator cssri = WebUtils.getResultIterator(ri, CssLanguage.CSS_MIME_TYPE);
 
 	    if (cssri != null) {
-		CssParserResult result = (CssParserResult) cssri.getParserResult();
-                if(result.root() != null) {
+		CssCslParserResult result = (CssCslParserResult) cssri.getParserResult();
+                if(result.getParseTree() != null) {
                     //the parser result seems to be quite ok,
                     //in case of serious parse issue the parse root is null
-                    CssElementContext context = new CssElementContext.Editor(result, topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
+                    CssElementContext context = new CssElementContext.Editor(result.getWrappedCssParserResult(), topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
                     ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
                 }
 	    }

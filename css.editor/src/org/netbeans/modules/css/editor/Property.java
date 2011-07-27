@@ -46,7 +46,7 @@ import java.util.Collection;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
 public class Property {
     
