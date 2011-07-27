@@ -1,5 +1,5 @@
 Name: Commons Net
-Version: 1.4.1
+Version: 3.0.1
 OSR: 3487
 Description: Apache Commons Net implements the client side of many basic Internet protocols.
 Origin: http://commons.apache.org/net/
