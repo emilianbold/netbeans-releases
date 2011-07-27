@@ -104,8 +104,8 @@ public class CustomizerPane extends JPanel
         categoryModel.addPropertyChangeListener( new CategoryChangeListener() );
         categoryPanel.add( categoryView, fillConstraints );
 
-        errorPanel = new JPanel(new BorderLayout());
         errorIcon = new JLabel();
+        errorPanel = new JPanel(new BorderLayout(errorIcon.getIconTextGap(), 0)); // cf. BasicLabelUI.layoutCL
         errorPanel.add(errorIcon, BorderLayout.LINE_START);
         errorIcon.setVerticalAlignment(SwingConstants.TOP);
         errorMessageValue = new JTextArea();
