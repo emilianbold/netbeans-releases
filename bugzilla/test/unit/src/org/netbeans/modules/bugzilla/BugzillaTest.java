@@ -137,7 +137,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
             updateTaskData(data, brc, repository);
 
             // hours worked
-            hoursWorked(data, brc, repository);
+            timeTracking(data, brc, repository);
             
             // add atachment
             data = addAttachement(data, brc, repository, "Adding attachement", "some file", "crap");
@@ -256,24 +256,21 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
 
     }
     
-    private void hoursWorked(TaskData data, BugzillaRepositoryConnector brc, TaskRepository repository) throws CoreException {
+    private void timeTracking(TaskData data, BugzillaRepositoryConnector brc, TaskRepository repository) throws CoreException {
         data = brc.getTaskData(repository, data.getTaskId(), nullProgressMonitor);
 		TaskAttribute attrModification1 = data.getRoot().getMappedAttribute(TaskAttribute.DATE_MODIFICATION);
 
-        TaskAttribute rta = data.getRoot();
-        TaskAttribute taActualTime = rta.getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey());
-        
         // Orig. Est.
-        TaskAttribute taEstimatedTime = rta.getMappedAttribute(BugzillaAttribute.ESTIMATED_TIME.getKey());
+        TaskAttribute taEstimatedTime = data.getRoot().getMappedAttribute(BugzillaAttribute.ESTIMATED_TIME.getKey());
         
         // Hours left
-        TaskAttribute taRemainingTime = rta.getMappedAttribute(BugzillaAttribute.REMAINING_TIME.getKey());
+        TaskAttribute taRemainingTime = data.getRoot().getMappedAttribute(BugzillaAttribute.REMAINING_TIME.getKey());
         
         // Current Est.
-        TaskAttribute taActuallTime = rta.getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey());
+        TaskAttribute taActualTime = data.getRoot().getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey());
         
         // Deadline
-        TaskAttribute taDeadline = rta.getMappedAttribute(BugzillaAttribute.DEADLINE.getKey());
+        TaskAttribute taDeadline = data.getRoot().getMappedAttribute(BugzillaAttribute.DEADLINE.getKey());
         
         // need a comment when changing Hours Worked
         TaskAttribute taComment = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
@@ -288,7 +285,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         taEstimatedTime.setValue("10");
         taWorkTime.setValue("3");
         taRemainingTime.setValue("3");
-        taActuallTime.setValue("7"); // will have no effect on the returned value
+        taActualTime.setValue("7"); // will have no effect on the returned value
         taComment.setValue("worked 3");
         taDeadline.setValue(new SimpleDateFormat("yyyy-MM-dd").format(new Date(System.currentTimeMillis() + (24*60*60*1000))));
         
@@ -296,7 +293,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         attrs.add(taEstimatedTime);
         attrs.add(taWorkTime);
         attrs.add(taComment);
-        attrs.add(taActuallTime);
+        attrs.add(taActualTime);
         attrs.add(taRemainingTime);
         RepositoryResponse rr = brc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
@@ -313,7 +310,7 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         ta = data.getRoot().getMappedAttribute(BugzillaAttribute.ESTIMATED_TIME.getKey());
         assertEquals("10.00", ta.getValue());
         ta = data.getRoot().getMappedAttribute(BugzillaAttribute.REMAINING_TIME.getKey());
-        assertEquals("0.00", ta.getValue());
+        assertEquals("3.00", ta.getValue());
         ta = data.getRoot().getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey());
         assertEquals("3.00", ta.getValue());
         ta = data.getRoot().getMappedAttribute(BugzillaAttribute.DEADLINE.getKey());
@@ -324,11 +321,17 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         // Hours left 2 => actuall == 2 + 3; 
         
         // Hours left
-        taRemainingTime = rta.getMappedAttribute(BugzillaAttribute.REMAINING_TIME.getKey());
+        taRemainingTime = data.getRoot().getMappedAttribute(BugzillaAttribute.REMAINING_TIME.getKey());
+        taWorkTime = data.getRoot().createMappedAttribute(BugzillaAttribute.WORK_TIME.getKey());
+        taComment = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);;
         
         taRemainingTime.setValue("2"); 
+        taWorkTime.setValue("2"); 
+        taComment.setValue("worked 2");
         attrs = new HashSet<TaskAttribute>();
         attrs.add(taRemainingTime);
+        attrs.add(taWorkTime);
+        attrs.add(taComment);
         rr = brc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_UPDATED);
 
@@ -337,6 +340,8 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         assertEquals("2.00", ta.getValue());
         ta = data.getRoot().getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey());
         assertEquals("5.00", ta.getValue());
+        ta = data.getRoot().getMappedAttribute(BugzillaAttribute.ESTIMATED_TIME.getKey());
+        assertEquals("10.00", ta.getValue());
         
         TaskAttribute attrModification2 = data.getRoot().getMappedAttribute(TaskAttribute.DATE_MODIFICATION);
         assertNotSame(attrModification1, attrModification2);
