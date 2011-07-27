@@ -47,12 +47,18 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -65,14 +71,47 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    private FriendFunctionDDImpl(AST ast, CsmClass cls, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, cls.getContainingFile(), scope, nameHolder, global);
+    protected FriendFunctionDDImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
         friendClassUID = UIDs.get(cls);
     }
-
+    
     public static FriendFunctionDDImpl create(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+        CsmFile file = cls.getContainingFile();
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(ast, cls, scope, nameHolder, global);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
+
+        FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, friendFunctionDDImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionDDImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        friendFunctionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        friendFunctionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDDImpl, file));
+        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, friendFunctionDDImpl);
+        if (body == null) {
+            throw new AstRendererException((FileImpl)file, startOffset,
+                    "Null body in method definition."); // NOI18N
+        }        
+        friendFunctionDDImpl.setCompoundStatement(body);
+        
         postObjectCreateRegistration(global, friendFunctionDDImpl);
         nameHolder.addReference(cls.getContainingFile(), friendFunctionDDImpl);
         return friendFunctionDDImpl;

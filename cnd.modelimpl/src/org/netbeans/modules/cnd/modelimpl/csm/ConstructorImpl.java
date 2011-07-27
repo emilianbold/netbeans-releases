@@ -49,6 +49,12 @@ import java.util.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
@@ -57,14 +63,57 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
-    private ConstructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, nameHolder, register);
+    protected ConstructorImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static ConstructorImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+    public static ConstructorImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        CsmScope scope = cls;
+        CsmFile file = cls.getContainingFile();
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        ConstructorImpl constructorImpl = new ConstructorImpl(ast, cls, visibility, nameHolder, register);
-        postObjectCreateRegistration(register, constructorImpl);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        boolean _virtual = false;
+        boolean _explicit = false;
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.LITERAL_static:
+                    _static = true;
+                    break;
+                case CPPTokenTypes.LITERAL_virtual:
+                    _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_explicit:
+                    _explicit = true;
+                    break;
+            }
+        }
+        
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
+
+        ConstructorImpl constructorImpl = new ConstructorImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, constructorImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, constructorImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        constructorImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        constructorImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, constructorImpl, file));
+        constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        postObjectCreateRegistration(global, constructorImpl);
         nameHolder.addReference(cls.getContainingFile(), constructorImpl);
         return constructorImpl;
     }

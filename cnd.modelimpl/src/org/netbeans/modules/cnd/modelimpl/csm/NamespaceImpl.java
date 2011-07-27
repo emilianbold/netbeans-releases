@@ -439,6 +439,23 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return true;
     }
 
+    /**
+     * Determines whether a function has namesace scope
+     *
+     * @param func function to check.
+     *
+     * @return true if the function has namesapce scope or global scope,
+     * or false if it is file-local scope (i.e. no external linkage)
+     */
+    public static boolean isNamespaceScope(CsmFile file, boolean pureDefinition, boolean _static) {
+        if( ((FileImpl) file).isHeaderFile() && ! pureDefinition ) {
+            return true;
+        } else if (_static) {
+            return false;
+        }
+        return true;
+    }
+    
     @Override
     public CsmOffsetableDeclaration findExistingDeclaration(int start, int end, CharSequence name) {
         throw new UnsupportedOperationException();

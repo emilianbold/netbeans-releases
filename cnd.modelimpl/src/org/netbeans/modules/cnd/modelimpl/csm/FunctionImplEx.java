@@ -76,18 +76,47 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
     private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
-    private final CharSequence[] classOrNspNames;   
+    private CharSequence[] classOrNspNames;   
     
-    protected FunctionImplEx(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file, null, scope, nameHolder, global);
-        classOrNspNames = CastUtils.isCast(ast) ?
-            getClassOrNspNames(ast) :
-            initClassOrNspNames(ast);
+    protected FunctionImplEx(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-
+    
     public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(ast, file, scope, nameHolder, global);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
+
+        FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        
+        temporaryRepositoryRegistration(global, functionImplEx);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImplEx, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        functionImplEx.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        functionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionImplEx, file));
+        functionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImplEx, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));        
+        
+        CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            functionImplEx.initClassOrNspNames(ast);
+        functionImplEx.setClassOrNspNames(classOrNspNames);        
+        
         if (register) {
             postObjectCreateRegistration(register, functionImplEx);
         } else {
@@ -97,6 +126,10 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return functionImplEx;
     }
 
+    protected void setClassOrNspNames(CharSequence[] classOrNspNames) {
+        this.classOrNspNames = classOrNspNames;
+    }
+    
     /** @return either class or namespace */
     protected CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
@@ -123,7 +156,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }    
 
 
-    private static CharSequence[] getClassOrNspNames(AST ast) {
+    protected static CharSequence[] getClassOrNspNames(AST ast) {
 	assert CastUtils.isCast(ast);
 	AST child = ast.getFirstChild();
         if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
@@ -158,7 +191,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	return null;
     }
 
-    private CharSequence[] initClassOrNspNames(AST node) {
+    protected CharSequence[] initClassOrNspNames(AST node) {
         //qualified id
         AST qid = AstUtil.findMethodName(node);
         if( qid == null ) {

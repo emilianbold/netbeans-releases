@@ -100,7 +100,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         return "Fun " + super.toString(); // NOI18N
     }
 
-    /*package*/ static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope, boolean isLocal) {
+    public static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope, boolean isLocal) {
         AST lParen = null;
         AST rParen = null;
         AST paramList = null;

@@ -52,7 +52,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -64,25 +67,63 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmFunctionDefinition {
 
     private CsmUID<CsmFunction> declarationUID;
-    private final CsmCompoundStatement body;
+    private CsmCompoundStatement body;
     private int parseCount;
 
-    protected FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file, scope, nameHolder, global);
-        body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        if (body == null) {
-            throw new AstRendererException((FileImpl) file, getStartOffset(),
-                    "Null body in function definition."); // NOI18N
-        }
+    protected FunctionDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-
-    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+    
+    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(ast, file, scope, nameHolder, register);
-        postObjectCreateRegistration(register, functionDefinitionImpl);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
+
+        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        
+        temporaryRepositoryRegistration(global, functionDefinitionImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDefinitionImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        functionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        functionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDefinitionImpl, file));
+        functionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDefinitionImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));        
+        
+        CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            functionDefinitionImpl.initClassOrNspNames(ast);
+        functionDefinitionImpl.setClassOrNspNames(classOrNspNames);        
+
+        CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, functionDefinitionImpl);
+        if (body == null) {
+            throw new AstRendererException((FileImpl)file, startOffset,
+                    "Null body in method definition."); // NOI18N
+        }        
+        functionDefinitionImpl.setCompoundStatement(body);
+        
+        postObjectCreateRegistration(global, functionDefinitionImpl);
         nameHolder.addReference(file, functionDefinitionImpl);
         return functionDefinitionImpl;
     }
+
+    protected void setCompoundStatement(CsmCompoundStatement body) {
+        this.body = body;
+    }    
 
     @Override
     public void dispose() {

@@ -94,7 +94,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     /** Creates a new instance of VariableDefinitionImpl */
     private VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
         super(ast, file, type, name, null,_static, _extern);
-        templateDescriptor = createTemplateDescriptor(ast, null, null, true);
+        templateDescriptor = createTemplateDescriptor(ast, file, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
     }
 

@@ -2087,5 +2087,111 @@ public class AstRenderer {
 //    public ExpressionBase renderExpression(ExpressionBase parent) {
 //        
 //    }
+    
+    public static class FunctionRenderer {
+        
+        public static boolean isStatic(AST ast, CsmFile file, CharSequence name) {
+            boolean _static = false;
+            AST child = ast.getFirstChild();
+            if (child != null) {
+                _static = child.getType() == CPPTokenTypes.LITERAL_static;
+            } else {
+                System.err.println("function ast " + ast.getText() + " without childs in file " + file.getAbsolutePath());
+            }
+            if (!_static) {
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(name, true, true, false);
+                Iterator<CsmFunction> it = CsmSelect.getStaticFunctions(file, filter);
+                while (it.hasNext()) {
+                    CsmFunction fun = it.next();
+                    if (name.equals(fun.getName())) {
+                        // we don't check signature here since file-level statics
+                        // is C-style construct
+                        _static = true;
+                        break;
+                    }
+                }
+            }
+            return _static;
+        }
+        
+        public static boolean isConst(AST node) {
+            AST token = node.getFirstChild();
+            while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
+                token = token.getNextSibling();
+            }
+            while( token != null ) {
+                if (AstRenderer.isConstQualifier(token.getType())) {
+                    return true;
+                }
+                token = token.getNextSibling();
+            }
+            return false;
+        }        
+        
+        public static CsmScope getScope(CsmScope scope, CsmFile file, boolean _static, boolean definition) {
+            // change scope to file for static methods, but only to prevent
+            // registration in global namespace
+            if(scope instanceof CsmNamespace) {
+                if( !NamespaceImpl.isNamespaceScope(file, definition, _static) ) {
+                        scope = file;
+                }
+            }
+            return scope;
+        }
+        
+        public static CsmType createReturnType(AST node, CsmScope scope, CsmFile file) {
+            CsmType ret = null;
+            AST token = getTypeToken(node);
+            if( token != null ) {
+                ret = AstRenderer.renderType(token, file);
+            }
+            if( ret == null ) {
+                ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, file); // NOI18N
+            }
+            return TemplateUtils.checkTemplateType(ret, scope);
+        }        
+        
+        public static FunctionParameterListImpl createParameters(AST ast, CsmScope scope, CsmFile file, boolean global) {
+            FunctionParameterListImpl parameterList = FunctionParameterListImpl.create(file, ast, scope, !global);
+            return parameterList;
+        }
+
+        public static boolean isVoidParameter(AST node) {
+            AST ast = findParameterNode(node);
+            return AstRenderer.isVoidParameter(ast);
+        }
+        
+        private static AST findParameterNode(AST node) {
+            AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
+            if (ast != null) {
+                // for K&R-style
+                AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_KR_PARMLIST);
+                if (ast2 != null) {
+                    ast = ast2;
+                }
+            }
+            return ast;
+        }
+        
+        private static AST getTypeToken(AST node) {
+            for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
+                int type = token.getType();
+                switch( type ) {
+                    case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                    case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                    case CPPTokenTypes.LITERAL_typename:
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_class:
+                    case CPPTokenTypes.LITERAL_union:
+                        return token;
+                    default:
+                        if( AstRenderer.isCVQualifier(type) ) {
+                            return token;
+                        }
+                }
+            }
+            return null;
+        }
+    }
 }
     

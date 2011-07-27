@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -76,25 +78,55 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDefinition {
 
-    private final CsmCompoundStatement body;
+    private CsmCompoundStatement body;
 
-    protected FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file, null, scope, nameHolder, global);
-        body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        if (body == null) {
-            throw new AstRendererException((FileImpl)file, getStartOffset(),
-                    "Null body in function definition."); // NOI18N
-        }
+    protected FunctionDDImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-
-    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+    
+    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(ast, file, scope, nameHolder, register);
-        postObjectCreateRegistration(register, functionDDImpl);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
+
+        FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, functionDDImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionDDImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        functionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        functionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDDImpl, file));
+        functionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDDImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, functionDDImpl);
+        if (body == null) {
+            throw new AstRendererException((FileImpl)file, startOffset,
+                    "Null body in method definition."); // NOI18N
+        }        
+        functionDDImpl.setCompoundStatement(body);
+        
+
+        postObjectCreateRegistration(global, functionDDImpl);
         nameHolder.addReference(file, functionDDImpl);
         return functionDDImpl;
     }
 
+    protected void setCompoundStatement(CsmCompoundStatement body) {
+        this.body = body;
+    }
 
     @Override
     public void dispose() {
