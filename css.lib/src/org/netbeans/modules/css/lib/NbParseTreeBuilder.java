@@ -179,7 +179,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         
         
         if (resyncing) {
-            System.out.println("resyncing over token " + token);
+//            System.out.println("resyncing over token " + token);
         }
 
     }
@@ -214,7 +214,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         hiddenTokens.add((CommonToken) token);
 
         if (resyncing) {
-            System.out.println("resyncing over hidden token " + token);
+//            System.out.println("resyncing over hidden token " + token);
         }
 
     }
