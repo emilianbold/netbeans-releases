@@ -68,7 +68,7 @@ public class CCDataObject extends SourceDataObject {
         iconBase = CCDataNode.CCSrcIcon,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         mimeType = MIMENames.CPLUSPLUS_MIME_TYPE,
-        preferredID = "cpp.source",
+        preferredID = "cpp.source", //NOI18N
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
