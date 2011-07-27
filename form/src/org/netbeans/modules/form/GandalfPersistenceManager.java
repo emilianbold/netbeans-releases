@@ -2212,8 +2212,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 		propList.add(property);
 		propList.add(value);
             }
-            if (propList != null)
+            if (propList != null) {
+                if (prEd != null) {
+                    property.setCurrentEditor(prEd);
+                }
                 return;
+            }
 	}
 
 	// set the value to the property
