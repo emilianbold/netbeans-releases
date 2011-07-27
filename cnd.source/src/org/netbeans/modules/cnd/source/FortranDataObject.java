@@ -72,7 +72,7 @@ public class FortranDataObject extends SourceDataObject {
         iconBase = FortranDataNode.FortranSrcIcon,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         mimeType = MIMENames.FORTRAN_MIME_TYPE,
-        preferredID = "header.source",
+        preferredID = "header.source", //NOI18N
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
