@@ -1419,7 +1419,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @since 6.37
      */
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ ElementType.TYPE, ElementType.METHOD })
+    @Target({ ElementType.TYPE })
     public static @interface Registration {
         /** Name of the mode the component shall be opened in */
         String mode();

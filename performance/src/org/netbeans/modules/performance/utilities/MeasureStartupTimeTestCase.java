@@ -180,7 +180,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
                 endTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
                 measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
             }
-                        
+                   
             long startupTime = endTime - startTime;
 
             System.out.println("\t" + startTime + " -> run from command line (start) ");
@@ -266,7 +266,12 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         }
         
         // construct command line
-        StringBuffer cmd = new StringBuffer((new File(ideBinDir,executor)).getAbsolutePath());
+        StringBuffer cmd = new StringBuffer();
+        String execDir = System.getProperty("netbeans.performance.exec.dir");
+        if (execDir==null) {
+            execDir= (new File(ideBinDir,executor)).getAbsolutePath();
+        } 
+        cmd.append(execDir);
         
         // add other argumens
         // guiltracker lib
