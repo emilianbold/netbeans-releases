@@ -252,11 +252,13 @@ public class MultiSplitPane extends JPanel
         return d;
     }
 
+    @Override
     public void mouseMoved( MouseEvent e ) {
         switchCursor( e );
         e.consume();
     }
 
+    @Override
     public void mouseDragged( MouseEvent e ) {
         if( null == draggingDivider )
             return;
@@ -265,6 +267,7 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if( null == draggingDivider )
             return;
@@ -276,6 +279,7 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if( !Switches.isTopComponentResizingEnabled() )
             return;
@@ -288,6 +292,7 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         if( null == draggingDivider ) {
             setCursor( Cursor.getDefaultCursor() );
@@ -295,9 +300,11 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
     }
     
@@ -608,6 +615,7 @@ public class MultiSplitPane extends JPanel
     
     protected class MultiSplitLayout implements LayoutManager {
         
+        @Override
         public void layoutContainer( Container c ) {
             if( c != MultiSplitPane.this )
                 return;
@@ -671,16 +679,20 @@ public class MultiSplitPane extends JPanel
             }
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container container) {
             return container.getSize();
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container container) {
             return container.getSize();
         }
 
+        @Override
         public void removeLayoutComponent(Component c) {}
 
+        @Override
         public void addLayoutComponent(String string, Component c) {}
     }
 }
