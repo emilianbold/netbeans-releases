@@ -1057,6 +1057,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         private final String authorName;
         private final Long number;
         private final String text;
+        private final Double worked;
 
         public Comment(TaskAttribute a) {
             Date d = null;
@@ -1080,6 +1081,20 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             String n = getMappedValue(a, TaskAttribute.COMMENT_NUMBER);
             number = n != null ? Long.parseLong(n) : null;
             text = getMappedValue(a, TaskAttribute.COMMENT_TEXT);
+            String workedString = getMappedValue(a, BugzillaAttribute.WORK_TIME.getKey());
+            
+            double dbWorked = 0;
+            if(workedString == null || workedString.isEmpty()) {
+                dbWorked = 0.0;
+            } else {
+                try {
+                    dbWorked = Double.parseDouble(workedString);
+                } catch (NumberFormatException e) {
+                    Bugzilla.LOG.log(Level.WARNING, "WORK_TIME time for comment " + number + " is " + workedString , e);
+                    dbWorked = 0;
+                }
+            }
+            worked = dbWorked;
         }
 
         public Long getNumber() {
@@ -1100,6 +1115,10 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
         public String getAuthorName() {
             return authorName;
+        }
+
+        public Double getWorked() {
+            return worked;
         }
     }
 
