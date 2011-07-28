@@ -2508,6 +2508,15 @@ final class Central implements ControllerHandler {
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManager.PROP_MODES, null, null);
     }
+    
+    /**
+     * 
+     * @param draggable 
+     * @since 2.37
+     */
+    void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        viewRequestor.userStartedKeyboardDragAndDrop( draggable );
+    }
 
     private ModeImpl findJoinedMode( int modeKind, SplitConstraint[] constraints ) {
         for( ModeImpl m : getModes() ) {
