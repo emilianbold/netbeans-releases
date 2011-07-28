@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 
 /**
  *
@@ -137,7 +138,8 @@ public class StylesheetTest extends NbTestCase {
         String content = " @import \"file.css\";\nh1 { color : red; }";
         //                0123456789012345678
         //                0         1
-        Stylesheet model = TestUtil.parse(content).getModel();        assertNotNull(model);
+        Stylesheet model = TestUtil.parse(content).getModel();        
+        assertNotNull(model);
 
         Collection<String> names = model.imported_files;
         assertNotNull(names);
@@ -145,6 +147,62 @@ public class StylesheetTest extends NbTestCase {
         assertEquals(1, names.size());
         assertEquals("file.css", names.iterator().next());
 
+    }
+     
+     
+     public void testRuleWithoutCloseBracket() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
+        String content = "h1 { color: red ";
+        //                0123456789012345678
+        //                0         1
+        Stylesheet model = TestUtil.parse(content).getModel();        
+        assertNotNull(model);
+
+        Collection<Rule> rules = model.rules();
+        assertNotNull(rules);
+        assertEquals(1, rules.size());
+        
+        Rule rule = rules.iterator().next();
+        assertNotNull(rule);        
+        assertEquals(-1, rule.getRuleCloseBracketOffset());
+
+    }
+     
+    public void testDeclarationWithoutProperyValueAndSemicolon() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
+        String content = "h1 { color:  }";
+        //                0123456789012345678
+        //                0         1
+        
+        CssParserResult result = TestUtil.parse(content);
+//        TestUtil.dumpResult(result);
+        
+        Stylesheet model = result.getModel();        
+        assertNotNull(model);
+
+        Collection<Rule> rules = model.rules();
+        assertNotNull(rules);
+        assertEquals(1, rules.size());
+        
+        Rule rule = rules.iterator().next();
+        assertNotNull(rule);        
+        
+        List<Declaration> declarations = rule.items();
+        assertNotNull(declarations);
+        assertEquals(1, declarations.size());
+        
+        Declaration decl = declarations.iterator().next();        
+        assertNotNull(decl);
+        
+        assertEquals(10, decl.colonOffset());
+        assertEquals(-1, decl.semicolonOffset());
+
+        Item prop = decl.getProperty();
+        assertNotNull(prop);
+        assertEquals("color", prop.image().toString());
+        
+        Item val = decl.getValue();
+        assertNotNull(val);
+        assertEquals("", val.image().toString());
+        
     }
 
 }

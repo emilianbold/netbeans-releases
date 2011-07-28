@@ -416,7 +416,7 @@ public final class SuiteUtils {
             suiteProps.setPrivateProperty(projectPropKey, projectDirF.getAbsolutePath());
         }
         String origModules = suiteProps.getProperty(MODULES_PROPERTY);
-        StringBuffer modules = new StringBuffer(origModules == null ? "" : origModules);
+        StringBuilder modules = new StringBuilder(origModules == null ? "" : origModules);
         if (modules.length() > 0) {
             modules.append(':');
         }

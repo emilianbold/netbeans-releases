@@ -331,6 +331,11 @@ public final class ProjectImpl implements ProjectProperties {
         }
 
         @Override
+        public String getCompileLine() {
+            return null;
+        }
+
+        @Override
         public String getItemName() {
             return item.getFileObject().getNameExt();
         }

@@ -1054,7 +1054,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         if (getRequiredTokenListModel().isChanged()) {
             String[] reqTokens = getRequiredTokenListModel().getTokens();
-            StringBuffer result = new StringBuffer(reqTokens.length > 1 ? "\n  " : ""); // NOI18N
+            StringBuilder result = new StringBuilder(reqTokens.length > 1 ? "\n  " : ""); // NOI18N
             for (int i = 0; i < reqTokens.length; i++) {
                 if (i != 0) {
                     result.append(",\n  "); // NOI18N

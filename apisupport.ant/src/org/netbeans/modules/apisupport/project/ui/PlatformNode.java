@@ -253,7 +253,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
                 }
                 //Issue: #57840: Broken platform 'default_platform'
                 if (ErrorManager.getDefault().isLoggable(ErrorManager.INFORMATIONAL) && platformCache == null) {
-                    StringBuffer message = new StringBuffer("RequestedPlatform: " + platformPropName + " not found.\nInstalled Platforms:\n"); // NOI18N
+                    StringBuilder message = new StringBuilder("RequestedPlatform: " + platformPropName + " not found.\nInstalled Platforms:\n"); // NOI18N
                     JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
                     for (int i=0; i<platforms.length; i++) {
                         message.append("Name: "+platforms[i].getProperties().get("platform.ant.name")+ // NOI18N

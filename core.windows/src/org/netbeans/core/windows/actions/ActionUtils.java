@@ -174,9 +174,19 @@ public abstract class ActionUtils {
             if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new DockModeAction( mode, null ) );
             
+            actions.add( null ); // Separator
+
+            //move window
+            actions.add( new MoveWindowAction( tc ) );
+            
+            //move group
+            actions.add( new MoveModeAction( mode) );
+            
+            //size group
+            actions.add( new ResizeModeAction( mode) );
+            
             if( isEditor ) {
                 actions.add( null ); // Separator
-
                 actions.add(new CloneDocumentAction(tc));
             }
 
@@ -225,6 +235,17 @@ public abstract class ActionUtils {
             if( Switches.isViewModeUndockingEnabled() || Switches.isModeSlidingEnabled() )
                 actions.add( new DockModeAction( findPreviousMode( tc, mode ), mode) );
             
+            actions.add( null ); // Separator
+            
+            //move window
+            actions.add(createDisabledAction("CTL_MoveWindowAction"));
+            
+            //move group
+            actions.add(createDisabledAction("CTL_MoveModeAction"));
+            
+            //size group
+            actions.add(createDisabledAction("CTL_ResizeModeAction"));
+
             if( isEditor ) {
                 actions.add( null ); // Separator
 
@@ -315,6 +336,17 @@ public abstract class ActionUtils {
             //dock group
             if( Switches.isViewModeUndockingEnabled() )
                 actions.add( new DockModeAction( mode, null ) );
+            
+            actions.add( null );
+            
+            //move window
+            actions.add(createDisabledAction("CTL_MoveWindowAction"));
+            
+            //move group
+            actions.add( new MoveModeAction( mode ) );
+            
+            //size group
+            actions.add( new ResizeModeAction( mode ) );
             
         } else if (kind == Constants.MODE_KIND_SLIDING) {
             if( Switches.isViewTopComponentClosingEnabled() ) {

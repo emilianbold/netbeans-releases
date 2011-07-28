@@ -687,7 +687,7 @@ public final class ModuleUpdater extends Thread {
       */
      public static final String quoteString(String s) {
          if ( s.indexOf( SPACE ) > -1 ) {
-             StringBuffer sb = new StringBuffer(s);
+             StringBuilder sb = new StringBuilder(s);
              int i = 0;
              while ( i < sb.length() ) {
                  if ( sb.charAt(i) == QUOTE )
@@ -1041,7 +1041,7 @@ public final class ModuleUpdater extends Thread {
         
         /** replace all occurences of String what by String repl in the String sin */
         private String replaceAll(String sin, String what, String repl) {
-            StringBuffer sb = new StringBuffer(sin);
+            StringBuilder sb = new StringBuilder(sin);
             int i = sb.toString().indexOf(what);
             int len = what.length();
             while ( i > -1 ) {

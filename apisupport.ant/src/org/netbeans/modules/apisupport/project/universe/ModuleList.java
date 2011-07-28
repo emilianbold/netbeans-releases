@@ -536,7 +536,7 @@ public final class ModuleList {
         PropertyEvaluator eval = parseProperties(basedir, root, type, cnb);
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
-        StringBuffer cpextra = new StringBuffer();
+        StringBuilder cpextra = new StringBuilder();
         for (Element ext : XMLUtil.findSubElements(data)) {
             if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
                 continue;

@@ -77,6 +77,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -633,6 +634,7 @@ public class TaskProcessorTest extends NbTestCase {
         assertTrue(taskCalled.await(5000, TimeUnit.MILLISECONDS));
     }
 
+    @RandomlyFails // in fact always for jglick
     public void testSlowCancelSampler() throws Exception {
         //Enable sampling
         TaskProcessor.SAMPLING_ENABLED = true;

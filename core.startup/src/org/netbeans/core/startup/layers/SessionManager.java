@@ -172,7 +172,7 @@ public final class SessionManager {
 
             // timed out!
             String locks [] = LocalFileSystemEx.getLocks ();
-            StringBuffer msg = new StringBuffer (256);
+            StringBuilder msg = new StringBuilder (256);
             msg.append ("Settings saving "); //NOI18N
             msg.append (count == 0 ? "timeout!" : "interrupted!"); //NOI18N
             msg.append ("\nList of pending locks:\n"); //NOI18N

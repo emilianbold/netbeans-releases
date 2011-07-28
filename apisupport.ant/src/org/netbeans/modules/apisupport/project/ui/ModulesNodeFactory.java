@@ -315,7 +315,7 @@ public class ModulesNodeFactory implements NodeFactory {
                 try {
                     NbModuleProject[] modules = SuiteUtils.getDependentModules(suiteComponent);
                     if (modules.length > 0) {
-                        StringBuffer sb = new StringBuffer("<ul>"); // NOI18N
+                        StringBuilder sb = new StringBuilder("<ul>"); // NOI18N
                         for (int j = 0; j < modules.length; j++) {
                             sb.append("<li>" + ProjectUtils.getInformation(modules[j]).getDisplayName() + "</li>"); // NOI18N
                         }

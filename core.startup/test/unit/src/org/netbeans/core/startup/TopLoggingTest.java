@@ -254,7 +254,7 @@ public class TopLoggingTest extends NbTestCase {
 
     }
     public void testLogLoggingMessagesEndsUpInMultipleFiles() throws Exception {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while(sb.length() < 1024) {
             sb.append("0123456789");
         }
