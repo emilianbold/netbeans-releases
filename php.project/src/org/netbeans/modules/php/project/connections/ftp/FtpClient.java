@@ -141,7 +141,7 @@ public class FtpClient implements RemoteClient {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Remote system is {0}", ftpClient.getSystemName());
+                LOGGER.log(Level.FINE, "Remote system is {0}", ftpClient.getSystemType());
             }
 
             LOGGER.fine("Setting data timeout");
