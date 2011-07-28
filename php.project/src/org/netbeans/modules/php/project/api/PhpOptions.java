@@ -47,12 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_INTERPRETER;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_PORT;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_SESSION_ID;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_STOP_AT_FIRST_LINE;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_WATCHES_AND_EVAL;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_INCLUDE_PATH;
+import static org.netbeans.modules.php.project.ui.options.PhpOptions.*;
 
 /**
  * Helper class to get actual PHP properties like debugger port etc.
@@ -68,6 +63,8 @@ public final class PhpOptions {
     public static final String PROP_PHP_DEBUGGER_SESSION_ID = "propPhpDebuggerSessionId"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE = "propPhpDebuggerStopAtFirstLine"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_WATCHES_AND_EVAL = "propPhpDebuggerWatchesAndEval"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_MAX_STRUCTURES_DEPTH = "propPhpDebuggerMaxStructuresDepth"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_MAX_CHILDREN = "propPhpDebuggerMaxChildren"; // NOI18N
     public static final String PROP_PHP_GLOBAL_INCLUDE_PATH = "propPhpGlobalIncludePath"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
@@ -91,6 +88,10 @@ public final class PhpOptions {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE, null, Boolean.valueOf(newValue));
                 } else if (PHP_DEBUGGER_WATCHES_AND_EVAL.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_WATCHES_AND_EVAL, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_MAX_STRUCTURES_DEPTH.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_MAX_STRUCTURES_DEPTH, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_MAX_CHILDREN.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_MAX_CHILDREN, null, Boolean.valueOf(newValue));
                 } else if (PHP_GLOBAL_INCLUDE_PATH.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_GLOBAL_INCLUDE_PATH, null, newValue);
                 }
