@@ -47,6 +47,7 @@
                         <attr name="preferredID" stringvalue="editor"/>
                         <attr intvalue="2" name="persistenceType"/>
                         <attr boolvalue="true" name="sourceview"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
             </folder>
