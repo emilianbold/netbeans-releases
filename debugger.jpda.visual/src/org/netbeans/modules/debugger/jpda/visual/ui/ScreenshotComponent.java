@@ -160,6 +160,7 @@ public class ScreenshotComponent extends TopComponent {
                 }
             }
         }
+        canvas.deactivated();
     }
 
     @Override
@@ -233,13 +234,14 @@ public class ScreenshotComponent extends TopComponent {
         }
         
         void activated() {
-            if (active) return ;
-            active = true;
             if (selection != null) {
-                listener.selectComponentAt(selection.x + 1, selection.y + 1);
+                listener.selectComponentAt(selection.x + 1, selection.y + 1, true);
             }
-            addMouseListener(listener);
-            ComponentHierarchy.getInstance().getExplorerManager().addPropertyChangeListener(listener);
+            if (!active) {
+                addMouseListener(listener);
+                ComponentHierarchy.getInstance().getExplorerManager().addPropertyChangeListener(listener);
+            }
+            active = true;
         }
         
         void deactivated() {
@@ -259,14 +261,14 @@ public class ScreenshotComponent extends TopComponent {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.isPopupTrigger()) {
-                    selectComponentAt(e.getX(), e.getY());
+                    selectComponentAt(e.getX(), e.getY(), false);
                     showPopupMenu(e.getX(), e.getY());
                 }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                selectComponentAt(e.getX(), e.getY());
+                selectComponentAt(e.getX(), e.getY(), false);
                 if (e.isPopupTrigger()) {
                     showPopupMenu(e.getX(), e.getY());
                 }
@@ -298,21 +300,21 @@ public class ScreenshotComponent extends TopComponent {
                         ci = nodes[0].getLookup().lookup(ComponentInfo.class);
                     }
                     logger.fine("nodes = "+Arrays.toString(nodes)+" => selectComponent("+ci+")");
-                    selectComponent(ci);
+                    selectComponent(ci, false);
                 } else if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName)) {
                     deactivated();
                 }
             }
             
-            private void selectComponentAt(int x, int y) {
+            private void selectComponentAt(int x, int y, boolean reActivated) {
                 x -= 1;
                 y -= 1;
                 RemoteScreenshot.ComponentInfo ci = screenshot.getComponentInfo().findAt(x, y);
                 logger.fine("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
-                selectComponent(ci);
+                selectComponent(ci, reActivated);
             }
             
-            private void selectComponent(ComponentInfo ci) {
+            private void selectComponent(ComponentInfo ci, boolean reActivated) {
                 Node node = null;
                 if (ci != null) {
                     Rectangle oldSelection = null;
@@ -321,7 +323,7 @@ public class ScreenshotComponent extends TopComponent {
                     }
                     selection = ci.getWindowBounds();
                     if (oldSelection != null) {
-                        if (oldSelection.equals(selection)) {
+                        if (oldSelection.equals(selection) && !reActivated) {
                             return ; // already selected
                         }
                         repaint(oldSelection.x, oldSelection.y, oldSelection.width + 3, oldSelection.height + 3);
