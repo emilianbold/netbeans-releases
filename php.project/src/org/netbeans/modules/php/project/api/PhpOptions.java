@@ -65,6 +65,8 @@ public final class PhpOptions {
     public static final String PROP_PHP_DEBUGGER_WATCHES_AND_EVAL = "propPhpDebuggerWatchesAndEval"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_MAX_STRUCTURES_DEPTH = "propPhpDebuggerMaxStructuresDepth"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_MAX_CHILDREN = "propPhpDebuggerMaxChildren"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_SHOW_URLS = "propPhpDebuggerShowUrls"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_SHOW_CONSOLE = "propPhpDebuggerShowConsole"; // NOI18N
     public static final String PROP_PHP_GLOBAL_INCLUDE_PATH = "propPhpGlobalIncludePath"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
@@ -92,6 +94,10 @@ public final class PhpOptions {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_MAX_STRUCTURES_DEPTH, null, Boolean.valueOf(newValue));
                 } else if (PHP_DEBUGGER_MAX_CHILDREN.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_MAX_CHILDREN, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_SHOW_URLS.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_SHOW_URLS, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_SHOW_CONSOLE.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_SHOW_CONSOLE, null, Boolean.valueOf(newValue));
                 } else if (PHP_GLOBAL_INCLUDE_PATH.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_GLOBAL_INCLUDE_PATH, null, newValue);
                 }
@@ -170,6 +176,26 @@ public final class PhpOptions {
      */
     public boolean isDebuggerWatchesAndEval() {
         return getPhpOptions().isDebuggerWatchesAndEval();
+    }
+
+    /**
+     * Check whether debugger shows requested URLs to the Output Window. The default value is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_SHOW_URLS}</code>.
+     * @return <code>true</code> if the debugger shows requested URLs, <code>false</code> otherwise.
+     * @since 2.35
+     */
+    public boolean isDebuggerShowRequestedUrls() {
+        return getPhpOptions().isDebuggerShowUrls();
+    }
+
+    /**
+     * Check whether debugger shows debugger console to the Output Window. The default value is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_SHOW_CONSOLE}</code>.
+     * @return <code>true</code> if the debugger shows debugger console, <code>false</code> otherwise.
+     * @since 2.35
+     */
+    public boolean isDebuggerShowDebuggerConsole() {
+        return getPhpOptions().isDebuggerShowConsole();
     }
 
     /**
