@@ -216,8 +216,8 @@ public abstract class RemotePathMap extends PathMap {
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 String rest = (value.length() > rpath.length()) ? "" : rpath.substring(value.length()); //NOI18N
-                if (!mpoint.endsWith(File.separator)) {
-                    mpoint += File.separator;
+                if (mpoint.length() > 0 && !mpoint.endsWith("/")) { //NOI18N
+                    mpoint += '/';
                 }
                 return mpoint + rest;
             }
