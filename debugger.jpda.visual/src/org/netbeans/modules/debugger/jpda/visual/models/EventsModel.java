@@ -61,6 +61,7 @@ import javax.swing.JScrollPane;
 import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
+import org.netbeans.modules.debugger.jpda.visual.ui.ComponentHierarchy;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -95,6 +96,10 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
     
     public EventsModel() {
+        Node[] nodes = ComponentHierarchy.getInstance().getExplorerManager().getSelectedNodes();
+        if (nodes.length > 0) {
+            selectedCI = nodes[0].getLookup().lookup(ComponentInfo.class);
+        }
         final Result<Node> nodeLookupResult = Utilities.actionsGlobalContext().lookupResult(Node.class);
         LookupListener ll = new LookupListener() {
             @Override
