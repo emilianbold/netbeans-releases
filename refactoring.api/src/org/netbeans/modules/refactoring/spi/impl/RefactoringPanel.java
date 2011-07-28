@@ -62,6 +62,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
@@ -701,6 +702,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             //[retouche]                        JavaModel.getJavaRepository().endTrans();
                         }
                         UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
+                        sortTree(root);
                     } catch (RuntimeException t) {
                         cleanupTreeElements();
                         throw t;
@@ -779,6 +781,36 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             isVisible = true;
         }
         setRefactoringEnabled(false, true);
+    }
+    
+    private void sortTree(CheckNode root) {
+        ArrayList<CheckNode> nodes = new ArrayList<CheckNode>();
+        ArrayList<CheckNode> leaves = new ArrayList<CheckNode>();
+        for (int i = 0; i < root.getChildCount(); i++){
+                CheckNode node = (CheckNode) root.getChildAt(i);
+                if(!node.isLeaf()) {
+                        sortTree(node);
+                        nodes.add(node);
+                }
+        }
+        for (int i = 0; i < root.getChildCount(); i++){
+            CheckNode node = (CheckNode) root.getChildAt(i);
+            if (node.isLeaf()) {
+                leaves.add(node);
+            }
+        }
+        Collections.sort(nodes, new Comparator<CheckNode>() {
+            public int compare(CheckNode o1, CheckNode o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
+        root.removeAllChildren();
+        for (CheckNode checkNode : nodes) {
+            root.add(checkNode);
+        }
+        for (CheckNode checkNode : leaves) {
+            root.add(checkNode);
+        }
     }
     
     @Override

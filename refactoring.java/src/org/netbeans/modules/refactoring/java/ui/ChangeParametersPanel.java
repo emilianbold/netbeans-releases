@@ -134,8 +134,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
     
     private static final String[] columnNames = {
-        getString("LBL_ChangeParsColName"), // NOI18N
         getString("LBL_ChangeParsColType"), // NOI18N
+        getString("LBL_ChangeParsColName"), // NOI18N
         getString("LBL_ChangeParsColDefVal"), // NOI18N
         getString("LBL_ChangeParsColOrigIdx"), // NOI18N
         getString("LBL_ChangeParsParUsed") // NOI18N
@@ -575,7 +575,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         acceptEditedValue(); 
         int rowCount = model.getRowCount();
-        model.addRow(new Object[] { "par" + rowCount, "Object", "null", new Integer(-1), Boolean.TRUE }); // NOI18N
+        model.addRow(new Object[] { "Object", "par" + rowCount, "null", new Integer(-1), Boolean.TRUE }); // NOI18N
         paramTable.scrollRectToVisible(paramTable.getCellRect(rowCount, 0, false));
         paramTable.changeSelection(rowCount, 0, false, false);
         autoEdit(paramTable);
@@ -709,7 +709,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 scan.scan(info.getTrees().getPath(method), par);
                 Boolean removable = !scan.hasRefernces();
                 if (model.getRowCount()<=originalIndex) {
-                    Object[] parRep = new Object[] { par.toString(), typeRepresentation, "", new Integer(originalIndex), removable };
+                    Object[] parRep = new Object[] { typeRepresentation, par.toString(), "", new Integer(originalIndex), removable };
                     model.addRow(parRep);
                 } else {
                     removable = Boolean.valueOf(model.isRemovable(originalIndex) && removable.booleanValue());
@@ -835,14 +835,14 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         if (parameters.length > 0) {
             int i;
             for (i = 0; i < parameters.length - 1; i++) {
-                buf.append((String) parameters[i].get(1));
-                buf.append(' '); //NOI18N
                 buf.append((String) parameters[i].get(0));
+                buf.append(' '); //NOI18N
+                buf.append((String) parameters[i].get(1));
                 buf.append(',').append(' '); //NOI18N
             }
-            buf.append((String) parameters[i].get(1));
-            buf.append(' '); //NOI18N
             buf.append((String) parameters[i].get(0));
+            buf.append(' '); //NOI18N
+            buf.append((String) parameters[i].get(1));
         }
         buf.append(")</html>"); //NOI18N
         
@@ -996,7 +996,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         {
             boolean isEditable = model.isCellEditable(row, column);
             JComponent comp = (JComponent) original.getTableCellRendererComponent(table,  value, isSelected, hasFocus, row, column);
-            if(column == 1 && table.isCellEditable(row, column)) {
+            if(column == 0 && table.isCellEditable(row, column)) {
                 buttonpanel.setComp(comp);
                 comp = buttonpanel;
             }
@@ -1073,9 +1073,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     
                     returnValue = editorPane;
                     
-                    if(col == 0) {
-                        editorPane.setText(model.getValueAt(row, col+1) + " " + value.toString()); //NOI18N
-                        startOffset = ((String)model.getValueAt(row, col + 1)).length() + 1;
+                    if(col == 1) {
+                        editorPane.setText(model.getValueAt(row, col-1) + " " + value.toString()); //NOI18N
+                        startOffset = ((String)model.getValueAt(row, col - 1)).length() + 1;
                         int endOffset = value.toString().length() + startOffset;
                         editorPane.select(startOffset, endOffset);
                         try {
@@ -1088,7 +1088,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         }
                     }
 
-                    if (col == 1) {
+                    if (col == 0) {
                         editorPane.setText(value.toString());
                         editorPane.selectAll();
                         ChangeParametersButtonPanel buttonPanel = new ChangeParametersButtonPanel();
