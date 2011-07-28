@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -62,7 +61,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.modules.php.dbgp.DebugSession;
-import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
