@@ -44,16 +44,23 @@
 package org.netbeans.modules.localhistory.ui.view;
 
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.util.NbBundle;
@@ -63,8 +70,11 @@ import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.localhistory.LocalHistory;
+import org.netbeans.modules.versioning.history.LinkButton;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,7 +102,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
     private LocalHistoryFileView masterView;
     static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
-    private ToolBar toolBar;
+    private JPanel toolBar;
 
     public LocalHistoryTopComponent() {
         initComponents();
@@ -127,7 +137,7 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         return files;
     }        
 
-    public void init(final File... files) {                
+    public void init(final File... files) {   
         final LocalHistoryFileView fileView = new LocalHistoryFileView();                
         LocalHistoryDiffView diffView = new LocalHistoryDiffView(this); 
         fileView.getExplorerManager().addPropertyChangeListener(diffView); 
@@ -147,7 +157,29 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
+                initToolbar();
                 fileView.refresh(files);
+            }
+
+            private boolean initToolbar() {
+                if (files.length == 0) {
+                    return true;
+                }
+                FileObject fo = FileUtil.toFileObject(files[0]);
+                if (fo == null) {
+                    return true;
+                }
+                final Object attr = fo.getAttribute(SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY);
+                if (attr == null || !(attr instanceof SearchHistorySupport)) {
+                    return true;
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((Toolbar)LocalHistoryTopComponent.this.getToolbarRepresentation()).setSupport((SearchHistorySupport) attr);
+                    }
+                });
+                return false;
             }
         });
     }
@@ -224,8 +256,10 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
 
     @Override
     public JComponent getToolbarRepresentation() {
-        if( toolBar == null ) { 
-            toolBar = new ToolBar();
+        synchronized(this) {
+            if(toolBar == null) { 
+                toolBar = new Toolbar();
+            }
         }
         return toolBar;
     }
@@ -267,24 +301,56 @@ final public class LocalHistoryTopComponent extends TopComponent implements Mult
         super.componentShowing();
     }  
     
-    private static class ToolBar extends JToolBar {
-        ToolBar() {
-            // Proper initialization of aqua toolbar ui, see commit dbd66075827a
-            super("editorToolbar"); // NOI18N
-            // the toolbar should have roll-over buttons and no handle for dragging
-            setFloatable(false);
-            setRollover(true);
+    private class Toolbar extends JPanel {
+        private LinkButton searchHistoryButton;
+        private SearchHistorySupport support;
+        
+        public Toolbar() {
             setBorder(new EmptyBorder(0, 0, 0, 0));
+            setOpaque(false);
+            setBackground(Color.white);
+            setLayout(new GridBagLayout());
+            
+            JLabel label = new JLabel(NbBundle.getMessage(this.getClass(), "LBL_LocalHistory")); // NOI18N
+            Font f = label.getFont();
+            label.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
+            
+            GridBagConstraints c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.CENTER;
+            c.weightx = 1;
+            add(label, c); 
+  
+            searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory")); // NOI18N
+            searchHistoryButton.setVisible(false);
+            searchHistoryButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(support == null) {
+                                return;
+                            }
+                            try {
+                                support.searchHistory(-1);
+                            } catch (IOException ex) {
+                                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.EAST;
+            c.weightx = 0;
+            add(searchHistoryButton, c); 
+            
         }
 
-        @Override
-        public String getUIClassID() {
-            // For GTK and Aqua look and feels, we provide a custom toolbar UI
-            if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
-                return "Nb.Toolbar.ui"; // NOI18N
-            } else {
-                return super.getUIClassID();
-            }
+        public void setSupport(SearchHistorySupport support) {
+            this.support = support;
+            searchHistoryButton.setVisible(true);
         }
-    }    
+    }
 }
