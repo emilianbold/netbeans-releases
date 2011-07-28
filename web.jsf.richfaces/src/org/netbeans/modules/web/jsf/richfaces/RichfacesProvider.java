@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf.richfaces;
 
-package org.netbeans.modules.web.jsf.api.components;
-
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
-import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author alexey butenko
+ * 
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class JsfComponents {
-    private final static String COMPONENTS_PATH = "j2ee/jsf/components";    //NOI18N
+public class RichfacesProvider implements JsfComponentProvider {
 
-
-    public static Set<? extends JsfComponentDescriptor> findJsfComponents() {
-        Collection<? extends JsfComponentProvider> componentProvider =
-                Lookups.forPath(COMPONENTS_PATH).lookupAll(JsfComponentProvider.class);
-        Set<JsfComponentDescriptor> result = new HashSet<JsfComponentDescriptor>();
-        for (JsfComponentProvider provider: componentProvider) {
-            for(JsfComponentDescriptor descriptor: provider.getComponents()) {
-                result.add(descriptor);
-            }
-        }
-        return result;
+    @Override
+    public Set<JsfComponentImplementation> getJsfComponents() {
+        JsfComponentImplementation implementation = new Richfaces4Implementation();
+        return Collections.singleton(implementation);
     }
+    
 }
