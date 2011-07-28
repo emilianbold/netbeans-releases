@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.source.ant;
 
+import java.util.TreeMap;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -52,9 +53,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.swing.Icon;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -62,7 +61,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.junit.NbTestCase;
@@ -72,7 +70,6 @@ import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
@@ -199,19 +196,19 @@ public class ProjectRunnerImplTest {
 
         }
 
-        Properties golden = new Properties();
+        Map<String,String> golden = new TreeMap<String,String>();
 
         for (Iterator<String> it = target.iterator(); it.hasNext();) {
             String key = it.next();
             String value = it.next();
 
-            golden.setProperty(key, value);
+            golden.put(key, value);
         }
 
         String[] projectName = new String[1];
-        Properties out = ProjectRunnerImpl.computeProperties(command, sourceMap, projectName);
+        Map<String,String> out = ProjectRunnerImpl.computeProperties(command, sourceMap, projectName);
 
-        assertEquals(golden, out);
+        assertEquals(golden.toString(), out.toString());
 
         if (displayName != null) {
             assertEquals(displayName, projectName[0]);
