@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.persistence.PersistenceManager;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -1909,6 +1910,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     //roles
+    
+    /**
+     * 
+     * @param draggable 
+     * @since 2.37
+     */
+    public void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        central.userStartedKeyboardDragAndDrop( draggable );
+    }
     
     void fireEvent( WindowSystemEventType type ) {
         assertEventDispatchThread();

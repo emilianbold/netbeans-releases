@@ -95,6 +95,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-DockModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-NewTabGroupAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CollapseTabGroupAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-ResizeModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MoveModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MoveWindowAction.instance"/>
         </folder>
     </folder>
     
