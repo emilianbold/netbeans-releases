@@ -122,7 +122,7 @@ public class ProjectRunnerImplTest {
         MockLookup.setInstances(new ProjectFactoryImpl(prj));
         
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J"),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", prjPath, "run.jvmargs", ""),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", prjPath, "run.jvmargs", "", "encoding", "UTF-8"),
                         "prj");
     }
     
@@ -169,7 +169,7 @@ public class ProjectRunnerImplTest {
         Collection<String> jvmArgs = Arrays.asList("test3", "test4");
 
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J", "work.dir", dir, "project", fake, "application.args", args, "run.jvmargs", jvmArgs),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4"),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4", "encoding", "UTF-8"),
                         "fake");
     }
     
