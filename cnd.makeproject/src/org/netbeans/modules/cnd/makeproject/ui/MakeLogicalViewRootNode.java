@@ -204,7 +204,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
         MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-        confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        if (confProvider != null) {
+            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        }
         stateChanged(null);
     }
 
