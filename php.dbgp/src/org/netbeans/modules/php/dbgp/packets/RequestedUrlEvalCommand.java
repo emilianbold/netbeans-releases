@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.modules.php.dbgp.packets.DbgpStream.StreamType;
-
-
 /**
- * @author ads
  *
+ * @author Ondrej Brejla
  */
-public class StreamCommand extends DbgpCommand {
-    
-    private static final String OPERATION_ARG   = "-c ";        // NOI18N
-    
-    public enum Operation {
-        DISABLE(0),
-        COPY(1),
-        REDIRECT(2);
+public class RequestedUrlEvalCommand extends EvalCommand {
 
-        private int id;
+    private static final String REQUEST_URI = "(isset($_SERVER['SSL']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']"; // NOI18N
 
-        private Operation(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public String toString() {
-            return "" + id;
-        }
+    public RequestedUrlEvalCommand(String transactionId) {
+        super(transactionId);
     }
 
-    public StreamCommand( StreamType type, String transactionId ) {
-        super( type.toString(), transactionId);
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
-        return true;
+    protected String getData() {
+        return REQUEST_URI;
     }
     
-    public void setOperation( Operation operation ){
-        myOperation = operation;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#getArguments()
-     */
-    @Override
-    protected String getArguments()
-    {
-        return OPERATION_ARG + myOperation.ordinal();
-    }
-
-    private Operation myOperation;
 }

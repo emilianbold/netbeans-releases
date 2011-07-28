@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,74 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.modules.php.dbgp.packets.DbgpStream.StreamType;
-
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.php.dbgp.DebugSession;
+import org.netbeans.modules.php.dbgp.UnsufficientValueException;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.w3c.dom.Node;
 
 /**
- * @author ads
  *
+ * @author Ondrej Brejla
  */
-public class StreamCommand extends DbgpCommand {
-    
-    private static final String OPERATION_ARG   = "-c ";        // NOI18N
-    
-    public enum Operation {
-        DISABLE(0),
-        COPY(1),
-        REDIRECT(2);
+public class RequestedUrlEvalResponse extends EvalResponse {
 
-        private int id;
+    private static final Logger logger = Logger.getLogger(DbgpStream.class.getName());
+    
+    public RequestedUrlEvalResponse(Node node) {
+        super(node);
+    }
 
-        private Operation(int id) {
-            this.id = id;
+    @Override
+    @NbBundle.Messages("LBL_PhpRequestedUrls=PHP Requested Urls")
+    public void process(DebugSession session, DbgpCommand command) {
+        InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_PhpRequestedUrls(), false);
+        try {
+            io.getOut().println(getProperty().getStringValue(), new OutputListenerImpl());
+        } catch (UnsufficientValueException ex) {
+            logger.log(Level.WARNING, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, null, ex);
+        } finally {
+            io.getOut().close();
+        }
+    }
+
+    private class OutputListenerImpl implements OutputListener {
+
+        @Override
+        public void outputLineSelected(OutputEvent ev) {
         }
 
         @Override
-        public String toString() {
-            return "" + id;
+        public void outputLineAction(OutputEvent ev) {
+            try {
+                HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(ev.getLine()));
+            } catch (MalformedURLException ex) {
+                logger.log(Level.WARNING, null, ex);
+            }
         }
-    }
 
-    public StreamCommand( StreamType type, String transactionId ) {
-        super( type.toString(), transactionId);
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
-    @Override
-    public boolean wantAcknowledgment()
-    {
-        return true;
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
+        }
+    
     }
     
-    public void setOperation( Operation operation ){
-        myOperation = operation;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#getArguments()
-     */
-    @Override
-    protected String getArguments()
-    {
-        return OPERATION_ARG + myOperation.ordinal();
-    }
-
-    private Operation myOperation;
 }
