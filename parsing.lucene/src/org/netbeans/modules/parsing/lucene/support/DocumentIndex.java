@@ -54,7 +54,22 @@ import org.netbeans.api.annotations.common.NullAllowed;
  * @author Tomas Zezula
  */
 public interface DocumentIndex {
-    
+
+    /**
+     * DocumentIndex providing a status.
+     * @since 1.5
+     */
+    public static interface WithStatus extends DocumentIndex {
+       /**
+        * Checks the validity of the index, see {@link Index#isValid(boolean)} for details
+        * Checks the validity of the index, see {@link Index#getStatus(boolean)} for details
+        * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
+        * when the index does not exist or {@link  Status#VALID} if the index is valid
+        * @throws IOException in case of IO error
+        */
+        public Index.Status getStatus() throws IOException;
+    }
+
     /**
      * Adds a document into the index.
      * The document may not be added persistently until {@link DocumentIndex#store(boolean)} is called
@@ -69,13 +84,11 @@ public interface DocumentIndex {
     void removeDocument (@NonNull String primaryKey);
 
     /**
-     * Checks the validity of the index, see {@link Index#getStatus(boolean)} for details
-     * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
-     * when the index does not exist or {@link  Status#VALID} if the index is valid
+     * Checks the validity of the index, see {@link Index#isValid(boolean)} for details
+     * @return true if index exists and is not broken
      * @throws IOException in case of IO error
-     * @since 2.1
      */
-    public Index.Status getStatus() throws IOException;
+    public boolean isValid() throws IOException;
     
     /**
      * Closes the index.

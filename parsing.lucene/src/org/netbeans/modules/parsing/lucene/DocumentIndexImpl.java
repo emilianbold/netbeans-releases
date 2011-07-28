@@ -67,7 +67,7 @@ import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
  *
  * @author Tomas Zezula
  */
-public final class DocumentIndexImpl implements DocumentIndex {
+public final class DocumentIndexImpl implements DocumentIndex.WithStatus {
     
     private final Index luceneIndex;
     private static final Convertor<IndexDocumentImpl,Document> ADD_CONVERTOR = new AddConvertor();
@@ -148,9 +148,22 @@ public final class DocumentIndexImpl implements DocumentIndex {
      */
     @Override
     public Index.Status getStatus() throws IOException {
-        return luceneIndex.getStatus(true);
+        if (luceneIndex instanceof Index.WithStatus) {
+            return ((Index.WithStatus)luceneIndex).getStatus(true);
+        } else if (luceneIndex.isValid(true)) {
+            return Index.Status.VALID;
+        } else if (!luceneIndex.exists()) {
+            return Index.Status.EMPTY;
+        } else {
+            return Index.Status.INVALID;
+        }
     }
-    
+
+    @Override
+    public boolean isValid() throws IOException {
+        return luceneIndex.isValid(true);
+    }
+
     @Override
     public void close() throws IOException {
         luceneIndex.close();

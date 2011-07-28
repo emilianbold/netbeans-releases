@@ -65,7 +65,7 @@ public interface Index {
 
     /**
      * Index status returned by {@link Index#getStatus(boolean)} method
-     * @since 2.1
+     * @since 1.5
      */
     enum Status {
         /**
@@ -81,24 +81,42 @@ public interface Index {
          */
         VALID;
     }
-    
+
+    /**
+     * Index providing providing a status.
+     * @since 1.5
+     */
+    public static interface WithStatus extends Index {
+        /**
+        * Checks the validity of the index. The index is invalid when it's broken.
+        * @param tryOpen when true the {@link Index} does exact but more expensive check.
+        * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
+        * when the index does not exist or {@link  Status#VALID} if the index is valid
+        * @throws IOException in case of IO problem
+        */
+        Status getStatus (boolean tryOpen) throws IOException;
+    }
+
     /**
      * An exception thrown by {@link Index} when operation is called on
      * a closed index.
      */
     public static final class IndexClosedException extends IOException {        
     }
-        
+    
+    /**
+     * Check if the index already exists
+     * @return true if the index already exists on disk.
+     */
+    boolean exists ();
     
     /**
      * Checks the validity of the index. The index is invalid when it's broken.
      * @param tryOpen when true the {@link Index} does exact but more expensive check.
-     * @return {@link Status#INVALID} when the index is broken, {@link Status#EMPTY}
-     * when the index does not exist or {@link  Status#VALID} if the index is valid
+     * @return true when {@link Index} is not broken
      * @throws IOException in case of IO problem
-     * @since 2.1
      */
-    Status getStatus (boolean tryOpen) throws IOException;
+    boolean isValid (boolean tryOpen) throws IOException;    
     
     /**
      * Queries the {@link Index} by given queries.
