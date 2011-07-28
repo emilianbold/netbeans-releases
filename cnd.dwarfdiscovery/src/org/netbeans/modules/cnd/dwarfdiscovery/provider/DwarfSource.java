@@ -101,11 +101,14 @@ public class DwarfSource implements SourceFileProperties{
     private CompilerSettings normilizeProvider;
     private Map<String,GrepEntry> grepBase;
     private String compilerName;
+    private CompileLineStorage storage;
+    private int handler;
     
-    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
+    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         language = lang;
         this.grepBase = grepBase;
         this.standard = standard;
+        this.storage = storage;
         initCompilerSettings(compilerSettings, lang);
         initSourceSettings(cu, lang);
     }
@@ -175,6 +178,14 @@ public class DwarfSource implements SourceFileProperties{
     @Override
     public String getCompilePath() {
         return compilePath;
+    }
+
+    @Override
+    public String getCompileLine() {
+        if (storage != null && handler != -1) {
+            return storage.getCompileLine(handler);
+        }
+        return null;
     }
     
     @Override
@@ -398,6 +409,9 @@ public class DwarfSource implements SourceFileProperties{
     public void process(CompilationUnit cu) throws IOException{
         String line = cu.getCommandLine();
         if (line != null && line.length()>0){
+            if (storage != null) {
+                handler = storage.putCompileLine(line);
+            }
             gatherLine(line);
             gatherIncludedFiles(cu);
         } else {

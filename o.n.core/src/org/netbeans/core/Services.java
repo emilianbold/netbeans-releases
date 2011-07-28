@@ -205,7 +205,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
             if (orderedFiles.size() < 2) continue;
             
             Iterator<DataObject> files = orderedFiles.iterator();
-            StringBuffer orderAttr = new StringBuffer(64);
+            StringBuilder orderAttr = new StringBuilder(64);
             while (files.hasNext()) {
                 DataObject file = files.next();
                 orderAttr.append(file.getPrimaryFile().getNameExt()).append('/');

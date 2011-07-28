@@ -109,12 +109,12 @@ public class Declaration extends Item {
 
     public Item getProperty() {
         Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
-        return new Item(snapshot, propertyNode);
+        return propertyNode != null ? new Item(snapshot, propertyNode) : null;
     }
 
     public Item getValue() {
         Node propertyNode = NodeUtil.getChildByType(node, NodeType.expr);
-        return new Item(snapshot, propertyNode);
+        return propertyNode != null ? new Item(snapshot, propertyNode) : null;
     }
 
     @Override
@@ -125,8 +125,8 @@ public class Declaration extends Item {
     /** Gets offset of the key - value separator in the css rule item.
      */
     public int colonOffset() {
-        Node colonNode = NodeUtil.getChildTokenNode(node, CssTokenId.COLON);
-        return colonNode.from();
+        Node colonNode = NodeUtil.getChildTokenNode(node, CssTokenId.COLON);        
+        return colonNode != null ? colonNode.from() : -1;
     }
 
     /** Gets offset of the ending semicolon in rule item or -1 if there is no ending semicolon.
@@ -134,7 +134,7 @@ public class Declaration extends Item {
     public int semicolonOffset() {
         //the semicolon following the declaration is a member of parent 'declarations' node
         Node n = NodeUtil.getSibling(node, false);
-        return n.type() == NodeType.token && NodeUtil.getTokenNodeTokenId(n) == CssTokenId.SEMI
+        return n != null && n.type() == NodeType.token && NodeUtil.getTokenNodeTokenId(n) == CssTokenId.SEMI
                 ? n.from()
                 : -1;
     }

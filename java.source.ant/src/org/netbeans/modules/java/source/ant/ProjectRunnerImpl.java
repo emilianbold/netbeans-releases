@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.source.ant;
 
+import java.util.TreeMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,7 +117,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         }
         
         String[] projectName = new String[1];
-        Properties antProps = computeProperties(command, properties, projectName);
+        Map<String,String> antProps = computeProperties(command, properties, projectName);
         
         FileObject script = buildScript(command);
         AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), projectName[0]);
@@ -128,7 +129,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
     }
 
-    static Properties computeProperties(String command, Map<String, ?> properties, String[] projectNameOut) {
+    static Map<String,String> computeProperties(String command, Map<String, ?> properties, String[] projectNameOut) {
         properties = new HashMap<String, Object>(properties);
         FileObject toRun = getValue(properties, PROP_EXECUTE_FILE, FileObject.class);
         String workDir = getValue(properties, PROP_WORK_DIR, String.class);
@@ -206,7 +207,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
-        Properties antProps = new Properties();
+        Map<String,String> antProps = new TreeMap<String,String>();
         setProperty(antProps, "platform.bootcp", boot.toString(ClassPath.PathConversionMode.FAIL));
         setProperty(antProps, "classpath", cp);
         setProperty(antProps, "classname", className);
@@ -261,7 +262,7 @@ out:                for (FileObject root : exec.getRoots()) {
 
         for (Entry<String, ?> e : properties.entrySet()) {
             if (e.getValue() instanceof String) {
-                antProps.setProperty(e.getKey(), (String) e.getValue());
+                antProps.put(e.getKey(), (String) e.getValue());
             }
         }
         
@@ -313,9 +314,9 @@ out:                for (FileObject root : exec.getRoots()) {
         }, InputOutput.NULL);
     }
 
-    private static void setProperty(Properties antProps, String property, String value) {
+    private static void setProperty(Map<String,String> antProps, String property, String value) {
         if (value != null) {
-            antProps.setProperty(property, value);
+            antProps.put(property, value);
         }
     }
 

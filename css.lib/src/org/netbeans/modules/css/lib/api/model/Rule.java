@@ -105,12 +105,15 @@ public class Rule extends Item {
     
     /** @return offset of the rule's closing bracket in the model's document. */
     public int getRuleCloseBracketOffset() {
-        return NodeUtil.getChildTokenNode(node, CssTokenId.RBRACE).from();
+        Node rbraceNode = NodeUtil.getChildTokenNode(node, CssTokenId.RBRACE);
+        return rbraceNode != null ? rbraceNode.from() : -1;
     }
 
     /** @return offset of the rule's opening bracket in the model's document. */
     public int getRuleOpenBracketOffset() {
-        return NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE).from();
+        Node lbraceNode = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
+        return lbraceNode != null ? lbraceNode.from() : -1;
+        
     }
 
     @Override

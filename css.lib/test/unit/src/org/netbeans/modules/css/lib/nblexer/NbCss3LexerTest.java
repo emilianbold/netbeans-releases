@@ -43,11 +43,16 @@ package org.netbeans.modules.css.lib.nblexer;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonToken;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.css.lib.Css3Lexer;
+import org.netbeans.modules.css.lib.ExtCss3Lexer;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 
 /**
@@ -116,8 +121,52 @@ public class NbCss3LexerTest extends NbTestCase {
         }
 
     }
+
+    public void testErrorCase1() throws Exception {
+        /*
+        java.lang.ArrayIndexOutOfBoundsException: Array index out of range: 4
+	at java.util.Vector.get(Vector.java:694)
+	at org.netbeans.modules.css.lib.nblexer.NbLexerCharStream.rewind(NbLexerCharStream.java:131)
+	at org.antlr.runtime.DFA.predict(DFA.java:149)
+	at org.netbeans.modules.css.lib.Css3Lexer.mNUMBER(Css3Lexer.java:7440)
+        */
+        String source = "padding: .5em; ";
+     
+        //first try to lex the source using the original ANTLR's input source
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        
+        assertANTLRToken("padding", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(":", Css3Lexer.COLON, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(".5em", Css3Lexer.EMS, lexer.nextToken());
+        
+        //now do the same with the netbeans lexer
+        TokenHierarchy th = TokenHierarchy.create(source, CssTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        assertToken("padding", CssTokenId.IDENT, ts);
+        assertToken(":", CssTokenId.COLON, ts);
+        assertToken(" ", CssTokenId.WS, ts);
+        assertToken(".5em", CssTokenId.EMS, ts);
+        
+    }
     
-    //currently fails! FIX!!!
+    private void assertANTLRToken(String expectedImage, int expectedType, org.antlr.runtime.Token token) {
+        assertNotNull(token);
+        assertEquals(expectedImage, token.getText());
+        assertEquals(expectedType, token.getType());
+    }
+    
+    private void assertToken(String expectedImage, CssTokenId expectedType, TokenSequence ts) {
+        assertTrue(ts.moveNext());
+        Token token = ts.token();
+        assertNotNull(token);
+        assertEquals(expectedImage, token.text().toString());
+        assertEquals(expectedType, token.id());
+    }
+    
     public void testLexing_Netbeans_org() throws Exception {
       LexerTestUtilities.checkTokenDump(this, "testfiles/netbeans.css",
                 CssTokenId.language());

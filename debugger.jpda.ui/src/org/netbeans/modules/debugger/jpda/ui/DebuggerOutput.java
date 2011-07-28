@@ -313,6 +313,10 @@ PropertyChangeListener {
                     );
 
                 boolean important = url == null; // Bring attention to the console output if there's no URL to display.
+                // Make an exception for a service class used by visual debugger
+                if (important && "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService".equals(className)) {
+                    important = false;
+                }
                 if (op != null) {
                     boolean done = op == lastOperation;
                     if (!done) {

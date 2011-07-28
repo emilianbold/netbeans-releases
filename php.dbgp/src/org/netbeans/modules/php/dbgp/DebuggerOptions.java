@@ -55,6 +55,8 @@ public class DebuggerOptions {
     int maxStructureDepth = -1;
     Boolean debugForFirstPageOnly;
     Boolean debuggerStoppedAtTheFirstLine;
+    Boolean requestedUrls;
+    Boolean debuggerConsole;
     String phpInterpreter;
     String projectEncoding;
     List<Pair<String, String>> pathMapping;
@@ -79,11 +81,11 @@ public class DebuggerOptions {
     public int getPort() {
         return (port != -1) ? port :  getGlobalInstance().getPort();
     }
-    
+
     public int getMaxChildren() {
         return (maxChildren != -1) ? maxChildren : getGlobalInstance().getMaxChildren();
     }
-    
+
     public int getMaxStructuresDepth() {
         return (maxStructureDepth != -1) ? maxStructureDepth : getGlobalInstance().getMaxStructuresDepth();
     }
@@ -93,6 +95,13 @@ public class DebuggerOptions {
             getGlobalInstance().isDebugForFirstPageOnly();
     }
 
+    public boolean showRequestedUrls() {
+        return (requestedUrls != null) ? requestedUrls : getGlobalInstance().showRequestedUrls();
+    }
+
+    public boolean showDebuggerConsole() {
+        return (debuggerConsole != null) ? debuggerConsole : getGlobalInstance().showDebuggerConsole();
+    }
     public boolean isDebuggerStoppedAtTheFirstLine() {
         return (debuggerStoppedAtTheFirstLine != null) ? debuggerStoppedAtTheFirstLine :
             getGlobalInstance().isDebuggerStoppedAtTheFirstLine();
@@ -102,7 +111,7 @@ public class DebuggerOptions {
         return (phpInterpreter != null) ? phpInterpreter :
             getGlobalInstance().getPhpInterpreter();
     }
-    
+
     public String getProjectEncoding() {
         return projectEncoding;
     }
@@ -131,6 +140,15 @@ public class DebuggerOptions {
             return false;
         }
 
+        @Override
+        public boolean showRequestedUrls() {
+            return PhpOptions.getInstance().isDebuggerShowRequestedUrls();
+        }
+
+        @Override
+        public boolean showDebuggerConsole() {
+            return PhpOptions.getInstance().isDebuggerShowDebuggerConsole();
+        }
 
         @Override
         public boolean isDebuggerStoppedAtTheFirstLine() {

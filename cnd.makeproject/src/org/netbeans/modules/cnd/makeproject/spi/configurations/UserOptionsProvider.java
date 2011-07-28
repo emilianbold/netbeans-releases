@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**

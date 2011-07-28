@@ -61,6 +61,11 @@ public interface SourceFileProperties extends ItemProperties {
     String getItemPath();
     
     /**
+     * Compile line
+     */
+    String getCompileLine();
+
+    /**
      * Get item name (name relative from compile path)
      */
     String getItemName();

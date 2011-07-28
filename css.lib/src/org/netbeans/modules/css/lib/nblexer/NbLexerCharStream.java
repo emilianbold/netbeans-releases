@@ -145,7 +145,7 @@ public class NbLexerCharStream implements CharStream {
             return ;
         }
         
-        rewind(markers.peek());
+        rewind(markers.size() - 1);
     }
 
     @Override
