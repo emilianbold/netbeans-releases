@@ -111,6 +111,8 @@ public abstract class ProfilingPointFactory {
     public abstract String getDescription();
 
     public abstract Icon getIcon();
+    
+    public abstract Icon getDisabledIcon();
 
     // Defines scope of the Profiling Point: Code or Global (see CodeProfilingPoint or GlobalProfilingPoint)
     public abstract int getScope();

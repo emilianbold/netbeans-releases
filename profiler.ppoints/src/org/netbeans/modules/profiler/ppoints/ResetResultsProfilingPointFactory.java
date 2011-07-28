@@ -73,7 +73,6 @@ public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory
     private static final String PP_DEFAULT_NAME = NbBundle.getMessage(ResetResultsProfilingPointFactory.class,
                                                                       "ResetResultsProfilingPointFactory_PpDefaultName"); // NOI18N
                                                                                                                           // -----
-    public static final Icon RESET_RESULTS_PP_ICON = Icons.getIcon(ProfilingPointsIcons.RESET_RESULTS);
     public static final String RESET_RESULTS_PP_TYPE = PP_TYPE;
     public static final String RESET_RESULTS_PP_DESCR = PP_DESCR;
 
@@ -84,7 +83,11 @@ public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory
     }
 
     public Icon getIcon() {
-        return RESET_RESULTS_PP_ICON;
+        return Icons.getIcon(ProfilingPointsIcons.RESET_RESULTS);
+    }
+    
+    public Icon getDisabledIcon() {
+        return Icons.getIcon(ProfilingPointsIcons.RESET_RESULTS_DISABLED);
     }
 
     public int getScope() {

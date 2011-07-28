@@ -73,7 +73,6 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
     private static final String PP_DEFAULT_NAME = NbBundle.getMessage(StopwatchProfilingPointFactory.class,
                                                                       "StopwatchProfilingPointFactory_PpDefaultName"); // NOI18N
                                                                                                                        // -----
-    public static final Icon RESET_RESULTS_PP_ICON = Icons.getIcon(ProfilingPointsIcons.STOPWATCH);
     public static final String RESET_RESULTS_PP_TYPE = PP_TYPE;
     public static final String RESET_RESULTS_PP_DESCR = PP_DESCR;
     private static final String START_LOCATION_PREFIX = "start_"; // NOI18N
@@ -86,7 +85,11 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     public Icon getIcon() {
-        return RESET_RESULTS_PP_ICON;
+        return Icons.getIcon(ProfilingPointsIcons.STOPWATCH);
+    }
+    
+    public Icon getDisabledIcon() {
+        return Icons.getIcon(ProfilingPointsIcons.STOPWATCH_DISABLED);
     }
 
     public int getScope() {

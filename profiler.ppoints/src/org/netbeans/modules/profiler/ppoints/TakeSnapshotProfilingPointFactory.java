@@ -73,7 +73,6 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
     private static final String PP_DEFAULT_NAME = NbBundle.getMessage(TakeSnapshotProfilingPointFactory.class,
                                                                       "TakeSnapshotProfilingPointFactory_PpDefaultName"); // NOI18N
                                                                                                                           // -----
-    public static final Icon TAKE_SNAPSHOT_PP_ICON = Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT);
     public static final String TAKE_SNAPSHOT_PP_TYPE = PP_TYPE;
     public static final String TAKE_SNAPSHOT_PP_DESCR = PP_DESCR;
 
@@ -84,7 +83,11 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
     }
 
     public Icon getIcon() {
-        return TAKE_SNAPSHOT_PP_ICON;
+        return Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT);
+    }
+    
+    public Icon getDisabledIcon() {
+        return Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT_DISABLED);
     }
 
     public int getScope() {

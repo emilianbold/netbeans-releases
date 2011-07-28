@@ -140,9 +140,11 @@ public class Utils {
             renderer.setBorder(BorderFactory.createEmptyBorder(1, 7, 1, 5));
 
             if (value instanceof ProfilingPoint) {
+                boolean enabled = ((ProfilingPoint) value).isEnabled();
                 renderer.setText(((ProfilingPoint) value).getName());
-                renderer.setIcon(((ProfilingPoint) value).getFactory().getIcon());
-                renderer.setEnabled(((ProfilingPoint) value).isEnabled());
+                renderer.setIcon(enabled ? ((ProfilingPoint) value).getFactory().getIcon() :
+                                           ((ProfilingPoint) value).getFactory().getDisabledIcon());
+                renderer.setEnabled(enabled);
             } else if (value instanceof ProfilingPointFactory) {
                 renderer.setText(((ProfilingPointFactory) value).getType());
                 renderer.setIcon(((ProfilingPointFactory) value).getIcon());
@@ -179,9 +181,11 @@ public class Utils {
             }
 
             if (value instanceof ProfilingPoint) {
+                boolean enabled = ((ProfilingPoint) value).isEnabled();
                 label.setText(((ProfilingPoint) value).getName());
-                label.setIcon(((ProfilingPoint) value).getFactory().getIcon());
-                label.setEnabled(((ProfilingPoint) value).isEnabled());
+                label.setIcon(enabled ? ((ProfilingPoint) value).getFactory().getIcon() :
+                                        ((ProfilingPoint) value).getFactory().getDisabledIcon());
+                label.setEnabled(enabled);
             } else if (value instanceof ProfilingPointFactory) {
                 label.setText(((ProfilingPointFactory) value).getType());
                 label.setIcon(((ProfilingPointFactory) value).getIcon());

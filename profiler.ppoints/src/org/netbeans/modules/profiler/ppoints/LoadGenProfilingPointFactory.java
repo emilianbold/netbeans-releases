@@ -79,7 +79,6 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
     private static final String PP_DEFAULT_NAME = NbBundle.getMessage(LoadGenProfilingPointFactory.class,
                                                                       "LoadGenProfilingPointFactory_PpDefaultName"); // NOI18N
                                                                                                                      // -----
-    private static final Icon LOADGEN_PP_ICON = Icons.getIcon(ProfilingPointsIcons.LOAD_GENERATOR);
     private static final String LOADGEN_PP_TYPE = PP_TYPE;
     private static final String LOADGEN_PP_DESCR = PP_DESCR;
     private static final String START_LOCATION_PREFIX = "start_"; // NOI18N
@@ -118,7 +117,11 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     public Icon getIcon() {
-        return LOADGEN_PP_ICON;
+        return Icons.getIcon(ProfilingPointsIcons.LOAD_GENERATOR);
+    }
+    
+    public Icon getDisabledIcon() {
+        return Icons.getIcon(ProfilingPointsIcons.LOAD_GENERATOR_DISABLED);
     }
 
     public int getScope() {

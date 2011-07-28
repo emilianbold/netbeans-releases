@@ -48,7 +48,10 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.text.MessageFormat;
 import java.util.Properties;
+import javax.swing.GrayFilter;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.ppoints.ui.icons.ProfilingPointsIcons;
@@ -72,7 +75,6 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
     private static final String PP_DEFAULT_NAME = NbBundle.getMessage(TriggeredTakeSnapshotProfilingPointFactory.class,
                                                                       "TriggeredTakeSnapshotProfilingPointFactory_PpDefaultName"); // NOI18N
                                                                                                                                    // -----
-    public static final Icon TAKE_SNAPSHOT_PP_ICON = Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT_TRIGGERED);
     public static final String TAKE_SNAPSHOT_PP_TYPE = PP_TYPE;
     public static final String TAKE_SNAPSHOT_PP_DESCR = PP_DESCR;
     
@@ -83,7 +85,16 @@ public class TriggeredTakeSnapshotProfilingPointFactory extends CodeProfilingPoi
     }
 
     public Icon getIcon() {
-        return TAKE_SNAPSHOT_PP_ICON;
+        return Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT_TRIGGERED);
+    }
+    
+    public Icon getDisabledIcon() {
+        Icon icon = UIManager.getLookAndFeel().getDisabledIcon(null, 
+                Icons.getIcon(ProfilingPointsIcons.TAKE_SNAPSHOT_TRIGGERED));
+        if (icon == null)
+            icon = new ImageIcon(GrayFilter.createDisabledImage(
+                    Icons.getImage(ProfilingPointsIcons.TAKE_SNAPSHOT_TRIGGERED)));
+        return icon;
     }
 
     public int getScope() {
