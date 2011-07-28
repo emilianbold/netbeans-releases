@@ -758,7 +758,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     }    
     
     /** Creates fake droppable for center panel. */
-    private TopComponentDroppable getCenterPanelDroppable() {
+    TopComponentDroppable getCenterPanelDroppable() {
         CenterPanelDroppable droppable = centerDropWRef.get();
         
         if(droppable == null) {
@@ -886,7 +886,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     /**
      * Performs actual drop operation. Called from DropTargetListener.
      * @return <code>true</code> if the drop was successful */
-    private static boolean performDrop(Controller controller,
+    static boolean performDrop(Controller controller,
     TopComponentDroppable droppable, TopComponentDraggable draggable, Point location) {
         if(DEBUG) {
             debugLog(""); // NOI18N
@@ -956,8 +956,11 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         return true;
     }
     // Helpers<<
-    
 
+    public void startKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        KeyboardDnd.start( this, draggable, viewAccessor );
+    }
+    
     /** Handles mouse cursors shapes and drag-under feedback during the drag.
      */
     private static class MotionListener implements DragSourceMotionListener {

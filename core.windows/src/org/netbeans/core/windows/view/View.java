@@ -48,6 +48,7 @@ package org.netbeans.core.windows.view;
 
 import org.netbeans.core.windows.WindowSystemSnapshot;
 import java.awt.*;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.openide.windows.TopComponent;
 
 
@@ -119,7 +120,7 @@ public interface View {
     public Component getEditorAreaComponent();
     
     public String guessSlideSide(TopComponent tc);
-   
-    
+
+    public void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable );
 }
 
