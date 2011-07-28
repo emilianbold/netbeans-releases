@@ -47,7 +47,12 @@ package org.netbeans.modules.java.hints.options;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,10 +64,14 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -79,6 +88,8 @@ import org.netbeans.modules.java.hints.jackpot.impl.refactoring.ConfigurationsCo
 import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities;
 
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
@@ -86,6 +97,11 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -93,7 +109,7 @@ import org.openide.util.RequestProcessor;
 public final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
-    
+
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
     private JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
@@ -101,6 +117,8 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     //AWT only:
     private HintMetadata toSelect = null;
+    
+    private Document oldDescription;
       
     DefaultMutableTreeNode extraNode = new DefaultMutableTreeNode(NbBundle.getMessage(HintsPanel.class, "CTL_DepScanning")); //NOI18N
 
@@ -169,6 +187,37 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         errorTree.setShowsRootHandles( true );
         errorTree.getSelectionModel().setSelectionMode( TreeSelectionModel.SINGLE_TREE_SELECTION );
         
+        errorTree.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                handleClick(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                handleClick(e);
+            }
+            
+            private void handleClick(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    Point p = e.getPoint();
+                    TreePath path = errorTree.getPathForLocation(e.getPoint().x, e.getPoint().y);
+                    if (path != null) {
+                        DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
+                        if (o.getUserObject() instanceof HintMetadata) {
+                            HintMetadata hint = (HintMetadata) o.getUserObject();
+                            if (hint.category.equals("custom")) {
+                                JPopupMenu popup = new JPopupMenu();
+                                popup.add(new JMenuItem(new RemoveHint(o, hint)));
+                                popup.show(errorTree, e.getX(), e.getY());
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
         toProblemCheckBox.setVisible(false);
         
         errorTreeModel = constructTM(allHints?RulesManager.getInstance().allHints.keySet():Utilities.getBatchSupportedHints(), allHints);
@@ -190,11 +239,14 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             toSelect = null;
         }
         
-        newButton.setVisible(false);
+        boolean editEnabled = !allHints && FileUtil.getConfigFile("Templates/Other/HintSample.hint")!=null;
+        newButton.setVisible(editEnabled);
         importButton.setVisible(false);
         exportButton.setVisible(false);
-        editScriptButton.setVisible(false);
+        editScriptButton.setVisible(editEnabled);
+        editingButtons.setVisible(false);
     }
+    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -219,6 +271,10 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         jScrollPane2 = new javax.swing.JScrollPane();
         descriptionTextArea = new javax.swing.JEditorPane();
         descriptionLabel = new javax.swing.JLabel();
+        editingButtons = new javax.swing.JPanel();
+        saveButton = new javax.swing.JButton();
+        cancelEdit = new javax.swing.JButton();
+        openInEditor = new javax.swing.JButton();
         buttonsPanel = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
         importButton = new javax.swing.JButton();
@@ -317,12 +373,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         descriptionPanel.add(jScrollPane2, gridBagConstraints);
 
         descriptionLabel.setLabelFor(descriptionTextArea);
@@ -330,8 +385,55 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         descriptionPanel.add(descriptionLabel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(saveButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.saveButton.text")); // NOI18N
+        saveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(cancelEdit, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.cancelEdit.text")); // NOI18N
+        cancelEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelEditActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(openInEditor, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.openInEditor.text")); // NOI18N
+        openInEditor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openInEditorActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout editingButtonsLayout = new javax.swing.GroupLayout(editingButtons);
+        editingButtons.setLayout(editingButtonsLayout);
+        editingButtonsLayout.setHorizontalGroup(
+            editingButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, editingButtonsLayout.createSequentialGroup()
+                .addComponent(openInEditor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 131, Short.MAX_VALUE)
+                .addComponent(saveButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cancelEdit))
+        );
+        editingButtonsLayout.setVerticalGroup(
+            editingButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(editingButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(openInEditor)
+                .addComponent(cancelEdit)
+                .addComponent(saveButton))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        descriptionPanel.add(editingButtons, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -353,6 +455,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         add(jSplitPane1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.newButton.text")); // NOI18N
+        newButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(importButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.importButton.text")); // NOI18N
 
@@ -366,19 +473,23 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(editScriptButton, org.openide.util.NbBundle.getMessage(HintsPanel.class, "HintsPanel.editScriptButton.text")); // NOI18N
+        editScriptButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editScriptButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
         buttonsPanel.setLayout(buttonsPanelLayout);
         buttonsPanelLayout.setHorizontalGroup(
             buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(buttonsPanelLayout.createSequentialGroup()
-                .addGap(214, 214, 214)
                 .addComponent(newButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(importButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(exportButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 272, Short.MAX_VALUE)
                 .addComponent(editScriptButton)
                 .addGap(18, 18, 18)
                 .addComponent(cancelButton))
@@ -389,10 +500,10 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
                 .addGap(5, 5, 5)
                 .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cancelButton)
-                    .addComponent(editScriptButton)
                     .addComponent(newButton)
                     .addComponent(importButton)
-                    .addComponent(exportButton)))
+                    .addComponent(exportButton)
+                    .addComponent(editScriptButton)))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -476,15 +587,99 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             ((ActionListener) configCombo.getSelectedItem()).actionPerformed(evt);
         }
     }//GEN-LAST:event_configComboActionPerformed
-    
+
+    private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+        try {
+            FileObject tempFO = FileUtil.getConfigFile("Templates/Other/HintSample.hint"); // NOI18N
+            FileObject folderFO = FileUtil.getConfigFile("rules");
+            if (folderFO == null) {
+                folderFO = FileUtil.getConfigRoot().createFolder("rules");
+            }
+            DataFolder folder = (DataFolder) DataObject.find(folderFO);
+            DataObject template = DataObject.find(tempFO);
+            DataObject newIfcDO = template.createFromTemplate(folder);
+            RulesManager.getInstance().reload();
+            errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+            errorTree.setModel(errorTreeModel);
+            select(getHintByName(newIfcDO.getPrimaryFile().getNameExt()));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+}//GEN-LAST:event_newButtonActionPerformed
+
+    private void editScriptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editScriptButtonActionPerformed
+        descriptionTextArea.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-javahints"));
+        descriptionTextArea.setEditable(true);
+        editScriptButton.setVisible(false);
+        editingButtons.setVisible(true);
+        optionsPanel.setVisible(false);
         
+        DataObject dob = getDataObject(getSelectedHint());
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
+        try {
+            oldDescription = descriptionTextArea.getDocument();
+            descriptionTextArea.setDocument(ec.openDocument());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        newButton.setEnabled(false);
+        searchTextField.setEnabled(false);
+        configCombo.setEnabled(false);
+        errorTree.setEnabled(false);
+        validate();
+}//GEN-LAST:event_editScriptButtonActionPerformed
+
+    private void cancelEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelEditActionPerformed
+        descriptionTextArea.setDocument(oldDescription);
+        descriptionTextArea.setContentType("text/html");
+        optionsPanel.setVisible(true);
+        editingButtons.setVisible(false);
+        editScriptButton.setVisible(true);
+        descriptionTextArea.setEditable(false);
+
+        newButton.setEnabled(true);
+        searchTextField.setEnabled(true);
+        configCombo.setEnabled(true);
+        errorTree.setEnabled(true);
+        logic.valueChanged(null);
+    }//GEN-LAST:event_cancelEditActionPerformed
+
+    private void openInEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openInEditorActionPerformed
+        cancelEditActionPerformed(evt);
+        cancelButtonActionPerformed(evt);
+        getRootPane().getParent().getParent().setVisible(false);
+        DataObject dob = getDataObject(getSelectedHint());
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
+        ec.open();
+    }//GEN-LAST:event_openInEditorActionPerformed
+
+    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
+        DataObject dob = getDataObject(getSelectedHint());
+        EditorCookie ec = dob.getCookie(EditorCookie.class);
+        try {
+            ec.saveDocument();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        cancelEditActionPerformed(evt);
+    }//GEN-LAST:event_saveButtonActionPerformed
+    
+    private HintMetadata getHintByName(String name) {
+        for (HintMetadata meta:Utilities.getBatchSupportedHints()) {
+            if (meta.id.startsWith(name)) {
+                return meta;
+            }
+        }
+        return null;
+    }    
     synchronized void update() {
         if (!initialized.get()) return;
         if ( logic != null ) {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton);
     }
     
     void cancel() {
@@ -557,6 +752,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton cancelEdit;
     private javax.swing.JComboBox configCombo;
     private javax.swing.JLabel configLabel;
     private javax.swing.JPanel configurationsPanel;
@@ -566,6 +762,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private javax.swing.JEditorPane descriptionTextArea;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JButton editScriptButton;
+    private javax.swing.JPanel editingButtons;
     private javax.swing.JTree errorTree;
     private javax.swing.JButton exportButton;
     private javax.swing.JButton importButton;
@@ -573,8 +770,10 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton newButton;
+    private javax.swing.JButton openInEditor;
     private javax.swing.JPanel optionsPanel;
     private javax.swing.JLabel refactoringsLabel;
+    private javax.swing.JButton saveButton;
     private javax.swing.JLabel searchLabel;
     private javax.swing.JPanel searchPanel;
     private javax.swing.JTextField searchTextField;
@@ -609,7 +808,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             if (catNode == null) {
                 cat2Hints.put(cat, catNode = new TreeSet<HintMetadata>(new Comparator<HintMetadata>() {
                     public int compare(HintMetadata o1, HintMetadata o2) {
-                        return HintsPanel.compare(o1.displayName, o2.displayName);
+                        return o1.displayName.compareToIgnoreCase(o2.displayName);
                     }
                 }));
             }
@@ -665,6 +864,16 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         return sb.toString();
     }
 
+    private DataObject getDataObject(HintMetadata selectedHint) {
+        FileObject fo = FileUtil.getConfigFile("rules/" + selectedHint.id.substring(0,selectedHint.id.lastIndexOf('-')));
+        try {
+            return DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
     private static final class AcceptorImpl implements Acceptor, org.netbeans.modules.java.hints.jackpot.impl.refactoring.OptionsFilter.Acceptor {
 
         public boolean accept(Object originalTreeNode, String filterText) {
@@ -707,5 +916,32 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             return (HintMetadata) lastPathComponent.getUserObject();
         return null;
     }
+    
+    private class RemoveHint extends AbstractAction {
+
+        HintMetadata hint;
+        DefaultMutableTreeNode node;
+
+        public RemoveHint(DefaultMutableTreeNode node, HintMetadata hint) {
+            super(NbBundle.getMessage(RemoveHint.class, "CTL_Delete"));
+            this.hint = hint;
+            this.node = node;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                getDataObject(hint).delete();
+                RulesManager.getInstance().allHints.remove(hint);
+                //errorTreeModel.removeNodeFromParent(node);
+                errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
+                errorTree.setModel(errorTreeModel);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        }
+    }
+
     
 }

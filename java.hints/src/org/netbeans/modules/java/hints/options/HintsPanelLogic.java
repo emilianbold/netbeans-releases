@@ -65,6 +65,7 @@ import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -136,6 +137,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private String depScanningDescription = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Desc"); //NOI18N
     private JComboBox configCombo;
     private String currentProfileId = HintsSettings.getCurrentProfileId();
+    private JButton editScript;
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
@@ -149,7 +151,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     void connect( final JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
-                  JEditorPane descriptionTextArea, final JComboBox configCombo) {
+                  JEditorPane descriptionTextArea, final JComboBox configCombo, JButton editScript) {
         
         this.errorTree = errorTree;
         this.errorTreeModel = errorTreeModel;
@@ -159,6 +161,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         this.customizerPanel = customizerPanel;
         this.descriptionTextArea = descriptionTextArea;        
         this.configCombo = configCombo;
+        this.editScript = editScript;
+        
         
         if (configCombo.getSelectedItem() !=null) {
             currentProfileId = ((Configuration) configCombo.getSelectedItem()).id();
@@ -304,6 +308,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
+        editScript.setEnabled(false);
         if ( o instanceof HintMetadata ) {
             if (defModel != severityComboBox.getModel()) {
                 severityComboBox.setModel(defModel);
@@ -314,6 +319,8 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             
             // Enable components
             componentsSetEnabled(true);
+            
+            editScript.setEnabled(hint.category.equals("custom"));
             
             // Set proper values to the componetnts
             
@@ -433,7 +440,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         Object o = getUserObject(treePath);
 
-        DefaultTreeModel model = errorTreeModel;
+        DefaultTreeModel model = (DefaultTreeModel) errorTree.getModel();
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
