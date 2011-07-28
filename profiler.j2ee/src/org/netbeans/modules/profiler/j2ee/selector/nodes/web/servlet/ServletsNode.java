@@ -43,18 +43,18 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.lang.model.element.TypeElement;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.AbstractWebContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
@@ -79,13 +79,13 @@ public class ServletsNode extends AbstractWebContainerNode {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected Collection<SelectorNode> collectChildren(ClasspathInfo cpInfo, CompilationController cc, WebAppMetadata md) {
+    protected Collection<SelectorNode> collectChildren(final Project prj, WebAppMetadata md) {
         Collection<SelectorNode> sNodes = new ArrayList<SelectorNode>();
         for(ServletInfo si : md.getServlets()) {
-            TypeElement sType = cc.getElements().getTypeElement(si.getServletClass());
+            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(si.getServletClass(), prj);
             List<String> patterns = si.getUrlPatterns();
             if (patterns != null && !patterns.isEmpty()) {
-                sNodes.add(new ServletNode(cpInfo, sType, si.getName(), patterns.get(0) , this));
+                sNodes.add(new ServletNode(sType, si.getName(), patterns.get(0) , this));
             }
         }
         return sNodes;

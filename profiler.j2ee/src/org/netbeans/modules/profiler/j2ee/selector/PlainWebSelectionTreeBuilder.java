@@ -45,16 +45,19 @@ package org.netbeans.modules.profiler.j2ee.selector;
 
 import java.util.Collections;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
 import java.util.List;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.WebProjectChildren;
-import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.builders.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -76,10 +79,12 @@ public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
         super(new Type("web-application", NbBundle.getMessage(PlainWebSelectionTreeBuilder.class, // NOI18N
                 "PlainWebSelectionTreeBuilder_DisplayName")), isPreferred, project); // NOI18N
     }
-
+    
+    @Override
     public List<SelectorNode> buildSelectionTree() {
         SelectorNode projectNode = new ProjectNode(project) {
 
+            @Override
             protected SelectorChildren getChildren() {
                 return new WebProjectChildren(project);
             }

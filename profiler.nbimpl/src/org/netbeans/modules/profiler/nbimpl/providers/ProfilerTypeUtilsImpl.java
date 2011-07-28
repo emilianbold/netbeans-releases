@@ -43,16 +43,23 @@ package org.netbeans.modules.profiler.nbimpl.providers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
+import org.netbeans.modules.profiler.nbimpl.javac.JavacPackageInfo;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
@@ -67,6 +74,7 @@ import org.openide.filesystems.FileObject;
     @ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
     @ProjectType(id="org-netbeans-modules-j2ee-ejbjarproject"),  // NOI18N
     @ProjectType(id="org-netbeans-modules-j2ee-earproject"),  // NOI18N
+    @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
     @ProjectType(id="org-netbeans-modules-web-project"), // NOI18N
     @ProjectType(id="org-netbeans-modules-ant-freeform", position=1230), // NOI18N, 
     @ProjectType(id="org-netbeans-modules-maven/jar"), // NOI18N
@@ -101,6 +109,28 @@ public class ProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvider {
             return eh != null ? new JavacClassInfo(eh, cpInfo) : null;
         }
         return null;
+    }
+    
+    @Override
+    public Collection<SourcePackageInfo> getPackages(boolean subprojects, SourcePackageInfo.Scope scope) {
+        Collection<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
+        
+        ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project, subprojects, scope == SourcePackageInfo.Scope.SOURCE, scope == SourcePackageInfo.Scope.DEPENDENCIES);
+        // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
+        // ignore such a project
+        if (cpInfo != null) {
+            Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
+            if (scope == SourcePackageInfo.Scope.SOURCE) {
+                sScope.add(ClassIndex.SearchScope.SOURCE);
+            }
+            if (scope == SourcePackageInfo.Scope.DEPENDENCIES) {
+                sScope.add(ClassIndex.SearchScope.DEPENDENCIES);
+            }
+            for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, sScope)) { // NOI18N
+                pkgs.add(new JavacPackageInfo(cpInfo, pkgName, pkgName, scope));
+            }
+        }        
+        return pkgs;
     }
 }
  

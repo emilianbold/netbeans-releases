@@ -43,6 +43,7 @@ package org.netbeans.modules.profiler.nbimpl.providers;
 
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import org.netbeans.modules.profiler.categorization.spi.CategoryDefinitionProcessor;
 import java.util.ArrayList;
@@ -52,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -215,12 +215,12 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
             final boolean inclusive, final Mark mark) {
         final Set<SourceMethodInfo> applicableMethods = new HashSet<SourceMethodInfo>();
         for(SourceMethodInfo mi : classType.getMethods(true)) {
-            if (!mi.getModifiers().contains(Modifier.PRIVATE)) {
+            if (!Modifier.isPrivate(mi.getModifiers())) {
                 if ((inclusive && restrictors.contains(mi.getName())) || (!inclusive && !restrictors.contains(mi.getName()))) {
-                    if (!mi.getModifiers().contains(Modifier.FINAL)) {
+                    if (!Modifier.isFinal(mi.getModifiers())) {
                         applicableMethods.add(mi);
                     }
-                    if (!mi.getModifiers().contains(Modifier.ABSTRACT)) {
+                    if (!Modifier.isAbstract(mi.getModifiers())) {
                         marker.addMethodMark(mi.getClassName(), mi.getName(), mi.getSignature(), mark);
                     }
                 }

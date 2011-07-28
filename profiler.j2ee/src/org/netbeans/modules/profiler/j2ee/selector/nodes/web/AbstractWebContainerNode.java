@@ -47,10 +47,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -58,13 +54,11 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet.ServletNode;
-import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -77,26 +71,18 @@ abstract public class AbstractWebContainerNode extends ContainerNode {
             final Set<SelectorNode> nodes = new HashSet<SelectorNode>();
 
             try {
-                Project project = parent.getLookup().lookup(Project.class);
+                final Project project = parent.getLookup().lookup(Project.class);
                 
                 WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
                 if (wm != null) {
-                    final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
                     final MetadataModel<WebAppMetadata> mm = wm.getMetadataModel();
                     nodes.addAll(mm.runReadAction(new MetadataModelAction<WebAppMetadata, Collection<ServletNode>>() {
 
                         @Override
                         public Collection<ServletNode> run(final WebAppMetadata metadata) throws Exception {
                             final Collection<ServletNode> sNodes = new ArrayList<ServletNode>();
-                            JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-                            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                                    public void cancel() {
-                                    }
+                            nodes.addAll(collectChildren(project, metadata));
 
-                                    public void run(CompilationController cc) throws Exception {
-                                        nodes.addAll(collectChildren(cpInfo, cc, metadata));
-                                    }
-                            }, false);
                             return sNodes;
                         }
                     }));
@@ -119,5 +105,5 @@ abstract public class AbstractWebContainerNode extends ContainerNode {
         return new Children();
     }
     
-    abstract protected Collection<SelectorNode> collectChildren(ClasspathInfo cpInfo, CompilationController cc, WebAppMetadata md);
+    abstract protected Collection<SelectorNode> collectChildren(Project prj, WebAppMetadata md);
 }

@@ -45,20 +45,15 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode.Children;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.AbstractWebContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 
 
 /**
@@ -83,12 +78,12 @@ public class ListenersNode extends AbstractWebContainerNode {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected Collection<SelectorNode> collectChildren(ClasspathInfo cpInfo, CompilationController cc, WebAppMetadata md) {
+    protected Collection<SelectorNode> collectChildren(final Project prj, WebAppMetadata md) {
         Collection<SelectorNode> fNodes = new ArrayList<SelectorNode>();
         for(Listener li : md.getRoot().getListener()) {
-            TypeElement sType = cc.getElements().getTypeElement(li.getListenerClass());
+            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(li.getListenerClass(), prj);
 
-            fNodes.add(new ListenerNode(cpInfo, sType, this));
+            fNodes.add(new ListenerNode(sType, this));
         }
         return fNodes;
     }

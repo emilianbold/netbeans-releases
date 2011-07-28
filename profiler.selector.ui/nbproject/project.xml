@@ -33,7 +33,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.profiler.selector.spi</code-name-base>
+                    <code-name-base>org.netbeans.modules.profiler.selector.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

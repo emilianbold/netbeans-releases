@@ -43,10 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.entity;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
@@ -54,22 +50,21 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
-import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
@@ -85,10 +80,7 @@ public class EntityBeansNode extends ContainerNode {
         protected List<SelectorNode> prepareChildren(final EntityBeansNode parent) {
             final List<SelectorNode> entityBeans = new ArrayList<SelectorNode>();
 
-            Project project = parent.getLookup().lookup(Project.class);
-
-            final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
-            final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
+            final Project project = parent.getLookup().lookup(Project.class);
 
             for (MetadataModel<EjbJarMetadata> mdModel : listAllMetadata(project)) {
                 try {
@@ -100,17 +92,8 @@ public class EntityBeansNode extends ContainerNode {
 
                                 for (Entity entity : entities) {
                                     final Entity entityBean = entity;
-                                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                                            public void cancel() {
-                                            }
-
-                                            public void run(CompilationController controller)
-                                                     throws Exception {
-                                                TypeElement type = controller.getElements()
-                                                                             .getTypeElement(entityBean.getEjbClass());
-                                                beanList.add(new EntityBeanNode(cpInfo, entityBean.getDefaultDisplayName(), Icons.getIcon(JavaEEIcons.CLASS), type, parent));
-                                            }
-                                        }, true);
+                                    SourceClassInfo eb = ProfilerTypeUtils.resolveClass(entityBean.getEjbClass(), project);
+                                    beanList.add(new EntityBeanNode(eb, entityBean.getDefaultDisplayName(), Icons.getIcon(JavaEEIcons.CLASS), parent));
                                 }
 
                                 return beanList;

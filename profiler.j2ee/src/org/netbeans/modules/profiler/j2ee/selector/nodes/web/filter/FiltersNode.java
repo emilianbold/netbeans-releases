@@ -43,18 +43,18 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.filter;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.lang.model.element.TypeElement;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.AbstractWebContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
@@ -79,13 +79,14 @@ public class FiltersNode extends AbstractWebContainerNode {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
-    protected Collection<SelectorNode> collectChildren(ClasspathInfo cpInfo, CompilationController cc, WebAppMetadata md) {
+    protected Collection<SelectorNode> collectChildren(Project prj, WebAppMetadata md) {
         Collection<SelectorNode> fNodes = new ArrayList<SelectorNode>();
         for(FilterInfo fi : md.getFilters()) {
-            TypeElement sType = cc.getElements().getTypeElement(fi.getFilterClass());
+            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(fi.getFilterClass(), prj);
             List<String> patterns = fi.getUrlPatterns();
             if (patterns != null && !patterns.isEmpty()) {
-                fNodes.add(new FilterNode(cpInfo, sType, fi.getName(), patterns.get(0) , this));
+                
+                fNodes.add(new FilterNode(sType, fi.getName(), patterns.get(0) , this));
             }
         }
         return fNodes;

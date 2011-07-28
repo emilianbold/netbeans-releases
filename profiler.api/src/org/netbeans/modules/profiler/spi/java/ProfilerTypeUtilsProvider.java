@@ -43,6 +43,7 @@ package org.netbeans.modules.profiler.spi.java;
 
 import java.util.Collection;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 
 /**
  * An SPI for {@linkplain ProfilerTypeUtils} functionality
@@ -60,4 +61,12 @@ public abstract class ProfilerTypeUtilsProvider {
      * @return Returns a list of all main classes present in the project
      */
     abstract public Collection<SourceClassInfo> getMainClasses();
+    
+    /**
+     * 
+     * @param subprojects A flag indicating whether subprojects should be taken into account
+     * @param scope A {@linkplain SourcePackageInfo.Scope} - SOURCE or DEPENDENCIES
+     * @return Returns a list of project's packages
+     */
+    abstract public Collection<SourcePackageInfo> getPackages(boolean subprojects, SourcePackageInfo.Scope scope);
 }
