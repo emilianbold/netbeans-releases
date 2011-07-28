@@ -148,7 +148,7 @@ public class NoLoggersTest extends TestBase {
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getClass().getSimpleName();
+        return "NoLoggersFix";
     }
 
 }

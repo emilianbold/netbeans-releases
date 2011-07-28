@@ -102,7 +102,7 @@ public class Bug138973Test extends NbTestCase {
         FileObject templateFile = FileUtil.createData(templatesFolder,
                                                       TEMPLATE_NAME_EXT);
         templateFile.setAttribute ("template", Boolean.TRUE);
-        templateFile.setAttribute("javax.script.ScriptEngine", "js");
+        templateFile.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         byte[] templateBytes = TESTING_TEXT.getBytes("ISO-8859-1");
         InputStream source = new ByteArrayInputStream(templateBytes);
         OutputStream target = templateFile.getOutputStream();

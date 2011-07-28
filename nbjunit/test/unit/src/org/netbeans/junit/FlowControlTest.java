@@ -65,9 +65,9 @@ public class FlowControlTest extends NbTestCase {
     }
 
 
-//    protected int timeOut() {
-//        return 10000;
-//    }
+    @Override protected int timeOut() {
+        return 0;
+    }
 
     protected Level logLevel() {
         return Level.FINE;

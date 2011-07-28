@@ -72,6 +72,10 @@ public class LoggingControlTest extends LoggingTestCaseHid {
         return Level.ALL;
     }
 
+    @Override protected int timeOut() {
+        return 0;
+    }
+
     public void testCorrectThreadSwitching() throws Exception {
         
         class Run implements Runnable {

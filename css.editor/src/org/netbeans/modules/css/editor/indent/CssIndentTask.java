@@ -47,14 +47,17 @@ public class CssIndentTask implements IndentTask, Lookup.Provider {
         lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
+    @Override
     public void reindent() throws BadLocationException {
         indenter.reindent();
     }
     
+    @Override
     public ExtraLock indentLock() {
         return null;
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }

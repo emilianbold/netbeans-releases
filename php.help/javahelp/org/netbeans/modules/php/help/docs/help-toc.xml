@@ -25,16 +25,27 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <toc version="2.0">
-	<tocitem text="PHP Development" expand="false">
-		<tocitem text="About PHP Development in the NetBeans IDE" target="org.netbeans.modules.php.help.about" />
-                <tocitem text="PHP Projects" target="org.netbeans.modules.php.help.project"/>
-                <tocitem text="Navigator Window (PHP Projects)" target="nav_window"/>
-		<tocitem text="Creating a PHP Project without Previously Developed Sources" target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" />
-		<tocitem text="Importing Previously Developed Source Files into a New Project" target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" />
-		<tocitem text="Defining the Default Run Configuration" target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" />
-		<tocitem text="Customizing the Project Settings: Source Files Location" target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" />
-		<tocitem text="Customizing the Project Settings: Run Configuration" target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" />
-		<tocitem text="Customizing the Project Settings: Include Path" target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" />
-                <tocitem text="Selecting a PHP Framework" target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel"/>
-	</tocitem>
+    <tocitem text="IDE Basics">
+        <tocitem text="Getting Started">
+            <tocitem text="PHP Applications" target="php_process" />
+        </tocitem>
+    </tocitem>
+    <tocitem text="PHP Applications" expand="false">
+        <tocitem text="About the NetBeans IDE for PHP" target="org.netbeans.modules.php.help.about" />
+        <tocitem text="Working with PHP" target="php_process"/>
+        <tocitem text="PHP Application Tasks: Quick Reference" target="php_quickref"/>
+        <tocitem text="PHP Projects" target="php_projects"/>
+        <tocitem text="Editing PHP Files" expand="false">
+            <tocitem text="About Editing PHP Files" target="php_editor"/>
+            <tocitem text="Syntax Highligting" target="php_syntax_highlighting"/>
+            <tocitem text="Code Completion" target="php_code_completion"/>
+            <tocitem text="Bracket Completion" target="php_brackets"/>
+            <tocitem text="Parameter Hints" target="php_paramhints"/>
+            <tocitem text="Go To Declarations" target="php_goto_decl"/>
+            <tocitem target="php_renaming" text="Rename Refactoring and Instant Rename"/>
+            <tocitem target="php_codegen" text="Code Generators"/>
+            <tocitem target="def_var_in_comment" text="Defining Variables in Comments"/>
+        </tocitem>
+        
+    </tocitem>
 </toc>

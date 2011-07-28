@@ -46,7 +46,7 @@ package org.netbeans.modules.mercurial.ui.rollback;
 import java.awt.BorderLayout;
 import java.io.File;
 import javax.swing.JPanel;
-import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.openide.util.NbBundle;
 
@@ -58,9 +58,9 @@ public class BackoutPanel extends ChangesetPickerPanel {
 
     private javax.swing.JLabel commitLabel;
     private javax.swing.JTextField commitMsgField;
-    private final RepositoryRevision repoRev;
+    private final HgLogMessage repoRev;
 
-    public BackoutPanel(File repo, RepositoryRevision repoRev) {
+    public BackoutPanel(File repo, HgLogMessage repoRev) {
         super(repo, null);
         this.repoRev = repoRev;
         initComponents();
@@ -77,7 +77,7 @@ public class BackoutPanel extends ChangesetPickerPanel {
     }
 
     @Override
-    protected RepositoryRevision getDisplayedRevision() {
+    protected HgLogMessage getDisplayedRevision() {
         return repoRev;
     }
 

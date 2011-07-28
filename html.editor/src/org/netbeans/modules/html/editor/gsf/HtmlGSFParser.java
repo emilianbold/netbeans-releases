@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.List;
 import java.util.logging.Level;
@@ -52,8 +56,10 @@ import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -65,6 +71,24 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  * @author marek
  */
 public class HtmlGSFParser extends Parser {
+
+    private static class AggregatedUndeclaredContentResolver extends UndeclaredContentResolver {
+
+        private Collection<UndeclaredContentResolver> resolvers;
+        
+        public AggregatedUndeclaredContentResolver(Collection<UndeclaredContentResolver> resolvers) {
+            this.resolvers = resolvers;
+        }
+
+        @Override
+        public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+            Map<String, List<String>> aggregated = new HashMap<String, List<String>>();
+            for(UndeclaredContentResolver resolver : resolvers) {
+                aggregated.putAll(resolver.getUndeclaredNamespaces(source));
+            }
+            return aggregated;
+        }
+    }
 
     private HtmlParserResult lastResult;
 
@@ -107,8 +131,18 @@ public class HtmlGSFParser extends Parser {
 
     private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
         HtmlSource source = new HtmlSource(snapshot);
-        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze();
         
+        String sourceMimetype = snapshot.getSource().getMimeType();
+        Collection<HtmlExtension> exts = HtmlExtension.getRegisteredExtensions(sourceMimetype);
+        Collection<UndeclaredContentResolver> resolvers = new ArrayList<UndeclaredContentResolver>();
+        for(HtmlExtension ex : exts) {
+            UndeclaredContentResolver resolver = ex.getUndeclaredContentResolver();
+            if(resolver != null) {
+                resolvers.add(resolver);
+            }
+        }
+        
+        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze(new AggregatedUndeclaredContentResolver(resolvers));        
         HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(spresult);
 
         if (TIMERS.isLoggable(Level.FINE)) {

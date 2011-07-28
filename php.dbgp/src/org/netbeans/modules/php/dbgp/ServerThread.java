@@ -117,6 +117,7 @@ class ServerThread extends SingleThread {
         }
     }
 
+    @Override
     public boolean cancel() {
         isStopped.set(true);
         closeSocket();

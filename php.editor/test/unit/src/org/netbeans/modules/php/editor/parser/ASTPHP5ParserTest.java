@@ -193,6 +193,34 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("varcomment/mixed02");
     }
     
+    public void testMagicMethod01() throws Exception {
+        performTest("phpdoc/magicMethod01");
+    }
+    
+    public void testMagicMethod02() throws Exception {
+        performTest("phpdoc/magicMethod02");
+    }
+    
+    public void testMagicMethod03() throws Exception {
+        performTest("phpdoc/magicMethod03");
+    }
+    
+    public void testMagicMethod04() throws Exception {
+        performTest("phpdoc/magicMethod04");
+    }
+    
+    public void testMagicMethod05() throws Exception {
+        performTest("phpdoc/magicMethod05");
+    }
+    
+    public void testMagicMethod06() throws Exception {
+        performTest("phpdoc/magicMethod06");
+    }
+    
+    public void testMagicMethod07() throws Exception {
+        performTest("phpdoc/magicMethod07");
+    }
+    
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

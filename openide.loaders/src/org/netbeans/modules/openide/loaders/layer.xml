@@ -23,4 +23,14 @@
             </folder>
         </folder>
     </folder>
+    <folder name="Templates"><!-- see NewTemplateAction -->
+        <folder name="Privileged">
+            <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
+        </folder>
+        <folder name="Recent">
+            <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
+        </folder>
+    </folder>
 </filesystem>

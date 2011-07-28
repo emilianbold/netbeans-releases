@@ -135,7 +135,7 @@ public class PredefinedSymbols {
         File file = InstalledFileLocator.getDefault().locate("docs/predefined_vars.zip", null, true); //NoI18N
         if (file != null) {
             try {
-                URL urll = file.toURL();
+                URL urll = file.toURI().toURL();
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {

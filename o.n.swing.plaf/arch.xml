@@ -390,6 +390,16 @@ made subject to such option by the copyright holder.
             The module will decide which sets of customizations to load based on
             the chosen look and feel.
         </api>
+
+        <api name="LookAndFeelCustomsClassName" category="devel" group="property" type="export">
+            The module adds some UIManager keys and values to provide e.g. special
+            border for main window toolbar or UI classes for tab control headers.
+            By default the proper subclass of LFCustoms is derived from current
+            Look and Feel name. Applications building on top of NetBeans can provide
+            their own look and feel customizations by branding <code>LookAndFeelCustomsClassName</code>
+            key in <code>org.netbeans.swing.plaf.Bundle</code>
+            bundle.
+        </api>
     </answer>
 
 

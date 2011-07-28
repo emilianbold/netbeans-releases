@@ -70,7 +70,7 @@ import javax.swing.JSeparator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;

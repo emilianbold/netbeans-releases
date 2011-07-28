@@ -54,7 +54,10 @@ import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -97,6 +100,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                     List<JComponent> systemItems = actionsToItems(vs[0].getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu));
                     items.addAll(systemItems);
                 }
+                items.addAll(actionsToItems(appendAdditionalActions(ctx, vs[0], new Action[0])));
                 items.add(Utils.createJSeparator());
             } else if (vs.length > 1) {
                 JMenuItem dummy = new JMenuItem("<multiple systems>");
@@ -112,20 +116,20 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 if (Utils.isLocalHistory(system)) {
                     localHistory = system;
                 } else {
-                    JMenu menu = createVersioningSystemMenu(system);
+                    JMenu menu = createVersioningSystemMenu(system, true);
                     items.add(menu);
                 }
             }
 
             if (localHistory != null) {
                 items.add(Utils.createJSeparator());
-                items.add(createVersioningSystemMenu(localHistory));
+                items.add(createVersioningSystemMenu(localHistory, false));
             }
         }
         return items.toArray(new JComponent[items.size()]);
     }
 
-    private JMenu createVersioningSystemMenu(final VersioningSystem system) {
+    private JMenu createVersioningSystemMenu(final VersioningSystem system, final boolean isRegularVCS) {
         final JMenu menu = new JMenu();
         Mnemonics.setLocalizedText(menu, Utils.getMenuLabel(system));
         menu.addMenuListener(new MenuListener() {
@@ -134,7 +138,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
                 if (menu.getItemCount() != 0) return;
                 // context should be cached while the menu is displayed
                 VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
-                constructMenu(menu, system, ctx);
+                constructMenu(menu, system, ctx, isRegularVCS);
             }
     
             @Override
@@ -148,7 +152,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         return menu;
     }
 
-    private void constructMenu(JMenu menu, VersioningSystem system, VCSContext ctx) {
+    private void constructMenu (JMenu menu, VersioningSystem system, VCSContext ctx, boolean isRegularVCS) {
         Action[] actions = null;
         if(system instanceof DelegatingVCS) {
             actions = ((DelegatingVCS)system).getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
@@ -156,6 +160,9 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             if (system.getVCSAnnotator() != null) {
                 actions = system.getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.MainMenu);
             }
+        }
+        if (isRegularVCS) {
+            actions = appendAdditionalActions(ctx, system, actions);
         }
         if(actions != null && actions.length > 0) {
             List<JComponent> systemItems = actionsToItems(actions);
@@ -189,5 +196,73 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
         public int compare(VersioningSystem a, VersioningSystem b) {
             return Utils.getDisplayName(a).compareTo(Utils.getDisplayName(b));
         }
+    }
+    
+    static class ConnectAction extends AbstractAction {
+        private final File root;
+        private final VersioningSystem vs;
+
+        public ConnectAction (VersioningSystem vs, File root, String name) {
+            super(name == null ? NbBundle.getMessage(VersioningMainMenu.class, "CTL_ConnectAction.name") : name); //NOI18N
+            this.vs = vs;
+            this.root = root;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            VersioningConfig.getDefault().connectRepository(vs, root);
+            VersioningManager.getInstance().versionedRootsChanged();
+        }
+    }
+
+    // should be available only from the main menu
+    private static class DisconnectAction extends AbstractAction {
+        private final File root;
+        private final VersioningSystem vs;
+
+        public DisconnectAction (VersioningSystem vs, File root) {
+            super(NbBundle.getMessage(VersioningMainMenu.class, "CTL_DisconnectAction.name")); //NOI18N
+            this.vs = vs;
+            this.root = root;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(VersioningMainMenu.class, "MSG_ConnectAction.confirmation.text", new Object[] { root.getName(), Utils.getDisplayName(vs) }), //NOI18N
+                    NbBundle.getMessage(VersioningMainMenu.class, "LBL_ConnectAction.confirmation.title"), //NOI18N
+                    NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+            if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+                VersioningConfig.getDefault().disconnectRepository(vs, root);
+                VersioningManager.getInstance().versionedRootsChanged();
+            }
+        }
+    }
+
+    /**
+     * appends connect/disconnect actions to given actions
+     * @param ctx
+     * @param system
+     * @param actions initial actions
+     * @return enhanced actions
+     */
+    private Action[] appendAdditionalActions (VCSContext ctx, VersioningSystem system, Action[] actions) {
+        if (ctx.getRootFiles().size() == 1) {
+            // can connect or disconnect just one root
+            File root = system.getTopmostManagedAncestor(ctx.getRootFiles().iterator().next());
+            if (root != null) {
+                VersioningSystem vs = system instanceof DelegatingVCS ? ((DelegatingVCS) system).getDelegate() : system;
+                Action a;
+                // adding connect/disconnect actions to the main menu
+                if (VersioningConfig.getDefault().isDisconnected(vs, root)) {
+                    actions = new Action[] { new ConnectAction(vs, root, null) };
+                } else {
+                    actions = actions == null ? new Action[2] : Arrays.copyOf(actions, actions.length + 2);
+                    actions[actions.length - 2] = null;
+                    actions[actions.length - 1] = new DisconnectAction(vs, root);
+                }
+            }
+        }
+        return actions;
     }
 }

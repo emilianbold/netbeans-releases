@@ -50,6 +50,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.netbeans.modules.templates.ScriptingCreateFromTemplateHandler;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
@@ -155,7 +156,7 @@ public final class SaveAsTemplateAction extends NodeAction {
             newTemplate.setTemplate(true);
             if (templateSample == null) {
                 // a fallback if no template sample found
-                newTemplate.getPrimaryFile ().setAttribute ("javax.script.ScriptEngine", "freemarker"); // NOI18N
+                newTemplate.getPrimaryFile().setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "freemarker"); // NOI18N
             } else {
                 setTemplateAttributes (newTemplate.getPrimaryFile (), getAttributes (templateSample.getPrimaryFile ()));
             }

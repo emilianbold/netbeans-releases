@@ -54,25 +54,31 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
  * @see org.netbeans.modules.php.project.connections.RemoteConnections
  */
 public final class SftpConfiguration extends RemoteConfiguration {
+
     private static final Logger LOGGER = Logger.getLogger(SftpConfiguration.class.getName());
     private static final String PATH_SEPARATOR = "/"; // NOI18N
 
     private final String host;
     private final int port;
     private final String userName;
-    private final String password;
     private final String knownHostsFile;
     private final String identityFile;
     private final String initialDirectory;
     private final int timeout;
 
-    public SftpConfiguration(final ConfigManager.Configuration cfg) {
-        super(cfg);
+    // @GuardedBy(this)
+    private String password;
+
+
+    public SftpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        super(cfg, createWithSecrets);
 
         host = cfg.getValue(SftpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
         userName = cfg.getValue(SftpConnectionProvider.USER);
-        password = readPassword(cfg, SftpConnectionProvider.PASSWORD);
+        if (createWithSecrets) {
+            password = readPassword(SftpConnectionProvider.PASSWORD);
+        }
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
@@ -106,8 +112,14 @@ public final class SftpConfiguration extends RemoteConfiguration {
         return userName;
     }
 
-    public String getPassword() {
-        return password != null ? password : ""; // NOI18N
+    public synchronized String getPassword() {
+        if (!createWithSecrets && password == null) {
+            password = readPassword(SftpConnectionProvider.PASSWORD);
+        }
+        if (password == null) {
+            password = ""; // NOI18N
+        }
+        return password;
     }
 
     public String getKnownHostsFile() {
@@ -131,8 +143,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
     @Override
     public boolean saveProperty(String key, String value) {
         if (SftpConnectionProvider.PASSWORD.equals(key)) {
-            // value cannot be used (is scrambled)
-            savePassword(password, SftpConnectionProvider.get().getDisplayName());
+            savePassword(ConfigManager.decode(value), SftpConnectionProvider.get().getDisplayName());
             return true;
         }
         return false;

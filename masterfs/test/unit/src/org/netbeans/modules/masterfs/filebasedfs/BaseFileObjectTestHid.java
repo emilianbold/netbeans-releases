@@ -151,7 +151,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertEquals(fileObject, findResource);
         assertEquals(linkDirFO, fileObject.getParent());
     }
-    
+
     public void testFileTypeNotRemembered() throws Exception {
         String newFileName = "test";
 
@@ -243,6 +243,20 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         
         List<FileObject> now = Arrays.asList(parent.getChildren());
         assertEquals("Same children: ", arr, now);
+    }
+    public void testCaseSensitiveRenameEventForMasterFS() throws Exception {
+        FileObject parent = root.getFileObject("testdir").createFolder("parent");
+        FileObject file = parent.createData("origi.nal");
+        file.addFileChangeListener(new FileChangeAdapter() {
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+                assertEquals("origi", fe.getName());
+                assertEquals("nal", fe.getExt());
+            }
+        });
+        FileLock lock = file.lock();
+        file.rename(lock, "Origi", "nal");
+        lock.releaseLock();
     }
     
     public void testRootToFileObject() throws Exception {

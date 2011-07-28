@@ -84,8 +84,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
-import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -349,6 +349,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Open
         -------------------
         Diff                 (default action)
+        Add
         Commit...        
         --------------------
         Conflict Resolved    (on conflicting file)
@@ -368,6 +369,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());

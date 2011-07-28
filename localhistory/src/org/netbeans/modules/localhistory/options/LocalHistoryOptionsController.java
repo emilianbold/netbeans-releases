@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.localhistory.options;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -56,25 +59,37 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public final class LocalHistoryOptionsController extends OptionsPanelController implements DocumentListener {
+public final class LocalHistoryOptionsController extends OptionsPanelController implements DocumentListener, ActionListener {
     
     private final LocalHistoryOptionsPanel panel;
-
+    private boolean noLabelValue;
+    private String daysValue;
+    
     public LocalHistoryOptionsController() {
         panel = new LocalHistoryOptionsPanel();
         panel.warningLabel.setVisible(false);
         panel.daysTextField.getDocument().addDocumentListener(this);
+        panel.keepForeverCheckBox.addActionListener(this);
     }   
         
     public void update() {        
-        panel.daysTextField.setText(Long.toString(LocalHistorySettings.getInstance().getTTL()));
-        panel.noLabelCleanupCheckBox.setSelected(!LocalHistorySettings.getInstance().getCleanUpLabeled());
+        panel.daysTextField.setText(daysValue = String.valueOf(LocalHistorySettings.getInstance().getTTL()));
+        panel.noLabelCleanupCheckBox.setSelected(noLabelValue = !LocalHistorySettings.getInstance().getCleanUpLabeled());
+        panel.keepForeverCheckBox.setSelected(LocalHistorySettings.getInstance().getKeepForever());
+        updateForeverState();
     }
 
     public void applyChanges() {
         if(!isValid()) return;
-        LocalHistorySettings.getInstance().setTTL(Integer.parseInt(panel.daysTextField.getText()));
-        LocalHistorySettings.getInstance().setCleanUpLabeled(!panel.noLabelCleanupCheckBox.isSelected());
+        if(panel.keepForeverCheckBox.isSelected()) {
+            LocalHistorySettings.getInstance().setKeepForever(true);
+            LocalHistorySettings.getInstance().setTTL(Integer.parseInt(daysValue));
+            LocalHistorySettings.getInstance().setCleanUpLabeled(!noLabelValue);
+        } else {
+            LocalHistorySettings.getInstance().setKeepForever(false);
+            LocalHistorySettings.getInstance().setTTL(Integer.parseInt(panel.daysTextField.getText()));
+            LocalHistorySettings.getInstance().setCleanUpLabeled(!panel.noLabelCleanupCheckBox.isSelected());
+        }
     }
 
     public void cancel() {
@@ -83,8 +98,10 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
 
     public boolean isValid() {
         boolean valid = true;
-        try {            
-            Integer.parseInt(panel.daysTextField.getText());
+        try {       
+            if(!panel.keepForeverCheckBox.isSelected()) {
+                Integer.parseInt(panel.daysTextField.getText());
+            } 
         } catch (NumberFormatException e) {
             valid = false;
         }
@@ -95,7 +112,8 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     public boolean isChanged() {       
         String ttl = Long.toString(LocalHistorySettings.getInstance().getTTL());        
         return !ttl.equals(panel.daysTextField.getText()) && 
-               (panel.noLabelCleanupCheckBox.isSelected() != LocalHistorySettings.getInstance().getCleanUpLabeled());
+               (panel.noLabelCleanupCheckBox.isSelected() != LocalHistorySettings.getInstance().getCleanUpLabeled()) &&
+               (panel.keepForeverCheckBox.isSelected() != LocalHistorySettings.getInstance().getKeepForever());
     }
 
     public JComponent getComponent(Lookup masterLookup) {
@@ -124,5 +142,35 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
 
     public void changedUpdate(DocumentEvent e) {
        isValid();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == panel.keepForeverCheckBox) {
+            updateForeverState();
+        }
+    }
+    
+    private void updateForeverState() {
+        if(panel.keepForeverCheckBox.isSelected()) {
+            panel.daysTextField.setEnabled(false);
+            panel.noLabelCleanupCheckBox.setEnabled(false);
+            panel.daysLabel1.setEnabled(false);
+            panel.daysLabel2.setEnabled(false);
+            panel.noLabelCleanupCheckBox.setEnabled(false);
+            noLabelValue = panel.noLabelCleanupCheckBox.isSelected();
+            daysValue = panel.daysTextField.getText();
+
+            panel.noLabelCleanupCheckBox.setSelected(false);
+            panel.daysTextField.setText("");
+        } else {
+            panel.daysTextField.setEnabled(true);
+            panel.noLabelCleanupCheckBox.setEnabled(true);
+            panel.daysLabel1.setEnabled(true);
+            panel.daysLabel2.setEnabled(true);
+
+            panel.noLabelCleanupCheckBox.setSelected(noLabelValue);
+            panel.daysTextField.setText(daysValue);
+        }
     }
 }

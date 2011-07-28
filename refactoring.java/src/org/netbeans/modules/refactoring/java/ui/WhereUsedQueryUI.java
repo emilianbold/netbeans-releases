@@ -44,41 +44,30 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.actions.Openable;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula, Jan Becicka, Ralph Ruijs
  */
 public class WhereUsedQueryUI implements RefactoringUI, Openable {
     private WhereUsedQuery query = null;
@@ -91,10 +80,14 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
 
     public WhereUsedQueryUI(TreePathHandle handle, CompilationInfo info) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
-        this.query.getContext().add(info.getClasspathInfo());
+        // ClasspathInfo needs to be in context until all other modules change there
+        // implementation to use scopes #199779. This is used by at least JPA refactoring and
+        // API support.
+        this.query.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
         this.element = handle;
         Element el = handle.resolveElement(info);
-        elementHandle = ElementHandle.create(el);
+        if (!(el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.PARAMETER))
+            elementHandle = ElementHandle.create(el);
         if (el!=null) {
             name = ElementHeaders.getHeader(el, info, ElementHeaders.NAME);
             kind = el.getKind();
@@ -129,28 +122,10 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
 
     public org.netbeans.modules.refactoring.api.Problem setParameters() {
         query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
-        if (panel.getScope()==WhereUsedPanel.Scope.ALL) {
-            if (kind==ElementKind.METHOD && panel.isMethodFromBaseClass()) {
-                TreePathHandle basem = panel.getBaseMethod();
-                if (basem!=null && (basem.getFileObject()==null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
-                    query.getContext().add(RetoucheUtils.getClasspathInfoFor(element, basem));
-                } else {
-                    query.getContext().add(RetoucheUtils.getClasspathInfoFor(basem));
-                }
-            } else {
-                query.getContext().add(RetoucheUtils.getClasspathInfoFor(element));
-            }
-        } else {
-            ClasspathInfo info = query.getContext().lookup(ClasspathInfo.class);
-            Project p = FileOwnerQuery.getOwner(element.getFileObject());
-            Sources sources = ProjectUtils.getSources(p);
-            Set<FileObject> roots = new HashSet();
-            for (SourceGroup sg:sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                roots.add(sg.getRootFolder());
-            }
-            ClassPath rcp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[roots.size()]));
-            info = ClasspathInfo.create(info.getClassPath(ClasspathInfo.PathKind.BOOT), info.getClassPath(ClasspathInfo.PathKind.COMPILE), rcp);
-            query.getContext().add(info);
+//        query.putValue(query., name);
+        Scope customScope = panel.getCustomScope();
+        if(customScope != null) {
+            query.getContext().add(customScope);
         }
         if (kind == ElementKind.METHOD) {
             setForMethod();
@@ -163,19 +138,16 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
     }
     
     private void setForMethod() {
-        if (panel.isMethodFromBaseClass()) {
-            query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
-        } else {
-            query.setRefactoringSource(Lookups.singleton(element));
-        }
+        query.setRefactoringSource(Lookups.singleton(element));
+        query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS,panel.isMethodFromBaseClass());
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
-        query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
     }
     
     private void setForClass() {
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
-        query.putValue(query.FIND_REFERENCES,panel.isClassFindUsages());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
     
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
@@ -255,7 +227,9 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable {
 
     @Override
     public void open() {
-        ElementOpen.open(element.getFileObject(), elementHandle);
+        if (elementHandle!=null) {
+            ElementOpen.open(element.getFileObject(), elementHandle);
+        }
     }
     
 }

@@ -169,7 +169,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
         @Override
         public boolean supportsCustomEditor() {
-            return true;
+            return canWrite;
         }
 
         @Override

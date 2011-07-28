@@ -83,6 +83,22 @@ public class FileUtilTest extends NbTestCase {
         FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
     }
 
+    public void testLowerAndCapitalNormalization() throws IOException {
+        if (!Utilities.isWindows()) {
+            return;
+        }
+        clearWorkDir();
+        
+        File a = new File(getWorkDir(), "a");
+        assertTrue("Lower case file created", a.createNewFile());
+        File A = new File(getWorkDir(), "A");
+
+        assertEquals("Normalizes to lower case", a.getAbsolutePath(), FileUtil.normalizeFile(A).getAbsolutePath());
+        assertTrue("Can delete the file", a.delete());
+        assertTrue("Can create capital file", A.createNewFile());
+        assertEquals("Normalizes to capital case", A.getAbsolutePath(), FileUtil.normalizeFile(A).getAbsolutePath());
+    }
+
     public void testWrongNormalization() throws Exception {
         CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
         final File file = new File("/../../tmp/");

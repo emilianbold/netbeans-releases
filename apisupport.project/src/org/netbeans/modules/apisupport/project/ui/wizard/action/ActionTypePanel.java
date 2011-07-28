@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

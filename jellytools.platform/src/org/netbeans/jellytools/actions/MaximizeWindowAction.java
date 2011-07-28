@@ -64,9 +64,11 @@ public class MaximizeWindowAction extends Action {
     /** "Window" main menu item. */
     private static final String windowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
                                                                      "Menu/Window");
-    
+    private static final String configureWindowItem = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle",
+            "Menu/Window/ConfigureWindow");
     /** "Window|Maximize Window" */
     private static final String windowMaximizePath = windowItem+"|"+
+                                            configureWindowItem + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
                                         "CTL_MaximizeWindowAction");
 

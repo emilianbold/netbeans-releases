@@ -49,6 +49,7 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -73,18 +74,27 @@ public final class StatusLineComponent extends JLabel {
 
     private static final String MAX_LINE_COLUMN_STRING = "99999 | 999";
 
+    private static final String MAX_LINE_COLUMN_OFFSET_STRING = "99999 | 999 <99999999>";
+
     private static final String INSERT_LOCALE = "status-bar-insert"; // NOI18N
 
     private static final String OVERWRITE_LOCALE = "status-bar-overwrite"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(StatusLineComponent.class.getName());
 
+    /**
+     * Besides line|column display also caret offset in status bar.
+     */
+    // -J-Dorg.netbeans.editor.caret.offset.level=FINE
+    private static final Logger CARET_OFFSET_LOG = Logger.getLogger("org.netbeans.editor.caret.offset");
+    
     private Dimension minDimension;
 
     StatusLineComponent(Type type) {
         switch (type) {
             case LINE_COLUMN:
-                initMinDimension(MAX_LINE_COLUMN_STRING);
+                initMinDimension(CARET_OFFSET_LOG.isLoggable(Level.FINE) ?
+                        MAX_LINE_COLUMN_OFFSET_STRING : MAX_LINE_COLUMN_STRING);
                 break;
 
             case TYPING_MODE:

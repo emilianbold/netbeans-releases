@@ -192,7 +192,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     boolean isApplicable(final DiscoveryDescriptor wizardDescriptor){
         if (first && simpleMode.isSelected()) {
-            lastApplicable = new DiscoveryExtension().isApplicable(wizardDescriptor).isApplicable();
+            lastApplicable = new DiscoveryExtension().isApplicable(wizardDescriptor, false).isApplicable();
             if (!lastApplicable) {
                 wizardDescriptor.setSimpleMode(false);
             }

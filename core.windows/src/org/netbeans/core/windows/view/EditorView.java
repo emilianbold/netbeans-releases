@@ -234,33 +234,41 @@ public class EditorView extends ViewElement {
             }
             //listen to files being dragged over the editor area
             DropTarget dropTarget = new DropTarget( this, new DropTargetListener() {
+                @Override
                 public void dragEnter(DropTargetDragEvent dtde) {
                 }
+                @Override
                 public void dragExit(DropTargetEvent dte) {
                 }
+                @Override
                 public void dragOver(DropTargetDragEvent dtde) {
-                    ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
-                    //check if a file is being dragged over and if anybody can process it
-                    if( null != handler && handler.canDrop( dtde ) ) {
-                        dtde.acceptDrag( DnDConstants.ACTION_COPY );
-                    } else {
-                        dtde.rejectDrag();
+                    for( ExternalDropHandler handler : Lookup.getDefault().lookupAll( ExternalDropHandler.class ) ) {
+                        //check if a file is being dragged over and if anybody can process it
+                        if( handler.canDrop( dtde ) ) {
+                            dtde.acceptDrag( DnDConstants.ACTION_COPY );
+                            return;
+                        }
                     }
+                    dtde.rejectDrag();
                 }
+                @Override
                 public void drop(DropTargetDropEvent dtde) {
                     boolean dropRes = false;
                     try {
-                        ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
-                        if( handler.canDrop( dtde ) ) {
-                            //file is being dragged over
-                            dtde.acceptDrop( DnDConstants.ACTION_COPY );
-                            //let the handler to take care of it
-                            dropRes = handler.handleDrop( dtde );
+                        for( ExternalDropHandler handler : Lookup.getDefault().lookupAll( ExternalDropHandler.class ) ) {
+                            if( handler.canDrop( dtde ) ) {
+                                //file is being dragged over
+                                dtde.acceptDrop( DnDConstants.ACTION_COPY );
+                                //let the handler to take care of it
+                                dropRes = handler.handleDrop( dtde );
+                                break;
+                            }
                         }
                     } finally {
                         dtde.dropComplete( dropRes );
                     }
                 }
+                @Override
                 public void dropActionChanged(DropTargetDragEvent dtde) {
                 }
             } );
@@ -306,7 +314,7 @@ public class EditorView extends ViewElement {
 
                 String side = getSideForLocation(location);
 
-                double ratio = Constants.DROP_AROUND_RATIO;
+                double ratio = Constants.DROP_AROUND_EDITOR_RATIO;
                 if(Constants.TOP.equals(side)) {
                     return new Rectangle(0, 0, rect.width, (int)(rect.height * ratio));
                 } else if(side == Constants.LEFT) {

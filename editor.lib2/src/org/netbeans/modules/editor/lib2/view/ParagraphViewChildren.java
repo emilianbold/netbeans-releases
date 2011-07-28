@@ -44,18 +44,20 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.text.Position.Bias;
+import javax.swing.text.TabExpander;
+import javax.swing.text.TabableView;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 
 /**
@@ -64,7 +66,7 @@ import javax.swing.text.View;
  * @author Miloslav Metelka
  */
 
-public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorView> {
+final class ParagraphViewChildren extends ViewChildren<EditorView> {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphViewChildren.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphViewChildren.class.getName());
@@ -72,356 +74,401 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
     private static final long serialVersionUID  = 0L;
 
     /**
-     * Info about line wrap - initially null.null
+     * Info about line wrap - initially null.
      */
-    private WrapInfo wrapInfo; // 32 bytes = 28-super + 4
+    private WrapInfo wrapInfo; // 28=super + 4 = 32 bytes
+    
+    private int measuredEndIndex; // 32 + 4 = 36 bytes
+
+    private float childrenHeight; // 36 + 4 = 40 bytes
 
     public ParagraphViewChildren(int capacity) {
         super(capacity);
     }
-
-    @Override
-    protected boolean rawOffsetUpdate() {
-        return true;
+    
+    float height() {
+        return (wrapInfo == null) ? childrenHeight : wrapInfo.height(this);
+    }
+    
+    float width() {
+        return (wrapInfo == null) ? (float) childrenWidth() : wrapInfo.width();
     }
 
-    @Override
-    protected boolean handleTabableViews() {
-        return true;
+    double childrenWidth() {
+        return startVisualOffset(measuredEndIndex);
+    }
+    
+    float childrenHeight() {
+        return childrenHeight;
+    }
+    
+    int length() {
+        return startOffset(size());
+    }
+    
+    boolean isFullyMeasured() {
+        return measuredEndIndex >= size();
+    }
+    
+    Shape getChildAllocation(int index, Shape alloc) {
+        Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
+        double startX = startVisualOffset(index);
+        double endX = endVisualOffset(index);
+        mutableBounds.x += startX;
+        mutableBounds.width = endX - startX;
+        mutableBounds.height = childrenHeight; // Only works in non-wrapping case
+        return mutableBounds;
     }
 
-    @Override
-    protected double getMajorAxisChildrenSpan(EditorBoxView<EditorView> boxView) {
-        // When wrapInfo is active the box view's width and height reflect the multi-line wrap
-        // (and the children' width/height are stored in wrapInfo).
-        // This is because the children may be dropped but the view must retain its spans
-        // after it as well.
-        return (wrapInfo != null) ? wrapInfo.childrenWidth : super.getMajorAxisChildrenSpan(boxView);
+    int getViewIndex(ParagraphView pView, int offset) {
+        offset -= pView.getStartOffset(); // Get relative offset
+        return viewIndexFirst(offset); // Binary search through relative offsets
+    }
+    
+    int getViewIndex(ParagraphView pView, double x, double y, Shape pAlloc) {
+        IndexAndAlloc indexAndAlloc = findIndexAndAlloc(pView, x, y, pAlloc);
+        return indexAndAlloc.index;
     }
 
-    @Override
-    protected void setMajorAxisChildrenSpan(EditorBoxView<EditorView> boxView, double majorAxisSpan) {
-        if (wrapInfo != null) {
-            wrapInfo.childrenWidth = majorAxisSpan;
-        } else {
-            super.setMajorAxisChildrenSpan(boxView, majorAxisSpan);
-        }
+    int viewIndexNoWrap(ParagraphView pView, double x, Shape pAlloc) {
+        Rectangle2D pViewRect = ViewUtils.shapeAsRect(pAlloc);
+        ensurePointMeasured(pView, x, pViewRect.getY(), pViewRect);
+        return viewIndexFirstVisual(x, measuredEndIndex); // Binary search through relative offsets
     }
-
-    @Override
-    protected float getMinorAxisChildrenSpan(EditorBoxView<EditorView> boxView) {
-        return (wrapInfo != null) ? wrapInfo.childrenHeight : super.getMinorAxisChildrenSpan(boxView);
-    }
-
-    @Override
-    protected void setMinorAxisChildrenSpan(EditorBoxView<EditorView> boxView, float minorAxisSpan) {
-        if (wrapInfo != null) {
-            wrapInfo.childrenHeight = minorAxisSpan;
-        } else {
-            super.setMinorAxisChildrenSpan(boxView, minorAxisSpan);
-        }
-    }
-
-    @Override
-    protected EditorView getEditorViewChildrenValid(EditorBoxView<EditorView> boxView, int index) {
-        return get(index);
-    }
-
-    @Override
-    protected void updateLayout(EditorBoxView<EditorView> boxView, VisualUpdate<EditorView> visualUpdate, Shape alloc) {
-        double origWidth = boxView.getMajorAxisSpan();
-        float origHeight = boxView.getMinorAxisSpan();
-        
-        recomputeLayout(boxView); // Recompute wrap lines
-
-        double width = boxView.getMajorAxisSpan();
-        float height = boxView.getMinorAxisSpan();
-        boolean widthChanged = (origWidth != width);
-        boolean heightChanged = (origHeight != height);
-
-        if (alloc != null) {
-            if (wrapInfo == null) {
-                super.updateLayout(boxView, visualUpdate, alloc);
-            } else {
-                Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
-                if (wrapInfo == null) {
-                    repaintBounds.x += visualUpdate.visualOffset;
-                    repaintBounds.width -= visualUpdate.visualOffset;
-                } else {
-                    // Possibly improve by computing exact bounds
-                }
-                if (widthChanged) {
-                    visualUpdate.markWidthChanged();
-                    repaintBounds.width = EXTEND_TO_END;
-                } else { // Just repaint the modified area (of the same size)
-                    // Leave the whole visible width for repaint
-                    //repaintBounds.width = removedSpan;
-                }
-                if (heightChanged) {
-                    visualUpdate.markHeightChanged();
-                    repaintBounds.height = EXTEND_TO_END;
-                } // else: leave the repaintBounds.height set to alloc's height
-                visualUpdate.repaintBounds = ViewUtils.toRect(repaintBounds);
-            }
-
-        } else { // Null alloc => compatible operation
-            if (widthChanged || heightChanged) {
-                boxView.preferenceChanged(null, widthChanged, heightChanged);
-            }
-        }
-    }
-
+    
     /**
-     * Recompute spans and possibly do wrap or vice versa (remove wrap).
-     * This is used once a component's width gets changed.
-     *
-     * @param boxView non-null box view.
+     * Replace children of paragraph view.
+     * 
+     * @param pView
+     * @param index
+     * @param removeCount
+     * @param addedViews
+     * @param offsetDelta delta of offsets caused by insert/removal.
      */
-    void recomputeLayout(EditorBoxView<EditorView> boxView) {
-        ParagraphView paragraphView = (ParagraphView) boxView;
-        DocumentView docView = paragraphView.getDocumentView();
-        if (docView != null) {
-            boolean wrapDone = false;
-            double childrenWidth = getMajorAxisChildrenSpan(boxView);
-            float childrenHeight = getMinorAxisChildrenSpan(boxView);
-            // Do no word wrap in case there's RTL text anywhere in paragraph view
-            if (docView.getLineWrapType() != DocumentView.LineWrapType.NONE && !paragraphView.isRTL()) {
-                wrapInfo = null;
-                float visibleWidth = docView.getVisibleWidth();
-                // Check if major axis span (should already be updated) exceeds scrollpane width.
-                if (visibleWidth > docView.getDefaultCharWidth() && childrenWidth > visibleWidth) {
-                    wrapDone = true;
-                    // Get current minor axis span before wrapInfo gets inited
-                    // since the method behavior would get modified.
-                    wrapInfo = new WrapInfo(childrenWidth, childrenHeight);
-                    float prefWidth = new WrapInfoUpdater(wrapInfo, paragraphView).initWrapInfo();
-                    float prefHeight = wrapInfo.preferredHeight();
-                    boxView.setMajorAxisSpan(prefWidth);
-                    boxView.setMinorAxisSpan(prefHeight);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("WrapInfo.init(): pref[" + prefWidth + "," + prefHeight + "] "
-                                + wrapInfo.toString(paragraphView));
-                    }
+    void replace(ParagraphView pView, int index, int removeCount, View[] addedViews, int offsetDelta) {
+        if (index + removeCount > size()) {
+            throw new IllegalArgumentException("index=" + index + ", removeCount=" + // NOI18N
+                    removeCount + ", viewCount=" + size()); // NOI18N
+        }
+        int removeEndIndex = index + removeCount;
+        int startRelOffset = 0;
+        int endRelOffset = 0;
+        startRelOffset = startOffset(index);
+        endRelOffset = (removeCount == 0) ? startRelOffset : endOffset(removeEndIndex - 1);
+        moveOffsetGap(removeEndIndex, endRelOffset);
+        double x = startVisualOffset(index);
+        // Move visual gap to index since everything above it will be visually recomputed later
+        if (index < measuredEndIndex) {
+            moveVisualGap(index, x);
+            lowerMeasuredEndIndex(index);
+        }
+        // Assign visual offset BEFORE possible removal/addition of views is made
+        // since the added views would NOT have the visual offset filled in yet.
+        if (removeCount != 0) { // Removing at least one item => index < size
+            remove(index, removeCount);
+        }
+        int endAddedIndex;
+        if (addedViews != null && addedViews.length != 0) {
+            endAddedIndex = index + addedViews.length;
+            addArray(index, addedViews);
+            int pViewStartOffset = pView.getStartOffset();
+            for (int i = 0; i < addedViews.length; i++) {
+                EditorView view = (EditorView) addedViews[i];
+                int offset = view.getRawEndOffset();
+                // Below gap => do not use offsetGapLength
+                view.setRawEndOffset(offset - pViewStartOffset);
+                view.setParent(pView);
+                // Do not measure added view at this point
+            }
+        } else { // No added views
+            endAddedIndex = index;
+        }
+        // Even if no views would be added (just removal) the tabbable views must be re-computed
+        // Since making the measuredEndIndex smaller => do not need to recompute layout
+        if (gapStorage != null) { // TODO - not used currently (no gap created)
+            gapStorage.offsetGapStart = endRelOffset;
+            gapStorage.offsetGapLength -= offsetDelta;
+        } else { // Move the items one by one
+            if (offsetDelta != 0) {
+                int viewCount = size(); // Refresh (changed by 
+                if (false && viewCount > ViewGapStorage.GAP_STORAGE_THRESHOLD) { // TODO enable when stable
+                    gapStorage = new ViewGapStorage();
+                    gapStorage.initOffsetGap(endRelOffset);
+                    offsetDelta += gapStorage.offsetGapLength; // Move above gap will follow
+                }
+                for (int i = endAddedIndex; i < viewCount; i++) {
+                    EditorView view = get(i);
+                    view.setRawEndOffset(view.getRawEndOffset() + offsetDelta);
                 }
             }
-            if (!wrapDone) {
-                boxView.setMajorAxisSpan(childrenWidth);
-                boxView.setMinorAxisSpan(childrenHeight);
-            }
         }
-    }
-
-    /**
-     * Get view index corresponding to given visualOffset depending on present
-     * TextLayout instances covering the line's views.
-     * <br/>
-     * For non-TextLayout views it gives regular results.
-     *
-     * @param boxView
-     * @param visualOffset
-     * @param last if set to false return first text-layout's view index.
-     *   If true return last text-layout's view index.
-     * @return structure with index and TextLayoutPart if any.
-     */
-    private ViewSearchResult getTextLayoutViewIndex(EditorBoxView<EditorView> boxView, double visualOffset, boolean last) {
-        ViewSearchResult result = new ViewSearchResult(boxView, visualOffset);
-        int high = size() - 1;
-        if (high == -1) {
-            result.index = -1;
-            return result;
-        }
-        int low = 0;
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            EditorView view = boxView.getEditorView(mid);
-            if (view instanceof HighlightsView) {
-                HighlightsView hView = (HighlightsView) view;
-                Object layout = hView.layout();
-                if (layout instanceof TextLayoutPart) {
-                    TextLayoutPart part = (TextLayoutPart) layout;
-                    int tlStartIndex = mid - part.index();
-                    double tlStartVisualOffset = getViewVisualOffset(tlStartIndex);
-                    double tlEndVisualOffset = getViewVisualOffset(tlStartIndex + part.viewCount());
-                    if (visualOffset >= tlStartVisualOffset && visualOffset <= tlEndVisualOffset) {
-                        // Found right text layout
-                        result.index =  last ? tlStartIndex + part.viewCount() - 1 : tlStartIndex;
-                        result.textLayoutPart = (TextLayoutPart) ((HighlightsView)boxView.getEditorView(
-                                result.index)).layout();
-                    }
-                }
+        // Update paragraph view's length to actual textual length of children.
+        // It cannot be done relatively by just adding offsetDelta to original length
+        // since box views with unitialized children already have proper length
+        // so later children initialization would double that length.
+        int newLength = getLength();
+        if (newLength != pView.getLength()) {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer(pView.getDumpId() + ": update length: " + // NOI18N
+                        pView.getLength() + " => " + newLength + "\n"); // NOI18N
             }
-            double midVisualOffset = getViewVisualOffset(mid);
-            if (midVisualOffset < visualOffset) {
-                low = mid + 1;
-            } else if (midVisualOffset > visualOffset) {
-                high = mid - 1;
-            } else {
-                // view starting exactly at the given visual offset found
-                high = mid;
-                break;
-            }
-        }
-        result.index = Math.max(high, 0);
-        result.view = boxView.getEditorView(result.index);
-        return result;
-    }
-
-    private int getOffset(ViewSearchResult result) {
-        assert (result.textLayoutPart.index() == 0); // Start part
-        TextHitInfo hitInfo = HighlightsViewUtils.x2Index(result.textLayout(), (float) result.visualOffset);
-        return result.view.getStartOffset() + hitInfo.getCharIndex();
-    }
-
-    private void updatePartViewIndex(ViewSearchResult result) {
-        if (result.textLayoutPart != null) {
-            int offset = getOffset(result);
-            result.index = getViewIndex(offset, result.index, result.index + result.textLayoutPart.viewCount());
-            result.view = result.boxView.getEditorView(result.index);
-        }
-    }
-
-    @Override
-    protected void paint(EditorBoxView<EditorView> boxView, Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        if (wrapInfo != null) {
-            Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
-            int startWrapLineIndex;
-            int endWrapLineIndex;
-            double relY = clipBounds.y - allocBounds.y;
-            float wrapLineHeight = wrapInfo.childrenHeight;
-            if (relY < wrapLineHeight) {
-                startWrapLineIndex = 0;
-            } else {
-                startWrapLineIndex = (int) (relY / wrapLineHeight);
-            }
-            // Find end index
-            relY += clipBounds.height + (wrapLineHeight - 1);
-            if (relY >= boxView.getMinorAxisSpan()) {
-                endWrapLineIndex = wrapInfo.wrapLineCount();
-            } else {
-                endWrapLineIndex = (int) (relY / wrapLineHeight);
-            }
-            wrapInfo.paintWrapLines(this, (ParagraphView)boxView,
-                    startWrapLineIndex, endWrapLineIndex, g, alloc, clipBounds);
-        } else {
-            super.paint(boxView, g, alloc, clipBounds);
-        }
-    }
-
-    @Override
-    protected void paintChildren(EditorBoxView<EditorView> boxView, Graphics2D g, Shape alloc,
-            Rectangle clipBounds, double startVisualOffset, double endVisualOffset)
-    {
-        if (((ParagraphView)boxView).isRTL()) {
-            // Calculate bounds of whole text layouts since for RTL text latter index is more left visually
-            int startIndex = Math.max(getTextLayoutViewIndex(boxView, startVisualOffset, false).index, 0); // Cover no-children case
-            int endIndex = getTextLayoutViewIndex(boxView, endVisualOffset, true).index + 1;
-            paintChildren(boxView, g, alloc, clipBounds, startIndex, endIndex);
-        } else {
-            super.paintChildren(boxView, g, alloc, clipBounds, startVisualOffset, endVisualOffset);
-        }
-    }
-
-    @Override
-    protected void paintChildren(EditorBoxView<EditorView> boxView, Graphics2D g, Shape alloc,
-            Rectangle clipBounds, int startIndex, int endIndex)
-    {
-        // Paint backward to properly paint text layout parts
-        for (int i = startIndex; i < endIndex; i++) {
-            EditorView view = getEditorViewChildrenValid(boxView, i);
-            Shape childAlloc = getChildAllocation(boxView, i, i + 1, alloc);
-
-            if (view instanceof HighlightsView) {
-                HighlightsView hView = (HighlightsView) view;
-                Object layout = hView.layout();
-                if (layout instanceof TextLayoutPart) {
-                    // Always paint whole text layout (at least due to possible RTL text)
-                    TextLayoutPart part = (TextLayoutPart) layout;
-                    TextLayout textLayout = part.textLayout();
-                    DocumentView docView = ((ParagraphView)boxView).getDocumentView();
-                    int layoutStartViewIndex = i - part.index();
-                    Shape textLayoutAlloc = getChildAllocation(boxView, layoutStartViewIndex,
-                            layoutStartViewIndex + part.viewCount(), alloc);
-                    Rectangle2D.Double textLayoutBounds = ViewUtils.shape2Bounds(textLayoutAlloc);
-                    int endPartRelIndex = Math.min(layoutStartViewIndex + part.viewCount(), endIndex) -
-                            layoutStartViewIndex;
-                    TextHitInfo startHit = TextHitInfo.leading(part.offsetShift());
-                    TextHitInfo endHit = TextLayoutUtils.endHit(boxView, part, layoutStartViewIndex,
-                            endPartRelIndex);
-                    // Since only a whole text layout can be rendered by its TL.draw() (in a single color)
-                    // do the rendering in the following way:
-                    // 1. All parts' backgrounds.
-                    // 2. Whole text layout's text in "global" foreground color.
-                    // 3. All parts' foregrounds (for part's "extra" foreground color
-                    //        render whole TL in part's "extra" color clipped to part's bounds).
-                    //
-                    // In adition in step 3 the TL was already rendered in "global" color (in step 2)
-                    // but this would interfere with TL's rendering in "extra" color (it looks blurry on screen).
-                    // Therefore in step 3 the part's background must be cleared first.
-                    //
-                    // Updated steps:
-                    // 1. All parts' backgrounds where (part.foreground() == null).
-                    // 2. Whole text layout in "global" color.
-                    // 3. Backgrounds of (part.foreground() != null) parts and all parts' foregrounds.
-                    //
-                    for (int j = part.index(); j < endPartRelIndex; j++) {
-                        HighlightsView partView = (HighlightsView) boxView.getEditorView(layoutStartViewIndex + j);
-                        TextLayoutPart paintPart = (TextLayoutPart) partView.layout();
-                        if (paintPart.foreground() == null) {
-                            int shift = paintPart.offsetShift();
-                            int length = partView.getLength();
-                            TextHitInfo shiftHit = TextHitInfo.leading(shift);
-                            TextHitInfo shiftLengthHit = TextHitInfo.leading(shift + length);
-                            Shape partAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutBounds,
-                                    shiftHit, shiftLengthHit);
-                            partView.partPaintBackground(g, partAlloc, textLayoutBounds, clipBounds);
-                        }
-                    }
-
-                    // Render textLayout
-                    Shape origClip = g.getClip();
-                    Color origColor = g.getColor();
-                    try {
-                        Shape renderTextLayoutAlloc = TextLayoutUtils.getRealAlloc(
-                                textLayout, textLayoutBounds,
-                                startHit, endHit);
-                        Color foreColor = part.textLayoutForeground();
-                        g.setColor(foreColor);
-                        g.clip(renderTextLayoutAlloc);
-                        HighlightsViewUtils.paintTextLayout(g, textLayoutBounds, textLayout, docView);
-                    } finally {
-                        g.setColor(origColor);
-                        g.setClip(origClip);
-                    }
-
-                    // Render foregrounds
-                    for (int j = part.index(); j < endPartRelIndex; j++) {
-                        HighlightsView partView = (HighlightsView) boxView.getEditorView(layoutStartViewIndex + j);
-                        TextLayoutPart paintPart = (TextLayoutPart) partView.layout();
-                        int shift = paintPart.offsetShift();
-                        int length = partView.getLength();
-                        TextHitInfo shiftHit = TextHitInfo.leading(shift);
-                        TextHitInfo shiftLengthHit = TextHitInfo.leading(shift + length);
-                        Shape partAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutBounds,
-                                shiftHit, shiftLengthHit);
-                        if (paintPart.foreground() != null) {
-                            partView.partPaintBackground(g, partAlloc, textLayoutBounds, clipBounds);
-                        }
-                        partView.partPaintForeground(g, partAlloc, textLayoutBounds, clipBounds);
-                    }
-
-                    i = layoutStartViewIndex + endPartRelIndex - 1;
-                    continue;
-                } // For TextLayout use regular painting (below)
-            }
-
-            view.paint(g, childAlloc, clipBounds);
+            pView.setLength(newLength);
         }
     }
     
-    @Override
-    public Shape modelToViewChecked(EditorBoxView<EditorView> boxView, int offset, Shape alloc, Bias bias) {
+    void lowerMeasuredEndIndex(int newMeasuredEndIndex) {
+        assert (newMeasuredEndIndex >= 0) : "newMeasuredEndIndex=" + newMeasuredEndIndex + " < 0"; // NOI18N
+        assert (newMeasuredEndIndex <= measuredEndIndex);
+        while (measuredEndIndex > newMeasuredEndIndex) {
+            EditorView view = get(--measuredEndIndex);
+            if (view instanceof HighlightsView) {
+                HighlightsView hView = (HighlightsView) view;
+                assert (hView.getTextLayout() != null);
+                hView.setTextLayout(null);
+            }
+        }
+    }
+    
+    boolean ensureIndexMeasured(ParagraphView pView, int index, Rectangle2D pViewRect) {
+        int viewCount = size();
+        if (measuredEndIndex < viewCount) {
+            if (measuredEndIndex <= index) { // <= to ensure next on inited too
+                double measuredEndX = startVisualOffset(measuredEndIndex);
+                fixSpansAndRepaint(pView, measuredEndX, viewCount, index, 0d, pViewRect);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    boolean ensurePointMeasured(ParagraphView pView, double x, double y, Rectangle2D pViewRect) {
+        int viewCount = size();
+        if (measuredEndIndex < viewCount) {
+            double relY = y - pViewRect.getY();
+            if (relY >= childrenHeight) {
+                // [TODO] Init just partially till relY
+                ensureIndexMeasured(pView, viewCount, pViewRect);
+                return true;
+            }
+            x -= pViewRect.getX(); // make relative
+            double measuredEndRelX = startVisualOffset(measuredEndIndex);
+            if (measuredEndRelX <= x) { // <= to ensure next one inited too
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("ensurePointMeasured: x=" + x + ",y=" + y + ", mX=" + measuredEndRelX); // NOI18N
+                }
+                fixSpansAndRepaint(pView, measuredEndRelX, viewCount, -1, x, pViewRect);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Ensure that all child views occupying the particular y coordinate will be measured.
+     *
+     * @param pView
+     * @param y
+     * @param pViewRect
+     * @return 
+     */
+    boolean ensureYMeasured(ParagraphView pView, double y, Rectangle2D pViewRect) {
+        // Use Integer.MAX_VALUE for reasonable subtracting
+        return ensurePointMeasured(pView, (double) Integer.MAX_VALUE, y, pViewRect);
+    }
+    
+    void fixSpansAndRepaint(ParagraphView pView, double mEndX,
+            int viewCount, int targetIndex, double targetRelX, Rectangle2D pViewRect)
+    {
+        DocumentView docView = pView.getDocumentView();
+        CharSequence docText = null;
+        int mEndOffset = 0;
+        TabExpander tabExpander = null;
+        float origWidth = width();
+        float origHeight = height();
+        // Ensure that a repeated fixing of spans will not be called many times
+        // since there is certain overhead - repaints and possible width preference change.
+        int mEndIndex = measuredEndIndex;
+        int stopIndex = mEndIndex << 1;
+        boolean wrapInfoChecked = false;
+        for (; mEndIndex < viewCount; mEndIndex++) {
+            EditorView view = get(mEndIndex);
+            // First assign parent to the view and then ask for preferred span.
+            // This way the view may get necessary info from its parent regarding its preferred span.
+            float width;
+            if (view instanceof HighlightsView) {
+                HighlightsView hView = (HighlightsView) view;
+                // Fill in text layout if necessary
+                if (hView.getTextLayout() == null) { // Fill in text layout
+                    if (docText == null) {
+                        mEndOffset = pView.getStartOffset() + startOffset(mEndIndex); // Needed for TextLayout creation
+                        docText = DocumentUtilities.getText(docView.getDocument());
+                    }
+                    String text = docText.subSequence(mEndOffset, mEndOffset + view.getLength()).toString();
+                    TextLayout textLayout = docView.createTextLayout(text, hView.getAttributes());
+                    hView.setTextLayout(textLayout);
+                 }
+            }
+            // Measure the view
+            if (view instanceof TabableView) {
+                if (tabExpander == null) {
+                    tabExpander = docView.getTabExpander();
+                }
+                width = ((TabableView) view).getTabbedSpan((float) mEndX, tabExpander);
+            } else {
+                width = view.getPreferredSpan(View.X_AXIS);
+            }
+            mEndX += width;
+            view.setRawEndVisualOffset(visualOffset2Raw(mEndX));
+            // Check for possible height change
+            float height = view.getPreferredSpan(View.Y_AXIS);
+            if (height > childrenHeight) {
+                childrenHeight = height;
+            }
+            mEndOffset += view.getLength();
+            // Check whether stop now
+            if (mEndIndex >= stopIndex &&
+                    ((targetIndex != -1 && mEndIndex > targetIndex) ||
+                    (targetIndex == -1 && mEndX > targetRelX))) // '>' so that the x is contained inside a view
+            {
+                if (!wrapInfoChecked) {
+                    wrapInfoChecked = true;
+                    checkCreateWrapInfo(docView, mEndX);
+                    if (wrapInfo != null) {
+                        stopIndex = viewCount; // Force measure till end
+                        continue;
+                    }
+                }
+                mEndIndex++;
+                break;
+            }
+        }
+        assert (mEndIndex >= measuredEndIndex);
+        measuredEndIndex = mEndIndex;
+        // [TODO] implement lazy incremental update
+        if (!wrapInfoChecked) {
+            checkCreateWrapInfo(docView, mEndX);
+        }
         if (wrapInfo != null) {
-            int wrapLineIndex = findWrapLineIndex(boxView, offset);
+            buildWrapLines(pView);
+        } // Else no wrapping 
+        boolean fullyMeasured = isFullyMeasured();
+        float newWidth = width();
+        float newHeight = height();
+        if ((fullyMeasured && newWidth != origWidth) || (!fullyMeasured && newWidth > origWidth)) {
+            pView.setWidth(newWidth);
+            pView.notifyChildWidthChange();
+        }
+        boolean repaintHeightChange = false;
+        if ((fullyMeasured && newHeight != origHeight) || (!fullyMeasured && newHeight > origHeight)) {
+            repaintHeightChange = true;
+            pView.setHeight(newHeight);
+            pView.notifyChildHeightChange();
+        }
+        // Repaint full pView [TODO] can be improved
+        Rectangle visibleRect = docView.getVisibleRect();
+        pView.notifyRepaint(pViewRect.getX(), pViewRect.getY(), visibleRect.getMaxX(),
+                repaintHeightChange ? visibleRect.getMaxY() : pViewRect.getMaxY());
+    }
+    
+    private void checkCreateWrapInfo(DocumentView docView, double childrenWidth) {
+        // For existing wrapInfo tend to create wrap info too since it could just be truncated
+        // but it contains up-to-date wrap line height.
+        if (wrapInfo != null || childrenWidth > docView.getAvailableWidth()) {
+            wrapInfo = new WrapInfo();
+        }
+    }
+    
+    private void buildWrapLines(ParagraphView pView) {
+        wrapInfo.updater = new WrapInfoUpdater(wrapInfo, pView);
+        wrapInfo.updater.initWrapInfo();
+        wrapInfo.updater = null; // Finished [TODO] Lazy update
+    }
+
+    void resetWidth() {
+        lowerMeasuredEndIndex(0);
+        wrapInfo = null;
+    }
+
+    void preferenceChanged(ParagraphView pView, EditorView view, boolean widthChange, boolean heightChange) {
+        int index = viewIndexFirst(raw2Offset(view.getRawEndOffset()));
+        if (index >= 0 && get(index) == view) {
+            if (widthChange) {
+                if (index < measuredEndIndex) {
+                    lowerMeasuredEndIndex(index);
+                }
+            }
+            if (heightChange) {
+                float newHeight = view.getPreferredSpan(View.Y_AXIS);
+                if (newHeight > childrenHeight) {
+                    childrenHeight = newHeight;
+                } else {
+                    heightChange = false; // Change in fact does not affect this view
+                }
+            }
+            if (widthChange || heightChange) {
+                pView.preferenceChanged(null, widthChange, heightChange);
+            }
+        }
+    }
+
+    void paint(ParagraphView pView, Graphics2D g, Shape pAlloc, Rectangle clipBounds) {
+        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(pAlloc);
+        // Ensure whole line gets inited (TODO - check available width for non-wrapping case)
+        ensureIndexMeasured(pView, size(), allocBounds);
+        if (wrapInfo != null) {
+            int startWrapLineIndex;
+            int endWrapLineIndex;
+            double wrapY = clipBounds.y - allocBounds.y;
+            float wrapLineHeight = wrapInfo.wrapLineHeight(this);
+            if (wrapY < wrapLineHeight) {
+                startWrapLineIndex = 0;
+            } else {
+                startWrapLineIndex = (int) (wrapY / wrapLineHeight);
+            }
+            // Find end index
+            wrapY += clipBounds.height + (wrapLineHeight - 1);
+            if (wrapY >= height()) {
+                endWrapLineIndex = wrapInfo.wrapLineCount();
+            } else {
+                endWrapLineIndex = (int) (wrapY / wrapLineHeight) + 1;
+            }
+            wrapInfo.paintWrapLines(this, pView, startWrapLineIndex, endWrapLineIndex, g, pAlloc, clipBounds);
+
+        } else { // Regular paint
+            double startX = clipBounds.x - allocBounds.x;
+            double endX = startX + clipBounds.width;
+            int startIndex = viewIndexNoWrap(pView, startX, pAlloc); // y ignored
+            int endIndex = viewIndexNoWrap(pView, endX, pAlloc) + 1; // y ignored
+            paintChildren(pView, g, pAlloc, clipBounds, startIndex, endIndex);
+        }
+    }
+    
+    void paintChildren(ParagraphView pView, Graphics2D g, Shape pAlloc, Rectangle clipBounds,
+            int startIndex, int endIndex)
+    {
+        while (startIndex < endIndex) {
+            EditorView view = get(startIndex);
+            Shape childAlloc = getChildAllocation(startIndex, pAlloc);
+            if (view.getClass() == NewlineView.class) {
+                // Extend till end of screen (docView's width)
+                Rectangle2D.Double childRect = ViewUtils.shape2Bounds(childAlloc);
+                DocumentView docView = pView.getDocumentView();
+                childRect.width = docView.getVisibleRect().getMaxX() - childRect.getX();
+                childAlloc = childRect;
+            }
+            view.paint(g, childAlloc, clipBounds);
+            startIndex++;
+        }
+    }
+    
+    Shape modelToViewChecked(ParagraphView pView, int offset, Shape alloc, Bias bias) {
+        int index = pView.getViewIndex(offset, bias);
+        if (index < 0) {
+            return alloc;
+        }
+        ensureIndexMeasured(pView, index, ViewUtils.shapeAsRect(alloc));
+        if (wrapInfo != null) {
+            int wrapLineIndex = findWrapLineIndex(pView, offset);
             WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
             Rectangle2D wrapLineBounds = wrapLineAlloc(alloc, wrapLineIndex);
             Shape ret = null;
@@ -433,31 +480,26 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
                         append(", orig-allocBounds=").append(ViewUtils.toString(alloc)).append("\n    "); // NOI18N
             }
 
-            if (wrapLine.startViewPart != null && offset < wrapLine.startViewPart.getEndOffset()) {
+            if (wrapLine.startPart != null && offset < wrapLine.startPart.getEndOffset()) {
                 Shape startPartAlloc = startPartAlloc(wrapLineBounds, wrapLine);
                 if (logBuilder != null) {
                     logBuilder.append("START-part:").append(ViewUtils.toString(startPartAlloc)); // NOI18N
                 }
-                ret = wrapLine.startViewPart.modelToViewChecked(offset, startPartAlloc, bias);
-            } else if (wrapLine.endViewPart != null && offset >= wrapLine.endViewPart.getStartOffset()) {
-                Shape endPartAlloc = endPartAlloc(wrapLineBounds, wrapLine, boxView);
+                ret = wrapLine.startPart.modelToViewChecked(offset, startPartAlloc, bias);
+            } else if (wrapLine.endPart != null && offset >= wrapLine.endPart.getStartOffset()) {
+                Shape endPartAlloc = endPartAlloc(wrapLineBounds, wrapLine, pView);
                 if (logBuilder != null) {
                     logBuilder.append("END-part:").append(ViewUtils.toString(endPartAlloc)); // NOI18N
                 }
                 // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-                ret = wrapLine.endViewPart.modelToViewChecked(offset, endPartAlloc, bias);
+                ret = wrapLine.endPart.modelToViewChecked(offset, endPartAlloc, bias);
             } else {
-                assert (wrapLine.hasFullViews()) : wrapInfo.dumpWrapLine(boxView, wrapLineIndex);
-                for (int i = wrapLine.startViewIndex; i < wrapLine.endViewIndex; i++) {
-                    EditorView view = boxView.getEditorView(i);
+                assert (wrapLine.hasFullViews()) : wrapInfo.dumpWrapLine(pView, wrapLineIndex);
+                for (int i = wrapLine.firstViewIndex; i < wrapLine.endViewIndex; i++) {
+                    EditorView view = pView.getEditorView(i);
                     if (offset < view.getEndOffset()) {
-                        Shape viewAlloc = viewAlloc(wrapLineBounds, wrapLine, i, boxView);
-                        if (view instanceof HighlightsView) {
-                            // Give index hint
-                            ret = ((HighlightsView)view).modelToViewChecked(offset, viewAlloc, bias, i);
-                        } else {
-                            ret = view.modelToViewChecked(offset, viewAlloc, bias);
-                        }
+                        Shape viewAlloc = wrapAlloc(wrapLineBounds, wrapLine, i, pView);
+                        ret = view.modelToViewChecked(offset, viewAlloc, bias);
                         assert (ret != null);
                         break;
                     }
@@ -469,61 +511,38 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
             }
             return ret;
 
-        } else {
-            // [TODO] Once modified to HighlightsView == single TextLayout => use super call again
-            int index = getViewIndex(offset, bias);
-            if (index >= 0) { // When at least one child the index will fit one of them
-                // First find valid child (can lead to change of child allocation bounds)
-                EditorView view = getEditorViewChildrenValid(boxView, index);
-                Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
-                // Update the bounds with child.modelToView()
-                if (view instanceof HighlightsView) {
-                    // Give index hint
-                    return ((HighlightsView) view).modelToViewChecked(offset, childAlloc, bias, index);
-                } else {
-                    return view.modelToViewChecked(offset, childAlloc, bias);
-                }
-            } else { // No children => fallback by leaving the given bounds
-                return alloc;
-            }
+        } else { // No wrapping
+            ensureIndexMeasured(pView, index, ViewUtils.shapeAsRect(alloc));
+            // First find valid child (can lead to change of child allocation bounds)
+            EditorView view = get(index);
+            Shape childAlloc = getChildAllocation(index, alloc);
+            // Update the bounds with child.modelToView()
+            return view.modelToViewChecked(offset, childAlloc, bias);
         }
     }
 
-    @Override
-    public int viewToModelChecked(EditorBoxView<EditorView> boxView, double x, double y, Shape alloc, Bias[] biasReturn) {
-        if (wrapInfo != null) {
-            int wrapLineIndex = findWrapLineIndex(alloc, y);
-            Shape wrapLineAlloc = wrapLineAlloc(alloc, wrapLineIndex);
-            WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
-            IndexAndAlloc indexAndAlloc = findIndexAndAlloc(boxView, x, wrapLineAlloc, wrapLine);
-            return indexAndAlloc.viewOrPart.viewToModelChecked(x, y, indexAndAlloc.alloc, biasReturn);
-        } else {
-            if (((ParagraphView)boxView).isRTL()) {
-                Rectangle2D.Double relXY = ViewUtils.shape2RelBounds(alloc, x, y);
-                ViewSearchResult result = getTextLayoutViewIndex(boxView, relXY.getX(), false);
-                if (result.textLayoutPart != null) { // first part
-                    return getOffset(result);
-                }
-            }
-            // [TODO] Once modified to HighlightsView == single TextLayout => use super call again
-            int index = getViewIndexAtPoint(boxView, x, y, alloc);
-            int offset;
-            if (index >= 0) {
-                // First find valid child (can lead to change of child allocation bounds)
-                EditorView view = getEditorViewChildrenValid(boxView, index);
-                Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
-                // forward to the child view
-                if (view instanceof HighlightsView) {
-                    // Give index hint
-                    offset = ((HighlightsView)view).viewToModelChecked(x, y, childAlloc, biasReturn, index);
-                } else {
-                    offset = view.viewToModelChecked(x, y, childAlloc, biasReturn);
-                }
-            } else { // at the end
-                offset = boxView.getStartOffset();
-            }
-            return offset;
-        }
+    public int viewToModelChecked(ParagraphView pView, double x, double y, Shape pAlloc, Bias[] biasReturn) {
+        IndexAndAlloc indexAndAlloc = findIndexAndAlloc(pView, x, y, pAlloc);
+        int offset = (indexAndAlloc != null)
+                ? indexAndAlloc.viewOrPart.viewToModelChecked(x, y, indexAndAlloc.alloc, biasReturn)
+                : pView.getStartOffset();
+        return offset;
+    }
+
+    public String getToolTipTextChecked(ParagraphView pView, double x, double y, Shape pAlloc) {
+        IndexAndAlloc indexAndAlloc = findIndexAndAlloc(pView, x, y, pAlloc);
+        String toolTipText = (indexAndAlloc != null)
+                ? indexAndAlloc.viewOrPart.getToolTipTextChecked(x, y, indexAndAlloc.alloc)
+                : null;
+        return toolTipText;
+    }
+
+    public JComponent getToolTip(ParagraphView pView, double x, double y, Shape pAlloc) {
+        IndexAndAlloc indexAndAlloc = findIndexAndAlloc(pView, x, y, pAlloc);
+        JComponent toolTip = (indexAndAlloc != null)
+                ? indexAndAlloc.viewOrPart.getToolTip(x, y, indexAndAlloc.alloc)
+                : null;
+        return toolTip;
     }
 
     /**
@@ -534,137 +553,84 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
      * @param offset offset inside line or -1 to "enter" a line at the given x.
      * @param x x-position corresponding to magic caret position.
      */
-    int getNextVisualPositionY(EditorBoxView<EditorView> boxView,
-            int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet, double x)
+    int getNextVisualPositionY(ParagraphView pView,
+            int offset, Bias bias, Shape pAlloc, boolean southDirection, Bias[] biasRet, double x)
     {
-        switch (direction) {
-            case SwingConstants.NORTH:
-                int retOffsetNorth;
-                if (offset == -1) {
-                    if (wrapInfo != null) { // Use last wrap line
-                        int lastWrapLineIndex = wrapInfo.wrapLineCount() - 1;
-                        retOffsetNorth = visualPositionOnWrapLine(boxView, alloc, biasRet, x, lastWrapLineIndex);
-                    } else { // wrapInfo == null; offset == -1
-                        retOffsetNorth = visualPosition(boxView, alloc, biasRet, x);
-                    }
-                } else { // offset != -1
-                    if (wrapInfo != null) {
-                        int wrapLineIndex = findWrapLineIndex(boxView, offset);
-                        if (wrapLineIndex > 0) {
-                            retOffsetNorth = visualPositionOnWrapLine(boxView, alloc, biasRet, x, wrapLineIndex - 1);
-                        } else {
-                            retOffsetNorth = -1;
-                        }
-                    } else { // wrapInfo == null
-                        retOffsetNorth = -1;
-                    }
+        // Children already ensured to be measured by parent
+        int retOffset;
+        if (offset == -1) {
+            if (wrapInfo != null) { // Use last wrap line
+                int wrapLine = southDirection ? 0 : wrapInfo.wrapLineCount() - 1;
+                retOffset = visualPositionOnWrapLine(pView, pAlloc, biasRet, x, wrapLine);
+            } else { // wrapInfo == null; offset == -1
+                retOffset = visualPositionNoWrap(pView, pAlloc, biasRet, x);
+            }
+        } else { // offset != -1
+            if (wrapInfo != null) {
+                int wrapLineIndex = findWrapLineIndex(pView, offset);
+                if (!southDirection && wrapLineIndex > 0) {
+                    retOffset = visualPositionOnWrapLine(pView, pAlloc, biasRet, x, wrapLineIndex - 1);
+                } else if (southDirection && wrapLineIndex < wrapInfo.wrapLineCount() - 1) {
+                    retOffset = visualPositionOnWrapLine(pView, pAlloc, biasRet, x, wrapLineIndex + 1);
+                } else {
+                    retOffset = -1;
                 }
-                return retOffsetNorth;
-
-            case SwingConstants.SOUTH:
-                int retOffsetSouth;
-                if (offset == -1) {
-                    if (wrapInfo != null) { // Use first wrap line
-                        retOffsetSouth = visualPositionOnWrapLine(boxView, alloc, biasRet, x, 0);
-                    } else { // wrapInfo == null; offset == -1
-                        retOffsetSouth = visualPosition(boxView, alloc, biasRet, x);
-                    }
-                } else { // offset != -1
-                    if (wrapInfo != null) {
-                        int wrapLineIndex = findWrapLineIndex(boxView, offset);
-                        if (wrapLineIndex < wrapInfo.wrapLineCount() - 1) {
-                            retOffsetSouth = visualPositionOnWrapLine(boxView, alloc, biasRet, x, wrapLineIndex + 1);
-                        } else {
-                            retOffsetSouth = -1;
-                        }
-                    } else { // wrapInfo == null
-                        retOffsetSouth = -1;
-                    }
-                }
-                return retOffsetSouth;
-
-            case SwingConstants.EAST: // Should be handled elsewhere
-            case SwingConstants.WEST: // Should be handled elsewhere
-                throw new IllegalStateException("Not intended to handle EAST and WEST directions"); // NOI18N
-            default:
-                throw new IllegalArgumentException("Bad direction: " + direction); // NOI18N
+            } else { // wrapInfo == null
+                retOffset = -1;
+            }
         }
+        return retOffset;
     }
     
-    private int visualPositionOnWrapLine(EditorBoxView<EditorView> boxView,
+    /**
+     * Find next visual position in Y direction.
+     * In case of no line-wrap the method should return -1 for a given valid offset.
+     * and a valid offset when -1 is given as parameter.
+     * @param offset offset inside line or -1 to "enter" a line at the given x.
+     */
+    int getNextVisualPositionX(ParagraphView pView, int offset, Bias bias, Shape pAlloc, boolean eastDirection, Bias[] biasRet) {
+        // Children already ensured to be measured by parent
+        int viewCount = size();
+        int index = (offset == -1)
+                ? (eastDirection ? 0 : viewCount - 1)
+                : getViewIndex(pView, offset);
+        int increment = eastDirection ? 1 : -1;
+        int retOffset = -1;
+        // Cycle through individual views in left or right direction
+        for (; retOffset == -1 && index >= 0 && index < viewCount; index += increment) {
+            EditorView view = get(index); // Ensure valid children
+            Shape viewAlloc = getChildAllocation(index, pAlloc);
+            retOffset = view.getNextVisualPositionFromChecked(offset, bias, viewAlloc, 
+                    eastDirection ? SwingConstants.EAST : SwingConstants.WEST, biasRet);
+            if (retOffset == -1) {
+                offset = -1; // Continue by entering the paragraph from outside
+            }
+        }
+        return retOffset;
+    }
+
+    private int visualPositionNoWrap(ParagraphView pView, Shape alloc, Bias[] biasRet, double x) {
+        int childIndex = viewIndexNoWrap(pView, x, alloc);
+        EditorView child = pView.getEditorView(childIndex);
+        Shape childAlloc = pView.getChildAllocation(childIndex, alloc);
+        Rectangle2D r = ViewUtils.shapeAsRect(childAlloc);
+        return child.viewToModelChecked(x, r.getY(), childAlloc, biasRet);
+    }
+
+    private int visualPositionOnWrapLine(ParagraphView pView,
             Shape alloc, Bias[] biasRet, double x, int wrapLineIndex)
     {
         WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
         Shape wrapLineAlloc = wrapLineAlloc(alloc, wrapLineIndex);
-        IndexAndAlloc indexAndAlloc = findIndexAndAlloc(boxView, x, wrapLineAlloc, wrapLine);
+        IndexAndAlloc indexAndAlloc = findIndexAndAlloc(pView, x, wrapLineAlloc, wrapLine);
         double y = ViewUtils.shapeAsRect(indexAndAlloc.alloc).getY();
         return indexAndAlloc.viewOrPart.viewToModelChecked(x, y, indexAndAlloc.alloc, biasRet);
     }
     
-    private int visualPosition(EditorBoxView<EditorView> boxView, Shape alloc, Bias[] biasRet, double x) {
-        Rectangle2D allocRect = ViewUtils.shapeAsRect(alloc);
-        double y = allocRect.getY();
-        int childIndex;
-        if (((ParagraphView)boxView).isRTL()) {
-            ViewSearchResult result = getTextLayoutViewIndex(boxView, x - allocRect.getX(), false);
-            if (result.textLayoutPart != null) {
-                return getOffset(result);
-            }
-            childIndex = result.index;
-        } else {
-            childIndex = getViewIndexAtPoint(boxView, x, y, alloc);
-        }
-        EditorView child = boxView.getEditorView(childIndex);
-        Shape childAlloc = boxView.getChildAllocation(childIndex, alloc);
-        return child.viewToModelChecked(x, y, childAlloc, biasRet);
-    }
-
-    private IndexAndAlloc findIndexAndAlloc(EditorBoxView<EditorView> boxView,
-            double x, Shape wrapLineAlloc, WrapLine wrapLine)
-    {
-        IndexAndAlloc indexAndAlloc = new IndexAndAlloc();
-        if (wrapLine.startViewPart != null && (x < wrapLine.startViewX ||
-                (!wrapLine.hasFullViews() && wrapLine.endViewPart == null)))
-        {
-            indexAndAlloc.index = -1; // start part
-            indexAndAlloc.viewOrPart = wrapLine.startViewPart;
-            indexAndAlloc.alloc = startPartAlloc(wrapLineAlloc, wrapLine);
-            return indexAndAlloc;
-        }
-        // Go through full views
-        if (wrapLine.hasFullViews()) {
-            Rectangle2D.Double viewBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-            viewBounds.x += wrapLine.startViewX;
-            double lastVisualOffset = boxView.getViewVisualOffset(wrapLine.startViewIndex);
-            for (int i = wrapLine.startViewIndex; i < wrapLine.endViewIndex; i++) {
-                double nextVisualOffset = boxView.getViewVisualOffset(i + 1);
-                viewBounds.width = nextVisualOffset - lastVisualOffset;
-                if (x < viewBounds.x + viewBounds.width || // Fits
-                        (i == wrapLine.endViewIndex - 1 && wrapLine.endViewPart == null)) // Last part and no end part
-                {
-                    indexAndAlloc.index = i;
-                    indexAndAlloc.viewOrPart = boxView.getEditorView(i);
-                    indexAndAlloc.alloc = viewBounds;
-                    return indexAndAlloc;
-                }
-                viewBounds.x += viewBounds.width;
-                lastVisualOffset = nextVisualOffset;
-            }
-            // Force last in case there is no end part
-        }
-        assert (wrapLine.endViewPart != null) : "Null endViewPart"; // NOI18N
-        // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-        indexAndAlloc.index = -2;
-        indexAndAlloc.viewOrPart = wrapLine.endViewPart;
-        indexAndAlloc.alloc = endPartAlloc(wrapLineAlloc, wrapLine, boxView);
-        return indexAndAlloc;
-    }
-
-    private int findWrapLineIndex(Shape alloc, double y) {
-        Rectangle2D allocRect = ViewUtils.shapeAsRect(alloc);
+    private int findWrapLineIndex(Rectangle2D pAllocRect, double y) {
         int wrapLineIndex;
-        double relY = y - allocRect.getY();
-        float wrapLineHeight = wrapInfo.childrenHeight;
+        double relY = y - pAllocRect.getY();
+        float wrapLineHeight = wrapInfo.wrapLineHeight(this);
         if (relY < wrapLineHeight) {
             wrapLineIndex = 0;
         } else {
@@ -677,13 +643,13 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
         return wrapLineIndex;
     }
     
-    private int findWrapLineIndex(EditorBoxView<EditorView> boxView, int offset) {
+    private int findWrapLineIndex(ParagraphView pView, int offset) {
         int wrapLineCount = wrapInfo.wrapLineCount();
         int wrapLineIndex = 0;
         WrapLine wrapLine = null;
         while (++wrapLineIndex < wrapLineCount) {
             wrapLine = wrapInfo.get(wrapLineIndex);
-            if (getWrapLineStartOffset(boxView, wrapLine) > offset) {
+            if (wrapLineStartOffset(pView, wrapLine) > offset) {
                 break;
             }
         }
@@ -691,60 +657,145 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
         return wrapLineIndex;
     }
 
-    private Rectangle2D.Double wrapLineAlloc(Shape alloc, int wrapLineIndex) {
-        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
-        allocBounds.y += wrapLineIndex * wrapInfo.childrenHeight;
-        allocBounds.height = wrapInfo.childrenHeight;
-        return allocBounds;
-    }
-    
     private Shape startPartAlloc(Shape wrapLineAlloc, WrapLine wrapLine) {
         Rectangle2D.Double startPartBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-        startPartBounds.width = wrapLine.startViewX;
+        startPartBounds.width = wrapLine.firstViewX;
         return startPartBounds;
     }
     
-    private Shape endPartAlloc(Shape wrapLineAlloc, WrapLine wrapLine, EditorBoxView<EditorView> boxView) {
+    private Shape endPartAlloc(Shape wrapLineAlloc, WrapLine wrapLine, ParagraphView pView) {
         Rectangle2D.Double endPartBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-        endPartBounds.width = wrapLine.endViewPart.getPreferredSpan(View.X_AXIS);
-        endPartBounds.x += wrapLine.startViewX;
+        endPartBounds.width = wrapLine.endPart.getPreferredSpan(View.X_AXIS);
+        endPartBounds.x += wrapLine.firstViewX;
         if (wrapLine.hasFullViews()) {
-            endPartBounds.x += (boxView.getViewVisualOffset(wrapLine.endViewIndex)
-                    - boxView.getViewVisualOffset(wrapLine.startViewIndex));
+            endPartBounds.x += (startVisualOffset(wrapLine.endViewIndex)
+                    - startVisualOffset(wrapLine.firstViewIndex));
         }
         return endPartBounds;
     }
     
-    private Shape viewAlloc(Shape wrapLineAlloc, WrapLine wrapLine, int viewIndex, EditorBoxView<EditorView> boxView) {
-        double startViewVisualOffset = boxView.getViewVisualOffset(wrapLine.startViewIndex);
-        double visualOffset = (viewIndex != wrapLine.startViewIndex)
-                ? boxView.getViewVisualOffset(viewIndex)
-                : startViewVisualOffset;
+    private Shape wrapAlloc(Shape wrapLineAlloc, WrapLine wrapLine, int viewIndex, ParagraphView pView) {
+        double startX = startVisualOffset(wrapLine.firstViewIndex);
+        double x = (viewIndex != wrapLine.firstViewIndex)
+                ? startVisualOffset(viewIndex)
+                : startX;
         Rectangle2D.Double viewBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-        viewBounds.x += wrapLine.startViewX + (visualOffset - startViewVisualOffset);
-        viewBounds.width = (boxView.getViewVisualOffset(viewIndex + 1) - visualOffset);
+        viewBounds.x += wrapLine.firstViewX + (x - startX);
+        viewBounds.width = endVisualOffset(viewIndex) - x;
         return viewBounds;
     }
 
-    private int getWrapLineStartOffset(EditorBoxView<EditorView> boxView, WrapLine wrapLine) {
-        if (wrapLine.startViewPart != null) {
-            return wrapLine.startViewPart.getStartOffset();
-        } else if (wrapLine.hasFullViews()) {
-            return boxView.getView(wrapLine.startViewIndex).getStartOffset();
-        } else {
-            assert (wrapLine.endViewPart != null) : "Invalid wrapLine: " + wrapLine;
-            return wrapLine.endViewPart.getStartOffset();
+    private IndexAndAlloc findIndexAndAlloc(ParagraphView pView, double x, double y, Shape pAlloc) {
+        if (size() == 0) {
+            return null;
+        }
+        Rectangle2D pRect = ViewUtils.shapeAsRect(pAlloc);
+        ensurePointMeasured(pView, x, y, pRect);
+        if (wrapInfo == null) { // Regular case
+            IndexAndAlloc indexAndAlloc = new IndexAndAlloc();
+            int index = viewIndexNoWrap(pView, x, pAlloc);
+            indexAndAlloc.index = index;
+            indexAndAlloc.viewOrPart = get(index);
+            indexAndAlloc.alloc = getChildAllocation(index, pAlloc);
+            return indexAndAlloc;
+            
+        } else { // Wrapping
+            int wrapLineIndex = findWrapLineIndex(pRect, y);
+            WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
+            Rectangle2D.Double wrapLineAlloc = wrapLineAlloc(pAlloc, wrapLineIndex);
+            return findIndexAndAlloc(pView, x, wrapLineAlloc, wrapLine);
         }
     }
 
-    @Override
-    public StringBuilder appendChildrenInfo(EditorBoxView<EditorView> boxView,
-            StringBuilder sb, int indent, int importantIndex)
+    private IndexAndAlloc findIndexAndAlloc(ParagraphView pView,
+            double x, Shape wrapLineAlloc, WrapLine wrapLine)
     {
-        super.appendChildrenInfo(boxView, sb, indent, importantIndex);
-        if (wrapInfo != null) {
-            wrapInfo.appendInfo(sb, (ParagraphView)boxView, indent);
+        IndexAndAlloc indexAndAlloc = new IndexAndAlloc();
+        if (wrapLine.startPart != null && (x < wrapLine.firstViewX
+                || (!wrapLine.hasFullViews() && wrapLine.endPart == null))) {
+            indexAndAlloc.index = -1; // start part
+            indexAndAlloc.viewOrPart = wrapLine.startPart;
+            indexAndAlloc.alloc = startPartAlloc(wrapLineAlloc, wrapLine);
+            return indexAndAlloc;
         }
+        // Go through full views
+        if (wrapLine.hasFullViews()) {
+            Rectangle2D.Double viewBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
+            viewBounds.x += wrapLine.firstViewX;
+            double lastX = startVisualOffset(wrapLine.firstViewIndex);
+            for (int i = wrapLine.firstViewIndex; i < wrapLine.endViewIndex; i++) {
+                double nextX = startVisualOffset(i + 1);
+                viewBounds.width = nextX - lastX;
+                if (x < viewBounds.x + viewBounds.width || // Fits
+                        (i == wrapLine.endViewIndex - 1 && wrapLine.endPart == null)) // Last part and no end part
+                {
+                    indexAndAlloc.index = i;
+                    indexAndAlloc.viewOrPart = pView.getEditorView(i);
+                    indexAndAlloc.alloc = viewBounds;
+                    return indexAndAlloc;
+                }
+                viewBounds.x += viewBounds.width;
+                lastX = nextX;
+            }
+            // Force last in case there is no end part
+        }
+        assert (wrapLine.endPart != null) : "Null endViewPart"; // NOI18N
+        // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
+        indexAndAlloc.index = -2;
+        indexAndAlloc.viewOrPart = wrapLine.endPart;
+        indexAndAlloc.alloc = endPartAlloc(wrapLineAlloc, wrapLine, pView);
+        return indexAndAlloc;
+    }
+
+    private Rectangle2D.Double wrapLineAlloc(Shape alloc, int wrapLineIndex) {
+        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
+        float wrapLineHeight = wrapInfo.wrapLineHeight(this);
+        allocBounds.y += wrapLineIndex * wrapLineHeight;
+        allocBounds.height = wrapLineHeight;
+        return allocBounds;
+    }
+    
+    private int wrapLineStartOffset(ParagraphView pView, WrapLine wrapLine) {
+        if (wrapLine.startPart != null) {
+            return wrapLine.startPart.getStartOffset();
+        } else if (wrapLine.hasFullViews()) {
+            return pView.getView(wrapLine.firstViewIndex).getStartOffset();
+        } else {
+            assert (wrapLine.endPart != null) : "Invalid wrapLine: " + wrapLine;
+            return wrapLine.endPart.getStartOffset();
+        }
+    }
+    
+    @Override
+    protected String findIntegrityError(EditorView parent) {
+        String err = super.findIntegrityError(parent);
+        return err;
+    }
+
+    /**
+     * Append pView-related info to string builder.
+     *
+     * @param pView
+     */
+    public StringBuilder appendViewInfo(ParagraphView pView, StringBuilder sb) {
+        sb.append(", chWxH=").append(width()).append("x").append(height()); // NOI18N
+        sb.append(", mI=").append(measuredEndIndex); // NOI18N
+        if (wrapInfo != null) {
+            sb.append(", Wrapped"); // NOI18N
+        }
+        return sb;
+    }
+
+    public StringBuilder appendChildrenInfo(ParagraphView pView, StringBuilder sb, int indent, int importantIndex) {
+        if (wrapInfo != null) {
+            wrapInfo.appendInfo(sb, pView, indent);
+        }
+        return appendChildrenInfo(sb, indent, importantIndex);
+    }
+
+    @Override
+    protected StringBuilder appendChildInfo(StringBuilder sb, int index) {
+        sb.append("x=").append(startVisualOffset(index)).append(": ");
         return sb;
     }
 
@@ -760,49 +811,11 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
          * View (or part) correspond to given index;
          */
         EditorView viewOrPart;
-        
+
         /**
          * Allocation corresponding to index.
          */
         Shape alloc;
-        
-    }
-
-    private static final class ViewSearchResult {
-
-        /**
-         * Box View.
-         */
-        final EditorBoxView<EditorView> boxView;
-
-        /**
-         * Visual x-offset of the search.
-         */
-        final double visualOffset;
-        
-        /**
-         * View index.
-         */
-        int index;
-        
-        /**
-         * View at index or null for invalid index.
-         */
-        EditorView view;
-
-        /**
-         * TextLayoutPart or null if the view at the index is not a text layout part.
-         */
-        TextLayoutPart textLayoutPart;
-
-        public ViewSearchResult(EditorBoxView<EditorView> boxView, double visualOffset) {
-            this.boxView = boxView;
-            this.visualOffset = visualOffset;
-        }
-        
-        TextLayout textLayout() {
-            return textLayoutPart.textLayout();
-        }
         
     }
 

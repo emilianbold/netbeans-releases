@@ -86,6 +86,12 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-custom2" foreColor="blue"> 
         <font style="italic" />
     </fontcolor>
+    
+    <!-- namespace prefix -->
+    <fontcolor name="mod-custom3" foreColor="red"> 
+        <font style="bold" />
+    </fontcolor>
+    
     <fontcolor name="mod-method" foreColor="007c00" >
         <font style="bold" />
     </fontcolor>

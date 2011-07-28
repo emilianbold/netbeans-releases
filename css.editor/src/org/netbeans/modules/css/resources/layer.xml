@@ -37,10 +37,10 @@
                         <attr name="position" intvalue="4700"/>
                     </file>
 		</folder>
-                <file name="language.instance">
+                <!--<file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.css.lexer.api.CssTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
-                </file>
+                </file>-->
                 
                 <file name="org-netbeans-modules-css-editor-indent-CssIndentTaskFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>

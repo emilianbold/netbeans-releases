@@ -162,6 +162,8 @@ public final class SimpleFactoryTest extends NbTestCase {
         assertNotNull("Now modified", sav);
         
         assertEquals(obj.getPrimaryFile().getNameExt(), sav.toString());
+        obj.setModified(false);
+        assertNull("Changes discarded", obj.getLookup().lookup(Savable.class));
     }
     
     //

@@ -45,14 +45,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.maven.grammar.AbstractSchemaBasedGrammar.MyTextElement;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.jdom.Element;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarResult;
@@ -125,11 +122,8 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
 
         if (path.endsWith("pluginGroups/pluginGroup")) { //NOI18N
 
-            Set elems = RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix());
-            Iterator it = elems.iterator();
             ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
+            for (String elem : RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix(), RepositoryPreferences.getInstance().getRepositoryInfos())) {
                 texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
             }
             return Collections.enumeration(texts);

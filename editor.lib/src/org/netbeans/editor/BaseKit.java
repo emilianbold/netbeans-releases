@@ -105,7 +105,6 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
-import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
@@ -379,11 +378,6 @@ public class BaseKit extends DefaultEditorKit {
 
     private final SearchableKit searchableKit;
 
-    /* package */ static final boolean LINEWRAP_ENABLED;
-    static {
-        LINEWRAP_ENABLED = HighlightingManager.LINEWRAP_ENABLED;
-    }
-
 //    static SettingsChangeListener settingsListener = new SettingsChangeListener() {
 //        public void settingsChange(SettingsChangeEvent evt) {
 //            String settingName = (evt != null) ? evt.getSettingName() : null;
@@ -585,10 +579,7 @@ public class BaseKit extends DefaultEditorKit {
      * @return the view factory
      */
     public @Override ViewFactory getViewFactory() {
-        //Boolean.getBoolean("org.netbeans.editor.linewrap")
-        return  HighlightingManager.LINEWRAP_ENABLED
-                ? org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE
-                : null;
+        return org.netbeans.modules.editor.lib2.view.ViewFactoryImpl.INSTANCE;
     }
 
     /** Create caret to navigate through document */

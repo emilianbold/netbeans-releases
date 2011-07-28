@@ -52,7 +52,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
@@ -216,6 +215,7 @@ public class UndoRedoSupport {
             context.setSelectedComponents(newSelection);
                     
             GridUtils.revalidateGrid(gridManager);
+            gridManager.updateGaps(false);
             int newColumns = info.getColumnCount();
             int newRows = info.getRowCount();
             int columns = Math.max(oldColumns, newColumns);

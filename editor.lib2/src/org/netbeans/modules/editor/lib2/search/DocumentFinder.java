@@ -808,11 +808,10 @@ public class DocumentFinder
 
         public final int find(int initOffset, CharSequence chars) {
             int offset = (initOffset != 0) ? initOffset-1 : chars.length() - 1;
-            int offset2;
             int limitPos = 0;
             int limitOffset = chars.length();
             while (offset >= 0 && offset < limitOffset) {
-                offset += scan(chars.charAt(offset), (offset == limitOffset));
+                offset += scan(chars.charAt(offset), (offset == limitPos));
                 if (found) {
                     break;
                 }

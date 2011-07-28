@@ -61,7 +61,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.editors2.JTableHeaderEditor;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
@@ -110,6 +109,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private CustomizerTableModel columnTableModel;
     /** Table model for table with row information. */
     private TableModelEditor.NbTableModel rowTableModel;
+
+    /** Binding support for the corresponding form model. */
+    private BindingDesignSupport bindingSupport;
 
     /**
      * Creates new <code>TableCustomizer</code>.
@@ -275,15 +277,15 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelBoundChoice.setMargin(new java.awt.Insets(0, 0, 0, 0));
         modelBoundChoice.addActionListener(formListener);
 
-        org.jdesktop.layout.GroupLayout modelBoundPanelLayout = new org.jdesktop.layout.GroupLayout(modelBoundPanel);
+        javax.swing.GroupLayout modelBoundPanelLayout = new javax.swing.GroupLayout(modelBoundPanel);
         modelBoundPanel.setLayout(modelBoundPanelLayout);
         modelBoundPanelLayout.setHorizontalGroup(
-            modelBoundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 408, Short.MAX_VALUE)
+            modelBoundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 404, Short.MAX_VALUE)
         );
         modelBoundPanelLayout.setVerticalGroup(
-            modelBoundPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
+            modelBoundPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
 
         modelButtonGroup.add(modelFromComponentChoice);
@@ -292,15 +294,15 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelFromComponentChoice.setMargin(new java.awt.Insets(0, 0, 0, 0));
         modelFromComponentChoice.addActionListener(formListener);
 
-        org.jdesktop.layout.GroupLayout modelFromComponentPanelLayout = new org.jdesktop.layout.GroupLayout(modelFromComponentPanel);
+        javax.swing.GroupLayout modelFromComponentPanelLayout = new javax.swing.GroupLayout(modelFromComponentPanel);
         modelFromComponentPanel.setLayout(modelFromComponentPanelLayout);
         modelFromComponentPanelLayout.setHorizontalGroup(
-            modelFromComponentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 408, Short.MAX_VALUE)
+            modelFromComponentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 404, Short.MAX_VALUE)
         );
         modelFromComponentPanelLayout.setVerticalGroup(
-            modelFromComponentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
+            modelFromComponentPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
 
         modelButtonGroup.add(modelCustomChoice);
@@ -309,51 +311,51 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         modelCustomChoice.setMargin(new java.awt.Insets(0, 0, 0, 0));
         modelCustomChoice.addActionListener(formListener);
 
-        org.jdesktop.layout.GroupLayout modelCustomPanelLayout = new org.jdesktop.layout.GroupLayout(modelCustomPanel);
+        javax.swing.GroupLayout modelCustomPanelLayout = new javax.swing.GroupLayout(modelCustomPanel);
         modelCustomPanel.setLayout(modelCustomPanelLayout);
         modelCustomPanelLayout.setHorizontalGroup(
-            modelCustomPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 408, Short.MAX_VALUE)
+            modelCustomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 404, Short.MAX_VALUE)
         );
         modelCustomPanelLayout.setVerticalGroup(
-            modelCustomPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 100, Short.MAX_VALUE)
+            modelCustomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
         );
 
-        org.jdesktop.layout.GroupLayout modelTabLayout = new org.jdesktop.layout.GroupLayout(modelTab);
+        javax.swing.GroupLayout modelTabLayout = new javax.swing.GroupLayout(modelTab);
         modelTab.setLayout(modelTabLayout);
         modelTabLayout.setHorizontalGroup(
-            modelTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(modelTabLayout.createSequentialGroup()
+            modelTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modelTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(modelTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(modelBoundPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(modelHardcodedChoice)
-                    .add(modelBoundChoice)
-                    .add(modelFromComponentChoice)
-                    .add(modelCustomChoice)
-                    .add(modelFromComponentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(modelCustomPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(modelTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(modelBoundPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(modelHardcodedChoice)
+                    .addComponent(modelBoundChoice)
+                    .addComponent(modelFromComponentChoice)
+                    .addComponent(modelCustomChoice)
+                    .addComponent(modelFromComponentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(modelCustomPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         modelTabLayout.setVerticalGroup(
-            modelTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(modelTabLayout.createSequentialGroup()
+            modelTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modelTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(modelHardcodedChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(modelBoundChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(modelBoundPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(modelFromComponentChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(modelFromComponentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(modelCustomChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(modelCustomPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(55, Short.MAX_VALUE))
+                .addComponent(modelHardcodedChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modelBoundChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modelBoundPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modelFromComponentChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modelFromComponentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modelCustomChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modelCustomPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(52, Short.MAX_VALUE))
         );
 
         modelHardcodedChoice.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Model_Hardcoded_ACSD")); // NOI18N
@@ -402,15 +404,15 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         columnTitlePanel.setEnabled(false);
 
-        org.jdesktop.layout.GroupLayout columnTitlePanelLayout = new org.jdesktop.layout.GroupLayout(columnTitlePanel);
+        javax.swing.GroupLayout columnTitlePanelLayout = new javax.swing.GroupLayout(columnTitlePanel);
         columnTitlePanel.setLayout(columnTitlePanelLayout);
         columnTitlePanelLayout.setHorizontalGroup(
-            columnTitlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 103, Short.MAX_VALUE)
+            columnTitlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 118, Short.MAX_VALUE)
         );
         columnTitlePanelLayout.setVerticalGroup(
-            columnTitlePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 24, Short.MAX_VALUE)
+            columnTitlePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 22, Short.MAX_VALUE)
         );
 
         columnTypeCombo.setEnabled(false);
@@ -418,28 +420,28 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         columnEditorPanel.setEnabled(false);
 
-        org.jdesktop.layout.GroupLayout columnEditorPanelLayout = new org.jdesktop.layout.GroupLayout(columnEditorPanel);
+        javax.swing.GroupLayout columnEditorPanelLayout = new javax.swing.GroupLayout(columnEditorPanel);
         columnEditorPanel.setLayout(columnEditorPanelLayout);
         columnEditorPanelLayout.setHorizontalGroup(
-            columnEditorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 103, Short.MAX_VALUE)
+            columnEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 118, Short.MAX_VALUE)
         );
         columnEditorPanelLayout.setVerticalGroup(
-            columnEditorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 24, Short.MAX_VALUE)
+            columnEditorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 22, Short.MAX_VALUE)
         );
 
         columnRendererPanel.setEnabled(false);
 
-        org.jdesktop.layout.GroupLayout columnRendererPanelLayout = new org.jdesktop.layout.GroupLayout(columnRendererPanel);
+        javax.swing.GroupLayout columnRendererPanelLayout = new javax.swing.GroupLayout(columnRendererPanel);
         columnRendererPanel.setLayout(columnRendererPanelLayout);
         columnRendererPanelLayout.setHorizontalGroup(
-            columnRendererPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 103, Short.MAX_VALUE)
+            columnRendererPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 118, Short.MAX_VALUE)
         );
         columnRendererPanelLayout.setVerticalGroup(
-            columnRendererPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 24, Short.MAX_VALUE)
+            columnRendererPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 22, Short.MAX_VALUE)
         );
 
         selectionModelLabel.setLabelFor(selectionModelCombo);
@@ -481,124 +483,124 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         columnErrorLabel.setForeground(new java.awt.Color(204, 0, 0));
 
-        org.jdesktop.layout.GroupLayout columnsTabLayout = new org.jdesktop.layout.GroupLayout(columnsTab);
+        javax.swing.GroupLayout columnsTabLayout = new javax.swing.GroupLayout(columnsTab);
         columnsTab.setLayout(columnsTabLayout);
         columnsTabLayout.setHorizontalGroup(
-            columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(columnsTabLayout.createSequentialGroup()
+            columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(columnsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(columnErrorLabel)
-                    .add(separator)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, columnsTabLayout.createSequentialGroup()
-                        .add(columnsScrollPane)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(insertColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, columnsTabLayout.createSequentialGroup()
-                                .add(columnCountLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(columnCountSpinner))
-                            .add(deleteColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(moveUpColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(moveDownColumnButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(columnsTabLayout.createSequentialGroup()
-                        .add(selectionModelLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(selectionModelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(reorderingAllowedChoice)
-                    .add(columnsTabLayout.createSequentialGroup()
-                        .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(columnTypeLabel)
-                            .add(columnEditorLabel)
-                            .add(columnRendererLabel)
-                            .add(columnTitleLabel)
-                            .add(placeHolder1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(placeHolder2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(columnTitlePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(columnRendererPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(columnEditorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(columnTypeCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .add(18, 18, 18)
-                        .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(columnsTabLayout.createSequentialGroup()
-                                .add(resizableColumnChoice)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(editableColumnChoice))
-                            .add(columnsTabLayout.createSequentialGroup()
-                                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(widthPrefLabel)
-                                    .add(widthMinLabel)
-                                    .add(widthMaxLabel))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(widthPrefCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(widthMinCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(widthMaxCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                        .add(45, 45, 45)))
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(columnErrorLabel)
+                    .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, columnsTabLayout.createSequentialGroup()
+                        .addComponent(columnsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(insertColumnButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, columnsTabLayout.createSequentialGroup()
+                                .addComponent(columnCountLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(columnCountSpinner))
+                            .addComponent(deleteColumnButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(moveUpColumnButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(moveDownColumnButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(columnsTabLayout.createSequentialGroup()
+                        .addComponent(selectionModelLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(selectionModelCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(reorderingAllowedChoice)
+                    .addGroup(columnsTabLayout.createSequentialGroup()
+                        .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(columnTypeLabel)
+                            .addComponent(columnEditorLabel)
+                            .addComponent(columnRendererLabel)
+                            .addComponent(columnTitleLabel)
+                            .addComponent(placeHolder1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(placeHolder2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(columnTitlePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(columnRendererPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(columnEditorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(columnTypeCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(columnsTabLayout.createSequentialGroup()
+                                .addComponent(resizableColumnChoice)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(editableColumnChoice))
+                            .addGroup(columnsTabLayout.createSequentialGroup()
+                                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(widthPrefLabel)
+                                    .addComponent(widthMinLabel)
+                                    .addComponent(widthMaxLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(widthPrefCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(widthMinCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(widthMaxCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGap(45, 45, 45)))
                 .addContainerGap())
         );
         columnsTabLayout.setVerticalGroup(
-            columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(columnsTabLayout.createSequentialGroup()
+            columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(columnsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(columnsScrollPane)
-                    .add(columnsTabLayout.createSequentialGroup()
-                        .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(columnCountLabel)
-                            .add(columnCountSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(insertColumnButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deleteColumnButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(moveUpColumnButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(moveDownColumnButton)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(columnTitlePanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(resizableColumnChoice)
-                        .add(editableColumnChoice)
-                        .add(columnTitleLabel)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(columnTypeLabel)
-                    .add(widthPrefLabel)
-                    .add(widthPrefCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(columnTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(columnEditorPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(widthMinLabel)
-                        .add(columnEditorLabel)
-                        .add(widthMinCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(4, 4, 4)
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(columnRendererPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(widthMaxLabel)
-                        .add(columnRendererLabel)
-                        .add(widthMaxCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(placeHolder1)
-                    .add(placeHolder2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(columnsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(selectionModelLabel)
-                    .add(selectionModelCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(reorderingAllowedChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(columnErrorLabel)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(columnsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                    .addGroup(columnsTabLayout.createSequentialGroup()
+                        .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(columnCountLabel)
+                            .addComponent(columnCountSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(insertColumnButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteColumnButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moveUpColumnButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moveDownColumnButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(columnTitlePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(resizableColumnChoice)
+                        .addComponent(editableColumnChoice)
+                        .addComponent(columnTitleLabel)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(columnTypeLabel)
+                    .addComponent(widthPrefLabel)
+                    .addComponent(widthPrefCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(columnTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(columnEditorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(widthMinLabel)
+                        .addComponent(columnEditorLabel)
+                        .addComponent(widthMinCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(4, 4, 4)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(columnRendererPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(widthMaxLabel)
+                        .addComponent(columnRendererLabel)
+                        .addComponent(widthMaxCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(placeHolder1)
+                    .addComponent(placeHolder2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(columnsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(selectionModelLabel)
+                    .addComponent(selectionModelCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(reorderingAllowedChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(columnErrorLabel)
                 .addContainerGap())
         );
 
@@ -657,48 +659,48 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         rowErrorLabel.setForeground(new java.awt.Color(204, 0, 0));
 
-        org.jdesktop.layout.GroupLayout rowsTabLayout = new org.jdesktop.layout.GroupLayout(rowsTab);
+        javax.swing.GroupLayout rowsTabLayout = new javax.swing.GroupLayout(rowsTab);
         rowsTab.setLayout(rowsTabLayout);
         rowsTabLayout.setHorizontalGroup(
-            rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(rowsTabLayout.createSequentialGroup()
+            rowsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(rowsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rowErrorLabel)
-                    .add(rowsTabLayout.createSequentialGroup()
-                        .add(rowsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(rowsTabLayout.createSequentialGroup()
-                                .add(rowCountLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(rowCountSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE))
-                            .add(insertRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
-                            .add(deleteRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
-                            .add(moveUpRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
-                            .add(moveDownRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addGroup(rowsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rowErrorLabel)
+                    .addGroup(rowsTabLayout.createSequentialGroup()
+                        .addComponent(rowsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rowsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(rowsTabLayout.createSequentialGroup()
+                                .addComponent(rowCountLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(rowCountSpinner, javax.swing.GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE))
+                            .addComponent(insertRowButton, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                            .addComponent(deleteRowButton, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                            .addComponent(moveUpRowButton, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                            .addComponent(moveDownRowButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         rowsTabLayout.setVerticalGroup(
-            rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(rowsTabLayout.createSequentialGroup()
+            rowsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(rowsTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rowsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 434, Short.MAX_VALUE)
-                    .add(rowsTabLayout.createSequentialGroup()
-                        .add(rowsTabLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(rowCountLabel)
-                            .add(rowCountSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(insertRowButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deleteRowButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(moveUpRowButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(moveDownRowButton)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rowErrorLabel)
+                .addGroup(rowsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rowsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                    .addGroup(rowsTabLayout.createSequentialGroup()
+                        .addGroup(rowsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(rowCountLabel)
+                            .addComponent(rowCountSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(insertRowButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteRowButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moveUpRowButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moveDownRowButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(rowErrorLabel)
                 .addContainerGap())
         );
 
@@ -711,15 +713,15 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
 
         tabbedPane.addTab(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_RowsTab"), rowsTab); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(tabbedPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
         );
 
         tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_ACSN")); // NOI18N
@@ -967,7 +969,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         boolean fromComponent = modelFromComponentChoice.isSelected();
         boolean hardcoded = modelHardcodedChoice.isSelected();
         boolean bound = modelBoundChoice.isSelected();
-        modelBoundCustomizer.getBindingPanel().setVisible(bound);
+        if (modelBoundCustomizer != null) {
+            modelBoundCustomizer.getBindingPanel().setVisible(bound);
+        }
         modelFromComponentCustomizer.setVisible(fromComponent);
         modelCustomCustomizer.setVisible(userCode);
         tabbedPane.setEnabledAt(2, hardcoded);
@@ -1005,7 +1009,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         widthPrefCombo.setVisible(!userCode);
         widthMaxLabel.setVisible(!userCode);
         widthMaxCombo.setVisible(!userCode);
-        expressionCombo.setVisible(bound);
+        if (expressionCombo != null) {
+            expressionCombo.setVisible(bound);
+        }
         columnExpressionLabel.setVisible(bound);
         boolean switch1 = bound != (columnExpressionLabel.getParent() != null);
         boolean switch2 = fromComponent != (dummyLabel1.getParent() != null);
@@ -1166,7 +1172,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             columnsTable.getCellEditor().stopCellEditing();
         }
         updateColumnSection();
-        if (!modelBoundChoice.isSelected() && !bindingProperty.isDefaultValue()) {
+        if (!modelBoundChoice.isSelected() && (bindingProperty != null) && !bindingProperty.isDefaultValue()) {
             bindingProperty.restoreDefaultValue();
         }
         if (modelFromComponentChoice.isSelected()) {
@@ -1307,6 +1313,11 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnModelProperty = (RADProperty)comp.getPropertyByName("columnModel"); // NOI18N
         columnSelectionAllowedProperty = (FormProperty)comp.getPropertyByName("columnSelectionAllowed"); // NOI18N
 
+        // Obtain binding support
+        bindingSupport = FormEditor.getBindingSupport(formModel);
+        modelBoundChoice.setVisible(bindingSupport != null);
+        modelBoundPanel.setVisible(bindingSupport != null);
+
         // Determine type of model
         try {
             Object value = modelProperty.getValue();
@@ -1324,45 +1335,48 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
-        bindingProperty = comp.getBindingProperty("elements"); // NOI18N
-        MetaBinding binding = bindingProperty.getValue();
-        modelBoundCustomizer = new BindingCustomizer(bindingProperty);
-        modelBoundCustomizer.setBinding(binding);
-        if (binding != null) {
-            modelBoundChoice.setSelected(true);
-        }
-        expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
-        expressionCombo.setEnabled(false);
-        expressionCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ColumnInfo info = columns.get(lastSelectedColumn);
-                Object expression = expressionCombo.getSelectedItem();
-                info.setExpression((expression == null) ? null : expression.toString());
-                String clazz = "Object"; // NOI18N
-                TreePath treePath = expressionCombo.getSelectedTreePath();
-                if (treePath != null) {
-                    Object pComp = treePath.getLastPathComponent();
-                    if (pComp instanceof BindingCustomizer.ExpressionNode) {
-                        clazz = ((BindingCustomizer.ExpressionNode)pComp).getTypeName();
-                        clazz = FormUtils.autobox(clazz);
-                        if (clazz.startsWith("java.lang.")) { // NOI18N
-                            clazz = clazz.substring(10);
+
+        if (bindingSupport != null) {
+            bindingProperty = comp.getBindingProperty("elements"); // NOI18N
+            MetaBinding binding = bindingProperty.getValue();
+            modelBoundCustomizer = new BindingCustomizer(bindingProperty);
+            modelBoundCustomizer.setBinding(binding);
+            if (binding != null) {
+                modelBoundChoice.setSelected(true);
+            }
+            expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
+            expressionCombo.setEnabled(false);
+            expressionCombo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ColumnInfo info = columns.get(lastSelectedColumn);
+                    Object expression = expressionCombo.getSelectedItem();
+                    info.setExpression((expression == null) ? null : expression.toString());
+                    String clazz = "Object"; // NOI18N
+                    TreePath treePath = expressionCombo.getSelectedTreePath();
+                    if (treePath != null) {
+                        Object pComp = treePath.getLastPathComponent();
+                        if (pComp instanceof BindingCustomizer.ExpressionNode) {
+                            clazz = ((BindingCustomizer.ExpressionNode)pComp).getTypeName();
+                            clazz = FormUtils.autobox(clazz);
+                            if (clazz.startsWith("java.lang.")) { // NOI18N
+                                clazz = clazz.substring(10);
+                            }
                         }
                     }
+                    columnTypeCombo.setSelectedItem(clazz);
+                    columnTableModel.fireTableRowsUpdated(lastSelectedColumn, lastSelectedColumn);
                 }
-                columnTypeCombo.setSelectedItem(clazz);
-                columnTableModel.fireTableRowsUpdated(lastSelectedColumn, lastSelectedColumn);
-            }
-        });
-        modelBoundCustomizer.addTypeChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (modelBoundChoice.isSelected()) {
-                    checkBindingType();
-                }
-            }            
-        });
+            });
+            modelBoundCustomizer.addTypeChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (modelBoundChoice.isSelected()) {
+                        checkBindingType();
+                    }
+                }            
+            });
+        }
 
         // Replace dummy panels by customizers
         GroupLayout layout = (GroupLayout)modelTab.getLayout();
@@ -1370,7 +1384,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         layout.replace(modelFromComponentPanel, modelFromComponentCustomizer);
         modelCustomCustomizer = modelCustomEd.getCustomEditor();
         layout.replace(modelCustomPanel, modelCustomCustomizer);
-        layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
+        if (modelBoundCustomizer != null) {
+            layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
+        }
         
         modelFromComponentEd.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -1529,9 +1545,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                                     columnName = model.getColumnName(index);
                                 } else {
                                     String name = subBinding.getSourcePath();
-                                    if (BindingDesignSupport.isSimpleExpression(name)) {
-                                        columnName = BindingDesignSupport.unwrapSimpleExpression(name);
-                                        columnName = BindingDesignSupport.capitalize(columnName);
+                                    if (bindingSupport.isSimpleExpression(name)) {
+                                        columnName = bindingSupport.unwrapSimpleExpression(name);
+                                        columnName = bindingSupport.capitalize(columnName);
                                     }
                                 }
                             }
@@ -1727,8 +1743,10 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             } else {
                 info.setClazz(columnTypeCombo.getSelectedItem().toString());
             }
-            Object expression = expressionCombo.getSelectedItem();
-            info.setExpression((expression == null) ? "null" : expression.toString()); // NOI18N
+            if (expressionCombo != null) {
+                Object expression = expressionCombo.getSelectedItem();
+                info.setExpression((expression == null) ? "null" : expression.toString()); // NOI18N
+            }
             if (modelHardcodedChoice.isSelected()) {
                 Class oldClass = rowTableModel.getColumnClass(lastSelectedColumn);
                 Class newClass = indexToType(info.getType());
@@ -1772,7 +1790,9 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         widthMinCombo.setEnabled(single);
         widthPrefCombo.setEnabled(single);
         widthMaxCombo.setEnabled(single);
-        expressionCombo.setEnabled(single);
+        if (expressionCombo != null) {
+            expressionCombo.setEnabled(single);
+        }
         if (single) {
             lastSelectedColumn = index[0];
             ColumnInfo info = columns.get(index[0]);

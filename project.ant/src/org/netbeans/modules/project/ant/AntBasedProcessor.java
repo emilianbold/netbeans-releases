@@ -95,10 +95,10 @@ public class AntBasedProcessor extends LayerGeneratingProcessor {
                     name = classname.replace('.', '-');
                     methodname = null;
                     if (!e.getModifiers().contains(Modifier.PUBLIC)) {
-                        throw new LayerGenerationException("Class needs to be public"); // NOI18N
+                        throw new LayerGenerationException("Class needs to be public", e, processingEnv, reg); // NOI18N
                     }
                     if (!processingEnv.getTypeUtils().isAssignable(e.asType(), project)) {
-                        throw new LayerGenerationException("Class needs to extend Project"); // NOI18N
+                        throw new LayerGenerationException("Class needs to extend Project", e, processingEnv, reg); // NOI18N
                     }
                     boolean found = false;
                     for (Element cns : processingEnv.getElementUtils().getAllMembers((TypeElement)e)) {
@@ -118,7 +118,7 @@ public class AntBasedProcessor extends LayerGeneratingProcessor {
                         }
                     }
                     if (!found) {
-                        throw new LayerGenerationException("There needs to be public constructor taking AntProjectHelper parameter"); // NOI18N
+                        throw new LayerGenerationException("There needs to be public constructor taking AntProjectHelper parameter", e, processingEnv, reg); // NOI18N
                     }
 
                     break;
@@ -128,7 +128,7 @@ public class AntBasedProcessor extends LayerGeneratingProcessor {
                     name = (classname + "." + methodname).replace('.', '-');
                     
                     if (!e.getEnclosingElement().getModifiers().contains(Modifier.PUBLIC)) {
-                        throw new LayerGenerationException("Class needs to be public"); // NOI18N
+                        throw new LayerGenerationException("Class needs to be public", e, processingEnv, reg); // NOI18N
                     }
 
                     ExecutableElement exec = (ExecutableElement)e;
@@ -138,10 +138,10 @@ public class AntBasedProcessor extends LayerGeneratingProcessor {
                         exec.getParameters().size() != 1 ||
                         !exec.getParameters().get(0).asType().equals(antHelper)
                     ) {
-                        throw new LayerGenerationException("The method needs to be public, static and take AntProjectHelper argument"); // NOI18N
+                        throw new LayerGenerationException("The method needs to be public, static and take AntProjectHelper argument", e, processingEnv, reg); // NOI18N
                     }
                     if (!processingEnv.getTypeUtils().isAssignable(exec.getReturnType(), project)) {
-                        throw new LayerGenerationException("Method needs to return Project"); // NOI18N
+                        throw new LayerGenerationException("Method needs to return Project", e, processingEnv, reg); // NOI18N
                     }
 
                     break;
