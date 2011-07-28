@@ -56,6 +56,7 @@ public class DebuggerOptions {
     Boolean debugForFirstPageOnly;
     Boolean debuggerStoppedAtTheFirstLine;
     Boolean requestedUrls;
+    Boolean debuggerConsole;
     String phpInterpreter;
     String projectEncoding;
     List<Pair<String, String>> pathMapping;
@@ -98,6 +99,9 @@ public class DebuggerOptions {
         return (requestedUrls != null) ? requestedUrls : getGlobalInstance().showRequestedUrls();
     }
 
+    public boolean showDebuggerConsole() {
+        return (debuggerConsole != null) ? debuggerConsole : getGlobalInstance().showDebuggerConsole();
+    }
     public boolean isDebuggerStoppedAtTheFirstLine() {
         return (debuggerStoppedAtTheFirstLine != null) ? debuggerStoppedAtTheFirstLine :
             getGlobalInstance().isDebuggerStoppedAtTheFirstLine();
@@ -138,6 +142,11 @@ public class DebuggerOptions {
 
         @Override
         public boolean showRequestedUrls() {
+            return false;
+        }
+        
+        @Override
+        public boolean showDebuggerConsole() {
             return false;
         }
 

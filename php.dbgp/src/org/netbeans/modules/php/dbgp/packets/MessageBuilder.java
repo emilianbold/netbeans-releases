@@ -63,10 +63,10 @@ class MessageBuilder {
         Node attr = node.getAttributes().getNamedItem( TYPE );
         assert attr!=null;
         String type = attr.getNodeValue();
-        if ( StreamType.STDOUT.equals(type) ) {
+        if ( StreamType.STDOUT.toString().equals(type) ) {
             return new DbgpStream( node , StreamType.STDOUT );
         }
-        else if ( StreamType.STDERR.equals(type) ) {
+        else if ( StreamType.STDERR.toString().equals(type) ) {
             return new DbgpStream( node , StreamType.STDERR );
         }
         else {
