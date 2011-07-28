@@ -141,6 +141,37 @@ public class ChangeParametersTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
+    
+    public void test114328() throws Exception { // [Change parameters] Check if method with the same signature already exists
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void testMethod(int x, int z) {\n"
+                + "         System.out.println(x + z);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "int", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, paramTable, Javadoc.NONE, new Problem(false, "ERR_existingMethod"), new Problem(false, "ERR_existingMethod"));
+    }
+    
+    public void test114328_2() throws Exception { // [Change parameters] Check if method with the same signature already exists
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A extends B{\n"
+                + "    public void testMethod(int x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t; public class B {\n"
+                + "    public void testMethod(int x, int z) {\n"
+                + "         System.out.println(x + z);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "int", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, paramTable, Javadoc.NONE, new Problem(false, "ERR_existingMethod"), new Problem(false, "ERR_existingMethod"));
+    }
 
     public void test194592() throws Exception {
         writeFilesAndWaitForScan(src,
