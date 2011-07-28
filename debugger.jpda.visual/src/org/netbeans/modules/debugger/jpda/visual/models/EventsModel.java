@@ -108,9 +108,11 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
                 for (Node n : nodeInstances) {
                     ComponentInfo ci = n.getLookup().lookup(ComponentInfo.class);
                     if (ci != null) {
-                        selectedCI = ci;
-                        if (ev != null) {
-                            fireModelChanged();
+                        if (!ci.equals(selectedCI)) {
+                            selectedCI = ci;
+                            if (ev != null) {
+                                fireModelChanged();
+                            }
                         }
                         break;
                     }
