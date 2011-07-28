@@ -45,8 +45,6 @@ package org.netbeans.modules.php.project.ui.options;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.List;
 import javax.swing.DefaultListModel;
@@ -72,8 +70,6 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -81,11 +77,12 @@ import org.openide.util.NbBundle;
 /**
  * @author  Tomas Mysik
  */
-public class PhpOptionsPanel extends JPanel {
+public final  class PhpOptionsPanel extends JPanel {
+
     private static final long serialVersionUID = 10985641247986428L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final WatchesAndEvalListener watchesAndEvalListener = new WatchesAndEvalListener();
+
 
     public PhpOptionsPanel() {
         initComponents();
@@ -96,11 +93,6 @@ public class PhpOptionsPanel extends JPanel {
         // listeners
         DocumentListener documentListener = new DefaultDocumentListener();
         phpInterpreterTextField.getDocument().addDocumentListener(documentListener);
-        debuggerPortTextField.getDocument().addDocumentListener(documentListener);
-        debuggerSessionIdTextField.getDocument().addDocumentListener(documentListener);
-        maxStructuresDepthTextField.getDocument().addDocumentListener(documentListener);
-        maxChildrenTextField.getDocument().addDocumentListener(documentListener);
-        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
     private void initPhpGlobalIncludePath() {
@@ -157,56 +149,6 @@ public class PhpOptionsPanel extends JPanel {
 
     public void setOpenResultInEditor(boolean openResultInEditor) {
         editorCheckBox.setSelected(openResultInEditor);
-    }
-
-    public Integer getDebuggerPort() {
-        return parseInteger(debuggerPortTextField.getText());
-    }
-
-    public void setDebuggerPort(int debuggerPort) {
-        debuggerPortTextField.setText(String.valueOf(debuggerPort));
-    }
-
-    public String getDebuggerSessionId() {
-        return debuggerSessionIdTextField.getText();
-    }
-
-    public void setDebuggerSessionId(String sessionId) {
-        debuggerSessionIdTextField.setText(sessionId);
-    }
-
-    public Integer getDebuggerMaxStructuresDepth() {
-        return parseInteger(maxStructuresDepthTextField.getText());
-    }
-
-    public void setDebuggerMaxStructuresDepth(int maxStructuresDepth) {
-        maxStructuresDepthTextField.setText(String.valueOf(maxStructuresDepth));
-    }
-
-    public Integer getDebuggerMaxChildren() {
-        return parseInteger(maxChildrenTextField.getText());
-    }
-
-    public void setDebuggerMaxChildren(int maxChildren) {
-        maxChildrenTextField.setText(String.valueOf(maxChildren));
-    }
-
-    public boolean isDebuggerStoppedAtTheFirstLine() {
-        return stopAtTheFirstLineCheckBox.isSelected();
-    }
-
-    public void setDebuggerStoppedAtTheFirstLine(boolean debuggerStoppedAtTheFirstLine) {
-        stopAtTheFirstLineCheckBox.setSelected(debuggerStoppedAtTheFirstLine);
-    }
-
-    public boolean isDebuggerWatchesAndEval() {
-        return watchesAndEvalCheckBox.isSelected();
-    }
-
-    public void setDebuggerWatchesAndEval(boolean debuggerWatchesAndEval) {
-        watchesAndEvalCheckBox.removeItemListener(watchesAndEvalListener);
-        watchesAndEvalCheckBox.setSelected(debuggerWatchesAndEval);
-        watchesAndEvalCheckBox.addItemListener(watchesAndEvalListener);
     }
 
     public String getPhpGlobalIncludePath() {
@@ -272,18 +214,6 @@ public class PhpOptionsPanel extends JPanel {
         outputWindowCheckBox = new JCheckBox();
         webBrowserCheckBox = new JCheckBox();
         editorCheckBox = new JCheckBox();
-        debuggingSeparator = new JSeparator();
-        debuggingLabel = new JLabel();
-        debuggerPortLabel = new JLabel();
-        debuggerPortTextField = new JTextField();
-        debuggerSessionIdLabel = new JLabel();
-        debuggerSessionIdTextField = new JTextField();
-        maxStructuresDepthLabel = new JLabel();
-        maxStructuresDepthTextField = new JTextField();
-        maxChildrenLabel = new JLabel();
-        maxChildrenTextField = new JTextField();
-        stopAtTheFirstLineCheckBox = new JCheckBox();
-        watchesAndEvalCheckBox = new JCheckBox();
         globalIncludePathSeparator = new JSeparator();
         globalIncludePathLabel = new JLabel();
         useTheFollowingPathByDefaultLabel = new JLabel();
@@ -319,24 +249,6 @@ public class PhpOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(outputWindowCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_OutputWindow"));
         Mnemonics.setLocalizedText(webBrowserCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_WebBrowser"));
         Mnemonics.setLocalizedText(editorCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_Editor"));
-
-        debuggingLabel.setLabelFor(this);
-        Mnemonics.setLocalizedText(debuggingLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_Debugging")); // NOI18N
-
-        debuggerPortLabel.setLabelFor(debuggerPortTextField);
-        Mnemonics.setLocalizedText(debuggerPortLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_DebuggerPort")); // NOI18N
-
-        debuggerSessionIdLabel.setLabelFor(debuggerSessionIdTextField);
-        Mnemonics.setLocalizedText(debuggerSessionIdLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.text")); // NOI18N
-
-        maxStructuresDepthLabel.setLabelFor(maxStructuresDepthTextField);
-        Mnemonics.setLocalizedText(maxStructuresDepthLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresDepthLabel.text")); // NOI18N
-
-        maxChildrenLabel.setLabelFor(maxChildrenTextField);
-
-        Mnemonics.setLocalizedText(maxChildrenLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(stopAtTheFirstLineCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_StopAtTheFirstLine"));
-        Mnemonics.setLocalizedText(watchesAndEvalCheckBox, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.text"));
 
         globalIncludePathLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(globalIncludePathLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_GlobalIncludePath")); // NOI18N
@@ -384,25 +296,6 @@ public class PhpOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(debuggingLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(debuggingSeparator, GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(stopAtTheFirstLineCheckBox)
-                        .addPreferredGap(ComponentPlacement.UNRELATED)
-                        .addComponent(watchesAndEvalCheckBox))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(debuggerPortLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, 101, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(debuggerSessionIdLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE))))
-            .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
@@ -419,23 +312,11 @@ public class PhpOptionsPanel extends JPanel {
                 .addComponent(globalIncludePathLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(maxStructuresDepthLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(maxStructuresDepthTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(maxChildrenLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(maxChildrenTextField, GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
-                .addContainerGap(61, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpInterpreterBrowseButton, phpInterpreterSearchButton});
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxStructuresDepthTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -457,33 +338,13 @@ public class PhpOptionsPanel extends JPanel {
                     .addComponent(openResultInLabel))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(debuggingLabel)
-                    .addComponent(debuggingSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(debuggerPortLabel)
-                    .addComponent(debuggerPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(debuggerSessionIdLabel)
-                    .addComponent(debuggerSessionIdTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(maxStructuresDepthLabel)
-                    .addComponent(maxStructuresDepthTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(maxChildrenLabel)
-                    .addComponent(maxChildrenTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(stopAtTheFirstLineCheckBox)
-                    .addComponent(watchesAndEvalCheckBox))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                     .addComponent(globalIncludePathLabel)
                     .addComponent(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(useTheFollowingPathByDefaultLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                    .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addFolderButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -516,30 +377,6 @@ public class PhpOptionsPanel extends JPanel {
         webBrowserCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.webBrowserCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         editorCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.editorCheckBox.AccessibleContext.accessibleName")); // NOI18N
         editorCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.editorCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        debuggingSeparator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggingSeparator.AccessibleContext.accessibleName_1")); // NOI18N
-        debuggingSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggingSeparator.AccessibleContext.accessibleDescription_1")); // NOI18N
-        debuggingLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggingLabel.AccessibleContext.accessibleName")); // NOI18N
-        debuggingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggingLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        debuggerPortLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerPortLabel.AccessibleContext.accessibleName")); // NOI18N
-        debuggerPortLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerPortLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        debuggerPortTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerPortTextField.AccessibleContext.accessibleName")); // NOI18N
-        debuggerPortTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerPortTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        debuggerSessionIdLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.AccessibleContext.accessibleName")); // NOI18N
-        debuggerSessionIdLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        debuggerSessionIdTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleName")); // NOI18N
-        debuggerSessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.debuggerSessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        maxStructuresDepthLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.AccessibleContext.accessibleName")); // NOI18N
-        maxStructuresDepthLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        maxStructuresDepthTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleName")); // NOI18N
-        maxStructuresDepthTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxStructuresTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        maxChildrenLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenLabel.AccessibleContext.accessibleName")); // NOI18N
-        maxChildrenLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        maxChildrenTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenTextField.AccessibleContext.accessibleName")); // NOI18N
-        maxChildrenTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.maxChildrenTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        watchesAndEvalCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.watchesAndEvalCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         globalIncludePathSeparator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleName_1")); // NOI18N
         globalIncludePathSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleDescription_1")); // NOI18N
         globalIncludePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -604,22 +441,12 @@ public class PhpOptionsPanel extends JPanel {
     private JButton addFolderButton;
     private JLabel commandLineLabel;
     private JSeparator commandLineSeparator;
-    private JLabel debuggerPortLabel;
-    private JTextField debuggerPortTextField;
-    private JLabel debuggerSessionIdLabel;
-    private JTextField debuggerSessionIdTextField;
-    private JLabel debuggingLabel;
-    private JSeparator debuggingSeparator;
     private JCheckBox editorCheckBox;
     private JLabel errorLabel;
     private JLabel globalIncludePathLabel;
     private JSeparator globalIncludePathSeparator;
     private JList includePathList;
     private JScrollPane includePathScrollPane;
-    private JLabel maxChildrenLabel;
-    private JTextField maxChildrenTextField;
-    private JLabel maxStructuresDepthLabel;
-    private JTextField maxStructuresDepthTextField;
     private JButton moveDownButton;
     private JButton moveUpButton;
     private JLabel openResultInLabel;
@@ -629,9 +456,7 @@ public class PhpOptionsPanel extends JPanel {
     private JButton phpInterpreterSearchButton;
     private JTextField phpInterpreterTextField;
     private JButton removeButton;
-    private JCheckBox stopAtTheFirstLineCheckBox;
     private JLabel useTheFollowingPathByDefaultLabel;
-    private JCheckBox watchesAndEvalCheckBox;
     private JCheckBox webBrowserCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -657,20 +482,4 @@ public class PhpOptionsPanel extends JPanel {
         }
     }
 
-    private static final class WatchesAndEvalListener implements ItemListener {
-        private static boolean warningShown = false;
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (warningShown) {
-                return;
-            }
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(PhpOptionsPanel.class, "MSG_WatchesAndEval"),
-                        NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(descriptor);
-                warningShown = true;
-            }
-        }
-    }
 }

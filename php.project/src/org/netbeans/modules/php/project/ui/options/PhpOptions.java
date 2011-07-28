@@ -68,6 +68,8 @@ public final class PhpOptions {
     public static final String DEFAULT_DEBUGGER_SESSION_ID = "netbeans-xdebug"; // NOI18N
     public static final int DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH = 3;
     public static final int DEFAULT_DEBUGGER_MAX_CHILDREN = 30;
+    public static final boolean DEFAULT_DEBUGGER_SHOW_URLS = false;
+    public static final boolean DEFAULT_DEBUGGER_SHOW_CONSOLE = false;
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
     public static final boolean DEFAULT_DEBUGGER_WATCHES_AND_EVAL = false;
 
@@ -84,6 +86,8 @@ public final class PhpOptions {
     public static final String PHP_DEBUGGER_MAX_CHILDREN = "phpDebuggerMaxChildren"; // NOI18N
     public static final String PHP_DEBUGGER_STOP_AT_FIRST_LINE = "phpDebuggerStopAtFirstLine"; // NOI18N
     public static final String PHP_DEBUGGER_WATCHES_AND_EVAL = "phpDebuggerWatchesAndEval"; // NOI18N
+    public static final String PHP_DEBUGGER_SHOW_URLS = "phpDebuggerShowUrls"; // NOI18N
+    public static final String PHP_DEBUGGER_SHOW_CONSOLE = "phpDebuggerShowConsole"; // NOI18N
 
     // php unit
     public static final String PHP_UNIT = "phpUnit"; // NOI18N
@@ -217,6 +221,22 @@ public final class PhpOptions {
 
     public void setDebuggerWatchesAndEval(boolean debuggerWatchesAndEval) {
         getPreferences().putBoolean(PHP_DEBUGGER_WATCHES_AND_EVAL, debuggerWatchesAndEval);
+    }
+
+    public boolean isDebuggerShowUrls() {
+        return getPreferences().getBoolean(PHP_DEBUGGER_SHOW_URLS, DEFAULT_DEBUGGER_SHOW_URLS);
+    }
+
+    public void setDebuggerShowUrls(boolean debuggerShowUrls) {
+        getPreferences().putBoolean(PHP_DEBUGGER_SHOW_URLS, debuggerShowUrls);
+    }
+
+    public boolean isDebuggerShowConsole() {
+        return getPreferences().getBoolean(PHP_DEBUGGER_SHOW_CONSOLE, DEFAULT_DEBUGGER_SHOW_CONSOLE);
+    }
+
+    public void setDebuggerShowConsole(boolean debuggerShowConsole) {
+        getPreferences().putBoolean(PHP_DEBUGGER_SHOW_CONSOLE, debuggerShowConsole);
     }
 
     /**
