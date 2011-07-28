@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,45 +34,74 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-package org.netbeans.modules.cnd.discovery.wizard.api;
-
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface FileConfiguration extends NodeConfiguration {
-
-    /**
-     * Absolute path to folder where item was compiled
-     * Can be defined for source files
-     */
-    String getCompilePath();
-
-    /**
-     * Language standard
-     */
-    ItemProperties.LanguageStandard getLanguageStandard();
-
-    /**
-     * Absolute item path
-     */
-    String getFilePath();
+public class CompileLineStorage {
+    private File file;
     
-    String getCompileLine();
-    
-    /**
-     * Get item name (name relative from compile path)
-     */
-    String getFileName();
+    public CompileLineStorage() {
+        try {
+            file = File.createTempFile("lines", ".log"); // NOI18N
+            file.deleteOnExit();
+        } catch (IOException ex) {
+        }
+    }
 
-    List<String> getUserInludePaths();
-
-    Map<String,String> getUserMacros();
+    public synchronized int putCompileLine(String line) {
+        if (file != null) {
+            RandomAccessFile os= null;
+            try {
+                os = new RandomAccessFile(file, "rw"); // NOI18N
+                int res = (int) os.length();
+                os.seek(res);
+                os.writeUTF(line);
+                return res;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+        return -1;
+    }
     
+    public synchronized String getCompileLine(int handler) {
+        if (file != null && handler >= 0) {
+            RandomAccessFile is= null;
+            try {
+                is = new RandomAccessFile(file, "r"); // NOI18N
+                is.seek(handler);
+                return is.readUTF();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
