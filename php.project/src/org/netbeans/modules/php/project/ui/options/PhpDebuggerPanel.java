@@ -305,6 +305,7 @@ public class PhpDebuggerPanel extends JPanel {
         portTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.portTextField.AccessibleContext.accessibleDescription")); // NOI18N
         sessionIdLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.sessionIdLabel.AccessibleContext.accessibleName")); // NOI18N
         sessionIdLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.debuggerSessionIdLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        sessionIdTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.sessionIdTextField.AccessibleContext.accessibleName")); // NOI18N
         sessionIdTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.sessionIdTextField.AccessibleContext.accessibleDescription")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName")); // NOI18N
         stopAtTheFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
@@ -312,9 +313,11 @@ public class PhpDebuggerPanel extends JPanel {
         watchesAndEvalCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.watchesAndEvalCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
         maxStructuresDepthLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthLabel.AccessibleContext.accessibleName")); // NOI18N
         maxStructuresDepthLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        maxStructuresDepthTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxStructuresDepthTextField.AccessibleContext.accessibleName")); // NOI18N
         maxStructuresDepthTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxStructuresDepthTextField.AccessibleContext.accessibleDescription")); // NOI18N
         maxChildrenLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenLabel.AccessibleContext.accessibleName")); // NOI18N
         maxChildrenLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        maxChildrenTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.maxChildrenTextField.AccessibleContext.accessibleName")); // NOI18N
         maxChildrenTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.maxChildrenTextField.AccessibleContext.accessibleDescription")); // NOI18N
         requestedUrlsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.requestedUrlsCheckBox.AccessibleContext.accessibleName")); // NOI18N
         requestedUrlsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerOptions.requestedUrlsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
