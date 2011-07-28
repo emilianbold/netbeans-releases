@@ -156,4 +156,29 @@ public class RemoveUnnecessaryReturnTest extends TestBase {
                             "}\n",
                             "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
     }
+
+    public void testNPE200462a() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Test(boolean b) {\n" +
+                            "        switch (b) {\n" +
+                            "            case false: if (b) { return ; }\n" +
+                            "    }\n" +
+                            "}\n",
+                            "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
+    }
+
+    public void testNPE200462b() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Test(boolean b) {\n" +
+                            "        switch (b) {\n" +
+                            "            case false: if (b) { return ; }\n" +
+                            "    }\n" +
+                            "}\n",
+                            "4:33-4:41:verifier:ERR_UnnecessaryReturnStatement");
+    }
+    
 }
