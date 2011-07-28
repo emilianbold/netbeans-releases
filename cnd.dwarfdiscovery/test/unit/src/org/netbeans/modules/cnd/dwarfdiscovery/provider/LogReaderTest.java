@@ -737,7 +737,7 @@ public class LogReaderTest extends TestCase {
         List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
-            CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros);
+            CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, null);
             assertEquals(cs.getLanguageKind(), ct);
         }
     }
