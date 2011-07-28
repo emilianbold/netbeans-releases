@@ -73,7 +73,7 @@ public class CDataObject extends SourceDataObject {
         iconBase = CDataNode.CSrcIcon,
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         mimeType = MIMENames.C_MIME_TYPE,
-        preferredID = "c.source",
+        preferredID = "c.source", //NOI18N
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
