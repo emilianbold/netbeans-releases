@@ -52,6 +52,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.logging.XMLFormatter;
 
 /** Logger that will enable the logging of important events during the startup
@@ -81,10 +82,12 @@ public class StartLog {
                 impl = new PrintImpl();
             else if("tests".equals(logProp))
                 impl = new PerformanceTestsImpl();
-            else if("xml".equals(logProp))
-                impl = new XMLImpl(logFileProp);
-            else
-                throw new Error("Unknown org.netbeans.log.startup value [" + logProp + "], it should be (print or tests) !"); // NOI18N
+            else if("xml".equals(logProp)) {
+                FileHandler h = new FileHandler(logFileProp);
+                h.setFormatter(new SimplerFormatter());
+                impl = h;
+            } else
+                throw new Error("Unknown org.netbeans.log.startup value [" + logProp + "], it should be (print or tests or xml) !"); // NOI18N
             register();
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
@@ -95,6 +98,10 @@ public class StartLog {
         LOG.setUseParentHandlers(false);
         LOG.addHandler(impl);
         LOG.setLevel(impl.getLevel());
+    }
+    
+    static void unregister() {
+        LOG.removeHandler(impl);
     }
     
     /** Start running some interval action.
@@ -343,31 +350,14 @@ public class StartLog {
 
     }
 
-    private static class XMLImpl extends FileHandler {
-        public XMLImpl(String logFileProp) throws IOException {
-            super(logFileProp);
-            final XMLFormatter f = new XMLFormatter() {
-                @Override
-                public String getHead(Handler h) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<?xml version=\"1.0\"");
-                    sb.append(" encoding='UTF-8'?>\n");
-                    sb.append("<log>\n");
-                    return sb.toString();
-                }
-            };
-            setFormatter(f);
-        }
-
+    private static class SimplerFormatter extends XMLFormatter {
         @Override
-        public void close() {
-            for (Handler h : LOG.getHandlers()) {
-                if (h == this) {
-                    super.close();
-                    return;
-                }
-            }
-            LOG.addHandler(this);
+        public String getHead(Handler h) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<?xml version=\"1.0\"");
+            sb.append(" encoding='UTF-8'?>\n");
+            sb.append("<log>\n");
+            return sb.toString();
         }
     }
 }
