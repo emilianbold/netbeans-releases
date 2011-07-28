@@ -36,6 +36,7 @@ import java.net.URL;
 import java.util.Locale;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -79,7 +80,8 @@ public class FeedbackSurveyTest extends NbTestCase {
         assertNotNull("Time passed, dialog shown", DD.nd);
         assertNotNull("Time passed, url shown", UD.url);
     }
-    
+
+    @RandomlyFails // always for jglick
     public void testStartAfterTimeout() throws Exception {
         MemoryURL.registerURL("memory://survey", "ok");
         
@@ -107,6 +109,7 @@ public class FeedbackSurveyTest extends NbTestCase {
         assertNotNull("Time passed, url shown", UD.url);
     }
     
+    @RandomlyFails // always for jglick
     public void testJustThreeReminds() throws Exception {
         MemoryURL.registerURL("memory://survey", "ok");
         

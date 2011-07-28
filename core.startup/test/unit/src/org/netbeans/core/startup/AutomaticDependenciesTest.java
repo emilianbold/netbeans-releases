@@ -216,7 +216,7 @@ public class AutomaticDependenciesTest extends NbTestCase {
             Dependency d = it.next();
             s.add(dep2String(d));
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         Iterator<String> it2 = s.iterator();
         while (it2.hasNext()) {
             b.append(it2.next());
@@ -233,7 +233,7 @@ public class AutomaticDependenciesTest extends NbTestCase {
         while (it.hasNext()) {
             s.add((String)it.next());
         }
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         it = s.iterator();
         while (it.hasNext()) {
             b.append(it.next());
@@ -245,7 +245,7 @@ public class AutomaticDependenciesTest extends NbTestCase {
     }
     
     private static String dep2String(Dependency d) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         b.append(d.getName());
         switch (d.getComparison()) {
         case Dependency.COMPARE_ANY:

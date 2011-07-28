@@ -323,7 +323,7 @@ implements LookupListener, Runnable, FlavorListener, AWTEventListener
             log.log (level, "  no clipboard contents");
         else {
             java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < arr.length; i++) {
                 sb.append("  ").append(i).append(" = ").append(arr[i]);
                 if (content) {

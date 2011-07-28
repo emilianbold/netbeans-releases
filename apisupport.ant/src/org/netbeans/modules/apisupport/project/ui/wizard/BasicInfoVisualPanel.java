@@ -375,7 +375,7 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
     }
     
     private File getFolder() {
-        StringBuffer destFolder = new StringBuffer(getLocationValue());
+        StringBuilder destFolder = new StringBuilder(getLocationValue());
         if (destFolder.length() != 0) {
             destFolder.append(File.separator);
         }

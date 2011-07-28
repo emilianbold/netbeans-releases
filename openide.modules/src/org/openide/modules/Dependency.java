@@ -424,7 +424,7 @@ public final class Dependency implements Serializable {
     /** Unspecified string representation for debugging. */
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
 
         if (type == TYPE_MODULE) {
             buf.append("module "); // NOI18N

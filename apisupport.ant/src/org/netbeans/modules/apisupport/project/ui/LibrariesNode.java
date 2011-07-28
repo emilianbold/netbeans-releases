@@ -158,7 +158,7 @@ final class LibrariesNode extends AbstractNode {
 
     private static String createHtmlDescription(final ModuleDependency dep) {
         // assemble an html short description (tooltip actually)
-        StringBuffer shortDesc = new StringBuffer("<html><u>" + dep.getModuleEntry().getCodeNameBase() + "</u><br>"); // NOI18N
+        StringBuilder shortDesc = new StringBuilder("<html><u>" + dep.getModuleEntry().getCodeNameBase() + "</u><br>"); // NOI18N
         if (dep.hasImplementationDependency()) {
             shortDesc.append("<br><font color=\"red\">" + getMessage("CTL_ImplementationDependency") + "</font>");
         }
