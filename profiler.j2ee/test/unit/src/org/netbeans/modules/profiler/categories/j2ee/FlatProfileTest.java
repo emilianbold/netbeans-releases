@@ -55,8 +55,8 @@ import org.netbeans.lib.profiler.results.cpu.FlatProfileBuilder;
 import org.netbeans.lib.profiler.results.cpu.FlatProfileContainer;
 import org.netbeans.lib.profiler.results.cpu.cct.CCTResultsFilter;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.SimpleCPUCCTNode;
-import org.netbeans.modules.profiler.categories.Category;
-import org.netbeans.modules.profiler.ui.stats.drilldown.DrillDown;
+import org.netbeans.modules.profiler.categorization.api.Category;
+import org.netbeans.modules.profiler.drilldown.DrillDown;
 import org.openide.util.Lookup;
 
 
@@ -903,7 +903,7 @@ public class FlatProfileTest extends TestBase {
     
     @Override
     protected String getProjectName() {
-        return BaseMarkTest.APP_NAME;
+        return TestBase.APP_NAME;
     }
     
     private class TestDrillDownFactory implements CCTResultsFilter.EvaluatorProvider {

@@ -58,9 +58,7 @@ import org.netbeans.lib.profiler.global.CommonConstants;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.*;
 import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.modules.profiler.utils.IDEUtils;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -81,7 +79,13 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import org.netbeans.modules.profiler.api.project.ProjectStorage;
+import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
+import org.netbeans.modules.profiler.utilities.ProfilerUtils;
+import org.openide.DialogDisplayer;
 
 
 /**
@@ -258,13 +262,13 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      */
     public ProfilerServerSettings getSettings(String serverInstanceID, boolean verbose) {
         // obtain agent ID
-        int agentID = J2EEProjectTypeProfiler.generateAgentID();
+        int agentID = J2EEProjectProfilingSupportProvider.generateAgentID();
 
         // obtain agent port
-        int agentPort = J2EEProjectTypeProfiler.generateAgentPort();
+        int agentPort = J2EEProjectProfilingSupportProvider.generateAgentPort();
 
         // obtain Java platform
-        JavaPlatform agentJavaPlatform = J2EEProjectTypeProfiler.generateAgentJavaPlatform(serverInstanceID);
+        org.netbeans.modules.profiler.api.JavaPlatform agentJavaPlatform = J2EEProjectProfilingSupportProvider.generateAgentJavaPlatform(serverInstanceID);
 
         if (agentJavaPlatform == null) {
             lastServerInstanceProperties = null;
@@ -272,18 +276,17 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             return null; // cancelled by the user
         }
 
-        String javaVersion = IDEUtils.getPlatformJDKVersion(agentJavaPlatform);
+        String javaVersion = agentJavaPlatform.getPlatformJDKVersion();
 
         if (javaVersion == null) {
-            Profiler.getDefault()
-                    .displayError(MessageFormat.format(FAILED_DETERMINE_PLATFORM_MSG,
+            ProfilerDialogs.displayError(MessageFormat.format(FAILED_DETERMINE_PLATFORM_MSG,
                                                        new Object[] { agentJavaPlatform.getDisplayName() }));
             lastServerInstanceProperties = null;
 
             return null;
         }
 
-        String localPlatform = IntegrationUtils.getLocalPlatform(IDEUtils.getPlatformArchitecture(agentJavaPlatform));
+        String localPlatform = IntegrationUtils.getLocalPlatform(agentJavaPlatform.getPlatformArchitecture());
 
         // init JVM arguments
         String[] jvmArgs = new String[2];
@@ -305,10 +308,10 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             jvmArgs[0] = IntegrationUtils.getProfilerAgentCommandLineArgs(localPlatform, IntegrationUtils.PLATFORM_JAVA_60,
                                                                           false, agentPort);
         }
+        
+        ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(convert(agentJavaPlatform), jvmArgs, env);
 
-        ProfilerServerSettings profilerServerSettings = new ProfilerServerSettings(agentJavaPlatform, jvmArgs, env);
-
-        if (verbose && ProfilerDialogs.notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
+        if (verbose && DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(MessageFormat.format(DIRECT_ATTACH_MSG,
                                                                                               new Object[] {
                                                                                                   agentJavaPlatform.getDisplayName(),
                                                                                                   "" + agentPort
@@ -326,10 +329,9 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             AttachSettings attachSettings = null;
 
             try {
-                attachSettings = NetBeansProfiler.getDefaultNB().loadAttachSettings(mainProject);
+                attachSettings = ProjectStorage.loadAttachSettings(mainProject);
             } catch (IOException e) {
-                Profiler.getDefault()
-                        .displayWarning(MessageFormat.format(FAILED_LOAD_SETTINGS_MSG, new Object[] { e.getMessage() }));
+                ProfilerDialogs.displayWarning(MessageFormat.format(FAILED_LOAD_SETTINGS_MSG, new Object[] { e.getMessage() }));
                 ProfilerLogger.log(e);
             }
 
@@ -337,7 +339,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
                 attachSettings = new AttachSettings();
                 attachSettings.setRemote(false);
                 attachSettings.setDirect(true);
-                NetBeansProfiler.saveAttachSettings(mainProject, attachSettings);
+                ProjectStorage.saveAttachSettings(mainProject, attachSettings);
             }
         }
 
@@ -384,7 +386,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         }
 
         if (notify) {
-            IDEUtils.runInProfilerRequestProcessor(new Runnable() {
+            ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
                     public void run() {
                         fireHandleProgressEvent(stopAgentStatus);
                     }
@@ -430,8 +432,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
      * allows the Profiler to correctly detect STATE_STARTING.
      */
     public void notifyStarting() {
-        profilerAgentID = J2EEProjectTypeProfiler.getLastAgentID();
-        profilerAgentPort = J2EEProjectTypeProfiler.getLastAgentPort();
+        profilerAgentID = J2EEProjectProfilingSupportProvider.getLastAgentID();
+        profilerAgentPort = J2EEProjectProfilingSupportProvider.getLastAgentPort();
 
         NetBeansProfiler.getDefaultNB().cleanForProfilingOnPort(profilerAgentPort); // try to kill an agent on port if some exists
 
@@ -537,7 +539,7 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
             }
         };
 
-        IDEUtils.runInProfilerRequestProcessor(task);
+        ProfilerUtils.runInProfilerRequestProcessor(task);
 
         // return (ProgressObject)this
         return this;
@@ -732,27 +734,41 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         final SessionSettings ss = new SessionSettings();
 
         ps.load(props);
-        ss.load(props);
+        try {
+            ss.load(props);
+        } catch (IllegalArgumentException e) {
+            ProfilerDialogs.displayWarning(e.getLocalizedMessage());
+        }
 
-        ProjectTypeProfiler ptp = projectToUse.getLookup().lookup(ProjectTypeProfiler.class);
-        if (ptp == null || !ptp.isProfilingSupported(projectToUse)) { // unsupported project
+        if (!ProjectProfilingSupport.get(projectToUse).isProfilingSupported()) { // unsupported project
             lastServerInstanceProperties = null;
 
             return false;
         }
 
-        lastServerInstanceProperties = InstanceProperties.getInstanceProperties(J2EEProjectTypeProfiler.getServerInstanceID(projectToUse));
+        lastServerInstanceProperties = InstanceProperties.getInstanceProperties(J2EEProjectProfilingSupportProvider.getServerInstanceID(projectToUse));
 
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    ((NetBeansProfiler) Profiler.getDefault()).setProfiledProject(projectToUse, null);
+        ((NetBeansProfiler) Profiler.getDefault()).setProfiledProject(projectToUse, null);
 
-                    if (!Profiler.getDefault().connectToStartedApp(ps, ss)) {
-                        ProfilerLogger.severe("Error connecting to started app"); // NOI18N
-                    }
-                }
-            });
+        if (!Profiler.getDefault().connectToStartedApp(ps, ss)) {
+            ProfilerLogger.severe("Error connecting to started app"); // NOI18N
+        }
 
         return true;
+    }
+
+    private JavaPlatform convert(org.netbeans.modules.profiler.api.JavaPlatform agentJavaPlatform) {
+        String platformName = agentJavaPlatform.getPlatformId();
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification("j2se", null)); // NOI18N
+
+        for (int i = 0; i < platforms.length; i++) {
+            JavaPlatform platform = platforms[i];
+            String antName = (String) platform.getProperties().get("platform.ant.name"); // NOI18N
+
+            if (antName.equals(platformName)) {
+                return platform;
+            }
+        }
+        throw new IllegalArgumentException("Platfrom "+platformName+" not found"); // NOI18N        
     }
 }

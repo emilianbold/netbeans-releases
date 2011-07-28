@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 
 /**
  *
@@ -66,7 +68,7 @@ abstract public class InnerClassesNode extends ContainerNode {
 
     /** Creates a new instance of ConstructorsNode */
     public InnerClassesNode(final ClassNode parent) {
-        super(NbBundle.getMessage(InnerClassesNode.class, "InnerClasses_DisplayName"), IconResource.CLASS_ICON, parent); // NOI18N
+        super(NbBundle.getMessage(InnerClassesNode.class, "InnerClasses_DisplayName"), Icons.getIcon(LanguageIcons.CLASS), parent); // NOI18N
     }
 
     protected SelectorChildren getChildren() {
