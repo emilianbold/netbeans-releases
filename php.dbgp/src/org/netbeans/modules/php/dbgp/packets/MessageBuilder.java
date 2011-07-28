@@ -138,6 +138,9 @@ class MessageBuilder {
             return new BreakResponse( node );
         }
         else if( command.equals( EvalCommand.EVAL )){
+            if (node.hasChildNodes()) {
+                return new RequestedUrlEvalResponse(node);
+            }
             return new EvalResponse( node );
         }
         else if( command.equals( ExprCommand.EXPR )){

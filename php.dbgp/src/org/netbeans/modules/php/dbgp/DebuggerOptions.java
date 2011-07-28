@@ -55,6 +55,7 @@ public class DebuggerOptions {
     int maxStructureDepth = -1;
     Boolean debugForFirstPageOnly;
     Boolean debuggerStoppedAtTheFirstLine;
+    Boolean requestedUrls;
     String phpInterpreter;
     String projectEncoding;
     List<Pair<String, String>> pathMapping;
@@ -91,6 +92,10 @@ public class DebuggerOptions {
     public boolean isDebugForFirstPageOnly() {
         return (debugForFirstPageOnly != null) ? debugForFirstPageOnly :
             getGlobalInstance().isDebugForFirstPageOnly();
+    }
+
+    public boolean showRequestedUrls() {
+        return (requestedUrls != null) ? requestedUrls : getGlobalInstance().showRequestedUrls();
     }
 
     public boolean isDebuggerStoppedAtTheFirstLine() {
@@ -131,6 +136,10 @@ public class DebuggerOptions {
             return false;
         }
 
+        @Override
+        public boolean showRequestedUrls() {
+            return false;
+        }
 
         @Override
         public boolean isDebuggerStoppedAtTheFirstLine() {

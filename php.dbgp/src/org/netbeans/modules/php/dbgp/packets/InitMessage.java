@@ -89,6 +89,8 @@ public class InitMessage extends DbgpMessage {
         setMaxDataSize(session);
         
         setBreakpoints( session );
+        negotiateRequestedUrls(session);
+       
         final String transactionId = session.getTransactionId();        
         DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ? 
             new StepIntoCommand(transactionId) : new RunCommand(transactionId);
@@ -142,6 +144,12 @@ public class InitMessage extends DbgpMessage {
         setCommand.setValue(value);
         DbgpResponse response = session.sendSynchronCommand(setCommand);
         assert response instanceof FeatureSetResponse : response;
+    }
+
+    private void negotiateRequestedUrls(DebugSession session) {
+        if (DebuggerOptions.getGlobalInstance().showRequestedUrls()) {
+            session.sendCommandLater(new RequestedUrlEvalCommand(session.getTransactionId()));
+        }
     }
 
     private void setBreakpoints( DebugSession session ) {
