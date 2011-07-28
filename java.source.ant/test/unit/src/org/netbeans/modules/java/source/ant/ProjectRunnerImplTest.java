@@ -61,6 +61,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.junit.NbTestCase;
@@ -122,7 +123,7 @@ public class ProjectRunnerImplTest {
         MockLookup.setInstances(new ProjectFactoryImpl(prj));
         
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J"),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", prjPath, "run.jvmargs", "", "encoding", "UTF-8"),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", prjPath, "run.jvmargs", "", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
                         "prj");
     }
     
@@ -169,7 +170,7 @@ public class ProjectRunnerImplTest {
         Collection<String> jvmArgs = Arrays.asList("test3", "test4");
 
         checkProperties(Arrays.asList("execute.file", java, "platform.java", "J", "work.dir", dir, "project", fake, "application.args", args, "run.jvmargs", jvmArgs),
-                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4", "encoding", "UTF-8"),
+                        Arrays.asList("classname", "A", "platform.java", "J", "classpath", prjPath, "work.dir", FileUtil.toFile(dir).getAbsolutePath(), "run.jvmargs", "test3 test4", "encoding", "UTF-8", "platform.bootcp", JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries().toString()),
                         "fake");
     }
     
