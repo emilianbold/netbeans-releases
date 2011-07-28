@@ -52,4 +52,11 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="org-netbeans-modules-form">
+        <folder name="classloader">
+            <folder name="system">
+                <file name="BindingSystemClasses.txt" url="BindingSystemClasses.txt" />
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

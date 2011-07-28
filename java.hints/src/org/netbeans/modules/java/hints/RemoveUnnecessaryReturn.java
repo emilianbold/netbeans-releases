@@ -78,6 +78,14 @@ public class RemoveUnnecessaryReturn {
             switch (tp.getLeaf().getKind()) {
                 case METHOD:
                     MethodTree mt = (MethodTree) tp.getLeaf();
+
+                    if (mt.getReturnType() == null) {
+                        if (mt.getName().contentEquals("<init>"))
+                            break OUTER;//constructor
+                        else
+                            return null; //a method without a return type - better ignore
+                    }
+                    
                     TypeMirror tm = ctx.getInfo().getTrees().getTypeMirror(new TreePath(tp, mt.getReturnType()));
 
                     if (tm == null || tm.getKind() != TypeKind.VOID) return null;
