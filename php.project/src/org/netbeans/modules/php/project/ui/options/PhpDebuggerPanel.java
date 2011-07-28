@@ -206,69 +206,7 @@ public class PhpDebuggerPanel extends JPanel {
         debuggerConsoleInfoLabel = new JLabel();
         errorLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return debuggerConsoleCheckBox;
-            }//end getDefaultComponent
-
-            public Component getFirstComponent(Container focusCycleRoot){
-                return debuggerConsoleCheckBox;
-            }//end getFirstComponent
-
-            public Component getLastComponent(Container focusCycleRoot){
-                return debuggerConsoleCheckBox;
-            }//end getLastComponent
-
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  requestedUrlsCheckBox){
-                    return debuggerConsoleCheckBox;
-                }
-                if(aComponent ==  portTextField){
-                    return sessionIdTextField;
-                }
-                if(aComponent ==  sessionIdTextField){
-                    return stopAtTheFirstLineCheckBox;
-                }
-                if(aComponent ==  maxStructuresDepthTextField){
-                    return maxChildrenTextField;
-                }
-                if(aComponent ==  watchesAndEvalCheckBox){
-                    return maxStructuresDepthTextField;
-                }
-                if(aComponent ==  stopAtTheFirstLineCheckBox){
-                    return watchesAndEvalCheckBox;
-                }
-                if(aComponent ==  maxChildrenTextField){
-                    return requestedUrlsCheckBox;
-                }
-                return debuggerConsoleCheckBox;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  debuggerConsoleCheckBox){
-                    return requestedUrlsCheckBox;
-                }
-                if(aComponent ==  sessionIdTextField){
-                    return portTextField;
-                }
-                if(aComponent ==  stopAtTheFirstLineCheckBox){
-                    return sessionIdTextField;
-                }
-                if(aComponent ==  maxChildrenTextField){
-                    return maxStructuresDepthTextField;
-                }
-                if(aComponent ==  maxStructuresDepthTextField){
-                    return watchesAndEvalCheckBox;
-                }
-                if(aComponent ==  watchesAndEvalCheckBox){
-                    return stopAtTheFirstLineCheckBox;
-                }
-                if(aComponent ==  requestedUrlsCheckBox){
-                    return maxChildrenTextField;
-                }
-                return debuggerConsoleCheckBox;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         portLabel.setLabelFor(portTextField);
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(PhpDebuggerPanel.class, "PhpDebuggerPanel.portLabel.text")); // NOI18N
@@ -306,7 +244,7 @@ public class PhpDebuggerPanel extends JPanel {
                             .addComponent(sessionIdLabel))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
                             .addComponent(sessionIdTextField, GroupLayout.PREFERRED_SIZE, 124, GroupLayout.PREFERRED_SIZE)))
                     .addComponent(stopAtTheFirstLineCheckBox)
                     .addComponent(watchesAndEvalCheckBox)
@@ -327,7 +265,7 @@ public class PhpDebuggerPanel extends JPanel {
                 .addContainerGap(63, Short.MAX_VALUE))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxStructuresDepthTextField});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {maxChildrenTextField, maxStructuresDepthTextField, portTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)

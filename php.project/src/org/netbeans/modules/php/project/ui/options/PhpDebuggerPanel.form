@@ -38,7 +38,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="portTextField" min="-2" pref="78" max="-2" attributes="0"/>
+                          <Component id="portTextField" linkSize="2" min="-2" pref="50" max="-2" attributes="0"/>
                           <Component id="sessionIdTextField" alignment="0" min="-2" pref="124" max="-2" attributes="0"/>
                       </Group>
                   </Group>
