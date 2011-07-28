@@ -350,25 +350,21 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
         initDelegates();
         fireProgressListenerStep();
+        Problem problem = null;
+        ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring, allMethods);
         if (!a.isEmpty()) {
-            Problem p = null;
             for (RenameRefactoring renameRefactoring : renameDelegates) {
-                p = chainProblems(p, renameRefactoring.prepare(elements.getSession()));
-                if (p != null && p.isFatal()) {
+                problem = chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
+                if (problem != null && problem.isFatal()) {
                     fireProgressListenerStop();
-                    return p;
+                    return problem;
                 }
             }
-            
-            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), treePathHandle);
-            p = createAndAddElements(a, transform, elements, refactoring);
-            if (p != null) {
-                fireProgressListenerStop();
-                return p;
-            }
+            TransformTask transform = new TransformTask(changeParamsTransformer, treePathHandle);
+            problem = createAndAddElements(a, transform, elements, refactoring);
         }
         fireProgressListenerStop();
-        return null;
+        return problem != null ? problem : changeParamsTransformer.getProblem();
     }
     
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {

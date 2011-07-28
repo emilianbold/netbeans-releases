@@ -61,6 +61,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,11 +75,14 @@ import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * <b>!!! Do not use {@link Element} parameter of visitXXX methods. Use {@link #allMethods} instead!!!</b>
@@ -108,6 +112,42 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         this.newModifiers = refactoring.getModifiers();
         this.returnType = refactoring.getReturnType();
         this.allMethods = am;
+    }
+    
+    private Problem problem;
+    private LinkedList<ClassTree> problemClasses = new LinkedList<ClassTree>();
+
+    public Problem getProblem() {
+        return problem;
+    }
+
+    private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
+        ClassTree classTree = (ClassTree) RetoucheUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
+        if(!problemClasses.contains(classTree) && !newModifiers.contains(Modifier.PUBLIC)) { // Only give one warning for every file
+            Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
+            TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);
+            TypeElement enclosingTypeElement2 = workingCopy.getElementUtilities().outermostTypeElement(p);
+            if(!workingCopy.getTypes().isSameType(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
+                if(newModifiers.contains(Modifier.PRIVATE)) {
+                    problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PRIVATE, enclosingTypeElement1)); //NOI18N
+                    problemClasses.add(classTree);
+                } else {
+                    PackageElement package1 = workingCopy.getElements().getPackageOf(el);
+                    PackageElement package2 = workingCopy.getElements().getPackageOf(p);
+                    if(!package1.getQualifiedName().equals(package2.getQualifiedName())) {
+                        if(newModifiers.contains(Modifier.PROTECTED)) {
+                            if(!workingCopy.getTypes().isSubtype(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
+                                problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PROTECTED, enclosingTypeElement1)); //NOI18N
+                                problemClasses.add(classTree);
+                            }
+                        } else {
+                            problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", "<default>", enclosingTypeElement1)); //NOI18N
+                            problemClasses.add(classTree);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void init() {
@@ -200,6 +240,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isMethodMatch(el)) {
+                    checkNewModifier(getCurrentPath(), p);
                     List<ExpressionTree> arguments = getNewArguments(tree.getArguments());
                     
                     MethodInvocationTree nju = make.MethodInvocation(
