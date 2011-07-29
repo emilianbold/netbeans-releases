@@ -104,6 +104,7 @@ public class EvaluatorTest extends TestBase {
             javaProjectProject.getHelper().resolveFile(eval.getProperty("basedir")));
         assertEquals("right nb_all", nbRootFile(),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("nb_all")));
+        assertEquals(file(nbRootFile(), "nbbuild/build/nbantext.jar"), javaProjectProject.getHelper().resolveFile(eval.getProperty("nbantext.jar")));
         assertEquals("right code.name.base.dashes", "org-netbeans-modules-java-project", eval.getProperty("code.name.base.dashes"));
         assertEquals("right is.autoload", "true", eval.getProperty("is.autoload"));
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
