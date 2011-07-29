@@ -359,10 +359,8 @@ public class HtmlCompletionQuery extends UserTask {
         assert node != null;
         assert root != null;
 
-        //find a leaf node for undeclared tags
-        AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
-        assert undeclaredTagsParseTreeRoot != null;
-        AstNode undeclaredTagsLeafNode = AstNodeUtils.findNode(undeclaredTagsParseTreeRoot, searchAstOffset, !backward, false);
+        //find a leaf node for the xml stuff
+        AstNode xmlLeafNode = findLeafTag(parserResult, searchAstOffset, !backward, false);
 
 
         //namespace is null for html content
@@ -433,7 +431,7 @@ public class HtmlCompletionQuery extends UserTask {
                 result.addAll(translateHtmlTags(offset - 1, possibleOpenTags, allTags));
 
                 if(HtmlPreferences.completionOffersEndTagAfterLt()) {
-                    result.addAll(getPossibleEndTags(htmlResult, node, undeclaredTagsLeafNode, offset, ""));
+                    result.addAll(getPossibleEndTags(htmlResult, node, xmlLeafNode, offset, ""));
                 }
             }
 
@@ -449,16 +447,16 @@ public class HtmlCompletionQuery extends UserTask {
                 (id == HTMLTokenId.TAG_OPEN_SYMBOL && preText.endsWith("</"))) { // NOI18N
             //complete end tags without prefix
             anchor = offset;
-            result = getPossibleEndTags(htmlResult, node, undeclaredTagsLeafNode, offset, "");
+            result = getPossibleEndTags(htmlResult, node, xmlLeafNode, offset, "");
 
         } else if (id == HTMLTokenId.TAG_CLOSE) { // NOI18N
             //complete end tags with prefix
             anchor = documentItemOffset;
-            result = getPossibleEndTags(htmlResult, node, undeclaredTagsLeafNode, offset, preText);
+            result = getPossibleEndTags(htmlResult, node, xmlLeafNode, offset, preText);
 
         } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
             anchor = offset;
-            result = getAutocompletedEndTag(node, undeclaredTagsLeafNode, astOffset, offset);
+            result = getAutocompletedEndTag(node, xmlLeafNode, astOffset, offset);
         } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
             /*Argument finder */
             String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
@@ -809,6 +807,28 @@ public class HtmlCompletionQuery extends UserTask {
         public Collection<? extends CompletionItem> getItems() {
             return items;
         }
+    }
+    
+    public AstNode findLeafTag(HtmlParserResult result, int offset, boolean forward, boolean physicalNodesOnly ) {
+        //first try to find the in the undeclared component tree
+        AstNode mostLeaf = AstNodeUtils.findNode(result.rootOfUndeclaredTagsParseTree(), offset, forward, physicalNodesOnly);
+        //now search the non html trees
+        for (String uri : result.getNamespaces().keySet()) {
+            AstNode root = result.root(uri);
+            AstNode leaf = AstNodeUtils.findNode(root, offset, forward, physicalNodesOnly);
+            if (leaf == null) {
+                continue;
+            }
+            if (mostLeaf == null) {
+                mostLeaf = leaf;
+            } else {
+                //they cannot overlap, just be nested, at least I think
+                if (leaf.logicalStartOffset() > mostLeaf.logicalStartOffset()) {
+                    mostLeaf = leaf;
+                }
+            }
+        }
+        return mostLeaf;
     }
 }
 
