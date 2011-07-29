@@ -313,6 +313,8 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
             File destDir = ModuleList.findNetBeansOrgDestDir(nbroot);
             stock.put("netbeans.dest.dir", destDir.getAbsolutePath()); // NOI18N
+            stock.put("nb.build.dir", "${nb_all}/nbbuild/build"); // #199286
+            stock.put("nbantext.jar", "${nb.build.dir}/nbantext.jar");
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
             try {
                 Map<String,String> clusterProperties = ModuleList.getClusterProperties(nbroot);
