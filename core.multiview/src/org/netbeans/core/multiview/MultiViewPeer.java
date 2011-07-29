@@ -47,6 +47,8 @@ package org.netbeans.core.multiview;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -87,6 +89,8 @@ import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
+import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 
 /** Special subclass of TopComponent which shows and handles set of
@@ -96,7 +100,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Dafe Simonek, Milos Kleint
  */
-public final class MultiViewPeer  {
+public final class MultiViewPeer implements PropertyChangeListener {
     static final String MULTIVIEW_ID = "MultiView-"; //NOI18N
 
     private static final String TOOLBAR_VISIBLE_PROP = /* org.netbeans.api.editor.settings.SimpleValueNames.TOOLBAR_VISIBLE_PROP */ "toolbarVisible"; // NOI18N
@@ -123,13 +127,15 @@ public final class MultiViewPeer  {
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
     private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListenerImpl();
+    private final PropertyChangeListener propListener;
     private DelegateUndoRedo delegateUndoRedo;
     
-    public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
+    MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
         delegateUndoRedo = new DelegateUndoRedo();
+        propListener = WeakListeners.propertyChange(this, null);
     }
     
     void copyMimeContext(MultiViewPeer other) {
@@ -656,7 +662,12 @@ public final class MultiViewPeer  {
                 if (el.getVisualRepresentation() instanceof Pane) {
                     Pane pane = (Pane)el.getVisualRepresentation();
                     pane.updateName();
-                    peer.setDisplayName(pane.getComponent().getDisplayName());
+                    final CloneableTopComponent tc = pane.getComponent();
+                    peer.setDisplayName(tc.getDisplayName());
+                    peer.setIcon(tc.getIcon());
+                    if (!Arrays.asList(tc.getPropertyChangeListeners()).contains(propListener)) {
+                        tc.addPropertyChangeListener(propListener);
+                    }
                 }
             }
         }
@@ -678,6 +689,18 @@ public final class MultiViewPeer  {
     @Override
     public String toString() {
         return "[model=" + model + "]"; // NOI18N
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (
+            "icon".equals(evt.getPropertyName()) || // NOI18N
+            "name".equals(evt.getPropertyName()) || // NOI18N
+            "displayName".equals(evt.getPropertyName()) || // NOI18N
+            "htmlDisplayName".equals(evt.getPropertyName()) // NOI18N
+        ) {
+            updateName();
+        }
     }
     /**
      * notification from the model that the selection changed.

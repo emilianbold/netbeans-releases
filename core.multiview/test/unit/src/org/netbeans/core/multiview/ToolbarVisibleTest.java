@@ -114,7 +114,7 @@ implements Lookup.Provider, Serializable {
         tc.open();
         assertVisible("MultiView visible", tc);
         
-        assertEquals("One toolbar exists", 1, MVE.allToolbars.size());
+        assertEquals("One toolbar exists: " + MVE.allToolbars, 1, MVE.allToolbars.size());
         
         MultiViewHandler handle = MultiViews.findMultiViewHandler(tc);
         final MultiViewPerspective[] perspectives = handle.getPerspectives();

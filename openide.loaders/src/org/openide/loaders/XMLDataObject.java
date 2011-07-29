@@ -456,6 +456,15 @@ public class XMLDataObject extends MultiDataObject {
             }
         }
         
+        @Override
+        protected Pane createPane() {
+            if (MultiDOEditor.isMultiViewAvailable()) {
+                MultiDataObject mdo = (MultiDataObject) getDataObject();
+                return MultiDOEditor.createMultiViewPane("text/plain", mdo); // NOI18N
+            }
+            return super.createPane();
+        }
+        
         //!!! it also stays for SaveCookie however does not understand
         // encoding declared in XML header => need to be rewritten.
         private static class XMLEditorEnv extends DataEditorSupport.Env {
