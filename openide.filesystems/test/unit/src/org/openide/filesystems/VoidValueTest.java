@@ -99,5 +99,18 @@ public class VoidValueTest extends NbTestCase {
         assertEquals(Collections.emptyList(), Collections.list(derivedFile.getAttributes()));
         assertFalse(new File(getWorkDir(), ".nbattrs").isFile());
     }
+    
+    public void testVoidValue() throws Exception { 
+        clearWorkDir();
+        LocalFileSystem local = new LocalFileSystem();
+        local.setRootDirectory(getWorkDir());
+        FileObject baseFile = local.getRoot().createData("file");
+        MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] {local});
+        FileObject derivedFile = mfs.findResource("file");
+        baseFile.setAttribute("real", "whatever");
+        derivedFile.setAttribute("real", null);
+        assertNull("Derived attribute nullified", derivedFile.getAttribute("real"));
+        assertNull("Underlaying attribute is not void", baseFile.getAttribute("real"));
+    }
 
 }
