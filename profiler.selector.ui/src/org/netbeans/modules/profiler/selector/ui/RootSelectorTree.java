@@ -130,6 +130,7 @@ public class RootSelectorTree extends JCheckTree {
         new SwingWorker(false) {
 
             protected void doInBackground() {
+                removeSelection(getSelection());
                 applySelection(selection);
             }
 

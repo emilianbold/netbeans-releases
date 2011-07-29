@@ -51,10 +51,7 @@ import org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet.ServletsNod
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
