@@ -185,7 +185,7 @@ public class CompileSupport extends CompileOptionsProvider {
                     }
                 }
                 if (line != null) {
-                    final String resLine = line;
+                    final String resLine = line.substring(line.indexOf('=')+1);
                     return new AllOptionsProvider() {
 
                         @Override
