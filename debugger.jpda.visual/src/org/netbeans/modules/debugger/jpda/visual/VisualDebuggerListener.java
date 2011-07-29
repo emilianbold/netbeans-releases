@@ -178,9 +178,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (serviceClass == null) {
             return ;
         }
-        ReferenceType serviceType = serviceClass.reflectedType();
-        Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
         try {
+            ReferenceType serviceType = serviceClass.reflectedType();
+            Field awtAccessLoop = serviceType.fieldByName("awtAccessLoop"); // NOI18N
             ((ClassType) serviceType).setValue(awtAccessLoop, serviceClass.virtualMachine().mirrorOf(false));
             serviceClass.enableCollection();
         } catch (VMDisconnectedException vdex) {
