@@ -157,15 +157,7 @@ public class FileObj extends BaseFileObj {
         final File f = getFileName().getFile();
         if (!f.exists()) {
             FileNotFoundException ex = new FileNotFoundException("Can't read " + f); // NOI18N
-            for (File p = f.getParentFile(); p != null; p = p.getParentFile()) {
-                if (p.exists()) {
-                    Exceptions.attachMessage(ex, "\nParent exists: " + p); // NOI18N
-                    Exceptions.attachMessage(ex, "\nHas children " + Arrays.toString(p.list())); // NOI18N
-                    break;
-                } else {
-                    Exceptions.attachMessage(ex, "\nParent does not exist " + p); // NOI18N
-                }
-            }
+            dumpFileInfo(f, ex);
             throw ex;
         }
         InputStream inputStream;
