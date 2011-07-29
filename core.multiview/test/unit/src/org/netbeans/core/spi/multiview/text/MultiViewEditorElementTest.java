@@ -83,9 +83,7 @@ public class MultiViewEditorElementTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         Lookup context = new AbstractLookup(ic);
         
-        Env env = new Env();
-        CES ces = new CES(env, context);
-        env.setSupport(ces);
+        CloneableEditorSupport ces = createSupport(context);
         ic.add(ces);
         ic.add(10);
         
@@ -99,6 +97,13 @@ public class MultiViewEditorElementTest extends NbTestCase {
         
         assertEquals("ten", Integer.valueOf(10), deser.getLookup().lookup(Integer.class));
         assertEquals("ces", ces, deser.getLookup().lookup(CloneableEditorSupport.class));
+    }
+    
+    public static CloneableEditorSupport createSupport(Lookup lkp) {
+        final Env env = new Env();
+        CES ces = new CES(env, lkp);
+        env.setSupport(ces);
+        return ces;
     }
     
     
@@ -173,7 +178,11 @@ public class MultiViewEditorElementTest extends NbTestCase {
          */
         @Override
         public InputStream inputStream() throws IOException {
-            return new ByteArrayInputStream(output.getBytes());
+            byte[] arr = output == null ? null : output.getBytes();
+            if (arr == null) {
+                arr = new byte[0];
+            }
+            return new ByteArrayInputStream(arr);
         }
 
         /** Obtains the output stream.
