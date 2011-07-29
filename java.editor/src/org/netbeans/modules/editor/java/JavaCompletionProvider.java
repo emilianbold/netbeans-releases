@@ -2406,6 +2406,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case EXCEPTION_PARAMETER:
                     case FIELD:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
@@ -2483,6 +2484,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case EXCEPTION_PARAMETER:
                     case FIELD:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
@@ -2534,6 +2536,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case EXCEPTION_PARAMETER:
                 case FIELD:
                 case LOCAL_VARIABLE:
+                case RESOURCE_VARIABLE:
                 case PARAMETER:
                 case CONSTRUCTOR:
                 case METHOD:
@@ -2617,6 +2620,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
@@ -2695,6 +2699,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case CONSTRUCTOR:
                             return false;
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
@@ -2727,6 +2732,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM_CONSTANT:
                     case EXCEPTION_PARAMETER:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), false));
                         break;
@@ -2764,6 +2770,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
@@ -2783,6 +2790,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM_CONSTANT:
                     case EXCEPTION_PARAMETER:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), false));
                         break;
@@ -2907,6 +2915,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case ENUM_CONSTANT:
                         case EXCEPTION_PARAMETER:
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
@@ -2961,6 +2970,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case EXCEPTION_PARAMETER:
                     case FIELD:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
@@ -3306,6 +3316,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             public boolean accept(Element e, TypeMirror t) {
                                 switch (e.getKind()) {
                                     case LOCAL_VARIABLE:
+                                    case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
@@ -3841,6 +3852,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return false;
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                             if (isStatic && (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)))
                                 return false;
                         case EXCEPTION_PARAMETER:

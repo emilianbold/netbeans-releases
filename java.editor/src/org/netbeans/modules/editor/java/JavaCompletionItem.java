@@ -159,6 +159,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
                 return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
