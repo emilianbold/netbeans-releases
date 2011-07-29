@@ -828,10 +828,17 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         synchronized (Installer.class) {
+            if (logStream != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return logStream;
+            }
             logStream = os;
+            return logStream;
         }
-
-        return os;
     }
 
     private static OutputStream logStreamMetrics () throws FileNotFoundException {
@@ -851,10 +858,17 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         synchronized (Installer.class) {
+            if (logStreamMetrics != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return logStreamMetrics;
+            }
             logStreamMetrics = os;
+            return logStreamMetrics;
         }
-
-        return os;
     }
 
     private static void closeLogStream() {
