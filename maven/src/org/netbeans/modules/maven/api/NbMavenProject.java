@@ -527,4 +527,9 @@ public final class NbMavenProject {
             assert false : "Attempted to remove PropertyChangeListener from project " + prj; //NOI18N
         }
     }
+
+    @Override public String toString() {
+        return project.toString();
+    }
+    
 }
