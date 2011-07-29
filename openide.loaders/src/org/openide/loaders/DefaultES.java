@@ -80,8 +80,8 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
      * @param obj data object to work on
      * @param set set to add/remove save cookie from
      */
-    DefaultES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
-        super(obj, new Environment(obj, entry));
+    DefaultES (MultiDataObject obj, MultiDataObject.Entry entry, CookieSet set) {
+        super(obj, null, new Environment(obj, entry));
         this.set = set;
         setMIMEType("text/plain"); // NOI18N
     }
@@ -111,6 +111,15 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     @Override
     protected boolean asynchronousOpen() {
         return true;
+    }
+
+    @Override
+    protected Pane createPane() {
+        if (MultiDOEditor.isMultiViewAvailable()) {
+            MultiDataObject mdo = (MultiDataObject) getDataObject();
+            return MultiDOEditor.createMultiViewPane("text/plain", mdo); // NOI18N
+        }
+        return super.createPane();
     }
     
     /** Helper method. Adds save cookie to the data object. */

@@ -89,11 +89,23 @@ final class MultiDOEditor implements Callable<Pane>, CookieSet.Factory {
         this.mimeType = mimeType;
         this.useMultiview = useMultiview;
     }
+    
+    static boolean isMultiViewAvailable() {
+        return factory != null;
+    }
+    
+    static Pane createMultiViewPane(String mimeType, MultiDataObject outer) {
+        try {
+            return (Pane) factory.invoke(null, mimeType, outer);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
 
     @Override
     public Pane call() throws Exception {
         if (factory != null) {
-            return (Pane) factory.invoke(null, mimeType, outer);
+            return createMultiViewPane(mimeType, outer);
         }
         return null;
     }
