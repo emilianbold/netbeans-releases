@@ -44,7 +44,9 @@ package org.netbeans.modules.maven.execute;
 
 import java.io.File;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -72,7 +74,21 @@ public class ReactorChecker implements PrerequisitesChecker {
             // Unloadable?
             return true;
         }
-        MavenProject prj = mavenprj.getMavenProject();
+        config.setExecutionDirectory(findReactor(mavenprj).getMavenProject().getBasedir());
+        return true;
+    }
+    
+    /**
+     * Tries to find the reactor root starting from what may be just a submodule.
+     * The intent is that running {@code mvn -f $reactor/pom.xml --projects $module} would work.
+     * @param module a project to start the search at
+     * @return its apparent reactor root; maybe just the same project
+     */
+    public static @NonNull NbMavenProject findReactor(@NonNull NbMavenProject module) { // #197232
+        MavenProject prj = module.getMavenProject();
+        if (prj.getBasedir() == null) { // already invalid
+            return module;
+        }
         while (true) {
             MavenProject parent = prj.getParent();
             if (parent == null) {
@@ -82,11 +98,14 @@ public class ReactorChecker implements PrerequisitesChecker {
                 // This is the root POM.
                 break;
             }
-            // XXX also verify that parent contains prj as a module? may not work in case modules are activated by profile
             prj = parent;
         }
-        config.setExecutionDirectory(prj.getBasedir());
-        return true;
+        try {
+            return ProjectManager.getDefault().findProject(FileUtil.toFileObject(prj.getBasedir())).getLookup().lookup(NbMavenProject.class);
+        } catch (Exception x) {
+            x.printStackTrace();
+            return module;
+        }
     }
-    
+
 }
