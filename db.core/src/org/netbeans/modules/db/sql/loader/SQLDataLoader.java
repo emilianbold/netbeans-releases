@@ -66,14 +66,17 @@ public class SQLDataLoader extends UniFileLoader {
         super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
     }
     
+    @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new SQLDataObject(primaryFile, this);
     }
     
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(SQLDataLoader.class, "LBL_LoaderName");
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         ExtensionList extensions = new ExtensionList();
@@ -81,6 +84,7 @@ public class SQLDataLoader extends UniFileLoader {
         setExtensions(extensions);
     }
     
+    @Override
     protected String actionsContext() {
         return "Loaders/text/x-sql/Actions/"; // NOI18N    
     }

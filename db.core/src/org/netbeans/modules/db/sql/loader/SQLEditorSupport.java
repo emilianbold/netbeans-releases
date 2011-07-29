@@ -116,8 +116,6 @@ public class SQLEditorSupport extends DataEditorSupport
     
     static final String EDITOR_CONTAINER = "sqlEditorContainer"; // NOI18N
     
-    private static final String MIME_TYPE = "text/x-sql"; // NOI18N
-    
     private final PropertyChangeSupport sqlPropChangeSupport = new PropertyChangeSupport(this);
     
     // the RequestProcessor used for executing statements.
@@ -148,7 +146,7 @@ public class SQLEditorSupport extends DataEditorSupport
     
     public SQLEditorSupport(SQLDataObject obj) {
         super(obj, null, new Environment(obj));
-        setMIMEType(MIME_TYPE);
+        setMIMEType(SQLDataLoader.SQL_MIME_TYPE);
     }
     
     @Override
@@ -171,7 +169,7 @@ public class SQLEditorSupport extends DataEditorSupport
 
     @Override
     protected Pane createPane() {
-        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(MIME_TYPE, getDataObject());
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(SQLDataLoader.SQL_MIME_TYPE, getDataObject());
     }
     
     @Override

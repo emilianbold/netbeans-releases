@@ -66,6 +66,7 @@ public class SQLDataObject extends MultiDataObject {
         final SQLEditorSupport sqlEditorSupport = new SQLEditorSupport(this);
         cookies.add(sqlEditorSupport);
         cookies.assign( SaveAsCapable.class, new SaveAsCapable() {
+            @Override
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 sqlEditorSupport.saveAs( folder, fileName );
             }

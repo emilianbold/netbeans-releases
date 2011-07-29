@@ -232,6 +232,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
      */
     private void createResultPopupMenu() {
         closeTabAction = new AbstractAction(getMessage("CLOSE_TAB_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 resultComponent.remove(resultComponent.getSelectedComponent());
                 enableTabActions();
@@ -243,6 +244,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
         };
 
         closeOtherTabsAction = new AbstractAction(getMessage("CLOSE_OTHER_TABS_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (Component component : resultComponent.getComponents()) {
                     if (! component.equals(resultComponent.getSelectedComponent())) {
@@ -256,6 +258,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
         };
 
         closePreviousTabsAction = new AbstractAction(getMessage("CLOSE_PREVIOUS_TABS_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (Component component : resultComponent.getComponents()) {
                     if ((currentResultTabs != null) && (! currentResultTabs.contains(component))) {
@@ -272,6 +275,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
         };
 
         closeAllTabsAction = new AbstractAction(getMessage("CLOSE_ALL_TABS_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 resultComponent.removeAll();
                 hideResultComponent();
@@ -294,6 +298,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
 
         resultComponent.addChangeListener(new ChangeListener() {
 
+            @Override
             public void stateChanged(ChangeEvent e) {
                 enableTabActions();
             }
@@ -301,6 +306,7 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
         });
 
         resultComponent.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
                     int selected = resultComponent.getSelectedIndex();
@@ -678,28 +684,35 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
             sqlEditorSupport().removeSQLPropertyChangeListener(this);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent event) {
             propChangeSupport.firePropertyChange(event);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             propChangeSupport.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             propChangeSupport.removePropertyChangeListener(listener);
         }
 
+        @Override
         public DatabaseConnection getDatabaseConnection() {
             return sqlEditorSupport().getActiveDatabaseConnection();
         }
 
+        @Override
         public void setDatabaseConnection(DatabaseConnection dbconn) {
             sqlEditorSupport().setDatabaseConnection(dbconn);
         }
 
+        @Override
         public void execute() {
             String text = Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+                @Override
                 public String run() {
                     return getText(getEditorPane());
                 }
@@ -707,9 +720,11 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
             sqlEditorSupport().execute(text, 0, text.length());
         }
 
+        @Override
         public void executeSelection() {
             final int[] offsets = new int[2];
             String text = Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+                @Override
                 public String run() {
                     JEditorPane editorPane = getEditorPane();
                     int startOffset = editorPane.getSelectionStart();
@@ -728,12 +743,15 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
             sqlEditorSupport().execute(text, offsets[0], offsets[1]);
         }
 
+        @Override
         public boolean isExecuting() {
             return sqlEditorSupport().isExecuting();
         }
 
+        @Override
         public boolean isSelection() {
             Boolean result = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
                 public Boolean run() {
                     JEditorPane editorPane = getEditorPane();
                     return Boolean.valueOf(editorPane.getSelectionStart() < editorPane.getSelectionEnd());
@@ -761,9 +779,11 @@ public class SQLCloneableEditor extends CloneableEditor implements MultiViewElem
             }
         }
 
+        @Override
         public void showHistory() {
             getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());

@@ -64,6 +64,7 @@ public class SQLNode extends DataNode {
         setIconBaseWithExtension(ICON_BASE);
     }
     
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
