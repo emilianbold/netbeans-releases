@@ -1232,7 +1232,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 String oldFullName = getPath();
 
                 if (isReadOnly()) {
-                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotRename",
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotRenameFromTo",
                             getPath(), getMultiFileSystem().getDisplayName(), newFullName));
                 }
 
