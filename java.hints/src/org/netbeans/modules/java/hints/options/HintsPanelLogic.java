@@ -124,7 +124,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     private JTree errorTree;
-    private DefaultTreeModel errorTreeModel;
+    DefaultTreeModel errorTreeModel;
     private JLabel severityLabel;
     private JComboBox severityComboBox;
     private JCheckBox tasklistCheckBox;
@@ -440,7 +440,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         Object o = getUserObject(treePath);
 
-        DefaultTreeModel model = (DefaultTreeModel) errorTree.getModel();
+        DefaultTreeModel model = errorTreeModel;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
