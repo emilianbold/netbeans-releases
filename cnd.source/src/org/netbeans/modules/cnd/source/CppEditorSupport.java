@@ -100,8 +100,9 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
     public CppEditorSupport(SourceDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
         this.ic = obj.getInstanceContent();
+        this.ic.add(obj.getNodeDelegate());
     }
 
     @Override

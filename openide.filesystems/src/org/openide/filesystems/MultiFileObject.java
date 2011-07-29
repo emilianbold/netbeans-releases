@@ -168,6 +168,20 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         }
     }
 
+    private boolean setAttributeOnFO(FileObject fo, String attrToSet, Object value, boolean fire) throws IOException {
+        if (fo instanceof AbstractFolder) {
+            ((AbstractFolder) fo).setAttribute(attrToSet, value, false);
+        } else {
+            /** cannot disable firing from underlaying delegate if not AbstractFolder
+             * without API change. So I don`t fire events from this method with one
+             * exception - root.
+             */
+            fire = fire && fo.isRoot();
+            fo.setAttribute(attrToSet, value);
+        }
+        return fire;
+    }
+
     /** Updates list of all references.
     */
     private void update() {
@@ -957,16 +971,14 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         getAttributeCache().setDelegate(fo);
         getAttributeCache().setAttributeName(attrToSet);
-        
-        if (fo instanceof AbstractFolder) {
-            ((AbstractFolder) fo).setAttribute(attrToSet, voidify(value), false);
+
+        if (value == null) {
+            fire = setAttributeOnFO(fo, attrToSet, null, fire);
+            if (fo.getAttribute(attrToSet) != null) {
+                fire = setAttributeOnFO(fo, attrToSet, voidify(null), fire);
+            }
         } else {
-            /** cannot disable firing from underlaying delegate if not AbstractFolder
-             * without API change. So I don`t fire events from this method with one
-             * exception - root.
-             */
-            fire = fire && fo.isRoot();
-            fo.setAttribute(attrToSet, voidify(value));
+            fire = setAttributeOnFO(fo, attrToSet, voidify(value), fire);
         }
 
         // fire changes for original attribute name even if the attr is actually

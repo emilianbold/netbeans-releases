@@ -264,13 +264,31 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             Node root = new AbstractNode(rootChildren);
             
             // creatings section panels for Chapters
+/////TEMP
             SectionPanel[] pan = new SectionPanel[persistenceUnits.length];
             for (int i=0; i < persistenceUnits.length; i++) {
                 pan[i] = new SectionPanel(this, persistenceUnitNode[i],
                         persistenceUnitNode[i].getDisplayName(), persistenceUnits[i], false, false);
                 pan[i].setHeaderActions(new javax.swing.Action[]{removeAction});
-                persistenceUnitsCont.addSection(pan[i]);
-            }
+                persistenceUnitsCont.addSection(pan[i]);              
+/////--END TEMP
+//            SectionContainer[] pan = new SectionContainer[persistenceUnits.length];
+//            for (int i=0; i < persistenceUnits.length; i++) {
+//                pan[i] = new SectionContainer(this, persistenceUnitNode[i],
+//                        persistenceUnitNode[i].getDisplayName(), false);
+//                pan[i].setHeaderActions(new javax.swing.Action[]{removeAction});
+//                persistenceUnitsCont.addSection(pan[i]);
+//                //
+//                Node mainPUNode = new ElementLeafNode(null);
+//                // Node for properties
+//                Node propertiesNode = new ElementLeafNode(NbBundle.getMessage(PersistenceToolBarMVElement.class, "LBL_PU_Properties"));
+//                // Container Node for the properties inside the pu
+//                Children puCh = new Children.Array();
+//                puCh.add(new Node[]{mainPUNode, propertiesNode});
+//                Provider prov = persistenceUnits[i].getProvider()!=null ? ProviderUtil.getProvider(persistenceUnits[i]) : Util.getDefaultProvider(project);
+//                pan[i].addSection(new SectionPanel(this, mainPUNode, mainPUNode.getDisplayName(), persistenceUnits[i], true, false));
+//                pan[i].addSection(new SectionPanel(this, propertiesNode, propertiesNode.getDisplayName(), new PropertiesPanel.PropertiesParamHolder(persistenceUnits[i], prov), false, false));
+            }        
             addSection(persistenceUnitsCont);
             setRoot(root);
         }
@@ -300,6 +318,20 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         }
         
     }
+    
+    private class ElementLeafNode extends org.openide.nodes.AbstractNode {
+
+        ElementLeafNode(String displayName) {
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(displayName);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            //return new HelpCtx(HibernateCfgDataObject.HELP_ID_DESIGN_HIBERNATE_CONFIGURATION); //NOI18N
+            return null;
+        }
+    }    
     
     /**
      * Handles adding of a new Persistence Unit via multiview.

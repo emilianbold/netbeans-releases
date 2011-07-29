@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Enumeration;
 import javax.swing.text.Document;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.OpenCookie;
@@ -66,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableTopComponent;
 
 /**
@@ -83,6 +85,7 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     public void setUp() throws Exception {
         FileObject folder = FileUtil.toFileObject(getWorkDir()).createFolder("folder");
         fileObject = folder.createData("SQLFile", "sql");
@@ -94,12 +97,21 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         support = (MySQLEditorSupport)dataObject.getCookie(OpenCookie.class);
     }
     
+    @Override
     public void tearDown() throws Exception {
         fileObject.getParent().delete();
     }
     
+    @Override
     public boolean runInEQ() {
         return true;
+    }
+    
+    public void testMultiViewElement() {
+        MySQLEditorSupport es = dataObject.getLookup().lookup(MySQLEditorSupport.class);
+        assertNotNull("SQLEditorSupport found in lookup of " + dataObject, es);
+        CloneableEditor ce = es.createCloneableEditor();
+        assertTrue("SQLEditorSupport.createCloneableEditor() instanceof MultiViewElement", ce instanceof MultiViewElement);
     }
     
     public void testEditorNameIsNodeDisplayName() throws Exception {
@@ -110,7 +122,9 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         doc.insertString(0, "test", null);
         
         assertTrue(support.messageName().indexOf(dataObject.getNodeDelegate().getDisplayName()) >= 0);
-        support.close();
+
+        // XXX should test support.close() here, but how, since canClose() displays a dialog box?
+        //support.close();
     }
     
     public void testDataObjectIsModifiedWhenDocumentChanged() throws Exception {
@@ -122,9 +136,8 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         assertTrue(support.isModified());
         assertTrue(dataObject.isModified());
         assertNotNull(dataObject.getCookie(SaveCookie.class));
-        // XXX should test canClose() here, but how, since canClose() displays a dialog box?
-        
-        support.close();
+        // XXX should test support.close() here, but how, since canClose() displays a dialog box?
+        //support.close();
     }
     
     public void testDocumentIsNotSavedOnComponentDeactivatedOrWriteExternal() throws Exception {
@@ -132,15 +145,18 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         Document doc = support.openDocument();
         doc.insertString(0, "test", null);
 
-        MySQLEditorSupport.MySQLCloneableEditor editor = (MySQLEditorSupport.MySQLCloneableEditor)support.getAllEditors().getComponents().nextElement();
-        editor.callComponentDeactivated();
+        CloneableTopComponent ctc = (CloneableTopComponent) support.getAllEditors().getComponents().nextElement();
+        SQLCloneableEditor editor = ctc.getLookup().lookup(SQLCloneableEditor.class);
+        
+        editor.componentDeactivated();
         assertFalse(support.saveDocumentCalled);
 
         doc.insertString(0, "test", null);
         editor.writeExternal(new ObjectOutputStream(new ByteArrayOutputStream()));
         assertFalse(support.saveDocumentCalled);
         
-        support.close();
+        // XXX should test support.close() here, but how, since canClose() displays a dialog box?
+        //support.close();
     }
     
     /**
@@ -149,6 +165,7 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
      */
     public static final class Pool extends DataLoaderPool {
         
+        @Override
         public Enumeration loaders() {
             return Enumerations.singleton(new MySQLDataLoader());
         }
@@ -164,10 +181,12 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
             super("org.netbeans.modules.db.sql.loader.SQLEditorSupportNormalTest$MySQLDataObject");
         }
     
+        @Override
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new MySQLDataObject(primaryFile, this);
         }
 
+        @Override
         protected void initialize() {
             super.initialize();
             ExtensionList extensions = new ExtensionList();
@@ -189,8 +208,9 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
             cookies.add(new MySQLEditorSupport(this));
         }
 
+        @Override
         protected Node createNodeDelegate() {
-            return new SQLNode(this);
+            return new SQLNode(this, getLookup());
         }
     }
     
@@ -209,10 +229,12 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         /**
          * In order to silently close a modified support.
          */
+        @Override
         public boolean canClose() {
             return true;
         }
         
+        @Override
         public void saveDocument() throws IOException {
             super.saveDocument();
             saveDocumentCalled = true;
@@ -222,6 +244,7 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
             return allEditors;
         }
         
+        @Override
         public CloneableEditor createCloneableEditor() {
             return new MySQLCloneableEditor(this);
         }
@@ -229,12 +252,8 @@ public class SQLEditorSupportNormalTest extends NbTestCase {
         private static final class MySQLCloneableEditor extends SQLCloneableEditor {
             
             public MySQLCloneableEditor(MySQLEditorSupport support) {
-                super(support);
+                super(Lookups.singleton(support));
             }
-            
-            public void callComponentDeactivated() {
-                componentDeactivated();
             }
         }
     }
-}
