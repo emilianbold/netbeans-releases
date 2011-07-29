@@ -47,7 +47,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -56,11 +55,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.api.whitelist.WhiteListQuery.WhiteList;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,19 +66,15 @@ import org.openide.util.NbBundle;
 class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScanner.Problem>> {
 
     private final Trees trees;
-    private final ElementUtilities elementUtil;
     private final AtomicBoolean cancel;
     private final WhiteList whiteList;
     private final ArrayDeque<MethodInvocationTree> methodInvocation;
-    private boolean inheritance = false;
 
     WhiteListScanner(
         final Trees trees,
-        final ElementUtilities elementUtil,
         final WhiteList whiteList,
         final AtomicBoolean cancel) {
         this.trees = trees;
-        this.elementUtil = elementUtil;
         this.whiteList = whiteList;
         this.cancel = cancel;
         methodInvocation = new ArrayDeque<MethodInvocationTree>();
@@ -90,42 +83,14 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
     @Override
     public Void visitMethod(MethodTree node, List<? super Problem> p) {
         checkCancel();
-        final ExecutableElement ee = (ExecutableElement) trees.getElement(getCurrentPath());
-        if (ee != null) {
-            for (ExecutableElement om = elementUtil.getOverriddenMethod(ee);
-                 om!=null;
-                 om = elementUtil.getOverriddenMethod(om)) {
-                 if (!whiteList.canOverride(ElementHandle.create(om))){
-                     p.add(new Problem(Kind.OVERRIDE, om, node));
-                 }
-            }
-        }
         return super.visitMethod(node, p);
     }
 
     @Override
     public Void visitClass(ClassTree node, List<? super Problem> p) {
         checkCancel();
-        scan(node.getModifiers(), p);
-	scan(node.getTypeParameters(), p);
-        inheritance = true;
-        scan(node.getExtendsClause(), p);
-        scan(node.getImplementsClause(), p);
-        inheritance = false;
-	scan(node.getMembers(), p);
-        return null;
+        return super.visitClass(node, p);
     }
-
-    @Override
-    public Void visitParameterizedType(ParameterizedTypeTree node, List<? super Problem> p) {
-        scan(node.getType(), p);
-        final boolean ci = inheritance;
-        inheritance = false;
-        scan(node.getTypeArguments(), p);
-        inheritance = ci;
-        return null;
-    }
-
 
     @Override
     public Void visitIdentifier(IdentifierTree node, List<? super Problem> p) {
@@ -142,8 +107,9 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
     @Override
     public Void visitNewClass(NewClassTree node, List<? super Problem> p) {
         final Element e = trees.getElement(getCurrentPath());
-        if (e != null && !whiteList.canInvoke(ElementHandle.create(e))) {
-                p.add(new Problem(Kind.INVOKE, e, node));
+        final WhiteListQuery.Result res;
+        if (e != null && !(res=whiteList.check(ElementHandle.create(e),WhiteListQuery.Operation.USAGE)).isAllowed()) {
+                p.add(new Problem(node,res.getViolatedRuleDescription()));
         }
         scan(node.getTypeArguments(), p);
         scan(node.getArguments(), p);
@@ -167,20 +133,17 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
             return;
         }
         final ElementKind k = e.getKind();
+        Tree toReport =  null;
         if (k.isClass() || k.isInterface()) {
-            if (inheritance) {
-                if (!whiteList.canOverride(ElementHandle.create(e))) {
-                    p.add(new Problem(Kind.SUBCLASS, e, node));
-                }
-            } else {
-                if (!whiteList.canInvoke(ElementHandle.create(e))) {
-                    p.add(new Problem(Kind.REFERENCE, e, node));
-                }
-            }
-        } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
-            if (!(methodInvocation.isEmpty() || whiteList.canInvoke(ElementHandle.create(e)))) {
-                p.add(new Problem(Kind.INVOKE, e, methodInvocation.peekFirst()));
-            }
+            toReport=node;
+        } else if ((k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) &&
+                !methodInvocation.isEmpty()) {
+            toReport=methodInvocation.peekFirst();
+        }
+        final WhiteListQuery.Result res;
+        if (toReport != null &&
+            !(res=whiteList.check(ElementHandle.create(e),WhiteListQuery.Operation.USAGE)).isAllowed()) {
+                p.add(new Problem(toReport,res.getViolatedRuleDescription()));
         }
     }
 
@@ -190,51 +153,19 @@ class WhiteListScanner extends TreePathScanner<Void, List<? super WhiteListScann
         }
     }
 
-
-    static enum Kind {
-        INVOKE,
-        REFERENCE,
-        SUBCLASS,
-        OVERRIDE
-    }
-
     static final class Problem {
-        final Kind kind;
-        final Element element;
         final Tree tree;
+        final String description;
 
         private Problem (
-                final Kind kind,
-                final Element element,
-                final Tree tree) {
-            this.kind = kind;
-            this.element = element;
+                final Tree tree,
+                final String description) {
             this.tree = tree;
+            this.description = description;
         }
     }
 
     static final class Cancel extends RuntimeException {
-    }
-
-    @NbBundle.Messages(value={
-        "ERR_BlackListed_Call=Invocation of {0} is prohibited by white list",
-        "ERR_BlackListed_Ref=Usage of {0} is prohibited by white list",
-        "ERR_BlackListed_Sub=Subclassing of {0} is prohibited by white list",
-        "ERR_BlackListed_Override=Overriding of {0} is prohibited by white list"
-    })
-    static String getErrorMessage(final Problem problem) {
-        switch (problem.kind) {
-            case REFERENCE:
-                return Bundle.ERR_BlackListed_Ref(problem.element.toString());
-            case INVOKE:
-                return Bundle.ERR_BlackListed_Call(problem.element.toString());
-            case SUBCLASS:
-                return Bundle.ERR_BlackListed_Sub(problem.element.toString());
-            case OVERRIDE:
-                return Bundle.ERR_BlackListed_Override(problem.element.toString());
-            default:
-                throw new IllegalStateException("Unknown problem kind: " + problem.kind);   //NOI18N
-        }
     }
 
 }

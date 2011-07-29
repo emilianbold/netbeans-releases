@@ -99,7 +99,6 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
         final List<WhiteListScanner.Problem> problems = new LinkedList<WhiteListScanner.Problem>();
         final WhiteListScanner scanner = new WhiteListScanner(
                 info.getTrees(),
-                info.getElementUtilities(),
                 whiteList,
                 canceled);
         final CompilationUnitTree cu = info.getCompilationUnit();
@@ -119,7 +118,7 @@ public class WhiteListCheckTask extends JavaParserResultTask<Result> {
             if (start >= 0 && end >= 0) {
                 errors.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.ERROR,
-                        WhiteListScanner.getErrorMessage(problem),
+                        problem.description,
                         file,
                         start,
                         end));

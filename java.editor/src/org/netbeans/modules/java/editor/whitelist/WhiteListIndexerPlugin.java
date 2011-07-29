@@ -49,7 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaIndexerPlugin;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
@@ -73,13 +72,10 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
     public void process(CompilationUnitTree toProcess, Lookup services) {
         final Trees trees = services.lookup(Trees.class);
         assert trees != null;
-        final ElementUtilities elementUtil = services.lookup(ElementUtilities.class);
-        assert elementUtil != null;
         final ErrorCollector ec = services.lookup(ErrorCollector.class);
         assert ec != null;
         final WhiteListScanner scanner = new WhiteListScanner(
                 trees,
-                elementUtil,
                 whiteList,
                 new AtomicBoolean());
         final List<WhiteListScanner.Problem> problems = new LinkedList<WhiteListScanner.Problem>();
@@ -90,7 +86,7 @@ public class WhiteListIndexerPlugin implements JavaIndexerPlugin {
             final int start = (int) sp.getStartPosition(toProcess, p.tree);
             int ln;
             if (start>=0 && (ln=(int)lm.getLineNumber(start))>=0) {
-                ec.addError(ErrorKind.ERROR, WhiteListScanner.getErrorMessage(p), ln);
+                ec.addError(ErrorKind.ERROR, p.description, ln);
             }
         }
     }

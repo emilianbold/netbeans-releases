@@ -111,22 +111,12 @@ public final class WhiteListQuery {
          * @param element to check
          * @return true if the element is allowed
          */
-        public final boolean canInvoke(
-            @NonNull final ElementHandle<?> element) {
+        public final Result check(
+            @NonNull final ElementHandle<?> element,
+            @NonNull final Operation operation) {
             Parameters.notNull("element", element); //NOI18N;
-            return impl.check(element, Operation.USAGE).isAllowed();
-        }
-
-        /**
-         * Checks if given method (type) can be overridden (subclassed).
-         * @param element to check
-         * @return true if the element is allowed
-         */
-        public final boolean canOverride(
-             @NonNull final ElementHandle<?> element) {
-//            Parameters.notNull("element", element); //NOI18N;
-//            return impl.canOverride(element);
-            return true;
+            Parameters.notNull("operation", operation); //NOI18N;
+            return impl.check(element, operation);
         }
     }
 

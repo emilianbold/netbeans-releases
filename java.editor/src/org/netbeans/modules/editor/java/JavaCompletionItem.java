@@ -428,11 +428,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
     }
     static abstract class WhiteListJavaCompletionItem extends JavaCompletionItem {
 
-        enum Mode {
-            INVOKE,
-            OVERRIDE;
-        }
-
         private final WhiteListQuery.WhiteList whiteList;
         private Boolean isBlackListed;
 
@@ -445,19 +440,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return this.whiteList;
         }
 
-        protected final boolean isBlackListed(final ElementHandle<?> handle, Mode mode) {
+        protected final boolean isBlackListed(
+                final ElementHandle<?> handle) {
             if (isBlackListed == null) {
-                boolean result;
-                if (whiteList == null) {
-                    result = false;
-                } else if (mode == Mode.INVOKE) {
-                    result = !whiteList.canInvoke(handle);
-                } else if (mode == Mode.OVERRIDE) {
-                    result = !whiteList.canOverride(handle);
-                } else {
-                    throw new IllegalStateException();
-                }
-                isBlackListed = result;
+                isBlackListed = whiteList == null ? false : !whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed();
             }
             return isBlackListed;
         }
@@ -726,12 +712,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(getColor());
-                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle),Mode.INVOKE))
+                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle)))
                     sb.append(STRIKE);
                 sb.append(escape(typeName));
                 for(int i = 0; i < dim; i++)
                     sb.append("[]"); //NOI18N
-                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle),Mode.INVOKE))
+                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle)))
                     sb.append(STRIKE_END);
                 if (enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
@@ -1175,10 +1161,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(FIELD_COLOR);
                 if (!isInherited)
                     sb.append(BOLD);
-                if (isDeprecated || isBlackListed(elementHandle, Mode.INVOKE))
+                if (isDeprecated || isBlackListed(elementHandle))
                     sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated || isBlackListed(elementHandle, Mode.INVOKE))
+                if (isDeprecated || isBlackListed(elementHandle))
                     sb.append(STRIKE_END);
                 if (!isInherited)
                     sb.append(BOLD_END);
@@ -1190,7 +1176,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(elementHandle, Mode.INVOKE) ? false : super.instantSubstitution(component);
+            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
         }
 
         protected String getRightHtmlText() {
@@ -1370,10 +1356,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 lText.append(METHOD_COLOR);
                 if (!isInherited)
                     lText.append(BOLD);
-                if (isDeprecated || isBlackListed(elementHandle, getMode()))
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE);
                 lText.append(simpleName);
-                if (isDeprecated || isBlackListed(elementHandle, getMode()))
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE_END);
                 if (!isInherited)
                     lText.append(BOLD_END);
@@ -1398,11 +1384,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(elementHandle, getMode()) ? false : super.instantSubstitution(component);
-        }
-
-        protected Mode getMode() {
-            return Mode.INVOKE;
+            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
         }
 
         protected String getRightHtmlText() {
@@ -1721,11 +1703,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         }
 
-        @Override
-        protected Mode getMode() {
-            return Mode.OVERRIDE;
-        }
-
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(super.toString());
@@ -1994,10 +1971,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 StringBuilder lText = new StringBuilder();
                 lText.append(CONSTRUCTOR_COLOR);
                 lText.append(BOLD);
-                if (isDeprecated || isBlackListed(elementHandle, Mode.INVOKE))
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE);
                 lText.append(simpleName);
-                if (isDeprecated || isBlackListed(elementHandle, Mode.INVOKE))
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE_END);
                 lText.append(BOLD_END);
                 lText.append(COLOR_END);
@@ -2021,7 +1998,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(elementHandle, Mode.INVOKE) ? false : super.instantSubstitution(component);
+            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
         }
 
         public CompletionTask createDocumentationTask() {
@@ -2958,10 +2935,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 lText.append(memberElementHandle.getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
                 lText.append(escape(typeName));
                 lText.append('.');
-                if (isDeprecated || isBlackListed(memberElementHandle, Mode.INVOKE))
+                if (isDeprecated || isBlackListed(memberElementHandle))
                     lText.append(STRIKE);
                 lText.append(memberName);
-                if (isDeprecated || isBlackListed(memberElementHandle, Mode.INVOKE))
+                if (isDeprecated || isBlackListed(memberElementHandle))
                     lText.append(STRIKE_END);
                 lText.append(COLOR_END);
                 if (params != null) {
@@ -2986,7 +2963,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public boolean instantSubstitution(JTextComponent component) {
-            return isBlackListed(memberElementHandle, Mode.INVOKE) ? false : super.instantSubstitution(component);
+            return isBlackListed(memberElementHandle) ? false : super.instantSubstitution(component);
         }
 
         protected String getRightHtmlText() {

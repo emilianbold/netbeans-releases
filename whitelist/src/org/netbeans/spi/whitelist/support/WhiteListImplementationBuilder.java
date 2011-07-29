@@ -45,6 +45,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -53,6 +54,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Union2;
 
@@ -70,6 +72,14 @@ public final class WhiteListImplementationBuilder {
 
     private WhiteListImplementationBuilder() {
         this.model = new Model();
+    }
+
+    @NonNull
+    public WhiteListImplementationBuilder setDisplayName(@NonNull final String displayName) {
+        Parameters.notNull("displayName", displayName); //NOI18N
+        checkPreconditions();
+        model.setDisplayName(displayName);
+        return this;
     }
 
     @NonNull
@@ -152,18 +162,154 @@ public final class WhiteListImplementationBuilder {
         }
 
         @Override
+        @NbBundle.Messages({
+            "RULE_Class=Class Access",
+            "RULE_Meth=Method Invocation",
+            "DESC_Class=Access of type {0} is forbidden by {1}.",
+            "DESC_Meth=Invocation of method {0} is forbidden by {1}."
+        })
         public WhiteListQuery.Result check(
                 @NonNull final ElementHandle<?> element,
                 @NonNull final WhiteListQuery.Operation operation) {
             assert element != null;
             assert operation != null;
             boolean b = model.isAllowed(element,INVOKE);
-            return new WhiteListQuery.Result(b, null, null);
+            String ruleName = null;
+            String ruleDesc = null;
+            if (!b) {
+                if (element.getKind().isClass() || element.getKind().isInterface()) {
+                    ruleName = Bundle.RULE_Class();
+                    ruleDesc = Bundle.DESC_Class(displayName(element), model.getDisplayName());
+                } else {
+                    ruleName = Bundle.RULE_Meth();
+                    ruleDesc = Bundle.DESC_Meth(displayName(element), model.getDisplayName());
+                }
+            }
+            return new WhiteListQuery.Result(
+                    b,
+                    ruleName,
+                    ruleDesc);
+        }
+
+        @NonNull
+        private static String displayName(
+            @NonNull final ElementHandle<? extends Element> handle) {
+            final ElementKind kind = handle.getKind();
+            final String[] vmSig = SourceUtils.getJVMSignature(handle);
+            if (kind.isClass() || kind.isInterface()) {
+                assert vmSig.length == 1;
+                return cannonicalName(vmSig[0]);
+            } else if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+                assert vmSig.length == 3;
+                final StringBuilder sb = new StringBuilder();
+                int index = vmSig[2].lastIndexOf(')');
+                assert index > 0;
+                cannonicalName(vmSig[2].substring(index+1),sb);
+                sb.append(' '); //NOI18N
+                sb.append(vmSig[1]);
+                sb.append('('); //NOI18N
+                int state = 0;
+                boolean first = true;
+                for (int i=1 ,j = 1; j< index;) {
+                    final char la = vmSig[2].charAt(j);
+                    switch (state) {
+                        case 0:
+                            if (la=='L') {      //NOI18N
+                                state = 1;
+                                j++;
+                            }
+                            else if (la=='[') { //NOI18N
+                                j++;
+                            } else {
+                                j++;
+                                if (first) {
+                                    first = false;
+                                } else {
+                                    sb.append(", ");    //NOI18N
+                                }
+                                cannonicalName(vmSig[2].substring(i,j), sb);
+                                i=j;
+                            }
+                            break;
+                        case 1:
+                            if (la==';') {      //NOI18N
+                                j++;
+                                if (first) {
+                                    first = false;
+                                } else {
+                                    sb.append(", ");    //NOI18N
+                                }
+                                cannonicalName(vmSig[2].substring(i,j), sb);
+                                i=j;
+                                state = 0;
+                            } else {
+                                j++;
+                            }
+                            break;
+                        default:
+                            throw new IllegalStateException();
+                    }
+                }
+                sb.append(')'); //NOI18N
+                return sb.toString();
+            } else  {
+                throw new UnsupportedOperationException(kind.name());
+            }
+        }
+
+        @NonNull
+        private static String cannonicalName(@NonNull final String binaryName) {
+            return binaryName.replace('$', '.').replace('/', '.');    //NOI18N
+        }
+
+        private static void cannonicalName(
+                @NonNull final String type,
+                @NonNull final StringBuilder into) {
+            final char la = type.charAt(0);
+            switch (la) {
+                case 'V':                       //NOI18N
+                    into.append("void");        //NOI18N
+                    break;
+                case 'Z':                       //NOI18N
+                    into.append("boolean");     //NOI18N
+                    break;
+                case 'B':                       //NOI18N
+                    into.append("byte");        //NOI18N
+                    break;
+                case 'S':                       //NOI18N
+                    into.append("short");       //NOI18N
+                    break;
+                case 'I':                       //NOI18N
+                    into.append("int");         //NOI18N
+                    break;
+                case 'J':                       //NOI18N
+                    into.append("long");        //NOI18N
+                    break;
+                case 'C':                       //NOI18N
+                    into.append("char");        //NOI18N
+                    break;
+                case 'F':                       //NOI18N
+                    into.append("float");       //NOI18N
+                    break;
+                case 'D':                       //NOI18N
+                    into.append("double");      //NOI18N
+                    break;
+                case 'L':                       //NOI18N
+                    into.append(cannonicalName(type.substring(1,type.length()-1)));
+                    break;
+                case '[':                       //NOI18N
+                    cannonicalName(type.substring(1), into);
+                    into.append("[]");          //NOI18N
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
         }
     }
 
     private static final class Model {
         private static final String DEF_NAMES = PackedNames.class.getName();
+        private String whiteListName;
         private Union2<StringBuilder,Pattern> checkedPkgs;
         private final Names names;
         private final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>> root =
@@ -226,9 +372,19 @@ public final class WhiteListImplementationBuilder {
             methodSigNode.state |= mode;
         }
 
+        void setDisplayName(final String name) {
+            whiteListName = name;
+        }
+
+        @NbBundle.Messages({
+            "TXT_UnknownWhiteList=Unknown WhiteList"
+        })
         Model build() {
             checkedPkgs = Union2.createSecond(
                     Pattern.compile(checkedPkgs.first().toString()));
+            if (whiteListName == null) {
+                whiteListName = Bundle.TXT_UnknownWhiteList();
+            }
             return this;
         }
 
@@ -273,6 +429,10 @@ public final class WhiteListImplementationBuilder {
                 return true;
             }
             return false;
+        }
+
+        String getDisplayName() {
+            return whiteListName;
         }
 
         private static class CacheNode {
@@ -375,7 +535,7 @@ public final class WhiteListImplementationBuilder {
         }
 
         @NonNull
-        private String folderToPackage(@NonNull final String folder) {
+        private static String folderToPackage(@NonNull final String folder) {
             return folder.replace( '/', '.' );  //NOI18N
         }
     }
