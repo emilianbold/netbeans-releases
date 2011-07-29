@@ -44,11 +44,8 @@
 
 package org.openide.xml;
 
-import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -399,23 +396,10 @@ public final class XMLUtil extends Object {
             throw new NullPointerException("You must set an encoding; use \"UTF-8\" unless you have a good reason not to!"); // NOI18N
         }
         Document doc2 = normalize(doc);
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent()); // #195921
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
-            if (tf.getClass().getName().equals("net.sf.saxon.TransformerFactoryImpl")) {
-                ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-                InputStream is = ccl.getResourceAsStream("META-INF/services/javax.xml.transform.TransformerFactory");
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                if (is != null) {
-                    try {
-                        byte[] buf = new byte[4096];
-                        int len = is.read(buf);
-                        baos.write(buf, 0, len);
-                    } finally {
-                        is.close();
-                    }
-                }
-                Logger.getLogger(XMLUtil.class.getName()).log(Level.WARNING, "#195921: got Saxon from TransformerFactory.newInstance; sysprop={0}; jaxp.properties length={1}; CCL={2} yielding ''{3}''", new Object[] {System.getProperty("javax.xml.transform.TransformerFactory"), new File(System.getProperty("java.home"), "lib/jaxp.properties").length(), ccl, baos.toString().trim()});
-            }
             Transformer t = tf.newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
             DocumentType dt = doc2.getDoctype();
@@ -447,6 +431,8 @@ public final class XMLUtil extends Object {
             t.transform(source, result);
         } catch (Exception e) {
             throw new IOException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
 
@@ -1069,7 +1055,7 @@ public final class XMLUtil extends Object {
 
     private static final class ErrHandler implements ErrorHandler {
 
-        public ErrHandler() {}
+        ErrHandler() {}
 
         private void annotate(SAXParseException exception) throws SAXException {
             Exceptions.attachMessage(exception, "Occurred at: " + exception.getSystemId() + ":" + exception.getLineNumber()); // NOI18N
