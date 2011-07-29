@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -60,7 +60,7 @@ public class SQLDataLoader extends UniFileLoader {
 
     private static final long serialVersionUID = 7673892611992320469L;
 
-    private static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
+    public static final String SQL_MIME_TYPE = "text/x-sql"; // NOI18N
     
     public SQLDataLoader() {
         super("org.netbeans.modules.db.sql.loader.SQLDataObject"); // NOI18N
