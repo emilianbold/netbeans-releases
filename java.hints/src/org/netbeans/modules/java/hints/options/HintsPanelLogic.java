@@ -95,7 +95,7 @@ import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
  *
  * @author Petr Hrebejk
  */
-class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener, ItemListener {
+public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener, ItemListener {
 
     private Map<String,ModifiedPreferences> changes = new HashMap<String, ModifiedPreferences>();
     private DependencyTracking depScn = null;
