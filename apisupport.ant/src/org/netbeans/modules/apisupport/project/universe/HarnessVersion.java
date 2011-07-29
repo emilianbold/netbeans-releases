@@ -45,7 +45,8 @@
 package org.netbeans.modules.apisupport.project.universe;
 
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.apisupport.project.universe.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /** Release of the build harness. */
 public enum HarnessVersion {
@@ -68,32 +69,45 @@ public enum HarnessVersion {
     V70;
 
     /** Gets a quick display name. */
+    @Messages({
+        "LBL_harness_version_5.0=5.0",
+        "LBL_harness_version_5.0u1=5.0 update 1 / 5.5",
+        "LBL_harness_version_5.5u1=5.5 update 1",
+        "LBL_harness_version_6.0=6.0",
+        "LBL_harness_version_6.1=6.1",
+        "LBL_harness_version_6.5=6.5",
+        "LBL_harness_version_6.7=6.7",
+        "LBL_harness_version_6.8=6.8",
+        "LBL_harness_version_6.9=6.9",
+        "LBL_harness_version_7.0=7.0",
+        "LBL_harness_version_unknown=unknown"
+    })
     public String getDisplayName() {
         switch (this) {
             case V50:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_5.0");
+                return LBL_harness_version_5_0();
             case V50u1:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_5.0u1");
+                return LBL_harness_version_5_0u1();
             case V55u1:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_5.5u1");
+                return LBL_harness_version_5_5u1();
             case V60:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_6.0");
+                return LBL_harness_version_6_0();
             case V61:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_6.1");
+                return LBL_harness_version_6_1();
             case V65:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_6.5");
+                return LBL_harness_version_6_5();
             case V67:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_6.7");
+                return LBL_harness_version_6_7();
             case V68:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_6.8");
+                return LBL_harness_version_6_8();
             case V69:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_6.9");
+                return LBL_harness_version_6_9();
             case V70:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_7.0");
+                return LBL_harness_version_7_0();
             default:
                 assert this == UNKNOWN;
         }
-        return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_unknown");
+        return LBL_harness_version_unknown();
     }
 
     /** Detects harness version based on org-netbeans-modules-apisupport-harness.jar */
