@@ -3491,9 +3491,11 @@ public class Reformatter implements ReformatTask {
                                 }
                             }
                             preserveNewLines = true;
+                            lastNewLinePos = i;
+                        } else {
+                            lastNewLinePos = currWSPos >= 0 ? currWSPos : i;                            
                         }
                         firstLine = false;
-                        lastNewLinePos = currWSPos >=0 ? currWSPos : i;
                     }
                     if (i >= checkOffset && actionType == 5) {
                         noFormat = true;
