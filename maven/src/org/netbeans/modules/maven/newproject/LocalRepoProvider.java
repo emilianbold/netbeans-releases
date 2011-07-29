@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.newproject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -70,7 +71,7 @@ public class LocalRepoProvider implements ArchetypeProvider {
                 return lst;
             }
                     
-            List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(info);
+            List<NBVersionInfo> archs = RepositoryQueries.findArchetypes(Collections.singletonList(info));
             if (archs == null) {
                 return lst;
             }

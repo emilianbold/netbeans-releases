@@ -2,6 +2,78 @@
 
 #include whitelist_bug_195029.txt
 
+#200051 - bunch of classes
+org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl$OnExpandAction
+org.netbeans.modules.ant.grammar.AntHighlightsLayerFactory
+org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider
+org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider$IndentReformatTaskFactoriesProvider
+org.netbeans.modules.gsf.codecoverage.CoverageHighlightsLayerFactory
+org.netbeans.modules.html.editor.indexing.HtmlIndexer$Factory
+org.netbeans.modules.j2ee.persistence.indexing.CopyResourcesIndexer$Factory
+org.netbeans.modules.java.freeform.AnnotationProcessingQueryImpl$R
+org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch$HighlightsFactoryImpl
+org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch$JavaFactoryImpl
+org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$OpenManagersWeakListener
+org.netbeans.modules.javadoc.highlighting.Factory
+org.netbeans.modules.javawebstart.JWSLookupProvider
+org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties
+org.netbeans.modules.merge.builtin.visualizer.MergeHighlightsLayerFactory
+org.netbeans.modules.mobility.editor.ConfigurationHighlightsLayerFactory
+org.netbeans.modules.profiler.AbstractProjectTypeProfiler
+org.netbeans.modules.profiler.j2se.J2SEProjectTypeProfiler
+org.netbeans.modules.profiler.utils.ProjectUtilities
+org.netbeans.modules.profiler.utils.ProjectUtilities$IntegrationUpdater
+org.netbeans.modules.projectimport.eclipse.core.spi.UpgradableProjectLookupProvider
+org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor$Factory
+org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor$Factory
+org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory
+
+
+#200050
+org.netbeans.modules.spring.beans.index.SpringBinaryIndexer
+org.netbeans.modules.spring.beans.index.SpringBinaryIndexer$Factory
+org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory
+org.netbeans.modules.web.beans.analysis.WebBeansModelAnalysisFactory
+org.netbeans.modules.web.el.ELIndexer$Factory
+org.netbeans.modules.web.el.ELLanguage
+org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor
+org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor$1Handler
+org.netbeans.modules.web.jsf.editor.facelets.LibraryDescriptor
+org.netbeans.modules.web.jsf.editor.index.JsfCustomIndexer$Factory
+org.netbeans.modules.web.jsf.editor.index.JsfIndexSupport
+org.netbeans.modules.websvc.api.jaxws.project.JaxWsBuildScriptExtensionProvider
+org.netbeans.modules.websvc.jaxwsmodel.project.J2seBuildScriptExtensionProvider
+org.netbeans.modules.websvc.jaxwsmodel.project.J2seJaxWsOpenHook
+
+
+#200047
+org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase
+org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper
+org.netbeans.modules.cnd.api.project.NativeProjectType
+org.netbeans.modules.cnd.asm.core.assistance.CodeHighlightFactory
+org.netbeans.modules.cnd.editor.cplusplus.CppDTIFactory
+org.netbeans.modules.cnd.editor.cplusplus.CppTBIFactory
+org.netbeans.modules.cnd.editor.cplusplus.CppTTIFactory
+org.netbeans.modules.cnd.editor.fortran.FortranTTIFactory
+org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory
+org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton
+org.netbeans.modules.cnd.makeproject.MakeProjectFileOwnerQuery
+org.netbeans.modules.cnd.makeproject.MakeProjectPaths
+org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl
+org.netbeans.modules.cnd.utils.CndUtils
+org.netbeans.modules.cnd.utils.MIMENames
+
+#200042
+org.netbeans.modules.bugtracking.spi.IssueProvider
+org.netbeans.modules.bugtracking.spi.IssueProvider$LazyIssue
+org.netbeans.modules.bugtracking.tasklist.TaskListProvider
+org.netbeans.modules.bugtracking.tasklist.TaskListProvider$RefreshTask
+org.netbeans.modules.bugzilla.Bugzilla
+org.netbeans.modules.bugzilla.BugzillaConfig
+org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider
+org.netbeans.modules.bugzilla.util.BugzillaUtil
+
+
 #186869
 org.netbeans.modules.javacard.api.JavacardPlatformChildren
 org.netbeans.modules.javacard.common.Utils
@@ -113,20 +185,18 @@ org.netbeans.modules.j2ee.persistenceapi.FileChangeSupportListener
 org.netbeans.modules.j2ee.persistenceapi.PersistenceScopeAccessor
 org.netbeans.modules.j2ee.persistenceapi.PersistenceScopesAccessor
 
-# Bug 177841
-# j2ee deployment plugins loaded even when j2se project and no server installed
-javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
-javax.enterprise.deploy.spi.DeploymentManager
-javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
+#IZ 200049
+org.netbeans.modules.glassfish.common.wizards.GlassfishWizardProvider
+org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
+org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
+org.netbeans.modules.glassfish.spi.ServerUtilities
 org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment
 org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule
 org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule$Type
-org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener
 org.netbeans.modules.j2ee.deployment.impl.Server
 org.netbeans.modules.j2ee.deployment.impl.ServerRegistry
 org.netbeans.modules.j2ee.deployment.impl.ServerRegistry$InstanceInstallListener
 org.netbeans.modules.j2ee.deployment.impl.ServerRegistry$PluginInstallListener
-org.netbeans.modules.j2ee.deployment.impl.gen.nbd.CommonBean
 org.netbeans.modules.j2ee.deployment.impl.gen.nbd.ContainerLimitation
 org.netbeans.modules.j2ee.deployment.impl.gen.nbd.NetbeansDeployment
 org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot
@@ -143,16 +213,11 @@ org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment
 org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory
 org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException
 org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor
+org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager
 org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer
 org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver
 org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory
 org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory
-org.netbeans.modules.j2ee.sun.api.ServerLocationManager
-org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory
-org.netbeans.modules.j2ee.sun.ide.j2ee.RunTimeDDCatalog
-org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory
-org.netbeans.modules.glassfish.javaee.Hk2OptionalFactory
-org.netbeans.modules.glassfish.spi.ServerUtilities
 
 #IZ 177644
 org.netbeans.modules.schema2beans.AttrProp
@@ -1817,4 +1882,8 @@ org.netbeans.modules.classfile.PrimitiveElementValue
 org.netbeans.modules.project.libraries.Util
 org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation
 org.netbeans.spi.java.project.support.ui.Bundle
+org.netbeans.modules.parsing.impl.TaskProcessor$Sampler
+org.netbeans.modules.parsing.lucene.IndexDocumentImpl
+org.netbeans.modules.parsing.lucene.support.IndexDocument
+org.netbeans.modules.parsing.spi.indexing.support.IndexDocument
 

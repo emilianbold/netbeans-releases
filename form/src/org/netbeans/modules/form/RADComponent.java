@@ -541,7 +541,7 @@ public class RADComponent {
         }
 
         try {
-            RADComponentRenameRefactoringSupport.renameComponent(this, name);
+            RenameSupport.renameComponent(this, name);
         } finally { // hack for robustness - if refactoring fails for whatever reason
             if (!getName().equals(name)) {
                 setName(name);
@@ -700,7 +700,7 @@ public class RADComponent {
         return null;
     }
 
-    synchronized BindingProperty[] getKnownBindingProperties() {
+    public synchronized BindingProperty[] getKnownBindingProperties() {
         return bindingProperties != null ? getAllBindingProperties() : NO_BINDINGS;
     }
 
@@ -1375,15 +1375,20 @@ public class RADComponent {
     }
 
     private synchronized void createBindingProperties() {
-        Collection<BindingDescriptor>[] props = FormEditor.getBindingSupport(formModel).getBindingDescriptors(this);
-        bindingProperties = new BindingProperty[props.length][];
-        for (int i=0; i<props.length; i++) {
-            bindingProperties[i] = new BindingProperty[props[i].size()];
-            int j = 0;
-            for (BindingDescriptor desc : props[i]) {
-                bindingProperties[i][j++] = new BindingProperty(this, desc);
+        BindingDesignSupport bindingSupport = FormEditor.getBindingSupport(formModel);
+        if (bindingSupport == null) {
+            bindingProperties = new BindingProperty[][] {{},{},{}};
+        } else {
+            Collection<BindingDescriptor>[] props = bindingSupport.getBindingDescriptors(this);
+            bindingProperties = new BindingProperty[props.length][];
+            for (int i=0; i<props.length; i++) {
+                bindingProperties[i] = new BindingProperty[props[i].size()];
+                int j = 0;
+                for (BindingDescriptor desc : props[i]) {
+                    bindingProperties[i][j++] = new BindingProperty(this, desc);
+                }
             }
-        }       
+        }
     }
 
     private synchronized void createEventProperties() {

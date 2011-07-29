@@ -189,7 +189,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         int dex = domainField.indexOf(File.separator);
         if (AddServerLocationPanel.isRegisterableDomain(domainDirCandidate)) {
             org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
-            String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort());
+            String uri = wizardIterator.formatUri(GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getAdminPort(), panel.getTargetValue());
             if (-1 == wizardIterator.getHttpPort()) {
                 wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(this.getClass(), "ERR_InvalidDomainData", domainField)); // NOI18N
                 return false;
@@ -205,6 +205,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             // the entry resolves to a domain name that we can register
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
+            wizardIterator.setTargetValue(panel.getTargetValue());
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded", domainField)); // NOI18N
             return true;
         }
@@ -214,6 +215,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
             wizardIterator.setHostName("localhost");
             wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
+            wizardIterator.setTargetValue(panel.getTargetValue());
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField)); // NOI18N
             return true;
         }
@@ -224,6 +226,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             //String domainLoc = domainDirCandidate.getAbsolutePath();
             wizardIterator.setDomainLocation(domainLoc);
             wizardIterator.setHostName("localhost");
+            wizardIterator.setTargetValue(panel.getTargetValue());
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
             org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDirCandidate, wizardIterator);
             return true;
@@ -233,6 +236,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_CreateDomain", domainField)); // NOI18N
             wizardIterator.setUseDefaultPorts(panel.getUseDefaultPorts());
             wizardIterator.setHostName("localhost");
+            wizardIterator.setTargetValue(panel.getTargetValue());
             return true;
         }
         if (new File(domainsDir, domainField).exists()) {
@@ -253,6 +257,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             wizardIterator.setAdminPort(portval);
             wizardIterator.setHostName(hn);
             wizardIterator.setDomainLocation(null);
+            wizardIterator.setTargetValue(panel.getTargetValue());
             wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(this.getClass(), "MSG_RegisterRemote", hn,port)); // NOI18N
             return true;
         } catch (NumberFormatException nfe) {

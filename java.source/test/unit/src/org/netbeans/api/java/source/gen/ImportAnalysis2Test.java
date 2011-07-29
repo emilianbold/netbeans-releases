@@ -651,6 +651,44 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void testParameterizedType() throws Exception {
+        clearWorkDir();
+        assertTrue(new File(getWorkDir(), "test").mkdirs());
+        testFile = new File(getWorkDir(), "test/Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "\n" +
+            "public abstract class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "\n" +
+            "import java.util.Map;\n" +
+            "\n" +
+            "public abstract class Test implements Map<String, String> {\n" +
+            "    Entry e;\n" +
+            "}\n";
+
+        ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
+        JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "e", make.QualIdent("java.util.Map.Entry"), null);
+                workingCopy.rewrite(clazz, make.addClassMember(make.addClassImplementsClause(clazz, make.Type("java.util.Map<String, String>")), vt));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

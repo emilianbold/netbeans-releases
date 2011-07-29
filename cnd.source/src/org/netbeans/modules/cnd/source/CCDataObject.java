@@ -41,14 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.source;
 
-
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /** Represents a C++ object in the Repository */
 public class CCDataObject extends SourceDataObject {
@@ -57,12 +59,22 @@ public class CCDataObject extends SourceDataObject {
     static final long serialVersionUID = -5855103267479484214L;
 
     public CCDataObject(FileObject pf, SourceAbstractDataLoader loader)
-			    throws DataObjectExistsException {
-	super(pf, loader);
+            throws DataObjectExistsException {
+        super(pf, loader);
+    }
+
+    @MultiViewElement.Registration(displayName = "#Source",
+        iconBase = CCDataNode.CCSrcIcon,
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType = MIMENames.CPLUSPLUS_MIME_TYPE,
+        preferredID = "cpp.source", //NOI18N
+        position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
     protected Node createNodeDelegate() {
-	return new CCDataNode(this);
+        return new CCDataNode(this);
     }
 }

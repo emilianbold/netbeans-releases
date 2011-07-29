@@ -73,6 +73,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
@@ -522,7 +523,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         lstVersions.setModel(dlm);
         RP.post(new Runnable() {
             public void run() {
-                final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId());
+                final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
                 final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -541,7 +542,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         lstClassifiers.setModel(mdl);
         RP.post(new Runnable() {
             public void run() {
-                List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+                List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
                 final Set<String> classifiers = new TreeSet<String>();
                 boolean hasJavadoc = false;
                 boolean hasSource = false;

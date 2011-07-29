@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextHitInfo;
@@ -55,6 +56,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -64,6 +66,7 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * Utilities related to HighlightsView and TextLayout management.
@@ -85,78 +88,6 @@ public class HighlightsViewUtils {
     private HighlightsViewUtils() {
     }
 
-    /**
-     * Find index affected by a change in paragraph view's children.
-     *
-     * @param boxView non-null box view (paragraph view).
-     * @param index >= 0 index where children be added/removed.
-     * @param viewCount total view count of the box view. Font of a view at "index"
-     *  needs to be examined.
-     * @return index from which the children's text layout should be recomputed.
-     */
-    static <V extends EditorView> int findAffectedLayoutIndex(EditorBoxView<V> boxView,
-            VisualUpdate<V> visualUpdate, int index)
-    {
-        assert (boxView instanceof ParagraphView) : "Not ParagraphView instance"; // NOI18N
-        ParagraphView pView = (ParagraphView) boxView;
-        DocumentView docView = pView.getDocumentView();
-        assert (docView != null) : "docView==null for pView=" + pView; // NOI18N
-        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
-        assert (textLayoutCache != null) : "textLayoutCache is null for pView=" + pView; // NOI18N
-        boolean inTLCache = textLayoutCache.contains(pView);
-        if (inTLCache) {
-            visualUpdate.markInCache();
-        } else { // Not in cache => return 0
-            return 0;
-        }
-        if (index > 0) {
-            Font defaultFont = docView.getTextComponent().getFont();
-            EditorView prevView = boxView.getEditorView(index - 1);
-            if (!(prevView instanceof HighlightsView)) {
-                return index;
-            }
-            HighlightsView prevHView = (HighlightsView) prevView;
-            Object prevLayout = prevHView.layoutRaw();
-            // Layouts should be inited (otherwise return earlier above)
-            assert (prevLayout != null) : "Null prevLayout"; // NOI18N
-            boolean prevRebuild;
-            if (prevLayout instanceof TextLayoutPart) {
-                prevRebuild = !((TextLayoutPart) prevLayout).isLast();
-            } else { // TextLayout instance
-                prevRebuild = false;
-            }
-            int viewCount = boxView.getViewCount();
-            if (!prevRebuild && index != viewCount) { // Check font at index
-                EditorView view = boxView.getEditorView(index);
-                if (view instanceof HighlightsView) {
-                    AttributeSet attrs = ((HighlightsView)view).getAttributes();
-                    AttributeSet prevAttrs = prevHView.getAttributes();
-                    Font font = ViewUtils.getFont(attrs, defaultFont);
-                    Font prevFont = ViewUtils.getFont(prevAttrs, defaultFont);
-                    // If font that follows at index is the same like the one that precedes index
-                    // then the preceding "round" must be recomputed to concat with the replaced view(s)
-                    prevRebuild = prevFont.equals(font) &&
-                            colorsEqual(foreColor(attrs), foreColor(prevAttrs)) &&
-                            strikeThroughEqual(strikeThrough(attrs), strikeThrough(prevAttrs));
-                }
-            }
-            if (prevRebuild) {
-                index--;
-                prevHView.setLayout(null);
-                if (prevLayout instanceof TextLayoutPart) {
-                    // Goto first
-                    while (((TextLayoutPart)prevLayout).index() != 0) { // Not first yet
-                        index--;
-                        prevHView = ((HighlightsView)boxView.getEditorView(index));
-                        prevLayout = prevHView.layoutRaw();
-                        prevHView.setLayout(null);
-                    }
-                }
-            }
-        }
-        return index;
-    }
-    
     private static Color foreColor(AttributeSet attrs) {
         return (attrs != null)
                 ? (Color) attrs.getAttribute(StyleConstants.Foreground)
@@ -168,240 +99,19 @@ public class HighlightsViewUtils {
         if (foreColor == null) {
             foreColor = textComponent.getForeground();
         }
+        if (foreColor == null) {
+            foreColor = Color.BLACK;
+        }
         return foreColor;
     }
 
-    private static Color backColor(AttributeSet attrs) {
-        return (attrs != null)
-                ? (Color) attrs.getAttribute(StyleConstants.Background)
-                : null;
-    }
-    
-    private static Color validBackColor(AttributeSet attrs, JTextComponent textComponent) {
-        Color backColor = backColor(attrs);
-        if (backColor == null) {
-            backColor = textComponent.getBackground();
-        }
-        return backColor;
-    }
-
-    private static boolean colorsEqual(Color color1, Color color2) {
-        return (color1 != null)
-                ? color1.equals(color2)
-                : color2 == null;
-    }
-
-    private static Boolean strikeThrough(AttributeSet attrs) {
-        return (attrs != null)
-                ? (Boolean) attrs.getAttribute(StyleConstants.StrikeThrough)
-                : null;
-    }
-
-    private static boolean strikeThroughEqual(Boolean strikeThrough1, Boolean strikeThrough2) {
-        return (strikeThrough1 != null)
-                ? strikeThrough1.equals(strikeThrough2)
-                : strikeThrough2 == null;
-    }
-
-    /**
-     * Fix layouts in a range of indices.
-     *
-     * @param boxView non-null paragraph view.
-     * @param startIndex index of first child view to fix.
-     * @param endIndex end index of fixing.
-     * @param viewCount total view count in boxView.
-     * @return possibly increased endIndex if fixing went beyond it (continuous group occurred).
-     */
-    static <V extends EditorView> void fixLayouts(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate) {
-        ParagraphView pView = (ParagraphView) boxView;
-        DocumentView docView = pView.getDocumentView();
-        Document doc = docView.getDocument();
-        CharSequence docText = DocumentUtilities.getText(doc);
-        JTextComponent textComponent = docView.getTextComponent();
-        Font defaultFont = textComponent.getFont();
-        int groupStartIndex = -1;
-        HighlightsView hViewFirst = null;
-        Font fontFirst = null;
-        Color foreColorFirst = null;
-        Color backColorFirst = null;
-        int viewCount = boxView.getViewCount();
-        if (!visualUpdate.isInCache()) {
-            assert (visualUpdate.visualIndex == 0); // Should be set to zero in findAffectedLayoutIndex()
-            visualUpdate.endVisualIndex = viewCount;
-            // Will become part of the cache
-            docView.getTextLayoutCache().activate(pView);
-        }
-        int i;
-        for (i = visualUpdate.visualIndex; i < viewCount; i++) {
-            EditorView view = boxView.getEditorView(i);
-            if (view instanceof HighlightsView) {
-                AttributeSet attrs = view.getAttributes();
-                Font font = ViewUtils.getFont(attrs, defaultFont);
-                docView.notifyFontUse(font); // Notify that this font is being used (possibly update line height)
-                Color foreColor = validForeColor(attrs, textComponent);
-                Color backColor = validBackColor(attrs, textComponent);
-                
-                assert (font != null) : "Null font";
-                if (hViewFirst == null) { // First hView
-                    groupStartIndex = i;
-                    hViewFirst = (HighlightsView) view;
-                    fontFirst = font;
-                    foreColorFirst = foreColor;
-                    backColorFirst = backColor;
-                } else { // Inside a group
-                    if (!font.equals(fontFirst)) {
-                        // [TODO] Possibly check for a different foreground color
-                        // since textLayout.draw() only works for whole layout
-                        // so it may be more efficient to break and create new text layout.
-//                            if (!foreColorsEqual(foreColor, foreColorFirst)) {
-//                                break;
-//                            }
-                        fixLayoutViewGroup(pView, docView, groupStartIndex, i, hViewFirst,
-                                docText, fontFirst, foreColorFirst, backColorFirst);
-                        // Create next group
-                        groupStartIndex = i;
-                        hViewFirst = (HighlightsView) view;
-                        fontFirst = font;
-                        foreColorFirst = foreColor;
-                        backColorFirst = backColor;
-                    } // Otherwise continue the group
-                }
-            } else { // Not HighlightsView => End possible group
-                if (hViewFirst != null) {
-                    fixLayoutViewGroup(pView, docView, groupStartIndex, i, hViewFirst,
-                            docText, fontFirst, foreColorFirst, backColorFirst);
-                    groupStartIndex = -1;
-                    hViewFirst = null;
-                }
-            }
-            
-            // Check if there's nothing "opened" at endIndex.
-            if (i >= visualUpdate.endVisualIndex && hViewFirst == null) {
-                // Check that existing layout in the next existing view is not "opened"
-                // i.e. the next child view must not be a textlayoutpart with index != 0.
-                Object layout;
-                if (i + 1 >= viewCount ||
-                        !((view = boxView.getEditorView(i + 1)) instanceof HighlightsView) ||
-                        !((layout = ((HighlightsView)view).layoutRaw()) instanceof TextLayoutPart) ||
-                        ((TextLayoutPart)layout).index() == 0)
-                {
-                    visualUpdate.endVisualIndex = i;
-                    return;
-                }
-            }
-        }
-        if (hViewFirst != null) { // Check possible group till viewCount
-            assert (i == viewCount);
-            fixLayoutViewGroup(pView, docView, groupStartIndex, i, hViewFirst,
-                    docText, fontFirst, foreColorFirst, backColorFirst);
-        }
-        visualUpdate.endVisualIndex = viewCount;
-    }
-    
-    private static void fixLayoutViewGroup(ParagraphView pView, DocumentView docView,
-            int groupStartIndex, int groupEndIndex, HighlightsView hViewFirst,
-            CharSequence docText, Font fontFirst, Color foreColorFirst, Color backColorFirst)
-    {
-        int startOffset = hViewFirst.getStartOffset();
-        int groupLength = groupEndIndex - groupStartIndex;
-        assert (groupLength > 0) : "groupLength=" + groupLength; // NOI18N
-        int textLength = (groupLength == 1)
-                ? hViewFirst.getLength()
-                : pView.getEditorView(groupEndIndex - 1).getEndOffset() - startOffset;
-        String text = docText.subSequence(startOffset, startOffset + textLength).toString();        
-        if (docView.isShowNonprintingCharacters()) {
-            text = text.replace(' ', DocumentView.PRINTING_SPACE);
-        }
-        TextLayout textLayout = docView.createTextLayout(text, fontFirst);
-
-        if (groupLength == 1) { // Construct TextLayout
-            hViewFirst.setLayout(textLayout);
-        } else { // Text layout wrapper
-            TextLayoutWrapper wrapper = new TextLayoutWrapper(textLayout, groupLength,
-                    foreColorFirst, backColorFirst);
-            TextLayoutPart textLayoutPart = new TextLayoutPart(wrapper, 0, 0, null, null);
-            hViewFirst.setLayout(textLayoutPart);
-            int len = hViewFirst.getLength();
-            JTextComponent textComponent = docView.getTextComponent();
-            float lastX = 0f;
-            for (int i = groupStartIndex + 1; i < groupEndIndex; i++) {
-                HighlightsView view = (HighlightsView) pView.getEditorView(i);
-                AttributeSet attrs = view.getAttributes();
-                Color foreColor = validForeColor(attrs, textComponent);
-                if (colorsEqual(foreColor, foreColorFirst)) {
-                    foreColor = null;
-                }
-                Color backColor = validBackColor(attrs, textComponent);
-                if (colorsEqual(backColor, backColorFirst)) {
-                    backColor = null;
-                }
-                float x = TextLayoutUtils.index2X(textLayout, len);
-                if (x < lastX) {
-                    pView.markRTL();
-                }
-                textLayoutPart = new TextLayoutPart(wrapper, i - groupStartIndex, len,
-                        foreColor, backColor);
-                view.setLayout(textLayoutPart);
-                len += view.getLength();
-            }
-        }
-    }
-
-    static String findLayoutIntegrityError(EditorBoxView boxView) {
-        String err = null;
-        int viewCount = boxView.getViewCount();
-        int partCount = -1;
-        int lastPartIndex = -1;
-        for (int i = 0; i < viewCount; i++) {
-            EditorView child = boxView.getEditorView(i);
-            if (child instanceof HighlightsView) {
-                Object layout = ((HighlightsView) child).layoutRaw();
-                if (layout instanceof TextLayoutPart) {
-                    TextLayoutPart part = (TextLayoutPart) layout;
-                    if (partCount != -1) { // Member
-                        lastPartIndex++;
-                        if (part.index() != lastPartIndex) {
-                            err = "part.index()=" + part.index() + " != (lastPartIndex+1)=" + // NOI18N
-                                    lastPartIndex;
-                        }
-                        if (lastPartIndex == part.viewCount() - 1) {
-                            partCount = -1;
-                        }
-                    } else { // partCount == -1
-                        partCount = part.viewCount();
-                        if (partCount <= 1) {
-                            err = "partCount=" + partCount + " <= 1"; // NOI18N
-                        }
-                        if (err == null && part.index() != 0) {
-                            err = "part.index()=" + part.index() + " != 0"; // NOI18N
-                        }
-                        lastPartIndex = 0;
-                    }
-                } else { // Non-TextLayoutPart
-                    if (partCount != -1) {
-                        err = "HV: Unterminated layout parts: partCount=" + partCount; // NOI18N
-                    }
-                }
-            } else {
-                if (partCount != -1) {
-                    err = "Non-HV: Unterminated layout parts: partCount=" + partCount; // NOI18N
-                }
-            }
-            if (err != null) {
-                err = "=" + boxView.getDumpId() + "[" + i + "]=" + child.getDumpId() + ": " + err; // NOI18N
-                break;
-            }
-        }
-        return err;
-    }
-    
     static Shape indexToView(TextLayout textLayout, Rectangle2D textLayoutBounds,
              int index, Position.Bias bias, int maxIndex, Shape alloc)
     {
         if (textLayout == null) {
             return alloc; // Leave given bounds
         }
-        assert (textLayout.getCharacterCount() >= maxIndex) : "textLayout.getCharacterCount()=" + // NOI18N
+        assert (maxIndex <= textLayout.getCharacterCount()) : "textLayout.getCharacterCount()=" + // NOI18N
                 textLayout.getCharacterCount() + " < maxIndex=" + maxIndex; // NOI18N
         // If offset is >getEndOffset() use view-end-offset - otherwise it would throw exception from textLayout.getCaretInfo()
 	int charIndex = Math.min(index, maxIndex);
@@ -440,77 +150,54 @@ public class HighlightsViewUtils {
         return hit;
     }
     
+    static double getMagicX(DocumentView docView, EditorView view, int offset, Bias bias, Shape alloc) {
+        JTextComponent textComponent = docView.getTextComponent();
+        if (textComponent == null) {
+            return 0d;
+        }
+        Caret caret = textComponent.getCaret();
+        Point magicCaretPoint = (caret != null) ? caret.getMagicCaretPosition() : null;
+        double x;
+        if (magicCaretPoint == null) {
+            Shape offsetBounds = view.modelToViewChecked(offset, alloc, bias);
+            if (offsetBounds == null) {
+                x = 0d;
+            } else {
+                x = offsetBounds.getBounds2D().getX();
+            }
+        } else {
+            x = magicCaretPoint.x;
+        }
+        return x;
+    }
+
     static int getNextVisualPosition(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet,
             TextLayout textLayout, int textLayoutOffset, int viewStartOffset, int viewLength, DocumentView docView)
     {
         int retOffset = -1;
-        boolean viewIsLeftToRight = false; // [TODO] AbstractDocument.isLeftToRight();
+        biasRet[0] = Bias.Forward; // BaseCaret ignores bias
         TextHitInfo currentHit, nextHit;
         switch (direction) {
             case View.EAST:
                 if (offset == -1) { // Entering view from the left.
-                    if (viewIsLeftToRight) {
-                        biasRet[0] = Bias.Forward;
-                        return viewStartOffset;
-                    } else {
-                        biasRet[0] = Bias.Backward;
-                        return viewStartOffset + viewLength;
-                    }
+                    retOffset = viewStartOffset;
                 } else { // Regular offset
-                    if (bias == Bias.Forward) {
-                        currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
-                    } else {
-                        currentHit = TextHitInfo.beforeOffset(offset - viewStartOffset);
-                    }
+                    currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
                     nextHit = textLayout.getNextRightHit(currentHit);
                     if (nextHit != null) {
-                        if (viewIsLeftToRight != textLayout.isLeftToRight()) {
-                            // If the layout's base direction is different from
-                            // this view's run direction, we need to use the weak
-                            // carrat. 
-                            nextHit = textLayout.getVisualOtherHit(nextHit);
-                        }
-                        if (nextHit.getInsertionIndex() == viewLength) {
-                            biasRet[0] = Bias.Backward;
-                        } else {
-                            biasRet[0] = Bias.Forward;
-                        }
                         retOffset = viewStartOffset + nextHit.getInsertionIndex();
                     } // Leave retOffset == -1
                 }
                 break;
 
-
             case View.WEST:
                 if (offset == -1) { // Entering view from the right
-                    if (viewIsLeftToRight) {
-                        biasRet[0] = Bias.Backward;
-                        return viewStartOffset + viewLength;
-                    } else {
-                        biasRet[0] = Bias.Forward;
-                        return viewStartOffset;
-                    }
+                    retOffset = viewStartOffset + viewLength - 1;
                 } else { // Regular offset
-                    if (bias == Bias.Forward) {
-                        currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
-                    } else {
-                        currentHit = TextHitInfo.beforeOffset(offset - viewStartOffset);
-                    }
+                    currentHit = TextHitInfo.afterOffset(offset - viewStartOffset);
                     nextHit = textLayout.getNextLeftHit(currentHit);
                     if (nextHit != null) {
-                        if (viewIsLeftToRight != textLayout.isLeftToRight()) {
-                            // If the layout's base direction is different from
-                            // this view's run direction, we need to use the weak
-                            // carrat. 
-                            nextHit = textLayout.getVisualOtherHit(nextHit);
-                        }
-                        if (nextHit.getInsertionIndex() == viewLength) {
-                            // A move to the left from an internal position will
-                            // only take us to the endOffset in a right to left run.
-                            biasRet[0] = Bias.Backward;
-                        } else {
-                            biasRet[0] = Bias.Forward;
-                        }
+                        retOffset = viewStartOffset + nextHit.getInsertionIndex();
                     } // Leave retOffset == -1
                 }
                 break;
@@ -521,146 +208,163 @@ public class HighlightsViewUtils {
             default:
                 throw new IllegalArgumentException("Bad direction: " + direction);
         }
-
         return retOffset;
     }
 
-    static void paint(Graphics2D g, Shape alloc, Rectangle clipBounds,
-            HighlightsView view, TextLayout textLayout, int shift, int len)
+    /**
+     * Paint text layout that corresponds fully or partially to the given highlights view.
+     *
+     * @param g graphics
+     * @param textLayoutAlloc
+     * @param clipBounds
+     * @param docView
+     * @param view
+     * @param textLayout
+     * @param startIndex first index inside textLayout to be rendered.
+     * @param endIndex end index inside textLayout to be rendered.
+     */
+    static void paintHiglighted(Graphics2D g, Shape textLayoutAlloc, Rectangle clipBounds,
+            DocumentView docView, EditorView view, int viewStartOffset,
+            boolean newline, TextLayout textLayout, int textLayoutOffset,
+            int startIndex, int endIndex)
     {
-        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
-        DocumentView docView = view.getDocumentView();
-        if (docView != null && allocBounds.intersects(clipBounds)) {
-            if (docView != null) {
-                PaintState paintState = PaintState.save(g);
-                try {
-                    AttributeSet attrs = view.getAttributes();
-                    paintBackground(g, allocBounds, attrs, docView);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest(view.getDumpId() + ":paint-bkg: " + ViewUtils.toString(g.getColor()) + // NOI18N
-                                ", bounds=" + ViewUtils.toString(allocBounds) + '\n'); // NOI18N
-                    }
+        Rectangle2D textLayoutRect = ViewUtils.shape2Bounds(textLayoutAlloc);
+        PaintState paintState = PaintState.save(g);
+        Shape origClip = g.getClip();
+        try {
+            // Render individual parts of the text layout with the correct highlighting
+            // 1. Only the whole text layout can be rendered by its TL.draw() (in a single color)
+            // 2. when TL is rendered in a color (e.g. black) it cannot be over-rendered
+            //    in another color (for custom foreground) since it would look blurry.
+            //
+            // Therefore do the rendering in the following way:
+            // 1. Get bounds of each part.
+            // 2. Render background of part's bounds
+            // 3. Render part's text in custom color by clipping of rendering of whole TL.
+            //
+            JTextComponent textComponent = docView.getTextComponent();
+            HighlightsSequence highlights = docView.getPaintHighlights(view,
+                    textLayoutOffset + startIndex - viewStartOffset);
+            TextLayout renderTextLayout = textLayout;
+            Boolean showNonPrintingChars = null;
+            boolean log = LOG.isLoggable(Level.FINEST);
+            while (highlights.moveNext()) {
+                int hiStartOffset = highlights.getStartOffset();
+                int hiEndOffset = Math.min(highlights.getEndOffset(), textLayoutOffset + endIndex);
+                if (hiEndOffset <= hiStartOffset) {
+                    break;
+                }
+                // For visualized TABs it is necessary to render each TAB char text layout individually
+                int renderEndOffset;
+                do {
+                    renderEndOffset = hiEndOffset;
+                    AttributeSet attrs = highlights.getAttributes();
+                    Shape renderPartAlloc;
                     if (textLayout != null) {
-                        paintForeground(g, allocBounds, textLayout, attrs, docView);
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            int startOffset = view.getStartOffset() + shift;
-                            Document doc = docView.getDocument();
-                            CharSequence text = DocumentUtilities.getText(doc).subSequence(startOffset, startOffset + len);
-                            // Here it's assumed that 'text' var contains the same content as (possibly cached)
-                            // textLayout but if textLayout caching would be broken then they could differ.
-                            LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
-                                    "\", XY["+ ViewUtils.toStringPrec1(allocBounds.getX()) + ";" +
-                                    ViewUtils.toStringPrec1(allocBounds.getY()) + "(B" + // NOI18N
-                                    ViewUtils.toStringPrec1(docView.getDefaultAscent()) + // NOI18N
-                                    ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
+                        TextHitInfo startHit = TextHitInfo.leading(hiStartOffset - textLayoutOffset);
+                        TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
+                        renderPartAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutRect, startHit, endHit);
+                        if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINER)) {
+                            ViewHierarchy.PAINT_LOG.finer("Hit<" + startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
+                                ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
+                                hiStartOffset, renderEndOffset) + "', alloc=" + ViewUtils.toString(renderPartAlloc)); // NOI18N
+                        }
+                    } else { // No text layout => Newline or TAB(s)
+                        if (showNonPrintingChars == null) {
+                            showNonPrintingChars = docView.isShowNonPrintingCharacters();
+                        }
+                        if (newline) {
+                            renderPartAlloc = textLayoutAlloc; // Single '\n' => render whole alloc
+                            renderTextLayout = showNonPrintingChars
+                                    ? docView.getNewlineCharTextLayout()
+                                    : null;
+                        } else { // It's TAB(s)
+                            if (showNonPrintingChars) {
+                                // Render just single TAB char's text layout
+                                renderEndOffset = hiStartOffset + 1;
+                            }
+                            Shape renderStartAlloc = view.modelToViewChecked(hiStartOffset, textLayoutRect, Bias.Forward);
+                            Rectangle2D.Double r = ViewUtils.shape2Bounds(renderStartAlloc);
+                            // Tab view should support doing modelToView() for its ending offset
+                            Shape renderEndAlloc = view.modelToViewChecked(renderEndOffset, textLayoutRect, Bias.Forward);
+                            Rectangle2D rEnd = ViewUtils.shapeAsRect(renderEndAlloc);
+                            r.width = rEnd.getX() - r.x;
+                            renderPartAlloc = r;
+                            if (showNonPrintingChars) {
+                                renderTextLayout = docView.getTabCharTextLayout(r.width);
+                            } else {
+                                renderTextLayout = null;
+                            }
                         }
                     }
-                } finally {
-                    paintState.restore();
-                }
+                    // First render background and background related highlights
+                    // Do not g.clip() before background is filled since otherwise there would be
+                    // painting artifacts for italic fonts (one-pixel slanting lines) at certain positions.
+                    fillBackground(g, renderPartAlloc, attrs, textComponent);
+                    // Clip to part's alloc since textLayout.draw() renders fully the whole text layout
+                    g.clip(renderPartAlloc);
+                    paintBackgroundHighlights(g, renderPartAlloc, attrs, docView);
+                    // Render foreground with proper color
+                    g.setColor(HighlightsViewUtils.validForeColor(attrs, textComponent));
+                    if (renderTextLayout != null) {
+                        paintTextLayout(g, textLayoutRect, renderTextLayout, docView);
+                    }
+                    paintStrikeThrough(g, textLayoutRect, attrs, docView);
+                    g.setClip(origClip);
+                    if (log) {
+                        Document doc = docView.getDocument();
+                        CharSequence text = DocumentUtilities.getText(doc).subSequence(hiStartOffset, hiEndOffset);
+                        // Here it's assumed that 'text' var contains the same content as (possibly cached)
+                        // textLayout but if textLayout caching would be broken then they could differ.
+                        LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
+                                "\", XY[" + ViewUtils.toStringPrec1(textLayoutRect.getX()) + ";"
+                                + ViewUtils.toStringPrec1(textLayoutRect.getY()) + "(B" + // NOI18N
+                                ViewUtils.toStringPrec1(docView.getDefaultAscent()) + // NOI18N
+                                ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
+                    }
+                    hiStartOffset = renderEndOffset;
+                } while (renderEndOffset < hiEndOffset);
             }
+
+        } finally {
+            g.setClip(origClip);
+            paintState.restore();
         }
     }
 
-    static void paintBackground(Graphics2D g, Shape alloc, AttributeSet attrs, DocumentView docView) {
-        // Paint background
-        Rectangle2D allocBounds = ViewUtils.shapeAsRect(alloc);
-        JTextComponent textComponent = docView.getTextComponent();
-        Color componentBackground = textComponent.getBackground();
-        ViewUtils.applyBackgroundAttributes(attrs, componentBackground, g);
-        if (!componentBackground.equals(g.getColor())) { // Not yet cleared by BasicTextUI.paintBackground()
+    static void fillBackground(Graphics2D g, Shape partAlloc, AttributeSet attrs, JTextComponent c) {
+        // Render background
+        if (ViewUtils.applyBackgroundColor(g, attrs, c)) {
             // Fill the alloc (not allocBounds) since it may be non-rectangular
-            g.fill(alloc);
+            g.fill(partAlloc);
         }
-        paintBackgroundExtras(g, allocBounds, attrs, docView);
-    }
-    
-    static void partPaintBackground(Graphics2D g, Shape alloc,
-            TextLayoutPart textLayoutPart, Shape textLayoutAlloc,
-            AttributeSet attrs, DocumentView docView)
-    {
-        // Paint background
-        Rectangle2D allocBounds = ViewUtils.shapeAsRect(alloc);
-        JTextComponent textComponent = docView.getTextComponent();
-        Color componentBackground = textComponent.getBackground();
-        ViewUtils.applyBackgroundAttributes(attrs, componentBackground, g);
-        // If part's foreground != null then the background must be forcibly cleared
-        // since there was text layout already rendered in "global" foreground color
-        // and if the TL would be rendered in part's foreground color by partPaintForeground()
-        // later over it then the result would look blur.
-        if (!componentBackground.equals(g.getColor()) || textLayoutPart.foreground() != null) {
-            // Fill the alloc (not allocBounds) since it may be non-rectangular
-            g.fill(alloc);
-        }
-        paintBackgroundExtras(g, allocBounds, attrs, docView);
     }
 
-    static void paintBackgroundExtras(Graphics2D g, Rectangle2D allocBounds,
-            AttributeSet attrs, DocumentView docView)
-    {
-        // Paint possible underlines
+    /**
+     * Render border lines, underline or wave underline and text limit line (but do not clear background).
+     * 
+     * @param g
+     * @param partAlloc
+     * @param attrs
+     * @param docView 
+     */
+    static void paintBackgroundHighlights(Graphics2D g, Shape partAlloc, AttributeSet attrs, DocumentView docView) {
+        // Paint background
+        Rectangle2D partAllocBounds = ViewUtils.shapeAsRect(partAlloc);
+        // Also get integer coords for text limit line and other renderings
+        int x = (int) partAllocBounds.getX();
+        int y = (int) partAllocBounds.getY();
+        int lastX = (int) (Math.ceil(partAllocBounds.getMaxX()) - 1);
+        int lastY = (int) (Math.ceil(partAllocBounds.getMaxY()) - 1);
+        paintTextLimitLine(g, docView, x, y, lastX, lastY);
+        // Paint extra 
         if (attrs != null) {
-            // For now operate with allocBounds although the alloc may be non-rectangular
-            int xInt = (int) allocBounds.getX();
-            int yInt = (int) allocBounds.getY();
-            int endXInt = (int) (allocBounds.getX() + allocBounds.getWidth() - 1);
-            int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
             Color leftBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.LeftBorderLineColor);
             Color rightBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.RightBorderLineColor);
             Color topBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.TopBorderLineColor);
             Color bottomBorderLineColor = (Color) attrs.getAttribute(EditorStyleConstants.BottomBorderLineColor);
-            Color textLimitLineColor = docView.getTextLimitLineColor();
-            boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
-            int textLimitWidth = docView.getTextLimitWidth();
-            float defaultCharWidth = docView.getDefaultCharWidth();
 
-            if (drawTextLimitLine && textLimitWidth > 0) { // draw limit line
-                int lineX = (int)(textLimitWidth * defaultCharWidth);
-                if (lineX >= xInt && lineX <= endXInt){
-                    g.setColor(textLimitLineColor);
-                    g.drawLine(lineX, yInt, lineX, endYInt);
-                }
-            }
-            if (leftBorderLineColor != null) {
-                g.setColor(leftBorderLineColor);
-                g.drawLine(xInt, yInt, xInt, endYInt);
-            }
-            if (rightBorderLineColor != null) {
-                g.setColor(rightBorderLineColor);
-                g.drawLine(endXInt, yInt, endXInt, endYInt);
-            }
-            if (topBorderLineColor != null) {
-                g.setColor(topBorderLineColor);
-                g.drawLine(xInt, yInt, endXInt, yInt);
-            }
-            if (bottomBorderLineColor != null) {
-                g.setColor(bottomBorderLineColor);
-                g.drawLine(xInt, endYInt, endXInt, endYInt);
-            }
-
-            Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-            if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
-                g.setColor(waveUnderlineColor);
-                float ascent = docView.getDefaultAscent();
-                Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
-                int y = (int)(allocBounds.getY() + underlineAndStrike[0] + ascent + 0.5);
-                int wavePixelCount = (int) allocBounds.getWidth() + 1;
-                if (wavePixelCount > 0) {
-                    int[] waveForm = {0, 0, -1, -1};
-                    int[] xArray = new int[wavePixelCount];
-                    int[] yArray = new int[wavePixelCount];
-
-                    int waveFormIndex = xInt % 4;
-                    for (int i = 0; i < wavePixelCount; i++) {
-                        xArray[i] = xInt + i;
-                        yArray[i] = y + waveForm[waveFormIndex];
-                        waveFormIndex = (++waveFormIndex) & 3;
-                    }
-                    g.drawPolyline(xArray, yArray, wavePixelCount - 1);
-                }
-            }
-
+            // Possibly paint underline
             Object underlineValue = attrs.getAttribute(StyleConstants.Underline);
             if (underlineValue != null) {
                 Color underlineColor;
@@ -676,138 +380,121 @@ public class HighlightsViewUtils {
                     Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
                     float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
                     g.fillRect(
-                            (int) allocBounds.getX(),
-                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[0]),
-                            (int) allocBounds.getWidth(),
+                            (int) partAllocBounds.getX(),
+                            (int) (partAllocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[0]),
+                            (int) partAllocBounds.getWidth(),
                             (int) Math.max(1, Math.round(underlineAndStrike[1]))
                     );
                 }
             }
+
+            // Possibly paint wave underline
+            Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+            if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
+                g.setColor(waveUnderlineColor);
+                float ascent = docView.getDefaultAscent();
+                Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
+                int yU = (int)(partAllocBounds.getY() + underlineAndStrike[0] + ascent + 0.5);
+                int wavePixelCount = (int) partAllocBounds.getWidth() + 1;
+                if (wavePixelCount > 0) {
+                    int[] waveForm = {0, 0, -1, -1};
+                    int[] xArray = new int[wavePixelCount];
+                    int[] yArray = new int[wavePixelCount];
+
+                    int waveFormIndex = x % 4;
+                    for (int i = 0; i < wavePixelCount; i++) {
+                        xArray[i] = x + i;
+                        yArray[i] = yU + waveForm[waveFormIndex];
+                        waveFormIndex = (++waveFormIndex) & 3;
+                    }
+                    g.drawPolyline(xArray, yArray, wavePixelCount - 1);
+                }
+            }
+
+            // Possibly paint an extra framing (e.g. for code templates)
+            if (leftBorderLineColor != null) {
+                g.setColor(leftBorderLineColor);
+                g.drawLine(x, y, x, lastY);
+            }
+            if (rightBorderLineColor != null) {
+                g.setColor(rightBorderLineColor);
+                g.drawLine(lastX, y, lastX, lastY);
+            }
+            if (topBorderLineColor != null) {
+                g.setColor(topBorderLineColor);
+                g.drawLine(x, y, lastX, y);
+            }
+            if (bottomBorderLineColor != null) {
+                g.setColor(bottomBorderLineColor);
+                g.drawLine(x, lastY, lastX, lastY);
+            }
+        }
+    }
+    
+    static void paintTextLimitLine(Graphics2D g, DocumentView docView, int x, int y, int lastX, int lastY) {
+        int textLimitLineX = docView.getTextLimitLineX();
+        if (textLimitLineX > 0 && textLimitLineX >= x && textLimitLineX <= lastX) {
+            g.setColor(docView.getTextLimitLineColor());
+            g.drawLine(textLimitLineX, y, textLimitLineX, lastY);
         }
     }
 
-    static void paintForeground(Graphics2D g, Shape alloc,
-            TextLayout textLayout, AttributeSet attrs, DocumentView docView)
-    {
-        JTextComponent textComponent = docView.getTextComponent();
-        ViewUtils.applyForegroundAttributes(attrs, textComponent.getFont(),
-                textComponent.getForeground(), g);
-        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
-        paintTextLayout(g, allocBounds, textLayout, docView);
-
+    /**
+     * Paint strike-through line for a font currently set to the graphics
+     * with the color currently set to the graphics.
+     * <br/>
+     * It's assumed that the clipping is set appropriately because the method
+     * renders whole textLayoutAlloc with the strike-through.
+     *
+     * @param g
+     * @param textLayoutBounds
+     * @param attrs
+     * @param docView
+     */
+    static void paintStrikeThrough(Graphics2D g, Rectangle2D textLayoutBounds, AttributeSet attrs, DocumentView docView) {
         if (attrs != null) {
             Object strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough);
             if (strikeThroughValue != null) {
                 Color strikeThroughColor;
                 if (strikeThroughValue instanceof Boolean) { // Correct swing-way
-                    strikeThroughColor = Boolean.TRUE.equals(strikeThroughValue) ? textComponent.getForeground() : null;
+                    JTextComponent c = docView.getTextComponent();
+                    strikeThroughColor = Boolean.TRUE.equals(strikeThroughValue) ? g.getColor() : null;
                 } else { // NB bug - it's Color instance
                     strikeThroughColor = (Color) strikeThroughValue;
                 }
                 if (strikeThroughColor != null) {
-                    g.setColor(strikeThroughColor);
-                    Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                    float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
-                    g.fillRect(
-                            (int) allocBounds.getX(),
-                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
-                            (int) Math.abs(TextLayoutUtils.getWidth(textLayout)), // Full width of text layout
-                            (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
-                    );
+                    Color origColor = g.getColor();
+                    try {
+                        g.setColor(strikeThroughColor);
+                        Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
+                        float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
+                        g.fillRect(
+                                (int) textLayoutBounds.getX(),
+                                (int) (textLayoutBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
+                                (int) textLayoutBounds.getWidth(),
+                                (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
+                        );
+                    } finally {
+                        g.setColor(origColor);
+                    }
                 }
             }
         }
     }
 
-    /**
-     * Paint foreground by text layout's part.
-     * Expects g.getColor() set to foreground color of the text layout.
-     * @param g
-     * @param alloc
-     * @param docView
-     * @param textLayoutPart
-     * @param attrs non-null attributes
-     */
-    static void partPaintForeground(Graphics2D g, Shape alloc,
-            TextLayoutPart textLayoutPart, Shape textLayoutAlloc,
-            AttributeSet attrs, DocumentView docView)
-    {
-        if (attrs == null) { // XXX #191257 hotfix
-            return;
-        }
-        JTextComponent textComponent = docView.getTextComponent();
-        Color origColor = null;
-        try {
-            if (textLayoutPart.foreground() != null) {
-                origColor = g.getColor();
-                // Unfortunately the text layout can only fully paint so limit painting
-                // by setting appropriate visual bounds.
-                Shape origClip = g.getClip();
-                g.clip(alloc); // Update current clip
-                g.setColor(textLayoutPart.foreground());
-                Rectangle2D textLayoutBounds = ViewUtils.shapeAsRect(textLayoutAlloc);
-                TextLayout textLayout = textLayoutPart.textLayout();
-                // Both x and ascentedY should already be floor/ceil-ed
-                float x = (float) textLayoutBounds.getX();
-                float ascentedY = (float) (textLayoutBounds.getY() + docView.getDefaultAscent());
-                textLayout.draw(g, x, ascentedY);
-    //            g.fill(shape); // Just for testing visual bounds
-                g.setClip(origClip);
-                // Leave foreground color for possible strike through rendering
-            }
-            // Text may have extra foreground color
-
-            Object strikeThroughValue;
-            if (attrs != null && (strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough)) != null) {
-                Color strikeThroughColor = null;
-                if (strikeThroughValue instanceof Boolean) { // Correct swing-way
-                    if (Boolean.TRUE.equals(strikeThroughValue)) {
-                        strikeThroughColor = textLayoutPart.foreground();
-                        if (strikeThroughColor == null) {
-                            // No extra foreground => default to component's foreground
-                            //strikeThroughColor = (Color) attrs.getAttribute(StyleConstants.Foreground);
-                            strikeThroughColor = textComponent.getForeground();
-                        }
-                    }
-                } else { // NB bug - it's Color instance
-                    strikeThroughColor = (Color) strikeThroughValue;
-                }
-                if (strikeThroughColor != null) {
-                    if (origColor == null) {
-                        origColor = g.getColor();
-                    }
-                    Rectangle2D allocBounds = ViewUtils.shapeAsRect(alloc);
-                    g.setColor(strikeThroughColor);
-                    Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                    float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
-                    g.fillRect(
-                            (int) allocBounds.getX(),
-                            (int) (allocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]),
-                            (int) allocBounds.getWidth(), // Full width of text layout
-                            (int) Math.max(1, Math.round(underlineAndStrike[3]))
-                    );
-                }
-            }
-        } finally {
-            if (origColor == null) {
-                g.setColor(origColor);
-            }
-        }
-    }
-
-    static void paintTextLayout(Graphics2D g, Rectangle2D bounds,
+    static void paintTextLayout(Graphics2D g, Rectangle2D textLayoutBounds,
             TextLayout textLayout, DocumentView docView)
     {
-        float x = (float) bounds.getX();
-        float ascentedY = (float) (bounds.getY() + docView.getDefaultAscent());
+        float x = (float) textLayoutBounds.getX();
+        float ascentedY = (float) (textLayoutBounds.getY() + docView.getDefaultAscent());
         // TextLayout is unable to do a partial render
         // Both x and ascentedY should already be floor/ceil-ed
         textLayout.draw(g, x, ascentedY);
     }
 
     static View breakView(int axis, int breakPartStartOffset, float x, float len,
-            HighlightsView fullView, int partShift, int partLength,
-            TextLayout textLayout, int textLayoutIndex)
+            HighlightsView fullView, int partShift, int partLength, TextLayout textLayout)
     {
         if (axis == View.X_AXIS) {
             DocumentView docView = fullView.getDocumentView();
@@ -827,7 +514,7 @@ public class HighlightsViewUtils {
                 assert (breakCharIndex >= 0);
                 float breakCharIndexX;
                 if (breakCharIndex != 0) {
-                    TextHitInfo hit = TextHitInfo.afterOffset(textLayoutIndex + breakCharIndex);
+                    TextHitInfo hit = TextHitInfo.afterOffset(breakCharIndex);
                     float[] locs = textLayout.getCaretInfo(hit);
                     breakCharIndexX = locs[0];
                 } else {
@@ -882,7 +569,6 @@ public class HighlightsViewUtils {
                     LOG.fine("HV.breakView(): <"  + partStartOffset + "," + (partStartOffset+partLength) + // NOI18N
                         "> => <" + breakPartStartOffset + "," + (partStartOffset+breakPartEndOffset) + // NOI18N
                         ">, x=" + x + ", len=" + len + // NOI18N
-                        ", textLayoutIndex=" + textLayoutIndex + // NOI18N
                         ", charIndexX=" + breakCharIndexX + "\n"); // NOI18N
                 }
                 if (breakFailed) {

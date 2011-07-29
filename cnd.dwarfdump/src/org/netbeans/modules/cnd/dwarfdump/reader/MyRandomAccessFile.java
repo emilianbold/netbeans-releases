@@ -52,6 +52,9 @@ import java.nio.channels.FileChannel;
  * @author Alexander Simon
  */
 public final class MyRandomAccessFile extends RandomAccessFile {
+    
+    //private static final int MAX_BUF_SIZE = Integer.MAX_VALUE;
+    private static final int MAX_BUF_SIZE = 1*1024*1024;
 
     private MappedByteBuffer buffer;
     private long bufferShift;
@@ -61,9 +64,15 @@ public final class MyRandomAccessFile extends RandomAccessFile {
     public MyRandomAccessFile(String fileName) throws IOException {
         super(fileName, "r"); // NOI18N
         channel = getChannel();
-        bufferSize = Math.min(channel.size(), Integer.MAX_VALUE - 1);
+        bufferSize = Math.min(channel.size(), MAX_BUF_SIZE - 1);
         bufferShift = 0;
-        buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+        try {
+            buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+        } catch (IOException ex) {
+            channel.close();
+            close();
+            throw ex;
+        }
     }
 
     @Override
@@ -71,8 +80,8 @@ public final class MyRandomAccessFile extends RandomAccessFile {
         if (buffer.remaining() == 0) {
             if(bufferShift + bufferSize < channel.size()) {
                 long position = bufferShift + bufferSize;
-                bufferShift = bufferShift + Integer.MAX_VALUE/2;
-                bufferSize = Math.min(channel.size() - bufferShift, Integer.MAX_VALUE - 1);
+                bufferShift = bufferShift + MAX_BUF_SIZE/2;
+                bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
                 ByteOrder order = buffer.order();
                 buffer.clear();
                 buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
@@ -92,10 +101,36 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        buffer.get(b, off, len);
-        return len;
+        if (buffer.remaining() >= len) {
+            buffer.get(b, off, len);
+            return len;
+        } else {
+            long position = getFilePointer();
+            if (position >= channel.size()) {
+                return -1;
+            }
+            bufferShift = Math.max(position - MAX_BUF_SIZE/2, 0L);
+            bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
+            ByteOrder order = buffer.order();
+            buffer.clear();
+            buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);
+            buffer.order(order);
+            buffer.position((int)(position-bufferShift));
+            if (len <= buffer.remaining()) {
+                buffer.get(b, off, len);
+                return len;
+            } else {
+                len = buffer.remaining();
+                buffer.get(b, off, len);
+                return len;
+            }
+        }
     }
 
+    public int remaining() {
+        return buffer.remaining();
+    }
+    
     @Override
     public long getFilePointer() throws IOException {
         return buffer.position() + bufferShift;
@@ -103,11 +138,18 @@ public final class MyRandomAccessFile extends RandomAccessFile {
 
     @Override
     public void seek(long pos) throws IOException {
+        long filePointer = getFilePointer();
+        if (pos == filePointer) {
+            return;
+        }
+        if (pos == channel.size()) {
+            return;
+        }
         if (pos >= bufferShift && pos < bufferShift + bufferSize) {
             buffer.position((int) (pos-bufferShift));
         } else {
-            bufferShift = Math.max(pos - Integer.MAX_VALUE/2, 0);
-            bufferSize = Math.min(channel.size() - bufferShift, Integer.MAX_VALUE - 1);
+            bufferShift = Math.max(pos - MAX_BUF_SIZE/2, 0);
+            bufferSize = Math.min(channel.size() - bufferShift, MAX_BUF_SIZE - 1);
             ByteOrder order = buffer.order();
             buffer.clear();
             buffer = channel.map(FileChannel.MapMode.READ_ONLY, bufferShift, bufferSize);

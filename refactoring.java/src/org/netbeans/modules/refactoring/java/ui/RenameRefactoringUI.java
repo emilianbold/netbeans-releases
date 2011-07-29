@@ -98,7 +98,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         Element element = handle.resolveElement(info);
-        elementHandle = ElementHandle.create(element);
+        if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+            elementHandle = ElementHandle.create(element);
         oldName = element.getSimpleName().toString();
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
             refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(false, handle.getFileObject()));
@@ -114,7 +115,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.handle = handle;
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
             Element element = handle.resolveElement(info);
-            elementHandle = ElementHandle.create(element);
+            if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+                elementHandle = ElementHandle.create(element);
             oldName = element.getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
@@ -138,7 +140,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (handle!=null) {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject, handle));
             Element element = handle.resolveElement(info);
-            elementHandle = ElementHandle.create(element);
+            if (!(element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER))
+                elementHandle = ElementHandle.create(element);
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(jmiObject));
         }
@@ -203,6 +206,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
                 refactoring.getContext().add(properties);
             }
             properties.setIsRenameGettersSetters(panel.isRenameGettersSetters());
+            properties.setIsRenameTestClass(panel.isRenameTestClass());
             
         }// else {
 //            ((MoveClassRefactoring) refactoring).setTargetPackageName(newName);

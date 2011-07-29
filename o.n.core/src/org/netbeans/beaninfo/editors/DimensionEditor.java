@@ -65,7 +65,7 @@ public class DimensionEditor extends ArrayOfIntSupport {
     }
 
     static String toArr (int[] ints) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if ((ints != null) && (ints.length > 0)) {
             for (int i=0; i < ints.length; i++) {
                 sb.append (ints[i]);

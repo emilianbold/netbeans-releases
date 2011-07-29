@@ -667,7 +667,7 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        boolean canEditHost = MakeProjectUtils.isFullRemote(project) ? FullRemoteExtension.canChangeHost(this) : true;
+        boolean canEditHost = MakeProjectUtils.canChangeHost(project, this);
         set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
         set.put(rsfNodeProp);
@@ -689,7 +689,7 @@ public class MakeConfiguration extends Configuration {
 
         return sheet;
     }
-
+    
     public RemoteSyncFactory getRemoteSyncFactory() {
         RemoteSyncFactory result = fixedRemoteSyncFactory;
         synchronized (this) {

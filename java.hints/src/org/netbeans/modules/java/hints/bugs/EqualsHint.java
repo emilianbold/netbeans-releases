@@ -53,6 +53,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
@@ -136,7 +137,7 @@ public class EqualsHint {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, arrays, instance);
     }
     
-    @Hint(id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="IncompatibleEquals")
+    @Hint(id="org.netbeans.modules.java.hints.EqualsHint", category="bugs", customizerProvider=CustomizerProviderImpl.class, suppressWarnings="IncompatibleEquals", options=Options.QUERY)
     @TriggerPattern(value="$this.equals($par)",
                     constraints={
                         @Constraint(variable="$this", type="java.lang.Object"),

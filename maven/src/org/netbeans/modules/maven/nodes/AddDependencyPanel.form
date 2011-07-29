@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -24,10 +24,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="txtArtifactId" alignment="0" pref="463" max="32767" attributes="0"/>
-                  <Component id="txtGroupId" alignment="0" pref="463" max="32767" attributes="0"/>
+                  <Component id="txtArtifactId" alignment="0" pref="472" max="32767" attributes="0"/>
+                  <Component id="txtGroupId" alignment="0" pref="472" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="txtVersion" pref="287" max="32767" attributes="0"/>
+                      <Component id="txtVersion" pref="310" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lblScope" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -182,7 +182,7 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
-                                      <Component id="searchField" pref="351" max="32767" attributes="0"/>
+                                      <Component id="searchField" pref="365" max="32767" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                       <Component id="chkNbOnly" min="-2" max="-2" attributes="0"/>
                                   </Group>
@@ -191,10 +191,10 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="resultsPanel" alignment="0" pref="555" max="32767" attributes="0"/>
+                                  <Component id="resultsPanel" alignment="0" pref="554" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="resultsLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="252" max="32767" attributes="0"/>
+                                      <EmptySpace pref="261" max="32767" attributes="0"/>
                                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
                                   </Group>
@@ -222,7 +222,7 @@
                           <Component id="resultsLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="resultsPanel" pref="206" max="32767" attributes="2"/>
+                      <Component id="resultsPanel" pref="223" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -332,7 +332,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="pnlOpenProjects" alignment="0" pref="555" max="32767" attributes="0"/>
+                          <Component id="pnlOpenProjects" alignment="0" pref="554" max="32767" attributes="0"/>
                           <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -345,7 +345,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="pnlOpenProjects" pref="262" max="32767" attributes="0"/>
+                      <Component id="pnlOpenProjects" pref="272" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -388,7 +388,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="artifactPanel" alignment="0" pref="555" max="32767" attributes="0"/>
+                          <Component id="artifactPanel" alignment="0" pref="554" max="32767" attributes="0"/>
                           <Component id="artifactsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -401,7 +401,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="artifactsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="artifactPanel" pref="262" max="32767" attributes="0"/>
+                      <Component id="artifactPanel" pref="272" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>

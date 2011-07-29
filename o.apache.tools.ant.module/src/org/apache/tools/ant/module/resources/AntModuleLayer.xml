@@ -58,16 +58,16 @@ made subject to such option by the copyright holder.
  
         <folder name="Other">
             <file name="Project.xml" url="Project.xml_">
+                <attr name="displayName" bundlevalue="org.apache.tools.ant.module.resources.Bundle#Templates/Other/Project.xml"/>
                 <attr name="position" intvalue="800"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
                 <attr name="templateCategory" stringvalue="ant-script"/>
             </file>
             <file name="CustomTask.java" url="CustomTask_java">
+                <attr name="displayName" bundlevalue="org.apache.tools.ant.module.resources.Bundle#Templates/Other/CustomTask.java"/>
                 <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
                 <!-- XXX #44054: implies a runtime dep on java/project module: -->
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
@@ -82,8 +82,8 @@ made subject to such option by the copyright holder.
         <!-- Recognize text/x-ant+xml: -->
         <folder name="MIMEResolver">
             <file name="org-apache-tools-ant-module-mime-resolver.xml" url="ant-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+                <attr name="displayName" bundlevalue="org.apache.tools.ant.module.resources.Bundle#Services/MIMEResolver/org-apache-tools-ant-module-mime-resolver.xml"/>
+                <attr name="iconBase" stringvalue="org/apache/tools/ant/module/resources/AntIcon.gif"/>
                 <attr name="position" intvalue="310"/>
             </file>
         </folder>
@@ -108,7 +108,11 @@ made subject to such option by the copyright holder.
             <folder name="x-ant+xml">
                 <folder name="Factories">
                     <file name="org-apache-tools-ant-module-loader-AntProjectDataLoader.instance">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.apache.tools.ant.module.Bundle#Loaders/text/x-ant+xml/Factories/org-apache-tools-ant-module-loader-AntProjectDataLoader.instance"/>
+                        <attr name="dataObjectClass" stringvalue="org.apache.tools.ant.module.loader.AntProjectDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="text/x-ant+xml"/>
+                        <attr name="iconBase" stringvalue="org/apache/tools/ant/module/resources/AntIcon.gif"/>
                     </file>
                 </folder>
                 

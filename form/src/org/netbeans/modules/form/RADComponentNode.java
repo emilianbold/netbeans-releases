@@ -265,7 +265,9 @@ public class RADComponentNode extends FormNode
                 } else {
                     actions.add(SystemAction.get(TestAction.class));
                 }
-                actions.add(SystemAction.get(BindAction.class));
+                if (FormEditor.getBindingSupport(component.getFormModel()) != null) {
+                    actions.add(SystemAction.get(BindAction.class));
+                }
                 actions.add(SystemAction.get(EventsAction.class));
                 actions.add(null);
                 

@@ -59,11 +59,9 @@ import org.netbeans.lib.editor.util.ListenerList;
  * @author Miloslav Metelka
  */
 
+@SuppressWarnings("ClassWithMultipleLoggers")
 public final class ViewHierarchy {
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.EditorViewHierarchy.level=FINE
-    private static final Logger LOG = Logger.getLogger(ViewHierarchy.class.getName());
-    
     private final JTextComponent component;
     
     private final ListenerList<ViewHierarchyListener> listenerList;
@@ -96,4 +94,55 @@ public final class ViewHierarchy {
         }
     }
 
+    /**
+     * Logger for core operations of the view hierarchy - resolving modelToView() and viewToModel() etc.
+     */
+    static final Logger OP_LOG = Logger.getLogger("org.netbeans.editor.view.op"); // -J-Dorg.netbeans.editor.view.op.level=FINE
+    
+    /**
+     * Logger tracking all view factory changes that cause either rebuild of the views
+     * or offset repaints.
+     * <br/>
+     * FINE reports which factory reported a change and an offset range of that change.
+     * <br/>
+     * FINER reports additional detailed information about the change.
+     * <br/>
+     * FINEST reports stacktrace where a particular span change request originated.
+     */
+    static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change"); // -J-Dorg.netbeans.editor.view.change.level=FINE
+    
+    /**
+     * Logger tracking all view rebuilds in the view hierarchy.
+     */
+    static final Logger BUILD_LOG = Logger.getLogger("org.netbeans.editor.view.build"); // -J-Dorg.netbeans.editor.view.build.level=FINE
+    
+    /**
+     * Logger for paint operations (may generate lots of output).
+     */
+    static final Logger PAINT_LOG = Logger.getLogger("org.netbeans.editor.view.paint"); // -J-Dorg.netbeans.editor.view.paint.level=FINE
+    
+    /**
+     * Logger for span change requests on the views and underlying text component.
+     * <br/>
+     * FINE reports span change descriptions
+     * <br/>
+     * FINEST reports stacktrace where a particular span change request originated.
+     */
+    static final Logger SPAN_LOG = Logger.getLogger("org.netbeans.editor.view.span"); // -J-Dorg.netbeans.editor.view.span.level=FINE
+    
+    /**
+     * Logger for repaint requests of the underlying text component.
+     * <br/>
+     * FINE reports repaint request's coordinates
+     * <br/>
+     * FINEST reports stacktrace where a particular repaint request originated.
+     */
+    static final Logger REPAINT_LOG = Logger.getLogger("org.netbeans.editor.view.repaint"); // -J-Dorg.netbeans.editor.view.repaint.level=FINE
+    
+    /**
+     * Logger for extra consistency checks inside view hierarchy (may slow down processing).
+     * <br/>
+     */
+    static final Logger CHECK_LOG = Logger.getLogger("org.netbeans.editor.view.check"); // -J-Dorg.netbeans.editor.view.check.level=FINE
+    
 }

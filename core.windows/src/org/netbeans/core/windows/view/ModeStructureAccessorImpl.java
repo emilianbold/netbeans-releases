@@ -81,14 +81,17 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         this.slidingModeAccessors = slidingModeAccessors;
     }
 
+    @Override
     public ElementAccessor getSplitRootAccessor() {
         return splitRootAccessor;
     }
     
+    @Override
     public ModeAccessor[] getSeparateModeAccessors() {
         return separateModeAccessors.toArray(new ModeAccessor[0]);
     }
     
+    @Override
     public SlidingAccessor[] getSlidingModeAccessors() {
         return slidingModeAccessors.toArray(new SlidingAccessor[0]);
     }
@@ -160,14 +163,17 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
 
         /** Gets originator object. Used only in model. */
+        @Override
         public final ModelElement getOriginator() {
             return originator;
         }
         
+        @Override
         public final ModeStructureSnapshot.ElementSnapshot getSnapshot() {
             return snapshot;
         }
         
+        @Override
         public boolean originatorEquals(ElementAccessor o) {
             if(o instanceof ElementAccessorImpl) {
                 return getClass().equals(o.getClass()) // To prevent mismatch between split and mode accessor.
@@ -177,6 +183,7 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             return false;
         }
         
+        @Override
         public String toString() {
             return super.toString() + "[originatorHash=" + (originator != null ? Integer.toHexString(originator.hashCode()) : "null") + "]"; // NOI18N
         }
@@ -200,22 +207,27 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             this.resizeWeight = resizeWeight;
         }
 
+        @Override
         public int getOrientation() {
             return orientation;
         }
         
+        @Override
         public double[] getSplitWeights() {
             return splitPositions;
         }
         
+        @Override
         public ElementAccessor[] getChildren() {
             return children;
         }
         
+        @Override
         public double getResizeWeight() {
             return resizeWeight;
         }
         
+        @Override
         public String toString() {
             StringBuffer buffer = new StringBuffer();
             buffer.append( super.toString() );
@@ -243,6 +255,7 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
         }
         
         
+        @Override
         public boolean originatorEquals(ElementAccessor o) {
             if(!super.originatorEquals(o)) {
                 return false;
@@ -254,42 +267,52 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             return getState() == me.getState();
         }
         
+        @Override
         public ModeImpl getMode() {
             return getModeSnapShot().getMode();
         }
         
+        @Override
         public String getName() {
             return getModeSnapShot().getName();
         }
 
+        @Override
         public int getState() {
             return getModeSnapShot().getState();
         }
 
+        @Override
         public int getKind() {
             return getModeSnapShot().getKind();
         }
 
+        @Override
         public Rectangle getBounds() {
             return getModeSnapShot().getBounds();
         }
 
+        @Override
         public int getFrameState() {
             return getModeSnapShot().getFrameState();
         }
 
+        @Override
         public TopComponent getSelectedTopComponent() {
             return getModeSnapShot().getSelectedTopComponent();
         }
 
+        @Override
         public TopComponent[] getOpenedTopComponents() {
             return getModeSnapShot().getOpenedTopComponents();
         }
         
+        @Override
         public double getResizeWeight() {
             return getModeSnapShot().getResizeWeight();
         }
         
+        @Override
         public String toString() {
             return super.toString() + "[name=" + getName() + " ]"; // NOI18N
         }
@@ -311,14 +334,17 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             this.slideInSizes = slideInSizes;
         }
     
+        @Override
         public String getSide() {
             return side;
         }
         
+        @Override
         public Map<TopComponent,Integer> getSlideInSizes() {
             return slideInSizes;
         }
         
+        @Override
         public boolean originatorEquals(ElementAccessor o) {
             if(!super.originatorEquals(o)) {
                 return false;
@@ -345,20 +371,24 @@ final class ModeStructureAccessorImpl implements ModeStructureAccessor {
             this.resizeWeight = resizeWeight;
         }
         
+        @Override
         public double getResizeWeight() {
             return resizeWeight;
         }
         
+        @Override
         public ElementAccessor getEditorAreaAccessor() {
             return editorAreaAccessor;
         }
         
+        @Override
         public String toString() {
             return super.toString() + "\n" + editorAreaAccessor; // NOI18N
         }
     }
 
     
+        @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("\nModesAccessorImpl hashCode=" + hashCode()); // NOI18N

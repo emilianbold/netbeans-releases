@@ -124,6 +124,8 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
     public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
     public static final String PHP_UNIT_RUN_TEST_FILES = "phpunit.run.test.files"; // NOI18N
+    public static final String PHP_UNIT_ASK_FOR_TEST_GROUPS = "phpunit.test.groups.ask"; // NOI18N
+    public static final String PHP_UNIT_LAST_USED_TEST_GROUPS = "phpunit.test.groups.last.used"; // NOI18N
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
 
@@ -212,6 +214,8 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private String phpUnitConfiguration;
     private String phpUnitSuite;
     private Boolean phpUnitRunTestFiles;
+    private Boolean phpUnitAskForTestGroups;
+    private String phpUnitLastUsedTestGroups;
     private Set<PhpModuleCustomizerExtender> customizerExtenders;
 
     // CustomizerRun
@@ -226,10 +230,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private DefaultListModel ignorePathListModel = null;
     private ListCellRenderer ignorePathListRenderer = null;
 
+    public PhpProjectProperties(PhpProject project) {
+        this(project, null, null);
+    }
+
     public PhpProjectProperties(PhpProject project, IncludePathSupport includePathSupport, IgnorePathSupport ignorePathSupport) {
         assert project != null;
-        assert includePathSupport != null;
-        assert ignorePathSupport != null;
 
         this.project = project;
         this.includePathSupport = includePathSupport;
@@ -457,6 +463,28 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         this.phpUnitRunTestFiles = phpUnitRunTestFiles;
     }
 
+    public Boolean getPhpUnitAskForTestGroups() {
+        if (phpUnitAskForTestGroups == null) {
+            phpUnitAskForTestGroups = ProjectPropertiesSupport.askForTestGroups(project);
+        }
+        return phpUnitAskForTestGroups;
+    }
+
+    public void setPhpUnitAskForTestGroups(Boolean phpUnitAskForTestGroups) {
+        this.phpUnitAskForTestGroups = phpUnitAskForTestGroups;
+    }
+
+    public String getPhpUnitLastUsedTestGroups() {
+        if (phpUnitLastUsedTestGroups == null) {
+            phpUnitLastUsedTestGroups = ProjectPropertiesSupport.getPhpUnitLastUsedTestGroups(project);
+        }
+        return phpUnitLastUsedTestGroups;
+    }
+
+    public void setPhpUnitLastUsedTestGroups(String phpUnitLastUsedTestGroups) {
+        this.phpUnitLastUsedTestGroups = phpUnitLastUsedTestGroups;
+    }
+
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
             customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
@@ -556,6 +584,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (phpUnitRunTestFiles != null) {
             projectProperties.setProperty(PHP_UNIT_RUN_TEST_FILES, phpUnitRunTestFiles.toString());
+        }
+        if (phpUnitAskForTestGroups != null) {
+            projectProperties.setProperty(PHP_UNIT_ASK_FOR_TEST_GROUPS, phpUnitAskForTestGroups.toString());
+        }
+        if (phpUnitLastUsedTestGroups != null) {
+            projectProperties.setProperty(PHP_UNIT_LAST_USED_TEST_GROUPS, phpUnitLastUsedTestGroups);
         }
 
         // configs

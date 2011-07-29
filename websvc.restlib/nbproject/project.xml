@@ -99,37 +99,58 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/asm-3.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jackson-core-asl-1.1.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jackson-core-asl-1.7.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-client-1.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jackson-jaxrs-1.7.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-core-1.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jackson-mapper-asl-1.7.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-json-1.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jackson-xc-1.7.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-multipart-1.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-apache-client-1.8.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-server-1.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-atom-abdera-1.8.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-spring-1.3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/jersey-client-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-core-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-guice-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-json-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-multipart-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-server-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-simple-server-1.8.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/jersey-spring-1.8.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/mimepull-1.4.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/oauth-client-1.8.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-client-1.3.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/oauth-server-1.8.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-signature-1.3.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/rest/oauth-signature-1.8.jar/</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

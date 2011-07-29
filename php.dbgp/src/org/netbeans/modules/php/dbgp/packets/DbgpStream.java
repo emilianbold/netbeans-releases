@@ -43,8 +43,15 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.dbgp.DebugSession;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.w3c.dom.Node;
+import sun.misc.BASE64Decoder;
 
 
 /**
@@ -72,10 +79,19 @@ public class DbgpStream extends DbgpMessage {
      * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
      */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        // TODO Auto-generated method stub
-        
+    @NbBundle.Messages("LBL_PhpDebuggerConsole=PHP Debugger Console")
+    public void process(DebugSession session, DbgpCommand command) {
+        BASE64Decoder decoder = new BASE64Decoder();
+        byte[] buffer = null;
+        try {
+            buffer = decoder.decodeBuffer(getNodeValue(getNode()));
+        } catch (IOException ex) {
+            Logger.getLogger(DbgpStream.class.getName()).log(Level.WARNING, null, ex);
+            buffer = new byte[0];
+        }
+        InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_PhpDebuggerConsole(), false);
+        io.getOut().println(new String(buffer));
+        io.getOut().close();
     }
     
 }

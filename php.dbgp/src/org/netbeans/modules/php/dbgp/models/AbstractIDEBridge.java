@@ -89,6 +89,7 @@ public abstract class AbstractIDEBridge {
             annotate( new CurrentLineAnnotation( line ) );
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                 }

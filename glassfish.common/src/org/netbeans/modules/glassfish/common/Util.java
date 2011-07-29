@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.filesystems.FileUtil;
@@ -296,5 +297,20 @@ public final class Util {
             return "{ " + id + ", " + port + ", " + secure + " }";
         }
 
+    }
+
+    static public String computeTarget(Map<String, String> ip) {
+        String retVal = null;
+        String url = ip.get(GlassfishModule.URL_ATTR);
+        if (null != url) {
+            int lastColon = url.lastIndexOf(':');
+            if (lastColon != -1) {
+                String candidate = url.substring(lastColon+1);
+                if (!Character.isDigit(candidate.charAt(0))) {
+                    retVal = candidate;
+                }
+            }
+        }
+        return retVal;
     }
 }

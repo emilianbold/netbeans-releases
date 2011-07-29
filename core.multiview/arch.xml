@@ -527,7 +527,22 @@ Nothing is executed.
         </question>
 -->
 <answer id="exec-property">
-No.
+<api name="multiview.toolbarVisible" category="devel" group="preferences" type="export">
+    <p>
+    The visibility of 
+    <a href="@TOP@/org/netbeans/core/spi/multiview/MultiViewElement.html#getToolbarRepresentation()">toolbar</a>
+    is controlled by a preference shared with editor module.
+    The multiview implementation listens and uses following property:
+    </p>
+    <pre>
+    MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class).getBoolean("toolbarVisible", true);    
+    </pre>
+    <p>
+    to find out whether all toolbars in all multiviews should be visible or not. Also,
+    since 1.25, the toolbar is hidden completely. There is a tab switching action
+    in multi view component popup menu to compensate this.
+    </p>
+</api>
 </answer>
 
 

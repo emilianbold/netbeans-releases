@@ -942,7 +942,7 @@ No.
         </question>
 -->
 <answer id="resources-read">
-Module reads a list of templates from folders Privileged and Recent from core/ui layer. 
+NewTemplateAction reads a list of templates from folders Privileged and Recent.
 This list is exposed in a popup menu.
 </answer>
 

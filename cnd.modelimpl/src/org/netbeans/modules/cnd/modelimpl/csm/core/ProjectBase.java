@@ -1812,6 +1812,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return null;
     }
 
+    public ProjectBase findFileProject(FSPath fsPath, boolean waitFilesCreated) {
+        // check own files
+        // Wait while files are created. Otherwise project file will be recognized as library file.
+        if (getFileSystem() == fsPath.getFileSystem()){
+            if (waitFilesCreated) {
+                ensureFilesCreated();
+            }
+            if (getFileUID(fsPath.getPath(), false) != null) {
+                return this;
+            }
+        }
+        // else check in libs
+        for (CsmProject prj : getLibraries()) {
+            if (((ProjectBase) prj).getFileSystem() == fsPath.getFileSystem()) {
+                // Wait while files are created. Otherwise project file will be recognized as library file.
+                if (waitFilesCreated) {
+                    ((ProjectBase) prj).ensureFilesCreated();
+                }
+                if (((ProjectBase) prj).getFileUID(fsPath.getPath(), false) != null) {
+                    return (ProjectBase) prj;
+                }
+            }
+        }
+        return null;        
+    }
+    
     public final boolean isMySource(String includePath) {
         return getProjectRoots().isMySource(includePath);
     }

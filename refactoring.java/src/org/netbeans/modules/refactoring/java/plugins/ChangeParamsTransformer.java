@@ -61,6 +61,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,11 +75,14 @@ import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * <b>!!! Do not use {@link Element} parameter of visitXXX methods. Use {@link #allMethods} instead!!!</b>
@@ -99,13 +103,51 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private Boolean constructorRefactoring;
     private final ParameterInfo[] paramInfos;
     private Collection<? extends Modifier> newModifiers;
+    private String returnType;
     private final ChangeParametersRefactoring refactoring;
 
     public ChangeParamsTransformer(ChangeParametersRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am) {
         this.refactoring = refactoring;
         this.paramInfos = refactoring.getParameterInfo();
         this.newModifiers = refactoring.getModifiers();
+        this.returnType = refactoring.getReturnType();
         this.allMethods = am;
+    }
+    
+    private Problem problem;
+    private LinkedList<ClassTree> problemClasses = new LinkedList<ClassTree>();
+
+    public Problem getProblem() {
+        return problem;
+    }
+
+    private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
+        ClassTree classTree = (ClassTree) RetoucheUtils.findEnclosingClass(workingCopy, tree, true, true, true, true, false).getLeaf();
+        if(!problemClasses.contains(classTree) && !newModifiers.contains(Modifier.PUBLIC)) { // Only give one warning for every file
+            Element el = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree));
+            TypeElement enclosingTypeElement1 = workingCopy.getElementUtilities().outermostTypeElement(el);
+            TypeElement enclosingTypeElement2 = workingCopy.getElementUtilities().outermostTypeElement(p);
+            if(!workingCopy.getTypes().isSameType(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
+                if(newModifiers.contains(Modifier.PRIVATE)) {
+                    problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PRIVATE, enclosingTypeElement1)); //NOI18N
+                    problemClasses.add(classTree);
+                } else {
+                    PackageElement package1 = workingCopy.getElements().getPackageOf(el);
+                    PackageElement package2 = workingCopy.getElements().getPackageOf(p);
+                    if(!package1.getQualifiedName().equals(package2.getQualifiedName())) {
+                        if(newModifiers.contains(Modifier.PROTECTED)) {
+                            if(!workingCopy.getTypes().isSubtype(enclosingTypeElement1.asType(), enclosingTypeElement2.asType())) {
+                                problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", Modifier.PROTECTED, enclosingTypeElement1)); //NOI18N
+                                problemClasses.add(classTree);
+                            }
+                        } else {
+                            problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(ChangeParamsTransformer.class, "ERR_StrongAccMod", "<default>", enclosingTypeElement1)); //NOI18N
+                            problemClasses.add(classTree);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void init() {
@@ -198,6 +240,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isMethodMatch(el)) {
+                    checkNewModifier(getCurrentPath(), p);
                     List<ExpressionTree> arguments = getNewArguments(tree.getArguments());
                     
                     MethodInvocationTree nju = make.MethodInvocation(
@@ -289,6 +332,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 modifiers.removeAll(ALL_ACCESS_MODIFIERS);
                 modifiers.addAll(newModifiers);
             }
+            
+            // apply new return type if necessary
+            boolean applyNewReturnType = false;
+            if(this.returnType != null) {
+                ExecutableElement exEl = (ExecutableElement) el;
+                String oldReturnType = exEl.getReturnType().toString();
+                if(!this.returnType.equals(oldReturnType)) {
+                    applyNewReturnType = true;
+                }
+            }
 
             //Compute new imports
             for (VariableTree vt : newParameters) {
@@ -341,7 +394,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             MethodTree nju = make.Method(
                     make.Modifiers(modifiers, current.getModifiers().getAnnotations()),
                     current.getName(),
-                    current.getReturnType(),
+                    applyNewReturnType? make.Type(this.returnType) : current.getReturnType(),
                     current.getTypeParameters(),
                     newParameters,
                     current.getThrows(),
@@ -357,7 +410,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         removed.removeAll(newParameters);
                         comment = updateJavadoc((ExecutableElement) el, removed, paramInfos);
                         GeneratorUtilities.get(workingCopy).copyComments(current, nju, true);
-                        make.removeComment(nju, 0, true);
+                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(nju, true);
+                        if(comments.isEmpty()) {
+                            comment = null;
+                        } else {
+                            if(comments.get(0).isDocComment()) {
+                                make.removeComment(nju, 0, true);
+                            } else {
+                                comment = null;
+                            }
+                        }
                         break;
                     case GENERATE:
                         comment = generateJavadoc(newParameters, current);
@@ -417,10 +479,10 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             builder.append(String.format("@param %s the value of %s", variableTree.getName(), variableTree.getName())); // NOI18N
             builder.append("\n"); // NOI18N
         }
-        boolean hasReturn = true;
-        if (returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
-            if (((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
-                hasReturn = false;
+        boolean hasReturn = false;
+        if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+            if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                hasReturn = true;
             }
         }
         if(hasReturn) {

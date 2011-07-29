@@ -55,18 +55,19 @@ public class StreamCommand extends DbgpCommand {
     private static final String OPERATION_ARG   = "-c ";        // NOI18N
     
     public enum Operation {
-        DISABLE,
-        COPY,
-        REDIRECT;
-        
-        static Operation forInt( int i ){
-            Operation[] operations = Operation.values();
-            for (Operation operation : operations) {
-                if ( i == operation.ordinal() ){
-                    return operation;
-                }
-            }
-            return null;
+        DISABLE(0),
+        COPY(1),
+        REDIRECT(2);
+
+        private int id;
+
+        private Operation(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return "" + id;
         }
     }
 

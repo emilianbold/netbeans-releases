@@ -53,16 +53,18 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.WindowManager;
 
 /**
@@ -70,15 +72,18 @@ import org.openide.windows.WindowManager;
  *
  * @author Milos Kleint
  */
-final class NewTCIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=200,
+    displayName="#template_winsys",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newTC.png", 
+    description="../../resources/newTC.html",
+    category="nbm-specific"
+)
+@Messages("template_winsys=Window")
+public final class NewTCIterator extends BasicWizardIterator {
 
     private NewTCIterator.DataModel data;
-    
-    private NewTCIterator() { /* Use factory method. */ };
-    
-    public static NewTCIterator createIterator() {
-        return new NewTCIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();

@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="Scope">
+        <api name="refactoring"/>
+        <summary>Scope added to allow to specify a limited scope for WhereUsedQuery</summary>
+        <version major="1" minor="18"/>
+        <date day="30" month="6" year="2011"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Scope is used to limit the WhereUsedQuery to a specific scope.<br />
+                An instance is added to the context of WhereUsedQuery to limit the
+                scope. A custom scope can be any combination of source roots, folders
+                and files.
+            </p>    
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="Scope"/>
+        <issue number="199779"/>
+    </change>
     <change id="ExplorerContext">
         <api name="refactoring"/>
         <summary>ExplorerContext added to allow handling of Explorer's Move, Copy, Delete and Rename actions</summary>

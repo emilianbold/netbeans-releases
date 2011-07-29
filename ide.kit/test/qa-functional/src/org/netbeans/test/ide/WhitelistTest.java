@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  *
  * To run this test do the following:
- * 1. execute test/whitelist/prepare.bat to prepare LimeWare project
+ * 1. execute test/whitelist/prepare.bat to prepare Tomcat project
  * 2. execute test/whitelist/test.bat to do the measurement
  * 3. execute test/whitelist/unprepare.bat to restore the environment
  *
@@ -115,7 +115,7 @@ public class WhitelistTest extends JellyTestCase {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             WhitelistTest.class
         ).clusters(".*").honorAutoloadEager(true).
-        enableModules(".*").reuseUserDir(stage > 1);
+        enableModules(".*").reuseUserDir(stage > 1);        
         
         conf = conf.addTest("testWhitelist" + stage);
         
@@ -134,7 +134,7 @@ public class WhitelistTest extends JellyTestCase {
             Thread.sleep(3000);
             testWhitelist();
         } finally {
-            openLime6Project();
+            openTomcat6Project();
         }
     }
 
@@ -195,14 +195,14 @@ public class WhitelistTest extends JellyTestCase {
         waitParsingFinished();
     }
 
-    public void openLime6Project() throws Exception {
-        openProject("lime6");
+    public void openTomcat6Project() throws Exception {
+        openProject("tomcat6");
     }
 
     private static void waitParsingFinished() throws Exception {
         Project[] arr = OpenProjects.getDefault().openProjects().get();
         assertEquals("One project is open", 1, arr.length);
-        assertEquals("project dir is OK", "lime6", arr[0].getProjectDirectory().getNameExt());
+        assertEquals("project dir is OK", "tomcat6", arr[0].getProjectDirectory().getNameExt());
 
         class R implements Runnable {
             boolean done;

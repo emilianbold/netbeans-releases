@@ -44,13 +44,20 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.font.FontRenderContext;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 
 /**
@@ -58,39 +65,41 @@ import javax.swing.text.View;
  * <br/>
  * It is capable to do a word-wrapping (see {@link ParagraphWrapView}.
  * <br/>
- * It is defined over an element either line element
- * or an artificial element that spans multiple lines (e.g. in case of code folding).
+ * It is not tight to any element (its element is null).
+ * Its contained views may span multiple lines (e.g. in case of code folding).
  * 
  * @author Miloslav Metelka
  */
 
-public class ParagraphView extends EditorBoxView<EditorView> {
+public final class ParagraphView extends EditorView implements EditorView.Parent {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ParagraphView.level=FINE
     private static final Logger LOG = Logger.getLogger(ParagraphView.class.getName());
     
     /**
-     * Bit marking that this view uses RTL text and thus certain operations
-     * require special handling.
-     * @see #isRTL()
+     * Total preferred width of this view.
+     * If children are currently not initialized this value may present last height.
      */
-    private static final int RTL_BIT = (1 << 31);
-
-    private Position startPos; // 40 + 4 = 44 bytes
-
+    private float width; // 24=super + 4 = 28 bytes
+    
     /**
-     * Total length of the paragraph view possibly mixed with
+     * Total preferred height of this view.
+     * If children are currently not initialized this value may present last height.
      */
-    private int length; // 44 + 4 = 48 bytes
+    private float height; // 28 + 4 = 32 bytes
+
+    private Position startPos; // 32 + 4 = 36 bytes
+    
+    /**
+     * Total length of the paragraph view.
+     */
+    private int length; // 36 + 4 = 40 bytes
+    
+    ParagraphViewChildren children; // 40 + 4 = 44 bytes
 
     public ParagraphView(Position startPos) {
         super(null);
         this.startPos = startPos;
-    }
-
-    @Override
-    public int getMajorAxis() {
-        return View.X_AXIS;
     }
 
     @Override
@@ -104,53 +113,259 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     }
 
     @Override
-    public AttributeSet getAttributes() {
-        return null;
-    }
-
-    @Override
     public int getLength() { // Total length of contained child views
-        return length & (~RTL_BIT);
+        return length;
     }
 
-    @Override
     public void setLength(int length) {
-        this.length = ((this.length & RTL_BIT) == 0) ? length : length + RTL_BIT;
+        this.length = length;
     }
     
-    /**
-     * Returns true if any of the child views of this paragraph view contains right-to-left text.
-     * <br/>
-     * In such case many things must be done in a different way. Regular binary search
-     * among child views for x-to-offset cannot be done since the x-offsets of the RTL child views
-     * are decreasing so since the array is not sorted it's not suitable for binary search.
-     * <br/>
-     * Line wrapping will be prohibited for such line in current implementation since it's
-     * way more difficult to handle.
-     * 
-     * @return true if there's any RTL text in this paragraph view.
-     */
-    public boolean isRTL() {
-        return (length & RTL_BIT) != 0;
-    }
-    
-    public void markRTL() {
-        this.length |= RTL_BIT;
-    }
-
     @Override
-    public int getRawOffset() {
+    public int getRawEndOffset() {
         return -1;
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
+    public void setRawEndOffset(int rawOffset) {
         throw new IllegalStateException("setRawOffset() must not be called on ParagraphView."); // NOI18N
     }
     
+    float getWidth() {
+        return width;
+    }
+    
+    void setWidth(float width) {
+        this.width = width;
+    }
+    
+    void resetWidth() {
+        this.width = 0f;
+        if (children != null) {
+            children.resetWidth();
+        }
+    }
+    
+    float getHeight() {
+        return height;
+    }
+    
+    void setHeight(float height) {
+        this.height = height;
+    }
+    
     @Override
-    protected EditorBoxViewChildren<EditorView> createChildren(int capacity) {
-        return new ParagraphViewChildren(capacity);
+    public float getPreferredSpan(int axis) {
+        return (axis == View.X_AXIS) ? width : height;
+    }
+    
+    /**
+     * Returns the number of child views of this view.
+     *
+     * @return the number of views &gt;= 0
+     * @see #getView(int)
+     */
+    @Override
+    public final int getViewCount() {
+        return (children != null) ? children.size() : 0;
+    }
+
+    /**
+     * Returns the view in this container with the particular index.
+     *
+     * @param index index of the desired view, &gt;= 0 and &lt; getViewCount()
+     * @return the view at index <code>index</code>
+     */
+    @Override
+    public View getView(int index) {
+        return (children != null) ? children.get(index) : null;
+    }
+
+    public final EditorView getEditorView(int index) {
+        return children.get(index);
+    }
+
+    @Override
+    public AttributeSet getAttributes() {
+        return null;
+    }
+
+    void releaseChildren() {
+        children = null;
+    }
+    
+    /*
+     * Replaces child views.
+     *
+     * @param index the starting index into the child views >= 0
+     * @param length the number of existing views to replace >= 0
+     * @param views the child views to insert
+     */
+    @Override
+    public void replace(int index, int length, View[] views) {
+        replace(index, length, views, 0);
+    }
+
+    void replace(int index, int length, View[] views, int offsetDelta) {
+        if (children == null) {
+            assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
+            children = new ParagraphViewChildren(views.length);
+        }
+        children.replace(this, index, length, views, offsetDelta);
+    }
+
+    /**
+     * Child views can call this on the parent to indicate that
+     * the preference has changed and should be reconsidered
+     * for layout.
+     *
+     * @param childView the child view of this view or null to signal
+     *  change in this view.
+     * @param widthChange true if the width preference has changed
+     * @param heightChange true if the height preference has changed
+     * @see javax.swing.JComponent#revalidate
+     */
+    @Override
+    public void preferenceChanged(View childView, boolean widthChange, boolean heightChange) {
+        if (childView == null) { // notify parent about this view change
+            View parent = getParent();
+            if (parent != null) {
+                parent.preferenceChanged(this, widthChange, heightChange);
+            }
+        } else { // Child of this view has changed
+            if (children != null) { // Ignore possible stale notification
+                children.preferenceChanged(this, (EditorView)childView, widthChange, heightChange);
+            }
+        }
+    }
+
+    @Override
+    public Shape getChildAllocation(int index, Shape alloc) {
+        checkChildrenNotNull();
+        return children.getChildAllocation(index, alloc);
+    }
+
+    /**
+     * Returns the child view index representing the given position in
+     * the model.
+     *
+     * @param offset the position >= 0.
+     * @param b either forward or backward bias.
+     * @return  index of the view representing the given position, or 
+     *   -1 if no view represents that position
+     */
+    @Override
+    public int getViewIndex(int offset, Position.Bias b) {
+        if (b == Position.Bias.Backward) {
+            offset--;
+        }
+        return getViewIndex(offset);
+    }
+
+    /**
+     * Returns the child view index representing the given position in
+     * the model.
+     *
+     * @param offset the position >= 0.
+     * @return  index of the view representing the given position, or 
+     *   -1 if no view represents that position
+     */
+    public int getViewIndex(int offset) {
+        checkChildrenNotNull();
+        return children.getViewIndex(this, offset);
+    }
+
+    @Override
+    public int getViewIndexChecked(double x, double y, Shape alloc) {
+        checkChildrenNotNull();
+        return children.getViewIndex(this, x, y, alloc);
+    }
+
+    @Override
+    public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
+        checkChildrenNotNull();
+        return children.modelToViewChecked(this, offset, alloc, bias);
+        
+    }
+
+    @Override
+    public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
+        checkChildrenNotNull();
+        return children.viewToModelChecked(this, x, y, alloc, biasReturn);
+    }
+
+    @Override
+    public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
+        // The background is already cleared by BasicTextUI.paintBackground() which uses component.getBackground()
+        checkChildrenNotNull();
+        children.paint(this, g, alloc, clipBounds);
+    }
+
+    @Override
+    public JComponent getToolTip(double x, double y, Shape allocation) {
+        checkChildrenNotNull();
+        return children.getToolTip(this, x, y, allocation);
+    }
+
+    @Override
+    public String getToolTipTextChecked(double x, double y, Shape allocation) {
+        checkChildrenNotNull();
+        return children.getToolTipTextChecked(this, x, y, allocation);
+    }
+
+    @Override
+    public HighlightsSequence getPaintHighlights(EditorView view, int shift) {
+        return getDocumentView().getPaintHighlights(view, shift);
+    }
+
+    @Override
+    public void notifyChildWidthChange() {
+        View parent = getParent();
+        if (parent instanceof EditorView.Parent) {
+            ((EditorView.Parent) parent).notifyChildWidthChange(); // Forward to parent
+        }
+    }
+
+    @Override
+    public void notifyChildHeightChange() {
+        View parent = getParent();
+        if (parent instanceof EditorView.Parent) {
+            ((EditorView.Parent) parent).notifyChildHeightChange(); // Forward to parent
+        }
+    }
+
+    @Override
+    public void notifyRepaint(double x0, double y0, double x1, double y1) {
+        View parent = getParent();
+        if (parent instanceof EditorView.Parent) {
+            ((EditorView.Parent) parent).notifyRepaint(x0, y0, x1, y1); // Forward to parent
+        }
+    }
+
+    @Override
+    public int getViewEndOffset(int rawChildEndOffset) {
+        return getStartOffset() + children.raw2Offset(rawChildEndOffset);
+    }
+
+    @Override
+    public FontRenderContext getFontRenderContext() {
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getFontRenderContext() : null;
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
+        // Do nothing - parent EditorBoxView is expected to handle this
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent evt, Shape a, ViewFactory f) {
+        // Do nothing - parent EditorBoxView is expected to handle this
+    }
+
+    public @Override
+    void changedUpdate(DocumentEvent e, Shape a, ViewFactory f) {
+        // Do nothing - parent EditorBoxView is expected to handle this
     }
 
     DocumentView getDocumentView() {
@@ -158,110 +373,80 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     }
 
     @Override
-    public void setParent(View parent) {
-        super.setParent(parent);
-        // Set minor axis span to default line height here when children
-        // are not initialized yet since this way there should be no need
-        // to notify parent about preferenceChange later (unless there's e.g. a word wrap).
-        if (parent instanceof EditorBoxView) {
-            DocumentView documentView = getDocumentView();
-            if (documentView != null && getMinorAxisSpan() == 0f) { // Not inited yet
-                setMinorAxisSpan(documentView.getDefaultLineHeight());
-            }
-        }
-    }
-    
-    /**
-     * Find next visual position in Y direction.
-     * In case of no line-wrap the method should return -1 for a given valid offset.
-     * and a valid offset when -1 is given as parameter.
-     * @param offset offset inside line or -1 to "enter" a line at the given x.
-     * @param x x-position corresponding to magic caret position.
-     */
-    int getNextVisualPositionY(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet, double x) {
-        return ((ParagraphViewChildren)children).getNextVisualPositionY(this, offset, bias, alloc, direction, biasRet, x);
-    }
-    
-    /**
-     * Find next visual position in Y direction.
-     * In case of no line-wrap the method should return -1 for a given valid offset.
-     * and a valid offset when -1 is given as parameter.
-     * @param offset offset inside line or -1 to "enter" a line at the given x.
-     */
-    int getNextVisualPositionX(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
+    public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc,
+            int direction, Bias[] biasRet)
+    {
+        int retOffset;
         switch (direction) {
             case SwingConstants.EAST:
             case SwingConstants.WEST:
-                int index = getViewIndex(offset);
-                int viewCount = getViewCount(); // Should always be >0
-                int increment = (direction == SwingConstants.EAST) ? 1 : -1;
-                int retOffset = -1;
-                for (; retOffset == -1 && index >= 0 && index < viewCount; index += increment) {
-                    EditorView view = getEditorViewChildrenValid(index); // Ensure valid children
-                    Shape viewAlloc = getChildAllocation(index, alloc);
-                    retOffset = view.getNextVisualPositionFromChecked(offset, bias, viewAlloc, direction, biasRet);
-                    if (retOffset == -1) {
-                        offset = -1; // Continue by entering the paragraph from outside
-                    }
+                retOffset = children.getNextVisualPositionX(this, offset, bias, alloc,
+                        direction == SwingConstants.EAST, biasRet);
+                break;
+            case SwingConstants.NORTH:
+            case SwingConstants.SOUTH:
+                DocumentView docView = getDocumentView();
+                if (docView != null) {
+                    retOffset = children.getNextVisualPositionY(this, offset, bias, alloc,
+                            direction == SwingConstants.SOUTH, biasRet,
+                            HighlightsViewUtils.getMagicX(docView, this, offset, bias, alloc));
+                } else {
+                    retOffset = offset;
                 }
-                return retOffset;
-
-            case SwingConstants.NORTH: // Should be handled elsewhere
-            case SwingConstants.SOUTH: // Should be handled elsewhere
-                throw new IllegalStateException("Not intended to handle EAST and WEST directions"); // NOI18N
+                break;
             default:
-                throw new IllegalArgumentException("Bad direction: " + direction); // NOI18N
+                throw new IllegalArgumentException("Bad direction " + direction); // NOI18N
         }
-    }
-
-    @Override
-    protected void releaseChildren() {
-        releaseTextLayouts();
-        super.releaseChildren();
+        return retOffset;
     }
     
     void releaseTextLayouts() {
-        DocumentView docView = getDocumentView();
-        if (docView != null) { // Only when actively used by docView
-            int viewCount = getViewCount(); // would be 0 for children == null
-            for (int i = 0; i < viewCount; i++) {
-                EditorView view = getEditorView(i);
-                if (view instanceof HighlightsView) {
-                    ((HighlightsView)view).setLayout(null);
-                }
-            }
-            docView.getTextLayoutCache().remove(this);
-        }
+        children.lowerMeasuredEndIndex(0);
     }
     
-    void initTextLayouts() {
-        // Init text layouts in children
-        assert (children != null) : "Null children"; // NOI18N
-        ViewStats.incrementInitTextLayouts();
-        updateViews(0, getViewCount(), null);
-    }
-
-    void recomputeLayout() {
-        if (children != null) {
-            ((ParagraphViewChildren) children).recomputeLayout(this);
+    private void checkChildrenNotNull() {
+        if (children == null) {
+            throw new IllegalStateException("Null children in " + getDumpId()); // NOI18N
         }
     }
 
     @Override
     public String findIntegrityError() {
         String err = super.findIntegrityError();
-        if (err != null) {
-            return err;
-        }
-        if (children != null) {
+        if (err == null && children != null) {
             int childrenLength = children.getLength();
             if (getLength() != childrenLength) {
                 return "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
             }
-            // Check layouts integrity
-            err = HighlightsViewUtils.findLayoutIntegrityError(this);
+        }
+        if (err != null) {
+            err = getDumpName() + ":" + err; // NOI18N
         }
         return err;
+    }
+
+    @Override
+    protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
+        super.appendViewInfo(sb, indent, importantChildIndex);
+        sb.append(", WxH:").append(getWidth()).append("x").append(getHeight());
+        if (children != null) {
+            children.appendViewInfo(this, sb);
+            if (importantChildIndex != -1) {
+                children.appendChildrenInfo(this, sb, indent + 4, importantChildIndex);
+            }
+        } else {
+            sb.append(", children=null");
+        }
+        return sb;
+    }
+    
+    @Override
+    public String toString() {
+        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
+    }
+
+    public String toStringDetail() { // Dump everything
+        return appendViewInfo(new StringBuilder(200), 0, -2).toString();
     }
 
     @Override

@@ -50,16 +50,13 @@ import javax.swing.Action;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * Action perform undock or dock, either of given or active top component.
+ * Action perform undock either of given or active top component.
  * Undock means that TopCompoment is moved to new, separate floating window,
- * Dock means move into main window area.
  *
  */
 public final class UndockWindowAction extends AbstractAction {
@@ -67,37 +64,41 @@ public final class UndockWindowAction extends AbstractAction {
     private final TopComponent tc;
 
     /**
-     * Creates instance of action to Undock/Dock of currently active top
+     * Creates instance of action to Undock currently active top
      * component in the system. For use in main menu.
      */
     public UndockWindowAction () {
         this.tc = null;
+        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction")); //NOI18N
     }
 
     /**
-     * Undock/Dock of given TopComponent.
+     * Undock of given TopComponent.
      * For use in the context menus.
      */
     public UndockWindowAction (TopComponent tc) {
         this.tc = tc;
+        putValue(Action.NAME, NbBundle.getMessage(DockWindowAction.class, "CTL_UndockWindowAction")); //NOI18N
     }
     
+    @Override
     public void actionPerformed (ActionEvent e) {
         // contextTC shound never be null thanks to isEnabled impl
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         TopComponent contextTC = getTC2WorkWith();
+        if( null == contextTC )
+            return;
         boolean isDocked = wmi.isDocked(contextTC);
         ModeImpl mode = (ModeImpl)wmi.findMode(contextTC);
 
         if (isDocked) {
             wmi.userUndockedTopComponent(contextTC, mode);
-        } else {
-            wmi.userDockedTopComponent(contextTC, mode);
         }
     }
     
     /** Overriden to share accelerator between instances of this action.
      */ 
+    @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             ActionUtils.putSharedAccelerator("UndockWindowAction", newValue); //NOI18N
@@ -108,6 +109,7 @@ public final class UndockWindowAction extends AbstractAction {
 
     /** Overriden to share accelerator between instances of this action.
      */ 
+    @Override
     public Object getValue(String key) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             return ActionUtils.getSharedAccelerator("UndockWindowAction"); //NOI18N
@@ -116,18 +118,17 @@ public final class UndockWindowAction extends AbstractAction {
         }
     }
 
+    @Override
     public boolean isEnabled() {
-        updateName();
-        return getTC2WorkWith() != null && Switches.isTopComponentUndockingEnabled()
-                && Switches.isUndockingEnabled(getTC2WorkWith());
-    }
-
-    private void updateName() {
-        TopComponent contextTC = getTC2WorkWith();
-        boolean isDocked = contextTC != null ? WindowManagerImpl.getInstance().isDocked(contextTC) : true;
-        putValue(Action.NAME,
-                NbBundle.getMessage(UndockWindowAction.class,
-                isDocked ? "CTL_UndockWindowAction" : "CTL_UndockWindowAction_Dock"));
+        TopComponent context = getTC2WorkWith();
+        boolean res = null != context;
+        if( res ) {
+            res &= Switches.isTopComponentUndockingEnabled() && Switches.isUndockingEnabled(context);
+            if( res ) {
+                res &= WindowManagerImpl.getInstance().isDocked( context );
+            }
+        }
+        return res;
     }
 
     private TopComponent getTC2WorkWith () {
@@ -136,5 +137,4 @@ public final class UndockWindowAction extends AbstractAction {
         }
         return WindowManager.getDefault().getRegistry().getActivated();
     }
-
 }

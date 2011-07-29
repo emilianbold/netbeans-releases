@@ -76,7 +76,6 @@ import org.netbeans.modules.php.dbgp.packets.Reason;
 import org.netbeans.modules.php.dbgp.packets.StackGetCommand;
 import org.netbeans.modules.php.dbgp.packets.Status;
 import org.netbeans.modules.php.dbgp.packets.StopCommand;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;

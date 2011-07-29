@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -100,7 +102,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         
         Problem p = null;
         for (RenameRefactoring renameRefactoring : renameDelegates) {
-            p = chainProblems(p, renameRefactoring.checkParameters());
+            p = chainProblems(p, renameRefactoring.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
@@ -112,10 +114,45 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     public Problem fastCheckParameters(final CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         ParameterInfo paramTable[] = refactoring.getParameterInfo();
+        final ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
         Problem p=null;
+        
+        // Check Method Name
+        final String methodName = refactoring.getMethodName();
+        if(methodName != null && !Utilities.isJavaIdentifier(methodName)) {
+            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier", methodName)); // NOI18N
+        }
+        
+        // Check return type
+        String returnType = refactoring.getReturnType();
+        TypeMirror parseType;
+        TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(method);
+        if (returnType != null && returnType.length() < 1) {
+            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NoReturn", returnType)); // NOI18N
+        } else if (returnType != null) {
+            TypeElement typeElement = javac.getElements().getTypeElement(returnType);
+            parseType = typeElement == null ? null : typeElement.asType();
+            if(parseType == null) {
+                boolean isGenericType = false;
+                List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+                for (TypeParameterElement typeParameterElement : typeParameters) {
+                    TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
+                    if(returnType.equals(tpTree.getName().toString())) {
+                        isGenericType = true;
+                    }
+                }
+                if(!isGenericType) {
+                    parseType = javac.getTreeUtilities().parseType(returnType, enclosingTypeElement);
+                    if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
+                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolveReturn", returnType)); // NOI18N
+                    }
+                }
+            }
+        }
+        
         for (int i = 0; i< paramTable.length; i++) {
             ParameterInfo parameterInfo = paramTable[i];
-            final ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
+            
             int originalIndex = parameterInfo.getOriginalIndex();
             final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
             
@@ -161,17 +198,26 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
 
             // check parameter type
             String t = parameterInfo.getType();
-            TypeMirror parseType = null;
+            parseType = null;
             if (t == null || t.length() < 1) {
                 p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
             } else {
                 TypeElement typeElement = javac.getElements().getTypeElement(t);
                 parseType = typeElement == null ? null : typeElement.asType();
                 if(parseType == null) {
-                    TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(method);
-                    parseType = javac.getTreeUtilities().parseType(t, enclosingTypeElement);
-                    if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
-                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolve", t, s)); // NOI18N
+                    boolean isGenericType = false;
+                    List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+                    for (TypeParameterElement typeParameterElement : typeParameters) {
+                        TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
+                        if(t.equals(tpTree.getName().toString())) {
+                            isGenericType = true;
+                        }
+                    }
+                    if(!isGenericType) {
+                        parseType = javac.getTreeUtilities().parseType(t, enclosingTypeElement);
+                        if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolve", t, s)); // NOI18N
+                        }
                     }
                 }
             }
@@ -190,7 +236,31 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                     }
                 }
             }
-
+            // check duplicate method signature
+            List<? extends Element> allMembers = javac.getElements().getAllMembers(enclosingTypeElement);
+            for (Element element : allMembers) {
+                if(!element.equals(method) &&
+                    element.getKind().equals(ElementKind.METHOD)) {
+                    ExecutableElement exMethod = (ExecutableElement)element;
+                    if(exMethod.getSimpleName().equals(method.getSimpleName())
+                            && exMethod.getParameters().size() == paramTable.length) {
+                        boolean sameParameters = true;
+                        for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                            TypeMirror exType = ((VariableElement)exMethod.getParameters().get(j)).asType();
+                            String type = paramTable[j].getType();
+                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                            if(!javac.getTypes().isSameType(exType, paramType)) {
+                                sameParameters = false;
+                            }
+                        }
+                        if(sameParameters) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
+                        }
+                    }
+                }
+            }
+            
+            // check ...
             if (parameterInfo.getType() != null && parameterInfo.getType().endsWith("...") && i != paramTable.length - 1) {//NOI18N
                 p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_VarargsFinalPosition", new Object[]{})); // NOI18N
             }
@@ -280,25 +350,21 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
         initDelegates();
         fireProgressListenerStep();
+        Problem problem = null;
+        ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(refactoring, allMethods);
         if (!a.isEmpty()) {
-            Problem p = null;
             for (RenameRefactoring renameRefactoring : renameDelegates) {
-                p = chainProblems(p, renameRefactoring.prepare(elements.getSession()));
-                if (p != null && p.isFatal()) {
+                problem = chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
+                if (problem != null && problem.isFatal()) {
                     fireProgressListenerStop();
-                    return p;
+                    return problem;
                 }
             }
-            
-            TransformTask transform = new TransformTask(new ChangeParamsTransformer(refactoring, allMethods), treePathHandle);
-            p = createAndAddElements(a, transform, elements, refactoring);
-            if (p != null) {
-                fireProgressListenerStop();
-                return p;
-            }
+            TransformTask transform = new TransformTask(changeParamsTransformer, treePathHandle);
+            problem = createAndAddElements(a, transform, elements, refactoring);
         }
         fireProgressListenerStop();
-        return null;
+        return problem != null ? problem : changeParamsTransformer.getProblem();
     }
     
     protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
@@ -360,7 +426,6 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         }
         final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
 
-        Problem p = null;
         try {
             getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
 
@@ -384,6 +449,12 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                                 renameRefactoringsList.add(renameRefactoring);
                             }
                         }
+                    }
+                    if(refactoring.getMethodName() != null && !method.getSimpleName().toString().equals(refactoring.getMethodName())) {
+                        RenameRefactoring renameRefactoring = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(method, javac)));
+                        renameRefactoring.setNewName(refactoring.getMethodName());
+                        renameRefactoring.setSearchInComments(true);
+                        renameRefactoringsList.add(renameRefactoring);
                     }
                 }
             }, true);

@@ -180,6 +180,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.project</friend>
+                <friend>org.netbeans.modules.refactoring.java</friend>
                 <friend>org.netbeans.modules.ruby.project</friend>
                 <package>org.netbeans.spi.gototest</package>
             </friend-packages>

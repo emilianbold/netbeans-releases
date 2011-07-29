@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.branding;
 
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import java.awt.AlphaComposite;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -56,7 +57,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -73,7 +74,7 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
 
     private boolean titleValueModified;
 
-    public BasicBrandingPanel(BasicBrandingModel model) {
+    public BasicBrandingPanel(BrandingModel model) {
         super(NbBundle.getMessage(BasicBrandingPanel.class, "LBL_BasicTab"), model); //NOI18N
         initComponents();        
         refresh(); 
@@ -94,7 +95,7 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
         boolean panelValid = true;
         
         if (panelValid && titleValue.getText().trim().length() == 0) {
-            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
+            setErrorMessage(NbBundle.getMessage(BasicBrandingPanel.class, "ERR_EmptyTitle"));//NOI18N
             panelValid = false;
         }        
         
@@ -105,7 +106,7 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
     }
     
     void refresh() {
-        BasicBrandingModel model = getBranding();
+        BrandingModel model = getBranding();
         model.brandingEnabledRefresh();
         model.initTitle(true);
         titleValue.setText(model.getTitle());

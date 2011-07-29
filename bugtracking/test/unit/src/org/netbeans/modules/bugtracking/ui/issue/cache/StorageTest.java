@@ -241,10 +241,7 @@ public class StorageTest extends NbTestCase {
     }
 
     private File getNameSpaceFolder(String url) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException  {
-        IssueStorage storage = IssueStorage.getInstance();
-        Method m = storage.getClass().getDeclaredMethod("getNameSpaceFolder", String.class);
-        m.setAccessible(true);
-        return (File) m.invoke(storage, new Object[] {url});
+        return StorageUtils.getNameSpaceFolder(getStorageRootFile(), url);
     }
 
     private void assertAttribute(Map<String, String> attrs, String attr, String value) {

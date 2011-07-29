@@ -108,20 +108,24 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             for(PackageConfiguration pc : getPackages(options, makeConfiguration)) {
                 res.addAll(pc.getMacros());
             }
-            if (options.indexOf("-fopenmp") >= 0) { // NOI18N
-                res.add("_OPENMP=200505"); // NOI18N
-            } else if (options.indexOf("-xopenmp") >= 0) { // NOI18N
-                int i = options.indexOf("-xopenmp"); // NOI18N
-                String rest = options.substring(i+8);
-                if (rest.length()==0 || rest.charAt(0)==' ' || rest.startsWith("=parallel") || rest.startsWith("=noopt")) { // NOI18N
-                    res.add("_OPENMP"); // NOI18N
-                }
-            }
-            if (options.indexOf("-xc99") >= 0) { // NOI18N
-                res.add("__STDC_VERSION__=199901L"); // NOI18N
-            }
+            convertOptionsToMacros(options, res);
         }
         return res;
+    }
+
+    private void convertOptionsToMacros(String options, List<String> res) {
+        if (options.indexOf("-fopenmp") >= 0) { // NOI18N
+            res.add("_OPENMP=200505"); // NOI18N
+        } else if (options.indexOf("-xopenmp") >= 0) { // NOI18N
+            int i = options.indexOf("-xopenmp"); // NOI18N
+            String rest = options.substring(i+8);
+            if (rest.length()==0 || rest.charAt(0)==' ' || rest.startsWith("=parallel") || rest.startsWith("=noopt")) { // NOI18N
+                res.add("_OPENMP"); // NOI18N
+            }
+        }
+        if (options.indexOf("-xc99") >= 0) { // NOI18N
+            res.add("__STDC_VERSION__=199901L"); // NOI18N
+        }
     }
 
     @Override

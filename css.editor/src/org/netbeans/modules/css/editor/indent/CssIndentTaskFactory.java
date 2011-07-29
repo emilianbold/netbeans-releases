@@ -36,6 +36,7 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
 
 public class CssIndentTaskFactory implements IndentTask.Factory {
 
+    @Override
     public IndentTask createTask(Context context) {
         return new CssIndentTask(context);
     }

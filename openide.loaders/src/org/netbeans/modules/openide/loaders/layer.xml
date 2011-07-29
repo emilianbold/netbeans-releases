@@ -23,4 +23,35 @@
             </folder>
         </folder>
     </folder>
+    <folder name="Templates"><!-- see NewTemplateAction -->
+        <folder name="Privileged">
+            <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
+        </folder>
+        <folder name="Recent">
+            <attr name="simple" boolvalue="false"/>
+            <attr name="position" intvalue="0"/>
+        </folder>
+    </folder>
+    <!-- registration of multiview element for text/plain - e.g. default data object -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="plain">
+                <folder name="MultiView">
+                    <file name="default-text-editor.instance">
+                        <attr methodvalue="org.netbeans.core.spi.multiview.MultiViewFactory.createMultiViewDescription" name="instanceCreate"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.core.multiview.ContextAwareDescription"/>
+                        <attr name="class" stringvalue="org.netbeans.core.spi.multiview.text.MultiViewEditorElement"/>
+                        <attr name="displayName" stringvalue="Source"/>
+                        <attr name="iconBase" stringvalue="none"/>
+                        <attr name="preferredID" stringvalue="editor"/>
+                        <attr intvalue="2" name="persistenceType"/>
+                        <attr boolvalue="true" name="sourceview"/>
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
+

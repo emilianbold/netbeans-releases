@@ -54,7 +54,7 @@ import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
-import org.netbeans.modules.hudson.util.Utilities;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.spi.Bundle.*;
@@ -138,14 +138,8 @@ public interface HudsonSCM {
                     appendChild(configXml.createTextNode("@hourly")); // NOI18N
         }
 
-        /**
-         * Evaluate an XPath expression.
-         * @param expr an XPath expression
-         * @param xml a DOM context
-         * @return the string value, or null
-         */
+        @Deprecated
         public static String xpath(String expr, Element xml) {
-            // XXX just move to some other API package?
             return Utilities.xpath(expr, xml);
         }
 

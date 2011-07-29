@@ -48,31 +48,32 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.visual.ui.preview.CssTCController;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-
-import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * 
- * @author Marek Fukala
+ * @author mfukala@netbeans.org
  */
-public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
+public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
 
     //static, will hold the singleton reference forever but I cannot reasonably
     //hook to gsf to be able to free this once last css component closes
     private static CssTCController windowController;
 
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+    
+    private boolean cancelled;
 
     private static synchronized void initializeWindowController() {
         if(windowController == null) {
@@ -98,20 +99,9 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         }
     }
 
-//    private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
-
-//    public static synchronized Source forDocument(Document doc) {
-//        Source source = (Source) doc.getProperty(SOURCE_DOCUMENT_PROPERTY_NAME);
-//        if (source == null) {
-//            source = new Source();
-//            doc.putProperty(SOURCE_DOCUMENT_PROPERTY_NAME, source);
-//        }
-//        return source;
-//    }
-
     @Override
     public int getPriority() {
-        return 100; //todo use reasonable number
+        return 5000; //low priority
     }
 
     @Override
@@ -121,12 +111,13 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
 
     @Override
     public void cancel() {
-        //xxx cancel???
+        cancelled = true;
     }
 
     @Override
-    public void run(CssParserResult result, SchedulerEvent event) {
-        //xxx: how come I can get null event here? parsing api bug?
+    public void run(CssCslParserResult result, SchedulerEvent event) {
+        cancelled = false;
+        
         if(event == null) {
             return ;
         }
@@ -137,27 +128,31 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
 
         int caretOffset = ((CursorMovedSchedulerEvent)event).getCaretOffset();
 
-        SimpleNode root = result.root();
+        Node root = result.getParseTree();
         if(root != null) {
             //find the rule scope and check if there is an error inside it
-            SimpleNode leaf = SimpleNodeUtil.findDescendant(root, caretOffset);
+            Node leaf = NodeUtil.findNodeAtOffset(root, caretOffset);
             if(leaf != null) {
-                SimpleNode ruleNode = leaf.kind() == CssParserTreeConstants.JJTSTYLERULE ?
+                Node ruleNode = leaf.type() == NodeType.ruleSet ?
                     leaf :
-                    SimpleNodeUtil.getAncestorByType(leaf, CssParserTreeConstants.JJTSTYLERULE);
+                    NodeUtil.getAncestorByType(leaf, NodeType.ruleSet);
                 if(ruleNode != null) {
                     //filter out warnings
                     List<? extends Error> errors = result.getDiagnostics();
                     for(Error e : errors) {
 
                         if(e.getSeverity() == Severity.ERROR) {
-                            if(ruleNode.startOffset() <= e.getStartPosition() &&
-                                    ruleNode.endOffset() >= e.getEndPosition()) {
+                            if(ruleNode.from() <= e.getStartPosition() &&
+                                    ruleNode.to() >= e.getEndPosition()) {
                                 //there is an error in the selected rule
                                 CssEditorSupport.getDefault().parsedWithError(result);
                                 return ;
                             }
                         }
+                    }
+                    
+                    if(cancelled) {
+                        return ;
                     }
 
                     //no errors found in the node
@@ -166,35 +161,14 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
                 }
             }
         }
+        
+        if(cancelled) {
+            return ;
+        }
 
-        //some error
-        CssEditorSupport.getDefault().parsedWithError(result);
+        //out of rule, lets notify the editor support anyway
+        CssEditorSupport.getDefault().parsed(result, ((CursorMovedSchedulerEvent)event).getCaretOffset());
 
     }
-
-//    public static class Source {
-//
-//        private Vector<SourceListener> listeners = new Vector<SourceListener>();
-//
-//        protected void parsed(Result ci, SchedulerEvent event) {
-//            //distribute to clients
-//            for (SourceListener listener : listeners) {
-//                listener.parsed(ci, event);
-//            }
-//        }
-//
-//        public void addChangeListener(SourceListener l) {
-//            listeners.add(l);
-//        }
-//
-//        public void removeChangeListener(SourceListener l) {
-//            listeners.remove(l);
-//        }
-//    }
-//
-//    public static interface SourceListener {
-//
-//        public void parsed(Result info, SchedulerEvent event);
-//    }
 }
 

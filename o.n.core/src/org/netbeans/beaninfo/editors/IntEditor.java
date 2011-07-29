@@ -134,7 +134,7 @@ public class IntEditor extends ExPropertyEditorSupport {
     
     private static final String arrToStr(int[] s) {
         if (s == null) return "null"; //NOI18N
-        StringBuffer out = new StringBuffer(s.length * 3);
+        StringBuilder out = new StringBuilder(s.length * 3);
         for (int i=0; i < s.length; i++) {
             out.append(s[i]);
             if (i != s.length-1) {
@@ -197,7 +197,7 @@ public class IntEditor extends ExPropertyEditorSupport {
             //use the keys, translate to an int value
             int idx = Arrays.asList(keys).indexOf(s);
             if ((idx == -1) || (idx > values.length-1)) {
-                StringBuffer msg = new StringBuffer();
+                StringBuilder msg = new StringBuilder();
                 msg.append(NbBundle.getMessage(IntEditor.class,
                     "EXC_ILLEGAL_STRING_TEXT_FIRST")); //NOI18N
                 msg.append(s);

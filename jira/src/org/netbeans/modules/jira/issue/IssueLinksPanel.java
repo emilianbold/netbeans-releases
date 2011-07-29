@@ -55,14 +55,14 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -176,16 +176,16 @@ public class IssueLinksPanel extends JPanel {
                         GroupLayout layout = new GroupLayout(panel);
                         layout.setHorizontalGroup(
                             layout.createSequentialGroup()
-                                .add(iconLabel)
-                                .add(issueButton)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(summaryLabel, 0, 0, summaryLabel.getPreferredSize().width)
+                                .addComponent(iconLabel)
+                                .addComponent(issueButton)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(summaryLabel, 0, 0, summaryLabel.getPreferredSize().width)
                         );
                         layout.setVerticalGroup(
-                            layout.createParallelGroup(GroupLayout.BASELINE)
-                                .add(iconLabel)
-                                .add(issueButton)
-                                .add(summaryLabel)
+                            layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(iconLabel)
+                                .addComponent(issueButton)
+                                .addComponent(summaryLabel)
                         );
                         panel.setLayout(layout);
                         add(panel);
