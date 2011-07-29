@@ -85,6 +85,7 @@ import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -134,6 +135,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private SessionProvider providerToDisplay;
     private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
     private ToolTipSupport toolTipSupport;
+    
+    private static final RequestProcessor RP = new RequestProcessor(ViewModelListener.class.getName(), 1);
 
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -170,58 +173,68 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         this.toolTipSupport = toolTipSupport;
     }
 
-    synchronized void destroy () {
-        DebuggerManager.getDebuggerManager ().removeDebuggerListener (
-            DebuggerManager.PROP_CURRENT_ENGINE,
-            this
-        );
-        boolean haveTreeModels = false;
-        for (List tms : treeModels) {
-            if (tms.size() > 0) {
-                haveTreeModels = true;
-                break;
+    void destroy () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(new Runnable() {
+                public void run() {
+                    destroy();
+                }
+            });
+            return ;
+        }
+        synchronized(this) {
+            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
+                DebuggerManager.PROP_CURRENT_ENGINE,
+                this
+            );
+            boolean haveTreeModels = false;
+            for (List tms : treeModels) {
+                if (tms.size() > 0) {
+                    haveTreeModels = true;
+                    break;
+                }
             }
-        }
-        boolean haveNodeModels = false;
-        for (List nms : nodeModels) {
-            if (nms.size() > 0) {
-                haveNodeModels = true;
-                break;
+            boolean haveNodeModels = false;
+            for (List nms : nodeModels) {
+                if (nms.size() > 0) {
+                    haveNodeModels = true;
+                    break;
+                }
             }
-        }
-        final boolean haveModels = haveTreeModels || haveNodeModels ||
-                                   (tableModels != null && tableModels.size() > 0);
-        if (haveModels && view.getComponentCount() > 0) {
-            JComponent tree = (JComponent) view.getComponent(0);
-            if (!(tree instanceof javax.swing.JTabbedPane)) {
-                Models.setModelsToView(tree, null);
+            final boolean haveModels = haveTreeModels || haveNodeModels ||
+                                       (tableModels != null && tableModels.size() > 0);
+            if (haveModels && view.getComponentCount() > 0) {
+                JComponent tree = (JComponent) view.getComponent(0);
+                if (!(tree instanceof javax.swing.JTabbedPane)) {
+                    Models.setModelsToView(tree, null);
+                }
             }
+            models.clear();
+            treeModels = new List[TREE_MODELS.length];
+            treeModelFilters = new List[TREE_MODEL_FILTERS.length];
+            treeExpansionModels = null;
+            treeExpansionModelFilters = null;
+            nodeModels = new List[NODE_MODELS.length];
+            nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
+            tableModels = null;
+            tableModelFilters = null;
+            nodeActionsProviders = null;
+            nodeActionsProviderFilters = null;
+            columnModels = null;
+            mm = null;
+            asynchModelFilters = null;
+            //rp = null;
+            sessionProviders = null;
+            currentSession = null;
+            providerToDisplay = null;
+            buttonsPane.removeAll();
+            buttons = null;
+            view.removeAll();
+            for (ViewModelListener l : subListeners) {
+                l.destroy();
+            }
+            subListeners.clear();
         }
-        models.clear();
-        treeModels = new List[TREE_MODELS.length];
-        treeModelFilters = new List[TREE_MODEL_FILTERS.length];
-        treeExpansionModels = null;
-        treeExpansionModelFilters = null;
-        nodeModels = new List[NODE_MODELS.length];
-        nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
-        tableModels = null;
-        tableModelFilters = null;
-        nodeActionsProviders = null;
-        nodeActionsProviderFilters = null;
-        columnModels = null;
-        mm = null;
-        asynchModelFilters = null;
-        //rp = null;
-        sessionProviders = null;
-        currentSession = null;
-        providerToDisplay = null;
-        buttonsPane.removeAll();
-        buttons = null;
-        view.removeAll();
-        for (ViewModelListener l : subListeners) {
-            l.destroy();
-        }
-        subListeners.clear();
     }
 
     @Override

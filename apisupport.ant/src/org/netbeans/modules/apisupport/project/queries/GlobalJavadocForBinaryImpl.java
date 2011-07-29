@@ -109,7 +109,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
         String cnbdashes = n.substring(0, n.length() - 4);
         NbPlatform supposedPlaf = null;
         for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
-            if (binaryRootF.getAbsolutePath().startsWith(plaf.getDestDir().getAbsolutePath())) {
+            if (binaryRootF.getAbsolutePath().startsWith(plaf.getDestDir().getAbsolutePath() + File.separator)) {
                 supposedPlaf = plaf;
                 break;
             }
