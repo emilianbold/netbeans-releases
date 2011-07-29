@@ -48,26 +48,34 @@ import org.openide.modules.SpecificationVersion;
 import static org.netbeans.modules.apisupport.project.universe.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
-/** Release of the build harness. */
+/**
+ * Release of the build harness.
+ * Proceeds in chronological order so we can do compatibility tests with {@link #compareTo}.
+ */
 public enum HarnessVersion {
 
-    // should proceed in chronological order so we can do compatibility tests with compareTo
-
     /** Unknown version - platform might be invalid, or just predate any 5.0 release version. */
-    UNKNOWN,
-    V50,
+    UNKNOWN("0"),
+    V50("1.6"),
     /** Harness version found in 5.0 update 1 and 5.5. */
-    V50u1,
+    V50u1("1.7"),
     /** Harness version found in 5.5 update 1. */
-    V55u1,
-    V60,
-    V61,
-    V65,
-    V67,
-    V68,
-    V69,
-    V70,
-    V71;
+    V55u1("1.9"),
+    V60("1.10"),
+    V61("1.11"),
+    V65("1.12"),
+    V67("1.14"),
+    V68("1.18"),
+    V69("1.20"),
+    V70("1.23"),
+    V71("1.27");
+
+    /** spec version of org-netbeans-modules-apisupport-harness.jar */
+    private final String minimumSpecVersion;
+
+    private HarnessVersion(String minimumSpecVersion) {
+        this.minimumSpecVersion = minimumSpecVersion;
+    }
 
     /** Gets a quick display name. */
     @Messages({
@@ -114,34 +122,15 @@ public enum HarnessVersion {
         return LBL_harness_version_unknown();
     }
 
-    /** Detects harness version based on org-netbeans-modules-apisupport-harness.jar */
     static HarnessVersion forHarnessModuleVersion(SpecificationVersion v) {
-        if (v.compareTo(new SpecificationVersion("1.27")) >= 0) { // NOI18N
-            return V71;
-        } else if (v.compareTo(new SpecificationVersion("1.23")) >= 0) { // NOI18N
-            return V70;
-        } else if (v.compareTo(new SpecificationVersion("1.20")) >= 0) { // NOI18N
-            return V69;
-        } else if (v.compareTo(new SpecificationVersion("1.18")) >= 0) { // NOI18N
-            return V68;
-        } else if (v.compareTo(new SpecificationVersion("1.14")) >= 0) { // NOI18N
-            return V67;
-        } else if (v.compareTo(new SpecificationVersion("1.12")) >= 0) { // NOI18N
-            return V65;
-        } else if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
-            return V61;
-        } else if (v.compareTo(new SpecificationVersion("1.10")) >= 0) { // NOI18N
-            return V60;
-        } else if (v.compareTo(new SpecificationVersion("1.9")) >= 0) { // NOI18N
-            return V55u1;
-        } else if (v.compareTo(new SpecificationVersion("1.7")) >= 0) { // NOI18N
-            return V50u1;
-        } else if (v.compareTo(new SpecificationVersion("1.6")) >= 0) { // NOI18N
-            return V50;
-        } else {
-            // earlier than beta2? who knows...
-            return UNKNOWN;
+        HarnessVersion[] versions = HarnessVersion.values();
+        for (int i = versions.length - 1; i >= 0; i--) {
+            if (v.compareTo(new SpecificationVersion(versions[i].minimumSpecVersion)) >= 0) {
+                return versions[i];
+            }
         }
+        assert false : "UNKNOWN's 0 should have matched";
+        return UNKNOWN;
     }
 
 }
