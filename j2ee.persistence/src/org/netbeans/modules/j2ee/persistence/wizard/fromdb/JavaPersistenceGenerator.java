@@ -1299,7 +1299,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     String fName = role.getParent().getRoleA().getFieldName();
                     String fieldTypeStr = fieldType.toString();
                     AssignmentTree aTree = (AssignmentTree) existingMappings.get(fieldTypeStr);
-                    if(aTree == null){//try to find other possible collection types
+                    if(aTree == null && role.isToMany()){//try to find other possible collection types
                         String inType = fieldTypeStr.substring(collectionType.className().length());
                         for(CollectionType ct:CollectionType.values()){
                             aTree = (AssignmentTree) existingMappings.get(ct.className()+inType);
