@@ -397,7 +397,7 @@ public final class XMLUtil extends Object {
         }
         Document doc2 = normalize(doc);
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader().getParent()); // #195921
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader()); // #195921
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer t = tf.newTransformer(
