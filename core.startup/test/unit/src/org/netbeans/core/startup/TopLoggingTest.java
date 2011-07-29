@@ -422,6 +422,7 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #6843: disk is "" at end
     public void testFlushHappensAfterFewSeconds() throws Exception {
         Logger l = Logger.getLogger(TopLoggingTest.class.getName());
         l.log(Level.INFO, "First visible message");
