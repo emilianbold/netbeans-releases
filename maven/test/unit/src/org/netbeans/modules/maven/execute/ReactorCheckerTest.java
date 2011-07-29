@@ -38,10 +38,13 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -114,10 +117,49 @@ public class ReactorCheckerTest extends NbTestCase {
         assertEquals(m, ReactorChecker.findReactor(m));
     }
 
-    // XXX ../parent/pom.xml exists but is not an aggregator and there is no ../pom.xml
-    // XXX ../parent/pom.xml exists but is not an aggregator and ../pom.xml is
-    // XXX ../pom.xml exists but does not list this module
-    // XXX ../pom.xml lists this as a module but only in a profile (which is not activated)
-    // XXX ../pom.xml lists this as a module but only in a profile (which is activated)
+    public void testFindReactorNonAggregatorParent() throws Exception {
+        project("parent", "<groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging>");
+        project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version><relativePath>../parent/pom.xml</relativePath></parent><artifactId>m</artifactId>");
+        NbMavenProject m = load("m");
+        assertEquals(m, ReactorChecker.findReactor(m));
+    }
+
+    public void testFindReactorAggregatorPlusPureParent() throws Exception {
+        project(null, "<groupId>g</groupId><artifactId>r</artifactId><version>0</version><packaging>pom</packaging><modules><module>m</module></modules>");
+        project("parent", "<groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging>");
+        project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version><relativePath>../parent/pom.xml</relativePath></parent><artifactId>m</artifactId>");
+        NbMavenProject p = load(null);
+        assertEquals(p, ReactorChecker.findReactor(load("m")));
+    }
+
+    public void testFindReactorParentDoesNotListMe() throws Exception {
+        project(null, "<groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging><modules><module>other</module></modules>");
+        project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent><artifactId>m</artifactId>");
+        NbMavenProject m = load("m");
+        assertEquals(m, ReactorChecker.findReactor(m));
+    }
+
+    public void testFindReactorParentListsMeOnlyInInactiveProfile() throws Exception {
+        project(null, "<groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging><profiles><profile><id>inactive</id><modules><module>m</module></modules></profile></profiles>");
+        project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent><artifactId>m</artifactId>");
+        NbMavenProject m = load("m");
+        assertEquals(m, ReactorChecker.findReactor(m));
+    }
+
+    public void testFindReactorParentListsMeInSelectedProfile() throws Exception {
+        project(null, "<groupId>g</groupId><artifactId>p</artifactId><version>0</version><packaging>pom</packaging><profiles><profile><id>sel</id><modules><module>m</module></modules></profile></profiles>");
+        project("m", "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent><artifactId>m</artifactId>");
+        M2ConfigProvider cp = ProjectManager.getDefault().findProject(d).getLookup().lookup(M2ConfigProvider.class);
+        boolean found = false;
+        for (M2Configuration cfg : cp.getConfigurations()) {
+            if (cfg.getActivatedProfiles().equals(Collections.singletonList("sel"))) {
+                cp.setActiveConfiguration(cfg);
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+        assertEquals(load(null), ReactorChecker.findReactor(load("m")));
+    }
 
 }
