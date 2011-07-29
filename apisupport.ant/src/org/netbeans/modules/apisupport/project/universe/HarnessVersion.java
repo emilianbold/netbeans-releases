@@ -66,7 +66,8 @@ public enum HarnessVersion {
     V67,
     V68,
     V69,
-    V70;
+    V70,
+    V71;
 
     /** Gets a quick display name. */
     @Messages({
@@ -80,6 +81,7 @@ public enum HarnessVersion {
         "LBL_harness_version_6.8=6.8",
         "LBL_harness_version_6.9=6.9",
         "LBL_harness_version_7.0=7.0",
+        "LBL_harness_version_7.1=7.1",
         "LBL_harness_version_unknown=unknown"
     })
     public String getDisplayName() {
@@ -104,6 +106,8 @@ public enum HarnessVersion {
                 return LBL_harness_version_6_9();
             case V70:
                 return LBL_harness_version_7_0();
+            case V71:
+                return LBL_harness_version_7_1();
             default:
                 assert this == UNKNOWN;
         }
@@ -112,9 +116,11 @@ public enum HarnessVersion {
 
     /** Detects harness version based on org-netbeans-modules-apisupport-harness.jar */
     static HarnessVersion forHarnessModuleVersion(SpecificationVersion v) {
-        if (v.compareTo(new SpecificationVersion("1.23")) >= 0) { // NOI18N
+        if (v.compareTo(new SpecificationVersion("1.27")) >= 0) { // NOI18N
+            return V71;
+        } else if (v.compareTo(new SpecificationVersion("1.23")) >= 0) { // NOI18N
             return V70;
-        } else if(v.compareTo(new SpecificationVersion("1.20")) >= 0) { // NOI18N
+        } else if (v.compareTo(new SpecificationVersion("1.20")) >= 0) { // NOI18N
             return V69;
         } else if (v.compareTo(new SpecificationVersion("1.18")) >= 0) { // NOI18N
             return V68;
