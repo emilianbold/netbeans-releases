@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
 import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 import org.xml.sax.InputSource;
@@ -81,6 +82,9 @@ public final class WhiteListConfigReader {
     
     private static WhiteListImplementation reader;
 
+    @NbBundle.Messages({
+        "TXT_WhiteListName=Oracle Cloud 9"
+    })
     public synchronized static WhiteListImplementation getDefault() {
         if (reader == null) {
             
@@ -112,7 +116,10 @@ public final class WhiteListConfigReader {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-                    setRealReader(getBuilder().build());
+                    setRealReader(
+                         getBuilder().
+                            setDisplayName(Bundle.TXT_WhiteListName()).
+                         build());
 //                }
 //            });
         }
