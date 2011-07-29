@@ -74,7 +74,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
-import org.netbeans.modules.apisupport.project.api.Util;
+import static org.netbeans.modules.apisupport.project.universe.Bundle.*;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +83,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
@@ -535,19 +536,22 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * The {@link #isDefault default platform} is specially marked.
      * @return a display label
      */
+    @Messages({
+        "# {0} - folder location", "MSG_InvalidPlatform=Invalid Platform ({0})",
+        "# {0} - plain platform label", "LBL_default_platform={0} (Default)"
+    })
     public String getLabel() {
         if (label == null) {
             try {
                 label = isValid() ? computeDisplayName(nbdestdir) :
-                    NbBundle.getMessage(NbPlatform.class, "MSG_InvalidPlatform",  // NOI18N
-                        getDestDir().getAbsolutePath());
+                    MSG_InvalidPlatform(getDestDir().getAbsolutePath());
             } catch (IOException e) {
                 Logger.getLogger(NbPlatform.class.getName()).log(Level.FINE, "could not get label for " + nbdestdir, e);
                 label = nbdestdir.getAbsolutePath();
             }
         }
         if (isDefault()) {
-            return NbBundle.getMessage(NbPlatform.class, "LBL_default_platform", label);
+            return LBL_default_platform(label);
         } else {
             return label;
         }
