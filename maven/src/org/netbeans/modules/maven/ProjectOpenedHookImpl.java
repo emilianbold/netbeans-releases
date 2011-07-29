@@ -151,11 +151,19 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
         USG_LOGGER.log(record);
 
-        for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
-            if (RepositoryPreferences.getInstance().getRepositoryInfoById(rep.getId()) == null) {
+        REPO: for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
+            String id = rep.getId();
+            if (RepositoryPreferences.getInstance().getRepositoryInfoById(id) == null) {
+                String url = rep.getMirroredRepositories().size() == 1 ? rep.getMirroredRepositories().get(0).getUrl() : rep.getUrl();
+                for (RepositoryInfo ri : RepositoryPreferences.getInstance().getRepositoryInfos()) { // #195130
+                    if (url.equals(ri.getRepositoryUrl())) {
+                        LOGGER.log(Level.WARNING, "Refusing to add duplicate repository definition for {0} with ID {1} when already registered as {2}", new Object[] {url, id, ri.getId()});
+                        continue REPO;
+                    }
+                }
                 RepositoryInfo ri;
                 try {
-                    ri = new RepositoryInfo(rep.getId(), RepositoryPreferences.TYPE_NEXUS, rep.getId(), null, rep.getUrl());
+                    ri = new RepositoryInfo(id, RepositoryPreferences.TYPE_NEXUS, id, null, url);
                 } catch (URISyntaxException x) {
                     LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
                     continue;
