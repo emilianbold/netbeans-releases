@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.html.editor.hints.HtmlHintsProvider;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -135,6 +135,11 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     @Override
     public boolean hasHintsProvider() {
         return true;
+    }
+    
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new HtmlRenameHandler();
     }
 
 }
