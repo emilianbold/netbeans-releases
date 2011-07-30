@@ -373,11 +373,26 @@ public class Reformatter implements ReformatTask {
         private static final String NEWLINE = "\n"; //NOI18N
         private static final String LEADING_STAR = "*"; //NOI18N
         private static final String P_TAG = "<p/>"; //NOI18N
+        private static final String CODE_TAG = "<code>"; //NOI18N
+        private static final String CODE_END_TAG = "</code>"; //NOI18N
         private static final String PRE_TAG = "<pre>"; //NOI18N
         private static final String PRE_END_TAG = "</pre>"; //NOI18N
-        private static final String PARAM_TAG = "@param"; //NOI18N
-        private static final String RETURN_TAG = "@return"; //NOI18N
-        private static final String THROWS_TAG = "@throws"; //NOI18N
+        private static final String JDOC_AUTHOR_TAG = "@author"; //NOI18N
+        private static final String JDOC_CODE_TAG = "@code"; //NOI18N
+        private static final String JDOC_DEPRECATED_TAG = "@deprecated"; //NOI18N
+        private static final String JDOC_EXCEPTION_TAG = "@exception"; //NOI18N
+        private static final String JDOC_LINK_TAG = "@link"; //NOI18N
+        private static final String JDOC_LINKPLAIN_TAG = "@linkplain"; //NOI18N
+        private static final String JDOC_LITERAL_TAG = "@literal"; //NOI18N
+        private static final String JDOC_PARAM_TAG = "@param"; //NOI18N
+        private static final String JDOC_RETURN_TAG = "@return"; //NOI18N
+        private static final String JDOC_SEE_TAG = "@see"; //NOI18N
+        private static final String JDOC_SERIAL_TAG = "@serial"; //NOI18N
+        private static final String JDOC_SERIAL_DATA_TAG = "@serialData"; //NOI18N
+        private static final String JDOC_SERIAL_FIELD_TAG = "@serialField"; //NOI18N
+        private static final String JDOC_SINCE_TAG = "@since"; //NOI18N
+        private static final String JDOC_THROWS_TAG = "@throws"; //NOI18N
+        private static final String JDOC_VERSION_TAG = "@version"; //NOI18N
         private static final String ERROR = "<error>"; //NOI18N
         private static final int ANY_COUNT = -1;
 
@@ -3280,24 +3295,45 @@ public class Reformatter implements ReformatTask {
             if (javadocTokens != null) {
                 int state = 0; // 0 - initial text, 1 - after param tag, 2 - param description, 3 - return description,
                                // 4 - after throws tag, 5 - exception description, 6 - after pre tag, 7 - after other tag
+                int currWSOffset = -1;
                 int lastWSOffset = -1;
                 boolean afterText = false;
+                boolean insideTag = false;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
                         case TAG:
                             String tokenText = javadocTokens.token().text().toString();
                             int newState;
-                            if (PARAM_TAG.equalsIgnoreCase(tokenText)) {
+                            if (JDOC_PARAM_TAG.equalsIgnoreCase(tokenText)) {
                                 newState = 1;
-                            } else if (RETURN_TAG.equalsIgnoreCase(tokenText)) {
+                            } else if (JDOC_RETURN_TAG.equalsIgnoreCase(tokenText)) {
                                 newState = 3;
-                            } else if (THROWS_TAG.equalsIgnoreCase(tokenText)) {
+                            } else if (JDOC_THROWS_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_EXCEPTION_TAG.equalsIgnoreCase(tokenText)) {
                                 newState = 4;
-                            } else {
+                            } else if (JDOC_AUTHOR_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_DEPRECATED_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SEE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SERIAL_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SERIAL_DATA_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SERIAL_FIELD_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SINCE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_VERSION_TAG.equalsIgnoreCase(tokenText)) {
                                 newState = 7;
+                            } else if (JDOC_LINK_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_LINKPLAIN_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_CODE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_LITERAL_TAG.equalsIgnoreCase(tokenText)) {
+                                insideTag = true;
+                                marks.add(Pair.of(lastWSOffset >= 0 ? lastWSOffset : javadocTokens.offset() - offset, 5));
+                                lastWSOffset = currWSOffset = -1;
+                                break;
+                            } else {
+                                lastWSOffset = currWSOffset = -1;
+                                break;
                             }
-                            if (lastWSOffset >= 0) {
-                                marks.add(Pair.of(lastWSOffset, afterText && (state == 0 && cs.blankLineAfterJavadocDescription()
+                            if (currWSOffset >= 0) {
+                                marks.add(Pair.of(currWSOffset, afterText && (state == 0 && cs.blankLineAfterJavadocDescription()
                                         || state == 2 && newState != 1 && cs.blankLineAfterJavadocParameterDescriptions()
                                         || state == 3 && cs.blankLineAfterJavadocReturnTag()) ? 0 : 1));
                             }
@@ -3305,7 +3341,7 @@ public class Reformatter implements ReformatTask {
                             if (state == 3 && cs.alignJavadocReturnDescription()) {
                                 marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 3));
                             }
-                            lastWSOffset = -1;
+                            lastWSOffset = currWSOffset = -1;
                             break;
                         case IDENT:
                             if (state == 1) {
@@ -3323,46 +3359,61 @@ public class Reformatter implements ReformatTask {
                                     marks.add(Pair.of(javadocTokens.offset() + len - offset, 4));
                                 state = 5;
                             }
-                            lastWSOffset = -1;
+                            lastWSOffset = currWSOffset = -1;
                             afterText = true;
                             break;
                         case OTHER_TEXT:
-                            lastWSOffset = -1;
+                            lastWSOffset = currWSOffset = -1;
                             CharSequence cseq = javadocTokens.token().text();
                             int nlNum = 1;
+                            int insideTagEndOffset = -1;
                             for (int i = cseq.length(); i >= 0; i--) {
                                 if (i == 0) {
-                                    lastWSOffset = javadocTokens.offset() - offset;
+                                    if (lastWSOffset < 0)
+                                        lastWSOffset = javadocTokens.offset() - offset;
+                                    if (currWSOffset < 0 && nlNum >= 0)
+                                        currWSOffset = javadocTokens.offset() - offset;
                                 } else {
                                     char c = cseq.charAt(i - 1);
-                                    if (c == '\n') {
-                                        if (--nlNum < 0) {
-                                            break;
+                                    if (Character.isWhitespace(c)) {
+                                        if (c == '\n')
+                                            nlNum--;
+                                        if (lastWSOffset < 0 && currWSOffset >= 0)
+                                            lastWSOffset = -2;
+                                    } else if (c != '*') {
+                                        if (insideTag && c == '}') {
+                                            insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
+                                            insideTag = false;
                                         }
-                                    } else if (!Character.isWhitespace(c) && c != '*') {
-                                        lastWSOffset = javadocTokens.offset() + i - offset;
+                                        if (lastWSOffset == -2)
+                                            lastWSOffset = javadocTokens.offset() + i - offset;
+                                        if (currWSOffset < 0 && nlNum >= 0)
+                                            currWSOffset = javadocTokens.offset() + i - offset;
                                         afterText = true;
-                                        break;
                                     }
                                 }
                             }
+                            if (insideTagEndOffset >= 0)
+                                marks.add(Pair.of(insideTagEndOffset, 6));
                             break;
                         case HTML_TAG:
                             tokenText = javadocTokens.token().text().toString();
                             if (P_TAG.equalsIgnoreCase(tokenText)) {
-                                if (lastWSOffset >= 0) {
-                                    marks.add(Pair.of(lastWSOffset, 1));
+                                if (currWSOffset >= 0) {
+                                    marks.add(Pair.of(currWSOffset, 1));
                                 }
                                 afterText = false;
-                            } else if (PRE_TAG.equalsIgnoreCase(tokenText)) {
-                                if (lastWSOffset >= 0) {
-                                    marks.add(Pair.of(lastWSOffset, 1));
+                            } else if (PRE_TAG.equalsIgnoreCase(tokenText)
+                                    || CODE_TAG.equalsIgnoreCase(tokenText)) {
+                                if (currWSOffset >= 0) {
+                                    marks.add(Pair.of(currWSOffset, 1));
                                 }
                                 marks.add(Pair.of(javadocTokens.offset() - offset, 5));
-                            } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)) {
-                                marks.add(Pair.of(lastWSOffset >= 0 ? lastWSOffset : javadocTokens.offset() - offset, 6));
+                            } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
+                                    || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
+                                marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
                             }
-                            lastWSOffset = -1;
+                            lastWSOffset = currWSOffset = -1;
                             break;
                     }
                 }
@@ -3420,7 +3471,8 @@ public class Reformatter implements ReformatTask {
                                         col += num;
                                     }
                                 }
-                                addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
+                                if (!s.equals(text.substring(lastWSPos, endOff)))
+                                    addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                             } else if (pendingDiff != null) {
                                 addDiff(pendingDiff);
                                 col++;
@@ -3439,9 +3491,23 @@ public class Reformatter implements ReformatTask {
                                 }
                             }
                             preserveNewLines = true;
+                            lastNewLinePos = i;
+                        } else {
+                            lastNewLinePos = currWSPos >= 0 ? currWSPos : i;                            
                         }
                         firstLine = false;
-                        lastNewLinePos = i;
+                    }
+                    if (i >= checkOffset && actionType == 5) {
+                        noFormat = true;
+                        align = -1;
+                        if (it.hasNext()) {
+                            Pair<Integer, Integer> next = it.next();
+                            checkOffset = next.first;
+                            actionType = next.second;
+                        } else {
+                            checkOffset = Integer.MAX_VALUE;
+                            actionType = -1;
+                        }
                     }
                 } else {
                     if (enableCommentFormatting) {
@@ -3487,6 +3553,7 @@ public class Reformatter implements ReformatTask {
                                     align = -1;
                                     break;
                                 case 6:
+                                    lastWSPos = -1;
                                     preserveNewLines = true;
                                     align = -1;
                                     break;

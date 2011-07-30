@@ -601,6 +601,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             RulesManager.getInstance().reload();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
             errorTree.setModel(errorTreeModel);
+            logic.errorTreeModel = errorTreeModel;
             select(getHintByName(newIfcDO.getPrimaryFile().getNameExt()));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

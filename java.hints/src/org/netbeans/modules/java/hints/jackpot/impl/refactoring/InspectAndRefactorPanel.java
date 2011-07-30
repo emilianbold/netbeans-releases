@@ -134,6 +134,20 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         initComponents();
         configurationCombo.setModel(new ConfigurationsComboModel(false));
         singleRefactoringCombo.setModel(new InspectionComboModel());
+        singleRefactoringCombo.addActionListener( new ActionListener() {
+
+            Object currentItem = singleRefactoringCombo.getSelectedItem();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object tempItem = singleRefactoringCombo.getSelectedItem();
+                if (!(tempItem instanceof HintMetadata)) {
+                    singleRefactoringCombo.setSelectedItem(currentItem);
+                } else {
+                    currentItem = tempItem;
+                }
+            }
+        });
+   
         configurationCombo.setRenderer(new ConfigurationRenderer());
         singleRefactoringCombo.setRenderer(new InspectionRenderer());
         singleRefactoringCombo.addPopupMenuListener(this);
@@ -564,9 +578,12 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (evt.getPropertyName().equals(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY)) {
                             AccessibleContext context = (AccessibleContext) evt.getNewValue();
-                            HintMetadata item = (HintMetadata) singleRefactoringCombo.getModel().getElementAt(context.getAccessibleIndexInParent());
-                            pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
-                            pane.setCaretPosition(0);
+                            Object elementAt = singleRefactoringCombo.getModel().getElementAt(context.getAccessibleIndexInParent());
+                            if (elementAt instanceof HintMetadata) {
+                                HintMetadata item = (HintMetadata) elementAt;
+                                pane.setText(HTML_DESC_HEADER + item.description + HTML_DESC_FOOTER);
+                                pane.setCaretPosition(0);
+                            }
                         }
                     }
                 });
