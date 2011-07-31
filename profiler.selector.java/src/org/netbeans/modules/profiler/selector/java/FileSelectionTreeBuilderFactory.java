@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.profiler.selector.java;
 
+import org.netbeans.modules.profiler.selector.java.impl.SingleFileSelectionTreeBuilder;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
