@@ -492,13 +492,20 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     public void testCreateFolderOrDataFile_ReadOnly() throws Exception {
         clearWorkDir();
         final File wDir = getWorkDir();
-        final File fold = new File(wDir,"a/b/c");
-        final File data = new File(fold,"a/b/c.data");
-        assertTrue(wDir.setReadOnly());
+        final File fold = new File(new File(new File(wDir,"a"), "b"), "c");
+        final File data = new File(new File(new File(fold,"a"), "b"), "c.data");
+        final boolean makeReadOnly = wDir.setReadOnly();
+        if (!makeReadOnly && Utilities.isWindows()) {
+            // According to bug 6728842: setReadOnly() only prevents the 
+            // directory to be deleted on windows, does not prevent files
+            // to be create in it. Thus the test cannot work on Windows.
+            return;
+        }
+        assertTrue("Can change directory to read only: " + wDir, makeReadOnly);
         assertFalse("Cannot write", wDir.canWrite());
         try {
             implCreateFolderOrDataFile(fold, data);        
-            fail();
+            fail("Creating folder or data should not be allowed: " + data);
         } catch (IOException ex) {            
         } finally {
             assertTrue(wDir.setWritable(true));
