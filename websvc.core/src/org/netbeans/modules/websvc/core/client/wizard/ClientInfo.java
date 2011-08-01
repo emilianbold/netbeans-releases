@@ -577,13 +577,19 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         {
             final WsdlSaas saas = explorerPanel.getWsdlSaas();
             if ( checkSaasState(saas) ){
+                descriptorPanel.fireChangeEvent();
                 return;
             }
             
-            DialogDescriptor descriptor = new DialogDescriptor( new JLabel( 
-                    NbBundle.getMessage( ClientInfo.class, "TXT_SaasWait")),
+            
+            LabelPanel panel = new LabelPanel(
+                    NbBundle.getMessage( ClientInfo.class, "TXT_SaasWait"),
+                    NbBundle.getMessage( ClientInfo.class, "ACSN_SaasWait"),
+                    NbBundle.getMessage( ClientInfo.class, "ACSD_SaasWait"));
+            DialogDescriptor descriptor = new DialogDescriptor( panel,
                     NbBundle.getMessage( ClientInfo.class, "TXT_SaasTitle"),true,
-                    new Object[0], null, DialogDescriptor.DEFAULT_ALIGN, null , null );   // NOI18N
+                    new Object[]{DialogDescriptor.CANCEL_OPTION}, null, 
+                    DialogDescriptor.DEFAULT_ALIGN, null , null );   // NOI18N
             final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             
             PropertyChangeListener listener = new PropertyChangeListener() {
@@ -595,6 +601,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                             SaasServicesModel.getInstance().
                                 removePropertyChangeListener( this );
                             dialog.setVisible( false );
+                            descriptorPanel.fireChangeEvent();
                         }
                     }
                 }
@@ -745,11 +752,12 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_SCHEMAS, getDownloadedSchemas());
             d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
-        } else if(wsdlSource == WSDL_FROM_FILE) {
+        } else if(wsdlSource == WSDL_FROM_FILE || wsdlSource == WSDL_FROM_SAAS) {
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL, null);
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, null);
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
-            d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
+            d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, wsdlSource == WSDL_FROM_FILE ? 
+                    jTxtLocalFilename.getText().trim() : saasTextField.getText().trim());
         }
         d.putProperty(ClientWizardProperties.WSDL_PACKAGE_NAME, getPackageName());
         d.putProperty(ClientWizardProperties.CLIENT_STUB_TYPE, jCbxClientType.getSelectedItem());
@@ -883,7 +891,6 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             jLblProjectName.setText(ProjectUtils.getInformation(project).getDisplayName());
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL));
             jTxtLocalFilename.setText(retriever != null ? retriever.getWsdlFileName() : ""); //NOI18N
-            jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
             
             jCbxPackageName.setModel(getPackageModel(project));
             String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
@@ -907,6 +914,17 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             this.wsdlTmpFile = null;
             this.retriever = null;
             this.downloadMsg = null;
+            
+            JTextField fileField = null;
+            if ( wsdlSource == WSDL_FROM_FILE ){
+                fileField = jTxtWsdlURL;
+            }
+            else if ( wsdlSource == WSDL_FROM_SAAS ){
+                fileField = saasTextField;
+            }
+            if ( fileField != null ){
+                fileField.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
+            }
             
             enableWsdlSourceFields();
             btnGrpWsdlSource.setSelected(getSelectedRadioButton(wsdlSource).getModel(), true);
@@ -993,11 +1011,13 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                 wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
         if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)
-                &&  (wsdlSource != WSDL_FROM_FILE)) {
+                &&  wsdlSource != WSDL_FROM_FILE && wsdlSource!= WSDL_FROM_SAAS) 
+        {
             boolean rpcEncoded = false;
             File tmpWsdl = null;
             try {
-                URL tmpWsdlUrl = new URL(wsdlSource == WSDL_FROM_PROJECT ? jTxtWsdlProject.getText() : jTxtWsdlURL.getText().trim());
+                URL tmpWsdlUrl = new URL(wsdlSource == WSDL_FROM_PROJECT ? jTxtWsdlProject.getText() : 
+                    jTxtWsdlURL.getText().trim());
                 tmpWsdl = File.createTempFile("tmp", "wsdl");
                 List<Proxy> proxies = ProxySelector.getDefault().select(tmpWsdlUrl.toURI());
                 Utilities.downloadURLUsingProxyAndSave(tmpWsdlUrl, 
@@ -1069,15 +1089,18 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         JRadioButton result = jRbnProject;
         
         switch(selected) {
-        case WSDL_FROM_PROJECT:
-            result = jRbnProject;
-            break;
-        case WSDL_FROM_FILE:
-            result = jRbnFilesystem;
-            break;
-        case WSDL_FROM_URL:
-            result = jRbnUrl;
-            break;
+            case WSDL_FROM_PROJECT:
+                result = jRbnProject;
+                break;
+            case WSDL_FROM_FILE:
+                result = jRbnFilesystem;
+                break;
+            case WSDL_FROM_URL:
+                result = jRbnUrl;
+                break;
+            case WSDL_FROM_SAAS:
+                result = saasWs;
+                break;
         }
         
         return result;
@@ -1222,7 +1245,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             // !PW FIXME what do we want to check it for?  Existence in temp directory?
             
             // Now drop down to do package validation.
-        } else if(wsdlSource == WSDL_FROM_FILE) {
+        } else if(wsdlSource == WSDL_FROM_FILE ) {
             String wsdlFilePath = jTxtLocalFilename.getText().trim();
             
             if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
@@ -1297,8 +1320,23 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             } catch (Exception e) {
                 ErrorManager.getDefault().annotate(e, ErrorManager.WARNING,
                         "Unable to check if wsdl is rpc encoded.", 
-                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),
+                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),// NOI18N 
                         e.getCause(), new java.util.Date());
+            }
+        }
+        else if ( wsdlSource == WSDL_FROM_SAAS ){
+            boolean valid = saasWsdl != null;
+            if ( valid ){
+                File file = FileUtil.toFile( saasWsdl );
+                valid = file!= null;
+                if ( valid ){
+                    valid = file.exists();
+                }
+            }
+            if ( !valid ){
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, 
+                        NbBundle.getMessage(ClientInfo.class, "ERR_NotSaasWsdlFile")); // NOI18N 
+                return false;
             }
         }
         
