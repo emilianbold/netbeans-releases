@@ -763,6 +763,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             switch(e.getKind()) {
                                 case EXCEPTION_PARAMETER:
                                 case LOCAL_VARIABLE:
+                                case RESOURCE_VARIABLE:
                                 case PARAMETER:
                                     return element != e;
                                 default:
@@ -896,8 +897,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
                             final HashSet<Name> illegalForwardRefNames = new  HashSet<Name>();
                             for (Element element : illegalForwardRefs) {
-                                if (element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.EXCEPTION_PARAMETER ||
-                                        element.getKind() == ElementKind.PARAMETER)
+                                if (element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.RESOURCE_VARIABLE
+                                        || element.getKind() == ElementKind.EXCEPTION_PARAMETER || element.getKind() == ElementKind.PARAMETER)
                                     illegalForwardRefNames.add(element.getSimpleName());
                             }
                             final ExecutableElement method = scope.getEnclosingMethod();
@@ -907,6 +908,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case TYPE_PARAMETER:
                                         return true;
                                     case LOCAL_VARIABLE:
+                                    case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&

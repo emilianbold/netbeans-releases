@@ -105,6 +105,13 @@ final class RemoteOperationFactory extends FileOperationFactory {
 
     @Override
     protected synchronized void resetInternal() {
+        if (remoteClient != null) {
+            try {
+                remoteClient.disconnect();
+            } catch (RemoteException ex) {
+                LOGGER.log(Level.INFO, "Error while disconnecting", ex);
+            }
+        }
         remoteClient = null;
     }
 
@@ -129,13 +136,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (!isValid(source)) {
                     return null;
                 }
-
-                RemoteClient client = getRemoteClient();
-                try {
-                    return doCopy(client, source);
-                } finally {
-                    client.disconnect();
-                }
+                return doCopy(getRemoteClient(), source);
             }
         };
     }
@@ -150,13 +151,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (!isValid(source)) {
                     return null;
                 }
-
-                RemoteClient client = getRemoteClient();
-                try {
-                    return doRename(client, source, oldName);
-                } finally {
-                    client.disconnect();
-                }
+                return doRename(getRemoteClient(), source, oldName);
             }
         };
     }
@@ -171,13 +166,7 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (!isValid(source)) {
                     return null;
                 }
-
-                RemoteClient client = getRemoteClient();
-                try {
-                    return doDelete(client, source);
-                } finally {
-                    client.disconnect();
-                }
+                return doDelete(getRemoteClient(), source);
             }
         };
     }

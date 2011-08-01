@@ -42,9 +42,21 @@
 package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
 
 /**
  *
@@ -52,11 +64,19 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
  */
 public final class InspectionComboModel extends AbstractListModel implements ComboBoxModel {
     private Object selected;
-    private final ArrayList<HintMetadata> hintsList;
+    private final ArrayList<Object> hintsList;
 
     public InspectionComboModel() {
-        hintsList = Utilities.getBatchSupportedHints();
-        selected = getElementAt(0);
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) constructTM(Utilities.getBatchSupportedHints(), false).getRoot();
+        Enumeration enumeration = root.preorderEnumeration();
+        
+        hintsList = new ArrayList<Object>();
+        while (enumeration.hasMoreElements()) {
+            Object userObject = ((DefaultMutableTreeNode) enumeration.nextElement()).getUserObject();
+            if (userObject!=null)
+                hintsList.add(userObject);
+        }
+        selected = getElementAt(1);
     }
     
     @Override
@@ -80,5 +100,58 @@ public final class InspectionComboModel extends AbstractListModel implements Com
     public Object getSelectedItem() {
         return selected;
     }
-    
+ 
+    /**
+     * TODO: copy/paste from HintsPanel 
+     */
+    private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata, boolean allHints) {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        Map<HintCategory, Collection<HintMetadata>> cat2Hints = new TreeMap<HintCategory, Collection<HintMetadata>>(new Comparator<HintCategory>() {
+            @Override
+            public int compare(HintCategory o1, HintCategory o2) {
+                return o1.displayName.compareToIgnoreCase(o2.displayName);
+            }
+        });
+        Map<String, HintCategory> cat2CatDesc =  new HashMap<String, HintCategory>();
+
+        for (HintMetadata m : metadata) {
+            if (m.options.contains(Options.NON_GUI)) continue;
+
+            HintCategory cat = cat2CatDesc.get(m.category);
+
+            if (cat == null) {
+                cat2CatDesc.put(m.category, cat = new HintCategory(m.category));
+            }
+            
+            Collection<HintMetadata> catNode = cat2Hints.get(cat);
+
+            if (catNode == null) {
+                cat2Hints.put(cat, catNode = new TreeSet<HintMetadata>(new Comparator<HintMetadata>() {
+                    public int compare(HintMetadata o1, HintMetadata o2) {
+                        return o1.displayName.compareToIgnoreCase(o2.displayName);
+                    }
+                }));
+            }
+
+            catNode.add(m);
+        }
+
+        for (Entry<HintCategory, Collection<HintMetadata>> e : cat2Hints.entrySet()) {
+            DefaultMutableTreeNode catNode = new DefaultMutableTreeNode(e.getKey());
+
+            for (HintMetadata hm : e.getValue()) {
+                DefaultMutableTreeNode hmNode = new DefaultMutableTreeNode(hm);
+
+                catNode.add(hmNode);
+                //hint2Path.put(hm, new TreePath(new Object[] {root, catNode, hmNode}));
+            }
+
+            root.add(catNode);
+        }
+
+        //if (allHints) 
+        //root.add(extraNode);
+        
+        return new DefaultTreeModel(root);
+    }    
 }

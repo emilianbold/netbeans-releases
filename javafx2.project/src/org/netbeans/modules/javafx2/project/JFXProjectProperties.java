@@ -43,8 +43,9 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-public class J2SEProjectProperties {
+public final class JFXProjectProperties {
 
+    public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N

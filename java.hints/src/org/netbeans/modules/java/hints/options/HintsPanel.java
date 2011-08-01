@@ -601,6 +601,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             RulesManager.getInstance().reload();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(), false);
             errorTree.setModel(errorTreeModel);
+            logic.errorTreeModel = errorTreeModel;
             select(getHintByName(newIfcDO.getPrimaryFile().getNameExt()));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -665,7 +666,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         cancelEditActionPerformed(evt);
     }//GEN-LAST:event_saveButtonActionPerformed
     
-    private HintMetadata getHintByName(String name) {
+    public static HintMetadata getHintByName(String name) {
         for (HintMetadata meta:Utilities.getBatchSupportedHints()) {
             if (meta.id.startsWith(name)) {
                 return meta;

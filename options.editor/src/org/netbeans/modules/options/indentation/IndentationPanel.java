@@ -201,7 +201,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     public @Override void actionPerformed (ActionEvent e) {
         if (cbOverrideGlobalOptions == e.getSource()) {
-            prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, cbOverrideGlobalOptions.isSelected());
+            prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, !cbOverrideGlobalOptions.isSelected());
         } else if (cbExpandTabsToSpaces == e.getSource()) {
             prefs.putBoolean(SimpleValueNames.EXPAND_TABS, cbExpandTabsToSpaces.isSelected());
         } else if (cboLineWrap == e.getSource()) {
@@ -289,8 +289,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         if (showOverrideGlobalOptions) {
             if (key == null || FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
                 boolean nue = prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
-                if (nue != cbOverrideGlobalOptions.isSelected()) {
-                    cbOverrideGlobalOptions.setSelected(nue);
+                if (nue == cbOverrideGlobalOptions.isSelected()) {
+                    cbOverrideGlobalOptions.setSelected(!nue);
                 }
                 
                 if (!nue) {

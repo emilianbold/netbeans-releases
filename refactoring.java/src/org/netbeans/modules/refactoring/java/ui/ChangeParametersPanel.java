@@ -60,8 +60,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.Set;
 import javax.lang.model.element.*;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -127,6 +125,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private final JComponent[] singleLineEditor;
     private boolean methodNameChanged;
     private boolean returnTypeChanged;
+    private boolean isConstructor;
     
     
     public Component getComponent() {
@@ -226,10 +225,17 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                             typeParameters.add(typeParameterTree.toString());
                         }
                         
+                        isConstructor = e.getKind() == ElementKind.CONSTRUCTOR;
+                        
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                DialogBinding.bindComponentToFile(fileObject, (int) start, (int) (end - start), ((JEditorPane)singleLineEditor[1]));
+                                if(isConstructor) {
+                                    methodNameText.setEnabled(false);
+                                    singleLineEditor[1].setEnabled(false);
+                                } else {
+                                    DialogBinding.bindComponentToFile(fileObject, (int) start, (int) (end - start), ((JEditorPane)singleLineEditor[1]));
+                                }
                                 ((JEditorPane)singleLineEditor[1]).setText(returnType);
                                 ((JEditorPane)singleLineEditor[1]).getDocument().addDocumentListener(returnTypeDocListener);
                                 ((JEditorPane)singleLineEditor[1]).putClientProperty(

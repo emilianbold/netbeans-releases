@@ -148,6 +148,10 @@ public class CssRuleContent {
 
 
         for(Declaration item : ruleItems()) {
+            if(item.getProperty() == null || item.getValue() == null) {
+                continue;
+            }
+            
             String property = item.getProperty().name();
             String propertyValue = item.getValue().name().trim();
             if(!(propertyValue.equals(Utils.NOT_SET) || propertyValue.equals(""))){ //NOI18N

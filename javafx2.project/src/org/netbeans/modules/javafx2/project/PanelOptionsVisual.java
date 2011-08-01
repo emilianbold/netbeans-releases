@@ -72,9 +72,9 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     private boolean valid;
     private String currentLibrariesLocation;
     private String projectLocation;
-    private final NewJ2SEProjectWizardIterator.WizardType type;
+    private final NewJFXProjectWizardIterator.WizardType type;
 
-    public PanelOptionsVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
+    public PanelOptionsVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
         this.type = type;

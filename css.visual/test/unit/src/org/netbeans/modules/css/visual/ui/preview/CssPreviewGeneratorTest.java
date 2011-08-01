@@ -49,7 +49,9 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import org.netbeans.modules.css.lib.api.model.Rule;
 import org.netbeans.modules.css.editor.model.CssRuleContent;
@@ -73,6 +75,16 @@ public class CssPreviewGeneratorTest extends CslTestBase {
         super(name);
     }
 
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new CssLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/x-css";
+    }
+    
     public void testCleanPseudoClass() throws ParseException, IOException {
        Stylesheet model = modelFor(":focus { }");
        Rule rule = rule(model, 0);

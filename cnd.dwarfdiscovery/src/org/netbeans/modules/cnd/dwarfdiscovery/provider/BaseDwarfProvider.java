@@ -235,6 +235,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         Position position = null;
         List<String> errors = new ArrayList<String>();
         List<String> searchPaths = new ArrayList<String>();
+        TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
         TreeMap<String,AtomicInteger> roots = new TreeMap<String,AtomicInteger>();
         int foundDebug = 0;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
@@ -253,6 +254,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
+                    incrementRoot(path, realRoots);
                     path = DiscoveryUtils.normalizeAbsolutePath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
@@ -284,19 +286,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
-                    path = path.replace('\\', '/');
-                    {
-                        int i = path.lastIndexOf('/');
-                        if (i >= 0) {
-                            String folder = path.substring(0, i);
-                            AtomicInteger val = roots.get(folder);
-                            if (val == null) {
-                                val = new AtomicInteger();
-                                roots.put(folder, val);
-                            }
-                            val.incrementAndGet();
-                        }
-                    }
+                    incrementRoot(path, roots);
                     String compilerName = DwarfSource.extractCompilerName(cu, language);
                     if (compilerName != null) {
                         AtomicInteger count = compilers.get(compilerName);
@@ -384,7 +374,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         } else {
             if (errors.isEmpty()) {
                 if (foundDebug > 0) {
-                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "BadDebugInformation", objFileName));  // NOI18N
+                    String notFoundRoot = getRoot(realRoots);
+                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "BadDebugInformation", notFoundRoot));  // NOI18N
                 } else {
                     errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "NotFoundDebugInformation", objFileName));  // NOI18N
                 }
@@ -393,6 +384,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
+    private void incrementRoot(String path, Map<String,AtomicInteger> roots) {
+        path = path.replace('\\', '/');
+        int i = path.lastIndexOf('/');
+        if (i >= 0) {
+            String folder = path.substring(0, i);
+            AtomicInteger val = roots.get(folder);
+            if (val == null) {
+                val = new AtomicInteger();
+                roots.put(folder, val);
+            }
+            val.incrementAndGet();
+        }
+    }
+    
     private String getCommonPart(String path, String commonRoot) {
         String[] splitPath = path.split("/"); // NOI18N
         ArrayList<String> list1 = new ArrayList<String>();

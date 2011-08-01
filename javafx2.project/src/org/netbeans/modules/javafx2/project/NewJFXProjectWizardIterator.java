@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new J2SE project.
  */
-public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     enum WizardType { APP, LIB, EXT }
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
@@ -78,20 +78,20 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     private WizardType type;
 
     /** Create a new wizard iterator. */
-    public NewJ2SEProjectWizardIterator() {
+    public NewJFXProjectWizardIterator() {
         this(WizardType.APP);
     }
 
-    public NewJ2SEProjectWizardIterator(WizardType type) {
+    public NewJFXProjectWizardIterator(WizardType type) {
         this.type = type;
     }
 
-    public static NewJ2SEProjectWizardIterator library() {
-        return new NewJ2SEProjectWizardIterator(WizardType.LIB);
+    public static NewJFXProjectWizardIterator library() {
+        return new NewJFXProjectWizardIterator(WizardType.LIB);
     }
 
-    public static NewJ2SEProjectWizardIterator existing() {
-        return new NewJ2SEProjectWizardIterator(WizardType.EXT);
+    public static NewJFXProjectWizardIterator existing() {
+        return new NewJFXProjectWizardIterator(WizardType.EXT);
     }
 
     private WizardDescriptor.Panel[] createPanels() {
@@ -112,12 +112,12 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         switch (type) {
             case EXT:
                 return new String[]{
-                            NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LAB_ConfigureProject"), // NOI18N
-                            NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LAB_ConfigureSourceRoots"), // NOI18N
-                            NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LAB_PanelIncludesExcludes"),}; // NOI18N
+                            NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LAB_ConfigureProject"), // NOI18N
+                            NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LAB_ConfigureSourceRoots"), // NOI18N
+                            NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LAB_PanelIncludesExcludes"),}; // NOI18N
             default:
                 return new String[]{
-                            NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LAB_ConfigureProject"),}; // NOI18N
+                            NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LAB_ConfigureProject"),}; // NOI18N
         }
     }
 
@@ -144,13 +144,13 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
-        handle.progress(NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
+        handle.progress(NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
         switch (type) {
             case EXT:
                 File[] sourceFolders = (File[]) wiz.getProperty("sourceRoot"); // NOI18N
                 File[] testFolders = (File[]) wiz.getProperty("testRoot"); // NOI18N
                 String buildScriptName = (String) wiz.getProperty("buildScriptName"); // NOI18N
-                AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
+                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
                 EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
                 if (includes == null) {
@@ -172,7 +172,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
                 }
                 break;
             default:
-                h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition);
+                h = JFXProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition);
                 handle.progress(2);
                 if (mainClass != null && mainClass.length() > 0) {
                     try {
@@ -217,7 +217,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
                 break;
         }
         resultSet.add(dir);
-        handle.progress(NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4); // NOI18N
+        handle.progress(NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4); // NOI18N
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder(dirF);
@@ -273,7 +273,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     public String name() {
-        return NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "LAB_IteratorName", index + 1, panels.length); // NOI18N
+        return NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LAB_IteratorName", index + 1, panels.length); // NOI18N
     }
 
     public boolean hasNext() {
@@ -332,7 +332,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
                 builder.append(c);
             }
         }
-        return builder.length() == 0 ? NbBundle.getMessage(NewJ2SEProjectWizardIterator.class, "TXT_DefaultPackageName") : builder.toString(); // NOI18N
+        return builder.length() == 0 ? NbBundle.getMessage(NewJFXProjectWizardIterator.class, "TXT_DefaultPackageName") : builder.toString(); // NOI18N
     }
 
     /**

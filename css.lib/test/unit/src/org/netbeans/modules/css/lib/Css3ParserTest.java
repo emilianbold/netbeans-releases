@@ -399,9 +399,9 @@ public class Css3ParserTest extends CslTestBase {
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);
-        assertResult(result, 4);
+        assertResult(result, 0);
     }
-
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }
