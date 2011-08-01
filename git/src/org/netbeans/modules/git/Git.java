@@ -127,6 +127,7 @@ public final class Git {
                 return Git.this.getTopmostManagedAncestor(file);
             }
         }, Logger.getLogger("org.netbeans.modules.git.RootsToFile"), statisticsFrequency); //NOI18N
+        ModuleLifecycleManager.getInstance().disableOtherModules();
     }
 
     void registerGitVCS(GitVCS gitVCS) {
