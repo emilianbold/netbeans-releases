@@ -838,12 +838,18 @@ public final class TopLogging {
         
         @Override
         public void flush() {
-            try {
-                flush.schedule(0);
-                flush.waitFinished(500);
-            } catch (InterruptedException ex) {
-                // ok, flush failed, do not even print
-                // as we are inside the System.err code
+            boolean empty;
+            synchronized (sb) {
+                empty = sb.length() == 0;
+            }
+            if (!empty) {
+                try {
+                    flush.schedule(0);
+                    flush.waitFinished(500);
+                } catch (InterruptedException ex) {
+                    // ok, flush failed, do not even print
+                    // as we are inside the System.err code
+                }
             }
             super.flush();
         }
