@@ -401,7 +401,7 @@ public class Css3ParserTest extends CslTestBase {
 //        TestUtil.dumpResult(result);
         assertResult(result, 4);
     }
-
+    
     private CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }

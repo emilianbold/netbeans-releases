@@ -48,8 +48,10 @@ import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.api.CssParserFactory;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.css.lib.nbparser.CssParser;
@@ -109,6 +111,7 @@ public class TestUtil {
     }
 
     public static void dumpResult(CssParserResult result) {
+        System.out.println("Parse Tree:");
         NodeUtil.dumpTree(result.getParseTree());
         Collection<ProblemDescription> problems = result.getDiagnostics();
         if (!problems.isEmpty()) {
@@ -118,5 +121,14 @@ public class TestUtil {
             }
         }
 
+    }
+    
+    public static void dumpTokens(CssParserResult result) {
+        System.out.println("Tokens:");
+        TokenSequence<CssTokenId> ts = result.getSnapshot().getTokenHierarchy().tokenSequence(CssTokenId.language());
+        while (ts.moveNext()) {
+            System.out.println(ts.offset() + "-" + (ts.token().length() + ts.offset()) + ": " + ts.token().text() + "(" + ts.token().id() + ")");
+        }
+        System.out.println("-------------");
     }
 }

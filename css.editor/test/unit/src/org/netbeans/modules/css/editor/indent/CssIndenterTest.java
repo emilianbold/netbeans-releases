@@ -181,9 +181,11 @@ public class CssIndenterTest extends TestBase {
         reformatFileContents("testfiles/case004.css", new IndentPrefs(4,4));
     }
 
-    public void testFormattingNetBeansCSS() throws Exception {
-        reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
-    }
+    //temporarily disable due to following issue:
+    //Bug 200569 - Lexing of 'u' + ' ' characaters sequence produces error token instead of IDENT+WS tokens
+//    public void testFormattingNetBeansCSS() throws Exception {
+//        reformatFileContents("testfiles/netbeans.css",new IndentPrefs(4,4));
+//    }
 
     public void testIndentation() throws Exception {
         // property indentation:
