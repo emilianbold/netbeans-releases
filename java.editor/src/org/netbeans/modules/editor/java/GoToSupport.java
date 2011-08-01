@@ -752,7 +752,8 @@ public class GoToSupport {
                 
                 Element enclosing = e.getEnclosingElement();
                 
-                if (e.getKind() != ElementKind.PARAMETER && e.getKind() != ElementKind.LOCAL_VARIABLE && e.getKind() != ElementKind.EXCEPTION_PARAMETER) {
+                if (e.getKind() != ElementKind.PARAMETER && e.getKind() != ElementKind.LOCAL_VARIABLE
+                        && e.getKind() != ElementKind.RESOURCE_VARIABLE && e.getKind() != ElementKind.EXCEPTION_PARAMETER) {
                     result.append(" in ");
 
                     //short typename:

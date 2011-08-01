@@ -1092,18 +1092,21 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 return Collections.emptyList();
             }
             List<FileObject> roots = new LinkedList<FileObject>();
-            for( FileObject dir : modules.getChildren() ){
-                String name = dir.getName();
+            for( FileObject child : modules.getChildren() ){
+                String name = child.getName();
                 if ( name.startsWith(ORACLE_WEBSERVICES)){
-                    FileObject jar = dir.getFileObject(
+                    FileObject jar = child.getFileObject(
                             ORACLE_WEBSERVICES_STANDALONE_CLIENT,JAR);
                     if ( jar != null ){
                         addJar(roots, jar);
                     }
-                    jar = dir.getFileObject("wsclient-rt",JAR); 
+                    jar = child.getFileObject("wsclient-rt",JAR); 
                     if ( jar != null ){
                         addJar(roots, jar);
                     }
+                }
+                else if (name.startsWith("ws.api_") && child.getExt().equals(JAR)){       // NOI18N
+                    addJar(roots , child);
                 }
             }
             return roots;

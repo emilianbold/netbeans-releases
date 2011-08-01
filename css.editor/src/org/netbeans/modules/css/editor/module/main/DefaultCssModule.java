@@ -174,11 +174,18 @@ public class DefaultCssModule extends CssModule {
             return null;
         }
 
-        //we must always get a token node
-        assert current.type() == NodeType.token;
-
-        //get the rule node (its parent)
-        current = current.parent();
+        if (current.type() == NodeType.token) {
+            //get the rule node (its parent)
+            current = current.parent();
+        }
+        
+        if(current == null) {
+            //this may happen if the offset falls to the area outside the selectors rule node.
+            //(for example when the stylesheet starts or ends with whitespaces or comment and
+            //and the offset falls there).
+            //In such case root node (with null parent) is returned from NodeUtil.findNodeAtOffset() 
+            return null; 
+        }
 
         //process only some interesting nodes
         if (!NodeUtil.isSelectorNode(current)) {

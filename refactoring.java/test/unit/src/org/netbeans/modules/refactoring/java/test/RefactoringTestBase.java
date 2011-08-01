@@ -173,7 +173,7 @@ public class RefactoringTestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         Util.allMimeTypes = new HashSet<String>();
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[] {
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml"}, new Object[] {
             new ClassPathProvider() {
                 public ClassPath findClassPath(FileObject file, String type) {
                     if ((src != null && (file == src || FileUtil.isParentOf(src, file)))

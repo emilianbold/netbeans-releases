@@ -65,6 +65,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
@@ -86,11 +87,18 @@ public class CvsFileSystemTest extends FileSystemFactoryHid {
         super(test);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
+        File workDir = getRepoDir().getParentFile();
+        FileUtils.deleteRecursively(workDir);
+        File userdir = new File(workDir, "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         MockServices.setServices(new Class[] {FileBasedURLMapper.class});                
     }
     
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -125,6 +133,7 @@ public class CvsFileSystemTest extends FileSystemFactoryHid {
         return new File(new File(System.getProperty("work.root.dir")), "repo");
     }
 
+    @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         try {                                 
             repoinit();            
@@ -155,6 +164,7 @@ public class CvsFileSystemTest extends FileSystemFactoryHid {
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
+    @Override
     protected void destroyFileSystem(String testName) throws IOException {}    
 
     @Override

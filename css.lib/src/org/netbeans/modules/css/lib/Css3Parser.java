@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2011-07-26 14:56:16
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2011-08-01 15:11:44
 
     package org.netbeans.modules.css.lib;
     
@@ -101,15 +101,15 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "cssClass", "combinator", "medium", "imports", "term", 
-        "property", "pseudoPage", "selectorsGroup", "expr", "esPred", "simpleSelectorSequence", 
-        "hexColor", "prio", "attrname", "selector", "operator", "function_name", 
-        "nsPred", "synpred3_Css3", "cssId", "syncTo_IDENT_RBRACE", "namespacePrefix", 
-        "syncToFollow", "declaration", "bodyset", "namespaceName", "elementSubsequent", 
-        "function", "pseudo", "synpred2_Css3", "bodylist", "declarations", 
-        "elementName", "page", "mediaList", "typeSelector", "ruleSet", "synpred1_Css3", 
-        "attrvalue", "unaryOperator", "media", "charSet", "attribute", "attrib", 
-        "styleSheet"
+        "invalidRule", "charSet", "elementSubsequent", "mediaList", "media", 
+        "declarations", "expr", "unaryOperator", "combinator", "operator", 
+        "term", "medium", "ruleSet", "prio", "elementName", "nsPred", "selector", 
+        "declaration", "hexColor", "attribute", "selectorsGroup", "pseudoPage", 
+        "function", "synpred3_Css3", "imports", "synpred2_Css3", "namespaceName", 
+        "bodyset", "esPred", "bodylist", "typeSelector", "syncToFollow", 
+        "synpred1_Css3", "styleSheet", "cssClass", "property", "simpleSelectorSequence", 
+        "syncTo_IDENT_RBRACE", "attrvalue", "cssId", "attrname", "attrib", 
+        "function_name", "namespacePrefix", "pseudo", "page"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision

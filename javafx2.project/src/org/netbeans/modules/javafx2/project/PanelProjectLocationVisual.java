@@ -68,9 +68,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_PROJECT_LOCATION = "projectLocation"; // NOI18N
     private PanelConfigureProject panel;
-    private NewJ2SEProjectWizardIterator.WizardType type;
+    private NewJFXProjectWizardIterator.WizardType type;
 
-    public PanelProjectLocationVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
+    public PanelProjectLocationVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
         this.type = type;
@@ -310,7 +310,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;
                     }
-                    settings.putProperty(NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                    settings.putProperty(NewJFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                     break;
                 default:
                     baseCount = WizardSettings.getNewLibraryCount() + 1;
@@ -318,7 +318,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;
                     }
-                    settings.putProperty(NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                    settings.putProperty(NewJFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
             }
         }
         this.projectNameTextField.setText(projectName);
