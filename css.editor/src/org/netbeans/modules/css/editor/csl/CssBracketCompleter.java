@@ -63,6 +63,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -297,8 +298,20 @@ public class CssBracketCompleter implements KeystrokeHandler {
             if (node != null) {
                 //go through the tree and add all parents with, eliminate duplicate nodes
                 do {
-                    int from = snapshot.getOriginalOffset(node.from());
-                    int to = snapshot.getOriginalOffset(node.to());
+                    //filter some unwanted node types
+                    switch(node.type()) {
+                        case declarations:
+                        case token:
+                            continue;
+                    }
+                    
+                    //use trimmed node range so nodes containing whitespaces at the start
+                    //or at the end of their range can be considered as duplicate nodes
+                    //of their children.
+                    int[] trimmedNodeRange = NodeUtil.getTrimmedNodeRange(node);
+                    
+                    int from = snapshot.getOriginalOffset(trimmedNodeRange[0]);
+                    int to = snapshot.getOriginalOffset(trimmedNodeRange[1]);
 
                     if (from == -1 || to == -1) {
                         continue;

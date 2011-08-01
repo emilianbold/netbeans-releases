@@ -42,6 +42,9 @@
 package org.netbeans.modules.css.lib.api;
 
 /**
+ * This enum should be updated once the ANTLR grammar has changed the set of rules.
+ * 
+ * It can be regexped from the generated Css3Parser.ruleNames field
  *
  * @author marekfukala
  */
@@ -55,10 +58,8 @@ public enum NodeType {
         ruleSet, function_name, bodyset, synpred2_Css3, operator, 
         attrname, selectorsGroup, typeSelector, nsPred, elementName, 
         function, imports, mediaList,
-        
-//        syncToIdent,
-        
-        //following node types don't correspond to any of the grammar rules:
+                
+        //following node types don't correspond to any of the grammar rules (do not remove them!):
         root, //an artificial root node of each parse tree
         error, //an error node
         recovery, //an error node, but for errors recovered - skipped (resynced) content by syncToBitSet(...)
