@@ -46,10 +46,20 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
- *
+ * Implementations need to be registered in a global lookup so that {@linkplain SelectionTreeBuilderFactory} can find them.
  * @author Jaroslav Bachorik
  */
 abstract public class SelectionTreeBuilderFactoryProvider {
+    /**
+     * Gets a list of supported {@linkplain SelectionTreeBuilder} builders for a particular project
+     * @param project A project to retrieve the list of builders for
+     * @return Returns a list of supported {@linkplain SelectionTreeBuilder} builders for the given project
+     */
     abstract public List<SelectionTreeBuilder> buildersForProject(Lookup.Provider project);
+    /**
+     * Gets a list of supported {@linkplain SelectionTreeBuilder} builders for a particular file
+     * @param file A file to retrieve the list of builders for
+     * @return Returns a list of supported {@linkplain SelectionTreeBuilder} builders for the given file
+     */
     abstract public List<SelectionTreeBuilder> buildersForFile(FileObject file);
 }

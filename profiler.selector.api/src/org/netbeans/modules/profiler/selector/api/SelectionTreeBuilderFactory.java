@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.profiler.selector.api;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
@@ -50,15 +49,24 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
- *
+ * A factory for obtaining {@linkplain SelectionTreeBuilder} builders for a particular project or file
  * @author Jaroslav Bachorik
  */
 final public class SelectionTreeBuilderFactory {
+    /**
+     * Gets a list of supported {@linkplain SelectionTreeBuilder} builders for a particular project
+     * @param project A project to retrieve the list of builders for
+     * @return Returns a list of supported {@linkplain SelectionTreeBuilder} builders for the given project
+     */
     public static List<SelectionTreeBuilder> buildersFor(FileObject file) {
         SelectionTreeBuilderFactoryProvider p = Lookup.getDefault().lookup(SelectionTreeBuilderFactoryProvider.class);
         return p != null ? p.buildersForFile(file) : Collections.EMPTY_LIST;
     }
-    
+    /**
+     * Gets a list of supported {@linkplain SelectionTreeBuilder} builders for a particular file
+     * @param file A file to retrieve the list of builders for
+     * @return Returns a list of supported {@linkplain SelectionTreeBuilder} builders for the given file
+     */
     public static List<SelectionTreeBuilder> buildersFor(Lookup.Provider project) {
         SelectionTreeBuilderFactoryProvider p = Lookup.getDefault().lookup(SelectionTreeBuilderFactoryProvider.class);
         return p != null ? p.buildersForProject(project) : Collections.EMPTY_LIST;

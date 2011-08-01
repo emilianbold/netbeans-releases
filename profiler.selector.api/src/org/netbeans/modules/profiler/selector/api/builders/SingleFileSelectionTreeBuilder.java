@@ -52,7 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * A {@linkplain SelectionTreeBuilder} implementation for "select root methods from class" view
  * @author Jaroslav Bachorik
  */
 public class SingleFileSelectionTreeBuilder extends SelectionTreeBuilder {

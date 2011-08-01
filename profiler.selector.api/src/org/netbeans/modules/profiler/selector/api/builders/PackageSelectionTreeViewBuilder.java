@@ -46,11 +46,12 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.profiler.selector.api.nodes.ProjectNode;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * A default "package view" {@linkplain SelectionTreeBuilder} implementation 
  * @author Jaroslav Bachorik
  */
 public class PackageSelectionTreeViewBuilder extends ProjectSelectionTreeBuilder {
