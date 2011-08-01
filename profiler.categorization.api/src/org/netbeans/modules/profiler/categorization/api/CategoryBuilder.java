@@ -115,8 +115,8 @@ public class CategoryBuilder {
                 LOGGER.throwing(CategoryBuilder.class.getName(), "processCategories", e); // NOI18N
             }
         } else if (node.isFolder()) {
-            String bundleName = (String) node.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
-            String label = bundleName != null ? NbBundle.getBundle(bundleName).getString(node.getPath()) : node.getName();
+            String label = (String)node.getAttribute("displayName"); // NOI18N
+            label = label != null ? label : node.getName();
 
             CategoryContainer newCategory = new CategoryContainer(node.getPath(), label);
             container.add(newCategory);

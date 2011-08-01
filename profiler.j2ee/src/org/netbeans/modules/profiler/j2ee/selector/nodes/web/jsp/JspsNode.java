@@ -55,10 +55,10 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**

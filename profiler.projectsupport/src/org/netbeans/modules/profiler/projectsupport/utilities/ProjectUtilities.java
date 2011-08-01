@@ -275,7 +275,7 @@ public class ProjectUtilities {
         return null;
     }
 
-    public static Icon getProjectIcon(Project project) {
+    public static Icon getProjectIcon(Lookup.Provider project) {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
 
         if (info == null) {
@@ -285,7 +285,7 @@ public class ProjectUtilities {
         }
     }
 
-    public static String getProjectName(Project project) {
+    public static String getProjectName(Lookup.Provider project) {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
 
         return (info != null) ? info.getDisplayName() : "UNKNOWN";

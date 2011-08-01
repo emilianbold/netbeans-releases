@@ -49,7 +49,6 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -66,8 +65,6 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.openide.filesystems.FileObject;
@@ -81,22 +78,10 @@ public class JavacClassInfo extends SourceClassInfo {
     private FileObject src;
     private ClasspathInfo cpInfo;
     private JavaSource source;
-    
-    final private Object methodsLock = new Object();
-    // @GuardedBy methodsLock
-    private boolean methodsInited = false;
-    // @GuardedBy methodsLock
-    private Set<SourceMethodInfo> methods = new HashSet<SourceMethodInfo>();
 
     private JavacClassInfo(ElementHandle<TypeElement> eh) {
         super(getSimpleName(eh.getBinaryName()), eh.getBinaryName(), eh.getBinaryName().replace('.', '/')); // NOI18N
         handle = eh;
-    }
-    
-    public JavacClassInfo(ElementHandle<TypeElement> eh, FileObject src) {
-        this(eh);
-        
-        this.src = src;
     }
     
     public JavacClassInfo(ElementHandle<TypeElement> eh, ClasspathInfo cpInfo) {
@@ -117,16 +102,14 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceMethodInfo>[] rslt = new Set[1];
         if (handle != null) {
             JavaSource jSrc = source;
-            if (src == null) {
-                jSrc = JavaSource.create(cpInfo);
-//                        FileObject jSrcFO = getFile();
-//                        jSrc = cpInfo != null ? JavaSource.create(cpInfo, jSrcFO) : JavaSource.forFileObject(jSrcFO);
+            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
+                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
             }
             try {
                 jSrc.runUserActionTask(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController cc) throws Exception {
-                        if (cc.toPhase(JavaSource.Phase.PARSED) == JavaSource.Phase.PARSED) {
+                        if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED) == JavaSource.Phase.ELEMENTS_RESOLVED) {
                             rslt[0] = getMethods(cc, all);
                         }
                     }
@@ -145,8 +128,6 @@ public class JavacClassInfo extends SourceClassInfo {
             JavaSource jSrc = source;
             if (jSrc == null) {
                 jSrc = JavaSource.create(cpInfo);
-//                FileObject jSrcFO = getFile();
-//                jSrc = cpInfo != null ? JavaSource.create(cpInfo, jSrcFO) : JavaSource.forFileObject(jSrcFO);
             }
             try {
                 jSrc.runUserActionTask(new Task<CompilationController>() {
@@ -185,23 +166,24 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceMethodInfo> infos = new HashSet<SourceMethodInfo>();
         if (handle != null) {
             JavaSource jSrc = source;
-            if (src == null) {
-                FileObject jSrcFO = getFile();
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, jSrcFO) : JavaSource.forFileObject(jSrcFO);
+            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
+                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
             }
             try {
                 jSrc.runUserActionTask(new Task<CompilationController>() {
                     
                     @Override
                     public void run(CompilationController cc) throws Exception {
-                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TypeElement type = handle.resolve(cc);
-                        for (ExecutableElement method : ElementFilter.constructorsIn(type.getEnclosedElements())) {
-                            infos.add(new JavacMethodInfo(method, cc));
+                        if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED) == JavaSource.Phase.ELEMENTS_RESOLVED) {
+                            TypeElement type = handle.resolve(cc);
+                            for (ExecutableElement method : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+                                infos.add(new JavacMethodInfo(method, cc));
+                            }
                         }
                     }
                 }, true);
             } catch (IOException e) {
+                e.printStackTrace();
             }
         }
         return infos;
@@ -213,12 +195,10 @@ public class JavacClassInfo extends SourceClassInfo {
 
         if (handle != null) {
             JavaSource jSrc = source;
-            if (src == null) {
-                src = getFile();
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, src) : JavaSource.forFileObject(src);
+            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
+                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
             }
             try {
-                final Project p = FileOwnerQuery.getOwner(src);
                 jSrc.runUserActionTask(new Task<CompilationController>() {
 
                     public void cancel() {
@@ -237,7 +217,7 @@ public class JavacClassInfo extends SourceClassInfo {
                             innerClasses.add(new JavacClassInfo(ElementHandle.create(element), cc));
                         }
 
-                        addAnonymousInnerClasses(p, cc, type, innerClasses);
+                        addAnonymousInnerClasses(cc, innerClasses);
                     }
                 }, true);
             } catch (IllegalArgumentException ex) {
@@ -257,12 +237,10 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo> ifcs = new HashSet<SourceClassInfo>();
         if (handle != null) {
             JavaSource jSrc = source;
-            if (src == null) {
-                src = getFile();
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, src) : JavaSource.forFileObject(src);
+            if (jSrc == null) {
+                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
             }
             try {
-                final Project p = FileOwnerQuery.getOwner(src);
                 jSrc.runUserActionTask(new Task<CompilationController>() {
 
                     public void cancel() {
@@ -291,26 +269,25 @@ public class JavacClassInfo extends SourceClassInfo {
         
         if (handle != null) {
             JavaSource jSrc = source;
-            if (src == null) {
-                src = getFile();
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, src) : JavaSource.forFileObject(src);
+            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
+                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
             }
             try {
-                final Project p = FileOwnerQuery.getOwner(src);
                 jSrc.runUserActionTask(new Task<CompilationController>() {
 
                     public void cancel() {
                     }
 
                     public void run(CompilationController cc) throws Exception {
-                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TypeElement te = handle.resolve(cc);
-                        
-                        TypeMirror superTm = te.getSuperclass();
-                        if (superTm != null) {
-                            TypeElement superType = (TypeElement)cc.getTypes().asElement(superTm);
-                            
-                            rslt[0] = new JavacClassInfo(ElementHandle.create(superType), cc);
+                        if (cc.toPhase(JavaSource.Phase.RESOLVED) == JavaSource.Phase.RESOLVED) {
+                            TypeElement te = handle.resolve(cc);
+
+                            TypeMirror superTm = te.getSuperclass();
+                            if (superTm != null) {
+                                TypeElement superType = (TypeElement)cc.getTypes().asElement(superTm);
+
+                                rslt[0] = new JavacClassInfo(ElementHandle.create(superType), cc);
+                            }
                         }
                     }
                 }, true);
@@ -324,14 +301,18 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceMethodInfo> mis = new HashSet<SourceMethodInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
+            Set<ExecutableElement> methods = new HashSet<ExecutableElement>(ElementFilter.methodsIn(te.getEnclosedElements()));
             for (ExecutableElement method : ElementFilter.methodsIn(cc.getElements().getAllMembers(te))) {
                 String parent = ElementUtilities.getBinaryName((TypeElement) method.getEnclosingElement());
                 if (parent.equals(getQualifiedName()) || 
                     (all && 
                      !containsAny(method.getModifiers(), EnumSet.of(Modifier.PRIVATE, Modifier.FINAL)) &&
                      !parent.equals(Object.class.getName()))) {
-                    mis.add(new JavacMethodInfo(method, cc));
+                    methods.add(method);
                 }
+            }
+            for(ExecutableElement method : methods) {
+                mis.add(new JavacMethodInfo(method, cc));
             }
         }
         return mis;
@@ -348,7 +329,7 @@ public class JavacClassInfo extends SourceClassInfo {
         return subs;
     }
     
-    Set<SourceClassInfo> getSuperclasses(final CompilationController cc) {
+    final Set<SourceClassInfo> getSuperclasses(final CompilationController cc) {
         final Set<SourceClassInfo> sups = new HashSet<SourceClassInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
@@ -360,10 +341,6 @@ public class JavacClassInfo extends SourceClassInfo {
     private void collectSuperclass(final CompilationController cc, final TypeElement te, Set<SourceClassInfo> superClasses) {
         TypeElement sType = (TypeElement)cc.getTypes().asElement(te.getSuperclass());
         if (sType != null) {//
-//                            @Override
-//                            public Void visitAssignment(AssignmentTree assTree, Void v) {
-//                                return super.visitAssignment(assTree, v);
-//                            }
             superClasses.add(new JavacClassInfo(ElementHandle.create(sType), cc));
             collectSuperclass(cc, sType, superClasses);
         }
@@ -438,14 +415,12 @@ public class JavacClassInfo extends SourceClassInfo {
         return hash;
     }   
 
-    private void addAnonymousInnerClasses(final Project p, final CompilationController cc, final TypeElement parentClass,
-            final Set<SourceClassInfo> innerClasses)
+    private void addAnonymousInnerClasses(final CompilationController cc, final Set<SourceClassInfo> innerClasses)
             throws IOException {
-        final Pattern anonymousInnerClassPattern = Pattern.compile("\\$[0-9]*");
         final int parentClassNameLength = getQualifiedName().length();
 
         cc.toPhase(JavaSource.Phase.RESOLVED);
-
+        
         TreePathScanner<Void, Void> scanner = new TreePathScanner<Void, Void>() {
 
             @Override
@@ -462,7 +437,7 @@ public class JavacClassInfo extends SourceClassInfo {
                         className = className.substring(parentClassNameLength);
                     }
 
-                    if (anonymousInnerClassPattern.matcher(className).matches()) {
+                    if (isAnonymous(className)) {
                         innerClasses.add(new JavacClassInfo(ElementHandle.create(innerClassElement), cc));
                     }
                 }
@@ -481,5 +456,4 @@ public class JavacClassInfo extends SourceClassInfo {
         
         return set.removeAll(subSet);
     }
-
 }

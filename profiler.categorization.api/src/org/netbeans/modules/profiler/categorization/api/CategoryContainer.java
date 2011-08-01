@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.lib.profiler.marker.Mark;
-import org.netbeans.modules.profiler.categorization.api.Category;
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
 

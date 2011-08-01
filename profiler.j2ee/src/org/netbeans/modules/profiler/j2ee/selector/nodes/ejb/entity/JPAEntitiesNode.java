@@ -67,13 +67,15 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
 import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.GreedySelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
@@ -88,12 +90,8 @@ public class JPAEntitiesNode extends ContainerNode {
 
         protected List<SelectorNode> prepareChildren(final JPAEntitiesNode parent) {
             final List<SelectorNode> entityBeans = new ArrayList<SelectorNode>();
-
-            Project project = parent.getLookup().lookup(Project.class);
-
-            final ClasspathInfo cpInfo = ClasspathInfoFactory.infoFor(project);
-            final JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-
+            
+            final Project project = parent.getLookup().lookup(Project.class);
             for (MetadataModel<EntityMappingsMetadata> mdModel : listAllMetadata(project)) {
                 try {
                     entityBeans.addAll(mdModel.runReadAction(new MetadataModelAction<EntityMappingsMetadata, List<SelectorNode>>() {
@@ -105,16 +103,8 @@ public class JPAEntitiesNode extends ContainerNode {
 
                                 for (Entity entity : entities) {
                                     final Entity entityBean = entity;
-                                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                                            public void cancel() {
-                                            }
-
-                                            public void run(CompilationController controller)
-                                                     throws Exception {
-                                                TypeElement type = controller.getElements().getTypeElement(entityBean.getClass2());
-                                                beanList.add(new EntityBeanNode(cpInfo, entityBean.getName(), Icons.getIcon(JavaEEIcons.CLASS), type, parent));
-                                            }
-                                        }, true);
+                                    SourceClassInfo jpa = ProfilerTypeUtils.resolveClass(entityBean.getClass2(), project);
+                                    beanList.add(new EntityBeanNode(jpa, entityBean.getName(), Icons.getIcon(JavaEEIcons.CLASS), parent));
                                 }
 
                                 return beanList;
