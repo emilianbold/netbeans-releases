@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.css.lib.nblexer;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonToken;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -154,18 +151,31 @@ public class NbCss3LexerTest extends NbTestCase {
         
     }
     
-//   public void testLexingOfUPlusWSChar() throws Exception {
-//        //lexing of 'u'+' ' chars is wrong, it produces error token instead of IDENT+WS tokens
-//        String source = "u ";
-//        
-//        //now do the same with the netbeans lexer
-//        CharStream charstream = new ANTLRStringStream(source);
-//        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
-//
-//        assertANTLRToken("u", Css3Lexer.IDENT, lexer.nextToken());
-//        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
-//        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
-//    }
+   public void testLexingOfUPlusWSChar() throws Exception {
+        //lexing of 'u'+' ' chars is wrong, it produces error token instead of IDENT+WS tokens
+        String source = "u ";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("u", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
+   
+   public void testLexingOfImportSymbol() throws Exception {
+        String source = "@import xxx";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("xxx", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
     
     
    /**
