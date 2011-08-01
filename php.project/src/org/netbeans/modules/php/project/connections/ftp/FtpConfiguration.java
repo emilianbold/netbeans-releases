@@ -61,6 +61,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final boolean anonymousLogin;
     private final String initialDirectory;
     private final int timeout;
+    private final int keepAliveInterval;
     private final boolean passiveMode;
     private final boolean ignoreDisconnectErrors;
 
@@ -80,6 +81,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
+        keepAliveInterval = readNumber(FtpConnectionProvider.KEEP_ALIVE_INTERVAL, FtpConnectionProvider.DEFAULT_KEEP_ALIVE_INTERVAL);
         passiveMode = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE));
         ignoreDisconnectErrors = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS));
     }
@@ -103,6 +105,10 @@ public final class FtpConfiguration extends RemoteConfiguration {
 
     public int getTimeout() {
         return timeout;
+    }
+
+    public int getKeepAliveInterval() {
+        return keepAliveInterval;
     }
 
     public boolean isPassiveMode() {

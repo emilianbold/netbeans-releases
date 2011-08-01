@@ -65,6 +65,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
     private final String identityFile;
     private final String initialDirectory;
     private final int timeout;
+    private final int keepAliveInterval;
 
     // @GuardedBy(this)
     private String password;
@@ -82,13 +83,8 @@ public final class SftpConfiguration extends RemoteConfiguration {
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
-        int time = SftpConnectionProvider.DEFAULT_TIMEOUT;
-        try {
-            time = Integer.parseInt(cfg.getValue(SftpConnectionProvider.TIMEOUT));
-        } catch (NumberFormatException nfe) {
-            LOGGER.log(Level.FINE, "Exception while parsing timeout", nfe); //NOI18N
-        }
-        timeout = time;
+        timeout = readNumber(SftpConnectionProvider.TIMEOUT, SftpConnectionProvider.DEFAULT_TIMEOUT);
+        keepAliveInterval = readNumber(SftpConnectionProvider.KEEP_ALIVE_INTERVAL, SftpConnectionProvider.DEFAULT_KEEP_ALIVE_INTERVAL);
     }
 
     public String getHost() {
@@ -106,6 +102,10 @@ public final class SftpConfiguration extends RemoteConfiguration {
 
     public int getTimeout() {
         return timeout;
+    }
+
+    public int getKeepAliveInterval() {
+        return keepAliveInterval;
     }
 
     public String getUserName() {
