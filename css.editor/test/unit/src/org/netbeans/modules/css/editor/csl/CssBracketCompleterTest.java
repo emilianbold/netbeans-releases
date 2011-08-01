@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -166,15 +167,15 @@ public class CssBracketCompleterTest extends TestBase {
         assertLogicalRanges("h1 {| color: red; }", new int[][]{{0,18}});
         //                   0123 456789012345678
 
-        assertLogicalRanges("@media page { h1 { col|or: red; } }", new int[][]{{19, 24}, {19, 29}, {14, 32}, {14, 33}, {0, 34}});
+        assertLogicalRanges("@media page { h1 { col|or: red; } }", new int[][]{{19, 24}, {19, 29}, {14, 32}, {0, 34}});
         //                   0123456789012345678901 234567890123456789
         //                   0         1         2          3
         
-        assertLogicalRanges("h1, h|2 { color: red; }", new int[][]{{4, 6}, {4, 7}, {0, 7}, {0, 22}});
+        assertLogicalRanges("h1, h|2 { color: red; }", new int[][]{{4, 6}, {0, 6}, {0, 22}});
         //                   01234 567890123456789012
 
-        assertLogicalRanges("@me|dia page { }", new int[][]{{0,15}});
-        //                   012 3456789012345
+        assertLogicalRanges("@me|dia page { h1 { } }", new int[][]{{0,22}});
+        //                   012 34567890123456789012
 
     }
 
@@ -238,9 +239,11 @@ public class CssBracketCompleterTest extends TestBase {
         assertTrue(result instanceof CssCslParserResult);
 
         CssCslParserResult cssResult = (CssCslParserResult)result;
+        NodeUtil.dumpTree(cssResult.getParseTree());
+        
         assertNotNull(cssResult.getParseTree());
         assertEquals(0, cssResult.getDiagnostics().size()); //no errors
-
+        
         KeystrokeHandler handler = getPreferredLanguage().getKeystrokeHandler();
         assertNotNull(handler);
 
