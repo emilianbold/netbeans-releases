@@ -158,6 +158,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         assert !projectOpened : String.format("Copy Support already opened for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = true;
+        proxyOperationFactory.reset();
 
         initTask.schedule(PROPERTY_CHANGE_DELAY);
     }
@@ -170,6 +171,8 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         assert projectOpened : String.format("Copy Support already closed for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = false;
+        proxyOperationFactory.reset();
+
         unregisterFileChangeListener();
     }
 
