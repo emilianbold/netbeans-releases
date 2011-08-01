@@ -45,8 +45,10 @@ import java.awt.Component;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.options.HintsPanelLogic;
 
 /**
  *
@@ -66,20 +68,24 @@ public class InspectionRenderer extends JLabel implements ListCellRenderer, UIRe
             boolean isSelected,
             boolean cellHasFocus) {
         
-        if (value != null) {
-            if (value instanceof HintMetadata) {
-                setText(((HintMetadata) value).displayName);
-            } else {
-                setText(value.toString());
-            }
-        }
-
         if (isSelected) {
             setBackground(list.getSelectionBackground());
             setForeground(list.getSelectionForeground());
         } else {
             setBackground(list.getBackground());
             setForeground(list.getForeground());
+        }
+
+        if (value != null) {
+            if (value instanceof HintMetadata) {
+                setText("  " + ((HintMetadata) value).displayName);
+                setEnabled(true);
+            } else if (value instanceof HintsPanelLogic.HintCategory) {
+                setText("<html><body><i>" + ((HintsPanelLogic.HintCategory) value).displayName + "</i></body></html>");
+                setEnabled(false);
+                setBackground(list.getBackground());
+                setForeground(UIManager.getColor("Label.disabledForeground"));
+            }
         }
         return this;
     }

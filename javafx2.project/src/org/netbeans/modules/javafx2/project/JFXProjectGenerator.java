@@ -97,9 +97,9 @@ import org.w3c.dom.NodeList;
  * 
  * TODO use J2SEProjectBuider instead
  */
-public class J2SEProjectGenerator {
+public class JFXProjectGenerator {
 
-    private J2SEProjectGenerator() {
+    private JFXProjectGenerator() {
     }
 
     /**
@@ -237,7 +237,7 @@ public class J2SEProjectGenerator {
                             h[0].putPrimaryConfigurationData(data, true);
                             if (buildXmlName != null) {
                                 final EditableProperties props = h[0].getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                props.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
+                                props.put(JFXProjectProperties.BUILD_SCRIPT, buildXmlName);
                                 h[0].putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             }
                             createJfxExtension(p, dirFO);
@@ -305,7 +305,7 @@ public class J2SEProjectGenerator {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
         ep.setProperty("dist.dir", "dist"); // NOI18N
-        ep.setComment("dist.dir", new String[]{"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
+        ep.setComment("dist.dir", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", ""); // NOI18N
         ep.setProperty("application.vendor", System.getProperty("user.name", "User Name")); //NOI18N
@@ -316,7 +316,7 @@ public class J2SEProjectGenerator {
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[]{"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[]{"${javac.test.classpath}"}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
-        ep.setComment("build.sysclasspath", new String[]{"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
+        ep.setComment("build.sysclasspath", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty("run.classpath", new String[]{ // NOI18N
                     "${javac.classpath}:", // NOI18N
                     "${build.classes.dir}", // NOI18N
@@ -325,7 +325,7 @@ public class J2SEProjectGenerator {
                     "${run.classpath}", // NOI18N
                 });
         ep.setComment("debug.classpath", new String[]{ // NOI18N
-                    "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_debug.transport"),
+                    "# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_debug.transport"),
                     "#debug.transport=dt_socket"
                 }, false);
         ep.setProperty("jar.compress", "false"); // NOI18N
@@ -335,7 +335,7 @@ public class J2SEProjectGenerator {
 
         ep.setProperty("javac.compilerargs", ""); // NOI18N
         ep.setComment("javac.compilerargs", new String[]{
-                    "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
+                    "# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
                 }, false);
         SpecificationVersion sourceLevel = getDefaultSourceLevel();
         ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
@@ -357,7 +357,7 @@ public class J2SEProjectGenerator {
         ep.setProperty("meta.inf.dir", "${src.dir}/META-INF"); // NOI18N
 
         ep.setProperty("build.dir", "build"); // NOI18N
-        ep.setComment("build.dir", new String[]{"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
+        ep.setComment("build.dir", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
         ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
         ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
         ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
@@ -373,23 +373,24 @@ public class J2SEProjectGenerator {
 //            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs_3"), // NOI18N
 //        }, false);
 
+        ep.setProperty(JFXProjectProperties.JAVAFX_ENABLED, "true"); // NOI18N
         ep.setProperty("jnlp.enabled", "false"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true"); // NOI18N
 
-        ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_USE, "true"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_ENCODING, "${" + J2SEProjectProperties.SOURCE_ENCODING + "}"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_USE, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_ENCODING, "${" + JFXProjectProperties.SOURCE_ENCODING + "}"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc.name());
+        ep.setProperty(JFXProjectProperties.SOURCE_ENCODING, enc.name());
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
@@ -475,11 +476,11 @@ public class J2SEProjectGenerator {
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                             !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(J2SEProjectGenerator.class.getName()).info("referenceLibrary is ignoring entry " + libEntry);
+                        Logger.getLogger(JFXProjectGenerator.class.getName()).info("referenceLibrary is ignoring entry " + libEntry);
                         //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
-                        Logger.getLogger(J2SEProjectGenerator.class.getName()).warning("Library '" + lib.getDisplayName() + // NOI18N
+                        Logger.getLogger(JFXProjectGenerator.class.getName()).warning("Library '" + lib.getDisplayName() + // NOI18N
                                 "' contains entry (" + libEntry + ") which does not exist. This entry is ignored and will not be refernced from sharable libraries."); // NOI18N
                         continue;
                     }
@@ -487,7 +488,7 @@ public class J2SEProjectGenerator {
                 URI u;
                 String name = PropertyUtils.relativizeFile(libBaseFolder, FileUtil.toFile(libEntryFO));
                 if (name == null) { // #198955
-                    Logger.getLogger(J2SEProjectGenerator.class.getName()).warning("Can not relativize file: " + libEntryFO.getPath()); // NOI18N
+                    Logger.getLogger(JFXProjectGenerator.class.getName()).warning("Can not relativize file: " + libEntryFO.getPath()); // NOI18N
                     continue;
                 }
                 u = LibrariesSupport.convertFilePathToURI(name);

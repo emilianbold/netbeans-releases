@@ -3545,6 +3545,7 @@ public class FormatingTest extends NbTestCase {
                 + "    }\n"
                 + "}\n";        
         reformat(doc, content, golden);
+        preferences.remove("generateParagraphTagOnBlankLines");        
 
         content =
                 "package hierbas.del.litoral;\n"
@@ -3564,7 +3565,29 @@ public class FormatingTest extends NbTestCase {
                 + "}\n";        
         reformat(doc, content, golden);
 
-        preferences.remove("generateParagraphTagOnBlankLines");        
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * The link in javadoc test shows \n"
+                + " * the {@link #read(ByteBuffer,long,TimeUnit,Object,CompletionHandler) read} and\n"
+                + " * {@link #write(ByteBuffer,long,TimeUnit,Object,CompletionHandler) write} methods.\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * The link in javadoc test shows the {@link #read(ByteBuffer,long,TimeUnit,Object,CompletionHandler) read}\n"
+                + " * and\n"
+                + " * {@link #write(ByteBuffer,long,TimeUnit,Object,CompletionHandler) write}\n"
+                + " * methods.\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+
         preferences.remove("text-limit-width");
     }
 

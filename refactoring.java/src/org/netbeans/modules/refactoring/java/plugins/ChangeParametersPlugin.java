@@ -54,6 +54,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -116,6 +117,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         ParameterInfo paramTable[] = refactoring.getParameterInfo();
         final ExecutableElement method = (ExecutableElement) treePathHandle.resolveElement(javac);
         Problem p=null;
+        boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
         
         // Check Method Name
         final String methodName = refactoring.getMethodName();
@@ -123,33 +125,76 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_InvalidIdentifier", methodName)); // NOI18N
         }
         
-        // Check return type
-        String returnType = refactoring.getReturnType();
-        TypeMirror parseType;
         TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(method);
-        if (returnType != null && returnType.length() < 1) {
-            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NoReturn", returnType)); // NOI18N
-        } else if (returnType != null) {
-            TypeElement typeElement = javac.getElements().getTypeElement(returnType);
-            parseType = typeElement == null ? null : typeElement.asType();
-            if(parseType == null) {
-                boolean isGenericType = false;
-                List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
-                for (TypeParameterElement typeParameterElement : typeParameters) {
-                    TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
-                    if(returnType.equals(tpTree.getName().toString())) {
-                        isGenericType = true;
+        List<? extends Element> allMembers = javac.getElements().getAllMembers(enclosingTypeElement);
+        // Check return type
+        if(!isConstructor) {
+            String returnType = refactoring.getReturnType();
+            TypeMirror parseType;
+            if (returnType != null && returnType.length() < 1) {
+                p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NoReturn", returnType)); // NOI18N
+            } else if (returnType != null) {
+                TypeElement typeElement = javac.getElements().getTypeElement(returnType);
+                parseType = typeElement == null ? null : typeElement.asType();
+                if(parseType == null) {
+                    boolean isGenericType = false;
+                    List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+                    for (TypeParameterElement typeParameterElement : typeParameters) {
+                        TypeParameterTree tpTree = (TypeParameterTree) javac.getTrees().getTree(typeParameterElement);
+                        if(returnType.equals(tpTree.getName().toString())) {
+                            isGenericType = true;
+                        }
+                    }
+                    if(!isGenericType) {
+                        parseType = javac.getTreeUtilities().parseType(returnType, enclosingTypeElement);
+                        if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolveReturn", returnType)); // NOI18N
+                        }
                     }
                 }
-                if(!isGenericType) {
-                    parseType = javac.getTreeUtilities().parseType(returnType, enclosingTypeElement);
-                    if(parseType == null || parseType.getKind() == TypeKind.ERROR) {
-                        p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_canNotResolveReturn", returnType)); // NOI18N
+            }
+            // check duplicate method signature
+            List<ExecutableElement> methods = ElementFilter.methodsIn(allMembers);
+            for (ExecutableElement exMethod : methods) {
+                if(!exMethod.equals(method)) {
+                    if(exMethod.getSimpleName().equals(method.getSimpleName())
+                            && exMethod.getParameters().size() == paramTable.length) {
+                        boolean sameParameters = true;
+                        for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                            TypeMirror exType = ((VariableElement)exMethod.getParameters().get(j)).asType();
+                            String type = paramTable[j].getType();
+                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                            if(!javac.getTypes().isSameType(exType, paramType)) {
+                                sameParameters = false;
+                            }
+                        }
+                        if(sameParameters) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
+                        }
+                    }
+                }
+            }
+        } else {
+            List<ExecutableElement> constructors = ElementFilter.constructorsIn(allMembers);
+            for (ExecutableElement constructor : constructors) {
+                if(!constructor.equals(method)) {
+                    if(constructor.getParameters().size() == paramTable.length) {
+                        boolean sameParameters = true;
+                        for (int j = 0; j < constructor.getParameters().size(); j++) {
+                            TypeMirror exType = ((VariableElement)constructor.getParameters().get(j)).asType();
+                            String type = paramTable[j].getType();
+                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                            if(!javac.getTypes().isSameType(exType, paramType)) {
+                                sameParameters = false;
+                            }
+                        }
+                        if(sameParameters) {
+                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingConstructor", constructor.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
+                        }
                     }
                 }
             }
         }
-        
         for (int i = 0; i< paramTable.length; i++) {
             ParameterInfo parameterInfo = paramTable[i];
             
@@ -198,7 +243,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
 
             // check parameter type
             String t = parameterInfo.getType();
-            parseType = null;
+            TypeMirror parseType = null;
             if (t == null || t.length() < 1) {
                 p = createProblem(p, true, newParMessage("ERR_partype")); // NOI18N
             } else {
@@ -233,29 +278,6 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                 if(parseType != null) {
                     if(!javac.getTypes().isAssignable(parseType, parameterElement.asType())) {
                         p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "WRN_isNotAssignable", parameterElement.asType().toString(), t)); // NOI18N
-                    }
-                }
-            }
-            // check duplicate method signature
-            List<? extends Element> allMembers = javac.getElements().getAllMembers(enclosingTypeElement);
-            for (Element element : allMembers) {
-                if(!element.equals(method) &&
-                    element.getKind().equals(ElementKind.METHOD)) {
-                    ExecutableElement exMethod = (ExecutableElement)element;
-                    if(exMethod.getSimpleName().equals(method.getSimpleName())
-                            && exMethod.getParameters().size() == paramTable.length) {
-                        boolean sameParameters = true;
-                        for (int j = 0; j < exMethod.getParameters().size(); j++) {
-                            TypeMirror exType = ((VariableElement)exMethod.getParameters().get(j)).asType();
-                            String type = paramTable[j].getType();
-                            TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
-                            if(!javac.getTypes().isSameType(exType, paramType)) {
-                                sameParameters = false;
-                            }
-                        }
-                        if(sameParameters) {
-                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_existingMethod", exMethod.toString(), enclosingTypeElement.getQualifiedName())); // NOI18N
-                        }
                     }
                 }
             }
