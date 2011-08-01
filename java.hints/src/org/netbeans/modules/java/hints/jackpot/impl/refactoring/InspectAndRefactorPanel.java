@@ -184,6 +184,15 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, customScope }));
         scopeCombo.setRenderer(new JLabelRenderer());
         loadPrefs();
+        if (dob!=null) {
+            FileObject primaryFile = dob.getPrimaryFile();
+            if (primaryFile!=null && "hint".equals(primaryFile.getExt()) && "rules".equals(primaryFile.getParent().getName())) { //NOI18N
+                HintMetadata hint = HintsPanel.getHintByName(primaryFile.getNameExt());
+                singleRefactoringCombo.setSelectedItem(hint);
+                setConfig(false);
+                singleRefactorRadio.setSelected(true);
+            }
+        }
     }
 
     /** This method is called from within the constructor to
