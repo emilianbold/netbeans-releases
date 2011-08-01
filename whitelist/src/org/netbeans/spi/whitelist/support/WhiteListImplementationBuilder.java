@@ -165,8 +165,10 @@ public final class WhiteListImplementationBuilder {
         @NbBundle.Messages({
             "RULE_Class=Class Access",
             "RULE_Meth=Method Invocation",
+            "RULE_Cons=Method Invocation",
             "DESC_Class=Access of type {0} is forbidden by {1}.",
-            "DESC_Meth=Invocation of method {0} is forbidden by {1}."
+            "DESC_Meth=Invocation of method {0} is forbidden by {1}.",
+            "DESC_Cons=Invocation of constuctor {0} is forbidden by {1}."
         })
         public WhiteListQuery.Result check(
                 @NonNull final ElementHandle<?> element,
@@ -180,6 +182,9 @@ public final class WhiteListImplementationBuilder {
                 if (element.getKind().isClass() || element.getKind().isInterface()) {
                     ruleName = Bundle.RULE_Class();
                     ruleDesc = Bundle.DESC_Class(displayName(element), model.getDisplayName());
+                } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                    ruleName = Bundle.RULE_Cons();
+                    ruleDesc = Bundle.DESC_Cons(displayName(element), model.getDisplayName());
                 } else {
                     ruleName = Bundle.RULE_Meth();
                     ruleDesc = Bundle.DESC_Meth(displayName(element), model.getDisplayName());
@@ -199,7 +204,15 @@ public final class WhiteListImplementationBuilder {
             if (kind.isClass() || kind.isInterface()) {
                 assert vmSig.length == 1;
                 return cannonicalName(vmSig[0]);
-            } else if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+            } else if (kind == ElementKind.CONSTRUCTOR) {
+                assert vmSig.length == 3;
+                final StringBuilder sb = new StringBuilder();
+                int index = vmSig[2].lastIndexOf(')');
+                assert index > 0;
+                sb.append(simpleName(vmSig[0]));
+                appendParams(vmSig[2],index,sb);
+                return sb.toString();
+            } else if (kind == ElementKind.METHOD) {
                 assert vmSig.length == 3;
                 final StringBuilder sb = new StringBuilder();
                 int index = vmSig[2].lastIndexOf(')');
@@ -207,11 +220,22 @@ public final class WhiteListImplementationBuilder {
                 cannonicalName(vmSig[2].substring(index+1),sb);
                 sb.append(' '); //NOI18N
                 sb.append(vmSig[1]);
-                sb.append('('); //NOI18N
+                appendParams(vmSig[2],index,sb);
+                return sb.toString();
+            } else  {
+                throw new UnsupportedOperationException(kind.name());
+            }
+        }
+
+        private static void appendParams(
+                @NonNull final String methodSig,
+                @NonNull final int paramsEndIndex,
+                @NonNull final StringBuilder sb) {
+            sb.append('('); //NOI18N
                 int state = 0;
                 boolean first = true;
-                for (int i=1 ,j = 1; j< index;) {
-                    final char la = vmSig[2].charAt(j);
+                for (int i=1 ,j = 1; j< paramsEndIndex;) {
+                    final char la = methodSig.charAt(j);
                     switch (state) {
                         case 0:
                             if (la=='L') {      //NOI18N
@@ -227,7 +251,7 @@ public final class WhiteListImplementationBuilder {
                                 } else {
                                     sb.append(", ");    //NOI18N
                                 }
-                                cannonicalName(vmSig[2].substring(i,j), sb);
+                                cannonicalName(methodSig.substring(i,j), sb);
                                 i=j;
                             }
                             break;
@@ -239,7 +263,7 @@ public final class WhiteListImplementationBuilder {
                                 } else {
                                     sb.append(", ");    //NOI18N
                                 }
-                                cannonicalName(vmSig[2].substring(i,j), sb);
+                                cannonicalName(methodSig.substring(i,j), sb);
                                 i=j;
                                 state = 0;
                             } else {
@@ -251,15 +275,17 @@ public final class WhiteListImplementationBuilder {
                     }
                 }
                 sb.append(')'); //NOI18N
-                return sb.toString();
-            } else  {
-                throw new UnsupportedOperationException(kind.name());
-            }
         }
 
         @NonNull
         private static String cannonicalName(@NonNull final String binaryName) {
             return binaryName.replace('$', '.').replace('/', '.');    //NOI18N
+        }
+
+        @NonNull
+        private static String simpleName(@NonNull final String binaryName) {
+            final int index =  Math.max(binaryName.lastIndexOf('.'),binaryName.lastIndexOf('$'));
+            return index == -1 ? binaryName : binaryName.substring(index+1);
         }
 
         private static void cannonicalName(
