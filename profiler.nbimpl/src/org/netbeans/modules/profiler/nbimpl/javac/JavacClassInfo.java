@@ -118,7 +118,7 @@ public class JavacClassInfo extends SourceClassInfo {
             } catch (IOException e) {
             }
         }
-        return rslt[0];
+        return rslt[0] != null ? rslt[0] : Collections.EMPTY_SET;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class JavacClassInfo extends SourceClassInfo {
             } catch (IOException e) {
             }
         }
-        return rslt[0];
+        return rslt[0] != null ? rslt[0] : Collections.EMPTY_SET;
     }
     
     @Override
