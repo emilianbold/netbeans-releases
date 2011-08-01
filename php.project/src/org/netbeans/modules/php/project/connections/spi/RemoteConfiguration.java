@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class RemoteConfiguration {
 
-    static final Logger LOGGER = Logger.getLogger(RemoteConfiguration.class.getName());
+    protected static final Logger LOGGER = Logger.getLogger(RemoteConfiguration.class.getName());
     static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
 
     protected final ConfigManager.Configuration cfg;
@@ -233,6 +233,23 @@ public abstract class RemoteConfiguration {
         public String getInitialDirectory() {
             return "/";
         }
+    }
+
+    /**
+     * Read value of the given key as a number. If number is not found in the given configuration
+     * (or value is not a number), the default value is returned (and set in the configuration).
+     * @param key key of the number
+     * @param defaultValue default value if any error occurs
+     * @return value of the given key as a numberor defaultValue if any error occurs
+     */
+    protected int readNumber(String key, int defaultValue) {
+        try {
+            return Integer.parseInt(cfg.getValue(key));
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+        }
+        cfg.putValue(key, String.valueOf(defaultValue));
+        return defaultValue;
     }
 
     protected String readPassword(String key) {

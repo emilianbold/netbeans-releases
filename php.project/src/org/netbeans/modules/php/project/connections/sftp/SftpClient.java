@@ -114,6 +114,10 @@ public class SftpClient implements RemoteClient {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Connecting to {0} [timeout: {1} ms]", new Object[] {host, timeout});
         }
+        int keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Keep-alive interval is {0} ms", keepAliveInterval);
+        }
         String username = configuration.getUserName();
         String password = configuration.getPassword();
         String knownHostsFile = configuration.getKnownHostsFile();
@@ -139,6 +143,8 @@ public class SftpClient implements RemoteClient {
             }
             sftpSession.setUserInfo(new SftpUserInfo(configuration));
             sftpSession.setTimeout(timeout);
+            // keep-alive
+            sftpSession.setServerAliveInterval(keepAliveInterval);
             sftpSession.connect(timeout);
 
             channel = sftpSession.openChannel("sftp"); // NOI18N

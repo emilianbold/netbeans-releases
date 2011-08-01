@@ -776,7 +776,16 @@ public final class ClassPath {
                             return null;
                         } else if (isData(_root)) {
                             if (retryCount == 0) {
-                                _root.refresh();
+                                Logger l = Logger.getLogger("org.netbeans.modules.masterfs"); // NOI18N
+                                Level prev = l.getLevel();
+                                try {
+                                    l.setLevel(Level.FINEST);
+                                    LOG.log(Level.WARNING, "Root is not folder {0}; about to refresh", _root); // NOI18N
+                                    _root.refresh();
+                                } finally {
+                                    l.setLevel(prev);
+                                    LOG.warning("End of refresh"); // NOI18N
+                                }
                                 continue;
                             } else {
                                 String fileState = null;
