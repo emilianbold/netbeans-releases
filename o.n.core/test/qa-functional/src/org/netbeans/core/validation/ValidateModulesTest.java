@@ -133,6 +133,11 @@ public class ValidateModulesTest extends NbTestCase {
             if ("false".equals(mod.getAttribute("AutoUpdate-Show-In-Client"))) {
                 continue;
             }
+            if (mod.getAttribute("Bundle-SymbolicName") != null &&
+                mod.getAttribute("AutoUpdate-Show-In-Client") == null
+            ) {
+                continue;
+            }
             if (mod.getLocalizedAttribute("OpenIDE-Module-Display-Category") == null) {
                 problems.append('\n').append(mod.getCodeNameBase());
             }
@@ -235,7 +240,10 @@ public class ValidateModulesTest extends NbTestCase {
     private static String findCNB(Manifest m) {
         String name = m.getMainAttributes().getValue("OpenIDE-Module");
         if (name == null) {
-            throw new IllegalArgumentException();
+            name = m.getMainAttributes().getValue("Bundle-SymbolicName");
+            if (name == null) {
+                throw new IllegalArgumentException();
+            }
         }
         return name.replaceFirst("/\\d+$", "");
     }

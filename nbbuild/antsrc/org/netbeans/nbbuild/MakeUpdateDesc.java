@@ -648,6 +648,7 @@ public class MakeUpdateDesc extends MatchingTask {
         module.setAttribute("downloadsize", "0"); // recalculated anyway
         Element manifest = doc.createElement("manifest");
         module.appendChild(manifest);
+        manifest.setAttribute("AutoUpdate-Show-In-Client", "false");
         manifest.setAttribute("OpenIDE-Module", cnb);
         String bundleName = loc(localized, attr, "Bundle-Name");
         manifest.setAttribute("OpenIDE-Module-Name", bundleName != null ? bundleName : cnb);
@@ -658,7 +659,7 @@ public class MakeUpdateDesc extends MatchingTask {
         if (requireBundle != null) {
             StringBuilder b = new StringBuilder();
             for (String dep : requireBundle.split(", ")) {
-                Matcher m = Pattern.compile("([^;]+)(?:;bundle-version=\"\\[(\\d+)((?:[.][0-9]+)*),(\\d+)\\)\")?").matcher(dep);
+                Matcher m = Pattern.compile("([^;]+)(.*)").matcher(dep);
                 if (!m.matches()) {
                     throw new BuildException("Could not parse dependency: " + dep);
                 }
@@ -666,18 +667,30 @@ public class MakeUpdateDesc extends MatchingTask {
                     b.append(", ");
                 }
                 b.append(m.group(1)); // dep CNB
-                String majorS = m.group(2);
-                if (majorS != null) {
-                    int major = Integer.parseInt(majorS);
-                    String rest = m.group(3);
-                    int max = Integer.parseInt(m.group(4));
-                    if (major > 99) {
-                        b.append('/').append(major / 100);
-                        if (max > major + 100) {
-                            b.append('-').append(max / 100 - 1);
+                Matcher m2 = Pattern.compile(";([^:=]+):?=\"?([^;\"]+)\"?").matcher(m.group(2));
+                while (m2.find()) {
+                    if (!m2.group(1).equals("bundle-version")) {
+                        continue;
+                    }
+                    String val = m2.group(2);
+                    Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
+                    if (!m3.matches()) {
+                        throw new BuildException("Could not parse version range: " + val);
+                    }
+                    int major = Integer.parseInt(m3.group(1));
+                    String rest = m3.group(2);
+                    try {
+                        int max = Integer.parseInt(m3.group(3));
+                        if (major > 99) {
+                            b.append('/').append(major / 100);
+                            if (max > major + 100) {
+                                b.append('-').append(max / 100 - 1);
+                            }
+                        } else if (max > 100) {
+                            b.append("/0-").append(max / 100 - 1);
                         }
-                    } else if (max > 100) {
-                        b.append("/0-").append(max / 100 - 1);
+                    } catch (NumberFormatException x) {
+                        // never mind end boundary, does not match NB conventions
                     }
                     b.append(" > ").append(major % 100).append(rest);
                 }

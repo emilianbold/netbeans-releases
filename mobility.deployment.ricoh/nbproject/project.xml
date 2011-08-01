@@ -14,12 +14,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.jsch</code-name-base>
+                    <code-name-base>com.jcraft.jsch</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>0.1.43</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

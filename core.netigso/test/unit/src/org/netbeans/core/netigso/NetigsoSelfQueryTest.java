@@ -386,12 +386,10 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
 
         @Override
         public void addBundleListener(BundleListener bl) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void removeBundleListener(BundleListener bl) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override

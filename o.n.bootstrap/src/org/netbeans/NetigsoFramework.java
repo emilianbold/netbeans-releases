@@ -213,6 +213,10 @@ public abstract class NetigsoFramework {
             toInit.add(nm);
             return;
         }
+        if (!toEnable.isEmpty()) {
+            getDefault().prepare(Lookup.getDefault(), toEnable);
+            toEnable.clear();
+        }
         nm.start();
     }
 

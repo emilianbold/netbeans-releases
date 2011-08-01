@@ -318,7 +318,7 @@ made subject to such option by the copyright holder.
         </pathconvert>
 
         <xmlvalidate warn="no"> <!--  failonerror="false" -->
-            <fileset file="${src.dir}/${layer.file}"/>
+            <fileset file="${src.dir}/${layer.file}" erroronmissingdir="false"/>
             <xmlcatalog classpath="${dtd.cp}">
                 <dtd publicId="-//NetBeans//DTD Filesystem 1.0//EN"
                 location="org/openide/filesystems/filesystem.dtd"/>

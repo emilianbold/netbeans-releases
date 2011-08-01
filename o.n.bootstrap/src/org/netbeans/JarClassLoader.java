@@ -418,6 +418,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private boolean dead;
         private int requests;
         private int used;
+        private Manifest manifest;
         /** #141110: expensive to repeatedly look for them */
         private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
         private final Set<File> warnedFiles = Collections.synchronizedSet(new HashSet<File>()); // #183696
@@ -457,12 +458,15 @@ public class JarClassLoader extends ProxyClassLoader {
 
         @Override
         public Manifest getManifest() {
+            if (manifest != null) {
+                return manifest;
+            }
             try {
                 byte[] arr = archive.getData(this, "META-INF/MANIFEST.MF");
                 if (arr == null) {
                     return null;
                 }
-                return new Manifest(new ByteArrayInputStream(arr));
+                return manifest = new Manifest(new ByteArrayInputStream(arr));
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Cannot read manifest for " + getPath(), ex);
                 return null;
