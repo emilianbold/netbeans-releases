@@ -2528,7 +2528,7 @@ public class ETable extends JTable {
         public void actionPerformed(ActionEvent e) {
             int row = getSelectedRow();
             int col = getSelectedColumn();
-            editCellAt(row, col, null);
+            editCellAt(row, col, e);
         }
         
         @Override
