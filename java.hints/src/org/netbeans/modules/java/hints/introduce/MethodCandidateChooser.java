@@ -123,9 +123,6 @@ public class MethodCandidateChooser extends JPanel implements FocusListener {
 
         bag.addHighlight(c.start, c.end, IntroduceHint.DUPE);
         
-        bag.addHighlight(0, c.start, SimpleAttributeSet.EMPTY);
-        bag.addHighlight(c.end, doc.getLength(), SimpleAttributeSet.EMPTY);
-        
         IntroduceHint.introduceBag(doc).setHighlights(bag);
 
     }

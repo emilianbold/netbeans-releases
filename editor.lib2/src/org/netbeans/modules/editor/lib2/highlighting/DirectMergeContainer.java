@@ -105,9 +105,11 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     public void highlightChanged(HighlightsChangeEvent event) {
         layerEvent = event;
         try {
-            event = new HighlightsChangeEvent(this, event.getStartOffset(), event.getEndOffset());
-            for (HighlightsChangeListener l : listeners) {
-                l.highlightChanged(event);
+            if (!listeners.isEmpty()) {
+                event = new HighlightsChangeEvent(this, event.getStartOffset(), event.getEndOffset());
+                for (HighlightsChangeListener l : listeners) {
+                    l.highlightChanged(event);
+                }
             }
             synchronized (activeHlSeqs) {
                 for (WeakReference<HlSequence> hlSeqRef : activeHlSeqs) {
