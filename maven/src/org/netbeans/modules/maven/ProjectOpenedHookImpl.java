@@ -75,6 +75,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -105,7 +106,8 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
         project = proj;
     }
-    
+
+    @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
     protected @Override void projectOpened() {
         checkBinaryDownloads();
         checkSourceDownloads();
