@@ -62,7 +62,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -70,8 +69,6 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -96,8 +93,6 @@ public class TestBase extends NbTestCase {
     protected FileObject testFO;
     static {
         setLookups();
-        assertEquals(RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
-        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
     }
 
     public TestBase(String name) {
@@ -158,11 +153,10 @@ public class TestBase extends NbTestCase {
     }
 
     public static void setLookups(Object... instances) {
-        Object[] allInstances = new Object[instances.length + 2];
+        Object[] allInstances = new Object[instances.length + 1];
         ClassLoader classLoader = TestBase.class.getClassLoader();
         allInstances[0] = classLoader;
-        allInstances[1] = new RepositoryImpl();
-        System.arraycopy(instances, 0, allInstances, 2, instances.length);
+        System.arraycopy(instances, 0, allInstances, 1, instances.length);
         MockLookup.setInstances(allInstances);
     }
 
