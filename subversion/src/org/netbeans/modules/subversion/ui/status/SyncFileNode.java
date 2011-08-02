@@ -245,11 +245,10 @@ public class SyncFileNode extends AbstractNode {
                         if (shortPath == null) {
                             shortPath = org.openide.util.NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
                         }
-                        setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
-                        // Table sorter is not thread safe, use this as workaround
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
+                                setValue("sortkey", shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
                                 firePropertyChange(COLUMN_NAME_PATH, null, null);
                             }
                         });
