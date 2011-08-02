@@ -267,6 +267,18 @@ public class CssCompletionTest extends TestBase {
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
     
+    public void testHtmlSelectorsCompletionAfterClassOrIdSelector() throws ParseException, BadLocationException {
+        checkCC("#myid |", arr("html"), Match.CONTAINS);
+        checkCC("#myid h|", arr("html"), Match.CONTAINS);
+        assertComplete("#myid b| { }", "#myid body| { }", "body");
+        assertComplete("#myid | { }", "#myid body| { }", "body");
+        
+        checkCC(".aclass |", arr("html"), Match.CONTAINS);
+        checkCC(".aclass h|", arr("html"), Match.CONTAINS);
+        assertComplete(".aclass b| { }", ".aclass body| { }", "body");
+        assertComplete(".aclass | { }", ".aclass body| { }", "body");
+    }
+    
     public void testCompleteSelectors() throws ParseException, BadLocationException {
         assertComplete("html b| { }", "html body| { }", "body");
         assertComplete("html bo| { }", "html body| { }", "body");

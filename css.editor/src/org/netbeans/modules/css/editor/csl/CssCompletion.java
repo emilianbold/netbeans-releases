@@ -548,7 +548,10 @@ public class CssCompletion implements CodeCompletionHandler {
             if (proposals.size() > 0) {
                 return new DefaultCompletionResult(proposals, false);
             }
-        } else if(node.type() == NodeType.typeSelector && tokenNodeTokenId == CssTokenId.WS) {
+        } else if((node.type() == NodeType.elementSubsequent  //after class or id selector
+                || node.type() == NodeType.typeSelector)  //after element selector
+                
+                && tokenNodeTokenId == CssTokenId.WS) {
             //complete element name - without a prefix
             List<CompletionProposal> proposals = completeHtmlSelectors(prefix, caretOffset);
             if (proposals.size() > 0) {
