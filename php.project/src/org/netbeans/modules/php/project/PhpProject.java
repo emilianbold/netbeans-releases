@@ -550,8 +550,8 @@ public final class PhpProject implements Project {
                 continue;
             }
             for (File file : ignoredFilesExtender.getIgnoredFiles()) {
-                assert file != null : "Ignored file = null found in " + provider.getName();
-                assert file.isAbsolute() : "Not absolute file found in " + provider.getName();
+                assert file != null : "Ignored file = null found in " + provider.getIdentifier();
+                assert file.isAbsolute() : "Not absolute file found in " + provider.getIdentifier();
 
                 ignored.add(file);
             }
@@ -577,7 +577,7 @@ public final class PhpProject implements Project {
                 for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
                     if (frameworkProvider.isInPhpModule(phpModule)) {
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getName(), getSourcesDirectory()));
+                            LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getSourcesDirectory()));
                         }
                         frameworks.add(frameworkProvider);
                     }

@@ -83,8 +83,8 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
         //assertSame("One factory method should be used", 1, MyFw.factoryCalls);
 
         Iterator<? extends PhpFrameworkProvider> it = all.iterator();
-        assertEquals("constructor", it.next().getName());
-        assertEquals("factory", it.next().getName());
+        assertEquals("constructor", it.next().getIdentifier());
+        assertEquals("factory", it.next().getIdentifier());
     }
 
     public void testPublicClass() throws Exception {
@@ -288,11 +288,11 @@ public class PhpFrameworkProviderRegistrationTest extends NbTestCase {
         static int factoryCalls = 0;
 
         public MyFw() {
-            super("constructor", null);
+            super("constructor", "constructor", null);
         }
 
         MyFw(String name) {
-            super(name, null);
+            super(name, name, null);
         }
 
         @Override
