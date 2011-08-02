@@ -103,10 +103,6 @@ public class UtilsTest extends NbTestCase {
         expResult = "http";
         result = Utils.getHttpListenerProtocol(hostname, port);
         assertEquals(expResult, result);
-        hostname = "this.is.a.bogus.name.edu";
-        port = 443;
-        result = Utils.getHttpListenerProtocol(hostname, port);
-        assertEquals(expResult, result);
     }
 
     /**
