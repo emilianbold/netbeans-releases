@@ -101,12 +101,8 @@ public class JavacClassInfo extends SourceClassInfo {
     public Set<SourceMethodInfo> getMethods(final boolean all) {
         final Set<SourceMethodInfo>[] rslt = new Set[1];
         if (handle != null) {
-            JavaSource jSrc = source;
-            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
-            }
             try {
-                jSrc.runUserActionTask(new Task<CompilationController>() {
+                getSource(false).runUserActionTask(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController cc) throws Exception {
                         if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED) == JavaSource.Phase.ELEMENTS_RESOLVED) {
@@ -125,12 +121,8 @@ public class JavacClassInfo extends SourceClassInfo {
     public Set<SourceClassInfo> getSubclasses() {
         final Set<SourceClassInfo>[] rslt = new Set[]{Collections.EMPTY_SET};
         if (handle != null) {
-            JavaSource jSrc = source;
-            if (jSrc == null) {
-                jSrc = JavaSource.create(cpInfo);
-            }
             try {
-                jSrc.runUserActionTask(new Task<CompilationController>() {
+                getSource(true).runUserActionTask(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController cc) throws Exception {
                         rslt[0] = getSubclasses(cc);
@@ -165,12 +157,8 @@ public class JavacClassInfo extends SourceClassInfo {
     public Set<SourceMethodInfo> getConstructors() {
         final Set<SourceMethodInfo> infos = new HashSet<SourceMethodInfo>();
         if (handle != null) {
-            JavaSource jSrc = source;
-            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
-            }
             try {
-                jSrc.runUserActionTask(new Task<CompilationController>() {
+                getSource(false).runUserActionTask(new Task<CompilationController>() {
                     
                     @Override
                     public void run(CompilationController cc) throws Exception {
@@ -194,12 +182,8 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo> innerClasses = new HashSet<SourceClassInfo>();
 
         if (handle != null) {
-            JavaSource jSrc = source;
-            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
-            }
             try {
-                jSrc.runUserActionTask(new Task<CompilationController>() {
+                getSource(false).runUserActionTask(new Task<CompilationController>() {
 
                     public void cancel() {
                     }
@@ -236,12 +220,8 @@ public class JavacClassInfo extends SourceClassInfo {
     public Set<SourceClassInfo> getInterfaces() {
         final Set<SourceClassInfo> ifcs = new HashSet<SourceClassInfo>();
         if (handle != null) {
-            JavaSource jSrc = source;
-            if (jSrc == null) {
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
-            }
             try {
-                jSrc.runUserActionTask(new Task<CompilationController>() {
+                getSource(true).runUserActionTask(new Task<CompilationController>() {
 
                     public void cancel() {
                     }
@@ -268,12 +248,8 @@ public class JavacClassInfo extends SourceClassInfo {
         final SourceClassInfo[] rslt = new SourceClassInfo[1];
         
         if (handle != null) {
-            JavaSource jSrc = source;
-            if (jSrc == null || jSrc.getFileObjects().isEmpty()) {
-                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
-            }
             try {
-                jSrc.runUserActionTask(new Task<CompilationController>() {
+                getSource(false).runUserActionTask(new Task<CompilationController>() {
 
                     public void cancel() {
                     }
@@ -455,5 +431,19 @@ public class JavacClassInfo extends SourceClassInfo {
         Set<T> set = new HashSet<T>(superSet);
         
         return set.removeAll(subSet);
+    }
+    
+    private synchronized JavaSource getSource(boolean allowSourceLess) {
+        JavaSource jSrc = source;
+        if (jSrc == null || (!allowSourceLess && jSrc.getFileObjects().isEmpty())) {
+            FileObject f = getFile();
+            if (f.getExt().toLowerCase().equals("java")) { // NOI18N
+                jSrc = cpInfo != null ? JavaSource.create(cpInfo, getFile()) : JavaSource.forFileObject(getFile());
+            } else if (cpInfo != null) {
+                jSrc = JavaSource.create(cpInfo);
+            }
+            source = jSrc;
+        }
+        return source;
     }
 }
