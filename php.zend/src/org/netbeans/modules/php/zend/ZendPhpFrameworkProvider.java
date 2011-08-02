@@ -77,7 +77,9 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     private ZendPhpFrameworkProvider() {
-        super(NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        super("Zend PHP Web Framework", // NOI18N
+                NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkName"),
+                NbBundle.getMessage(ZendPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
         badgeIcon = new BadgeIcon(
                 ImageUtilities.loadImage(ICON_PATH),
                 ZendPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
