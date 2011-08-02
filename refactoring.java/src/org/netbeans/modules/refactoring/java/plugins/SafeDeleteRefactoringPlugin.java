@@ -116,7 +116,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             if(Tree.Kind.METHOD == treePathHandle.getKind()){
                 JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
                 try {
-                    javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), cancelRequest);
+                    javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), true);
                 } catch (IOException ioException) {
                     ErrorManager.getDefault().notify(cancelRequest?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
                 }
