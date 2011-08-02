@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import org.openide.modules.Dependency;
 import org.openide.util.NbBundle;
 
 /** Object representing one module, possibly installed.
@@ -265,5 +266,8 @@ final class FixedModule extends Module {
         String s = "FixedModule:" + getCodeNameBase(); // NOI18N
         if (!isValid()) s += "[invalid]"; // NOI18N
         return s;
+    }
+    @Override 
+    void refineDependencies(Set<Dependency> dependencies) {
     }
 }

@@ -689,9 +689,13 @@ public abstract class Module extends ModuleInfo {
         dependencies.addAll(Dependency.create(Dependency.TYPE_REQUIRES, attr.getValue("OpenIDE-Module-Requires"))); // NOI18N
         dependencies.addAll(Dependency.create(Dependency.TYPE_NEEDS, attr.getValue("OpenIDE-Module-Needs"))); // NOI18N
         dependencies.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, attr.getValue("OpenIDE-Module-Recommends"))); // NOI18N
+        refineDependencies(dependencies);
+        dependenciesA = dependencies.toArray(new Dependency[dependencies.size()]);
+    }
+
+    void refineDependencies(Set<Dependency> dependencies) {
         // Permit the concrete installer to make some changes:
         mgr.refineDependencies(this, dependencies);
-        dependenciesA = dependencies.toArray(new Dependency[dependencies.size()]);
     }
 
 }
