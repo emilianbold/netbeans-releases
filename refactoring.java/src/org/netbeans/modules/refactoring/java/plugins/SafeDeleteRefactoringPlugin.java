@@ -225,6 +225,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      */
     @Override
     public Problem preCheck() {
+        cancelRequest = false;
 //        Element[] refElements = refactoring.getRefactoredObjects();
 //        for(int i = 0;i < refElements.length; ++i) {
 //            Element refactoredObject = refElements[i];
