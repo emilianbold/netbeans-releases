@@ -114,8 +114,7 @@ public class GuiRunLevel implements RunLevel {
             }
         }
 
-        // install java.net.Authenticator
-        java.net.Authenticator.setDefault (new NbAuthenticator ());
+        NbAuthenticator.install();
         
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Splash.getInstance().increment(1);
