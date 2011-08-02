@@ -945,10 +945,12 @@ public class NbModuleSuite {
             }
             return clusters.toArray(new File[0]);
         }
+
+        private static String cnb(Manifest m) {
+            String cn = m.getMainAttributes().getValue("OpenIDE-Module");
+            return cn != null ? cn.replaceFirst("/\\d+", "") : null;
+        }
         
-        private static Pattern CODENAME = Pattern.compile("OpenIDE-Module: *([^/$ \n\r]*)[/]?[0-9]*", Pattern.MULTILINE);
-        private static final Pattern JAR_URL = Pattern.compile("(jar:)?(file:.+[.]jar)(!/)?");
-        private static final Pattern MAVEN_CP = Pattern.compile("Maven-Class-Path: (.+)$", Pattern.MULTILINE);
         /** Looks for all modules on classpath of given loader and builds 
          * their list from them.
          */
@@ -958,10 +960,14 @@ public class NbModuleSuite {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                String manifest = asString(url.openStream(), true);
-                Matcher m = CODENAME.matcher(manifest);
-                if (m.find()) {
-                    cnbs.add(m.group(1));
+                InputStream is = url.openStream();
+                try {
+                    String cnb = cnb(new Manifest(is));
+                    if (cnb != null) {
+                        cnbs.add(cnb);
+                    }
+                } finally {
+                    is.close();
                 }
             }
 
@@ -978,10 +984,17 @@ public class NbModuleSuite {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                String manifest = asString(url.openStream(), true);
-                Matcher m = CODENAME.matcher(manifest);
-                if (m.find()) {
-                    String cnb = m.group(1);
+                Manifest m;
+                InputStream is = url.openStream();
+                try {
+                    m = new Manifest(is);
+                } catch (IOException x) {
+                    throw new IOException("parsing " + url + ": " + x, x);
+                } finally {
+                    is.close();
+                }
+                String cnb = cnb(m);
+                if (cnb != null) {
                     File jar = jarFromURL(url);
                     if (jar == null) {
                         continue;
@@ -990,10 +1003,10 @@ public class NbModuleSuite {
                         // Otherwise will get DuplicateException.
                         continue;
                     }
-                    Matcher m2 = MAVEN_CP.matcher(manifest);
-                    if (m2.find()) {
+                    String mavenCP = m.getMainAttributes().getValue("Maven-Class-Path");
+                    if (mavenCP != null) {
                         // Do not use ((URLClassLoader) loader).getURLs() as this does not work for Surefire Booter.
-                        jar = rewrite(jar, m2.group(1).split(" "), System.getProperty("java.class.path"));
+                        jar = rewrite(jar, mavenCP.split(" "), System.getProperty("java.class.path"));
                     }
                     String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

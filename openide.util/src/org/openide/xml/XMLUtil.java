@@ -44,10 +44,14 @@
 
 package org.openide.xml;
 
+import java.io.ByteArrayInputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -397,7 +401,18 @@ public final class XMLUtil extends Object {
         }
         Document doc2 = normalize(doc);
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader()); // #195921
+        Thread.currentThread().setContextClassLoader(AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() { // #195921
+            @Override public ClassLoader run() {
+                return new ClassLoader(ClassLoader.getSystemClassLoader().getParent()) {
+                    @Override public InputStream getResourceAsStream(String name) {
+                        if (name.startsWith("META-INF/services/")) {
+                            return new ByteArrayInputStream(new byte[0]); // JAXP #6723276
+                        }
+                        return super.getResourceAsStream(name);
+                    }
+                };
+            }
+        }));
         try {
             TransformerFactory tf = TransformerFactory.newInstance();
             Transformer t = tf.newTransformer(
