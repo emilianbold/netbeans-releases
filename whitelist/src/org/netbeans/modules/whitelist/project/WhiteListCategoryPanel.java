@@ -47,6 +47,7 @@
  */
 package org.netbeans.modules.whitelist.project;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.Reference;
@@ -94,7 +95,11 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         initComponents();
         WhiteListsModel model = new WhiteListsModel(getTableContent());
         jTable1.setModel(model);
+        jTable1.getTableHeader().setVisible(false);
+        jTable1.getTableHeader().setPreferredSize(new Dimension(0, 0));
         jTable1.getColumnModel().getColumn(0).setCellEditor(new DefaultCellEditor(new JCheckBox()));
+        jTable1.getColumnModel().getColumn(0).setMaxWidth(25);
+        jTable1.getColumnModel().getColumn(0).setMinWidth(25);
     }
 
     private List<Desc> getTableContent() {
@@ -216,20 +221,16 @@ public class WhiteListCategoryPanel extends javax.swing.JPanel implements Action
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .addComponent(jLabel1))
-                .addContainerGap())
+                .addComponent(jLabel1)
+                .addContainerGap(283, Short.MAX_VALUE))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -79,12 +79,14 @@ public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSele
         public TestingWhitelist() {
             test = WhiteListImplementationBuilder.create().
                     addCheckedPackage("java.rmi").
-                    addInvocableClass("java.rmi.Naming").build();
+                    addInvocableClass("java/rmi/Naming").
+                    setDisplayName("Testing Whitelist").
+                    build();
         }
         
         @Override
         public String getDisplayName() {
-            return "Testing Whitelist";
+            return "Testing Whitelist (allows java.rmi.Naming)";
         }
 
         @Override
