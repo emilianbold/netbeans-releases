@@ -615,6 +615,34 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
             }
         });
     }
+    
+    // Required for JDev implementation
+    public void updateLocation(CodeProfilingPoint cpp, int oldLine, int newLine) {
+        if (cpp instanceof CodeProfilingPoint.Single) {
+            CodeProfilingPoint.Single cpps = (CodeProfilingPoint.Single)cpp;
+            CodeProfilingPoint.Location loc = cpps.getLocation();
+            if (loc.getLine() == oldLine)
+                updateLocation(cpps, newLine, cpps.getAnnotation());
+                
+        } else if (cpp instanceof CodeProfilingPoint.Paired) {
+            CodeProfilingPoint.Paired cppp = (CodeProfilingPoint.Paired)cpp;
+            CodeProfilingPoint.Annotation ann = null;
+            CodeProfilingPoint.Location loc = cppp.getStartLocation();
+            if (loc.getLine() == oldLine) {
+                ann = cppp.getStartAnnotation();
+            } else {
+                loc = cppp.getEndLocation();
+                if (loc.getLine() == oldLine)
+                    ann = cppp.getEndAnnotation();
+            }
+            if (ann != null) updateLocation(cppp, newLine, ann);
+        }
+    }
+    
+    private void updateLocation(CodeProfilingPoint cpp, int line, CodeProfilingPoint.Annotation cppa) {
+        cpp.internalUpdateLocation(cppa, line);
+        dirtyProfilingPoints.add(cpp);
+    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Line && Line.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
