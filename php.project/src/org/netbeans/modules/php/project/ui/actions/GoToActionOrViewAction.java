@@ -126,13 +126,13 @@ public final class GoToActionOrViewAction extends TextAction implements ContextA
                 if (actionsExtender.isActionWithView(fo)) {
                     GoToViewAction goToViewAction = actionsExtender.getGoToViewAction(fo, offset);
                     if (goToViewAction == null) {
-                        throw new IllegalStateException(fo.getPath() + " is action with view so GoToView instance must be returned by " + frameworkProvider.getName());
+                        throw new IllegalStateException(fo.getPath() + " is action with view so GoToView instance must be returned by " + frameworkProvider.getIdentifier());
                     }
                     return goToViewAction;
                 } else if (actionsExtender.isViewWithAction(fo)) {
                     GoToActionAction goToActionAction = actionsExtender.getGoToActionAction(fo, offset);
                     if (goToActionAction == null) {
-                        throw new IllegalStateException(fo.getPath() + " is view with action so GoToAction instance must be returned by " + frameworkProvider.getName());
+                        throw new IllegalStateException(fo.getPath() + " is view with action so GoToAction instance must be returned by " + frameworkProvider.getIdentifier());
                     }
                     return goToActionAction;
                 }

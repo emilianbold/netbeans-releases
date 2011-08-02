@@ -57,12 +57,23 @@ made subject to such option by the copyright holder.
         <h3>The Preview Window</h3>
         <p>The Preview window contains sample code that reflects changes you make in Formatting.</p>
         <h3>Categories</h3>
+         <ul>
+            <li><a href="#tabs-indents">Tabs and Indents</a></li>
+            <li><a href="#alignment">Alignment</a></li>
+            <li><a href="#braces">Braces</a></li>
+			<li><a href="#wrapping">Wrapping</a></li>
+            <li><a href="#blank-lines">Blank Lines</a></li>
+            <li><a href="#spaces">Spaces</a></li>
+           	<li><a href="#comments">Comments</a></li>
+			<li><a href="#imports">Imports</a></li>
+        </ul>
         
-        
-        <h3>Tabs and Indents</h3>
+        <h3><a name="tabs-indents"></a>Tabs and Indents</h3>
 
-        <ul>
-            <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.
+          <ul>
+          <li><b>Use All Languages Settings:</b> Unselect to override the All Languages settings. Unselecting Use All Languages Settings enables the following fields: 
+		   
+            <ul><li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.
             <!--The number of spaces inserted is set in the Number of Spaces per Indent property.-->
            When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
             possible. It also replaces preceding spaces with the tab character if possible.  
@@ -73,33 +84,92 @@ made subject to such option by the copyright holder.
             made up of a combination of spaces and tab characters.  It is easiest to predict 
             the location of tab characters if you set Number of Spaces per Indent to an even
             multiple or divisor of Tab Size.
-              <ul class="note"><li><b>Important:</b> This feature does not convert
+             <ul class="note"><li><b>Important:</b> This feature does not convert
                         existing tabs to spaces. Only tabs that you add <i>after</i> you
                         enable this option are converted.</li></ul>
             </li>
-            <li><b>Indent:</b> Number of spaces per indentation level for subelements, new lines inside
+            <li><b>Number of Spaces per Indent:</b> Number of spaces per indentation level for subelements, new lines inside
                 brackets, etc.</li>
-            <li><b>Tab size:</b>See the description of Expand Tabs to Spaces, above.
-            </li>
-            <li><b>Right margin:</b> Position of the vertical red line that indicates the right margin.
-          </li>     
-            <li><b>Line wrap:</b> Whether lines are wrapped when they are longer than the width of the Editor window (no relationship to right margin). Options are:
+            <li><b>Tab Size:</b> See the description of Expand Tabs to Spaces, above.            </li>
+            <li><b>Right Margin:</b> Position of the vertical red line that indicates the right margin.          </li>     
+            <li><b>Line Wrap:</b> Whether lines are wrapped when they are longer than the width of the Editor window (no relationship to right margin). Options are:
                 <ul>
                     <li><b>Off.</b> No line wrapping (default).</li>
                     <li><b>After words.</b> Words are not broken by line wrapping.</li>
                     <li><b>Anywhere.</b> Lines are broken in the middle of words by line wrapping.</li>
-                </ul></li>
+			  </ul>
+					 <p>See also <a href="#wrapping">Wrapping</a>.</p>
+             </li>
         </ul>
-         <h3>Alignment</h3>
-		 <p>Allows for specifying lines  that require alignment. </p>
-		 <h3>Braces</h3>
-		 <p>Sets  braces so that they are declared according to the specified options and generates braces for the specifed statements. </p>
-		 <h3>Wrapping</h3>
-		 <p>Applies when an expression does not fit on a single line. The principles of breaking an expression are specified in accordance with the selected options.</p>
-		 <h3>Blank Lines</h3>
-		 <p>Improves readability by setting off sections of code that are logically related according to the specified options. </p>
-		 <h3>Spaces</h3>
-		 <p>Inserts blank spaces before, after, around, or within  such code elements as keywords, parentheses, operators,  left braces, comma, semicolon, colopn, and type casts when a corresponding option is chosen. </p>
+		</li>
+		<li><b>Continuation Indentation Size:</b> If you place a line break in a code statement, this is how
+            far the IDE indents the continuation of the code statement after the line break.</li>
+			<li><b>Label Indentation:</b> Specified number adds extra indentation to the current label indentation level.</li>
+			<li><b>Absolute Label Indentation:</b> When selected, the IDE  flushes labels completely to the left. </li>
+			<li><b>Indent Top Level Class Members:</b> When selected, the IDE adds indentation size of 4 to all class members (methods, fields, inner classes, initializers).</li>
+			<li><b>Indent Case Statements in Switch:</b> When selected, the IDE adds indentation size of 4 to 'case' statements in relation to 'switch' statement.</li>
+			<li><b>Add Leading Star in Comment:</b> When selected, the IDE adds a leading asterisk in the comments. </li>
+        </ul>
+        <ul class="note"><li>You can experiment with different Tab and Indent settings and see the results in the Preview window.</li></ul>
+         <h3><a name="alignment"></a>Alignment</h3>
+		 <p>Align the selected elements when you place line breaks before them.</p>
+        <ul>
+            <li><b>New lines.</b> The IDE breaks lines before any elements you select here.</li>
+            <li><b>Multiline Alignment.</b> When you place line breaks before any elements you select here,
+            the IDE aligns the selected elements.</li>
+        </ul>
+        <ul class="note"><li>You can experiment with different Alignment settings and see the results in the Preview window.</li></ul>
+		 <h3><a name="braces"></a>Braces</h3>
+		 <ul>
+          <li><b>Braces Placement:</b> Select where to place the braces for each type of declaration listed here. The possible brace locations are:
+            <ul>
+            <li>Same line</li>
+            <li>New line</li>
+            <li>New line half indented</li>
+            <li>New line indented</li>
+        </ul></li>
+		<li><b>Special "else if" Treatment:</b> When selected, the &quot;else if&quot; is not separated into two lines and the code is kept together in one line. </li>
+		<li><b>Braces Generation:</b> Select where to generate the braces for each type of statement listed here. The possible brace locations are:
+          <ul>
+            <li>Generate</li>
+            <li>Leave Alone</li>
+            <li>Eiminate</li>
+           
+        </ul></li></ul>
+		 <ul class="note"><li>You can experiment with different Braces settings and see the results in the Preview window.</li></ul>
+		 <h3><a name="wrapping"></a>Wrapping</h3>
+		 <p>In this panel set the rules for the IDE to wrap lines automatically. The panel lists the 
+        possible locations before which the IDE wraps lines. For each location you can have the IDE never
+        wrap lines, always wrap lines, or wrap lines if the statement is long.</p>
+		   <ul class="note"><li>You can experiment with different Wrapping settings and see the results in the Preview window.</li>
+            <li>See also the Line Wrap option in <a href="#tabs-indents">Tabs and Indents</a>.</li></ul>
+		 <h3><a name="blank-lines"></a>Blank Lines</h3>
+		 <p>Improves readability by setting off sections of code that are logically related according to the specified options. Select the number of blank lines to place in the listed positions. For example, "After Field: 1" places 1 blank line after every field.</p>
+		  <ul class="note"><li>You can experiment with different Blank Lines settings and see the results in the Preview window.</li></ul>
+		 <h3><a name="spaces"></a>Spaces</h3>
+		  <p>In this panel, set where the IDE automatically puts whitespaces. Due to the large number
+        of possible places to put whitespaces, the places to put whitespaces are displayed in a tree
+        of categories. 
+        Expand a tree node to see the places under a category, or
+        collapse a node to hide the places under a category. The categories are:</p>
+        <ul>
+            <li>Before Keywords (example: "while")</li>
+            <li>Before Parentheses (example: "for (")</li>
+            <li>Around Operators (example: binary operators)</li>
+            <li>Before Left Braces (example: Class declarations, "class Example {")</li>
+            <li>Within Parentheses (example: "if ( convert...")</li>
+            <li>Other (example: After Commas)</li>               
+        </ul>
+		 <ul class="note"><li>You can experiment with different Spaces settings and see the results in the Preview window.</li></ul>
+		 <h3><a name="comments"></a>Comments</h3>
+		 <p><b>Enable Comments Formatting:</b> Unselect to disable comments formatting. Selecting Enable Comments Formatting enables the following fields:</p> 
+		  <ul>
+		  <li><b>General.</b> Selected options specify the style of implementing general code comments. </li>
+		  <li><b>Javadoc.</b> Selected options specify the style of implementing  comments for Javadoc. </li>
+		  </ul>
+		   <ul class="note"><li>You can experiment with different Comments settings and see the results in the Preview window.</li></ul>
+		 <h3><a name="imports"></a>Imports</h3>
+		 <p>TBD</p>
          <hr>
         <p>
             <small><a href="../../credits.html">Legal Notices</a></small>

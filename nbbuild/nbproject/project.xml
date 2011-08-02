@@ -142,8 +142,7 @@ made subject to such option by the copyright holder.
             </ide-actions>
             <export>
                 <type>jar</type>
-                <location>nbantext.jar</location>
-                <script>${ant.script}</script>
+                <location>${nbantext.jar}</location>
                 <build-target>bootstrap</build-target>
             </export>
             <view>
@@ -152,7 +151,7 @@ made subject to such option by the copyright holder.
                         <label>Ant Tasks</label>
                         <location>antsrc</location>
                     </source-folder>
-		    <source-folder style="packages">
+                    <source-folder style="packages">
                         <label>Tests for Ant Tasks</label>
                         <location>test/unit/src</location>
                     </source-folder>

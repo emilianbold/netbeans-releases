@@ -75,12 +75,11 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
 
     Richfaces4CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
-    boolean initialize = false;
+    boolean initialize = true;
     
     public static final Logger LOGGER = Logger.getLogger(Richfaces4Customizer.class.getName());
 
     public Richfaces4Customizer() {
-        initialize = true;
     }
     
     @Override
@@ -115,9 +114,12 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
 
                             @Override
                             public void windowGainedFocus(WindowEvent e) {
-                                panel.initLibraries(initialize);
-                                initialize = false;
-                                changeSupport.fireChange();
+                                if (initialize) {
+                                    panel.initLibraries(true);
+                                    initialize = false;
+                                } else {
+                                    changeSupport.fireChange();
+                                }
                             }
 
                             @Override

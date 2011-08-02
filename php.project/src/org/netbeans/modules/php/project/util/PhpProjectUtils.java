@@ -293,7 +293,7 @@ public final class PhpProjectUtils {
             if (buffer.length() > 0) {
                 buffer.append("|"); // NOI18N
             }
-            buffer.append(provider.getName());
+            buffer.append(provider.getIdentifier());
         }
         return buffer.toString();
     }

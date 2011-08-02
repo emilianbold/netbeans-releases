@@ -99,6 +99,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -148,7 +149,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
     // better to move this to JSFConfigurationPanel
-    public Set extendImpl(WebModule webModule) {
+    public Set extendImpl(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
         Set result = new HashSet();
         Library jsfLibrary = null;      
         Library jstlLibrary = null;
@@ -257,7 +258,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             
             // extending for JSF component libraries
             for (JsfComponentImplementation jsfComponentDescriptor : panel.getEnabledJsfDescriptors()) {
-                result.addAll(jsfComponentDescriptor.extend(webModule));
+                result.addAll(jsfComponentDescriptor.extend(webModule, jsfComponentCustomizer));
             }
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):

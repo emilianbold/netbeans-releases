@@ -85,10 +85,12 @@ public interface JsfComponentImplementation {
      * component library corresponding to this implementation.
      *
      * @param  webModule the web module to be extended; never null.
+     * @param  jsfComponentCustomizer customizer with JSF component library 
+     * settings for given project (web module)
      * @return the set of newly created files in the web module which should be opened.
      */
     @NonNull
-    public Set<FileObject> extend(@NonNull WebModule webModule);
+    public Set<FileObject> extend(@NonNull WebModule webModule, @NullAllowed JsfComponentCustomizer jsfComponentCustomizer);
     
     /**
      * Returns for which version is the JSF component library designated. 
@@ -114,19 +116,18 @@ public interface JsfComponentImplementation {
     public boolean isInWebModule(@NonNull WebModule webModule);
 
     /**
-     * Returns a {@link JsfComponentCustomizer} for this JSF component
+     * Returns a new {@link JsfComponentCustomizer} for this JSF component
      * library.
      * <p>
      * For new project is called with {@code null} parameter. In project customizer is called for 
      * given {@link WebModule}.
      * 
-     * @param initialize says if the customizer should be initialized to IDE or project defaults
      * @param webmodule the web module for which should be customizer adapted; null if the 
      * project doesn't exist yet
-     * @return a customizer; can be {@code null} if the JSF suite doesn't 
+     * @return a new customizer; can be {@code null} if the JSF suite doesn't 
      * support that and no extending panel should be offered.
      */
-    public JsfComponentCustomizer getJsfComponentCustomizer(boolean initialize, @NullAllowed WebModule webModule);
+    public JsfComponentCustomizer createJsfComponentCustomizer(@NullAllowed WebModule webModule);
 
     /**
      * Performs actions needed for removal JSF component library form the web module.
