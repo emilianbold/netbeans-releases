@@ -1342,7 +1342,7 @@ final class ModuleList implements Stamps.Updater {
                     boolean eager = (eagerB != null ? eagerB.booleanValue() : false);
                     Module m;
                     try {
-                        m = mgr.create(jarFile, new ModuleHistory(jar), reloadable, autoload, eager);
+                        m = mgr.create(jarFile, new ModuleHistory(jar, "created from " + xmlfile), reloadable, autoload, eager);
                     } catch (DuplicateException dupe) {
                         // XXX should this be tolerated somehow? In case the original is
                         // in fact scheduled for deletion anyway?
@@ -1632,7 +1632,7 @@ final class ModuleList implements Stamps.Updater {
                         }
                         continue;
                     }
-                    ModuleHistory history = new ModuleHistory(jar); // NOI18N
+                    ModuleHistory history = new ModuleHistory(jar, "loaded from " + f); // NOI18N
                     Boolean reloadableB = (Boolean) props.get("reloadable"); // NOI18N
                     boolean reloadable = reloadableB != null ? reloadableB.booleanValue() : false;
                     boolean enabled = enabledB != null ? enabledB.booleanValue() : false;
