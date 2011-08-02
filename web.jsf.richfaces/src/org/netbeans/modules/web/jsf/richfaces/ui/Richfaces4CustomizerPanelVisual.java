@@ -93,7 +93,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
         addChangeListener(listener);
         
         initLibraries(true);
-
+        
         richfacesComboBox.addActionListener(new ActionListener() {
 
             @Override
@@ -133,8 +133,9 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
                         
                         if (firstInit) {
                             setDefaultComboBoxValues();
+                        } else {
+                            changeSupport.fireChange();
                         }
-                        changeSupport.fireChange();
                     }
                 });
             }
