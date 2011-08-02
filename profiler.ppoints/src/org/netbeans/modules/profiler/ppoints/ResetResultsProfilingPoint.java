@@ -321,10 +321,7 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     public ResetResultsProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, location, project, factory, false);
-    }
-    public ResetResultsProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, location, project, factory, existing);
+        super(name, location, project, factory);
         getChangeSupport().addPropertyChangeListener(this);
     }
 

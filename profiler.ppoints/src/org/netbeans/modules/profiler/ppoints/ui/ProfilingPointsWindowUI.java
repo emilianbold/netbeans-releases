@@ -256,7 +256,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             ProfilingPointsManager.getDefault().removeProfilingPoints(selectedProfilingPoints);
         } else if (e.getSource() == editButton) {
             ProfilingPoint selectedProfilingPoint = getProfilingPointAt(profilingPointsTable.getSelectedRow());
-            selectedProfilingPoint.customize();
+            selectedProfilingPoint.customize(false);
         } else if (e.getSource() == disableButton) {
             int[] selectedRows = profilingPointsTable.getSelectedRows();
 
@@ -341,7 +341,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
             }
 
             ProfilingPoint selectedProfilingPoint = getProfilingPointAt(selectedRow);
-            selectedProfilingPoint.customize();
+            selectedProfilingPoint.customize(false);
         } else if (e.getSource() == removeItem) {
             deletePPs();
         }

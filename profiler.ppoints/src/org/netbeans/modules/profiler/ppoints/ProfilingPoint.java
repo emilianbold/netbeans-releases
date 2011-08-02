@@ -126,19 +126,13 @@ public abstract class ProfilingPoint {
     private ResultsRenderer resultsRenderer;
     private String name; // Name of the Profiling Point, must be unique within a project
     private boolean enabled = true; // Defines if the Profiling Point is currently enabled
-    final private AtomicBoolean uninitialized;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     ProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    
-    ProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
         this.name = name;
         this.project = project;
         this.factory = factory;
-        uninitialized = new AtomicBoolean(!existing);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
@@ -205,21 +199,15 @@ public abstract class ProfilingPoint {
     }
 
     // Opens customizer for the Profiling Point
-    public void customize() {
+    public void customize(boolean deleteOnCancel) {
         final ValidityAwarePanel customizer = getCustomizer();
         if (!ProfilingPointsManager.getDefault().customize(customizer,
             new Runnable() {
                 public void run() {
                     setValues(customizer);
                 }
-            })) 
-        {
-            if (uninitialized.compareAndSet(true, false)) {
-                ProfilingPointsManager.getDefault().removeProfilingPoint(this);
-            }
-        } else {
-            uninitialized.compareAndSet(true, false);
-        }
+            }) && deleteOnCancel)
+            ProfilingPointsManager.getDefault().removeProfilingPoint(this);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {

@@ -191,10 +191,7 @@ public abstract class TriggeredGlobalProfilingPoint extends GlobalProfilingPoint
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     TriggeredGlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    TriggeredGlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, project, factory, existing);
+        super(name, project, factory);
         condition = new TriggerCondition();
     }
 

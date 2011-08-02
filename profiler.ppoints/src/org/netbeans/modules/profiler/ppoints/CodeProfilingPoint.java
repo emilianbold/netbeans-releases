@@ -67,12 +67,8 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
 
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
-        Paired(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory) {
-            this(name, startLocation, endLocation, project, factory, false);
-        }
-        
-        Paired(String name, Location startLocation, Location endLocation, Lookup.Provider  project, ProfilingPointFactory factory, boolean existing) {
-            super(name, project, factory, existing);
+        Paired(String name, Location startLocation, Location endLocation, Lookup.Provider  project, ProfilingPointFactory factory) {
+            super(name, project, factory);
             this.startLocation = startLocation;
             this.endLocation = endLocation;
         }
@@ -205,11 +201,7 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
         //~ Constructors ---------------------------------------------------------------------------------------------------------
 
         Single(String name, Location location, Lookup.Provider  project, ProfilingPointFactory factory) {
-            this(name, location, project, factory, false);
-        }
-        
-        Single(String name, Location location, Lookup.Provider  project, ProfilingPointFactory factory, boolean existing) {
-            super(name, project, factory, existing);
+            super(name, project, factory);
             this.location = location;
         }
 
@@ -404,10 +396,7 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     CodeProfilingPoint(String name, Lookup.Provider  project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    CodeProfilingPoint(String name, Lookup.Provider  project, ProfilingPointFactory factory, boolean existing) {
-        super(name, project, factory, existing);
+        super(name, project, factory);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

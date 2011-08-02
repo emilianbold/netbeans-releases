@@ -104,7 +104,7 @@ public class CustomizeProfilingPointAction extends SystemAction implements Conte
 
                     @Override
                     public void actionPerformed(ActionEvent ae) {
-                        pp.customize();
+                        pp.customize(false);
                     }
                 };
             }

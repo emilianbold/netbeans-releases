@@ -50,7 +50,6 @@ import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointFactory;
 import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
 import org.netbeans.modules.profiler.ppoints.Utils;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -82,8 +81,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.modules.profiler.api.EditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -389,7 +386,7 @@ public class ToggleProfilingPointAction extends AbstractAction implements AWTEve
                             });
                     }
 
-                    ppoint.customize();
+                    ppoint.customize(true);
                 }
             }
         }

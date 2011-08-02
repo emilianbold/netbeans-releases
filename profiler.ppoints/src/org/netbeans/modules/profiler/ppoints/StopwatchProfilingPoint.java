@@ -428,10 +428,7 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     public StopwatchProfilingPoint(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, startLocation, endLocation, project, factory, false);
-    }
-    public StopwatchProfilingPoint(String name, Location startLocation, Location endLocation, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, startLocation, endLocation, project, factory, existing);
+        super(name, startLocation, endLocation, project, factory);
         getChangeSupport().addPropertyChangeListener(this);
     }
 

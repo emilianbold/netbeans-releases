@@ -433,10 +433,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     public TakeSnapshotProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, location, project, factory, false);
-    }
-    public TakeSnapshotProfilingPoint(String name, Location location, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, location, project, factory, existing);
+        super(name, location, project, factory);
         getChangeSupport().addPropertyChangeListener(this);
     }
 

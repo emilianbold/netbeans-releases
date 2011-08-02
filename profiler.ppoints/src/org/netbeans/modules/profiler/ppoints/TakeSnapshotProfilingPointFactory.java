@@ -162,7 +162,7 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
         TakeSnapshotProfilingPoint profilingPoint = null;
 
         try {
-            profilingPoint = new TakeSnapshotProfilingPoint(name, location, project, this, true);
+            profilingPoint = new TakeSnapshotProfilingPoint(name, location, project, this);
             profilingPoint.setEnabled(Boolean.parseBoolean(enabledStr));
             profilingPoint.setSnapshotType(type);
             profilingPoint.setSnapshotTarget(target);

@@ -381,10 +381,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     public TimedTakeSnapshotProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    public TimedTakeSnapshotProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, project, factory, existing);
+        super(name, project, factory);
         getChangeSupport().addPropertyChangeListener(this);
     }
 

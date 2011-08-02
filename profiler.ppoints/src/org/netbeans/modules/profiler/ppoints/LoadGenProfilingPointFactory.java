@@ -209,7 +209,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
         LoadGenProfilingPoint profilingPoint = null;
 
         try {
-            profilingPoint = new LoadGenProfilingPoint(name, startLocation, endLocation, project, this, true);
+            profilingPoint = new LoadGenProfilingPoint(name, startLocation, endLocation, project, this);
             profilingPoint.setEnabled(Boolean.parseBoolean(enabledStr));
             profilingPoint.setSriptFileName(scriptFile);
         } catch (Exception e) {

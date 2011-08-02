@@ -54,10 +54,7 @@ import org.openide.util.Lookup;
 public abstract class GlobalProfilingPoint extends ProfilingPoint {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     GlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory) {
-        this(name, project, factory, false);
-    }
-    GlobalProfilingPoint(String name, Lookup.Provider project, ProfilingPointFactory factory, boolean existing) {
-        super(name, project, factory, existing);
+        super(name, project, factory);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
