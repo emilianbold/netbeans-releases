@@ -837,7 +837,6 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
                   @Override
                   public Void visitMethod(MethodTree mt, Void p) {
                      Tree nt = make.setLabel(mt, mt.getName());
-                     GeneratorUtilities.get(workingCopy).copyComments(mt, nt, true);
                      final List<Comment> comments = tu.getComments(nt, true);
                      int size = comments.size();
 
