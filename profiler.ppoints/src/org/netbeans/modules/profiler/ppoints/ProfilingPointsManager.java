@@ -642,11 +642,12 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
                 storeProfilingPoints(new ProfilingPoint[] { profilingPoint });
 
             if (isAnnotationChange(evt)) {
-                deannotate((CodeProfilingPoint.Annotation[]) evt.getOldValue());
-                annotate((CodeProfilingPoint) profilingPoint, (CodeProfilingPoint.Annotation[]) evt.getNewValue());
+                ProfilingPointAnnotator.get().annotationChanged(evt);
             }
 
             if (isLocationChange(evt)) {
+                ProfilingPointAnnotator.get().locationChanged(evt);
+                
                 CodeProfilingPoint.Location oldLocation = (CodeProfilingPoint.Location)evt.getOldValue();
                 if (oldLocation != null && !CodeProfilingPoint.Location.EMPTY.equals(oldLocation))
                     removeFileWatch(new File(oldLocation.getFile()));
@@ -657,6 +658,7 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
             }
                 
             if (isAppearanceChange(evt)) {
+                ProfilingPointAnnotator.get().appearanceChanged(evt);
                 firePropertyChanged(PROPERTY_PROFILING_POINTS_CHANGED);
             }
 //        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
@@ -1030,47 +1032,12 @@ public class ProfilingPointsManager extends ProfilingPointsProcessor
         }
     }
 
-    private void annotate(final CodeProfilingPoint profilingPoint, final CodeProfilingPoint.Annotation[] annotations) {
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
-                public void run() {
-                    for (CodeProfilingPoint.Annotation cppa : annotations) {
-                        // --- Code for saving dirty profiling points on document save instead of IDE closing ----------------
-                        //          DataObject dataObject = Utils.getDataObject(profilingPoint.getLocation(cppa));
-                        //          if (dataObject != null) dataObject.addPropertyChangeListener(ProfilingPointsManager.this);
-                        // ---------------------------------------------------------------------------------------------------
-                        Line editorLine = Utils.getEditorLine(profilingPoint.getLocation(cppa));
-
-                        if (editorLine != null) {
-                            editorLine.addPropertyChangeListener(ProfilingPointsManager.this);
-                            cppa.attach(editorLine);
-                        }
-                    }
-                }
-            });
-    }
-
     private void annotateProfilingPoint(final CodeProfilingPoint profilingPoint) {
-        annotate(profilingPoint, profilingPoint.getAnnotations());
-    }
-
-    private void deannotate(final CodeProfilingPoint.Annotation[] annotations) {
-        for (CodeProfilingPoint.Annotation cppa : annotations) {
-            // --- Code for saving dirty profiling points on document save instead of IDE closing ----------------
-            //      DataObject dataObject = Utils.getDataObject(profilingPoint.getLocation(cppa));
-            //      if (dataObject != null) dataObject.removePropertyChangeListener(ProfilingPointsManager.this);
-            // ---------------------------------------------------------------------------------------------------
-            Annotatable cppaa = cppa.getAttachedAnnotatable();
-
-            if (cppaa != null) {
-                cppaa.removePropertyChangeListener(this);
-            }
-
-            cppa.detach();
-        }
+        ProfilingPointAnnotator.get().annotate(profilingPoint);
     }
 
     private void deannotateProfilingPoint(final CodeProfilingPoint profilingPoint) {
-        deannotate(profilingPoint.getAnnotations());
+        ProfilingPointAnnotator.get().deannotate(profilingPoint);
     }
 
     private void loadProfilingPoints(Lookup.Provider project) {

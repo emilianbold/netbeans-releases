@@ -142,6 +142,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.profiler</friend>
+                <friend>org.netbeans.modules.profiler.nbimpl</friend>
                 <friend>org.netbeans.modules.profiler.stp</friend>
                 <package>org.netbeans.modules.profiler.ppoints</package>
                 <package>org.netbeans.modules.profiler.ppoints.ui</package>

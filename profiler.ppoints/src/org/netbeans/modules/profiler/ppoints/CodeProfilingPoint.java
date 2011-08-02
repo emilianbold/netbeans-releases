@@ -173,7 +173,7 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
         protected void timeAdjust(final int threadId, final long timeDiff0, final long timeDiff1) {
         }
 
-        CodeProfilingPoint.Annotation[] getAnnotations() {
+        public CodeProfilingPoint.Annotation[] getAnnotations() {
             return usesEndLocation() ? new CodeProfilingPoint.Annotation[] { getStartAnnotation(), getEndAnnotation() }
                                      : new CodeProfilingPoint.Annotation[] { getStartAnnotation() };
         }
@@ -258,7 +258,7 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
 
         protected abstract Annotation getAnnotation();
 
-        CodeProfilingPoint.Annotation[] getAnnotations() {
+        public CodeProfilingPoint.Annotation[] getAnnotations() {
             return new CodeProfilingPoint.Annotation[] { getAnnotation() };
         }
         
@@ -421,7 +421,7 @@ public abstract class CodeProfilingPoint extends ProfilingPoint {
         return (firstAnnotation == null) ? null : getLocation(firstAnnotation);
     }
 
-    abstract Annotation[] getAnnotations();
+    public abstract Annotation[] getAnnotations();
     
     abstract void setLocation(Annotation annotation, Location location);
 

@@ -634,6 +634,10 @@ public class Utils {
     //
     //    return dao;
     //  }
+    public static Line getEditorLine(CodeProfilingPoint profilingPoint, CodeProfilingPoint.Annotation annotation) {
+        return getEditorLine(profilingPoint.getLocation(annotation));
+    }    
+        
     public static Line getEditorLine(CodeProfilingPoint.Location location) {
         // URL
         String url = location.getFile();
