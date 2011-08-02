@@ -482,6 +482,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (q1 instanceof PrefixQuery && "u".equals(((PrefixQuery)q1).getPrefix().field())) {
                     // increase for queries like "+u:org.netbeans.modules|*" to succeed
                     MAX_MAX_CLAUSE = 1<<16;
+                } else if (q1 instanceof TermQuery && "p".equals(((TermQuery) q1).getTerm().field())) {
+                    // +p:nbm also produces several thousand hits
+                    MAX_MAX_CLAUSE = 1<<16;
                 }
             }
         }
@@ -1262,9 +1265,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             }
                         }
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        fsr.setCount(MAX_RESULT_COUNT);
-                        FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), true);
-                        infos.addAll(convertToNBVersionInfo(response.getResults()));
+                        FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
+                        if (response != null) {
+                            infos.addAll(convertToNBVersionInfo(response.getResults()));
+                        }
                         return null;
                     }
                 });
