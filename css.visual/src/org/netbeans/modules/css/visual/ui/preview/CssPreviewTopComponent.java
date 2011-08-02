@@ -95,6 +95,11 @@ public final class CssPreviewTopComponent extends TopComponent {
     
         public void activate(final CssRuleContext content) {
             assert SwingUtilities.isEventDispatchThread();
+            
+            if(previewPanel == null) {
+                return ; //no preview component 
+            }
+            
             LOGGER.log(Level.FINE, "Previewable activated - POSTING activate task {0}", content);//NOI18N
 
             //the CssPreviewGenerator.getPreviewCode() needs to run outside of AWT

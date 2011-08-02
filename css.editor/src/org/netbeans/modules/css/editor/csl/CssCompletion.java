@@ -161,7 +161,10 @@ public class CssCompletion implements CodeCompletionHandler {
             snapshot.getText().subSequence(astCaretOffset, astCaretOffset + 1).charAt(0) :
             ' '; //NOI18N
 
-        Node tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
+        //if the caret points to a token node then determine its type
+        Node _tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
+        CssTokenId tokenNodeTokenId = _tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(_tokenNode) : null;
+        
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
         if (node == null) {
             //the parse tree is likely broken by some text typed, 
@@ -539,13 +542,22 @@ public class CssCompletion implements CodeCompletionHandler {
                     extendedItemsOnly);
 
 
-        } else if (node.type() == NodeType.elementName
-                || node.type() == NodeType.typeSelector) {
-            //complete selector's element name
+        } else if (node.type() == NodeType.elementName) {
+            //complete selector's element name - with a prefix
             List<CompletionProposal> proposals = completeHtmlSelectors(prefix, snapshot.getOriginalOffset(node.from()));
             if (proposals.size() > 0) {
                 return new DefaultCompletionResult(proposals, false);
             }
+        } else if((node.type() == NodeType.elementSubsequent  //after class or id selector
+                || node.type() == NodeType.typeSelector)  //after element selector
+                
+                && tokenNodeTokenId == CssTokenId.WS) {
+            //complete element name - without a prefix
+            List<CompletionProposal> proposals = completeHtmlSelectors(prefix, caretOffset);
+            if (proposals.size() > 0) {
+                return new DefaultCompletionResult(proposals, false);
+            }
+            
         } else if (node.type() == NodeType.selectorsGroup ||
                 node.type() == NodeType.combinator ||
                 node.type() == NodeType.selector ||
