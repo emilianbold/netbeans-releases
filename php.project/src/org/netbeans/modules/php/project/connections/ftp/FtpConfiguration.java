@@ -58,23 +58,30 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final String host;
     private final int port;
     private final String userName;
-    private final String password;
     private final boolean anonymousLogin;
     private final String initialDirectory;
     private final int timeout;
+    private final int keepAliveInterval;
     private final boolean passiveMode;
     private final boolean ignoreDisconnectErrors;
 
-    public FtpConfiguration(final ConfigManager.Configuration cfg) {
-        super(cfg);
+    // @GuardedBy(this)
+    private String password;
+
+
+    public FtpConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        super(cfg, createWithSecrets);
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        password = readPassword(cfg, FtpConnectionProvider.PASSWORD);
+        if (createWithSecrets) {
+            password = readPassword(FtpConnectionProvider.PASSWORD);
+        }
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
+        keepAliveInterval = readNumber(FtpConnectionProvider.KEEP_ALIVE_INTERVAL, FtpConnectionProvider.DEFAULT_KEEP_ALIVE_INTERVAL);
         passiveMode = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE));
         ignoreDisconnectErrors = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS));
     }
@@ -98,6 +105,10 @@ public final class FtpConfiguration extends RemoteConfiguration {
 
     public int getTimeout() {
         return timeout;
+    }
+
+    public int getKeepAliveInterval() {
+        return keepAliveInterval;
     }
 
     public boolean isPassiveMode() {
@@ -127,7 +138,15 @@ public final class FtpConfiguration extends RemoteConfiguration {
         if (anonymousLogin) {
             return "nobody@nowhere.net"; // NOI18N
         }
-        return password != null ? password : ""; // NOI18N
+        synchronized (this) {
+            if (!createWithSecrets && password == null) {
+                password = readPassword(FtpConnectionProvider.PASSWORD);
+            }
+            if (password == null) {
+                password = ""; // NOI18N
+            }
+            return password;
+        }
     }
 
     @Override
@@ -143,8 +162,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
     @Override
     public boolean saveProperty(String key, String value) {
         if (FtpConnectionProvider.PASSWORD.equals(key)) {
-            // value cannot be used (is scrambled)
-            savePassword(password, FtpConnectionProvider.get().getDisplayName());
+            savePassword(ConfigManager.decode(value), FtpConnectionProvider.get().getDisplayName());
             return true;
         }
         return false;

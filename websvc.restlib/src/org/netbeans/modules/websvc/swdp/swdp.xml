@@ -53,39 +53,57 @@ made subject to such option by the copyright holder.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/asm-3.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-core-asl-1.1.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-client-1.3.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-core-1.3.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-json-1.3.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-multipart-1.3.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-server-1.3.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-spring-1.3.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-core-asl-1.7.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-jaxrs-1.7.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-mapper-asl-1.7.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-xc-1.7.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-apache-client-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-atom-abdera-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-client-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-core-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-guice-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-json-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-multipart-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-server-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-simple-server-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-spring-1.8.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jettison-1.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/mimepull-1.4.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-client-1.3.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.3.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-client-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-server-1.8.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.8.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_api.jar!/</resource>
     </volume>  
      <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-client-1.3-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-core-1.1.5.1-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-json-1.3-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-multipart-1.3-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-spring-1.3-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-client-1.3-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-signature-1.3-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-apache-client-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-atom-abdera-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-guice-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-multipart-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-simple-server-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-spring-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-client-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-server-1.8-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-signature-1.8-javadoc.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.3/jersey-json-1.3.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.3/jersey-server-1.3.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.3/jersey-client-1.3.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-multipart/1.3/jersey-multipart-1.3.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.3/oauth-client-1.3.pom</resource>
-        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-signature/1.3/oauth-signature-1.3.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.8/jersey-atom-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-json/1.8/jersey-json-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-core/1.8/jersey-core-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-server/1.8/jersey-server-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/jersey-client/1.8/jersey-client-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-atom-abdera/1.8/jersey-atom-abdera-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-apache-client/1.8/jersey-apache-client-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-spring/1.8/jersey-spring-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-multipart/1.8/jersey-multipart-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-guice/1.8/jersey-guice-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-simple-server/1.8/jersey-simple-server-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.8/oauth-client-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-server/1.8/oauth-server-1.8.pom</resource>
+        <resource>http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-oauth/oauth-signature/1.8/oauth-signature-1.8.pom</resource>
     </volume>
 </library>

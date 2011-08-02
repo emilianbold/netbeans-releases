@@ -173,7 +173,6 @@ public class Mercurial {
 
     void attachListeners(MercurialVCS mvcs) {
         fileStatusCache.addPropertyChangeListener(mvcs);
-        mercurialAnnotator.addPropertyChangeListener(mvcs);
         addPropertyChangeListener(mvcs);
     }
 
@@ -379,6 +378,10 @@ public class Mercurial {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
     }
 
+    public void refreshAnnotations (Set<File> files) {
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
+    }
+
     public void changesetChanged(File repository) {
         support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
     }
@@ -559,7 +562,7 @@ public class Mercurial {
         File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
         File knownParent = null;
         for (File r : roots) {
-            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+            if(!Utils.isScanForbidden(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
             }
         }

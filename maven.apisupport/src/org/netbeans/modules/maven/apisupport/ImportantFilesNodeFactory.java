@@ -59,18 +59,15 @@ import org.netbeans.modules.apisupport.project.api.NodeFactoryUtils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
@@ -162,7 +159,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         
         @Override
         public String getHtmlDisplayName() {
-            return computeAnnotatedHtmlDisplayName(LBL_important_files(), getFiles());
+            return NodeFactoryUtils.computeAnnotatedHtmlDisplayName(LBL_important_files(), getFiles());
         }
         
         @Override
@@ -240,7 +237,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 if (file != null) {
                     try {
                         Node orig = DataObject.find(file).getNodeDelegate();
-                        return new Node[] {new SpecialFileNode(orig, FILES.get(key))};
+                        return new Node[] {NodeFactoryUtils.createSpecialFileNode(orig, FILES.get(key))};
                     } catch (DataObjectNotFoundException e) {
                         throw new AssertionError(e);
                     }
@@ -326,84 +323,5 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
     }
-    /**
-     * Node to represent some special file in a project.
-     * Mostly just a wrapper around the normal data node.
-     */
-    static final class SpecialFileNode extends FilterNode {
-        
-        private final String displayName;
-        
-        public SpecialFileNode(Node orig, String displayName) {
-            super(orig);
-            this.displayName = displayName;
-        }
-        
-        @Override
-        public String getDisplayName() {
-            if (displayName != null) {
-                return displayName;
-            } else {
-                return super.getDisplayName();
-            }
-        }
-        
-        @Override
-        public boolean canRename() {
-            return false;
-        }
-        
-        @Override
-        public boolean canDestroy() {
-            return false;
-        }
-        
-        @Override
-        public boolean canCut() {
-            return false;
-        }
-        
-        @Override
-        public String getHtmlDisplayName() {
-            String result = null;
-            DataObject dob = getLookup().lookup(DataObject.class);
-            if (dob != null) {
-                Set<FileObject> files = dob.files();
-                result = computeAnnotatedHtmlDisplayName(getDisplayName(), files);
-            }
-            return result;
-        }
         
     }
-    
-    /**
-     * Annotates <code>htmlDisplayName</code>, if it is needed, and returns the
-     * result; <code>null</code> otherwise.
-     */
-    private static String computeAnnotatedHtmlDisplayName(
-            final String htmlDisplayName, final Set<FileObject> files) {
-        
-        String result = null;
-        if (files != null && files.iterator().hasNext()) {
-            try {
-                FileObject fo = files.iterator().next();
-                FileSystem.Status stat = fo.getFileSystem().getStatus();
-                if (stat instanceof FileSystem.HtmlStatus) {
-                    FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-                    
-                    String annotated = hstat.annotateNameHtml(htmlDisplayName, files);
-                    
-                    // Make sure the super string was really modified (XXX why?)
-                    if (!htmlDisplayName.equals(annotated)) {
-                        result = annotated;
-                    }
-                }
-            } catch (FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        return result;
-    }
-    
-    
-}

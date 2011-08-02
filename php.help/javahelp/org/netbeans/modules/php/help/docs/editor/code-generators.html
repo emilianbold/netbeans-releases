@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright (c) 2009 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Code Generators</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+
+        <h2>Code Generators</h2>
+        <p>When you press the combination Alt-Insert (Ctrl-I on Mac), a menu opens with all possible code generators. The list of generators is context sensitive. It depends on the position of the caret in the code when the key combination is pressed. Depending on your position in the code, you can generate a database connection, database tables, lorum ipsum text, and several others. This section describes only the following code generators:</p>
+        <ul>
+            <li><a href="#generate-constructors">Constructors</a></li>
+            <li><a href="#generate-getters-setters">Getters and Setters</a></li>
+            <li><a href="#generate-overriden-methods">Overridden and Implemented Methods</a></li>
+        </ul>
+        <div class="indent">
+            <h3><a name="generate-constructors"></a>Constructors</h3>
+            <p>You can generate constructors by pressing Alt-Insert (Ctrl-I on Mac) when the caret is inside a class body, but not inside any functions contained in that body. When you select Generate... Constructor, a dialog opens llisting the fields you can initialize by the constructor. The field names are used as parameters of the constructor.</p>
+            <p>You can decide not to select any fields. In this case, the IDE generates an empty constructor, with no parameters. If the field is a class with properties, you can either select individual properties, or you can select the class, in which case all the class' properties are selected automatically.</p>
+            <p>For more information, see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/generate_constructor_getters_and_setters">
+                <param name="text" value="<html><u>NetBeans PHP blog post</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+            <h3><a name="generate-getters-setters"></a>Getters and Setters</h3>
+            <p>You can generate getters and setters by pressing Alt-Insert (Ctrl-I on Mac) when the caret is inside a class body and selecting Getter, Setter, or Getters and Setters. Only the possible functions are displayed. For example, if you already have setters for the available properties, only the getter option appears.</p>
+            <p>When you select Generate... Getter/Setter/Getter and Setter, a dialog appears with the properties for which you can generate a getter or setter. The properties are displayed in a tree. If you select a parent class, you automatically select all that class' properties.</p>
+            <p>You can name a getter or setter according to either the convention getName or the convention get_name.</p>
+            <p>For more information, see the original <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/generate_constructor_getters_and_setters">
+                <param name="text" value="<html><u>NetBeans PHP blog post</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object> and the post on <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/generate_constructor_getters_and_setters_improved">
+                <param name="text" value="<html><u>improved getter and setter generation</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+            <h3><a name="generate-overriden-methods"></a>Overridden and Implemented Methods</h3>
+            <p>You can generate overridden or implemented methods by pressing Alt-Insert (Ctrl-I on Mac) when the caret is inside a class declaration and there are multiple class members. A dialog opens showing the methods you can insert and indicating whether they are overridden or implemented.</p>
+            <p>This feature complements the &quot;Implement all abstract methods&quot; hint and <a href="#cc-overridden-methods">code completion for overridden and implemented methods</a>.</p>
+            <p>For more information, see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/generate_overriden_implemented_methods">
+                <param name="text" value="<html><u>NetBeans PHP blog post</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+            
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+
+            <dd><a href="../process.html">Working with PHP</a></dd>
+            <dd><a href="../php_quickref.html">Project Tasks: Quick Reference</a>
+            </dd></dl>
+
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
+</html>

@@ -57,34 +57,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="Templates">
-        <folder name="Project">
-            <folder name="Maven2">
-                <file name="NbModule">
-                    <attr name="position" intvalue="400"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.apisupport.Bundle#template.module"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.apisupport.NbmWizardIterator.createNbModuleIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/apisupport/NbModuleDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/nbmicon.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="NbSuite">
-                    <attr name="position" intvalue="450"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.apisupport.Bundle#template.suite"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.apisupport.NbmWizardIterator.createNbSuiteIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/apisupport/NbSuiteDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/suiteicon.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="NbApp">
-                    <attr name="position" intvalue="500"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.apisupport.Bundle#template.app"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.apisupport.NbmWizardIterator.createNbAppIterator"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/apisupport/NbAppDescription.html"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/suiteicon.png"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 </filesystem>

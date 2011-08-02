@@ -49,7 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import javax.swing.undo.UndoManager;
-import org.netbeans.editor.BaseDocument;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -72,7 +71,7 @@ public class CustomCodeEditor extends javax.swing.JPanel implements PropertyChan
         catch (Exception ex) { // ignore - should not happen
             ex.printStackTrace();
         }
-        Object um = editorPane.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        Object um = editorPane.getDocument().getProperty("undo-manager"); // NOI18N // BaseDocument.UNDO_MANAGER_PROP
         if (um instanceof UndoManager) {
             ((UndoManager)um).discardAllEdits();
         }

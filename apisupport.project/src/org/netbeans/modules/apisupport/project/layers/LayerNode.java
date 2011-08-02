@@ -54,8 +54,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -133,18 +132,10 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         setKeys(Collections.<LayerChildren.KeyType>emptySet());
                         return;
                     }
-                    boolean showContextNode = true;
-                    NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
-                    if( null != moduleProvider 
-                            && !moduleProvider.prepareContext(NbBundle.getMessage(LayerNode.class, "LBL_XML_layer_in_context")) ) { //NOI18N
-                        //don't show 'layer in context' if the context classpath didn't initialize properly
-                        showContextNode = false;
-                    }
-                    final boolean b = showContextNode;
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            initialize(b);
+                            initialize();
                         }
                     });
                 }
@@ -184,7 +175,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             }
         }
 
-        private void initialize(boolean showContextNode) {
+        private void initialize() {
             try {
                 FileObject layer = handle.getLayerFile();
                 Project prj = FileOwnerQuery.getOwner(layer);
@@ -194,24 +185,20 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                 }
                 p = prj;
                 layerfs = handle.layer(false);
-                if( !showContextNode ) {
+                setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
+                Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
+                boolean context = false;
+                if (project != null) {
+                    LayerHandle h = LayerHandle.forProject(project);
+                    h.setAutosave(true); // #135376
+                    if (layer.equals(h.getLayerFile())) {
+                        sfs = LayerUtils.getEffectiveSystemFilesystem(project);
+                        setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
+                        context = true;
+                    }
+                }
+                if (!context) {
                     setKeys(Collections.singleton(KeyType.RAW));
-                } else {
-                    setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
-                    Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
-                    boolean context = false;
-                    if (project != null) {
-                        LayerHandle h = LayerHandle.forProject(project);
-                        h.setAutosave(true); // #135376
-                        if (layer.equals(h.getLayerFile())) {
-                            sfs = LayerUtils.getEffectiveSystemFilesystem(project);
-                            setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
-                            context = true;
-                        }
-                    }
-                    if (!context) {
-                        setKeys(Collections.singleton(KeyType.RAW));
-                    }
                 }
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);

@@ -159,9 +159,12 @@ public final class TopLogging {
         }
         ps.close();
         try {
+            StartLog.unregister();
             LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(os.toByteArray()));
         } catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            StartLog.register();
         }
 
 
@@ -176,8 +179,6 @@ public final class TopLogging {
             logger.addHandler (streamHandler ());
         }
         logger.addHandler(new LookupDel());
-
-        StartLog.register();
     }
 
     /**

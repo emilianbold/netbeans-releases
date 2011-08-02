@@ -51,13 +51,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
@@ -105,6 +102,9 @@ public abstract class PhpUnit extends PhpProgram {
     public static final String PARAM_FILTER = "--filter"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    public static final String PARAM_LIST_GROUPS = "--list-groups"; // NOI18N
+    public static final String PARAM_GROUP = "--group"; // NOI18N
+
     // for older PHP Unit versions
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
     // bootstrap & config
@@ -164,7 +164,7 @@ public abstract class PhpUnit extends PhpProgram {
         if (hasValidVersion(new PhpUnitCustom(command))
                 && version[0] >= MINIMAL_VERSION_PHP53[0]
                 && version[1] >= MINIMAL_VERSION_PHP53[1]) {
-            return new PhpUnit34(command);
+            return new PhpUnitImpl(command);
         }
         return new PhpUnit33(command);
     }
@@ -291,7 +291,7 @@ public abstract class PhpUnit extends PhpProgram {
             case PHP_53:
                 if (version[0] <= MINIMAL_VERSION_PHP53[0]
                         && version[1] < MINIMAL_VERSION_PHP53[1]) {
-                    // this instanceof PhpUnit34; - would not work with PhpUnit35 etc.
+                    // this instanceof PhpUnitImpl; - would not work with PhpUnit35 etc.
                     error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnitPhp53", PhpUnit.getVersions(phpUnit, project));
                 }
                 break;
@@ -334,16 +334,9 @@ public abstract class PhpUnit extends PhpProgram {
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new OutputProcessorFactory());
-        ExecutionService service = ExecutionService.newService(externalProcessBuilder, executionDescriptor, null);
-        Future<Integer> result = service.run();
-        try {
-            result.get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            // ignored
-            LOGGER.log(Level.INFO, null, ex);
-        }
+        String message = NbBundle.getMessage(PhpUnit.class, "LBL_ValidatingPhpUnit");
+        execute(externalProcessBuilder, executionDescriptor, message, message);
+
         return version;
     }
 

@@ -1297,7 +1297,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 if (role.equals(role.getParent().getRoleB())) { // Role B
                     String fName = role.getParent().getRoleA().getFieldName();
-                    AssignmentTree aTree = (AssignmentTree) existingMappings.get(fieldType.toString());
+                    String fieldTypeStr = fieldType.toString();
+                    AssignmentTree aTree = (AssignmentTree) existingMappings.get(fieldTypeStr);
+                    if(aTree == null && role.isToMany()){//try to find other possible collection types
+                        String inType = fieldTypeStr.substring(collectionType.className().length());
+                        for(CollectionType ct:CollectionType.values()){
+                            aTree = (AssignmentTree) existingMappings.get(ct.className()+inType);
+                            if(aTree != null)break;
+                        }                        
+                    }
                     if (aTree != null) {
                         ExpressionTree expr = aTree.getExpression();
                         if (expr instanceof LiteralTree) {

@@ -60,11 +60,10 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.test.MockLookup;
 
 /**
  * A base class for unit tests.
@@ -73,12 +72,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public abstract class SourceTestSupport extends NbTestCase {
     static {
-        // set the lookup which will be returned by Lookup.getDefault()
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        assertEquals("Unable to set the default lookup!", Lkp.class, Lookup.getDefault().getClass());
         setLookups();
-        assertEquals(RepositoryImpl.class, Lookup.getDefault().lookup(Repository.class).getClass());
-        assertEquals("The default Repository is not our repository!", RepositoryImpl.class, Repository.getDefault().getClass());
     }
     
     
@@ -101,13 +95,8 @@ public abstract class SourceTestSupport extends NbTestCase {
     
     protected void tearDown() throws Exception{
         super.tearDown();
-        getSystemFs().reset();
     }
 
-    private RepositoryImpl.MultiFileSystemImpl getSystemFs() throws Exception {
-        return (RepositoryImpl.MultiFileSystemImpl)FileUtil.getConfigRoot().getFileSystem();
-    }
-    
     private void setCacheFolder() throws IOException{
         File cacheFolder = new File(getWorkDir(),"cache");
         cacheFolder.mkdirs();
@@ -115,13 +104,12 @@ public abstract class SourceTestSupport extends NbTestCase {
     }
     
     private void initTemplates() throws Exception{
-        RepositoryImpl.MultiFileSystemImpl systemFS = getSystemFs();
-        FileObject interfaceTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Interface.java");
+        FileObject interfaceTemplate = FileUtil.getConfigFile("Templates/Classes/Interface.java");
         TestUtilities.copyStringToFileObject(interfaceTemplate,
                 "package ${package};" +
                 "public interface ${name} {\n" +
                 "}");
-        FileObject classTemplate = systemFS.getRoot().getFileObject("Templates/Classes/Class.java");
+        FileObject classTemplate = FileUtil.getConfigFile("Templates/Classes/Class.java");
         TestUtilities.copyStringToFileObject(classTemplate,
                 "package ${package};" +
                 "public class ${name} {\n" +
@@ -148,27 +136,12 @@ public abstract class SourceTestSupport extends NbTestCase {
         in.close();
     }
     
-    private static void setLookups(Object... lookups) {
-        ((Lkp)Lookup.getDefault()).setProxyLookups(Lookups.fixed(lookups));
-    }
-    
-    public static final class Lkp extends ProxyLookup {
-        
-        private final Repository repository = new RepositoryImpl();
-        
-        public Lkp() {
-            setProxyLookups(new Lookup[0]);
-        }
-        
-        private void setProxyLookups(Lookup... lookups) {
-            Lookup[] allLookups = new Lookup[lookups.length + 3];
-            ClassLoader classLoader = SourceTestSupport.class.getClassLoader();
-            allLookups[0] = Lookups.singleton(classLoader);
-            allLookups[1] = Lookups.singleton(repository);
-            System.arraycopy(lookups, 0, allLookups, 2, lookups.length);
-            allLookups[allLookups.length - 1] = Lookups.metaInfServices(classLoader);
-            setLookups(allLookups);
-        }
+    private static void setLookups(Object... instances) {
+        Object[] allInstances = new Object[instances.length + 1];
+        ClassLoader classLoader = SourceTestSupport.class.getClassLoader();
+        allInstances[0] = classLoader;
+        System.arraycopy(instances, 0, allInstances, 1, instances.length);
+        MockLookup.setInstances(allInstances);
     }
     
     public static final class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {

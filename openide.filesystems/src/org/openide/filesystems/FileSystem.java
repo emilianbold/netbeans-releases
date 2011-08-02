@@ -188,7 +188,7 @@ public abstract class FileSystem implements Serializable {
     private boolean hidden = false;
 
     /** system name */
-    private String systemName = "".intern(); // NOI18N
+    private String systemName = ""; // NOI18N
 
     /** Utility field used by event firing mechanism. */
     private transient ListenerList<FileStatusListener> fileStatusList;

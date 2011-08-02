@@ -39,6 +39,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="m_isBaseClassStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_isBaseClassActionPerformed"/>
           </Events>
           <AuxValues>
@@ -71,6 +72,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="m_overridersStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_overridersActionPerformed"/>
           </Events>
           <AuxValues>
@@ -98,6 +100,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="m_usagesStateChanged"/>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="m_usagesActionPerformed"/>
           </Events>
           <AuxValues>
@@ -268,7 +271,9 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="scopeLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="scope" max="32767" attributes="0"/>
+                  <Component id="scope" pref="150" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="btnCustomScope" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -277,6 +282,7 @@
           <Group type="103" groupAlignment="3" attributes="0">
               <Component id="scopeLabel" alignment="3" min="-2" max="-2" attributes="1"/>
               <Component id="scope" alignment="3" max="32767" attributes="1"/>
+              <Component id="btnCustomScope" alignment="3" min="-2" max="-2" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -304,6 +310,13 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="((javax.swing.JTextField) scope.getEditor().getEditorComponent()).setColumns(SCOPE_COMBOBOX_COLUMNS);"/>
           </AuxValues>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnCustomScope">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="ELLIPSIS" type="code"/>
+            </Property>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

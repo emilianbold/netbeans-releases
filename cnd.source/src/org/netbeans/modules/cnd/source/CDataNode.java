@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.source;
 public class CDataNode extends SourceDataNode {
 
     /** The base name of the C source icon */
-    private static final String CSrcIcon =
+    static final String CSrcIcon =
             "org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"; // NOI18N
 
     public CDataNode(SourceDataObject obj) {

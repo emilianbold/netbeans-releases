@@ -68,17 +68,17 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
-import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -97,15 +97,17 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             new RemoteConfiguration.Empty(MISSING_CONFIG, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
-    private final PhpProjectProperties properties;
-    private final PhpProject project;
+    final PhpProjectProperties properties;
+    final PhpProject project;
+    final Category category;
+
     private final JLabel[] labels;
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
-    final Category category;
 
-    public RunAsRemoteWeb(PhpProjectProperties properties, ConfigManager manager, Category category) {
+
+    public RunAsRemoteWeb(final PhpProjectProperties properties, ConfigManager manager, Category category) {
         super(manager);
         this.properties = properties;
         this.category = category;
@@ -141,7 +143,10 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
         uploadFilesComboBox.setRenderer(new RemoteUploadRenderer());
 
-        // listeners
+        registerListeners();
+    }
+
+    private void registerListeners() {
         for (int i = 0; i < textFields.length; i++) {
             DocumentListener dl = new FieldUpdater(propertyNames[i], labels[i], textFields[i]);
             textFields[i].getDocument().addDocumentListener(dl);

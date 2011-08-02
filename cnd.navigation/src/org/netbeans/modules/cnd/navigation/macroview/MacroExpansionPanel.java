@@ -257,7 +257,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         add(jPanel1, java.awt.BorderLayout.CENTER);
 
         jToolBar1.setFloatable(false);
-        jToolBar1.setOrientation(1);
+        jToolBar1.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jToolBar1.setRollover(true);
         jToolBar1.setMaximumSize(new java.awt.Dimension(28, 240));
         jToolBar1.setPreferredSize(new java.awt.Dimension(28, 240));

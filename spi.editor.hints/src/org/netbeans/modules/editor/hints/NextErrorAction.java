@@ -143,7 +143,8 @@ public class NextErrorAction extends AbstractAction implements PropertyChangeLis
         try {
             BaseDocument doc = Utilities.getDocument(comp);
             int lineStart = Utilities.getRowStart(doc, offset);
-            HighlightsSequence s = HighlightingManager.getInstance().getHighlights(comp, null).getHighlights(lineStart, Integer.MAX_VALUE);
+            // "unused-browseable" in java.editor/.../ColoringManager and csl.api/.../ColoringManager
+            HighlightsSequence s = HighlightingManager.getInstance(comp).getBottomHighlights().getHighlights(lineStart, Integer.MAX_VALUE);
             int lastUnusedEndOffset = -1;
 
             while (s.moveNext()) {

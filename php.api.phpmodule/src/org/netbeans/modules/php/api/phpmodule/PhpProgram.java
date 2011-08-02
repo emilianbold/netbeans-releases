@@ -45,14 +45,18 @@ package org.netbeans.modules.php.api.phpmodule;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.progress.ProgressUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -201,6 +205,7 @@ public abstract class PhpProgram {
      * @return task representing the actual run, value representing result
      *         of the {@link Future} is exit code of the process
      * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
+     * @see #execute(ExternalProcessBuilder, ExecutionDescriptor, String, String)
      * @see ExecutionService#run()
      * @since 1.10
      */
@@ -218,10 +223,71 @@ public abstract class PhpProgram {
      * @throws ExecutionException if the process throws any exception
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
+     * @see #execute(ExternalProcessBuilder, ExecutionDescriptor, String, String)
      * @since 1.10
      */
     public static int executeAndWait(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) throws ExecutionException, InterruptedException {
         return ExecutionService.newService(processBuilder, executionDescriptor, title).run().get();
+    }
+
+    /**
+     * Execute process, <b>blocking but not blocking EDT</b>. It is just a wrapper for {@link ExecutionService#run()} which waits for the return code and displays
+     * progress dialog if it is run in EDT.
+     * <p>
+     * {@link ExecutionException} is logged with INFO level, {@link InterruptedException} is simply propagated.
+     * @param processBuilder {@link ExternalProcessBuilder process builder}
+     * @param executionDescriptor {@link ExecutionDescriptor descriptor} describing the configuration of service
+     * @param title display name of this service
+     * @param progressMessage message displayed if the task is run in EDT
+     * @return exit code of the process or {@code null} if any error occured
+     * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
+     * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
+     * @since 1.48
+     */
+    public static Integer execute(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, String progressMessage) {
+        ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, title);
+        final Future<Integer> result = service.run();
+        if (SwingUtilities.isEventDispatchThread()) {
+            if (!result.isDone()) {
+                try {
+                    // let's wait in awt to avoid flashing dialogs
+                    getResult(result, 99L);
+                } catch (TimeoutException ex) {
+                    ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                        @Override
+                        public void run() {
+                            getResult(result);
+                        }
+                    }, progressMessage);
+                }
+            }
+        }
+        return getResult(result);
+    }
+
+    static Integer getResult(Future<Integer> result) {
+        try {
+            return getResult(result, null);
+        } catch (TimeoutException ex) {
+            // in fact, cannot happen since we don't use timeout
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        return null;
+    }
+
+    static Integer getResult(Future<Integer> result, Long timeout) throws TimeoutException {
+        try {
+            if (timeout != null) {
+                return result.get(timeout, TimeUnit.MILLISECONDS);
+            }
+            return result.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            // ignored
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
     }
 
     @Override

@@ -222,7 +222,7 @@ public class EntityRelations extends J2eeTestCase {
             String text = operator.getText();
             assertNotNull(text);
             assertFalse(text.length() == 0);
-            waitHintsShown(fileToTest, size);
+            waitHintsShown(fileToTest, size, operator);
             for (ErrorDescription errorDescription : problems) {
                 write(errorDescription.toString());
             }
@@ -335,7 +335,7 @@ public class EntityRelations extends J2eeTestCase {
         }
     }
 
-    private void waitHintsShown(FileObject fileToTest, int size) {
+    private void waitHintsShown(FileObject fileToTest, int size, EditorOperator editorOperator) {
         final int delay = 1000;
         int repeat = 20;
         final Object lock = new Object();
@@ -353,13 +353,19 @@ public class EntityRelations extends J2eeTestCase {
         Logger logger = Logger.getLogger(AnnotationHolder.class.getName());
         logger.setLevel(Level.FINE);
         try {
+            boolean notReady = true;
             do {
                 synchronized (lock) {
                     task.schedule(delay);
                     logger.addHandler(handl);
                     lock.wait(repeat * delay);
                 }
-            } while ((repeat-- > 0) && (getFixes(fileToTest).size() < size));
+                notReady = getFixes(fileToTest).size() < size;
+                if (notReady) {
+                    // modify file to refresh hints (see bug 198171)
+                    editorOperator.replace("package", "package");  //NOI18N
+                }
+            } while ((repeat-- > 0) && notReady);
         } catch (InterruptedException intExc) {
             throw new JemmyException("REFRESH DID NOT FINISHED IN " + repeat * delay + " SECONDS", intExc);
         } finally {

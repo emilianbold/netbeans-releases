@@ -46,6 +46,7 @@ package org.netbeans.core.validation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -532,11 +533,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             if (module == null) {
                 continue;
             }
-            String layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
-            if (layer == null) {
-                // XXX should also consider META-INF/generated-layer.xml here
-                continue;
-            }
             String depsS = mf.getMainAttributes().getValue("OpenIDE-Module-Module-Dependencies");
             if (depsS != null) {
                 Set<String> deps = new HashSet<String>();
@@ -545,56 +541,77 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
                 directDeps.put(module, deps);
             }
-            
-            URL base = new URL(u, "../");
-            URL layerURL = new URL(base, layer);
-            URLConnection connect = layerURL.openConnection ();
-            connect.setDefaultUseCaches (false);
-            FileSystem fs = new XMLFileSystem(layerURL);
-
-            Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
-            while (all.hasMoreElements ()) {
-                FileObject fo = all.nextElement ();
-                String simplePath = fo.getPath();
-
-                if (simplePath.endsWith(suffix)) {
-                    hiddenFiles.put(simplePath, layerURL);
+            for (boolean generated : new boolean[] {false, true}) {
+                String layer;
+                if (generated) {
+                    layer = "META-INF/generated-layer.xml";
                 } else {
-                    allFiles.add(simplePath);
-                }
-
-                Number weight = (Number) fo.getAttribute("weight");
-                // XXX if weight != null, test that it is actually overriding something or being overridden
-                String weightedPath = weight == null ? simplePath : simplePath + "#" + weight;
-
-                Map<String,Object> attributes = getAttributes(fo, base);
-
-                if (fo.isFolder()) {
-                    for (Map.Entry<String,Object> attr : attributes.entrySet()) {
-                        Map<String,Map<String,Object>> m1 = folderAttributes.get(weightedPath);
-                        if (m1 == null) {
-                            m1 = new TreeMap<String,Map<String,Object>>();
-                            folderAttributes.put(weightedPath, m1);
-                        }
-                        Map<String,Object> m2 = m1.get(attr.getKey());
-                        if (m2 == null) {
-                            m2 = new TreeMap<String,Object>();
-                            m1.put(attr.getKey(), m2);
-                        }
-                        m2.put(module, attr.getValue());
+                    layer = mf.getMainAttributes ().getValue ("OpenIDE-Module-Layer");
+                    if (layer == null) {
+                        continue;
                     }
-                    continue;
                 }
-                
-                Map<String,ContentAndAttrs> overrides = files.get(weightedPath);
-                if (overrides == null) {
-                    overrides = new TreeMap<String,ContentAndAttrs>();
-                    files.put(weightedPath, overrides);
+
+                URL base = new URL(u, "../");
+                URL layerURL = new URL(base, layer);
+                URLConnection connect;
+                try {
+                    connect = layerURL.openConnection();
+                    connect.connect();
+                } catch (FileNotFoundException x) {
+                    if (generated) {
+                        continue;
+                    } else {
+                        throw x;
+                    }
                 }
-                overrides.put(module, new ContentAndAttrs(fo.asBytes(), attributes, layerURL));
+                connect.setDefaultUseCaches (false);
+                FileSystem fs = new XMLFileSystem(layerURL);
+
+                Enumeration<? extends FileObject> all = fs.getRoot().getChildren(true);
+                while (all.hasMoreElements ()) {
+                    FileObject fo = all.nextElement ();
+                    String simplePath = fo.getPath();
+
+                    if (simplePath.endsWith(suffix)) {
+                        hiddenFiles.put(simplePath, layerURL);
+                    } else {
+                        allFiles.add(simplePath);
+                    }
+
+                    Number weight = (Number) fo.getAttribute("weight");
+                    // XXX if weight != null, test that it is actually overriding something or being overridden
+                    String weightedPath = weight == null ? simplePath : simplePath + "#" + weight;
+
+                    Map<String,Object> attributes = getAttributes(fo, base);
+
+                    if (fo.isFolder()) {
+                        for (Map.Entry<String,Object> attr : attributes.entrySet()) {
+                            Map<String,Map<String,Object>> m1 = folderAttributes.get(weightedPath);
+                            if (m1 == null) {
+                                m1 = new TreeMap<String,Map<String,Object>>();
+                                folderAttributes.put(weightedPath, m1);
+                            }
+                            Map<String,Object> m2 = m1.get(attr.getKey());
+                            if (m2 == null) {
+                                m2 = new TreeMap<String,Object>();
+                                m1.put(attr.getKey(), m2);
+                            }
+                            m2.put(module, attr.getValue());
+                        }
+                        continue;
+                    }
+
+                    Map<String,ContentAndAttrs> overrides = files.get(weightedPath);
+                    if (overrides == null) {
+                        overrides = new TreeMap<String,ContentAndAttrs>();
+                        files.put(weightedPath, overrides);
+                    }
+                    overrides.put(module, new ContentAndAttrs(fo.asBytes(), attributes, layerURL));
+                }
+                // make sure the filesystem closes the stream
+                connect.getInputStream ().close ();
             }
-            // make sure the filesystem closes the stream
-            connect.getInputStream ().close ();
         }
         assertFalse("At least one layer file is usually used", allFiles.isEmpty());
 
@@ -605,6 +622,14 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             }
             Set<String> overriders = overrides.keySet();
             String file = e.getKey();
+
+            if (file.matches("Editors/Actions/build-(popup-menu|tool-tip)[.]instance")) {
+                // Provided by editor.lib but overridden (direct dep) by editor.
+                // Seems like the editor.lib definition might be needed if editor is missing.
+                // @EditorActionRegistration does not supply a way to define a weight.
+                // So for now, just permit this special case.
+                continue;
+            }
 
             if (new HashSet<ContentAndAttrs>(overrides.values()).size() == 1) {
                 // All the same. Check whether these are parallel declarations (e.g. CND debugger vs. Java debugger), or vertical.

@@ -49,12 +49,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileSystem;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wizard <em>J2SE Library Descriptor</em> for registering
@@ -66,6 +67,7 @@ final class NewLibraryDescriptor extends BasicWizardIterator {
     
     NewLibraryDescriptor.DataModel data;
     
+    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1100, displayName = "#Templates/NetBeansModuleDevelopment/emptyLibraryDescriptor", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/libraries.gif", description = "/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html", category = "nbm-specific")
     public static NewLibraryDescriptor createIterator() {
         return new NewLibraryDescriptor();
     }

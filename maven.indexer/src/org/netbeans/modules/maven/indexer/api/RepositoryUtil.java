@@ -48,8 +48,11 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -92,6 +95,27 @@ public final class RepositoryUtil {
         art.setFile(new File(repo.getBasedir(), localPath));
 
         return art;
+    }
+    
+    /**
+     * Tries to download an artifact.
+     * @param info a version of an artifact
+     * @return the file in the local repository (might not exist if download failed)
+     * @throws AbstractArtifactResolutionException currently never?
+     * @since 1.17
+     */
+    public static File downloadArtifact(NBVersionInfo info) throws Exception {
+        Artifact a = createArtifact(info);
+        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+        List<ArtifactRepository> remotes;
+        RepositoryInfo repo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+        if (repo != null && repo.isRemoteDownloadable()) {
+            remotes = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, repo.getRepositoryUrl(), repo.getId()));
+        } else {
+            remotes = Collections.emptyList();
+        }
+        online.resolve(createArtifact(info), remotes, online.getLocalRepository());
+        return a.getFile();
     }
     
     public static String calculateSHA1Checksum(File file) throws IOException {

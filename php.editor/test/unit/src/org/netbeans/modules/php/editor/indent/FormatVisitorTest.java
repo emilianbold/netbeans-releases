@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.StringReader;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;

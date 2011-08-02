@@ -40,7 +40,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -55,7 +55,7 @@
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Component id="formatterNameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jSeparator1" pref="480" max="32767" attributes="0"/>
+                      <Component id="jSeparator1" pref="490" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -75,7 +75,7 @@
                               <EmptySpace min="6" pref="6" max="6" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
-                              <Component id="formattersScrollPane" pref="481" max="32767" attributes="0"/>
+                              <Component id="formattersScrollPane" pref="505" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -85,7 +85,7 @@
                       <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                       <Component id="formatChildrenLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="testChildrenTextField" pref="407" max="32767" attributes="0"/>
+                      <Component id="testChildrenTextField" pref="412" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="formatChildrenLabelIf" min="-2" max="-2" attributes="0"/>
                   </Group>

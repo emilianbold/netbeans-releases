@@ -589,6 +589,11 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
 
     private void adjustToolbarPanelBorder() {
         if( toolbarPanel.getComponentCount() > 0 ) {
+            Border b = UIManager.getBorder( "Nb.MainWindow.Toolbar.Border");
+            if( null != b ) {
+                toolbarPanel.setBorder( b );
+                return;
+            }
             //add border
             if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 if( isXPTheme() ) {

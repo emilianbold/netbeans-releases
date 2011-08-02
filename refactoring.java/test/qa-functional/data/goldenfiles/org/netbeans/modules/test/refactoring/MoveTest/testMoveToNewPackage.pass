@@ -1,0 +1,18 @@
+Created directory:
+/moveDestNew
+Created file:
+==>MoveToNewPkg.java
+
+package moveDestNew;
+
+import moveSource.Reference;
+import static moveSource.StatRef.statRef;
+
+public class MoveToNewPkg {
+    Reference r;
+    {
+        statRef();
+    }
+}
+Deleted file:
+/moveSource/MoveToNewPkg.java

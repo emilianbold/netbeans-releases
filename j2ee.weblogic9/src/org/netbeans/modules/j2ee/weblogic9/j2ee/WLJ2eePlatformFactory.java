@@ -54,10 +54,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -65,6 +69,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -80,26 +85,40 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -115,7 +134,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Kirill Sorokin
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
-
+    
+    
+    public static final String ORACLE = "oracle";                                  // NOI18N 
+    
     private static final Logger LOGGER = Logger.getLogger(WLJ2eePlatformFactory.class.getName());
 
     private static final String OPENJPA_JPA_PROVIDER = "org.apache.openjpa.persistence.PersistenceProviderImpl"; // NOI18N
@@ -761,7 +783,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), new JpaSupportImpl(this));
+            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), 
+                    new JpaSupportImpl(this), new JsxWsPoliciesSupportImpl(this),
+                    new JaxRsStackSupportImpl(this));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }
@@ -814,6 +838,372 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
             return !newLibraries.isEmpty();
         }
+    }
+    
+    private static class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
+        
+        private static final String API = "api";                    // NOI18N
+        private static final String JAX_RS = "jax-rs";              // NOI18N
+        
+        private static final String JERSEY = "jersey";              //NOI18N
+        private static final String JSON = "json";                  //NOI18N
+        private static final String JETTISON ="jettison";           //NOI18N
+        private static final String ROME ="rome";                   //NOI18N
+    
+
+        JaxRsStackSupportImpl ( J2eePlatformImplImpl platformImpl){
+            this.platformImpl = platformImpl;
+        }
+        
+        @Override
+        public boolean addJsr311Api( Project project ) {
+            /*
+             *  WL has a deployable JSR311 war. But it will appear in the project's
+             *  classpath only after specific user action. This is unacceptable 
+             *  because generated source code requires classes independently 
+             *  of additional explicit user actions. 
+             *  
+             *  So the following code returns true only if there is already deployed
+             *  JSR311 library on the server
+             */
+            WLServerLibrarySupport support =getLibrarySupport();
+            Set<WLServerLibrary> libraries = support.getDeployedLibraries();
+            for (WLServerLibrary library : libraries) {
+                String title = library.getImplementationTitle();
+                if ( title!= null && title.toLowerCase(Locale.ENGLISH).contains(JAX_RS) && 
+                        title.toLowerCase(Locale.ENGLISH).contains(API))
+                {
+                    ServerLibrary apiLib = ServerLibraryFactory.
+                            createServerLibrary(library);
+                    J2eeModuleProvider provider = project.getLookup().lookup(
+                        J2eeModuleProvider.class);
+                    try {
+                        provider.getConfigSupport().configureLibrary(
+                                ServerLibraryDependency.minimalVersion(
+                                        apiLib.getName(),
+                                        apiLib.getSpecificationVersion(),
+                                        apiLib.getImplementationVersion()));
+                    } catch (org.netbeans.modules.j2ee.deployment.
+                            common.api.ConfigurationException ex) 
+                    {
+                        Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
+                                log(Level.INFO, null, ex);
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        @Override
+        public boolean extendsJerseyProjectClasspath(Project project) {
+            J2eeModuleProvider provider = project.getLookup().lookup(
+                    J2eeModuleProvider.class);
+            Collection<ServerLibrary> serverLibraries = getServerJerseyLibraries();
+            if (provider != null && serverLibraries.size() > 0) {
+                try {
+                    for (ServerLibrary serverLibrary : serverLibraries) {
+                        provider.getConfigSupport().configureLibrary(
+                                ServerLibraryDependency.minimalVersion(
+                                serverLibrary.getName(),
+                                serverLibrary.getSpecificationVersion(),
+                                serverLibrary.getImplementationVersion()));
+                    }
+                    Preferences prefs = ProjectUtils.getPreferences(project,
+                            ProjectUtils.class, true);
+                    prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT,
+                            Boolean.TRUE.toString());
+                    return true;
+                } catch (org.netbeans.modules.j2ee.deployment.common.api.
+                        ConfigurationException ex) 
+                {
+                    Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                            Level.INFO,
+                            "Exception during extending an web project", ex); //NOI18N
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public void removeJaxRsLibraries(Project project) {
+            // TODO: is it possible to remove ServerLibrary from project classpath ?
+        }
+        
+        private Collection<ServerLibrary> getServerJerseyLibraries() {
+            WLServerLibraryManager manager = getLibraryManager();
+            Collection<ServerLibrary> libraries = new LinkedList<ServerLibrary>();  
+            libraries.addAll(findJerseyLibraries(manager.getDeployableLibraries()));
+            libraries.addAll(findJerseyLibraries(manager.getDeployedLibraries()));
+            return libraries;
+        }
+        
+        private Collection<ServerLibrary> findJerseyLibraries(
+                Collection<ServerLibrary> collection) {
+            Collection<ServerLibrary> result = new ArrayList<ServerLibrary>(
+                    collection.size());
+            for (Iterator<ServerLibrary> iterator = collection.iterator(); 
+                    iterator.hasNext();) 
+            {
+                ServerLibrary library = iterator.next();
+                String title = library.getImplementationTitle();
+                if ( title == null ){
+                    continue;
+                }
+                title = title.toLowerCase(Locale.ENGLISH);
+                if (title.contains(JERSEY) || title.contains(JSON)
+                        || title.contains(ROME) || title.contains(JETTISON)) {
+                    result.add(library);
+                }
+            }
+            return result;
+        }
+        
+        private WLServerLibraryManager getLibraryManager(){
+            return new WLServerLibraryManager(platformImpl.dm);
+        }
+        
+        private WLServerLibrarySupport getLibrarySupport(){
+            return new WLServerLibrarySupport(platformImpl.dm);
+        }
+        
+        private J2eePlatformImplImpl platformImpl;
+    }
+    
+    private static class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
+        private static final String ORACLE_COMMON_MODULES = "oracle_common/modules/";  // NOI18N
+        private static final String ORACLE_WEBSERVICES =    "oracle.webservices";      // NOI18N
+        private static final String ORACLE_WEBSERVICES_STANDALONE_CLIENT = 
+                ORACLE_WEBSERVICES+".standalone.client";                               // NOI18N
+        
+        private static final String JAR = "jar";                                       // NOI18N
+        
+        JsxWsPoliciesSupportImpl(J2eePlatformImplImpl platformImpl){
+                this.platformImpl = platformImpl;
+        }
+        
+        public String getId(){
+            return ORACLE;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation#getClientPolicyIds()
+         */
+        @Override
+        public List<String> getClientPolicyIds()
+        {
+            // TODO : filter ids ( keep only client policies )
+            return getAllPolicyIds();
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation#getServicePolicyIds()
+         */
+        @Override
+        public List<String> getServicePolicyIds()
+        {
+            // TODO : filter ids ( keep only services policies )
+            return getAllPolicyIds();
+        }
+
+        @Override
+        public boolean supports(FileObject wsdl , Lookup loookup )
+        {
+            DefaultHandler handler = loookup.lookup(DefaultHandler.class);
+            if ( handler instanceof OraclePolicyHandler ){
+                return ((OraclePolicyHandler)handler).hasOraclePolicy;
+            }
+            return false;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation#extendsProjectClasspath(org.netbeans.modules.javaee.specs.support.spi.Project, java.util.Collection)
+         */
+        @Override
+        public void extendsProjectClasspath( Project project,
+                Collection<String> fqns )
+        {
+            /*
+             *  TODO : the current implementation cares ONLY about limited
+             *  list of FQNs. The should be changed if <code>fqns</code> 
+             *  has more items than expected.
+             *  Hardcoding of the selected FQNs is less expensive because only
+             *  limited ( two ) jar files are required to check.
+             *  Generic algorithm could be created but it will be a performance
+             *  problem : one need to scan all jars in each subfolder.  
+             *    
+             */
+            SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sgs == null || sgs.length < 1) {       
+                return ;
+            }
+            
+            FileObject sourceRoot = sgs[0].getRootFolder();
+            List<FileObject> roots = getJarRoots(sgs);
+            Map<FileObject, URL> archive2Url = new HashMap<FileObject, URL>();
+            List<String> foundFqns = new LinkedList<String>(fqns );
+            for( FileObject root: roots ){
+                if ( foundFqns.isEmpty()){
+                    break;
+                }
+                for(Iterator<String> iterator = foundFqns.iterator(); iterator.hasNext();){
+                     if ( hasClassFile( root , iterator.next()) ){
+                         iterator.remove();
+                     } 
+                     if (!archive2Url.containsKey(root)) {
+                        try {
+                            archive2Url.put( root, root.getURL());
+                        } catch (FileStateInvalidException ex) {
+                            Logger.getLogger(getClass().getName()).log(Level.INFO, 
+                                    "Couldn't extends compile classpath with required jars " +
+                                    "for WL policy support", ex);       // NOI18N
+                        }
+                     }
+                }
+            }
+            List<URL> urls = new LinkedList<URL>(archive2Url.values());
+            try {
+                ProjectClassPathModifier.addRoots(urls.toArray( new URL[urls.size()]), 
+                        sourceRoot, ClassPath.COMPILE);
+            }
+            catch (IOException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, 
+                                    "Couldn't extends compile classpath with required jars " +
+                                    "for WL policy support", ex);       // NOI18N
+            }
+        }
+        
+        @Override
+        public Lookup getLookup( FileObject wsdl ){
+            DefaultHandler handler = new OraclePolicyHandler();
+            return Lookups.fixed( handler );
+        }
+        
+        protected List<FileObject> getJarRoots( SourceGroup[] sgs){
+            File home = platformImpl.getMiddlewareHome();
+            FileObject middlewareHome = FileUtil.toFileObject( 
+                    FileUtil.normalizeFile(home));
+            FileObject modules = middlewareHome.getFileObject(ORACLE_COMMON_MODULES);//NOI18N 
+            if ( modules == null ){
+                return Collections.emptyList();
+            }
+            List<FileObject> roots = new LinkedList<FileObject>();
+            for( FileObject child : modules.getChildren() ){
+                String name = child.getName();
+                if ( name.startsWith(ORACLE_WEBSERVICES)){
+                    FileObject jar = child.getFileObject(
+                            ORACLE_WEBSERVICES_STANDALONE_CLIENT,JAR);
+                    if ( jar != null ){
+                        addJar(roots, jar);
+                    }
+                    jar = child.getFileObject("wsclient-rt",JAR); 
+                    if ( jar != null ){
+                        addJar(roots, jar);
+                    }
+                }
+                else if (name.startsWith("ws.api_") && child.getExt().equals(JAR)){       // NOI18N
+                    addJar(roots , child);
+                }
+            }
+            return roots;
+        }
+        
+        protected void addJar(List<FileObject> archiveRoots, FileObject jar) {
+            if (FileUtil.isArchiveFile(jar)) {  
+                archiveRoots.add(FileUtil.getArchiveRoot(jar));
+            }
+        }
+  
+        private List<String> getAllPolicyIds(){
+            File home = platformImpl.getMiddlewareHome();
+            FileObject middlewareHome = FileUtil.toFileObject( 
+                    FileUtil.normalizeFile(home));
+            FileObject modules = middlewareHome.getFileObject(ORACLE_COMMON_MODULES);//NOI18N 
+            if ( modules == null ){
+                return Collections.emptyList();
+            }
+            FileObject policiesFolder =null;
+            for ( FileObject folder : modules.getChildren() ){
+                if ( folder.getName().startsWith("oracle.wsm.policies")){// NOI18N 
+                    policiesFolder = folder;
+                    break;
+                }
+            }
+            if ( policiesFolder == null ){
+                return Collections.emptyList();
+            }
+            FileObject[] jars = policiesFolder.getChildren();
+            FileObject policies = null;
+            for (FileObject jar : jars) {
+                FileObject archiveRoot = FileUtil.getArchiveRoot( jar );
+                policies = archiveRoot.getFileObject(
+                        "META-INF/policies/oracle/");       //      NOI18N 
+                if ( policies != null ){
+                    break;
+                }
+            }
+            List<String> allIds = new LinkedList<String>();
+            if ( policies != null ){
+                for (FileObject fileObject : policies.getChildren()) {
+                    String name = fileObject.getName();
+                    allIds.add( name );
+                }
+            }
+            return allIds;
+        }
+        
+        private boolean hasClassFile(FileObject root, String fqn) {
+            String fileName = fqn.replace('.', '/');
+            return root.getFileObject(fileName+ ".class")!=null;       // NOi18N
+        }
+        
+        private J2eePlatformImplImpl platformImpl;
+    }
+    
+    private static final class OraclePolicyHandler extends DefaultHandler {
+        
+        private static final String POLICY = "Policy";                  // NOI18N
+
+        private static final String COLON_POLICY = ":"+POLICY;          // NOI18N
+
+
+        /* (non-Javadoc)
+         * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, c)
+         */
+        @Override
+        public void startElement( String uri, String localName, String qName,
+                org.xml.sax.Attributes attributes ) throws SAXException
+        {
+            super.startElement(uri, localName, qName, attributes);
+            boolean policy = false;
+            if ( localName != null && localName.equals(POLICY)){
+                policy = true;
+            }
+            if ( qName != null && qName.endsWith(COLON_POLICY) ) {
+                policy = true;
+            }
+            if ( !policy ){
+                return;
+            }
+            int count = attributes.getLength();
+            for (int i=0; i<count ; i++) {
+                String value = attributes.getValue(i);
+                if ( value.toLowerCase( Locale.ENGLISH).contains(ORACLE)){
+                    hasOraclePolicy = true;
+                }
+            }
+        }
+        
+        boolean hasOraclePolicy(){
+            return hasOraclePolicy;
+        }
+        
+        private boolean hasOraclePolicy;
+        
     }
 
     private static class JpaSupportImpl implements JpaSupportImplementation {

@@ -124,7 +124,7 @@ public class PhpDeleteRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(PhpDeleteRefactoringUI.class);
     }
 
     public boolean isRefactoringBypassRequired() {

@@ -58,6 +58,7 @@ import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
@@ -116,7 +117,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
     }
 
     public List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet) {
-        if (!"hg".equals(Helper.xpath("kind", changeSet))) { // NOI18N
+        if (!"hg".equals(Utilities.xpath("kind", changeSet))) { // NOI18N
             return null;
         }
         URI repo = getDefaultPull(URI.create(job.getUrl() + "ws/"), job); // NOI18N
@@ -134,16 +135,16 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 this.itemXML = xml;
             }
             public String getUser() {
-                return Helper.xpath("author/fullName", itemXML); // NOI18N
+                return Utilities.xpath("author/fullName", itemXML); // NOI18N
             }
             public String getMessage() {
-                return Helper.xpath("msg", itemXML); // NOI18N
+                return Utilities.xpath("msg", itemXML); // NOI18N
             }
             public Collection<? extends HudsonJobChangeFile> getFiles() {
-                if ("true".equals(Helper.xpath("merge", itemXML))) { // NOI18N
+                if ("true".equals(Utilities.xpath("merge", itemXML))) { // NOI18N
                     return Collections.emptySet();
                 }
-                final String node = Helper.xpath("node", itemXML); // NOI18N
+                final String node = Utilities.xpath("node", itemXML); // NOI18N
                 class HgFile implements HudsonJobChangeFile {
                     final String path;
                     final EditType editType;
@@ -164,15 +165,15 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 List<HgFile> files = new ArrayList<HgFile>();
                 NodeList nl = itemXML.getElementsByTagName("addedPath"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
-                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.add)); // NOI18N
+                    files.add(new HgFile(Utilities.xpath("text()", (Element) nl.item(i)), EditType.add)); // NOI18N
                 }
                 nl = itemXML.getElementsByTagName("modifiedPath"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
-                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.edit)); // NOI18N
+                    files.add(new HgFile(Utilities.xpath("text()", (Element) nl.item(i)), EditType.edit)); // NOI18N
                 }
                 nl = itemXML.getElementsByTagName("deletedPath"); // NOI18N
                 for (int i = 0; i < nl.getLength(); i++) {
-                    files.add(new HgFile(Helper.xpath("text()", (Element) nl.item(i)), EditType.delete)); // NOI18N
+                    files.add(new HgFile(Utilities.xpath("text()", (Element) nl.item(i)), EditType.delete)); // NOI18N
                 }
                 return files;
             }

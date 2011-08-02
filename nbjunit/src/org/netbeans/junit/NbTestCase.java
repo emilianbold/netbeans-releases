@@ -180,13 +180,35 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     /** Provides support for tests that can have problems with terminating.
      * Runs the test in a "watchdog" that measures the time the test shall
      * take and if it does not terminate it reports a failure including a thread dump.
-     * <p>Best to specify a duration less than 600000, which is the default timeout
-     * for any JUnit test in an NBM project specified in {@code common.xml},
-     * as these "hard" timeouts (covering even VM crashes) do not capture a thread dump.
-     * @return amount ms to give one test to finish or 0 (default) to disable time outs
+     * <p>If the system property {@code nbjunit.hard.timeout} is set to a number
+     * (of milliseconds) by which the whole VM must exit (as in the {@code timeout}
+     * property to Ant's {@code <junit>} task), and is at least 60000 (one minute),
+     * this "soft timeout" will default to 10000 (ten seconds) less than that, so
+     * that we can capture a meaningful thread dump rather than simply report that the
+     * test took too long. (If the VM crashes, the hard timeout kicks in.) Otherwise the
+     * default is 0 (no soft timeout). For an Ant-based NBM project, {@code common.xml}
+     * specifies 600000 (ten minutes) as a default hard timeout, and sets the system
+     * property, so soft timeouts should be the default. Note that the soft timeout is
+     * per test, whereas a hard timeout is per suite (by default - whatever is run in
+     * one JVM), so it is still possible to get a hard timeout from a hung test in case
+     * the tests preceding it in the suite completed but took more than ten seconds
+     * cumulatively; for such cases, simply override this method to specify a lower
+     * soft timeout.
+     * @return amount ms to give one test to finish or 0 to disable time outs
      * @since 1.20
      */
     protected int timeOut() {
+        String hardTimeoutS = System.getProperty("nbjunit.hard.timeout");
+        if (hardTimeoutS != null) {
+            try {
+                int hardTimeoutI = Integer.parseInt(hardTimeoutS);
+                if (hardTimeoutI >= 60000) {
+                    return hardTimeoutI - 10000;
+                }
+            } catch (NumberFormatException x) {
+                x.printStackTrace();
+            }
+        }
         return 0;
     }
 

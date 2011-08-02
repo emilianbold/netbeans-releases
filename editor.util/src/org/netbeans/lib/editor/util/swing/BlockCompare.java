@@ -75,6 +75,10 @@ public final class BlockCompare {
     private static final int OVERLAP_END = (OVERLAP_START << 1);
     private static final int EMPTY_X = (OVERLAP_END << 1);
     private static final int EMPTY_Y = (EMPTY_X << 1);
+    private static final int EQUAL_START = (EMPTY_Y << 1);
+    private static final int EQUAL_END = (EQUAL_START << 1);
+    private static final int LOWER_START = (EQUAL_END << 1);
+    private static final int LOWER_END = (LOWER_START << 1);
 
     private final int value;
 
@@ -85,7 +89,9 @@ public final class BlockCompare {
     /**
      * Check if block X is before block Y.
      *
-     * @return true if end offset of block X is &lt;= start offset of block Y.
+     * @return true if end offset of block X is &lt;= start offset of block Y i.e.<br/>
+     *   xEndOffset &lt;= yStartOffset.
+     * 
      */
     public boolean before() {
         return (value & BEFORE) != 0;
@@ -94,7 +100,9 @@ public final class BlockCompare {
     /**
      * Check if block X is after block Y.
      *
-     * @return true if start offset of block X is &gt;= end offset of block Y.
+     * @return true if start offset of block X is &gt;= end offset of block Y i.e.<br/>
+     *   xStartOffset &gt;= yEndOffset.
+     *   
      */
     public boolean after() {
         return (value & AFTER) != 0;
@@ -158,7 +166,9 @@ public final class BlockCompare {
      * Check if block X overlaps block Y at its begining.
      *
      * @return true if start offset of block X is before start offset of block Y
-     *  and end offset of block X is inside block Y.
+     *  and end offset of block X is inside block Y i.e.<br/>
+     *   xStartOffset &lt; yStartOffset and <br/>
+     *   xEndOffset &gt; yStartOffset and xEndOffset &lt; yEndOffset.
     */
     public boolean overlapStart() {
         return ((value & OVERLAP_START) != 0);
@@ -168,7 +178,9 @@ public final class BlockCompare {
      * Check if block X overlaps block Y at its end.
      *
      * @return true if start offset of block X is inside block Y
-     *  and end offset of block X is above end of block Y.
+     *  and end offset of block X is above end of block Y i.e.<br/>
+     *  xStartOffset &gt; yStartOffset && xStartOffset &lt; yEndOffset<br/>
+     *  xEndOffset &gt; yEndOffset.
     */
     public boolean overlapEnd() {
         return ((value & OVERLAP_END) != 0);
@@ -191,6 +203,46 @@ public final class BlockCompare {
     public boolean emptyY() {
         return (value & EMPTY_Y) != 0;
     }
+    
+    /**
+     * Check if block X and Y have same start offset.
+     *
+     * @return true if start offset of block X equals to start offset of block Y i.e. xStartOffset == yStartOffset.
+     * @since 1.44
+     */
+    public boolean equalStart() {
+        return (value & EQUAL_START) != 0;
+    }
+
+    /**
+     * Check if block X and Y have same end offset.
+     *
+     * @return true if end offset of block X equals to end offset of block Y i.e. xEndOffset == yEndOffset.
+     * @since 1.44
+     */
+    public boolean equalEnd() {
+        return (value & EQUAL_END) != 0;
+    }
+
+    /**
+     * Check if block X starts lower than Y.
+     *
+     * @return true if start offset of block X is &lt; start offset of block Y i.e. xStartOffset &lt; yStartOffset.
+     * @since 1.44
+     */
+    public boolean lowerStart() {
+        return (value & LOWER_START) != 0;
+    }
+
+    /**
+     * Check if block X ends lower than Y.
+     *
+     * @return true if end offset of block X is &lt; end offset of block Y i.e. xEndOffset &lt; yEndOffset.
+     * @since 1.44
+     */
+    public boolean lowerEnd() {
+        return (value & LOWER_END) != 0;
+    }
 
     @Override
     public String toString() {
@@ -203,6 +255,10 @@ public final class BlockCompare {
         appendBit(sb, OVERLAP_END, "OVERLAP_END");
         appendBit(sb, EMPTY_X, "EMPTY_X");
         appendBit(sb, EMPTY_Y, "EMPTY_Y");
+        appendBit(sb, EQUAL_START, "EQUAL_START");
+        appendBit(sb, EQUAL_END, "EQUAL_END");
+        appendBit(sb, LOWER_START, "LOWER_START");
+        appendBit(sb, LOWER_END, "LOWER_END");
         return sb.toString();
     }
 
@@ -221,29 +277,31 @@ public final class BlockCompare {
                 " > yEndOffset=" + yEndOffset;
         int value;
         if (xEndOffset < yStartOffset) {
-            value = BEFORE;
-            if (xStartOffset == xEndOffset)
+            value = BEFORE | LOWER_START | LOWER_END;
+            if (xStartOffset == xEndOffset) {
                 value |= EMPTY_X;
-            if (yStartOffset == yEndOffset)
+            }
+            if (yStartOffset == yEndOffset) {
                 value |= EMPTY_Y;
+            }
 
-        } else if (xEndOffset == yStartOffset) { // X right-before Y
-            if (xStartOffset == xEndOffset) { // X empty && right-before Y
-                if (yStartOffset == yEndOffset) { // X and Y empty
-                    value = EMPTY_X | EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS;
-                } else { // X empty && right-before Y; Y non-empty
-                    value = EMPTY_X | BEFORE | CONTAINS;
+        } else if (xEndOffset == yStartOffset) { // xStartOffset ?? xEndOffset == yStartOffset ?? yEndOffset
+            if (xStartOffset == xEndOffset) { // xStartOffset == xEndOffset == yStartOffset ?? yEndOffset
+                if (yStartOffset == yEndOffset) { // xStartOffset == xEndOffset == yStartOffset == yEndOffset
+                    value = EMPTY_X | EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS | EQUAL_START | EQUAL_END;
+                } else { // xStartOffset == xEndOffset == yStartOffset < yEndOffset
+                    value = EMPTY_X | BEFORE | CONTAINS | EQUAL_START | LOWER_END;
                 }
-            } else { // X non-empty; right-before Y
-                if (yStartOffset == yEndOffset) { // X non-empty && right-before Y; Y empty
-                    value = EMPTY_Y | BEFORE | INSIDE;
-                } else { // X non-empty && right-before Y; Y non-empty
-                    value = BEFORE;
+            } else { // xStartOffset < xEndOffset == yStartOffset ?? yEndOffset
+                if (yStartOffset == yEndOffset) { // xStartOffset < xEndOffset == yStartOffset == yEndOffset
+                    value = EMPTY_Y | BEFORE | INSIDE | LOWER_START | EQUAL_END;
+                } else { // xStartOffset < xEndOffset == yStartOffset < yEndOffset
+                    value = BEFORE | LOWER_START | LOWER_END;
                 }
             }
 
-        } else { // xEndOffset > yStartOffset
-            if (xStartOffset > yEndOffset) {
+        } else { // yStartOffset < xEndOffset
+            if (yEndOffset < xStartOffset) { // yStartOffset ?? yEndOffset < xStartOffset ?? xEndOffset
                 value = AFTER;
                 if (xStartOffset == xEndOffset) {
                     value |= EMPTY_X;
@@ -252,40 +310,48 @@ public final class BlockCompare {
                     value |= EMPTY_Y;
                 }
 
-            } else if (xStartOffset == yEndOffset) { // X right-after Y
-                if (xStartOffset == xEndOffset) { // X empty && right-after Y
-                    if (yStartOffset == yEndOffset) { // X and Y empty
-                        value = EMPTY_X | EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS;
-                    } else { // X empty && right-after Y; Y non-empty
-                        value = EMPTY_X | AFTER | CONTAINS;
+            } else if (xStartOffset == yEndOffset) { // yStartOffset < xEndOffset && xStartOffset == yEndOffset
+                if (xStartOffset == xEndOffset) { // yStartOffset ?? yEndOffset == xStartOffset == xEndOffset
+                    if (yStartOffset == yEndOffset) { // yStartOffset == yEndOffset == xStartOffset == xEndOffset
+                        value = EMPTY_X | EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS | EQUAL_START | EQUAL_END;
+                    } else { // yStartOffset < xStartOffset == xEndOffset == yEndOffset
+                        value = EMPTY_X | AFTER | CONTAINS | LOWER_START | EQUAL_END;
                     }
-                } else { // X non-empty && right-after Y
-                    if (yStartOffset == yEndOffset) { // X and Y empty
-                        value = EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS;
-                    } else { // X non-empty && right-after Y; Y non-empty
+                } else { // yStartOffset <= yEndOffset == xStartOffset < xEndOffset
+                    if (yStartOffset == yEndOffset) { // yStartOffset == yEndOffset == xStartOffset < xEndOffset
+                        value = EMPTY_Y | BEFORE | AFTER | INSIDE | CONTAINS | EQUAL_START;
+                    } else { // yStartOffset < yEndOffset == xStartOffset < xEndOffset
                         value = AFTER;
                     }
                 }
 
-            } else { // xStartOffset < yEndOffset && xEndOffset > yStartOffset
-                if (xStartOffset < yStartOffset) {
-                    if (xEndOffset < yEndOffset) {
-                        value = OVERLAP_START;
-                    } else { // xEndOffset >= yEndOffset
-                        value = CONTAINS;
+            } else { // xStartOffset < yEndOffset && yStartOffset < xEndOffset
+                if (xStartOffset < yStartOffset) { // xStartOffset < yStartOffset < xEndOffset
+                    if (xEndOffset < yEndOffset) { // xStartOffset < yStartOffset < xEndOffset < yEndOffset
+                        value = OVERLAP_START | LOWER_START | LOWER_END;
+                    } else { // xStartOffset < yStartOffset < yEndOffset <= xEndOffset
+                        value = CONTAINS | LOWER_START;
+                        if (xEndOffset == yEndOffset) { // xStartOffset < yStartOffset < yEndOffset == xEndOffset
+                            value |= EQUAL_END;
+                        } // xStartOffset < yStartOffset < yEndOffset < xEndOffset
                     }
-                } else if (xStartOffset == yStartOffset) {
-                    if (xEndOffset < yEndOffset) {
-                        value = INSIDE;
-                    } else if (xEndOffset == yEndOffset) {
-                        value = INSIDE | CONTAINS;
-                    } else { // xEndOffset > yEndOffset
-                        value = CONTAINS;
+                } else if (xStartOffset == yStartOffset) { // xStartOffset == yStartOffset < yEndOffset && xEndOffset > yStartOffset
+                    if (xEndOffset < yEndOffset) { // xStartOffset == yStartOffset < xEndOffset < yEndOffset
+                        value = INSIDE | EQUAL_START | LOWER_END;
+                    } else if (xEndOffset == yEndOffset) { // xStartOffset == yStartOffset < xEndOffset == yEndOffset
+                        value = INSIDE | CONTAINS | EQUAL_START | EQUAL_END;
+                    } else { // xStartOffset == yStartOffset < yEndOffset < xEndOffset
+                        value = CONTAINS | EQUAL_START;
                     }
-                } else { // xStartOffset > yStartOffset
-                    if (xEndOffset <= yEndOffset) {
+                } else { // yStartOffset < xStartOffset < yEndOffset
+                    if (xEndOffset <= yEndOffset) { // yStartOffset < xStartOffset < xEndOffset <= yEndOffset
                         value = INSIDE;
-                    } else { // xEndOffset > yEndOffset
+                        if (xEndOffset == yEndOffset) { // yStartOffset < xStartOffset < xEndOffset == yEndOffset
+                            value |= EQUAL_END;
+                        } else { // yStartOffset < xStartOffset < xEndOffset < yEndOffset
+                            value |= LOWER_END;
+                        }
+                    } else { // yStartOffset < xStartOffset < yEndOffset < xEndOffset
                         value = OVERLAP_END;
                     }
                 }

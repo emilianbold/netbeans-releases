@@ -151,7 +151,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     if (myFileProperties == null){
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
                         if (objFileNames != null) {
-                            myFileProperties = getSourceFileProperties(objFileNames,null, null, null);
+                            myFileProperties = getSourceFileProperties(objFileNames,null, null, null, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;

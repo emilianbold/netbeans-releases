@@ -265,10 +265,14 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
     public void propertyChange(PropertyChangeEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                if (editorCookie.getDocument() == null) {
+                    clearAll();
+                    return;
+                }
+
                 JEditorPane[] panes = editorCookie.getOpenedPanes();
 
                 if (panes == null) {
-                    clearAll();
                     return ;
                 }
 

@@ -43,12 +43,16 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import org.netbeans.modules.refactoring.api.Scope;
+import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
+import java.beans.BeanInfo;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,59 +69,97 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.netbeans.modules.refactoring.java.ui.WhereUsedPanel.Scope;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
 import javax.lang.model.element.Modifier;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 
 
 /**
  * @author  Jan Becicka
+ * @author  Ralph Ruijs
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
+    private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N
     private final transient TreePathHandle element;
     private  TreePathHandle newElement;
     private final transient ChangeListener parent;
     private static final int MAX_NAME = 50;
     private static final int SCOPE_COMBOBOX_COLUMNS = 14;
+    public static final String ELLIPSIS = "\u2026"; //NOI18N
+    private Scope customScope;
+    private boolean enableScope;
     
     /** Creates new form WhereUsedPanel */
     public WhereUsedPanel(String name, TreePathHandle e, ChangeListener parent) {
         setName(NbBundle.getMessage(WhereUsedPanel.class,"LBL_WhereUsed")); // NOI18N
         this.element = e;
         this.parent = parent;
+        this.enableScope = true;
         initComponents();
-        //parent.setPreviewEnabled(false);
+        btnCustomScope.setAction(new ScopeAction(scope));
     }
     
-    public enum Scope {
-        ALL,
-        CURRENT
-    }
-    
-    public Scope getScope() {
-        if (scope.getSelectedIndex()==1)
-            return Scope.CURRENT;
-        return Scope.ALL;
+    public Scope getCustomScope() {
+        FileObject file = RetoucheUtils.getFileObject(element);
+        Scope value = null;
+        
+        if(!enableScope) {
+            return Scope.create(null, null, Arrays.asList(file));
+        }
+
+        switch (scope.getSelectedIndex()) {
+            case 1:
+                value = Scope.create(Arrays.asList(projectSources), null, null);
+                break;
+            case 2:
+                NonRecursiveFolder nonRecursiveFolder = new NonRecursiveFolder() {
+                    public FileObject getFolder() {
+                        return packageFolder;
+                    }
+                };
+                value = Scope.create(null, Arrays.asList(nonRecursiveFolder), null);
+                break;
+            case 3:
+                value = Scope.create(null, null, Arrays.asList(file));
+                break;
+            case 4:
+                value = WhereUsedPanel.this.customScope;
+                break;
+        }
+        return value;
     }
 
     private boolean initialized = false;
     private String methodDeclaringSuperClass = null;
     private String methodDeclaringClass = null;
+    private FileObject packageFolder = null;
+    private FileObject[] projectSources = null;
     
     String getMethodDeclaringClass() {
         return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
@@ -130,17 +172,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     public void initialize() {
         if (initialized) return;
         JavaSource source = JavaSource.forFileObject(element.getFileObject());
-        Project p = FileOwnerQuery.getOwner(element.getFileObject());
-        final JLabel currentProject;
-        final JLabel allProjects;
-        if (p!=null) {
-            ProjectInformation pi = ProjectUtils.getInformation(FileOwnerQuery.getOwner(element.getFileObject()));
-            currentProject = new JLabel(pi.getDisplayName(), pi.getIcon(), SwingConstants.LEFT);
-            allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class,"LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT);
-        } else {
-            currentProject = null;
-            allProjects = null;
-        }
+        final Project p = FileOwnerQuery.getOwner(element.getFileObject());
         CancellableTask<CompilationController> task =new CancellableTask<CompilationController>() {
             public void cancel() {
                 throw new UnsupportedOperationException("Not supported yet."); // NOI18N
@@ -164,7 +196,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         ExecutableElement el = (ExecutableElement) overridens.iterator().next();                        
                         assert el!=null;
                         m_isBaseClassText =
-                                new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
+                                new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format( //NOI18N
                                 new Object[] {
                             methodDeclaringSuperClass = getSimpleName((el).getEnclosingElement())
                         }
@@ -183,10 +215,46 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 } else {
                     labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getSimpleName()); // NOI18N
                 }
+
+                TreePath path = WhereUsedPanel.this.element.resolve(info);
+                final String packageName = path.getCompilationUnit().getPackageName().toString();
+                packageFolder = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(packageName.replaceAll("\\.", "/"));
                 
                 final Set<Modifier> modifiers = modif;
                 final String isBaseClassText = m_isBaseClassText;
-                
+
+                final JLabel customScope;
+                final JLabel currentFile;
+                final JLabel currentPackage;
+                final JLabel currentProject;
+                final JLabel allProjects;
+                if (p != null) {
+                    ProjectInformation pi = ProjectUtils.getInformation(FileOwnerQuery.getOwner(WhereUsedPanel.this.element.getFileObject()));
+                    
+                    SourceGroup[] sources = ProjectUtils.getSources(pi.getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    projectSources = new FileObject[sources.length];
+                    for (int i = 0; i < sources.length; i++) {
+                        projectSources[i] = sources[i].getRootFolder();
+                    }
+                    
+                    DataObject currentFileDo = null;
+                    try {
+                        currentFileDo = DataObject.find(WhereUsedPanel.this.element.getFileObject());
+                    } catch (DataObjectNotFoundException ex) {
+                    } // Not important, only for Icon.
+                    customScope = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CustomScope"), pi.getIcon(), SwingConstants.LEFT); //NOI18N
+                    currentFile = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentFile", WhereUsedPanel.this.element.getFileObject().getNameExt()), currentFileDo != null ? new ImageIcon(currentFileDo.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)) : pi.getIcon(), SwingConstants.LEFT); //NOI18N
+                    currentPackage = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentPackage", packageName), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT); //NOI18N
+                    currentProject = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentProject", pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT); //NOI18N
+                    allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); //NOI18N
+                } else {
+                    customScope = null;
+                    currentFile = null;
+                    currentPackage = null;
+                    currentProject = null;
+                    allProjects = null;
+                }
+
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         remove(classesPanel);
@@ -216,8 +284,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             c_usages.setVisible(false);
                             c_directOnly.setVisible(false);
                         }
-                        if (currentProject!=null) {
-                            scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject }));
+                        ElementKind kind = element.getKind();
+                        if((kind.equals(ElementKind.LOCAL_VARIABLE) || kind.equals(ElementKind.PARAMETER))
+                                || element.getModifiers().contains(Modifier.PRIVATE)) {
+                            enableScope = false;
+                        }
+                        if(enableScope && currentProject!=null) {
+                            scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
                             int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
                             scope.setSelectedIndex(defaultItem);
                             scope.setRenderer(new JLabelRenderer());
@@ -272,6 +345,26 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
         }
     }
+
+    private class ScopeAction extends AbstractAction {
+        private final JComboBox scope;
+
+        private ScopeAction(JComboBox scope) {
+            this.scope = scope;
+            this.putValue(NAME, ELLIPSIS);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Scope customScope = getCustomScope();
+            
+            customScope = JavaScopeBuilder.open(NbBundle.getMessage(WhereUsedPanel.class, "DLG_CustomScope"), customScope); //NOI18N
+            if (customScope != null) {
+                WhereUsedPanel.this.customScope = customScope;
+                scope.setSelectedIndex(4);
+            }
+        }
+    }
     
     private String getSimpleName(Element clazz) {
         return clazz.getSimpleName().toString();
@@ -320,12 +413,18 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         scopePanel = new javax.swing.JPanel();
         scopeLabel = new javax.swing.JLabel();
         scope = new javax.swing.JComboBox();
+        btnCustomScope = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
         methodsPanel.setLayout(new java.awt.GridBagLayout());
 
         m_isBaseClass.setSelected(true);
+        m_isBaseClass.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                m_isBaseClassStateChanged(evt);
+            }
+        });
         m_isBaseClass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_isBaseClassActionPerformed(evt);
@@ -349,6 +448,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         methodsPanel.add(jPanel1, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(m_overriders, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindOverridingMethods")); // NOI18N
+        m_overriders.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                m_overridersStateChanged(evt);
+            }
+        });
         m_overriders.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_overridersActionPerformed(evt);
@@ -365,6 +469,11 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         m_usages.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(m_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
         m_usages.setMargin(new java.awt.Insets(10, 2, 2, 2));
+        m_usages.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                m_usagesStateChanged(evt);
+            }
+        });
         m_usages.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 m_usagesActionPerformed(evt);
@@ -450,6 +559,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
         });
 
+        btnCustomScope.setText(ELLIPSIS);
+
         javax.swing.GroupLayout scopePanelLayout = new javax.swing.GroupLayout(scopePanel);
         scopePanel.setLayout(scopePanelLayout);
         scopePanelLayout.setHorizontalGroup(
@@ -458,13 +569,16 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 .addContainerGap()
                 .addComponent(scopeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scope, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(scope, 0, 150, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnCustomScope)
                 .addContainerGap())
         );
         scopePanelLayout.setVerticalGroup(
             scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
             .addComponent(scopeLabel)
             .addComponent(scope)
+            .addComponent(btnCustomScope)
         );
 
         scope.getAccessibleContext().setAccessibleDescription("N/A");
@@ -495,7 +609,20 @@ private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         parent.stateChanged(null);
     }//GEN-LAST:event_m_usagesActionPerformed
 
+private void m_isBaseClassStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_isBaseClassStateChanged
+        parent.stateChanged(null);
+}//GEN-LAST:event_m_isBaseClassStateChanged
+
+private void m_overridersStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_overridersStateChanged
+        parent.stateChanged(null);
+}//GEN-LAST:event_m_overridersStateChanged
+
+private void m_usagesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_m_usagesStateChanged
+        parent.stateChanged(null);
+}//GEN-LAST:event_m_usagesStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCustomScope;
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JRadioButton c_directOnly;
     private javax.swing.JRadioButton c_subclasses;

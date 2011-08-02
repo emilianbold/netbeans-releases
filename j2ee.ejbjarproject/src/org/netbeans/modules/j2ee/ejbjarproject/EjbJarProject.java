@@ -1076,7 +1076,17 @@ public class EjbJarProject implements Project, FileChangeListener {
             listeners.remove(listener);
         }
 
+        private boolean isCopyOnSaveEnabled() {
+            return Boolean.parseBoolean(EjbJarProject.this.evaluator().getProperty(EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE));
+        }
+        
         public void initialize() throws FileStateInvalidException {
+            EjbJarProject.this.evaluator().addPropertyChangeListener(this);
+            
+            if (!isCopyOnSaveEnabled()) {
+                return;
+            }
+            
             metaBase = getEjbModule().getMetaInf();
             metaBaseValue = evaluator().getProperty(EjbJarProjectProperties.META_INF);
             if (resources != null) {
@@ -1094,8 +1104,6 @@ public class EjbJarProject implements Project, FileChangeListener {
             }
 
             LOGGER.log(Level.FINE, "Meta directory is {0}", metaBaseValue);
-
-            EjbJarProject.this.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
@@ -1112,6 +1120,7 @@ public class EjbJarProject implements Project, FileChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (EjbJarProjectProperties.META_INF.equals(evt.getPropertyName())
+                    || EjbJarProjectProperties.J2EE_COMPILE_ON_SAVE.equals(evt.getPropertyName())
                     || EjbJarProjectProperties.RESOURCE_DIR.equals(evt.getPropertyName())) {
                 try {
                     cleanup();

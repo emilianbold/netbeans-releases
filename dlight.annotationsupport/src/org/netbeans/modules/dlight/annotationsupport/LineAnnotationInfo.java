@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.annotationsupport;
 
+import java.awt.Rectangle;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
@@ -63,8 +64,7 @@ public final class LineAnnotationInfo {
     private String columns[];
     private String notFormatedColumns[];
     private Position position;
-    private int y1;
-    private int y2;
+    private Rectangle bounds;
 
     public LineAnnotationInfo(FileAnnotationInfo fileAnnotationInfo) {
         this.fileAnnotationInfo = fileAnnotationInfo;
@@ -219,30 +219,16 @@ public final class LineAnnotationInfo {
         return tooltip;
     }
 
-    /**
-     * @return the y1
-     */
-    public int getY1() {
-        return y1;
-    }
-
-    /**
-     * @return the y2
-     */
-    public int getY2() {
-        return y2;
-    }
-
-    /**
-     * @param y1 the y1 to set
-     */
-    public void setY(int y1, int y2) {
-        this.y1 = y1;
-        this.y2 = y2;
-    }
-
     @Override
     public String toString() {
         return getTooltip() ;
+    }
+
+    void setBounds(Rectangle bounds) {
+        this.bounds = bounds;
+    }
+
+    boolean contains(int y) {
+        return bounds != null && bounds.contains(bounds.x, y);
     }
 }

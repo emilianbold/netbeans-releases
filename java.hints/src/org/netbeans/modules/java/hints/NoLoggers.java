@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -124,7 +125,7 @@ public final class NoLoggers {
                     ctx,
                     ctx.getPath(),
                     NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers", cls), //NOI18N
-                    new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo())), //NOI18N
+                    JavaFix.toEditorFix(new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo()))), //NOI18N
                     FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithoutLogger") //NOI18N
             ));
         } else {
@@ -132,86 +133,74 @@ public final class NoLoggers {
         }
     }
 
-    private static final class NoLoggersFix implements Fix {
+    private static final class NoLoggersFix extends JavaFix {
 
         private final String description;
-        private final TreePathHandle loggerFieldHandle;
 
         public NoLoggersFix(String description, TreePathHandle loggerFieldHandle) {
+            super(loggerFieldHandle);
             this.description = description;
-            this.loggerFieldHandle = loggerFieldHandle;
         }
 
         public String getText() {
             return description;
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(loggerFieldHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    TreePath tp = loggerFieldHandle.resolve(wc);
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            TreeMaker m = wc.getTreeMaker();
+            ClassTree classTree = (ClassTree) tp.getLeaf();
+            Element cls = wc.getTrees().getElement(tp);
 
-                    if (tp == null) {
-                        return;
-                    }
-
-                    TreeMaker m = wc.getTreeMaker();
-                    ClassTree classTree = (ClassTree) tp.getLeaf();
-                    Element cls = wc.getTrees().getElement(tp);
-
-                    // find free field name
-                    String loggerFieldName = null;
-                    List<VariableElement> fields = ElementFilter.fieldsIn(cls.getEnclosedElements());
-                    if (!contains(fields, "LOG")) { //NOI18N
-                        loggerFieldName = "LOG"; //NOI18N
-                    } else {
-                        if (!contains(fields, "LOGGER")) { //NOI18N
-                            loggerFieldName = "LOGGER"; //NOI18N
-                        } else {
-                            for(int i = 1; i < Integer.MAX_VALUE; i++) {
-                                String n = "LOG" + i; //NOI18N
-                                if (!contains(fields, n)) {
-                                    loggerFieldName = n;
-                                    break;
-                                }
-                            }
+            // find free field name
+            String loggerFieldName = null;
+            List<VariableElement> fields = ElementFilter.fieldsIn(cls.getEnclosedElements());
+            if (!contains(fields, "LOG")) { //NOI18N
+                loggerFieldName = "LOG"; //NOI18N
+            } else {
+                if (!contains(fields, "LOGGER")) { //NOI18N
+                    loggerFieldName = "LOGGER"; //NOI18N
+                } else {
+                    for(int i = 1; i < Integer.MAX_VALUE; i++) {
+                        String n = "LOG" + i; //NOI18N
+                        if (!contains(fields, n)) {
+                            loggerFieldName = n;
+                            break;
                         }
                     }
-
-                    if (loggerFieldName == null) {
-                        return;
-                    }
-                    
-                    // modifiers
-                    Set<Modifier> mods = new HashSet<Modifier>();
-                    mods.add(Modifier.PRIVATE);
-                    mods.add(Modifier.STATIC);
-                    mods.add(Modifier.FINAL);
-                    ModifiersTree mt = m.Modifiers(mods);
-
-                    // logger type
-                    TypeElement loggerTypeElement = wc.getElements().getTypeElement("java.util.logging.Logger"); // NOI18N
-                    ExpressionTree loggerClassQualIdent = m.QualIdent(loggerTypeElement);
-
-                    // initializer
-                    MemberSelectTree getLogger = m.MemberSelect(loggerClassQualIdent, "getLogger"); //NOI18N
-                    ExpressionTree initializer = m.MethodInvocation(
-                        Collections.<ExpressionTree>emptyList(),
-                        getLogger,
-                        Collections.singletonList(m.MethodInvocation(
-                            Collections.<ExpressionTree>emptyList(),
-                            m.MemberSelect(m.QualIdent(cls), "class.getName"), //NOI18N
-                            Collections.<ExpressionTree>emptyList())
-                    ));
-
-                    // new logger field
-                    VariableTree nueLogger = m.Variable(mt, loggerFieldName, loggerClassQualIdent, initializer); //NOI18N
-                    ClassTree nueClassTree = m.addClassMember(classTree, nueLogger);
-                    wc.rewrite(classTree, nueClassTree);
                 }
-            }).commit();
-            return null;
+            }
+
+            if (loggerFieldName == null) {
+                return;
+            }
+
+            // modifiers
+            Set<Modifier> mods = new HashSet<Modifier>();
+            mods.add(Modifier.PRIVATE);
+            mods.add(Modifier.STATIC);
+            mods.add(Modifier.FINAL);
+            ModifiersTree mt = m.Modifiers(mods);
+
+            // logger type
+            TypeElement loggerTypeElement = wc.getElements().getTypeElement("java.util.logging.Logger"); // NOI18N
+            ExpressionTree loggerClassQualIdent = m.QualIdent(loggerTypeElement);
+
+            // initializer
+            MemberSelectTree getLogger = m.MemberSelect(loggerClassQualIdent, "getLogger"); //NOI18N
+            ExpressionTree initializer = m.MethodInvocation(
+                Collections.<ExpressionTree>emptyList(),
+                getLogger,
+                Collections.singletonList(m.MethodInvocation(
+                    Collections.<ExpressionTree>emptyList(),
+                    m.MemberSelect(m.QualIdent(cls), "class.getName"), //NOI18N
+                    Collections.<ExpressionTree>emptyList())
+            ));
+
+            // new logger field
+            VariableTree nueLogger = m.Variable(mt, loggerFieldName, loggerClassQualIdent, initializer); //NOI18N
+            ClassTree nueClassTree = m.addClassMember(classTree, nueLogger);
+            wc.rewrite(classTree, nueClassTree);
         }
 
         private static boolean contains(Collection<VariableElement> fields, String name) {

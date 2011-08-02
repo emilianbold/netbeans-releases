@@ -84,8 +84,7 @@ public class IssueController extends BugtrackingController {
     public void opened() {
         BugzillaIssue issue = issuePanel.getIssue();
         if (issue != null) {
-            // Hack - reset any previous modifications when the issue window is reopened
-            issuePanel.reloadForm(true);
+            issuePanel.opened();
             issue.opened();
         }
     }
@@ -95,6 +94,7 @@ public class IssueController extends BugtrackingController {
         BugzillaIssue issue = issuePanel.getIssue();
         if (issue != null) {
             issue.closed();
+            issuePanel.closed();
         }
     }
 

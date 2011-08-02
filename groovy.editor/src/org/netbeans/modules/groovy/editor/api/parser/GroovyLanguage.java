@@ -48,6 +48,8 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
@@ -68,9 +70,12 @@ import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  * Language/lexing configuration for Groovy
@@ -78,13 +83,25 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-@LanguageRegistration(mimeType="text/x-groovy")
+@LanguageRegistration(mimeType="text/x-groovy", useMultiview=true)
 @PathRecognizerRegistration(mimeTypes="text/x-groovy", sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
 public class GroovyLanguage extends DefaultLanguageConfig {
     
     public GroovyLanguage() {
     }
 
+    @MultiViewElement.Registration(
+        displayName = "#CTL_SourceTabCaption",
+        iconBase = GroovySources.GROOVY_FILE_ICON_16x16,
+        mimeType = "text/x-groovy",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID = "groovy.source",
+        position = 1
+    )
+    public static MultiViewEditorElement createEditor(Lookup lkp) {
+        return new MultiViewEditorElement(lkp);
+    }
+    
     @Override
     public String getLineCommentPrefix() {
         return GroovyUtils.getLineCommentPrefix();

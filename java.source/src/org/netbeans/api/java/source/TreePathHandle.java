@@ -728,6 +728,7 @@ public final class TreePathHandle {
                 case FIELD:
                 case PARAMETER:
                 case LOCAL_VARIABLE:
+                case RESOURCE_VARIABLE:
                 case EXCEPTION_PARAMETER:
                     return Kind.VARIABLE;
                     

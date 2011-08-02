@@ -96,32 +96,32 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
         for (Element e : roundEnv.getElementsAnnotatedWith(LookupProvider.Registration.class)) {
             LookupProvider.Registration lpr = e.getAnnotation(LookupProvider.Registration.class);
             if (lpr.projectType().length == 0 && lpr.projectTypes().length == 0) {
-                throw new LayerGenerationException("You must specify either projectType or projectTypes", e);
+                throw new LayerGenerationException("You must specify either projectType or projectTypes", e, processingEnv, lpr);
             }
             for (String type : lpr.projectType()) {
-                layer(e).instanceFile("Projects/" + type + "/Lookup", null, LookupProvider.class).write();
+                layer(e).instanceFile("Projects/" + type + "/Lookup", null, LookupProvider.class, lpr, null).write();
             }
             for (LookupProvider.Registration.ProjectType type : lpr.projectTypes()) {
-                layer(e).instanceFile("Projects/" + type.id() + "/Lookup", null, LookupProvider.class).position(type.position()).write();
+                layer(e).instanceFile("Projects/" + type.id() + "/Lookup", null, LookupProvider.class, type, null).position(type.position()).write();
             }
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ProjectServiceProvider.class)) {
+            ProjectServiceProvider psp = e.getAnnotation(ProjectServiceProvider.class);
             List<TypeMirror> services = findServiceAnnotation(e);
             if (services.isEmpty()) {
-                throw new LayerGenerationException("Must specify at least one service", e);
+                throw new LayerGenerationException("Must specify at least one service", e, processingEnv, psp);
             }
             String servicesBinName = null;
             for (TypeMirror service : services) {
                 String n = processingEnv.getElementUtils().getBinaryName((TypeElement) processingEnv.getTypeUtils().asElement(service)).toString();
                 if (n.equals(LookupMerger.class.getName())) {
-                    throw new LayerGenerationException("@ProjectServiceProvider should not be used on LookupMerger; use @LookupMerger.Registration instead", e);
+                    throw new LayerGenerationException("@ProjectServiceProvider should not be used on LookupMerger; use @LookupMerger.Registration instead", e, processingEnv, psp);
                 }
                 servicesBinName = servicesBinName == null ? n : servicesBinName + "," + n;
             }
-            String[] binAndMethodNames = findPSPDefinition(e, services);
-            ProjectServiceProvider psp = e.getAnnotation(ProjectServiceProvider.class);
+            String[] binAndMethodNames = findPSPDefinition(e, services, psp);
             if (psp.projectType().length == 0 && psp.projectTypes().length == 0) {
-                throw new LayerGenerationException("You must specify either projectType or projectTypes", e);
+                throw new LayerGenerationException("You must specify either projectType or projectTypes", e, processingEnv, psp);
             }
             String fileBaseName = binAndMethodNames[0].replace('.', '-');
             if (binAndMethodNames[1] != null) {
@@ -163,11 +163,11 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
             }
             DeclaredType service = findLookupMergerType(impl);
             if (service == null) {
-                throw new LayerGenerationException("Not assignable to LookupMerger<T> for some T", e);
+                throw new LayerGenerationException("Not assignable to LookupMerger<T> for some T", e, processingEnv, lmr);
             }
             String serviceBinName = processingEnv.getElementUtils().getBinaryName((TypeElement) service.asElement()).toString();
             if (lmr.projectType().length == 0 && lmr.projectTypes().length == 0) {
-                throw new LayerGenerationException("You must specify either projectType or projectTypes", e);
+                throw new LayerGenerationException("You must specify either projectType or projectTypes", e, processingEnv, lmr);
             }
             for (String type : lmr.projectType()) {
                 layer(e).file("Projects/" + type + "/Lookup/" + fileBaseName + ".instance").
@@ -208,12 +208,12 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
         throw new LayerGenerationException("No @ProjectServiceProvider found", e);
     }
 
-    private String[] findPSPDefinition(Element e, List<TypeMirror> services) throws LayerGenerationException {
+    private String[] findPSPDefinition(Element e, List<TypeMirror> services, ProjectServiceProvider psp) throws LayerGenerationException {
         if (e.getKind() == ElementKind.CLASS) {
             TypeElement clazz = (TypeElement) e;
             for (TypeMirror service : services) {
                 if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), service)) {
-                    throw new LayerGenerationException("Not assignable to " + service, e);
+                    throw new LayerGenerationException("Not assignable to " + service, e, processingEnv, psp);
                 }
             }
             int constructorCount = 0;
@@ -234,37 +234,37 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
                 constructorCount++;
             }
             if (constructorCount != 1) {
-                throw new LayerGenerationException("Must have exactly one public constructor optionally taking Project and/or Lookup", e);
+                throw new LayerGenerationException("Must have exactly one public constructor optionally taking Project and/or Lookup", e, processingEnv, psp);
             }
             if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("Class must be public", e);
+                throw new LayerGenerationException("Class must be public", e, processingEnv, psp);
             }
             return new String[] {processingEnv.getElementUtils().getBinaryName(clazz).toString(), null};
         } else {
             ExecutableElement meth = (ExecutableElement) e;
             for (TypeMirror service : services) {
                 if (!processingEnv.getTypeUtils().isAssignable(meth.getReturnType(), service)) {
-                    throw new LayerGenerationException("Not assignable to " + service, e);
+                    throw new LayerGenerationException("Not assignable to " + service, e, processingEnv, psp);
                 }
             }
             if (!meth.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("Method must be public", e);
+                throw new LayerGenerationException("Method must be public", e, processingEnv, psp);
             }
             if (!meth.getModifiers().contains(Modifier.STATIC)) {
-                throw new LayerGenerationException("Method must be static", e);
+                throw new LayerGenerationException("Method must be static", e, processingEnv, psp);
             }
             List<? extends VariableElement> params = meth.getParameters();
             if (params.size() > 2) {
-                throw new LayerGenerationException("Method must take at most two parameters", e);
+                throw new LayerGenerationException("Method must take at most two parameters", e, processingEnv, psp);
             }
             for (VariableElement param : params) {
                 if (!param.asType().equals(processingEnv.getElementUtils().getTypeElement(Project.class.getCanonicalName()).asType()) &&
                         !param.asType().equals(processingEnv.getElementUtils().getTypeElement(Lookup.class.getCanonicalName()).asType())) {
-                    throw new LayerGenerationException("Method parameters may be either Lookup or Project", e);
+                    throw new LayerGenerationException("Method parameters may be either Lookup or Project", e, processingEnv, psp);
                 }
             }
             if (!meth.getEnclosingElement().getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("Class must be public", e);
+                throw new LayerGenerationException("Class must be public", e, processingEnv, psp);
             }
             return new String[] {
                 processingEnv.getElementUtils().getBinaryName((TypeElement) meth.getEnclosingElement()).toString(),

@@ -208,7 +208,14 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     
     @Override
     public boolean supportsStartDebugging(Target target) {
-        return supportsStartDeploymentManager();
+        GlassfishModule commonSupport = getCommonServerSupport();
+        assert null != commonSupport : "commonSupport is null?"; // NOI18N
+        if (null == commonSupport) {
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonSupport is null??"); // NOI18N
+            return false;
+        }
+        boolean retVal = supportsStartDeploymentManager() && !isClusterOrInstance(commonSupport);
+        return retVal;
     }
 
     @Override
@@ -413,7 +420,8 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonSupport is null??");
             return false;
         }
-        return !commonSupport.isRemote();
+        boolean retVal = !commonSupport.isRemote()  && !isClusterOrInstance(commonSupport);
+        return retVal;
     }
 
     public boolean isProfiling(Target target) {
@@ -481,5 +489,16 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             }, jdkRoot, settings.getJvmArgs());
         }
         return this;
+    }
+
+    private boolean isClusterOrInstance(GlassfishModule commonSupport) {
+        String uri = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+        if (null == uri) {
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "{0} has a null URI??",
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DISPLAY_NAME_ATTR)); // NOI18N
+            return true;
+        }
+        String target = Hk2DeploymentManager.getTargetFromUri(uri);
+        return null == target ? false : true;
     }
 }

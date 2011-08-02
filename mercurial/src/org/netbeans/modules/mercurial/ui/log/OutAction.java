@@ -77,7 +77,7 @@ public class OutAction extends SearchHistoryAction {
             return;
         }
         outputSearchContextTab(repositoryRoot, "MSG_LogOut_Title");
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot});
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot}, ""); //NOI18N
         tc.setDisplayName(NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", repositoryRoot.getName()));
         tc.open();
         tc.requestActive();

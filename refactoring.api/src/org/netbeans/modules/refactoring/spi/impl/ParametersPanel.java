@@ -194,9 +194,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private void initComponents() {
 
         progressPanel = new javax.swing.JPanel();
-        innerPanel = new javax.swing.JPanel();
-        label = new javax.swing.JLabel();
-        openInNewTab = new javax.swing.JCheckBox();
         controlsPanel = new javax.swing.JPanel();
         buttonsPanel = new javax.swing.JPanel();
         back = new javax.swing.JButton();
@@ -205,6 +202,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         next = new javax.swing.JButton();
         cancel = new javax.swing.JButton();
         help = new javax.swing.JButton();
+        panel = new javax.swing.JPanel();
+        innerPanel = new javax.swing.JPanel();
+        label = new TooltipLabel();
+        openInNewTab = new javax.swing.JCheckBox();
         containerPanel = new javax.swing.JPanel();
         pleaseWait = new javax.swing.JLabel();
 
@@ -216,22 +217,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         progressPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 11));
         progressPanel.setOpaque(false);
         progressPanel.setLayout(new java.awt.BorderLayout());
-
-        innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(128, 128, 128)));
-        innerPanel.setLayout(new java.awt.BorderLayout());
-
-        label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        innerPanel.add(label, java.awt.BorderLayout.WEST);
-
-        org.openide.awt.Mnemonics.setLocalizedText(openInNewTab, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.openInNewTab.text")); // NOI18N
-        openInNewTab.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                openInNewTabStateChanged(evt);
-            }
-        });
-        innerPanel.add(openInNewTab, java.awt.BorderLayout.EAST);
-
-        progressPanel.add(innerPanel, java.awt.BorderLayout.CENTER);
 
         controlsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
         controlsPanel.setLayout(new java.awt.BorderLayout());
@@ -287,6 +272,27 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         controlsPanel.add(buttonsPanel, java.awt.BorderLayout.EAST);
 
         progressPanel.add(controlsPanel, java.awt.BorderLayout.SOUTH);
+
+        panel.setLayout(new java.awt.BorderLayout());
+
+        innerPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(128, 128, 128)));
+        innerPanel.setLayout(new java.awt.BorderLayout());
+
+        label.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        innerPanel.add(label, java.awt.BorderLayout.WEST);
+
+        panel.add(innerPanel, java.awt.BorderLayout.CENTER);
+
+        org.openide.awt.Mnemonics.setLocalizedText(openInNewTab, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.openInNewTab.text")); // NOI18N
+        openInNewTab.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 4, 1, 1));
+        openInNewTab.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                openInNewTabStateChanged(evt);
+            }
+        });
+        panel.add(openInNewTab, java.awt.BorderLayout.EAST);
+
+        progressPanel.add(panel, java.awt.BorderLayout.PAGE_START);
 
         add(progressPanel, java.awt.BorderLayout.SOUTH);
 
@@ -427,10 +433,14 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
                     try {
                         if (!previewAll && session != null) {
-                            UndoWatcher.watch(session, ParametersPanel.this);
-                            session.addProgressListener(ParametersPanel.this);
-                            session.doRefactoring(true);
-                            UndoWatcher.stopWatching(ParametersPanel.this);
+                            if (session.getRefactoringElements().isEmpty()) {
+                                JOptionPane.showMessageDialog(ParametersPanel.this, NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"), rui.getName(), JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                UndoWatcher.watch(session, ParametersPanel.this);
+                                session.addProgressListener(ParametersPanel.this);
+                                session.doRefactoring(true);
+                                UndoWatcher.stopWatching(ParametersPanel.this);
+                            }
                         }
                     } finally {
                         if (!previewAll) {
@@ -466,6 +476,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     private javax.swing.JLabel label;
     private javax.swing.JButton next;
     private javax.swing.JCheckBox openInNewTab;
+    private javax.swing.JPanel panel;
     private javax.swing.JLabel pleaseWait;
     private javax.swing.JButton previewButton;
     private javax.swing.JPanel progressPanel;
@@ -741,6 +752,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if (progressBar!=null && progressBar.isVisible()) {
+                    LOGGER.log(Level.INFO, event.getSource() + " called start multiple times");
+                    return;
+                }
                 progressPanel.remove(innerPanel);
                 progressBar = ProgressBar.create(progressHandle = ProgressHandleFactory.createHandle("")); //NOI18N
                 progressPanel.add(progressBar, BorderLayout.CENTER);

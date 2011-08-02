@@ -42,11 +42,13 @@
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
+import java.util.EnumSet;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
@@ -68,8 +70,9 @@ public class HintMetadata {
     public final Collection<? extends String> suppressWarnings;
     public final CustomizerProvider customizer;
     public final boolean showInTaskList = false;
+    public final Set<Options> options;
 
-    HintMetadata(String id, String displayName, String description, String category, boolean enabled, Kind kind, HintSeverity severity, CustomizerProvider customizer, Collection<? extends String> suppressWarnings) {
+    HintMetadata(String id, String displayName, String description, String category, boolean enabled, Kind kind, HintSeverity severity, Collection<? extends String> suppressWarnings, CustomizerProvider customizer, Set<Options> options) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -77,44 +80,9 @@ public class HintMetadata {
         this.enabled = enabled;
         this.kind = kind;
         this.severity = severity;
-        this.customizer = customizer;
         this.suppressWarnings = suppressWarnings;
-    }
-
-    public static HintMetadata create(String id, String displayName, String description, String category, boolean enabled, Kind kind, HintSeverity severity, Collection<? extends String> suppressWarnings) {
-        return create(id, displayName, description, category, enabled, kind, severity, null, suppressWarnings);
-    }
-
-    public static HintMetadata create(String id, String displayName, String description, String category, boolean enabled, Kind kind, HintSeverity severity, CustomizerProvider customizer, Collection<? extends String> suppressWarnings) {
-        return new HintMetadata(id, displayName, description, category, enabled, kind, severity, customizer, suppressWarnings);
-    }
-
-    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, Kind kind, String... suppressWarnings) {
-        return create(id, bundleForFQN, category, enabled, severity, kind, suppressWarnings);
-    }
-
-    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, Kind kind, CustomizerProvider customizer, String... suppressWarnings) {
-        ResourceBundle bundle;
-
-        try {
-            int lastDot = bundleForFQN.lastIndexOf('.');
-
-            assert lastDot >= 0;
-
-            bundle = NbBundle.getBundle(bundleForFQN.substring(0, lastDot + 1) + "Bundle");
-        } catch (MissingResourceException mre) {
-            Logger.getLogger(HintMetadata.class.getName()).log(Level.FINE, null, mre);
-            bundle = null;
-        }
-
-        return create(id, bundle, category, enabled, severity, kind, customizer, suppressWarnings);
-    }
-
-    public static HintMetadata create(String id, ResourceBundle bundle, String category, boolean enabled, HintSeverity severity, Kind kind, CustomizerProvider customizer, String... suppressWarnings) {
-        String displayName = lookup(bundle, "DN_" + id, "No Display Name");
-        String description = lookup(bundle, "DESC_" + id, "No Description");
-
-        return new HintMetadata(id, displayName, description, category, enabled, kind, severity, customizer, Arrays.asList(suppressWarnings));
+        this.customizer = customizer;
+        this.options = options;
     }
 
     private static String lookup(ResourceBundle bundle, String key, String def) {
@@ -128,8 +96,108 @@ public class HintMetadata {
 
     public enum Kind {
         HINT,
-        HINT_NON_GUI,
-        SUGGESTION,
-        SUGGESTION_NON_GUI;
+        SUGGESTION;
+    }
+
+    public enum Options {
+        NON_GUI,
+        QUERY,
+        NO_BATCH;
+    }
+
+    public static final class Builder {
+        private final String id;
+        private String displayName;
+        private String description;
+        private String category;
+        private boolean enabled;
+        private Kind kind;
+        private HintSeverity severity;
+        private final Collection<String> suppressWarnings = new ArrayList<String>();
+        private CustomizerProvider customizer;
+        private final Set<Options> options = EnumSet.noneOf(Options.class);
+
+        private Builder(String id) {
+            this.id = id;
+            this.displayName = "";
+            this.description = "";
+            this.category = "";
+            this.enabled = true;
+            this.kind = Kind.HINT;
+            this.severity = HintSeverity.WARNING;
+        }
+
+        public static Builder create(String id) {
+            return new Builder(id);
+        }
+
+        public Builder setDescription(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+            return this;
+        }
+
+        public Builder setBundle(ResourceBundle bundle) {
+            this.displayName = lookup(bundle, "DN_" + id, "No Display Name");
+            this.description = lookup(bundle, "DESC_" + id, "No Description");
+            return this;
+        }
+
+        public Builder setBundle(String bundleForFQN) {
+            ResourceBundle bundle;
+
+            try {
+                int lastDot = bundleForFQN.lastIndexOf('.');
+
+                assert lastDot >= 0;
+
+                bundle = NbBundle.getBundle(bundleForFQN.substring(0, lastDot + 1) + "Bundle");
+            } catch (MissingResourceException mre) {
+                Logger.getLogger(HintMetadata.class.getName()).log(Level.FINE, null, mre);
+                bundle = null;
+            }
+            return setBundle(bundle);
+        }
+
+        public Builder setCategory(String category) {
+            this.category = category;
+            return this;
+        }
+
+        public Builder setEnabled(boolean enabled) {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public Builder setKind(Kind kind) {
+            this.kind = kind;
+            return this;
+        }
+
+        public Builder setSeverity(HintSeverity severity) {
+            this.severity = severity;
+            return this;
+        }
+
+
+        public Builder addSuppressWarnings(String... keys) {
+            this.suppressWarnings.addAll(Arrays.asList(keys));
+            return this;
+        }
+
+        public Builder setCustomizerProvider(CustomizerProvider customizer) {
+            this.customizer = customizer;
+            return this;
+        }
+
+        public Builder addOptions(Options... options) {
+            this.options.addAll(Arrays.asList(options));
+            return this;
+        }
+
+        public HintMetadata build() {
+            return new HintMetadata(id, displayName, description, category, enabled, kind, severity, suppressWarnings, customizer, options);
+        }
+
     }
 }

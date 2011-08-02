@@ -93,7 +93,6 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.api.LocaleQuery;
@@ -111,7 +110,6 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -465,7 +463,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         
         Locale locale;
         
-        FileObject file = getFile(doc);
+        FileObject file = NbEditorUtilities.getFileObject(doc);
 
         if (file != null) {
             locale = LocaleQuery.findLocale(file);
@@ -526,15 +524,6 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private final AtomicBoolean cancel = new AtomicBoolean();
 
     private static final AttributeSet ERROR = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, Color.RED, EditorStyleConstants.Tooltip, NbBundle.getMessage(ComponentPeer.class, "TP_MisspelledWord"));
-
-    private static FileObject getFile(Document doc) {
-        DataObject dataObject = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-
-        if (dataObject == null)
-            return null;
-
-        return dataObject.getPrimaryFile();
-    }
 
     public void insertUpdate(DocumentEvent e) {
         documentUpdate();
@@ -650,7 +639,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                 result.add(new DictionaryBasedHint(currentWord, proposal, document, span, "0" + currentWord));
             }
             
-            FileObject file = getFile(document);
+            FileObject file = NbEditorUtilities.getFileObject(document);
 
             if (file != null) {
                 Project p = FileOwnerQuery.getOwner(file);

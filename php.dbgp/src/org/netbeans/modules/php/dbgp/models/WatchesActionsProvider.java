@@ -60,9 +60,11 @@ public class WatchesActionsProvider implements NodeActionsProviderFilter {
             NbBundle.getBundle(WatchesActionsProvider.class).
             getString(WATCH_ACTION_DELETE),
             new Models.ActionPerformer() {
+                @Override
                 public boolean isEnabled(Object node) {
                     return true;
                 }
+                @Override
                 public void perform(Object[] nodes) {
                     for( Object node : nodes ) {
                         ((ScriptWatchEvaluating) node).remove();
@@ -83,9 +85,11 @@ public class WatchesActionsProvider implements NodeActionsProviderFilter {
         NbBundle.getBundle(WatchesActionsProvider.class).
             getString(WATCH_ACTION_CUSTOMIZE),
         new Models.ActionPerformer() {
+            @Override
             public boolean isEnabled(Object node) {
                 return true;
             }
+            @Override
             public void perform(Object[] nodes) {
                 customize((ScriptWatchEvaluating) nodes [0]);
             }
@@ -96,6 +100,7 @@ public class WatchesActionsProvider implements NodeActionsProviderFilter {
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeActionsProviderFilter#getActions(org.netbeans.spi.viewmodel.NodeActionsProvider, java.lang.Object)
      */
+    @Override
     public Action[] getActions( NodeActionsProvider original, Object node )
             throws UnknownTypeException
     {
@@ -117,6 +122,7 @@ public class WatchesActionsProvider implements NodeActionsProviderFilter {
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeActionsProviderFilter#performDefaultAction(org.netbeans.spi.viewmodel.NodeActionsProvider, java.lang.Object)
      */
+    @Override
     public void performDefaultAction( NodeActionsProvider original, Object node )
             throws UnknownTypeException
     {

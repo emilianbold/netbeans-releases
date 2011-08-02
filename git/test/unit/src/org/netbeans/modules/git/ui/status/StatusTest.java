@@ -51,12 +51,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.FileStatusCache.ChangedEvent;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitVCS;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
@@ -69,7 +72,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -84,7 +86,9 @@ public class StatusTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            GitVCS.class});
         Git.STATUS_LOG.setLevel(Level.ALL);
     }
 

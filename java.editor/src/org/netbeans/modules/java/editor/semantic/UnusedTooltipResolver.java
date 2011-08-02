@@ -111,6 +111,7 @@ final class UnusedTooltipResolver implements HighlightAttributeValue<String> {
                     
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                             key = "LBL_UnusedVariable"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();

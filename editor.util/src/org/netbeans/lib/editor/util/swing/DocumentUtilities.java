@@ -473,12 +473,16 @@ public final class DocumentUtilities {
             if (isWriteLocked(doc))
                 return true;
             if (numReadersField == null) {
+                Field f = null;
                 try {
-                    numReadersField = AbstractDocument.class.getDeclaredField("numReaders");
+                    f = AbstractDocument.class.getDeclaredField("numReaders"); // NOI18N
                 } catch (NoSuchFieldException ex) {
                     throw new IllegalStateException(ex);
                 }
-                numReadersField.setAccessible(true);
+                f.setAccessible(true);
+                synchronized (doc) {
+                    numReadersField = f;
+                }
             }
             try {
                 synchronized (doc) {
@@ -505,12 +509,16 @@ public final class DocumentUtilities {
     public static boolean isWriteLocked(Document doc) {
         if (checkAbstractDoc(doc)) {
             if (currWriterField == null) {
+                Field f = null;
                 try {
-                    currWriterField = AbstractDocument.class.getDeclaredField("currWriter");
+                    f = AbstractDocument.class.getDeclaredField("currWriter"); // NOI18N
                 } catch (NoSuchFieldException ex) {
                     throw new IllegalStateException(ex);
                 }
-                currWriterField.setAccessible(true);
+                f.setAccessible(true);
+                synchronized (doc) {
+                    currWriterField = f;
+                }
             }
             try {
                 synchronized (doc) {
@@ -525,7 +533,7 @@ public final class DocumentUtilities {
     
     private static boolean checkAbstractDoc(Document doc) {
         if (doc == null)
-            throw new IllegalArgumentException("document is null");
+            throw new IllegalArgumentException("document is null"); // NOI18N
         return (doc instanceof AbstractDocument);
     }
     

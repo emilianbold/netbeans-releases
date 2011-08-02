@@ -51,13 +51,19 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -69,6 +75,8 @@ import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
+import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
+import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -90,6 +98,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private Task prepareTask;
     private RepositoryComboSupport rs;
     private Node[] context;
+    private DelegatingUndoRedoManager delegatingUndoRedoManager;
 
     /**
      * Creates new {@code IssueTopComponent}.
@@ -112,6 +121,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         issuePanel.add(findBar, BorderLayout.PAGE_END);
     }
 
+    @Override
+    public UndoRedo getUndoRedo() {
+        if(delegatingUndoRedoManager == null) {
+            delegatingUndoRedoManager = new DelegatingUndoRedoManager();
+        }
+        return delegatingUndoRedoManager;
+    }
+    
     /**
      * Returns issue displayed by this top-component.
      *
@@ -190,6 +207,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         this.issue = issue;
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
+        
+        if(isOpened()) {
+            // #opened() did not fire beacuse of null issue -> fire afterwards
+            issue.getController().opened();
+        }
+        ((DelegatingUndoRedoManager)getUndoRedo()).init();
+        
         repoPanel.setVisible(false);
         setNameAndTooltip();
         issue.addPropertyChangeListener(this);
@@ -221,50 +245,50 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
         jPanel1.setOpaque(false);
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 64, Short.MAX_VALUE)
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 64, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 8, Short.MAX_VALUE)
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 8, Short.MAX_VALUE)
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.newButton.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout repoPanelLayout = new org.jdesktop.layout.GroupLayout(repoPanel);
+        javax.swing.GroupLayout repoPanelLayout = new javax.swing.GroupLayout(repoPanel);
         repoPanel.setLayout(repoPanelLayout);
         repoPanelLayout.setHorizontalGroup(
-            repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repoPanelLayout.createSequentialGroup()
+            repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(repoPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(repoPanelLayout.createSequentialGroup()
-                        .add(repoLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 225, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(findIssuesLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(repoPanelLayout.createSequentialGroup()
+                        .addComponent(repoLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(findIssuesLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         repoPanelLayout.setVerticalGroup(
-            repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repoPanelLayout.createSequentialGroup()
-                .add(50, 50, 50)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(repoPanelLayout.createSequentialGroup()
+            repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(repoPanelLayout.createSequentialGroup()
+                .addGap(50, 50, 50)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(repoPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(findIssuesLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(repoLabel)
-                    .add(repositoryComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(findIssuesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(repoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(repoLabel)
+                    .addComponent(repositoryComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(newButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         issuePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("EditorPane.background"));
@@ -274,19 +298,19 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         org.openide.awt.Mnemonics.setLocalizedText(preparingLabel, org.openide.util.NbBundle.getMessage(IssueTopComponent.class, "IssueTopComponent.preparingLabel.text")); // NOI18N
         issuePanel.add(preparingLabel, java.awt.BorderLayout.CENTER);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(repoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(repoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(issuePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -331,7 +355,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     if (issue == null) {
                         return;
                     }
-
+                    ((DelegatingUndoRedoManager)getUndoRedo()).init();
+                    
                     IssueAccessor.getInstance().setSelection(issue, context);
 
                     SwingUtilities.invokeLater(new Runnable() {
@@ -339,6 +364,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         public void run() {
                             controller = issue.getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
+                            controller.opened(); // XXX TC wasn't realy opened
                             issue.addPropertyChangeListener(IssueTopComponent.this);
                             revalidate();
                             repaint();
@@ -507,4 +533,77 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
+    private class DelegatingUndoRedoManager implements UndoRedo {
+        private UndoRedo delegate;
+        final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    
+        void init() {
+            delegate = UndoRedoSupport.getUndoRedo(issue);
+            synchronized(this) {
+                for (ChangeListener l : listeners) {
+                    delegate.addChangeListener(l);
+                }
+            }
+            for (ChangeListener l : listeners) {
+                l.stateChanged(new ChangeEvent(delegate));
+            }
+        }
+        
+        @Override
+        public boolean canUndo() {
+            return delegate != null ? delegate.canUndo() : UndoRedo.NONE.canUndo();
+        }
+
+        @Override
+        public boolean canRedo() {
+            return delegate != null ? delegate.canRedo() : UndoRedo.NONE.canRedo();
+        }
+
+        @Override
+        public void undo() throws CannotUndoException {
+            if(delegate != null) {
+                delegate.undo();
+            } else {
+                UndoRedo.NONE.undo();
+            }
+        }
+
+        @Override
+        public void redo() throws CannotRedoException {
+            if(delegate != null) {
+                delegate.redo();
+            } else {
+                UndoRedo.NONE.redo();
+            }
+        }
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            if(delegate != null) {
+                delegate.addChangeListener(l);
+            } else {
+                synchronized(this) {
+                    listeners.add(l); 
+                }
+            }
+        }
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+            if(delegate != null) {
+                delegate.removeChangeListener(l);
+            } else {
+                synchronized(this) {
+                    listeners.remove(l); 
+                }
+            }
+        }
+        @Override
+        public String getUndoPresentationName() {
+            return delegate != null ? delegate.getUndoPresentationName() : UndoRedo.NONE.getUndoPresentationName();
+        }
+        @Override
+        public String getRedoPresentationName() {
+            return delegate != null ? delegate.getRedoPresentationName() : UndoRedo.NONE.getRedoPresentationName();
+        }
+    }
+    
 }

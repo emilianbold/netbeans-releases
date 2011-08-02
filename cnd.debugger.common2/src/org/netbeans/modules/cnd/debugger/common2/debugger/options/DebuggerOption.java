@@ -210,7 +210,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "on",  // NOI18N //default value
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
     
     public static final DebuggerOption DISSASSEMLER_VERSION  =
 	new DebuggerOption(// NOI18N
@@ -226,7 +226,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values  
 			    "off",  // NOI18N //default value  
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption FOLLOW_FORK_INHERIT  =
 	new DebuggerOption( // NOI18N
@@ -234,7 +234,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values  
 			    "off",  // NOI18N //default value  
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption FOLLOW_FORK_MODE  =
 	new DebuggerOption( // NOI18N
@@ -276,7 +276,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "off",  // NOI18N //default value   
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption MT_RESUME_ONE  =
 	new DebuggerOption(// NOI18N
@@ -292,7 +292,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "on",  // NOI18N //default value   
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption OUTPUT_AUTO_FLUSH  =
 	new DebuggerOption( // NOI18N
@@ -300,7 +300,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "on",  // NOI18N //default value   
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     static String default_dbx_init_file = System.getProperty("user.home") + "/.dbxrc";
     public static final DebuggerOption DBX_INIT_FILE =
@@ -386,7 +386,7 @@ public class DebuggerOption extends Option {
  
                             "off",  // NOI18N //default value    
                             false, // is engine option
-                            RADIO_BUTTON, false); //type
+                            CHECK_BOX, false); //type
                                  
     public static final DebuggerOption OUTPUT_PRETTY_PRINT  =
 	new DebuggerOption(  // NOI18N
@@ -394,7 +394,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "off",  // NOI18N //default value    
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption OUTPUT_SHORT_FILE_NAME  =
 	new DebuggerOption( // NOI18N
@@ -402,7 +402,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "on",  // NOI18N //default value   
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption OVERLOAD_FUNCTION  =
 	new DebuggerOption( // NOI18N
@@ -426,7 +426,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "on",  // NOI18N //default value  
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption PROC_EXCLUSIVE_ATTACH  =
 	new DebuggerOption( // NOI18N
@@ -434,7 +434,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values   
 			    "on",  // NOI18N //default value
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
 
 
@@ -467,7 +467,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"}, // NOI18N //values
 			    "off",  // NOI18N //default value
 			    true, // is engine option
-			    RADIO_BUTTON, true); //type
+			    CHECK_BOX, true); //type
 
     public static final DebuggerOption RUN_SAVETTY  =
 	new DebuggerOption( // NOI18N
@@ -640,7 +640,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"},  // NOI18N //values
 			    "off",    // NOI18N //default value
 			    false, // is engine option
-			    RADIO_BUTTON, false);  //type
+			    CHECK_BOX, false);  //type
 			    
 
     public static final DebuggerOption BALLOON_EVAL  =
@@ -683,7 +683,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"},  // NOI18N //values
 			    "on",    // NOI18N //default value
 			    true, // is engine option
-			    RADIO_BUTTON, true);  //type
+			    CHECK_BOX, true);  //type
 
     public static final DebuggerOption STEP_EVENTS  =
 	new DebuggerOption( // NOI18N
@@ -714,7 +714,7 @@ public class DebuggerOption extends Option {
 			    new String[] {"on", "off"},  // NOI18N //values
 			    "on",    // NOI18N //default value
 			    true, // is engine option
-			    RADIO_BUTTON, true);  //type
+			    CHECK_BOX, true);  //type
 
     public static final DebuggerOption TRACE_SPEED  =
 	new DebuggerOption( // NOI18N

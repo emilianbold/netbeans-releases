@@ -140,6 +140,14 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
             setError(err);
             return false;
         }
+
+        err = RemoteValidator.validateKeepAliveInterval(keepAliveTextField.getText());
+        if (err != null) {
+            setError(err);
+            return false;
+        }
+
+        // ok
         setError(null);
         return true;
     }
@@ -172,6 +180,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         identityFileTextField.getDocument().addDocumentListener(documentListener);
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
+        keepAliveTextField.getDocument().addDocumentListener(documentListener);
     }
 
     void fireChange() {
@@ -239,6 +248,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         initialDirectoryTextField = new JTextField();
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
+        keepAliveLabel = new JLabel();
+        keepAliveTextField = new JTextField();
 
         setFocusTraversalPolicy(null);
 
@@ -248,6 +259,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
 
         Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text"));
+
         hostTextField.setMinimumSize(new Dimension(150, 19));
 
         portLabel.setLabelFor(portTextField);
@@ -263,7 +275,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text")); // NOI18N
 
         identityFileLabel.setLabelFor(identityFileTextField);
-
         Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text"));
         Mnemonics.setLocalizedText(identityFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.text"));
         identityFileBrowseButton.addActionListener(new ActionListener() {
@@ -284,11 +295,14 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         timeoutLabel.setLabelFor(timeoutTextField);
 
         Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.text"));
+
         timeoutTextField.setMinimumSize(new Dimension(20, 19));
+
+        keepAliveLabel.setLabelFor(keepAliveTextField);
+        Mnemonics.setLocalizedText(keepAliveLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.keepAliveLabel.text"));
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -301,7 +315,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                     .addComponent(initialDirectoryLabel)
                     .addComponent(timeoutLabel)
                     .addComponent(identityFileLabel)
-                    .addComponent(knownHostsFileLabel))
+                    .addComponent(knownHostsFileLabel)
+                    .addComponent(keepAliveLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -313,9 +328,10 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                             .addComponent(identityFileTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                             .addComponent(userTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                             .addComponent(hostTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                            .addComponent(timeoutTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                            .addComponent(timeoutTextField, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 185, GroupLayout.PREFERRED_SIZE)
                             .addComponent(passwordTextField, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                            .addComponent(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE))
+                            .addComponent(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                            .addComponent(keepAliveTextField, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 185, GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addGroup(Alignment.TRAILING, layout.createParallelGroup(Alignment.LEADING, false)
@@ -329,6 +345,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {identityFileBrowseButton, knownHostsFileBrowseButton});
+
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {keepAliveTextField, timeoutTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -366,6 +384,10 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(timeoutTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(timeoutLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(keepAliveLabel)
+                    .addComponent(keepAliveTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -407,6 +429,11 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         timeoutLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.AccessibleContext.accessibleDescription")); // NOI18N
         timeoutTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutTextField.AccessibleContext.accessibleName")); // NOI18N
         timeoutTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        keepAliveLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.keepAliveLabel.AccessibleContext.accessibleName")); // NOI18N
+        keepAliveLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.keepAliveLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        keepAliveTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.keepAliveTextField.AccessibleContext.accessibleName")); // NOI18N
+        keepAliveTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.keepAliveTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -436,6 +463,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     private JTextField identityFileTextField;
     private JLabel initialDirectoryLabel;
     private JTextField initialDirectoryTextField;
+    private JLabel keepAliveLabel;
+    private JTextField keepAliveTextField;
     private JButton knownHostsFileBrowseButton;
     private JLabel knownHostsFileLabel;
     private JTextField knownHostsFileTextField;
@@ -514,6 +543,15 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         timeoutTextField.setText(timeout);
     }
 
+    public String getKeepAliveInterval() {
+        return keepAliveTextField.getText();
+    }
+
+    public void setKeepAliveInterval(String keepAliveInterval) {
+        keepAliveTextField.setText(keepAliveInterval);
+    }
+
+    @Override
     public void read(Configuration cfg) {
         setHostName(cfg.getValue(SftpConnectionProvider.HOST));
         setPort(cfg.getValue(SftpConnectionProvider.PORT));
@@ -523,8 +561,10 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         setIdentityFile(cfg.getValue(SftpConnectionProvider.IDENTITY_FILE));
         setInitialDirectory(cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY));
         setTimeout(cfg.getValue(SftpConnectionProvider.TIMEOUT));
+        setKeepAliveInterval(cfg.getValue(SftpConnectionProvider.KEEP_ALIVE_INTERVAL));
     }
 
+    @Override
     public void store(Configuration cfg) {
         cfg.putValue(SftpConnectionProvider.HOST, getHostName());
         cfg.putValue(SftpConnectionProvider.PORT, getPort());
@@ -534,15 +574,19 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         cfg.putValue(SftpConnectionProvider.IDENTITY_FILE, getIdentityFile());
         cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, RunAsValidator.sanitizeUploadDirectory(getInitialDirectory(), false));
         cfg.putValue(SftpConnectionProvider.TIMEOUT, getTimeout());
+        cfg.putValue(SftpConnectionProvider.KEEP_ALIVE_INTERVAL, getKeepAliveInterval());
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             processUpdate();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             processUpdate();
         }

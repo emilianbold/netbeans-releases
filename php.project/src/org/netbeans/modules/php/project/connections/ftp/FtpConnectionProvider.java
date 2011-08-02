@@ -67,6 +67,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     static final String ANONYMOUS_LOGIN = "anonymousLogin"; // NOI18N
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
+    static final String KEEP_ALIVE_INTERVAL = "keepAliveInterval"; // NOI18N
     static final String PASSIVE_MODE = "passiveMode"; // NOI18N
     static final String IGNORE_DISCONNECT_ERRORS = "ignoreDisconnectErrors"; // NOI18N
 
@@ -79,11 +80,13 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         ANONYMOUS_LOGIN,
         INITIAL_DIRECTORY,
         TIMEOUT,
+        KEEP_ALIVE_INTERVAL,
         PASSIVE_MODE,
         IGNORE_DISCONNECT_ERRORS
     ));
     private static final int DEFAULT_PORT = 21;
     private static final int DEFAULT_TIMEOUT = 30;
+    static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
 
     private FtpConnectionProvider() {
@@ -113,18 +116,19 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         configuration.putValue(ANONYMOUS_LOGIN, String.valueOf(false));
         configuration.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
         configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
+        configuration.putValue(KEEP_ALIVE_INTERVAL, String.valueOf(DEFAULT_KEEP_ALIVE_INTERVAL));
         configuration.putValue(PASSIVE_MODE, String.valueOf(false));
         configuration.putValue(IGNORE_DISCONNECT_ERRORS, String.valueOf(true));
 
         assert accept(configuration) : "Not my configuration?!";
 
-        return new FtpConfiguration(configuration);
+        return new FtpConfiguration(configuration, false);
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets) {
         if (accept(configuration)) {
-            return new FtpConfiguration(configuration);
+            return new FtpConfiguration(configuration, createWithSecrets);
         }
         return null;
     }

@@ -46,6 +46,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.test.refactoring.actions.MovePopupAction;
@@ -67,32 +68,32 @@ public class MoveTest extends ModifyingRefactoring {
     }
 
     public void testMoveClass() {
-        performMove("Move", "moveSource", "modeDest", true, TargetDestination.SOURCE);
+        performMove("Move.java", "moveSource", "modeDest", false, TargetDestination.SOURCE);
     }
     
     public void testMoveToTest() {
-        performMove("MoveToTest", "moveSource", "dest", true, TargetDestination.SOURCE);
+        performMove("MoveToTest.java", "moveSource", "dest", true, TargetDestination.TESTS);
     }
 
     public void testMoveToNewPackage() {
-        performMove("MoveToNewPkg", "moveSource", "mobeDestNew", false, TargetDestination.SOURCE);
+        performMove("MoveToNewPkg.java", "moveSource", "moveDestNew", true, TargetDestination.SOURCE);
     }
 
-    private void performMove(String className, String pkgName, String newPkg, boolean performInEditor, TargetDestination target) {
+    private void performMove(String fileName, String pkgName, String newPkg, boolean performInEditor, TargetDestination target) {
         if (performInEditor) {
-            openSourceFile(pkgName, className);
-            EditorOperator editor = new EditorOperator(className);
+            openSourceFile(pkgName, fileName);
+            EditorOperator editor = new EditorOperator(fileName);
             editor.setCaretPosition(1, 1);
             new MovePopupAction().perform(editor);
         } else {
             ProjectsTabOperator pto = ProjectsTabOperator.invoke();
             ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
-            Node node = new Node(prn, pkgName + treeSeparator + className);            
+            SourcePackagesNode src = new SourcePackagesNode(prn);
+            Node node = new Node(src, pkgName + treeSeparator + fileName);
             node.select();
             new MovePopupAction().perform(node);
         }
         MoveOperator mo = new MoveOperator();
-        mo.getPackageCombo().typeText(newPkg);
         JComboBoxOperator location = mo.getLocationCombo();
         switch(target) {
             case SOURCE:
@@ -101,7 +102,9 @@ public class MoveTest extends ModifyingRefactoring {
             case TESTS:
                 location.selectItem(1);
                 break;
-        }        
+        }
+        mo.getPackageCombo().clearText();
+        mo.getPackageCombo().typeText(newPkg);
         mo.getPreview().push();
         dumpRefactoringResults();
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -78,6 +78,7 @@ public interface GlassfishModule {
     public static final String DRIVER_DEPLOY_FLAG = "driverDeployOn";
     public static final String START_DERBY_FLAG = "derbyStartOn";
     public static final String USE_IDE_PROXY_FLAG = "useIDEProxyOn";
+    public static final String HTTPHOST_ATTR = "httphostname";  // NOI18N -- necessary for cluster and instance support
     
     public static final String USE_SHARED_MEM_ATTR = "use.shared.mem"; // NOI18N
     public static final String DEBUG_PORT = "debugPort"; // NOI18N

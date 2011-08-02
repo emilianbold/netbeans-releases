@@ -64,12 +64,14 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.versioning.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
@@ -80,7 +82,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -95,7 +96,9 @@ public class StatusTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setLayersAndInstances();
+        MockServices.setServices(new Class[] {
+            VersioningAnnotationProvider.class,
+            GitVCS.class});
         Git.STATUS_LOG.setLevel(Level.ALL);
         setAutomaticRefreshEnabled(true);
     }
@@ -386,10 +389,8 @@ public class StatusTest extends AbstractGitTestCase {
         status = getCache().getStatus(folder);
         assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.waitForFilesToRefresh();
-        status = getCache().getStatus(folder);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
-        status = getCache().getStatus(file1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
+        waitForStatus(folder, Status.NOTVERSIONED_EXCLUDED);
+        waitForStatus(file1, Status.NOTVERSIONED_EXCLUDED);
     }
 
     public void testPurgeRemovedIgnoredFiles () throws Exception {
@@ -846,6 +847,18 @@ public class StatusTest extends AbstractGitTestCase {
         Image icon = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         icon = annotator.annotateIcon(icon, context);
         assertEquals(string, ImageUtilities.getImageToolTip(icon));
+    }
+
+    private void waitForStatus (File file, Status expectedStatus) throws InterruptedException {
+        FileInformation status = null;
+        for (int i = 0; i < 100; ++i) {
+            status = getCache().getStatus(file);
+            if (status.containsStatus(expectedStatus)) {
+                break;
+            }
+            Thread.sleep(200);
+        }
+        assertTrue("Status of " + file + " - " + status.getStatusText() + "; expected " + expectedStatus, status.containsStatus(expectedStatus));
     }
 
     @ServiceProvider(service=SharabilityQueryImplementation.class)
