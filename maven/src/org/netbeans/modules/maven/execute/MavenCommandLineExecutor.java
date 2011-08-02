@@ -61,6 +61,7 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
@@ -310,7 +311,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         if (react) {
             toRet.add("--projects");
-            toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
+            // Prefer relative directory when possible since that works even with broken projects (error:error).
+            File basedir = config.getExecutionDirectory();
+            File projdir = config.getMavenProject().getBasedir();
+            String rel = basedir != null && projdir != null ? FileUtilities.relativizeFile(basedir, projdir) : null;
+            if (rel != null) {
+                // XXX if rel == '.' we do not need to use -am or -amd or -pl at all
+                toRet.add(rel);
+            } else {
+                toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
+            }
         }
 
         String opts = MavenSettings.getDefault().getDefaultOptions();
