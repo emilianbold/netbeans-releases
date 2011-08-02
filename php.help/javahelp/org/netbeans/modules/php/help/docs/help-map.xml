@@ -68,6 +68,9 @@ made subject to such option by the copyright holder.
     
     <!-- CSH for the Rename dialog, includes help for Rename Refactoring window -->
     <mapID target="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" url="csh/refactoring.html"/>
+    
+    <!-- CSH for the Delete dialog, includes help for Usages window -->
+    <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="csh/safe-delete.html"/>
 
  <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="csh/about_source_editor.html" />
