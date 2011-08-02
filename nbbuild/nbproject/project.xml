@@ -46,9 +46,6 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
-        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>NetBeans Build System</name>
-        </general-data>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>NetBeans Build System</name>
             <properties>
@@ -144,18 +141,8 @@ made subject to such option by the copyright holder.
                 </action>
             </ide-actions>
             <export>
-                <type>folder</type>
-                <location>${nb.build.dir}/antclasses</location>
-                <build-target>bootstrap</build-target>
-            </export>
-            <export>
                 <type>jar</type>
                 <location>${nbantext.jar}</location>
-                <build-target>bootstrap</build-target>
-            </export>
-            <export>
-                <type>folder</type>
-                <location>${nb.build.dir}/test/unit/classes</location>
                 <build-target>bootstrap</build-target>
             </export>
             <view>
@@ -209,7 +196,6 @@ made subject to such option by the copyright holder.
                     </action>
                 </context-menu>
             </view>
-            <subprojects/>
             <project-license>cddl-netbeans-sun</project-license>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
