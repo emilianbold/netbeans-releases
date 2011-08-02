@@ -65,6 +65,9 @@ made subject to such option by the copyright holder.
     
     <!-- CSH for the Find Usages dialog -->
     <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="csh/findUsages-CSH.html"/>
+    
+    <!-- CSH for the Rename dialog, includes help for Rename Refactoring window -->
+    <mapID target="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" url="csh/refactoring.html"/>
 
  <!--CSH for PHP source editor-->
     <mapID target="text.x-php5" url="csh/about_source_editor.html" />
