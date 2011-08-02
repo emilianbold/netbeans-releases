@@ -183,7 +183,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
                 preferredLang.equals(PreferredLanguage.Facelets.getName())) {
             preferences.put(PREFERRED_LANGUAGE, component.getPreferredLanguage());
         }
-        return framework.extendImpl(webModule);
+        return framework.extendImpl(webModule, component.getJsfComponentCustomizer());
     }
 
     public ExtenderController getController() {

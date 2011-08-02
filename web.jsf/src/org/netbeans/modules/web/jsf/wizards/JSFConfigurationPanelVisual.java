@@ -138,6 +138,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     
     // Jsf component libraries related
     private JSFComponentsTableModel jsfComponentsTableModel;
+    private JsfComponentCustomizer jsfComponentCustomizer;
     
     private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders = 
             Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
@@ -944,8 +945,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         
         // check all enabled JSF component libraries
         for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
-            if (jsfComponentDescriptor.getJsfComponentCustomizer(false, null) != null && 
-                    !jsfComponentDescriptor.getJsfComponentCustomizer(false, null).isValid()) {
+            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null && 
+                    !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
                 controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, 
                         NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); // NOI18N
                 return false;
@@ -1135,6 +1136,14 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     
     protected void setURLPattern(String pattern){
         tURLPattern.setText(pattern);
+    }
+
+    public JsfComponentCustomizer getJsfComponentCustomizer() {
+        return jsfComponentCustomizer;
+    }
+
+    public void setJsfComponentCustomizer(JsfComponentCustomizer jsfComponentCustomizer) {
+        this.jsfComponentCustomizer = jsfComponentCustomizer;
     }
     
     public List<? extends JsfComponentImplementation> getActivedJsfDescriptors() {
@@ -1501,9 +1510,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     /** 
      * Implements a TableModel.
      */
-    public static final class JSFComponentsTableModel extends AbstractTableModel {
+    public final class JSFComponentsTableModel extends AbstractTableModel {
         
-        private static final Class<?>[] COLUMN_TYPES = new Class<?>[] {Boolean.class, JsfComponentImplementation.class, JButton.class};
+        private final Class<?>[] COLUMN_TYPES = new Class<?>[] {Boolean.class, JsfComponentImplementation.class, JButton.class};
         private DefaultListModel model;
         private boolean inCustomizer;
         
@@ -1571,7 +1580,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
     
-    private static final class JSFComponentModelActionListener implements ActionListener {
+    private final class JSFComponentModelActionListener implements ActionListener {
 
         private JsfComponentImplementation jsfDescriptor;
         private JSFComponentWindowChangeListener listener;
@@ -1583,7 +1592,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            final JsfComponentCustomizer jsfCustomizer = jsfDescriptor.getJsfComponentCustomizer(true, null);
+            final JsfComponentCustomizer jsfCustomizer = jsfDescriptor.createJsfComponentCustomizer(null);
             jsfCustomizer.addChangeListener(listener);
             
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
@@ -1600,6 +1609,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                        setJsfComponentCustomizer(jsfCustomizer);
                         jsfCustomizer.saveConfiguration();
                     }
                 }
@@ -1658,7 +1668,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
         public Boolean isClickable() {
-            return component.getJsfComponentCustomizer(false, null) != null;
+            return component.createJsfComponentCustomizer(null) != null;
         }
     }
 }

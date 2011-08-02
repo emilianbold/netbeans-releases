@@ -86,7 +86,7 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     }
 
     @Override
-    public Set<FileObject> extend(WebModule webModule) {
+    public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
         try {
             ProjectClassPathModifier.addLibraries(
                     new Library[]{ LibraryManager.getDefault().getLibrary(PRIMEFACES_LIBRARY_NAME) }, 
@@ -112,7 +112,7 @@ public class Primefaces2Implementation implements JsfComponentImplementation {
     }
 
     @Override
-    public JsfComponentCustomizer getJsfComponentCustomizer(boolean initialize, WebModule webModule) {
+    public JsfComponentCustomizer createJsfComponentCustomizer(WebModule webModule) {
         return null;
     }
 
