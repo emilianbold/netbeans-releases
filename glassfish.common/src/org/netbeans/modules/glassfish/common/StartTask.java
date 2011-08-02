@@ -277,7 +277,9 @@ public class StartTask extends BasicTask<OperationState> {
         long start = System.currentTimeMillis();
         Process serverProcess;
         try {
-            jdkHome = getJavaPlatformRoot(support);
+            if (null == jdkHome) {
+                jdkHome = getJavaPlatformRoot(support);
+            }
             // lookup the javadb start service and use it here.
             RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
             if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
