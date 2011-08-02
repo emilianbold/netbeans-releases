@@ -61,6 +61,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
@@ -150,7 +151,10 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     
     @Override
     public org.openide.util.Lookup getLookup() {
-        return super.getLookup();
+        if (multiViewObserver == null) {
+            return getLookupSuper();
+        }
+        return multiViewObserver.getTopComponent().getLookup();
     }
     
     @Override
@@ -236,6 +240,10 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
             return MultiViewFactory.createUnsafeCloseState("editor", save, null);
         } 
         return CloseOperationState.STATE_OK;
+    }
+
+    Lookup getLookupSuper() {
+        return super.getLookup();
     }
     
 }

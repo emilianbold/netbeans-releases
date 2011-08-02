@@ -463,7 +463,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         
     }
     
-    private static class LP implements Lookup.Provider, Serializable {
+    public static class LP implements Lookup.Provider, Serializable {
         private static final Map<Integer,Lookup> map = new HashMap<Integer, Lookup>();
         
         private final int cnt;
