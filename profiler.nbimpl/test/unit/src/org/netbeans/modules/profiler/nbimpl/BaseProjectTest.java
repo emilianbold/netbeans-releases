@@ -71,6 +71,10 @@ public class BaseProjectTest extends NbTestCase {
     public BaseProjectTest(String name) {
         super(name);
     }
+    
+    public void testDummy() {
+        // just dummy test to make junit happy
+    }
 
     
     @Override

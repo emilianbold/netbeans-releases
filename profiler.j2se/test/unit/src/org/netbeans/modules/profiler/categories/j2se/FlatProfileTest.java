@@ -523,8 +523,9 @@ public class FlatProfileTest extends TestBase {
         
         status.updateInstrMethodsInfo("streams.TestInputStream", 0, 
                 "skip", "(J)J");
-        builder.methodEntry( 7, 1, 3, 0, 0);
-        ioIds.add(7);
+        builder.methodEntry( 7, 1, 1, 0, 0);
+        // method skip() is in fact defined in BufferedInputStream
+//        ioIds.add(7);
         
         SimpleCPUCCTNode root = (SimpleCPUCCTNode)builder.getAppRootNode();
         
@@ -964,14 +965,14 @@ public class FlatProfileTest extends TestBase {
         checkCategory(status, flatProfile, "Painters", paintersIds);
         
         drillDown.drillup();
-        drillDown.drilldown( getCategoryId("Java2D"));
+        drillDown.drilldown( getCategoryId("Java 2D"));
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
         
         assertEquals(java2DIds.size()+" method expected in Java 2D category",
                 java2DIds.size() ,  flatProfile.getNRows());
-        checkCategory(status, flatProfile, "Java2D", java2DIds);
+        checkCategory(status, flatProfile, "Java 2D", java2DIds);
         
         drillDown.drillup();
         drillDown.drillup();
@@ -1223,14 +1224,14 @@ public class FlatProfileTest extends TestBase {
         checkCategory(status, flatProfile, "Painters", paintersIds);
         
         drillDown.drillup();
-        drillDown.drilldown( getCategoryId("Java2D"));
+        drillDown.drilldown( getCategoryId("Java 2D"));
         
         flatProfileBuilder.cctEstablished( root , false );
         flatProfile = flatProfileBuilder.createFlatProfile();
         
         assertEquals(java2DIds.size()+" method expected in Java 2D category",
                 java2DIds.size() ,  flatProfile.getNRows());
-        checkCategory(status, flatProfile, "Java2D", java2DIds);
+        checkCategory(status, flatProfile, "Java 2D", java2DIds);
         
         drillDown.drillup();
         drillDown.drillup();
