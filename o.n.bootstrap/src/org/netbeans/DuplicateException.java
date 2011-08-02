@@ -60,7 +60,9 @@ public final class DuplicateException extends Exception {
         this.nue = nue;
     }
     private static String getInfo(Module m) {
-        if (m.getJarFile() != null) {
+        if (m.getHistory() != null) {
+            return m.getHistory().toString();
+        } else if (m.getJarFile() != null) {
             return m.getJarFile().getAbsolutePath();
         } else {
             return m.getCodeNameBase();
