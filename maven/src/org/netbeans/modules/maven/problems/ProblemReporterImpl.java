@@ -42,9 +42,8 @@
 
 package org.netbeans.modules.maven.problems;
 
-import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.maven.api.problem.ProblemReport;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -65,8 +64,10 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
+import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,7 +75,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -196,19 +197,6 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         return o1.hashCode() > o2.hashCode() ? 1 : (o1.hashCode() < o2.hashCode() ? -1 : 0);
         
     }
-    
-//    public void addValidatorReports(InvalidProjectModelException exc) {
-//        ModelValidationResult res = exc.getValidationResult();
-//        if (res == null) {
-//            return;
-//        }
-//        List messages = exc.getValidationResult().getMessages();
-//        if (messages != null && messages.size() > 0) {
-//            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-//                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_Project_validation"), exc.getValidationResult().render("\n"), new OpenPomAction(nbproject)); //NOI18N
-//            addReport(report);
-//        }
-//    }
 
     private ModuleInfo findJ2eeModule() {
         Collection<? extends ModuleInfo> infos = Lookup.getDefault().lookupAll(ModuleInfo.class);
@@ -220,6 +208,27 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         return null;
     }
     
+    @Messages({
+        "ERR_MissingJ2eeModule=Maven J2EE support module missing",
+        "MSG_MissingJ2eeModule=You are missing the Maven J2EE support module in your installation. "
+            + "This means that all J2EE related functionality (for example, Deployment, File templates) is missing. "
+            + "The most probable cause is that part of the general J2EE support is missing as well. "
+            + "Please go to Tools/Plugins and install the plugins related to J2EE.",
+        "ERR_MissingApisupportModule=Maven NetBeans Development support module missing",
+        "MSG_MissingApisupportModule=You are missing the Maven APIsupport module in your installation. "
+            + "This means that all NetBeans development related functionality (for example, File templates, running platform application) is missing. "
+            + "The most probable cause is that part of the general API support is missing as well. "
+            + "Please go to Tools/Plugins and install the plugins related to NetBeans development.",
+            "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
+            "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
+            + "Please check that the path is absolute and points to an existing binary.",
+            "ACT_DownloadDeps=Download Dependencies",
+            "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
+            "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
+            + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
+            + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
+            + "The artifacts are:\n {0}"
+    })
     public void doBaseProblemChecks(MavenProject project) {
         String packaging = nbproject.getProjectWatcher().getPackagingType();
         if (NbMavenProject.TYPE_WAR.equals(packaging) ||
@@ -232,8 +241,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             if (!foundJ2ee) {
                 if (!hasReportWithId(MISSINGJ2EE)) {
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                        NbBundle.getMessage(ProblemReporterImpl.class, "ERR_MissingJ2eeModule"),
-                        NbBundle.getMessage(ProblemReporterImpl.class, "MSG_MissingJ2eeModule"),
+                        ERR_MissingJ2eeModule(),
+                        MSG_MissingJ2eeModule(),
                         null);
                     report.setId(MISSINGJ2EE);
                     addReport(report);
@@ -258,8 +267,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             }
             if (!foundApisupport) {
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                    NbBundle.getMessage(ProblemReporterImpl.class, "ERR_MissingApisupportModule"),
-                    NbBundle.getMessage(ProblemReporterImpl.class, "MSG_MissingApisupportModule"), 
+                    ERR_MissingApisupportModule(),
+                    MSG_MissingApisupportModule(),
                     null);
                 addReport(report);
             }
@@ -283,8 +292,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                         if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
                             //TODO create a correction action for this.
                             ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                    org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_SystemScope"),
-                                    org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_SystemScope"),
+                                    ERR_SystemScope(),
+                                    MSG_SystemScope(),
                                     new OpenPomAction(nbproject));
                             addReport(report);
                         } else {
@@ -310,11 +319,11 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                         mess = mess + ar.getId() + "\n"; //NOI18N
                     }
                     AbstractAction act = new DependenciesNode.ResolveDepsAction(nbproject);
-                    act.putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ACT_DownloadDeps"));
+                    act.putValue(Action.NAME, ACT_DownloadDeps());
 
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                            org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NonLocal"),
-                            org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NonLocal", mess),
+                            ERR_NonLocal(),
+                            MSG_NonLocal(mess),
                             act);
                     addReport(report);
                 }
@@ -323,7 +332,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
     
-    private @CheckForNull MavenProject checkParent(final @NonNull MavenProject project) {
+    private @CheckForNull@Messages( {"ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.", "MSG_NoParent=The parent POM with id {0}  was not found in sources or local repository. Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \nIf parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."})
+ MavenProject checkParent(final @NonNull MavenProject project) {
         MavenProject parentDecl;
         try {
             parentDecl = project.getParent();
@@ -343,8 +353,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             
             if (art.getFile() != null && !art.getFile().exists()) {
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ERR_NoParent"),
-                        org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "MSG_NoParent", art.getId()),
+                        ERR_NoParent(),
+                        MSG_NoParent(art.getId()),
                         new RevalidateAction(nbproject));
                 addReport(report);
             }
@@ -359,8 +369,9 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         private NbMavenProjectImpl project;
         private String filepath;
         
+        @Messages("ACT_OpenPom=Open pom.xml")
         OpenPomAction(NbMavenProjectImpl proj) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ProblemReporterImpl.class, "ACT_OpenPom"));
+            putValue(Action.NAME, ACT_OpenPom());
             project = proj;
         }
         
