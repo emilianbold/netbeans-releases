@@ -49,7 +49,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -88,7 +87,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private final NbMavenProjectImpl nbproject;
     private ModuleInfo j2eeInfo;
     private PropertyChangeListener listener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
+        @Override public void propertyChange(PropertyChangeEvent evt) {
             if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
                 ProblemReport rep = getReportWithId(MISSINGJ2EE);
                 if (rep != null) {
@@ -116,7 +115,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         listeners.remove(list);
     }
     
-    public void addReport(ProblemReport report) {
+    @Override public void addReport(ProblemReport report) {
         assert report != null;
         synchronized (reports) {
             reports.add(report);
@@ -124,7 +123,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         fireChange();
     }
     
-    public void addReports(ProblemReport[] report) {
+    @Override public void addReports(ProblemReport[] report) {
         assert report != null;
         synchronized (reports) {
             for (int i = 0; i < report.length; i++) {
@@ -135,7 +134,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         fireChange();
     }
     
-    public void removeReport(ProblemReport report) {
+    @Override public void removeReport(ProblemReport report) {
         synchronized (reports) {
             reports.remove(report);
         }
@@ -155,7 +154,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
     
-    public Collection<ProblemReport> getReports() {
+    @Override public Collection<ProblemReport> getReports() {
         synchronized (reports) {
             return new ArrayList<ProblemReport>(reports);
         }
@@ -188,13 +187,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
     
-    public int compare(ProblemReport o1, ProblemReport o2) {
-        int ret = new Integer(o1.getSeverityLevel()).compareTo(
-                new Integer(o2.getSeverityLevel()));
+    @Override public int compare(ProblemReport o1, ProblemReport o2) {
+        int ret = o1.getSeverityLevel() - o2.getSeverityLevel();
         if (ret != 0) {
             return ret;
         }
-        return o1.hashCode() > o2.hashCode() ? 1 : (o1.hashCode() < o2.hashCode() ? -1 : 0);
+        return o1.hashCode() - o2.hashCode();
         
     }
 
@@ -219,12 +217,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "This means that all NetBeans development related functionality (for example, File templates, running platform application) is missing. "
             + "The most probable cause is that part of the general API support is missing as well. "
             + "Please go to Tools/Plugins and install the plugins related to NetBeans development.",
-            "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
-            "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
+        "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
+        "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
             + "Please check that the path is absolute and points to an existing binary.",
-            "ACT_DownloadDeps=Download Dependencies",
-            "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
-            "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
+        "ACT_DownloadDeps=Download Dependencies",
+        "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
+        "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
             + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
             + "The artifacts are:\n {0}"
@@ -281,12 +279,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 parent = checkParent(parent);
             }
 
-            List<Artifact> compileArts = project.getTestArtifacts();
-            if (compileArts != null) {
                 List<Artifact> missingJars = new ArrayList<Artifact>();
-                Iterator<Artifact> it = compileArts.iterator();
-                while (it.hasNext()) {
-                    Artifact art =  it.next();
+                for (Artifact art : project.getArtifacts()) {
                     File file = art.getFile();
                     if (file == null || !file.exists()) {
                         if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
@@ -311,29 +305,28 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     }
                 }
                 if (missingJars.size() > 0) {
-                    //TODO create a correction action for this.
-                    Iterator<Artifact> it2 = missingJars.iterator();
-                    String mess = ""; //NOI18N
-                    while (it2.hasNext()) {
-                        Artifact ar = it2.next();
-                        mess = mess + ar.getId() + "\n"; //NOI18N
+                    StringBuilder mess = new StringBuilder();
+                    for (Artifact art : missingJars) {
+                        mess.append(art.getId()).append('\n');
                     }
                     AbstractAction act = new DependenciesNode.ResolveDepsAction(nbproject);
                     act.putValue(Action.NAME, ACT_DownloadDeps());
-
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                             ERR_NonLocal(),
                             MSG_NonLocal(mess),
                             act);
                     addReport(report);
                 }
-
-            }
         }
     }
-    
-    private @CheckForNull@Messages( {"ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.", "MSG_NoParent=The parent POM with id {0}  was not found in sources or local repository. Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \nIf parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."})
- MavenProject checkParent(final @NonNull MavenProject project) {
+
+    @Messages({
+        "ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.",
+        "MSG_NoParent=The parent POM with id {0}  was not found in sources or local repository. "
+            + "Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \n"
+            + "If parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."
+    })
+    private @CheckForNull MavenProject checkParent(@NonNull MavenProject project) {
         MavenProject parentDecl;
         try {
             parentDecl = project.getParent();
