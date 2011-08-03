@@ -45,7 +45,9 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Sheet;
 
 /**
  *
@@ -76,5 +78,14 @@ public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomi
     public Object[] getLookup(FileObject getProjectDirectory, Object[] base) {
         return base;
     }
-    
+
+    @Override
+    public Sheet getPropertySheet(Sheet sheet) {
+        return sheet;
+    }
+
+    @Override
+    public CustomizerNode getRootPropertyNode(CustomizerNode rootPopertyNode) {
+        return rootPopertyNode;
+    }
 }

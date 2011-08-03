@@ -79,12 +79,6 @@ public class ProjectNodeFactory {
             //includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
         }
         
-//        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)context.getConfigurationDescriptor();
-//        if (makeConfigurationDescriptor.getActiveConfiguration().isCustomConfiguration()) {
-//            MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getActiveConfiguration().getProjectCustomizer();
-//            includeRunDebugDescriptions = false;
-//        }
-        
         List<CustomizerNode> uncheckedCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(lookup);
         List<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         CustomizerNode node = createGeneralDescription(lookup);
@@ -132,6 +126,13 @@ public class ProjectNodeFactory {
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
 
+        
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)context.getConfigurationDescriptor();
+        if (makeConfigurationDescriptor.getActiveConfiguration().isCustomConfiguration()) {
+            MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getActiveConfiguration().getProjectCustomizer();
+            rootDescription = makeprojectCustomizer.getRootPropertyNode(rootDescription);
+        }
+        
         return new PropertyNode(rootDescription);
     }
 

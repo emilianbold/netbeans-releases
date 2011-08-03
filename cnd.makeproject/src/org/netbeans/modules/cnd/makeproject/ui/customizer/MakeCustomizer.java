@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -538,20 +539,10 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                                 for (int i = 0; i < selectedConfigurations.length; i++) {
                                     Sheet sheet = propNode.getSheet(selectedConfigurations[i]);
                                     
-                                    
-                                    
-//                                    Node.PropertySet[] sets = sheet.toArray();
-//                                    for (Node.PropertySet set : sets) {
-//                                        Node.Property[] properties = set.getProperties();
-//                                        for (Node.Property property : properties) {
-//                                            System.out.println("----------" + property.getName());
-//                                            if ("DevelopmentHost".equals(property.getName())) {
-//                                                property.setHidden(true);
-//                                            }
-//                                        }
-//                                    }
-                                    
-                                    
+                                    if (((MakeConfigurationDescriptor)projectDescriptor).getActiveConfiguration().isCustomConfiguration()) {
+                                        MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor)projectDescriptor).getActiveConfiguration().getProjectCustomizer();
+                                        sheet = makeProjectCustomizer.getPropertySheet(sheet);
+                                    }
                                     
                                     dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                 }

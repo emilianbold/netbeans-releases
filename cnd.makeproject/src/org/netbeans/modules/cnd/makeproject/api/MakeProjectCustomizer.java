@@ -45,7 +45,9 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Sheet;
 
 /**
  *
@@ -58,4 +60,6 @@ public interface MakeProjectCustomizer {
     public String getOutputValue(MakeConfiguration makeConfiguration);
     public Action[] getActions(Project project, List<Action> actions);
     public Object[] getLookup(FileObject getProjectDirectory, Object[] base);
+    public Sheet getPropertySheet(Sheet sheet);
+    public CustomizerNode getRootPropertyNode(CustomizerNode rootPopertyNode);
 }
