@@ -501,6 +501,7 @@ public class MakeConfiguration extends Configuration {
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
         remoteMode = makeConf.remoteMode;
+        customizerId = makeConf.getCustomizerId();
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
@@ -643,6 +644,7 @@ public class MakeConfiguration extends Configuration {
         clone.setDevelopmentHost(dhconf);
         clone.fixedRemoteSyncFactory = this.fixedRemoteSyncFactory;
         clone.remoteMode = this.remoteMode;
+        clone.customizerId = this.customizerId;
         CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
@@ -692,11 +694,11 @@ public class MakeConfiguration extends Configuration {
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
         boolean canEditHost = MakeProjectUtils.canChangeHost(project, this);
-        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
+        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, "DevelopmentHost", getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
         set.put(rsfNodeProp);
 //        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
-        set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSetCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N

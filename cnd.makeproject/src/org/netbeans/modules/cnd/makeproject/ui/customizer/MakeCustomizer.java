@@ -536,11 +536,29 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                             if (selNode instanceof PropertyNode && ((PropertyNode)selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                                 PropertyNode propNode = (PropertyNode) selNode;
                                 for (int i = 0; i < selectedConfigurations.length; i++) {
-                                    dummyNodes.add(new DummyNode(propNode.getSheet(selectedConfigurations[i]), selectedConfigurations[i].getName()));
+                                    Sheet sheet = propNode.getSheet(selectedConfigurations[i]);
+                                    
+                                    
+                                    
+//                                    Node.PropertySet[] sets = sheet.toArray();
+//                                    for (Node.PropertySet set : sets) {
+//                                        Node.Property[] properties = set.getProperties();
+//                                        for (Node.Property property : properties) {
+//                                            System.out.println("----------" + property.getName());
+//                                            if ("DevelopmentHost".equals(property.getName())) {
+//                                                property.setHidden(true);
+//                                            }
+//                                        }
+//                                    }
+                                    
+                                    
+                                    
+                                    dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                 }
                             }
                         }
                         propertySheet.setNodes(dummyNodes.toArray(new DummyNode[dummyNodes.size()]));
+                        
                         panel.add(propertySheet, fillConstraints);
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);

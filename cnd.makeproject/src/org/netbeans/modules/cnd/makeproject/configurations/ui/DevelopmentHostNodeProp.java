@@ -62,14 +62,16 @@ public class DevelopmentHostNodeProp extends Node.Property {
     private DevelopmentHostConfiguration configuration;
     private boolean canWrite;
     private String name;
+    private String displayName;
     private String description;
 
     @SuppressWarnings("unchecked")
-    public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String description) {
+    public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String displayName, String description) {
         super(Integer.class);
         this.configuration = configuration;
         this.canWrite = canWrite;
         this.name = name;
+        this.displayName = displayName;
         this.description = description;
         setValue("title", NbBundle.getMessage(DevelopmentHostNodeProp.class, "DLG_TITLE_Connect")); // NOI18N
     }
@@ -77,6 +79,11 @@ public class DevelopmentHostNodeProp extends Node.Property {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override
