@@ -77,6 +77,11 @@ public final class LogInAction extends AbstractAction {
     }
 
     public @Override void actionPerformed(ActionEvent ev) {
+        if (instance.isForbidden()) {
+            // This will automatically prompt for login.
+            instance.synchronize(true);
+            return;
+        }
         RP.post(new Runnable() {
             @Override public void run() {
                 try {
@@ -86,7 +91,7 @@ public final class LogInAction extends AbstractAction {
                         if (retry != null) {
                             // XXX try opening user/$user/configure, which lets you know if you are really authenticated
                             // otherwise failed login gets here but there is no apparent way to tell (at least not in ServletConnectionAuthenticator)
-                            instance.synchronize();
+                            instance.synchronize(false);
                             return;
                         }
                     }
