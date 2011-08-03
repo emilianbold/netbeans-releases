@@ -80,13 +80,19 @@ public class TestAction extends CallableSystemAction implements Runnable {
     private Map<String,Map<String,Frame>> previews = new HashMap<String,Map<String,Frame>>();
 
     public TestAction() {
-//        setEnabled(false);
     }
 
     @Override
     public boolean isEnabled() {
         FormDesigner designer = FormDesigner.getSelectedDesigner();
         return designer != null && designer.getTopDesignComponent() != null;
+    }
+
+    /**
+     * Forces re-evaluation of enabled state.
+     */
+    public void updateEnabled() {
+        firePropertyChange("enabled", null, null); // NOI18N
     }
     
     @Override
