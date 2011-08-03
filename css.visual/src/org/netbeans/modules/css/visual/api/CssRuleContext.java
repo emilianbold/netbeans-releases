@@ -33,7 +33,7 @@ package org.netbeans.modules.css.visual.api;
 import java.io.File;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 
 /**
  * A context class representig a parsed css source. 

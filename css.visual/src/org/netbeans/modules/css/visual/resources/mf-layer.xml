@@ -52,7 +52,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
         </folder>
         <folder name="Tools">
-            <file name="org-netbeans-modules-css-actions-CheckStyleAction.instance"/>
             <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.refactoring.actions.HtmlRefactoringActionsFactory.extractInlinedStyleAction"/>
             </file>
@@ -63,7 +62,7 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <folder name="Other">
                 <attr name="position" intvalue="1700"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.visual.Bundle"/>
                 <file name="CssPreviewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
                     <attr name="position" intvalue="700"/>
@@ -105,44 +104,12 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-css">
 
-                <file name="org-netbeans-modules-css-editor-CssCaretAwareSourceTask$Factory.instance">
+                <file name="org-netbeans-modules-css-visual-CssCaretAwareSourceTask$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
-                
 
-                <folder name="Popup">
-                    <file name="CssSeparator1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="4100"/>
-                    </file>
-                    <file name="org-netbeans-modules-css-actions-CheckStyleAction.instance">
-                        <attr name="position" intvalue="4300"/>
-                    </file>
-                    <file name="org-netbeans-modules-css-actions-CopyStyleAction$HTML.instance">
-                        <attr name="position" intvalue="4400"/>
-                    </file>
-                    <file name="org-netbeans-modules-css-actions-CopyStyleAction$XML.instance">
-                        <attr name="position" intvalue="4500"/>
-                    </file>
-		</folder>
             </folder>
         </folder>
     </folder>
-
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-css">
-                <folder name="Actions">
-                    <file name="aftercheckseparator.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="870"/>
-                    </file>
-                    <file name="org-netbeans-modules-css-actions-CheckStyleAction.shadow">
-			<attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-css-actions-CheckStyleAction.instance"/>
-			<attr name="position" intvalue="880"/>
-		    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
+    
 </filesystem>

@@ -175,7 +175,7 @@ public class EditorOperatorTest extends JellyTestCase {
      * Dock after testing the previous three labels.
      */
     public void testDockWindow() {
-        (new DockWindowAction()).perform();
+        new DockWindowAction().perform(eo);
     }
 
     /** Test of getText method. */
@@ -307,8 +307,8 @@ public class EditorOperatorTest extends JellyTestCase {
         String tooltip = Bundle.getStringTrimmed("org.netbeans.lib.editor.bookmarks.actions.Bundle", "bookmark-toggle");
         AbstractButtonOperator button1 = eo.getToolbarButton(tooltip);
         button1.push();
-        AbstractButtonOperator button2 = eo.getToolbarButton(9);
-        assertEquals("Toggle Bookmark button should have index 9",
+        AbstractButtonOperator button2 = eo.getToolbarButton(11);
+        assertEquals("Toggle Bookmark button should have index 11",
                 button1.getToolTipText(), button2.getToolTipText());
     }
 

@@ -56,19 +56,17 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.editor.CssEditorSupport;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssEditorSupport;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JPanel;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  * Super class for all Style editors
@@ -148,13 +146,13 @@ abstract public class StyleEditor extends JPanel {
 
     protected void startAggregatedEventsSession() {
         if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
-//            CssEditorSupport.getDefault().firstAggregatedEventWillFire();
+            CssEditorSupport.getDefault().firstAggregatedEventWillFire();
         }
     }
 
     protected void closeAggregatedEventsSession() {
         if(!IN_PROPERTY_VALUES_INITIALIZATION.get()) {
-//            CssEditorSupport.getDefault().lastAggregatedEventFired();
+            CssEditorSupport.getDefault().lastAggregatedEventFired();
         }
     }
     

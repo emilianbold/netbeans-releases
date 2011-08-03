@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -518,7 +519,7 @@ public class CssPropertyValue {
     }
 
     private boolean resolve(Element e, Stack<String> input, List<ResolvedToken> consumed) {
-        log.append(e.path() + "\n"); //NOI18N
+        log.append(e.path()).append("\n"); //NOI18N
         boolean itemResolved = false;
 
         if (input.isEmpty()) {
@@ -550,7 +551,7 @@ public class CssPropertyValue {
                                     break loop;
                                 } else {
                                     //remember we resolved something under this element so we do not enter it again
-                                    log.append("sg resolved in " + member.path() + "\n"); //NOI18N
+                                    log.append("sg resolved in ").append(member.path()).append("\n"); //NOI18N
                                     elementsToProcess.remove(member);
                                     //start resolving the group from the beginning
                                     break;
@@ -588,19 +589,19 @@ public class CssPropertyValue {
                         //consumed
                         input.pop();
                         consumed.add(new ResolvedToken(token, e));
-                        log.append("eaten UNIT '" + token + "'\n"); //NOI18N
+                        log.append("eaten UNIT '").append(token).append("'\n"); //NOI18N
                         return true;
                     }
 
                 } else {
-                    Logger.global.warning("ERROR - no acceptor for unit property value " + ve.value()); //NOI18N
+                    Logger.getAnonymousLogger().log(Level.WARNING, "ERROR - no acceptor for unit property value {0}", ve.value()); //NOI18N
                 }
 
             } else if (token.equalsIgnoreCase(ve.value())) {
                 //consumed
                 input.pop();
                 consumed.add(new ResolvedToken(token, e));
-                log.append("eaten '" + token + "'\n"); //NOI18N
+                log.append("eaten '").append(token).append("'\n"); //NOI18N
                 return true;
             }
 

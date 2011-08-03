@@ -169,7 +169,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     Language top = parentPath.topLanguage();
                     if ("text/html".equals(top.mimeType())) {
                         //in html
-                        TokenHierarchy hi = TokenHierarchy.get(doc);
+                        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
                         List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
                         if (embedded.size() > 1) {
                             TokenSequence<?> htmlts = embedded.get(embedded.size() - 2);
