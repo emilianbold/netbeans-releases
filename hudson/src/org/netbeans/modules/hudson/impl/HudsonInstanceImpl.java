@@ -102,6 +102,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private HudsonVersion version;
     private boolean connected;
+    private boolean forbidden;
     private boolean terminated;
     
     private final Synchronization synchronization;
@@ -227,6 +228,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         synchronization.stop();
         terminated = true;
         connected = false;
+        forbidden = false;
         version = null;
         jobs.clear();
         views.clear();
@@ -248,7 +250,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public boolean isConnected() {
         return connected;
     }
-    
+
+    public boolean isForbidden() {
+        return forbidden;
+    }
+
     public HudsonInstanceProperties getProperties() {
         return properties;
     }
@@ -305,8 +311,13 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         this.primaryView = primaryView;
     }
 
+    /**
+     * Initiate synchronization: fetching refreshed job data from the server.
+     * Will run asynchronously.
+     * @param authentication to prompt for login if the anonymous user cannot even see the job list; set to true for explicit user gesture, false otherwise
+     */
     @Messages("MSG_Synchronizing=Synchronizing {0}")
-    public synchronized void synchronize() {
+    public synchronized void synchronize(final boolean authentication) {
         if (semaphore.tryAcquire()) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
             final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
@@ -339,7 +350,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         Collection<HudsonView> oldViews = getViews();
                         
                         // Retrieve jobs
-                        Collection<HudsonJob> retrieved = getConnector().getAllJobs();
+                        Collection<HudsonJob> retrieved = getConnector().getAllJobs(authentication);
                         
                         // Exit when instance is terminated
                         if (terminated)
@@ -347,7 +358,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         
                         // Set connected and version
                         connected = getConnector().isConnected();
-                        version = getConnector().getHudsonVersion();
+                        version = getConnector().getHudsonVersion(authentication);
+                        forbidden = getConnector().forbidden;
                         
                         // Update state
                         fireStateChanges();
@@ -506,7 +518,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             String s = getProperties().get(INSTANCE_SYNC);
             int pause = Integer.parseInt(s) * 60 * 1000;
             if (pause > 0) {
-                synchronize();
+                synchronize(false);
                 task.schedule(pause);
             }
         }

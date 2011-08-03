@@ -384,7 +384,6 @@ public class Css3ParserTest extends CslTestBase {
         //commented out since it currently fails
         //assertResult(result, 0); 
     }
-    
     public void testErrorCase5() throws ParseException, BadLocationException {
         String content = "a { }   m { }";
         
@@ -392,8 +391,44 @@ public class Css3ParserTest extends CslTestBase {
 //        TestUtil.dumpResult(result);
         
         assertResult(result, 0);
+    }
+    
+    public void testMSFunction() throws ParseException, BadLocationException {
+        //Microsoft css extension allows following code:
+        String content = "a {"
+                + "filter: progid:DXImageTransform.Microsoft.gradient("
+                + "startColorstr='#bdb1a0', endColorstr='#958271',GradientType=0 ); /* IE6-9 */"
+                + "   color: red;"
+                + "}";
         
-        //fails - recovery in declarations eats the closing right curly bracket
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpResult(result);
+        
+        assertNotNull(NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/property/filter"));
+        
+        Node function = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath + "ruleSet/declarations/declaration|0/expr/term/function");
+        assertNotNull(function);
+        
+        Node functionName = NodeUtil.query(function, "function_name");
+        assertNotNull(functionName);
+        assertEquals("progid:DXImageTransform.Microsoft.gradient", functionName.image().toString());
+        
+        Node attr = NodeUtil.query(function, "attribute|0");
+        assertNotNull(attr);
+        
+        Node attrName = NodeUtil.query(attr, "attrname");
+        assertNotNull(attrName);
+        assertEquals("startColorstr", attrName.image().toString());
+        
+        Node attrVal = NodeUtil.query(attr, "attrvalue");
+        assertNotNull(attrVal);
+        assertEquals("'#bdb1a0'", attrVal.image().toString());
+        
+        assertResult(result, 0);
+        
+        
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {

@@ -143,8 +143,7 @@ public class ExportDiffChangesAction extends ContextAction {
                 HgProgressSupport ps = new HgProgressSupport() {
                     @Override
                     protected void perform() {
-                        OutputLogger logger = getLogger();
-                        async(this, root, context, toFile, logger, singleDiffSetup);
+                        async(this, root, context, toFile, singleDiffSetup);
                     }
                 };
                 ps.start(rp, root, org.openide.util.NbBundle.getMessage(ExportDiffChangesAction.class, "LBL_ExportChanges_Progress")).waitFinished();
@@ -154,48 +153,60 @@ public class ExportDiffChangesAction extends ContextAction {
 
     }
     
-    private void async(HgProgressSupport progress, File root, VCSContext context, File destination, OutputLogger logger, boolean singleDiffSetup) {
+    private void async(HgProgressSupport progress, File root, VCSContext context, File destination, boolean singleDiffSetup) {
+        List<Setup> setups;
+        Mercurial hg = Mercurial.getInstance();
+
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated instanceof DiffSetupSource) {
+            if (!singleDiffSetup) {
+                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+            } else {
+                DiffNode node = context.getElements().lookup(DiffNode.class);
+                if (node != null) {
+                    setups = new ArrayList<Setup>(Collections.singletonList(node.getSetup()));
+                } else {
+                    LOG.log(Level.INFO, "No DiffNode in the context: {0}", new Object[]{context.getElements().lookup(Object.class)}); //NOI18N
+                    return;
+                }
+            }
+            for (Iterator i = setups.iterator(); i.hasNext();) {
+                Setup setup = (Setup) i.next();
+                File file = setup.getBaseFile();
+                // remove files from other repositories
+                if (!root.equals(hg.getRepositoryRoot(file))) {
+                    i.remove();
+                }
+            }
+        } else {
+            File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
+            setups = new ArrayList<Setup>(files.length);
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                if (root.equals(hg.getRepositoryRoot(file)))  {
+                    Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
+                    Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
+                    Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
+                    setups.add(setup);
+                }
+            }
+        }
+        exportDiff(setups, destination, root, progress);
+    }
+    
+    /**
+     * 
+     * @param setups
+     * @param destination patch file to save changes to. If export fails for some reason, the file will not be created and will be deleted if existed before.
+     * @param root
+     * @param progress 
+     */
+    public void exportDiff (List<Setup> setups, File destination, File root, HgProgressSupport progress) {
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
+        OutputLogger logger = progress.getLogger();
         try {
-            List<Setup> setups;
-            Mercurial hg = Mercurial.getInstance();
-
-            TopComponent activated = TopComponent.getRegistry().getActivated();
-            if (activated instanceof DiffSetupSource) {
-                if (!singleDiffSetup) {
-                    setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
-                } else {
-                    DiffNode node = context.getElements().lookup(DiffNode.class);
-                    if (node != null) {
-                        setups = new ArrayList<Setup>(Collections.singletonList(node.getSetup()));
-                    } else {
-                        LOG.log(Level.INFO, "No DiffNode in the context: {0}", new Object[]{context.getElements().lookup(Object.class)}); //NOI18N
-                        return;
-                    }
-                }
-                for (Iterator i = setups.iterator(); i.hasNext();) {
-                    Setup setup = (Setup) i.next();
-                    File file = setup.getBaseFile();
-                    // remove files from other repositories
-                    if (!root.equals(hg.getRepositoryRoot(file))) {
-                        i.remove();
-                    }
-                }
-            } else {
-                File [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
-                setups = new ArrayList<Setup>(files.length);
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    if (root.equals(hg.getRepositoryRoot(file)))  {
-                        Mercurial.LOG.log(Level.FINE, "preparing setup {0}", file); //NOI18N
-                        Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                        Mercurial.LOG.log(Level.FINE, "setup prepared {0}", setup.getBaseFile()); //NOI18N
-                        setups.add(setup);
-                    }
-                }
-            }
             if (root == null) {
                 NotifyDescriptor nd = new NotifyDescriptor(
                         NbBundle.getMessage(ExportDiffChangesAction.class, "MSG_BadSelection_Prompt"), 
@@ -264,7 +275,7 @@ public class ExportDiffChangesAction extends ContextAction {
                 try {
                     out.flush();
                     out.close();
-                } catch (IOException alreadyClsoed) {
+                } catch (IOException alreadyClosed) {
                 }
             }
             if (success) {

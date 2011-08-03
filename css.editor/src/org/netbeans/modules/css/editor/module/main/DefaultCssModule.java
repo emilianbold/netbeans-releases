@@ -356,7 +356,7 @@ public class DefaultCssModule extends CssModule {
             public boolean visit(Node node) {
                 if (node.type() == NodeType.selectorsGroup) {
                     //get parent - ruleSet to obtain the { ... } range 
-                    Node ruleNode = (Node) node.parent();
+                    Node ruleNode = node.parent();
                     assert ruleNode.type() == NodeType.ruleSet;
 
                     int so = snapshot.getOriginalOffset(ruleNode.from());

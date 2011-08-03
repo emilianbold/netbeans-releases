@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.editor;
+package org.netbeans.modules.css.visual;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +55,6 @@ import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.css.lib.api.model.Rule;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
 import org.netbeans.modules.css.lib.api.model.Declaration;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.css.visual.api.StyleBuilderTopComponent;
@@ -80,7 +79,7 @@ public class CssEditorSupport {
     private CssRuleContent selected = null;
     private Document document = null;
     private List<CssPreviewable.Listener> previewableListeners = new ArrayList<CssPreviewable.Listener>();
-    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.Utilities.VISUAL_EDITOR_LOGGER);
+    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.visual.Utilities.VISUAL_EDITOR_LOGGER);
     private static final CssEditorSupport INSTANCE = new CssEditorSupport();
     private static final boolean DEBUG = Boolean.getBoolean("issue_129209_debug");
 

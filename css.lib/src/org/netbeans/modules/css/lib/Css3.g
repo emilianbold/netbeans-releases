@@ -407,23 +407,26 @@ term
 
 function
 	: 	function_name WS*
-		LPAREN
+		LPAREN WS*
 		( 
-			expr 
+			expr
 		| 
 		  	(
-				attribute (COMMA attribute)*				
+				attribute (COMMA WS* attribute )*				
 			) 
 		)
 		RPAREN
 	;
     
 function_name
-	: IDENT
+        //css spec allows here just IDENT, 
+        //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
+        //the function name can be a bit more complicated
+	: (IDENT COLON)? IDENT (DOT IDENT)*
     	;
     	
 attribute
-	: attrname OPEQ attrvalue
+	: attrname WS* OPEQ WS* attrvalue
 	;
     
 attrname

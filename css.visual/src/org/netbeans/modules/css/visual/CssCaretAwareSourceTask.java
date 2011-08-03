@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.editor;
+package org.netbeans.modules.css.visual;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -94,7 +94,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
                 return Collections.singletonList(new CssCaretAwareSourceTask());
             } else {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
     }

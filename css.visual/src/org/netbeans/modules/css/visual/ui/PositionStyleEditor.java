@@ -53,7 +53,7 @@ package org.netbeans.modules.css.visual.ui;
 import org.netbeans.modules.css.visual.model.ClipData;
 import org.netbeans.modules.css.visual.model.ClipModel;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.model.PositionData;
 import org.netbeans.modules.css.visual.model.PositionModel;
 import org.netbeans.modules.css.visual.model.PropertyData;
