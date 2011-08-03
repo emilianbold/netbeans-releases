@@ -84,7 +84,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private static CssPreviewTopComponent instance;
     
-    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.Utilities.VISUAL_EDITOR_LOGGER);
+    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.visual.Utilities.VISUAL_EDITOR_LOGGER);
     
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/css/resources/style_sheet_16.png";//NOI18N
