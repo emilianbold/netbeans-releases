@@ -144,7 +144,9 @@ public class HudsonManagerImpl {
         fireChangeListeners();
         
         // Remove instance file
-        removeInstanceDefinition(instance);
+        if (instance.isPersisted()) {
+            removeInstanceDefinition(instance);
+        }
         
         return instance;
     }
