@@ -51,7 +51,7 @@ import java.util.ListIterator;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import org.netbeans.modules.css.lib.api.model.Rule;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.NbBundle;
 

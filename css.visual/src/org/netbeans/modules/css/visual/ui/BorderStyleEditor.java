@@ -54,7 +54,7 @@ import java.awt.BorderLayout;
 import java.awt.FontMetrics;
 import org.netbeans.modules.css.visual.model.BorderModel;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -63,7 +63,7 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 import javax.swing.*;
-import org.netbeans.modules.css.editor.CssEditorSupport;
+import org.netbeans.modules.css.visual.CssEditorSupport;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.openide.util.NbBundle;
 

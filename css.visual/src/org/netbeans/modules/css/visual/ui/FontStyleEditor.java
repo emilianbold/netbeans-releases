@@ -54,7 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.model.FontModel;
 import org.netbeans.modules.css.visual.model.PropertyWithUnitData;
 import org.netbeans.modules.css.visual.model.TextDecorationData;

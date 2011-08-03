@@ -45,9 +45,11 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
+// it is tested in MaximizeWindowActionTest
 /**
- * Used to call "Restore Window" popup menu item, "Window|Restore Window" main
- * menu item, shortcut or restore window by IDE API.
+ * Used to call "Maximize" popup menu item, "Window|Configure Window|Maximize" main
+ * menu item, shortcut or restore window by IDE API. There is the same menu item
+ * to maximize and restore window, just check box informs you about current status.
  *
  * @see Action
  * @see org.netbeans.jellytools.TopComponentOperator
@@ -60,26 +62,29 @@ public class RestoreWindowAction extends Action {
      */
     private static final String windowItem =
             Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
+    /**
+     * "Configure Window"
+     */
     private static final String configureWindowItem =
             Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window/ConfigureWindow");
     /**
-     * "Window|Restore Window"
+     * "Window|Configure Window|Maximize"
      */
-    private static final String windowRestorePath =
+    private static final String windowMaximizePath =
             windowItem + "|"
             + configureWindowItem + "|"
             + Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-            "CTL_UnmaximizeWindowAction");
+            "CTL_MaximizeWindowAction");
     /**
-     * "Restore Window"
+     * "Maximize"
      */
-    private static final String popupPathRestore =
-            Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_UnmaximizeWindowAction");
+    private static final String popupPathMaximize =
+            Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_MaximizeWindowAction");
 
     /** Creates new instance of RestoreWindowAction. */
     public RestoreWindowAction() {
         // action MaximizeWindowAction is no called but it is used to get shortcut
-        super(windowRestorePath, popupPathRestore, "org.netbeans.core.windows.actions.MaximizeWindowAction");
+        super(windowMaximizePath, popupPathMaximize, "org.netbeans.core.windows.actions.MaximizeWindowAction");
     }
 
     /** Performs popup action Restore Window on given component operator 
@@ -101,7 +106,7 @@ public class RestoreWindowAction extends Action {
      * @param tco top component operator which should be activated and maximized
      */
     public void performPopup(TopComponentOperator tco) {
-        tco.pushMenuOnTab(popupPathRestore);
+        tco.pushMenuOnTab(popupPathMaximize);
     }
 
     /** Restore active top component by IDE API.*/

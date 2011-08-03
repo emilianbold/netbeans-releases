@@ -67,12 +67,15 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
+import org.netbeans.modules.mercurial.ui.shelve.ShelveChangesAction;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.util.RootsToFile;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -171,9 +174,17 @@ public class Mercurial {
         asyncInit(); // Does the Hg check but postpones querying user until menu is activated
     }
 
-    void attachListeners(MercurialVCS mvcs) {
+    void register (final MercurialVCS mvcs) {
         fileStatusCache.addPropertyChangeListener(mvcs);
         addPropertyChangeListener(mvcs);
+        getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                if (isAvailable(false, false)) {
+                    ShelveChangesActionsRegistry.getInstance().registerAction(mvcs, SystemAction.get(ShelveChangesAction.class));
+                }
+            }
+        });
     }
 
     private void setDefaultPath() {

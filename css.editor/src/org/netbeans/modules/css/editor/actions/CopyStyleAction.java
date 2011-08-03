@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.actions;
+package org.netbeans.modules.css.editor.actions;
 
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;

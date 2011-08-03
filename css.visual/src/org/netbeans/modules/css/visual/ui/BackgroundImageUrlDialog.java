@@ -51,7 +51,7 @@ package org.netbeans.modules.css.visual.ui;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.Utilities;
+import org.netbeans.modules.css.visual.Utilities;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;

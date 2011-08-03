@@ -67,7 +67,7 @@ public final class ModuleHistory {
         this.jar = jar;
     }
 
-    public ModuleHistory(String jar, String info) {
+    ModuleHistory(String jar, String info) {
         this(jar);
         this.info = info;
     }
