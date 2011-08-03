@@ -69,25 +69,55 @@ import org.openide.util.Parameters;
  */
 public abstract class PhpFrameworkProvider {
 
+    private final String identifier;
     private final String name;
     private final String description;
 
     /**
      * Creates a new PHP framework with a name and description.
      *
-     * @param  name the short name of this PHP framework (e.g., "Symfony"); never <code>null</code>.
+     * @param  identifier the <b>non-localized (usually english)</b> identifier of this PHP framework (e.g., "Symfony Framework"); never <code>null</code>.
+     * @param  name the <b>localized</b> name of this PHP framework (e.g., "Symfony PHP Web Framework"); never <code>null</code>.
      * @param  description the description of this PHP framework (e.g., "An open source framework based on the MVC pattern"); can be <code>null</code>.
-     * @throws NullPointerException if the <code>name</code> parameter is <code>null</code>.
+     * @throws NullPointerException if the <code>identifier</code> or <code>name</code> parameter is <code>null</code>.
+     * @since 1.49
      */
-    public PhpFrameworkProvider(String name, String description) {
+    public PhpFrameworkProvider(String identifier, String name, String description) {
+        Parameters.notNull("identifier", identifier); // NOI18N
         Parameters.notNull("name", name); // NOI18N
 
+        this.identifier = identifier;
         this.name = name;
         this.description = description;
     }
 
     /**
-     * Returns the name of this PHP framework.
+     * Creates a new PHP framework with a name and description.
+     * <p>
+     * <b>This constructor will be removed after 7.1!</b>
+     *
+     * @param  name the short, <b>localized</b> name of this PHP framework (e.g., "Symfony"); never <code>null</code>.
+     * @param  description the description of this PHP framework (e.g., "An open source framework based on the MVC pattern"); can be <code>null</code>.
+     * @throws NullPointerException if the <code>name</code> parameter is <code>null</code>.
+     * @deprecated use {@link PhpFrameworkProvider#PhpFrameworkProvider(String, String, String)} instead
+     */
+    @Deprecated
+    public PhpFrameworkProvider(String name, String description) {
+        this(name, name, description);
+    }
+
+    /**
+     * Returns the <b>non-localized (usually english)</b> identifier of this PHP framework.
+     *
+     * @return the <b>non-localized (usually english)</b> identifier; never <code>null</code>.
+     * @since 1.49
+     */
+    public final String getIdentifier() {
+        return identifier;
+    }
+
+    /**
+     * Returns the <b>localized</b> name of this PHP framework.
      *
      * @return the name; never <code>null</code>.
      */

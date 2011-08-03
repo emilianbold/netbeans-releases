@@ -79,6 +79,15 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
+    <!-- folder name="Toolbars">
+        <folder name="Debug">
+            <file name="org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.instance"/>
+                <attr name="position" intvalue="850"/>
+            </file>
+        </folder>
+    </folder -->
+    
     <folder name="debugger">
         <folder name="jpda">
             <folder name="options">
