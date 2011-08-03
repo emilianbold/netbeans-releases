@@ -84,7 +84,7 @@ public final class CssPreviewTopComponent extends TopComponent {
     
     private static CssPreviewTopComponent instance;
     
-    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.Utilities.VISUAL_EDITOR_LOGGER);
+    private static final Logger LOGGER = Logger.getLogger(org.netbeans.modules.css.visual.Utilities.VISUAL_EDITOR_LOGGER);
     
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/css/resources/style_sheet_16.png";//NOI18N
@@ -365,7 +365,7 @@ public final class CssPreviewTopComponent extends TopComponent {
             //resolve relative URL base for the preview component
             String relativeURL = null;
             if (source != null) {
-                relativeURL = source.toURL().toExternalForm();
+                relativeURL = source.toURI().toURL().toExternalForm();
             }
 
             LOGGER.log(Level.FINE, "preview - setting content {0}", htmlCode); //NOI18N

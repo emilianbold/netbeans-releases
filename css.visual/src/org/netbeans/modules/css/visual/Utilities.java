@@ -47,7 +47,7 @@
  * Created on November 5, 2004, 5:08 PM
  */
 
-package org.netbeans.modules.css;
+package org.netbeans.modules.css.visual;
 
 import java.io.File;
 import java.io.FileInputStream;

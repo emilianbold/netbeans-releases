@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.editor.model;
+package org.netbeans.modules.css.visual;
 
 import org.netbeans.modules.css.lib.api.model.Rule;
 import org.netbeans.modules.css.lib.api.model.Declaration;
