@@ -558,9 +558,6 @@ out: TestMergeExtendBaseBean - Second
 out: TestMergeExtendBaseBean Merging attributes attr on chapter != null -> OK
 out: TestMergeExtendBaseBean Merging attributes attr on chapter -> OK
 out: TestMergeExtendBaseBean - creating the DOM document
-out: TestMergeExtendBaseBean - creating the bean graph for memory test
-out: TestMergeExtendBaseBean - memory test done
-out: TestMergeExtendBaseBean - creating the DOM document
 out: TestMergeExtendBaseBean - creating the DOM document
 out: TestMergeExtendBaseBean - creating the bean graph for the comment merge test
 out: <?xml version='1.0' encoding='UTF-8' ?>
