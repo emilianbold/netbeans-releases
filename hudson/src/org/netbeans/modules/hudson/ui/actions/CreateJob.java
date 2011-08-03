@@ -155,7 +155,7 @@ public class CreateJob implements ActionListener {
                     postData(baos.toByteArray()).
                     httpConnection().disconnect();
             URLDisplayer.getDefault().showURL(new URL(instance.getUrl() + "job/" + Utilities.uriEncode(name) + "/")); // NOI18N
-            ((HudsonInstanceImpl) instance).synchronize();
+            ((HudsonInstanceImpl) instance).synchronize(false);
             ProjectHudsonProvider.getDefault().recordAssociation(project,
                     new ProjectHudsonProvider.Association(instance.getUrl(), name));
             OpenProjects.getDefault().open(new Project[] {project}, false);
