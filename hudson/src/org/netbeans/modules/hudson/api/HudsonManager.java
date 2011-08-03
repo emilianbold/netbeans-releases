@@ -71,7 +71,7 @@ public class HudsonManager {
             public @Override boolean isPersisted() {
                 return persistent;
             }
-        });
+        }, true);
         HudsonManagerImpl.getDefault().addInstance(nue);
         return nue;
     }
