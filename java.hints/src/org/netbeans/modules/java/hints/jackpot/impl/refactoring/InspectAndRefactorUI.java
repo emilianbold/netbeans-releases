@@ -45,10 +45,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -135,5 +137,18 @@ public class InspectAndRefactorUI implements RefactoringUI {
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.java.hints.jackpot.pattern.format");
+    }
+
+    public static void openRefactoringUI(Lookup context) {
+        UI.openRefactoringUI(new InspectAndRefactorUI(null, true, false, context));
+    }
+
+    public static final class HintWrap {
+        public final HintMetadata hm;
+        public final Iterable<? extends HintDescription> hints;
+        public HintWrap(HintMetadata hm, Iterable<? extends HintDescription> hints) {
+            this.hm = hm;
+            this.hints = hints;
+        }
     }
 }

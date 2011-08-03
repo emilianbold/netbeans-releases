@@ -111,6 +111,7 @@ public final class EditorFindSupport {
     public static final String FIND_WRAP_SEARCH = "find-wrap-search"; // NOI18N
     public static final String FIND_MATCH_CASE = "find-match-case"; // NOI18N
     public static final String FIND_SMART_CASE = "find-smart-case"; // NOI18N
+    public static final String FIND_PRESERVE_CASE = "find-preserve-case"; // NOI18N
     public static final String FIND_WHOLE_WORDS = "find-whole-words"; // NOI18N
     public static final String FIND_REG_EXP = "find-reg-exp"; // NOI18N
     public static final String FIND_HISTORY = "find-history"; // NOI18N
@@ -182,6 +183,7 @@ public final class EditorFindSupport {
         props.put(FIND_WHOLE_WORDS, Boolean.FALSE);
         props.put(FIND_REG_EXP, Boolean.FALSE);
         props.put(FIND_HISTORY, new Integer(30));
+        props.put(FIND_PRESERVE_CASE, Boolean.FALSE);
 
         return props;
     }
