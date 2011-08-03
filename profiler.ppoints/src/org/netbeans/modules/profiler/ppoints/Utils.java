@@ -89,6 +89,8 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.GoToSource;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.java.JavaProfilerSource;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -381,9 +383,12 @@ public class Utils {
         if (documentOffset == -1) {
             return null;
         }
-        // FIXME
+        // FIXME - optimize
         JavaProfilerSource src = JavaProfilerSource.createFrom(fileObject);
-        return src != null ? src.getEnclosingClass(documentOffset).getQualifiedName() : null;
+        if (src == null) return null;
+        SourceClassInfo sci = src.getEnclosingClass(documentOffset);
+        if (sci == null) return null;
+        return sci.getQualifiedName();
     }
     
     public static String getMethodName(CodeProfilingPoint.Location location) {
@@ -399,9 +404,12 @@ public class Utils {
         if (documentOffset == -1) {
             return null;
         }
-        // FIXME
+        // FIXME - optimize
         JavaProfilerSource src = JavaProfilerSource.createFrom(fileObject);
-        return src != null ? src.getEnclosingMethod(documentOffset).getName() : null;
+        if (src == null) return null;
+        SourceMethodInfo smi = src.getEnclosingMethod(documentOffset);
+        if (smi == null) return null;
+        return smi.getName();
     }
 
     public static CodeProfilingPoint.Location getCurrentLocation(int lineOffset) {
