@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.editor.lib2.highlighting;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     
     private final List<HighlightsChangeListener> listeners = new CopyOnWriteArrayList<HighlightsChangeListener>();
     
-    private final List<WeakReference<HlSequence>> activeHlSeqs = new ArrayList<WeakReference<HlSequence>>();
+    private final List<Reference<HlSequence>> activeHlSeqs = new ArrayList<Reference<HlSequence>>();
     
     private HighlightsChangeEvent layerEvent;
     
@@ -88,7 +89,9 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     
     @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        return new HlSequence(layers, startOffset, endOffset);
+        HlSequence hs = new HlSequence(layers, startOffset, endOffset);
+        activeHlSeqs.add(new WeakReference<HlSequence>(hs));
+        return hs;
     }
 
     @Override
@@ -112,7 +115,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                 }
             }
             synchronized (activeHlSeqs) {
-                for (WeakReference<HlSequence> hlSeqRef : activeHlSeqs) {
+                for (Reference<HlSequence> hlSeqRef : activeHlSeqs) {
                     HlSequence seq = hlSeqRef.get();
                     if (seq != null) {
                         seq.notifyLayersChanged();
