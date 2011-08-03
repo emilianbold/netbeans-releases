@@ -80,6 +80,10 @@
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.tuxedo.model</friend>
+                <friend>com.sun.tools.tuxedo.project</friend>
+                <friend>com.sun.tools.tuxedo.source</friend>
+                <friend>com.sun.tools.tuxedo.testrunner</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
