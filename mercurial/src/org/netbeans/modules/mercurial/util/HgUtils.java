@@ -976,6 +976,15 @@ itor tabs #66700).
         if(ctx != null) {
             files = rootFiles ? ctx.getRootFiles() : ctx.getFiles();
         }
+        return sortUnderRepository(files);
+    }
+
+    /**
+     * Returns root files sorted per their repository roots
+     * @param files
+     * @return
+     */
+    public static Map<File, Set<File>> sortUnderRepository (Set<File> files) {
         Map<File, Set<File>> sortedRoots = null;
         if (files != null) {
             sortedRoots = new HashMap<File, Set<File>>();
