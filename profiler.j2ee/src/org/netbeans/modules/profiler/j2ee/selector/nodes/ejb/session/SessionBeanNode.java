@@ -43,21 +43,20 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.session;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
-import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class SessionBeanNode extends JavaClassNode {
+public class SessionBeanNode extends ClassNode {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    public SessionBeanNode(final ClasspathInfo cpInfo, String displayName, final Icon icon, final TypeElement classElement, final ContainerNode parent) {
-        super(cpInfo, displayName, icon, false, classElement, parent);
+    public SessionBeanNode(final SourceClassInfo clz, String displayName, final Icon icon, final ContainerNode parent) {
+        super(clz, displayName, icon, parent);
     }
 }

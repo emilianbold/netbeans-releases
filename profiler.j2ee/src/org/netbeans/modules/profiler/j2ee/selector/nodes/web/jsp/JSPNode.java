@@ -45,15 +45,16 @@ package org.netbeans.modules.profiler.j2ee.selector.nodes.web.jsp;
 
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
 import org.openide.filesystems.FileObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
@@ -78,7 +79,7 @@ public class JSPNode extends SelectorNode {
 
     /** Creates a new instance of JSPNode */
     public JSPNode(FileObject jspFile, ContainerNode parent) {
-        super(jspFile.getName(), jspFile.getNameExt(), Utils.JSP_ICON, SelectorChildren.LEAF, parent);
+        super(jspFile.getName(), jspFile.getNameExt(), Icons.getIcon(JavaEEIcons.JSP), SelectorChildren.LEAF, parent);
         SourceCodeSelection scs = WebProjectUtils.getJSPMethodSignature(getLookup().lookup(Project.class), jspFile);
         rootMethod = new SourceCodeSelection(scs.getClassName(), scs.getMethodName(), scs.getMethodSignature());
     }
