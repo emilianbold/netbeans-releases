@@ -1331,7 +1331,14 @@ public class CasualDiff {
         int localPointer = bounds[0];
         if (oldT.encl != null) {
             int[] enclBounds = getBounds(oldT.encl);
-            localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
+
+            if (newT.encl == null) {
+                moveFwdToToken(tokenSequence, enclBounds[1], JavaTokenId.DOT);
+                tokenSequence.moveNext();
+                localPointer = tokenSequence.offset();
+            } else {
+                localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
+            }
         }
         diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
         if (!enumConstantPrint) {
