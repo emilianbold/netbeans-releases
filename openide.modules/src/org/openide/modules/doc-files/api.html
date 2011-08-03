@@ -387,20 +387,6 @@ It is a module author's responsibility to make sure that new versions of a
 module are capable of "cleaning up" obsoleted installations created by older
 versions, as far back as a user is likely to be directly upgrading.
 
-<p>Some module installer classes may desire to keep state across
-sessions, for example if they require specific instructions on
-what to uninstall that can only be gotten during the installation
-process. All installers are automatically
-
-<a href="@JDK@/java/io/Externalizable.html"><code>Externalizable</code></a>
-
-and module authors may decide to override the two methods of this interface
-to read and write its state from an
-object source. Typically you would want to serialize and deserialize
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)">shared class fields</a>
-in the object using these methods.
-It is a good idea to call the super methods as the first action when overriding.
-
 <p>In some cases, a module relies on some external resource to be present
 in order for it to be used. For example, an external application may need
 to be installed in order for it to do anything. Or it may require a valid
@@ -436,11 +422,6 @@ definition of an "installation-clean module":
 <code>ModuleInstall</code> object (static or instance fields with
 initializers or initializer blocks or the <code>initialize</code>
 method).
-
-<li>Does not override the <code>readExternal</code> nor
-<code>writeExternal</code> methods, nor any other related methods such
-as <code>readResolve</code> or <code>writeReplace</code>. Thus it has
-no externalized state.
 
 <li>Does not override <code>installed</code> nor <code>updated</code>
 (these will then just call <code>restored</code>).
