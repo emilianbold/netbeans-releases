@@ -44,6 +44,7 @@ package org.netbeans.modules.maven;
 import java.util.prefs.BackingStoreException;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
@@ -77,6 +78,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /**
  * openhook implementation, register global classpath and also
@@ -113,7 +117,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         checkSourceDownloads();
         checkJavadocDownloads();
         project.attachUpdater();
-        MavenFileOwnerQueryImpl.getInstance().registerProject(project);
+        registerWithSubmodules(FileUtil.toFile(project.getProjectDirectory()), new HashSet<File>());
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
@@ -329,5 +333,63 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
        }
    }
 
+    /** Similar to {@link SubprojectProviderImpl#addProjectModules} but more efficient for large numbers of modules. */
+    private static void registerWithSubmodules(File basedir, Set<File> registered) { // #200445
+        if (!registered.add(basedir)) {
+            return;
+        }
+        File pom = new File(basedir, "pom.xml");
+        if (!pom.isFile()) {
+            return;
+        }
+        Element project;
+        try {
+            project = XMLUtil.parse(new InputSource(pom.toURI().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement();
+        } catch (Exception x) {
+            LOGGER.log(Level.FINE, "could not parse " + pom, x);
+            return;
+        }
+        Element parent = XMLUtil.findElement(project, "parent", null);
+        Element groupId = XMLUtil.findElement(project, "groupId", null);
+        if (groupId == null) {
+            groupId = XMLUtil.findElement(parent, "groupId", null);
+            if (groupId == null) {
+                LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
+                return;
+            }
+        }
+        Element artifactId = XMLUtil.findElement(project, "artifactId", null);
+        if (artifactId == null) {
+            artifactId = XMLUtil.findElement(parent, "artifactId", null);
+            if (artifactId == null) {
+                LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
+                return;
+            }
+        }
+        try {
+            MavenFileOwnerQueryImpl.getInstance().registerCoordinates(XMLUtil.findText(groupId), XMLUtil.findText(artifactId), basedir.toURI().toURL());
+        } catch (MalformedURLException x) {
+            LOGGER.log(Level.FINE, null, x);
+        }
+        scanForSubmodulesIn(project, basedir, registered);
+        Element profiles = XMLUtil.findElement(project, "profiles", null);
+        if (profiles != null) {
+            for (Element profile : XMLUtil.findSubElements(profiles)) {
+                if (profile.getTagName().equals("profile")) {
+                    scanForSubmodulesIn(profile, basedir, registered);
+                }
+            }
+        }
+    }
+    private static void scanForSubmodulesIn(Element projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
+        Element modules = XMLUtil.findElement(projectOrProfile, "modules", null);
+        if (modules != null) {
+            for (Element module : XMLUtil.findSubElements(modules)) {
+                if (module.getTagName().equals("module")) {
+                    registerWithSubmodules(FileUtilities.resolveFilePath(basedir, XMLUtil.findText(module)), registered);
+                }
+            }
+        }
+    }
 
 }
