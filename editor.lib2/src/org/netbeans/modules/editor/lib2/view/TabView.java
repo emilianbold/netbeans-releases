@@ -45,15 +45,11 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.TabExpander;
