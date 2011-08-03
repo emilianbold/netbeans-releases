@@ -53,6 +53,7 @@ import com.sun.tools.javac.util.Context;
 import java.util.List;
 import java.util.logging.*;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
@@ -66,7 +67,7 @@ import org.netbeans.modules.java.source.builder.TreeFactory;
 public abstract class Transformer<R, P> extends TreeScanner<R,P> {
 
     CommentHandler commentHandler;
-    public TreeFactory make;
+    public TreeMaker make;
     protected WorkingCopy copy;
     protected String refactoringDescription;
     protected Types types; // used by tests
@@ -83,7 +84,7 @@ public abstract class Transformer<R, P> extends TreeScanner<R,P> {
      * specified QueryEnvironment.
      */
     public void attach(Context context, WorkingCopy copy) {
-        make = TreeFactory.instance(context);
+        make = copy.getTreeMaker();
         types = JavacTypes.instance(context);
         commentHandler = CommentHandlerService.instance(context);
         model = ASTService.instance(context);

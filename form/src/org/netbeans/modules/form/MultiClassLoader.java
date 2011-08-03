@@ -35,58 +35,70 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.errors;
+package org.netbeans.modules.form;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.Vector;
 
 /**
+ * Very simple class loader that delegates to several class loaders.
+ * Note that no class returned by this class loader will claim that
+ * it was loaded by this class loader. So, you probably don't want
+ * to use this class unless you are sure that this is not a problem
+ * in your context.
  *
- * @author lahvac
+ * @author Jan Stola
  */
-public class ChangeMethodReturnTypeTest extends ErrorHintsTestBase {
-
-    public ChangeMethodReturnTypeTest(String name) {
-        super(name);
-    }
-
-    public void testVoidToInt() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test; public class Test { private void t() { return 1|;} }",
-                       "FIX_ChangeMethodReturnType int",
-                       "package test; public class Test { private int t() { return 1;} }");
-    }
-
-    public void testStringToInt() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test; public class Test { private String t() { return 1|;} }",
-                       "FIX_ChangeMethodReturnType int",
-                       "package test; public class Test { private int t() { return 1;} }");
-    }
-
-    public void test200467() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test; import java.util.List; public class Test { <A> void getMForm() { List<? extends A> a = null; return a|; } }",
-                       "FIX_ChangeMethodReturnType List<? extends A>",
-                       "package test; import java.util.List; public class Test { <A> List<? extends A> getMForm() { List<? extends A> a = null; return a; } }");
+public class MultiClassLoader extends ClassLoader {
+    /** Class loader delegates. */
+    private ClassLoader[] loaders;
+    
+    /**
+     * Creates new {@code MultiClassLoader}.
+     * 
+     * @param loaders class loader delegates.
+     */
+    public MultiClassLoader(ClassLoader... loaders) {
+        this.loaders = loaders;
     }
 
     @Override
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
-        return new ChangeMethodReturnType().run(info, null, pos, path, null);
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        for (ClassLoader loader : loaders) {
+            try {
+                return loader.loadClass(name);
+            } catch (ClassNotFoundException cnfe) {}
+        }
+        return super.findClass(name);
     }
 
     @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
+    protected URL findResource(String name) {
+        URL url = null;
+        for (ClassLoader loader : loaders) {
+            url = loader.getResource(name);
+            if (url != null) {
+                break;
+            }
+        }
+        return url;
     }
 
-    static {
-        NbBundle.setBranding("test");
+    @Override
+    protected Enumeration<URL> findResources(String name) throws IOException {
+        Vector<URL> vector = new Vector<URL>();
+        for (ClassLoader loader : loaders) {
+            Enumeration<URL> enumeration = loader.getResources(name);
+            while (enumeration.hasMoreElements()) {
+                URL url = enumeration.nextElement();
+                if (!vector.contains(url)) {
+                    vector.add(url);
+                }
+            }
+        }
+        return vector.elements();
     }
-
+    
 }

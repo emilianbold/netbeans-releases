@@ -278,20 +278,24 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                 ViewUtils.log(ViewHierarchy.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
                         startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             }
+
             if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
                 fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
             }
 
         } else { // Paint highlights change
             assert (evt.getSource() == paintHighlightsContainer);
-            HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
-                    ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
-                    : null;
-            String layerInfo = (layerEvent != null)
-                    ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
-                    : ""; // NOI18N
-            ViewUtils.log(ViewHierarchy.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
-                    startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
+            if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+                HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
+                        ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
+                        : null;
+                String layerInfo = (layerEvent != null)
+                        ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
+                        : ""; // NOI18N
+                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
+                        startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
+            }
+
             offsetRepaint(startOffset, endOffset);
         }
     }
