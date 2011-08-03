@@ -51,6 +51,8 @@ import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -65,6 +67,8 @@ import org.openide.windows.TopComponent;
  *
  * @author ondra
  */
+@ActionID(id = "org.netbeans.modules.versioning.shelve.impl.ShelveChangesMenu", category = "Versioning")
+@ActionRegistration(displayName = "#CTL_Menu_ShelveChanges")
 public class ShelveChangesMenu extends AbstractAction implements DynamicMenuContent {
     public static final String PREF_KEY_SHELVED_PATCHES = "shelvedPatches"; //NOI18N
     
