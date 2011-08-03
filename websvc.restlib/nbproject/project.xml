@@ -65,6 +65,7 @@ made subject to such option by the copyright holder.
                 <package>javax.ws.rs.ext</package>
                 <package>com.sun.jersey.api</package>
                 <package>com.sun.jersey.api.client</package>
+                <package>com.sun.jersey.api.client.async</package>
                 <package>com.sun.jersey.api.client.config</package>
                 <package>com.sun.jersey.api.client.filter</package>
                 <package>com.sun.jersey.api.container</package>
@@ -73,6 +74,8 @@ made subject to such option by the copyright holder.
                 <package>com.sun.jersey.api.core</package>
                 <package>com.sun.jersey.api.json</package>
                 <package>com.sun.jersey.api.model</package>
+                <package>com.sun.jersey.api.provider</package>
+                <package>com.sun.jersey.api.provider.jaxb</package>
                 <package>com.sun.jersey.api.representation</package>
                 <package>com.sun.jersey.api.uri</package>
                 <package>com.sun.jersey.api.view</package>

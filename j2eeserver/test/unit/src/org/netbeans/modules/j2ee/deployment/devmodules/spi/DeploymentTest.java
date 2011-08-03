@@ -62,7 +62,7 @@ public class DeploymentTest extends ServerRegistryTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.addInstance(URL, "user", "password", "TestInstance", true, null); // NOI18N
+        registry.addInstance(URL, "user", "password", "TestInstance", true, false, null); // NOI18N
     }
 
     @Override

@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -272,6 +273,7 @@ public abstract class JavaSourceAccessor {
     public abstract Difference createDifference(Kind kind, PositionRef startPos, PositionRef endPos, String oldText, String newText, String description);
     public abstract Difference createNewFileDifference(JavaFileObject fileObject, String text);
     public abstract ModificationResult createModificationResult(Map<FileObject, List<Difference>> diffs, Map<?, int[]> tag2Span);
+    public abstract ElementUtilities createElementUtilities(@NonNull JavacTaskImpl jt);
     public abstract Map<FileObject, List<Difference>> getDiffsFromModificationResult(ModificationResult mr);
     public abstract Map<?, int[]> getTagsFromModificationResult(ModificationResult mr);
     public abstract ClassIndex createClassIndex (@NonNull ClassPath bootPath, @NonNull ClassPath classPath, @NonNull ClassPath sourcePath, boolean supportsChanges);
