@@ -78,7 +78,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         
         putProperty("Integer VCS.Priority", Utils.getPriority("mercurial"));
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        Mercurial.getInstance().attachListeners(this);        
+        Mercurial.getInstance().register(this);        
     }
 
     public static String getDisplayName() {
