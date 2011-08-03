@@ -102,6 +102,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI.HintWrap;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
@@ -126,14 +127,16 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N    
     private FileObject fileObject;
+    private final HintWrap hintWrap;
     org.netbeans.modules.refactoring.api.Scope customScope;
     
     /** Creates new form InspectAndRefactorPanel */
     public InspectAndRefactorPanel(Lookup context, ChangeListener parent, boolean query) {
         
         initComponents();
+        hintWrap = context.lookup(HintWrap.class);
         configurationCombo.setModel(new ConfigurationsComboModel(false));
-        singleRefactoringCombo.setModel(new InspectionComboModel());
+        singleRefactoringCombo.setModel(new InspectionComboModel(hintWrap != null ? Collections.singletonList(hintWrap.hm) : Utilities.getBatchSupportedHints()));
         singleRefactoringCombo.addActionListener( new ActionListener() {
 
             Object currentItem = singleRefactoringCombo.getSelectedItem();
@@ -184,14 +187,14 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             scopeCombo.setModel(new DefaultComboBoxModel(new Object[]{allProjects, customScope }));
         scopeCombo.setRenderer(new JLabelRenderer());
         loadPrefs();
-        if (dob!=null) {
-            FileObject primaryFile = dob.getPrimaryFile();
-            if (primaryFile!=null && "hint".equals(primaryFile.getExt()) && "rules".equals(primaryFile.getParent().getName())) { //NOI18N
-                HintMetadata hint = HintsPanel.getHintByName(primaryFile.getNameExt());
-                singleRefactoringCombo.setSelectedItem(hint);
-                setConfig(false);
-                singleRefactorRadio.setSelected(true);
-            }
+        if (hintWrap != null) {
+            singleRefactoringCombo.setSelectedItem(hintWrap.hm);
+            setConfig(false);
+            singleRefactorRadio.setSelected(true);
+            singleRefactorRadio.setEnabled(false);
+            singleRefactoringCombo.setEnabled(false);
+            manageSingleRefactoring.setEnabled(false);
+            configurationRadio.setEnabled(false);
         }
     }
 
@@ -420,6 +423,9 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
 
     public Union2<String, Iterable<? extends HintDescription>> getPattern() {
         if(singleRefactorRadio.isSelected()) {
+            if (hintWrap != null) {
+                return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintWrap.hints);
+            }
         HintMetadata hint = (HintMetadata) singleRefactoringCombo.getSelectedItem();
         Collection<? extends HintDescription> hintDesc = RulesManager.getInstance().allHints.get(hint);
         return Union2.<String, Iterable<? extends HintDescription>>createSecond(hintDesc);
@@ -510,12 +516,14 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     private boolean prefsLoading = false;
 
     private void storePrefs() {
-        if (prefsLoading) 
+        if (prefsLoading)
             return;
         Preferences prefs = NbPreferences.forModule(InspectAndRefactorPanel.class);
-        prefs.putBoolean("InspectAndRefactorPanel.singleRefactorRadio", singleRefactorRadio.isSelected());
-        prefs.putInt("InspectAndRefactorPanel.configurationCombo", configurationCombo.getSelectedIndex());
-        prefs.putInt("InspectAndRefactorPanel.singleRefactoringCombo", singleRefactoringCombo.getSelectedIndex());
+        if (hintWrap == null) {
+            prefs.putBoolean("InspectAndRefactorPanel.singleRefactorRadio", singleRefactorRadio.isSelected());
+            prefs.putInt("InspectAndRefactorPanel.configurationCombo", configurationCombo.getSelectedIndex());
+            prefs.putInt("InspectAndRefactorPanel.singleRefactoringCombo", singleRefactoringCombo.getSelectedIndex());
+        }
         prefs.putInt("InspectAndRefactorPanel.scopeCombo", scopeCombo.getSelectedIndex());
                 
     }

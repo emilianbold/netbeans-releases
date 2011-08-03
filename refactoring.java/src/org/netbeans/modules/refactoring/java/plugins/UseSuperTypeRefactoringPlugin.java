@@ -116,6 +116,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      */
     @Override
     public Problem preCheck() {
+        cancelRequest = false;
         //        Element subType = refactoring.getTypeElement();
         //        if(!(subType instanceof JavaClass)){
         //            String errMsg = NbBundle.getMessage(UseSuperTypeRefactoringPlugin.class,

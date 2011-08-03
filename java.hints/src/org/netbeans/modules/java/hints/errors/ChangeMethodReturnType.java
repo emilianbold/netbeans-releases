@@ -100,6 +100,8 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
         if (targetType == null || targetType.getKind() == /*XXX:*/TypeKind.ERROR) return null;
 
+        targetType = Utilities.resolveCapturedType(info, targetType);
+
         return Collections.singletonList(JavaFix.toEditorFix(new FixImpl(info, method, TypeMirrorHandle.create(targetType), info.getTypeUtilities().getTypeName(targetType).toString())));
     }
 

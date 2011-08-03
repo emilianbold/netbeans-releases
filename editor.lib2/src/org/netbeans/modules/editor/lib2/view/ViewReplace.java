@@ -46,7 +46,6 @@ package org.netbeans.modules.editor.lib2.view;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.lib.editor.util.ArrayUtilities;
 
 /**
  * Information about views being replaced in a view.
