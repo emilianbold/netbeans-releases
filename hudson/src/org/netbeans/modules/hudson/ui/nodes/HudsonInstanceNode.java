@@ -82,6 +82,7 @@ public class HudsonInstanceNode extends AbstractNode {
     private boolean warn = false;
     private boolean run = false;
     private boolean alive = false;
+    private boolean forbidden;
     private boolean version = false;
     
     public HudsonInstanceNode(final HudsonInstanceImpl instance) {
@@ -120,6 +121,7 @@ public class HudsonInstanceNode extends AbstractNode {
     @Messages({
         "MSG_WrongVersion=[Older version than {0}]",
         "MSG_Disconnected=[Disconnected]",
+        "MSG_forbidden=[Unauthorized]",
         "HudsonInstanceNode.from_open_project=(from open project)"
     })
     @Override public String getHtmlDisplayName() {
@@ -131,7 +133,7 @@ public class HudsonInstanceNode extends AbstractNode {
                 (alive ? (version ? "" : " <font color=\"#A40000\">" + // NOI18N
                     MSG_WrongVersion(HudsonVersion.SUPPORTED_VERSION) + "</font>") :
                     " <font color=\"#A40000\">" + // NOI18N
-                MSG_Disconnected() + "</font>") +
+                (forbidden ? MSG_forbidden() : MSG_Disconnected()) + "</font>") +
                 (!pers ? " <font color='!controlShadow'>" + // NOI18N
                     HudsonInstanceNode_from_open_project() + "</font>" : "");
     }
@@ -157,6 +159,7 @@ public class HudsonInstanceNode extends AbstractNode {
         String oldHtmlName = "";
         
         alive = instance.isConnected();
+        forbidden = instance.isForbidden();
         version = Utilities.isSupportedVersion(instance.getVersion());
         
         // Refresh children

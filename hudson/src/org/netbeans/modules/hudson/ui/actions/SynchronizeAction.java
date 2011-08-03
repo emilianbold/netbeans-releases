@@ -68,7 +68,7 @@ public class SynchronizeAction implements ActionListener {
     
     public @Override void actionPerformed(ActionEvent e) {
         for (HudsonInstanceImpl instance : instances) {
-            instance.synchronize();
+            instance.synchronize(true);
         }
     }
 
