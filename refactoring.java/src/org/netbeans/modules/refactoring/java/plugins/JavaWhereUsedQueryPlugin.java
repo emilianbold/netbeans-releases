@@ -103,6 +103,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
+        cancelRequest = false;
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         if (!handle.getFileObject().isValid() || RetoucheUtils.getElementKind(handle) == null) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N

@@ -106,7 +106,7 @@ import org.openide.windows.TopComponent;
 public class J2MEDataObject extends MultiDataObject {
     static final long serialVersionUID = 8090017233591568305L;
 
-    public static final String MIME_TYPE = "text/x-java"; // NOI18N
+    private static final String MIME_TYPE = "text/x-java"; // NOI18N
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
     
     private J2MEEditorSupport jes;
