@@ -94,7 +94,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             if(sourceMimeType.equals(CSS_MIMETYPE) && mimeType.equals(CSS_MIMETYPE)) { //NOI18N
                 return Collections.singletonList(new CssCaretAwareSourceTask());
             } else {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
         }
     }

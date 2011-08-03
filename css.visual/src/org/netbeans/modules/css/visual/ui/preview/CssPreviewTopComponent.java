@@ -365,7 +365,7 @@ public final class CssPreviewTopComponent extends TopComponent {
             //resolve relative URL base for the preview component
             String relativeURL = null;
             if (source != null) {
-                relativeURL = source.toURL().toExternalForm();
+                relativeURL = source.toURI().toURL().toExternalForm();
             }
 
             LOGGER.log(Level.FINE, "preview - setting content {0}", htmlCode); //NOI18N

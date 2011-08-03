@@ -140,7 +140,7 @@ public class CheckStyleAction extends NodeAction implements ErrorHandler, Docume
                 failed = true;
             } catch (Throwable t) {
                 disp.display("Unexpected exception from CSS parser: " + t.getMessage()); //NOI18N
-                Logger.global.log(Level.INFO, "Unexpected exception from CSS parser", t); //NOI18N
+                Logger.getAnonymousLogger().log(Level.INFO, "Unexpected exception from CSS parser", t); //NOI18N
                 failed = true;
             }
             if ((failed == true) || (warnings > 0)) {

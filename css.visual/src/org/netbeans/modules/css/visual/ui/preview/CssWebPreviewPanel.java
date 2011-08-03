@@ -142,7 +142,6 @@ public class CssWebPreviewPanel extends javax.swing.JPanel implements CssPreview
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(NbBundle.getMessage(CssWebPreviewPanel.class, "WebPreviewChooserTitle")); //NOI18N
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileFilter(filter);
