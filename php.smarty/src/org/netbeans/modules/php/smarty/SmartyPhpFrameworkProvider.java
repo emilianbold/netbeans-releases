@@ -78,7 +78,10 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     private SmartyPhpFrameworkProvider() {
-        super(NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        super("Smarty PHP Web Framework", //NOI18N
+                NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkName"),  //NOI18N
+                NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkDescription")); //NOI18N
+        
         badgeIcon = new BadgeIcon(
                 ImageUtilities.loadImage(ICON_PATH),
                 SmartyPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
@@ -90,7 +93,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     public static boolean isSmartyTemplateExtension(String ext) {
-        for (String mimeExt : FileUtil.getMIMETypeExtensions("text/x-tpl")) {
+        for (String mimeExt : FileUtil.getMIMETypeExtensions("text/x-tpl")) { // NOI18N
             if (ext.equals(mimeExt)) {
                 return true;
             }
@@ -160,7 +163,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
                             fs.setFound(true);
                         }
                     }
-                }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"), 
+                }, NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "MSG_SearchingForSmartyExt"),  // NOI18N
                    new AtomicBoolean(false), false, 1000, 10000);
             }
             return fs.isFound();
