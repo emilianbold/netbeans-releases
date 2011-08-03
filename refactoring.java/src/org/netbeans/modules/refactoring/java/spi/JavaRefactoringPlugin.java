@@ -121,6 +121,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected abstract JavaSource getJavaSource(Phase p);
 
     public Problem preCheck() {
+        cancelRequest = false;
         return workingTask.run(Phase.PRECHECK);
     }
 

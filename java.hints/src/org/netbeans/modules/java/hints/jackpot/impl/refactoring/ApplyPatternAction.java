@@ -41,7 +41,6 @@ package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -51,9 +50,9 @@ public final class ApplyPatternAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         Node[] n = TopComponent.getRegistry().getActivatedNodes();
         if (n.length > 0) {
-            UI.openRefactoringUI(new InspectAndRefactorUI(null, true, false, n[0].getLookup()));
+            InspectAndRefactorUI.openRefactoringUI(n[0].getLookup());
             return;
         }
-        UI.openRefactoringUI(new InspectAndRefactorUI(null, true, false, Lookup.EMPTY ));
+        InspectAndRefactorUI.openRefactoringUI(Lookup.EMPTY);
     }
 }
