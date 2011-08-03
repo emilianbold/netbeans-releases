@@ -251,9 +251,6 @@ out: TestMerge - Second
 out: TestMerge Merging attributes attr on chapter != null -> OK
 out: TestMerge Merging attributes attr on chapter -> OK
 out: TestMerge - creating the DOM document
-out: TestMerge - creating the bean graph for memory test
-out: TestMerge - memory test done
-out: TestMerge - creating the DOM document
 out: TestMerge - creating the DOM document
 out: TestMerge - creating the bean graph for the comment merge test
 out: <?xml version="1.0" encoding="UTF-8"?>
