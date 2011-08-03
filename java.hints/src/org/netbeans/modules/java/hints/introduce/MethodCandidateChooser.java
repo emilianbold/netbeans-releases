@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.FocusEvent;
@@ -60,18 +59,9 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.netbeans.modules.java.hints.introduce.IntroduceAction.Candidate;
-import org.netbeans.spi.editor.highlighting.HighlightsLayer;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.Context;
-import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.Exceptions;
 
@@ -122,9 +112,6 @@ public class MethodCandidateChooser extends JPanel implements FocusListener {
         OffsetsBag bag = new OffsetsBag(doc);
 
         bag.addHighlight(c.start, c.end, IntroduceHint.DUPE);
-        
-        bag.addHighlight(0, c.start, SimpleAttributeSet.EMPTY);
-        bag.addHighlight(c.end, doc.getLength(), SimpleAttributeSet.EMPTY);
         
         IntroduceHint.introduceBag(doc).setHighlights(bag);
 
@@ -255,7 +242,6 @@ public class MethodCandidateChooser extends JPanel implements FocusListener {
 
     @Override
     public void setVisible(boolean aFlag) {
-        System.err.println("setVisible(" + aFlag + ")");
         super.setVisible(aFlag);
     }
 

@@ -113,8 +113,12 @@ final class ProjectRootNodeChildren extends ChildFactory.Detachable<Object> impl
         }
         Set<NodeList> s;
         synchronized (lock) {
-            assert res != null : "removeNotify called twice or w/o addNotify()"; //NOI18N
-            res.removeLookupListener(this);
+            // #200543
+            if (res != null) {
+                res.removeLookupListener(this);
+            } else {
+                LOGGER.log(Level.SEVERE, "removeNotify called twice or w/o addNotify()!"); //NOI18N
+            }
             res = null;
             s = new HashSet<NodeList>(lists);
             lists.clear();
