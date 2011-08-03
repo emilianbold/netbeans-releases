@@ -92,7 +92,7 @@ public abstract class ShelveChangesSupport {
                 return;
             }
             exportPatch(patchFile, commonParent);
-            if (isCanceled()) {
+            if (!patchFile.exists() || isCanceled()) {
                 return;
             }
             patchCreated = true;
