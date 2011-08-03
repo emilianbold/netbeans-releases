@@ -54,7 +54,7 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import org.netbeans.modules.css.lib.api.model.Rule;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;

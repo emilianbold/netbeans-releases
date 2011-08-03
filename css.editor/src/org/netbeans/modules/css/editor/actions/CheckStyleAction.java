@@ -41,12 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.actions;
+package org.netbeans.modules.css.editor.actions;
 
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.BaseDocument;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
@@ -64,6 +66,8 @@ import org.w3c.css.sac.*;
  * @author Petr Kuzel
  * @author Marek Fukala
  */
+@ActionID(id = "org.netbeans.modules.css.editor.actions.CheckStyleAction", category = "Tools")
+@ActionRegistration(displayName = "NAME_check_CSS")
 public class CheckStyleAction extends NodeAction implements ErrorHandler, DocumentHandler {
     
     //check status

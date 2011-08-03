@@ -50,7 +50,7 @@
 
 package org.netbeans.modules.css.visual.model;
 
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 
