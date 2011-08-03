@@ -232,7 +232,7 @@ public class NewProjectWizardOperator extends WizardOperator {
         getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         waitClosed();
         // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
+        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CAP_Opening_Projects");
         NbDialogOperator openingOper;
         try {
             openingOper = new NbDialogOperator(openingProjectsTitle);
