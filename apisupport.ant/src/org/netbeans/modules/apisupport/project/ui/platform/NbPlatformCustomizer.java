@@ -155,8 +155,10 @@ public final class NbPlatformCustomizer extends JPanel {
             removeButton.setEnabled(false);
             return;
         }
-        plfNameValue.setText(plaf.getLabel());
+        plfNameValue.setText(NbPlatform.getComputedLabel(plaf.getDestDir()));
+        plfNameValue.setCaretPosition(0);
         plfFolderValue.setText(plaf.getDestDir().getAbsolutePath());
+        plfFolderValue.setCaretPosition(plfFolderValue.getText().length());
         boolean isValid = plaf.isValid();
         if (isValid) {
             if (sourcesTab == null) {
