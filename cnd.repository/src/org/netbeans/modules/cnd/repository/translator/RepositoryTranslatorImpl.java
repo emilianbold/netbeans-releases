@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
+import org.openide.modules.Places;
 import org.openide.util.CharSequences;
 
 /**
@@ -116,10 +117,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
     private static boolean loaded = false;
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
-    private final static String MASTER_INDEX_FILE_NAME = System.getProperty("netbeans.user") + //NOI18N
-            File.separator + "var" + File.separator + "cache" + //NOI18N
-            File.separator + "cnd" + File.separator + "model" + //NOI18N
-            File.separator + "index"; //NOI18N
+    private final static File MASTER_INDEX_FILE = Places.getCacheSubfile("cnd/model/index"); // NOI18N
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
 
     /** Creates a new instance of RepositoryTranslatorImpl */
@@ -344,7 +342,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         InputStream bis = null;
         DataInputStream dis = null;
         try {
-            fis = new FileInputStream(MASTER_INDEX_FILE_NAME);
+            fis = new FileInputStream(MASTER_INDEX_FILE);
             bis = new BufferedInputStream(fis);
             dis = new DataInputStream(bis);
             readMasterIndex(dis);
@@ -379,7 +377,7 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
         DataOutputStream dos = null;
 
         try {
-            fos = new FileOutputStream(MASTER_INDEX_FILE_NAME, false);
+            fos = new FileOutputStream(MASTER_INDEX_FILE, false);
             bos = new BufferedOutputStream(fos);
             dos = new DataOutputStream(bos);
             writeUnitsCache(dos);

@@ -58,6 +58,7 @@ public abstract class FileSystemCacheProvider {
 
     protected abstract String getCacheImpl(ExecutionEnvironment executionEnvironment);
 
+    // XXX reconsider API - why not File? why /-separated on Windows?
     public static String getCacheRoot(ExecutionEnvironment executionEnvironment) {
         FileSystemCacheProvider provider = Lookup.getDefault().lookup(FileSystemCacheProvider.class);
         RemoteLogger.assertTrue(provider != null, "No FileSystemCacheProvider found"); // NOI18N

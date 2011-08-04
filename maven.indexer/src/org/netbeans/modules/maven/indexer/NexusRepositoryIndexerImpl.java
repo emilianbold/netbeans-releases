@@ -51,7 +51,6 @@ import org.apache.maven.index.expr.StringSearchExpression;
 import org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
-import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import java.io.File;
@@ -163,6 +162,7 @@ import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -179,7 +179,6 @@ import org.sonatype.aether.util.repository.DefaultMirrorSelector;
 public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, ClassUsageQuery, GenericFindQuery, ContextLoadedQuery {
-    private static final String MAVENINDEX_PATH = "mavenindex";
 
     private PlexusContainer embedder;
     private ArtifactRepository repository;
@@ -763,18 +762,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         repo.fireChangeIndex();
     }
 
-    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // if mkdirs fails, indexing will just fail later anyway
     private File getDefaultIndexLocation() {
-        String userdir = System.getProperty("netbeans.user"); //NOI18N
-        File cacheDir;
-        if (userdir != null) {
-            cacheDir = new File(new File(new File(userdir, "var"), "cache"), MAVENINDEX_PATH);//NOI18N
-        } else {
-            File root = FileUtil.toFile(FileUtil.getConfigRoot());
-            cacheDir = new File(root, MAVENINDEX_PATH);//NOI18N
-        }
-        cacheDir.mkdirs();
-        return cacheDir;
+        return Places.getCacheSubdirectory("mavenindex");
     }
 
     @Override
