@@ -683,7 +683,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             for (FileObject c : children) {
                 String name = c.getName();
                 String ext = c.getExt();
-                if (name.equals("cndcustomizerid")) {
+                if (name.equals("cndcustomizerid")) { // NOI18N
                     id = ext;
                     break;
                 }

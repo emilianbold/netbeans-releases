@@ -121,7 +121,7 @@ public class MakeConfiguration extends Configuration {
     };
     
     private static String[] TYPE_NAMES_CUSTOM = {
-        "CUSTOM"                                        // <=== FIXUP
+        "CUSTOM"                                        // <=== FIXUP // NOI18N
     };
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;

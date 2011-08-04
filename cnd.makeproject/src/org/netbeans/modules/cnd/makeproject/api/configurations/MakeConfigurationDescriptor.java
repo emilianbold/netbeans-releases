@@ -325,7 +325,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             while (logicalFolders.hasNext()) {
                 LogicalFoldersInfo logicalFoldersInfo = logicalFolders.next();
                 Folder f;
-                if (logicalFoldersInfo.getLogicalFolderName().equals("root")) {
+                if (logicalFoldersInfo.getLogicalFolderName().equals("root")) { // NOI18N
                     f = rootFolder;
                 } else {
                     f = rootFolder.findFolderByName(logicalFoldersInfo.getLogicalFolderName());
