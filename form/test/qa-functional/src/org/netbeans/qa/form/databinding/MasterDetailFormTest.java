@@ -80,8 +80,8 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(MasterDetailFormTest.class).addTest(
                 "testMasterDetailWizard",
-                "testGeneratedJpaStuff",
-                 "testGeneratedCode"
+                "testGeneratedJpaStuff"//,
+                 //"testGeneratedCode"
                 ).gui(true).enableModules(".*").clusters(".*"));
 
     }

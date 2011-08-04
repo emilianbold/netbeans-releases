@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.6.1
+#Version 8.8
 
 CLSS public abstract interface java.io.Serializable
 
@@ -247,7 +247,9 @@ meth public abstract org.openide.util.lookup.ServiceProvider[] value()
 CLSS public abstract org.openide.util.lookup.implspi.AbstractServiceProviderProcessor
 cons protected init()
 meth protected abstract boolean handleProcess(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
+meth protected final void register(javax.lang.model.element.Element,java.lang.Class<? extends java.lang.annotation.Annotation>,javax.lang.model.type.TypeMirror,java.lang.String,int,java.lang.String[])
 meth protected final void register(javax.lang.model.element.TypeElement,java.lang.Class<? extends java.lang.annotation.Annotation>,javax.lang.model.type.TypeMirror,java.lang.String,int,java.lang.String[])
+ anno 0 java.lang.Deprecated()
 meth public final boolean process(java.util.Set<? extends javax.lang.model.element.TypeElement>,javax.annotation.processing.RoundEnvironment)
 supr javax.annotation.processing.AbstractProcessor
 hfds originatingElementsByProcessor,outputFilesByProcessor,verifiedClasses

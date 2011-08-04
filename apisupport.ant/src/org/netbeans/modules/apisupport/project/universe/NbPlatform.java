@@ -532,28 +532,33 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     
     /**
      * Get a display label suitable for the user.
-     * If not set, {@link #computeDisplayName} is used.
+     * If not set, {@link #getComputedLabel} is used.
      * The {@link #isDefault default platform} is specially marked.
      * @return a display label
      */
-    @Messages({
-        "# {0} - folder location", "MSG_InvalidPlatform=Invalid Platform ({0})",
-        "# {0} - plain platform label", "LBL_default_platform={0} (Default)"
-    })
+    @Messages("LBL_default_plaf=Development IDE")
     public String getLabel() {
-        if (label == null) {
-            try {
-                label = isValid() ? computeDisplayName(nbdestdir) :
-                    MSG_InvalidPlatform(getDestDir().getAbsolutePath());
-            } catch (IOException e) {
-                Logger.getLogger(NbPlatform.class.getName()).log(Level.FINE, "could not get label for " + nbdestdir, e);
-                label = nbdestdir.getAbsolutePath();
-            }
-        }
         if (isDefault()) {
-            return LBL_default_platform(label);
-        } else {
-            return label;
+            return LBL_default_plaf();
+        }
+        if (label == null) {
+            label = getComputedLabel(nbdestdir);
+        }
+        return label;
+    }
+
+    /**
+     * Finds label based on intrinsic metadata in the platform, regardless of user configuration.
+     * {@link #computeDisplayName} is used where possible.
+     * @see #getLabel
+     */
+    @Messages({"# {0} - folder location", "MSG_InvalidPlatform=Invalid Platform ({0})"})
+    public static String getComputedLabel(File destdir) {
+        try {
+            return isPlatformDirectory(destdir) ? computeDisplayName(destdir) : MSG_InvalidPlatform(destdir);
+        } catch (IOException e) {
+            Logger.getLogger(NbPlatform.class.getName()).log(Level.FINE, "could not get label for " + destdir, e);
+            return destdir.getAbsolutePath();
         }
     }
     

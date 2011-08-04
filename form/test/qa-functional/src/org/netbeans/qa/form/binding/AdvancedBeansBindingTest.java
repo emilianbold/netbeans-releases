@@ -51,6 +51,7 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -213,10 +214,22 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
     }
     
     /** Tests validation */
-    public void testValidation() {
+    public void testValidation() throws InterruptedException {
 
         // open frame
-        openFile(FILENAME);
+        ProjectRootNode prn;
+        ProjectsTabOperator pto;
+        
+        
+              
+        
+        pto = new ProjectsTabOperator();
+        prn = pto.getProjectRootNode("SampleProject");
+        prn.select();
+        Node formnode = new Node(prn, "Source Packages|" + "data" + "|" + FILENAME);
+        OpenAction openAction = new OpenAction();
+        openAction.perform(formnode);
+        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
         
@@ -226,7 +239,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         JDialogOperator bindOp = new JDialogOperator("Bind");  // NOI18N
         JTabbedPaneOperator tabOp = new JTabbedPaneOperator(bindOp);
         tabOp.selectPage("Advanced");  // NOI18N
-       // bindOp.ok();
+        bindOp = new JDialogOperator("Bind");
+       
         
         new JButtonOperator(tabOp, 4).pushNoBlock();
         NbDialogOperator valOp = new NbDialogOperator("Validator");  // NOI18N
@@ -235,9 +249,11 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         JTextFieldOperator jtfOp= new JTextFieldOperator(valOp, 0);
         jtfOp.setText(VALIDATOR_NAME);
         new JButtonOperator(valOp, "OK").push();  // NOI18N
-        
+        new JButtonOperator(bindOp, "OK").push();  // NOI18N
+        openAction = new OpenAction();
+        openAction.perform(formnode);
         // find code in source file
-        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        designer = new FormDesignerOperator(FILENAME);
         findInCode("binding.setValidator(" + VALIDATOR_NAME + ");", designer);  // NOI18N
         
         // open bind dialog again and check selected
@@ -326,6 +342,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         bindOp.ok();
         
         assertEquals("new Bool2FaceConverter()", result);  // NOI18N
+        
+        designer.source();
     }
     
     /** Select update mode for  jlabel */
