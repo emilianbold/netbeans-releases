@@ -44,6 +44,8 @@ package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -51,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
@@ -63,11 +66,17 @@ import org.openide.filesystems.FileUtil;
  */
 public class Util {
     
+    private static final String[] defaultJPA20Keys=new String[]{"javax.persistence.lock.timeout", "javax.persistence.query.timeout", "javax.persistence.validation.group.pre-persist", "javax.persistence.validation.group.pre-update", "javax.persistence.validation.group.pre-remove"};
+
+    
+    
     public static String[] getAllPropNames(Provider propCat) {
-        if (propCat.equals(ProviderUtil.ECLIPSELINK_PROVIDER)) {
-            return new String[0];
-        }  else // Should never be here
-            return new String[0];
+        ArrayList<String> results = new ArrayList<String>();
+        if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(propCat))){
+            Collections.addAll(results, defaultJPA20Keys);
+        }
+        results.addAll(propCat.getPropertyNames());
+        return results.toArray(new String[]{});
     }
     
     /**
@@ -77,16 +86,20 @@ public class Util {
      * @param sessionFactory The session factory that contains the properties
      * @return Array of property names
      */
-    public static String[] getAvailPropNames(Provider propCat, PersistenceUnit sessionFactory) {
+    public static String[] getAvailPropNames(Provider propCat, PersistenceUnit pu) {
 
         List<String> propsList = Arrays.asList(getAllPropNames(propCat));
         
-        if (sessionFactory != null) {
+        if (pu != null) {
             ArrayList<String> availProps = new ArrayList<String>(propsList);
-            for (int i = 0; i < sessionFactory.getProperties().sizeProperty2(); i++) {
-
-                String propName = sessionFactory.getProperties().getProperty2(i).getName();
-                if (availProps.contains(propName) ||
+            availProps.remove(propCat.getJdbcDriver());
+            availProps.remove(propCat.getJdbcUsername());
+            availProps.remove(propCat.getJdbcUrl());
+            availProps.remove(propCat.getJdbcPassword());
+            availProps.remove(propCat.getTableGenerationPropertyName());
+            for (int i = 0; i < pu.getProperties().sizeProperty2(); i++) {
+                String propName = pu.getProperties().getProperty2(i).getName();
+                if (!availProps.remove(propName) &&
                         availProps.contains("javax.persistence." + propName)) {
                     availProps.remove(propName);
                 }
