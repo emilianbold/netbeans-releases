@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form;
+package org.netbeans.modules.form.refactoring;
 
 import java.io.IOException;
 import java.util.Collection;

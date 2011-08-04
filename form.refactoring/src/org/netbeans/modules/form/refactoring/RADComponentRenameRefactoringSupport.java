@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.form;
+package org.netbeans.modules.form.refactoring;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
@@ -62,6 +62,11 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.RenameSupport;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;

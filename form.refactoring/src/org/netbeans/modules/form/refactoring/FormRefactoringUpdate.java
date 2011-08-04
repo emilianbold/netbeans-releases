@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.form;
+package org.netbeans.modules.form.refactoring;
 
 import java.awt.EventQueue;
 import java.io.IOException;
@@ -51,6 +51,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RenameSupport;
+import org.netbeans.modules.form.ResourceSupport;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;

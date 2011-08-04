@@ -488,7 +488,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             throw ioEx;
     }
 
-    void saveSourceOnly() throws IOException {
+    public void saveSourceOnly() throws IOException {
         try {
             saving = true; // workaround for bug 75225
             super.saveDocument();
