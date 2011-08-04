@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.platform;
 
-import java.io.File;
-import java.io.IOException;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.api.BasicVisualPanel;
@@ -72,12 +70,7 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String destDir = (String) getSettings().getProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY);
-        try {
-            plafNameValue.setText(NbPlatform.computeDisplayName(new File(destDir)));
-        } catch (IOException e) {
-            plafNameValue.setText(destDir);
-        }
+        plafNameValue.setText((String) getSettings().getProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY));
         checkForm();
     }
     
