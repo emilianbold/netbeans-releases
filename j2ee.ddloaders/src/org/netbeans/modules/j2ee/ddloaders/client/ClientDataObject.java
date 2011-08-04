@@ -68,6 +68,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
@@ -77,7 +78,8 @@ import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -91,8 +93,11 @@ import org.openide.loaders.OperationAdapter;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -168,7 +173,25 @@ public class ClientDataObject extends  DDMultiViewDataObject
         }
         return null;
     }
-    
+
+    @Override
+    protected String getEditorMimeType() {
+        return "text/x-dd-client";
+    }
+
+    @MultiViewElement.Registration(
+        mimeType="text/x-dd-client",
+        iconBase="org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml",
+        displayName="#CTL_SourceTabCaption",
+        position=1
+    )
+    @Messages("CTL_SourceTabCaption=Source")
+    public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
+    }
+
     /**
      * This methods gets called when object is changed
      *
@@ -232,14 +255,6 @@ public class ClientDataObject extends  DDMultiViewDataObject
         return "<application-client";
     }
 
-    
-    /**
-     * MultiViewDesc for MultiView editor
-     */
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[] {};
-    }
-    
     /**
      *
      *

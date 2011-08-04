@@ -293,12 +293,10 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     public static List<AnnotationMirror> getAllStereotypes( Element element ,
             AnnotationHelper helper  ) 
     {
-        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
-        Set<Element> foundStereotypesElement = new HashSet<Element>(); 
+        Set<AnnotationMirror> result = new HashSet<AnnotationMirror>();
         StereotypeChecker checker = new StereotypeChecker( helper);
-        doGetStereotypes(element, result, foundStereotypesElement, checker,
-                helper);
-        return result;
+        doGetStereotypes(element, result, checker,helper);
+        return new ArrayList<AnnotationMirror>( result );
     }
     
     public static boolean isStereotype( TypeElement annotationElement,
@@ -465,8 +463,8 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     }
     
     private static void doGetStereotypes( Element element , 
-            List<AnnotationMirror> result ,Set<Element>  foundStereotypesElement,
-            final StereotypeChecker checker , AnnotationHelper helper ) 
+            Set<AnnotationMirror> result ,final StereotypeChecker checker , 
+            AnnotationHelper helper ) 
     {
         TransitiveAnnotationHandler handler = new TransitiveAnnotationHandler(){
 
@@ -486,8 +484,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
             }
             
         };
-        transitiveVisitAnnotatedElements(element, result, foundStereotypesElement, 
-                helper, handler);
+        transitiveVisitAnnotatedElements(element, result, helper, handler);
     }
     
     private String getNamedName( Element element, AnnotationMirror namedAnnotation )
