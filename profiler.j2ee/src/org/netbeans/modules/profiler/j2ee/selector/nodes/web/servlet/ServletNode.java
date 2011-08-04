@@ -43,18 +43,18 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
+import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ServletNode extends JavaClassNode {
+public class ServletNode extends ClassNode {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     private String externalName;
@@ -63,9 +63,9 @@ public class ServletNode extends JavaClassNode {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     /** Creates a new instance of ServletNode */
-    public ServletNode(ClasspathInfo cpInfo, TypeElement classElement, String servletName, String servletMapping,
+    public ServletNode(SourceClassInfo clz, String servletName, String servletMapping,
                        ContainerNode parent) {
-        super(cpInfo, Utils.SERVLET_ICON, classElement, parent);
+        super(clz, servletName, Icons.getIcon(JavaEEIcons.SERVLET), parent);
         externalName = servletName;
         mapping = servletMapping;
     }
