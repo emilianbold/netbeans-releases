@@ -50,6 +50,26 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="Places">
+        <api name="modules"/>
+        <summary>Added <code>Places</code></summary>
+        <version major="7" minor="25"/>
+        <date day="4" month="8" year="2011"/>
+        <author login="jglick"/>
+        <compatibility>
+            <p>
+                Modules using system properties such as <code>netbeans.user</code>
+                should use this new API instead.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Introduced a structured API for accessing well-known file locations.
+            </p>
+        </description>
+        <class package="org.openide.modules" name="Places"/>
+        <issue number="57798"/>
+    </change>
     <change id="Dependency.java.keywords">
         <api name="modules"/>
         <summary>Module names can contain Java keywords</summary>

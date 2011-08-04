@@ -54,6 +54,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 
 /**
  *
@@ -73,8 +74,7 @@ public class PlatformLayersCacheManagerTest extends TestBase {
     protected void setUp() throws Exception {
 
         super.setUp();
-        File userdir = new File(System.getProperty("netbeans.user"));
-        cacheDir = new File(userdir, PlatformLayersCacheManager.CACHE_PATH);
+        cacheDir = new File(Places.getCacheDirectory(), PlatformLayersCacheManager.CACHE_PATH);
         assertFalse("Cache not yet saved", cacheDir.isDirectory());
         plaf = NbPlatform.getDefaultPlatform();
         jarNames = new HashSet<String>();

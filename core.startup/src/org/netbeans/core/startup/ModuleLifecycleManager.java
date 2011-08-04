@@ -49,6 +49,7 @@ import org.netbeans.CLIHandler;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.LifecycleManager;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -98,7 +99,7 @@ public class ModuleLifecycleManager extends LifecycleManager {
         if (!TopSecurityManager.class.getClassLoader().getClass().getName().endsWith(".Launcher$AppClassLoader")) {
             throw new UnsupportedOperationException("not running in regular module system, cannot restart"); // NOI18N
         }
-        String userdir = System.getProperty("netbeans.user"); // NOI18N
+        File userdir = Places.getUserDirectory();
         if (userdir == null) {
             throw new UnsupportedOperationException("no userdir"); // NOI18N
         }

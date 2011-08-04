@@ -74,6 +74,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -213,11 +214,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
     }
     private boolean existsDefaultIndexLocation() {
-        String userdir = System.getProperty("netbeans.user"); //NOI18N
-        if (userdir == null) {
-            return false; // from a unit test
-        }
-        File cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
+        File cacheDir = new File(Places.getCacheDirectory(), "mavenindex");//NOI18N
         return cacheDir.exists() && cacheDir.isDirectory();
     }
     private boolean checkDiff(String repoid, long amount) {

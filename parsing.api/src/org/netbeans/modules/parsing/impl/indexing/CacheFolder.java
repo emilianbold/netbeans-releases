@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.modules.Places;
 
 /**
  *
@@ -68,8 +69,6 @@ public final class CacheFolder {
 
     private static final Logger LOG = Logger.getLogger(CacheFolder.class.getName());
     
-    private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
-    private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"index";    //NOI18N
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
     private static final String SLICE_PREFIX = "s";              //NOI18N
     
@@ -198,20 +197,7 @@ public final class CacheFolder {
 
     public static synchronized FileObject getCacheFolder () {
         if (cacheFolder == null) {
-            final String nbUserDirProp = System.getProperty(NB_USER_DIR);
-            if (nbUserDirProp == null) {
-                throw new IllegalStateException("No " + NB_USER_DIR + " system property"); //NOI18N
-            }
-
-            final File nbUserDir = new File (nbUserDirProp);
-            File cache = FileUtil.normalizeFile(new File (nbUserDir, INDEX_DIR));
-            if (!cache.exists()) {
-                cache.mkdirs();
-                if (!cache.exists()) {
-                    throw new IllegalStateException("Can't create indices cache folder " + cache.getAbsolutePath()); //NOI18N
-                }
-            }
-
+            File cache = Places.getCacheSubdirectory("index"); // NOI18N
             if (!cache.isDirectory()) {
                 throw new IllegalStateException("Indices cache folder " + cache.getAbsolutePath() + " is not a folder"); //NOI18N
             }

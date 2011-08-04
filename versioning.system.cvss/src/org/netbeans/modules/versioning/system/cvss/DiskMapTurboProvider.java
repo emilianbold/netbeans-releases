@@ -45,12 +45,12 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.turbo.TurboProvider;
-import org.openide.filesystems.FileUtil;
 import org.openide.ErrorManager;
 
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import org.openide.modules.Places;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -306,13 +306,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private void initCacheStore() {
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "cvscache"); // NOI18N
-        } else {
-            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
-            cacheStore = new File(cachedir, "cvscache"); // NOI18N
-        }
+        cacheStore = Places.getCacheSubdirectory("cvscache"); // NOI18N
     }
 
     private void makeSureCacheStoreExists() {

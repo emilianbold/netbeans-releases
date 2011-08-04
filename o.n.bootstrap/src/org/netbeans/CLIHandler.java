@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.modules.Places;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -523,13 +524,13 @@ public abstract class CLIHandler extends Object {
         }
         
         // get the value
-        String home = System.getProperty("netbeans.user"); // NOI18N
+        String home = System.getProperty(Places.USER_DIR_PROP); // NOI18N
         if (home == null) {
             home = System.getProperty("user.home"); // NOI18N
-            System.setProperty ("netbeans.user", home); // NOI18N
+            System.setProperty(Places.USER_DIR_PROP, home); // NOI18N
         }
     
-        if ("memory".equals(home)) { // NOI18N
+        if (/*Places.MEMORY*/"memory".equals(home)) { // NOI18N
             int execCode = processInitLevelCLI(args, handlers, failOnUnknownOptions);
             return new Status(execCode);
         }

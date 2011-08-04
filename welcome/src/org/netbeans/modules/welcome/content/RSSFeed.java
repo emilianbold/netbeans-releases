@@ -92,7 +92,7 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -135,16 +135,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
      * Enclosing folder is created if it does not exist yet.
      */
     private static File initCacheStore(String path) throws IOException {
-        File cacheStore;
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "welcome"); // NOI18N
-        } else {
-            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
-            cacheStore = new File(cachedir, "welcome"); // NOI18N
-        }
-        cacheStore = new File(cacheStore, path);
-        cacheStore.getParentFile().mkdirs();
+        File cacheStore = Places.getCacheSubfile("welcome/" + path); // NOI18N
         cacheStore.createNewFile();
         return cacheStore;
     }

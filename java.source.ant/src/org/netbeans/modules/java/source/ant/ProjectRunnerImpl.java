@@ -80,6 +80,7 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -384,7 +385,7 @@ out:                for (FileObject root : exec.getRoots()) {
 
         URL thisClassSource = ProjectRunnerImpl.class.getProtectionDomain().getCodeSource().getLocation();
         File jarFile = FileUtil.archiveOrDirForURL(thisClassSource);
-        File scriptFile = new File(getCacheFolder(), actionName + ".xml");
+        File scriptFile = Places.getCacheSubfile("executor-snippets/" + actionName + ".xml");
         
         if (!scriptFile.canRead() || (jarFile != null && jarFile.lastModified() > scriptFile.lastModified())) {
             try {
@@ -402,34 +403,6 @@ out:                for (FileObject root : exec.getRoots()) {
         }
 
         return FileUtil.toFileObject(scriptFile);
-    }
-
-    private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
-    private static final String SNIPPETS_CACHE_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"executor-snippets";    //NOI18N
-
-
-    private static String getNbUserDir () {
-        final String nbUserProp = System.getProperty(NB_USER_DIR);
-        return nbUserProp;
-    }
-
-    private static File cacheFolder;
-
-    private static synchronized File getCacheFolder () {
-        if (cacheFolder == null) {
-            final String nbUserDirProp = getNbUserDir();
-            assert nbUserDirProp != null;
-            final File nbUserDir = new File (nbUserDirProp);
-            cacheFolder = FileUtil.normalizeFile(new File (nbUserDir, SNIPPETS_CACHE_DIR));
-            if (!cacheFolder.exists()) {
-                boolean created = cacheFolder.mkdirs();
-                assert created : "Cannot create cache folder";  //NOI18N
-            }
-            else {
-                assert cacheFolder.isDirectory() && cacheFolder.canRead() && cacheFolder.canWrite();
-            }
-        }
-        return cacheFolder;
     }
 
     private static void copyFile(URLConnection source, FileObject target) throws IOException {
