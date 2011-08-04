@@ -51,6 +51,7 @@ import org.openide.util.Lookup;
 /**
  *
  * @author Tomas Zezula
+ * @since 1.35
  */
 public final class SourceJavadocAttacher {
 

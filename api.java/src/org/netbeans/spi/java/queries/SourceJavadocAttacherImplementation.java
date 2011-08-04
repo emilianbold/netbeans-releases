@@ -43,10 +43,12 @@ package org.netbeans.spi.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
  * @author Tomas Zezula
+ * @since 1.35
  */
 public interface SourceJavadocAttacherImplementation {
 
@@ -56,6 +58,6 @@ public interface SourceJavadocAttacherImplementation {
         UNSUPPORTED
     }
 
-    Result attachSources(URL root) throws IOException;
-    Result attachJavadoc(URL root) throws IOException;
+    Result attachSources(@NonNull URL root) throws IOException;
+    Result attachJavadoc(@NonNull URL root) throws IOException;
 }
