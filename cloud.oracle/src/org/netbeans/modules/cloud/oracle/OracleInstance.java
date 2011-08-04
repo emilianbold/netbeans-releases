@@ -70,6 +70,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStatus;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -243,13 +244,19 @@ public class OracleInstance {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
             String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName, name);
-            if (!WhiteListTool.execute(f, tabName)) {
-//                return DeploymentStatus.FAILED;
+            File weblogic = WhiteListAction.findWeblogicJar();
+            if (weblogic != null) {
+                if (!WhiteListTool.execute(f, tabName, weblogic)) {
+    //                return DeploymentStatus.FAILED;
+                }
             }
             
             InputOutput io = IOProvider.getDefault().getIO(tabName, false);
             ow = io.getOut();
             owe = io.getErr();
+            if (weblogic == null) {
+                owe.println(NbBundle.getMessage(OracleInstance.class, "MSG_NO_WEBLOGIC"));
+            }
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
                 ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));

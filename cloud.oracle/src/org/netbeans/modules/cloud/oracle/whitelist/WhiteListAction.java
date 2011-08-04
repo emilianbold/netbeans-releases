@@ -42,16 +42,19 @@
 package org.netbeans.modules.cloud.oracle.whitelist;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Collection;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2eePlatformImpl2;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -59,6 +62,7 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -86,11 +90,16 @@ public class WhiteListAction extends AbstractAction {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("[temporary] Could you build your WAR first please?? Thanks."));
             return;
         }
+        final File weblogic = findWeblogicJar();
+        if (weblogic == null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Whitelist tool cannot be run without Weblogic 10.3.6 registered in the IDE."));
+            return;
+        }
         RequestProcessor.getDefault().post(new Runnable() {
 
             @Override
             public void run() {
-                WhiteListTool.execute(FileUtil.toFile(fo[0]));
+                WhiteListTool.execute(FileUtil.toFile(fo[0]), weblogic);
             }
         });
     }
@@ -130,6 +139,29 @@ public class WhiteListAction extends AbstractAction {
             return new WhiteListAction(project);
         }
 
+    }
+
+    private static final Version MINIMAL_WL_VERSION =
+            Version.fromJsr277OrDottedNotationWithFallback("10.3.6"); // NOI18N
+    
+    public static File findWeblogicJar() {
+        for (String id : Deployment.getDefault().getServerInstanceIDs()) {
+            File home;
+            try {
+                home = Deployment.getDefault().getServerInstance(id).getJ2eePlatform().getServerHome();
+            } catch (InstanceRemovedException ex) {
+                // ignore
+                continue;
+            }
+            Version version = WLPluginProperties.getServerVersion(home);
+            if (version != null && version.isAboveOrEqual(MINIMAL_WL_VERSION)) {
+                File f = WLPluginProperties.getWeblogicJar(home);
+                if (f != null) {
+                    return f;
+                }
+            }
+        }
+        return null;
     }
     
 }
