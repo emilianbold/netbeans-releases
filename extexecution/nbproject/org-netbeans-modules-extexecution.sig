@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.24.1
+#Version 1.25
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
@@ -215,7 +215,7 @@ meth public static org.netbeans.api.extexecution.input.InputReaderTask newTask(o
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 meth public void run()
 supr java.lang.Object
-hfds DELAY,LOGGER,cancelled,draining,inputProcessor,inputReader,running
+hfds DELAY_INCREMENT,LOGGER,MAX_DELAY,MIN_DELAY,cancelled,draining,inputProcessor,inputReader,running
 
 CLSS public final org.netbeans.api.extexecution.input.InputReaders
 innr public final static FileInput

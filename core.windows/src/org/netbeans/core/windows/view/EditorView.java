@@ -120,8 +120,12 @@ public class EditorView extends ViewElement {
                //#64701 on macosx the nb.scrollpane.border draws ugly line on top
                 panel.setBorder(BorderFactory.createEmptyBorder());
             } else {
-                // special border installed into UI manager by netbeans
-                panel.setBorder((Border)UIManager.get("Nb.ScrollPane.border"));
+                Border border = UIManager.getBorder( "Nb.EmptyEditorArea.border"); //NOI18N
+                if( null == border ) {
+                    // special border installed into UI manager by netbeans
+                    border = UIManager.getBorder("Nb.ScrollPane.border"); //NOI18N
+                }
+                panel.setBorder(border);
 	    }
         }
     }
