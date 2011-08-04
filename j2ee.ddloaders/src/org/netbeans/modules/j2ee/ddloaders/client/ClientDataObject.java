@@ -184,7 +184,8 @@ public class ClientDataObject extends  DDMultiViewDataObject
         iconBase="org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif",
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="multiview_xml",
-        displayName="#CTL_SourceTabCaption"
+        displayName="#CTL_SourceTabCaption",
+        position=1
     )
     @Messages("CTL_SourceTabCaption=Source")
     public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
