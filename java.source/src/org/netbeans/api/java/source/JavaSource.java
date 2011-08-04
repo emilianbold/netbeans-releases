@@ -819,6 +819,11 @@ public final class JavaSource {
         }
 
         @Override
+        public ElementUtilities createElementUtilities(@NonNull JavacTaskImpl jt) {
+            return new ElementUtilities(jt);
+        }
+
+        @Override
         public Map<FileObject, List<ModificationResult.Difference>> getDiffsFromModificationResult(ModificationResult mr) {
             return mr.diffs;
         }

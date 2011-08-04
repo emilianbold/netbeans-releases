@@ -59,7 +59,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.Icon;
-import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -71,7 +70,6 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
@@ -112,6 +110,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
@@ -173,11 +172,13 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -231,6 +232,7 @@ public final class WebProject implements Project {
     private final WebProjectLibrariesModifierImpl libMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
+    private WhiteListUpdater whiteListUpdater;
     
     private AntBuildExtender buildExtender;
 
@@ -399,6 +401,7 @@ public final class WebProject implements Project {
         deployOnSaveSupport = new DeployOnSaveSupportProxy();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
+        whiteListUpdater = new WhiteListUpdater(this);
     }
 
     public void setProjectPropertiesSave(boolean value) {
@@ -583,6 +586,8 @@ public final class WebProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
+            //new ServerWhiteListDelegation(this),
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
@@ -608,6 +613,35 @@ public final class WebProject implements Project {
         return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
     
+//    private static class ServerWhiteListDelegation implements WhiteListQueryImplementation {
+//
+//        private WebProject project;
+//
+//        public ServerWhiteListDelegation(WebProject project) {
+//            this.project = project;
+//        }
+//        
+//        @Override
+//        public WhiteListImplementation getWhiteList(FileObject file) {
+//            String servInstID = project.evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+//            if (servInstID != null) {
+//                J2eePlatform platform;
+//                try {
+//                    platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+//                    WhiteListQueryImplementation sw = platform.getLookup().lookup(WhiteListQueryImplementation.class);
+//                    if (sw != null) {
+//                        return sw.getWhiteList(file);
+//                    }
+//                } catch (InstanceRemovedException ex) {
+//                    //Exceptions.printStackTrace(ex);
+//                }
+//            }
+//            return null;
+//        }
+//        
+//    }
+
+
     public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
@@ -2269,6 +2303,85 @@ public final class WebProject implements Project {
         }
 
     }
+
+    /**
+     * When server is changes web project and all its subprojects get enabled
+     * whitelist if necessary.
+     */
+    private void updateWhitelist(String oldWhiteListId, String newWhiteListId) {
+        List<Project> projs = new ArrayList<Project>();
+        projs.add(this);
+        projs.addAll(getLookup().lookup(SubprojectProvider.class).getSubprojects());
+        for (Project p : projs) {
+            if (oldWhiteListId != null) {
+                WhiteListQuery.enableWhiteListInProject(p, oldWhiteListId, false);
+            }
+            if (newWhiteListId != null) {
+                WhiteListQuery.enableWhiteListInProject(p, newWhiteListId, true);
+            }
+        }
+    }
+
+
+    private static class WhiteListUpdater implements PropertyChangeListener {
+
+        private static final RequestProcessor rp = new RequestProcessor();
+        private WebProject p;
+        private String lastWhiteList;
+
+        public WhiteListUpdater(WebProject p) {
+            this.p = p;
+            lastWhiteList = getServerWhiteList();
+            p.evaluator().addPropertyChangeListener(this);
+        }
     
+        private void updateWhitelist(final String oldWhiteListId, final String newWhiteListId) {
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    p.updateWhitelist(oldWhiteListId, newWhiteListId);
+                }
+            });
+        }
+        
+        private void checkWhiteLists() {
+            String newWhiteList = getServerWhiteList();
+            if ((newWhiteList == null && lastWhiteList == null) ||
+                (newWhiteList != null && lastWhiteList != null && newWhiteList.equals(lastWhiteList))) {
+                return;
+            }
+            updateWhitelist(lastWhiteList, newWhiteList);
+            lastWhiteList = newWhiteList;
+        }
+        
+        private String getServerWhiteList() {
+            String servInstID = p.evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            if (servInstID != null) {
+                J2eePlatform platform;
+                try {
+                    platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+                    WhiteListQueryImplementation.UserSelectable sw = platform.getLookup().lookup(WhiteListQueryImplementation.UserSelectable.class);
+                    if (sw != null) {
+                        return sw.getId();
+                    }
+                } catch (InstanceRemovedException ex) {
+                    //Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(WebProjectProperties.J2EE_SERVER_INSTANCE)){
+                checkWhiteLists();
+            }
+            if (evt.getPropertyName().equals(ProjectProperties.JAVAC_CLASSPATH)){
+                // if classpath changes refresh whitelists as well:
+                updateWhitelist(null, getServerWhiteList());
+            }
+        }
+        
+    }
 
 }
