@@ -82,15 +82,15 @@ public class PlatformComponentFactoryTest extends NbTestCase {
         NbPlatformListModel model = new NbPlatformListModel();
 
         int size = model.getSize();
-        List<NbPlatform> actual = new ArrayList<NbPlatform>(size);
+        List<String> actual = new ArrayList<String>(size);
         for (int i = 0; i < size; i++) {
-            actual.add((NbPlatform) model.getElementAt(i));
+            actual.add(((NbPlatform) model.getElementAt(i)).getLabel());
         }
         assertEquals(Arrays.asList(
-                NbPlatform.getPlatformByID("first"),
-                NbPlatform.getPlatformByID("between"),
-                NbPlatform.getDefaultPlatform(),
-                NbPlatform.getPlatformByID("last")
+                "AAA first",
+                "Development IDE",
+                "KKK between",
+                "ZZZ last"
                 ), actual);
     }
     
