@@ -410,14 +410,6 @@ public class TopComponentOperator extends JComponentOperator {
         }
     }
 
-    /** Saves this document by popup menu on tab. */
-    public void saveDocument() {
-        // Save Document
-        String saveItem = Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle",
-                "LBL_SaveDocumentAction");
-        pushMenuOnTab(saveItem);
-    }
-
     /** Finds index-th TopComponent with given name in whole IDE.
      * @param name name of TopComponent
      * @param index index of TopComponent
