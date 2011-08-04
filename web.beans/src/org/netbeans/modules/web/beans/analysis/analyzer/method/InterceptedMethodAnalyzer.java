@@ -178,5 +178,20 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
             }
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer#getInterceptorBindings(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel)
+     */
+    @Override
+    protected Set<AnnotationMirror> getInterceptorBindings( Element element,
+            WebBeansModel model )
+    {
+        Set<AnnotationMirror> iBindings = super.getInterceptorBindings(element, model);
+        List<? extends AnnotationMirror> annotations = model
+                .getCompilationController().getElements()
+                .getAllAnnotationMirrors(element);
+        iBindings.retainAll(annotations);
+        return iBindings;
+    }
 
 }

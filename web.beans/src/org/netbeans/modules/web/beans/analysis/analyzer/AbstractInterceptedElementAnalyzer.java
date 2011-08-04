@@ -44,7 +44,6 @@ package org.netbeans.modules.web.beans.analysis.analyzer;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -65,13 +64,7 @@ public abstract class AbstractInterceptedElementAnalyzer {
     {
         Collection<AnnotationMirror> interceptorBindings = model
                 .getInterceptorBindings(element);
-        List<? extends AnnotationMirror> annotations = model
-                .getCompilationController().getElements()
-                .getAllAnnotationMirrors(element);
-        Set<AnnotationMirror> set = new HashSet<AnnotationMirror>(
-                interceptorBindings);
-        set.retainAll(annotations);
-        return set;
+        return new HashSet<AnnotationMirror>( interceptorBindings );
     }
     
     protected boolean hasInterceptorBindings(Element element,
