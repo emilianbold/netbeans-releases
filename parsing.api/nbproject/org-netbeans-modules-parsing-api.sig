@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.39.1
+#Version 1.42.0
 
 CLSS public abstract interface java.io.Serializable
 
@@ -188,8 +188,10 @@ meth public void refreshIndex(java.net.URL,java.util.Collection<? extends java.n
  anno 2 org.netbeans.api.annotations.common.NullAllowed()
 meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>)
 meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean)
+meth public void refreshIndexAndWait(java.net.URL,java.util.Collection<? extends java.net.URL>,boolean,boolean)
 supr java.lang.Object
-hfds instance
+hfds inRefreshIndexAndWait,instance
+hcls MyAccessor
 
 CLSS public org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent
 cons protected init(java.lang.Object,int,int)
