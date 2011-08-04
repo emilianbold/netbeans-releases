@@ -39,20 +39,66 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.weblogic9.cloud;
+package org.netbeans.modules.libs.cloud9;
 
 import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
+import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  */
-public class WhiteListQueryImpl implements WhiteListQueryImplementation {
+@ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
+    path="org-netbeans-api-java/whitelists/")
+public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
     @Override
     public WhiteListImplementation getWhiteList(FileObject file) {
-        
-        return WhiteListQuerySupport.createBuilder();
+        return WhiteListConfigReader.getDefault();
     }
+
+    @Override
+    public String getDisplayName() {
+        return "Oracle Cloud-9";
+    }
+
+    @Override
+    public String getId() {
+        return "cloud-9"; // or should it be rather "cloud-9-version-1.0"
+    }
+    
+    
+    @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
+        path="org-netbeans-api-java/whitelists/")
+    public static class TestingWhitelist implements WhiteListQueryImplementation.UserSelectable {
+
+        private WhiteListImplementation test;
+
+        public TestingWhitelist() {
+            test = WhiteListImplementationBuilder.create().
+                    addCheckedPackage("java.rmi").
+                    addInvocableClass("java/rmi/Naming").
+                    setDisplayName("Testing Whitelist").
+                    build();
+        }
+        
+        @Override
+        public String getDisplayName() {
+            return "Testing Whitelist (allows java.rmi.Naming)";
+        }
+
+        @Override
+        public String getId() {
+            return "test-whitelist";
+        }
+
+        @Override
+        public WhiteListImplementation getWhiteList(FileObject file) {
+            return test;
+        }
+        
+    }
+    
 }

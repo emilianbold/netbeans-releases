@@ -52,11 +52,11 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.cloud.oracle.whitelist.WhiteListQueryImpl;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
+import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -167,7 +167,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     @Override
     public Lookup getLookup() {
         return LookupProviderSupport.createCompositeLookup(
-                Lookups.fixed(new WhiteListQueryImpl(), new Marker()), 
+                Lookups.fixed(WhiteListQuerySupport.createCloud9WhiteListQueryImpl(), new Marker()), 
                 "J2EE/DeploymentPlugins/Oracle Cloud 9/Lookup"); //NOI18N
     }
     

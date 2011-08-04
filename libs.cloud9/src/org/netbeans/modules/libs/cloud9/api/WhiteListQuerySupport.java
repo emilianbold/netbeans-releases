@@ -41,17 +41,15 @@
  */
 package org.netbeans.modules.libs.cloud9.api;
 
-import org.netbeans.modules.libs.cloud9.WhiteListConfigReader;
-import org.netbeans.spi.whitelist.WhiteListQueryImplementation.WhiteListImplementation;
+import org.netbeans.modules.libs.cloud9.WhiteListQueryImpl;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 
 /**
  *
- * @author david
  */
 public class WhiteListQuerySupport {
     
-    public static WhiteListImplementation createBuilder() {
-        return WhiteListConfigReader.getDefault();
+    public static WhiteListQueryImplementation createCloud9WhiteListQueryImpl() {
+        return new WhiteListQueryImpl();
     }
-    
 }
