@@ -202,7 +202,7 @@ public class ClassPathUtils {
     
     public static boolean isOnClassPath(FileObject fileInProject, String className) {
         String resourceName = className.replace('.', '/') + ".class"; // NOI18N
-        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.COMPILE);
         if (classPath == null)
             return false;
 
