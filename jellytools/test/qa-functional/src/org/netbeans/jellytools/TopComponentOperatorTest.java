@@ -199,19 +199,6 @@ public class TopComponentOperatorTest extends JellyTestCase {
     }
 
     /**
-     * Test of saveDocument method.
-     */
-    public void testSaveDocument() {
-        ProjectsTabOperator.invoke();
-        new OpenAction().performAPI(editableSourceNode);
-        EditorOperator eo = new EditorOperator(editableSourceNode.getText());
-        eo.insert("//dummy\n", 1, 1); // NOI18N
-        eo.saveDocument();
-        boolean modified = eo.isModified();
-        assertFalse("Document is not saved.", modified);//NOI18N
-    }
-
-    /**
      * Test of save method.
      */
     public void testSave() {
