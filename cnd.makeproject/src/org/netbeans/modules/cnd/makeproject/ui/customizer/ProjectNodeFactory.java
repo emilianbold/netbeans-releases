@@ -113,10 +113,12 @@ public class ProjectNodeFactory {
         }
         uncheckedCustomizers.removeAll(debugCustomizers);
 
-        CustomizerNode advanced = getAdvancedCustomizerNode(uncheckedCustomizers, lookup);
-        if (advanced != null) {
-            descriptions.add(advanced);
-        }
+        // Add remainder nodes direcrtly under root and not under Advanced. Don't need Advanced node anymore, right?
+        descriptions.addAll(uncheckedCustomizers);
+//        CustomizerNode advanced = getAdvancedCustomizerNode(uncheckedCustomizers, lookup);
+//        if (advanced != null) {
+//            descriptions.add(advanced);
+//        }
 
         descriptions.add(createRequiredProjectsDescription(lookup));
         if (includeMakefileDescription) {

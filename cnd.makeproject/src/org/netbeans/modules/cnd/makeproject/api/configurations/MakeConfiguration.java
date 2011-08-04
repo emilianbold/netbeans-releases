@@ -1012,9 +1012,7 @@ public class MakeConfiguration extends Configuration {
 
     public String getOutputValue() {
         String output = null;
-        if (isCustomConfiguration()) {
-            output = getProjectCustomizer().getOutputValue(this);
-        } else if (isLinkerConfiguration()) {
+        if (isLinkerConfiguration()) {
             output = getLinkerConfiguration().getOutputValue();
         } else if (isArchiverConfiguration()) {
             output = getArchiverConfiguration().getOutputValue();

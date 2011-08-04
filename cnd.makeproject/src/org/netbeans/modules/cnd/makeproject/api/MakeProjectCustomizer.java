@@ -57,7 +57,6 @@ public interface MakeProjectCustomizer {
     public String getCustomizerId();
     public String getIconPath();
     public String getMakefileWriter();
-    public String getOutputValue(MakeConfiguration makeConfiguration);
     public Action[] getActions(Project project, List<Action> actions);
     public Object[] getLookup(FileObject getProjectDirectory, Object[] base);
     public Sheet getPropertySheet(Sheet sheet);

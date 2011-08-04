@@ -62,9 +62,6 @@ public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomi
     public abstract String getIconPath();
 
     @Override
-    public abstract String getOutputValue(MakeConfiguration makeConfiguration);
-
-    @Override
     public String getMakefileWriter() {
         return null;
     }

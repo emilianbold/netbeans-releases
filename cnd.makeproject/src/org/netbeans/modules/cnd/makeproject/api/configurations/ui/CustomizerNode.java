@@ -58,7 +58,7 @@ public class CustomizerNode {
     private final String name;
     private final String displayName;
     private CustomizerNode[] children;
-    private final Lookup lookup;
+    protected final Lookup lookup;
 
     public enum CustomizerStyle {SHEET, PANEL};
         

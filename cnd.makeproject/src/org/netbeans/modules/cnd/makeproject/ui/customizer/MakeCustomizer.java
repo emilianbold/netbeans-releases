@@ -638,7 +638,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             lastContext = new MakeContext(MakeContext.Kind.Project, project, getSelectedHost(), selectedConfigurations)
                     .setPanel(this)
                     .setConfigurationDescriptor(projectDescriptor);
-            Lookup lookup = Lookups.fixed(lastContext);
+            Lookup lookup = Lookups.fixed(lastContext, project); // FIXUP: MakeContext should be public so other projects could make use of the context. Adding 'project' so they can at least get that.
             return ProjectNodeFactory.createRootNodeProject(lookup);
         }
     }
