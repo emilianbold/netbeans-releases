@@ -381,7 +381,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             return tpe.getSimpleName().toString();
                     }
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, TYPE);
                         if (containsDeclaredType(tm))
@@ -395,7 +395,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = iterableElementType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
                         if (containsDeclaredType(tm))
@@ -407,7 +407,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, true);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
                         if (containsDeclaredType(tm))
@@ -419,7 +419,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, false);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
                         if (containsDeclaredType(tm))
@@ -435,7 +435,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     return ""; //NOI18N
                 } else if (tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, CAST);
                         if (containsDeclaredType(tm))
@@ -455,7 +455,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = uncaughtExceptionType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, UNCAUGHT_EXCEPTION_TYPE);
                         if (containsDeclaredType(tm))
