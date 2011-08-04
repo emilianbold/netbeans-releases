@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.14.1
+#Version 8.15
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)

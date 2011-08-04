@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 0.76.1
+#Version 0.79.0
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotation(com.sun.source.tree.AnnotationTree,{com.sun.source.tree.TreeVisitor%1})
@@ -47,6 +47,7 @@ meth public abstract {com.sun.source.tree.TreeVisitor%0} visitTry(com.sun.source
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitTypeCast(com.sun.source.tree.TypeCastTree,{com.sun.source.tree.TreeVisitor%1})
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitTypeParameter(com.sun.source.tree.TypeParameterTree,{com.sun.source.tree.TreeVisitor%1})
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitUnary(com.sun.source.tree.UnaryTree,{com.sun.source.tree.TreeVisitor%1})
+meth public abstract {com.sun.source.tree.TreeVisitor%0} visitUnionType(com.sun.source.tree.UnionTypeTree,{com.sun.source.tree.TreeVisitor%1})
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitVariable(com.sun.source.tree.VariableTree,{com.sun.source.tree.TreeVisitor%1})
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitWhileLoop(com.sun.source.tree.WhileLoopTree,{com.sun.source.tree.TreeVisitor%1})
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitWildcard(com.sun.source.tree.WildcardTree,{com.sun.source.tree.TreeVisitor%1})
@@ -110,6 +111,7 @@ meth public {com.sun.source.util.TreeScanner%0} visitTry(com.sun.source.tree.Try
 meth public {com.sun.source.util.TreeScanner%0} visitTypeCast(com.sun.source.tree.TypeCastTree,{com.sun.source.util.TreeScanner%1})
 meth public {com.sun.source.util.TreeScanner%0} visitTypeParameter(com.sun.source.tree.TypeParameterTree,{com.sun.source.util.TreeScanner%1})
 meth public {com.sun.source.util.TreeScanner%0} visitUnary(com.sun.source.tree.UnaryTree,{com.sun.source.util.TreeScanner%1})
+meth public {com.sun.source.util.TreeScanner%0} visitUnionType(com.sun.source.tree.UnionTypeTree,{com.sun.source.util.TreeScanner%1})
 meth public {com.sun.source.util.TreeScanner%0} visitVariable(com.sun.source.tree.VariableTree,{com.sun.source.util.TreeScanner%1})
 meth public {com.sun.source.util.TreeScanner%0} visitWhileLoop(com.sun.source.tree.WhileLoopTree,{com.sun.source.util.TreeScanner%1})
 meth public {com.sun.source.util.TreeScanner%0} visitWildcard(com.sun.source.tree.WildcardTree,{com.sun.source.util.TreeScanner%1})
@@ -665,7 +667,7 @@ meth public {org.netbeans.api.java.source.ElementHandle%0} resolve(org.netbeans.
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds kind,log,signatures
+hfds NORMALIZATION_CACHE,kind,log,signatures
 hcls ElementHandleAccessorImpl
 
 CLSS public final org.netbeans.api.java.source.ElementUtilities
@@ -1081,6 +1083,7 @@ meth public com.sun.source.tree.TypeParameterTree insertTypeParameterBound(com.s
 meth public com.sun.source.tree.TypeParameterTree removeTypeParameterBound(com.sun.source.tree.TypeParameterTree,com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.TypeParameterTree removeTypeParameterBound(com.sun.source.tree.TypeParameterTree,int)
 meth public com.sun.source.tree.UnaryTree Unary(com.sun.source.tree.Tree$Kind,com.sun.source.tree.ExpressionTree)
+meth public com.sun.source.tree.UnionTypeTree UnionType(java.util.List<? extends com.sun.source.tree.Tree>)
 meth public com.sun.source.tree.VariableTree Variable(com.sun.source.tree.ModifiersTree,java.lang.CharSequence,com.sun.source.tree.Tree,com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.VariableTree Variable(javax.lang.model.element.VariableElement,com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.WhileLoopTree WhileLoop(com.sun.source.tree.ExpressionTree,com.sun.source.tree.StatementTree)
@@ -1103,6 +1106,10 @@ meth public org.openide.filesystems.FileObject getFileObject()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public static org.netbeans.api.java.source.TreePathHandle create(com.sun.source.util.TreePath,org.netbeans.api.java.source.CompilationInfo)
 meth public static org.netbeans.api.java.source.TreePathHandle create(javax.lang.model.element.Element,org.netbeans.api.java.source.CompilationInfo)
+meth public static org.netbeans.api.java.source.TreePathHandle from(org.netbeans.api.java.source.ElementHandle<?>,org.netbeans.api.java.source.ClasspathInfo)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds delegate,log
 hcls CountingDelegate,Delegate,ElementDelegate,EmptyDelegate,TreeDelegate
