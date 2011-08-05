@@ -335,11 +335,22 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isCompileConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
-               getConfigurationType().getValue() == TYPE_STATIC_LIB ||
-               getConfigurationType().getValue() == TYPE_CUSTOM;    // <=== FIXUP
+//        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+//               getConfigurationType().getValue() == TYPE_STATIC_LIB ||
+//               getConfigurationType().getValue() == TYPE_CUSTOM;    // <=== FIXUP
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_STATIC_LIB:
+                return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isCompileConfiguration();
+            default:
+                return false;
+        }
     }
 
     public boolean isLibraryConfiguration() {
@@ -348,8 +359,9 @@ public class MakeConfiguration extends Configuration {
             case TYPE_STATIC_LIB:
             case TYPE_QT_DYNAMIC_LIB:
             case TYPE_QT_STATIC_LIB:
-            case TYPE_CUSTOM: // <=== FIXUP
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isLibraryConfiguration();
             default:
                 return false;
         }
@@ -360,10 +372,20 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isLinkerConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
-               getConfigurationType().getValue() == TYPE_CUSTOM;   // <=== FIXUP
+//        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+//               getConfigurationType().getValue() == TYPE_CUSTOM;   // <=== FIXUP
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
+            case TYPE_DYNAMIC_LIB:
+                return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isLinkerConfiguration();
+            default:
+                return false;
+        }
     }
 
     public final boolean isMakefileConfiguration() {
@@ -374,15 +396,24 @@ public class MakeConfiguration extends Configuration {
         switch (getConfigurationType().getValue()) {
             case TYPE_DYNAMIC_LIB:
             case TYPE_QT_DYNAMIC_LIB:
-            case TYPE_CUSTOM: // <=== FIXUP
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isDynamicLibraryConfiguration();
             default:
                 return false;
         }
     }
 
     public boolean isArchiverConfiguration() {
-        return getConfigurationType().getValue() == TYPE_STATIC_LIB;
+//        return getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_STATIC_LIB:
+                return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isArchiverConfiguration();
+            default:
+                return false;
+        }
     }
 
     public boolean isQmakeConfiguration() {
@@ -403,6 +434,8 @@ public class MakeConfiguration extends Configuration {
             case TYPE_DYNAMIC_LIB:
             case TYPE_STATIC_LIB:
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isStandardManagedConfiguration();
             default:
                 return false;
         }

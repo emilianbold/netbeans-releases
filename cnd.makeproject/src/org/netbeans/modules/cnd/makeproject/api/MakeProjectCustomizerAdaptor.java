@@ -85,4 +85,34 @@ public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomi
     public CustomizerNode getRootPropertyNode(CustomizerNode rootPopertyNode) {
         return rootPopertyNode;
     }
+
+    @Override
+    public boolean isArchiverConfiguration() {
+        return false;
+    }
+
+    @Override
+    public boolean isCompileConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isDynamicLibraryConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isLibraryConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isLinkerConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isStandardManagedConfiguration() {
+        return false;
+    }
 }
