@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.Property;
-import org.netbeans.modules.css.editor.PropertyModel.Element;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 
 /**
  * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
@@ -52,14 +52,14 @@ import org.netbeans.modules.css.editor.PropertyModel.Element;
  */
 public class CssValueElement extends CssPropertyElement {
     
-    private Element value; 
+    private GrammarElement value; 
     
-    public CssValueElement(Property property, Element value) {
+    public CssValueElement(PropertyDescriptor property, GrammarElement value) {
         super(property);
         this.value = value;
     }
 
-    public Element value() {
+    public GrammarElement value() {
         return value;
     }
     

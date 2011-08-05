@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -40,8 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.css.editor.csl;
-
+package org.netbeans.modules.css.editor.properties.parser;
 
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
 
@@ -49,16 +48,25 @@ import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
  *
  * @author mfukala@netbeans.org
  */
-public class CssPropertyElement extends CssElement {
-
-    private PropertyDescriptor propertyDescriptor;
+public class PropertyModel {
     
-    public CssPropertyElement(PropertyDescriptor propertyDescriptor) {
-        super(propertyDescriptor.getName());
-        this.propertyDescriptor = propertyDescriptor;
+    private GroupGrammarElement values;
+    private PropertyDescriptor pd;
+    
+    
+    public PropertyModel(PropertyDescriptor pd) {
+        this.pd = pd;
     }
     
     public PropertyDescriptor getPropertyDescriptor() {
-        return this.propertyDescriptor;
+        return pd;
     }
+        
+    public synchronized GroupGrammarElement values() {
+        if(values == null) {
+            values = GrammarParser.parse(pd.getValueGrammar(), pd.getName());
+        } 
+        return values;
+    }    
+    
 }

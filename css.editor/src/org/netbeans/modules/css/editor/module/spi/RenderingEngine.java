@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,77 +34,84 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.module.spi;
 
-package org.netbeans.modules.css.editor;
-
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
+ * todo: make it enum?
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class Property {
+public abstract class RenderingEngine {
+
+    private static final String MOZILLA = "Mozilla"; //NOI18N
+    private static final String MS = "Microsoft"; //NOI18N
     
-    private String name, initialValue, appliedTo, percentages;
-    private Collection<String> mediaGroups;
-    private PropertyModel.GroupElement values;
-    private String valuesText;
-    private boolean inherited;
+    public static final RenderingEngine MOZILLA_FIREFOX_50 = new RenderingEngine() {
+
+        @Override
+        public String getVendor() {
+            return MOZILLA;
+        }
+
+        @Override
+        public String getName() {
+            return "Firefox";
+        }
+
+        @Override
+        public String getVersion() {
+            return "5.0";
+        }
+    };
+    public static final RenderingEngine MICROSOFT_IE_90 = new RenderingEngine() {
+
+        @Override
+        public String getVendor() {
+            return MS;
+        }
+
+        @Override
+        public String getName() {
+            return "Internet Explorer";
+        }
+
+        @Override
+        public String getVersion() {
+            return "9.0";
+        }
+    };
     
-    Property(String name, String initialValue, String valuesText,
-            String appliedTo, boolean inherited, String percentages, 
-            Collection<String> mediaGroups) {
-        this.name = name;
-        this.initialValue = initialValue;
-        this.valuesText = valuesText;
-        this.appliedTo = appliedTo;
-        this.inherited = inherited;
-        this.percentages = percentages;
-        this.mediaGroups = mediaGroups;
-    }
-        
-    public String name() {
-        return name;
+    public static final Collection<RenderingEngine> ALL = 
+            Arrays.asList(new RenderingEngine[]{
+                MOZILLA_FIREFOX_50, 
+                MICROSOFT_IE_90
+            });
+    
+    private static final char ID_ITEMS_SEPARATOR = '_'; //NOI18N
+
+    //mozilla
+    public abstract String getVendor();
+
+    //firefox
+    public abstract String getName();
+
+    //5.0
+    public abstract String getVersion();
+
+    //mozilla_firefox_5.0
+    public String getId() {
+        return new StringBuilder().append(getVendor()).append(ID_ITEMS_SEPARATOR).append(getName()).append(ID_ITEMS_SEPARATOR).append(getVersion()).toString();
     }
 
-    public synchronized PropertyModel.GroupElement values() {
-        if(values == null) {
-            values = PropertyModel.instance().parse(valuesText, name);
-        } 
-        return values;
+    public String getDescription() {
+        return ""; //default is no description
     }
-    
-    String valuesText() {
-        return valuesText;
-    }
-    
-    public String initialValue() {
-        return initialValue;
-    }
-    
-    //XXX returns just a string description of the applicable elements
-    //this needs to be fixed together with #1
-    public String appliedTo() {
-        return appliedTo;
-    }
-    
-    public boolean inherited() {
-        return inherited;
-    }
-    
-    //XXX returns just a string description!!!
-    public String percentages() {
-        return percentages;
-    }
-    
-    public Collection<String> mediaGroups() {
-        return mediaGroups;
-    }
-    
-    
 }
