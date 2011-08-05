@@ -53,7 +53,6 @@ import org.openide.util.lookup.ServiceProvider;
  * A SPI for attaching source roots and javadoc roots to binary roots.
  * The implementations of this interface are registered in global {@link Lookup}
  * @see ServiceProvider
- * @since 1.35
  * @author Tomas Zezula
  * @since 1.35
  */
