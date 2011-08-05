@@ -205,6 +205,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
         assert o != null && o instanceof FileObject : o + " is not null and instanceof FileObject.";
         FileObject fileObject = (FileObject) o;
         info = FoDFileSystem.getInstance ().whichProvides(fileObject);
+        assert info != null : "No info for " + fileObject;
         finder = new FindComponentModules(info);
     }
 
