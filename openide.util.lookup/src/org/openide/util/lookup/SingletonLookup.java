@@ -146,6 +146,10 @@ class SingletonLookup extends Lookup {
         return item;
     }
 
+    @Override public String toString() {
+        return "SingletonLookup[" + objectToLookup + "]";
+    }
+
     static class SingletonResult<T> extends Lookup.Result<T> {
 
         private final Lookup.Item<T> item;

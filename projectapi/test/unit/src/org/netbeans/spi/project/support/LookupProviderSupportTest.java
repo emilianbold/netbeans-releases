@@ -53,22 +53,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -83,55 +74,6 @@ public class LookupProviderSupportTest extends NbTestCase {
         super(testName);
     }
 
-    /**
-     * Test of createCompositeLookup method, of class org.netbeans.spi.project.support.LookupProviderSupport.
-     */
-    public void testCreateCompositeLookup() {
-        LookupMergerImpl merger = new LookupMergerImpl();
-        Lookup base = Lookups.fixed(new JButton(), new JComboBox(), merger);
-        LookupProviderImpl pro1 = new LookupProviderImpl();
-        LookupProviderImpl pro2 = new LookupProviderImpl();
-        LookupProviderImpl pro3 = new LookupProviderImpl();
-        
-        InstanceContent provInst = new InstanceContent();
-        Lookup providers = new AbstractLookup(provInst);
-        provInst.add(pro1);
-        provInst.add(pro2);
-        
-        pro1.ic.add(new JTextField());
-        pro2.ic.add(new JTextArea());
-        
-        LookupProviderSupport.DelegatingLookupImpl del = new LookupProviderSupport.DelegatingLookupImpl(base, providers, "<irrelevant>");
-        
-        assertNotNull(del.lookup(JTextArea.class));
-        assertNotNull(del.lookup(JComboBox.class));
-        
-        // test merger..
-        JButton butt = del.lookup(JButton.class);
-        assertNotNull(butt);
-        assertEquals("CORRECT", butt.getText());
-        assertEquals(1, del.lookupAll(JButton.class).size());
-        assertEquals(1, merger.expectedCount);
-        
-        pro3.ic.add(new JButton());
-        pro3.ic.add(new JRadioButton());
-        provInst.add(pro3);
-        assertNotNull(del.lookup(JRadioButton.class));
-                
-        // test merger..
-        assertEquals(butt, del.lookup(JButton.class));
-        assertEquals(1, del.lookupAll(JButton.class).size());
-        assertEquals(2, merger.expectedCount);
-        
-        pro1.ic.add(new JButton());
-        
-        // test merger..
-        assertEquals(butt, del.lookup(JButton.class));
-        assertEquals(1, del.lookupAll(JButton.class).size());
-        assertEquals(3, merger.expectedCount);
-        
-    }
-    
     private SourcesImpl createImpl(String id) {
         SourcesImpl impl0 = new SourcesImpl();
         SourceGroupImpl grp0 = new SourceGroupImpl();
@@ -160,7 +102,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         pro2.ic.add(impl2);
         pro3.ic.add(impl3);
         
-        LookupProviderSupport.DelegatingLookupImpl del = new LookupProviderSupport.DelegatingLookupImpl(base, providers, "<irrelevant>");
+        DelegatingLookupImpl del = new DelegatingLookupImpl(base, providers, "<irrelevant>");
         
         Sources srcs = del.lookup(Sources.class); 
         assertNotNull(srcs);
@@ -221,26 +163,14 @@ public class LookupProviderSupportTest extends NbTestCase {
                 return Lookups.singleton(instance);
             }
         }
-        Lookup inner = new LookupProviderSupport.DelegatingLookupImpl(base, Lookups.fixed(new Prov(impl2)), null);
-        Lookup outer = new LookupProviderSupport.DelegatingLookupImpl(inner, Lookups.fixed(new Prov(impl3)), null);
+        Lookup inner = new DelegatingLookupImpl(base, Lookups.fixed(new Prov(impl2)), null);
+        Lookup outer = new DelegatingLookupImpl(inner, Lookups.fixed(new Prov(impl3)), null);
         List<String> names = new ArrayList<String>();
         for (SourceGroup g : outer.lookup(Sources.class).getSourceGroups("java")) {
             names.add(g.getName());
         }
         Collections.sort(names);
         assertEquals("[group1, group2, group3]", names.toString());
-    }
-    
-    private class LookupProviderImpl implements LookupProvider {
-        InstanceContent ic = new InstanceContent();
-        boolean wasAlreadyCalled = false;
-        public Lookup createAdditionalLookup(Lookup baseContext) {
-            assertNotNull(baseContext.lookup(JButton.class));
-            assertNull(baseContext.lookup(JCheckBox.class));
-            assertFalse(wasAlreadyCalled);
-            wasAlreadyCalled = true;
-            return new AbstractLookup(ic);
-        }
     }
 
     private class LookupProviderImpl2 implements LookupProvider {
@@ -252,26 +182,6 @@ public class LookupProviderSupportTest extends NbTestCase {
             }
             return l;
         }
-    }
-    
-    private class LookupMergerImpl implements LookupMerger<JButton> {
-        
-        int expectedCount;
-        
-        public Class<JButton> getMergeableClass() {
-            return JButton.class;
-        }
-
-        public @Override JButton merge(final Lookup lookup) {
-            expectedCount = lookup.lookupAll(JButton.class).size();
-            lookup.lookupResult(JButton.class).addLookupListener(new LookupListener() {
-                public @Override void resultChanged(LookupEvent ev) {
-                    expectedCount = lookup.lookupAll(JButton.class).size();
-                }
-            });
-            return new JButton("CORRECT");
-        }
-        
     }
     
     private static class SourcesImpl implements Sources {
