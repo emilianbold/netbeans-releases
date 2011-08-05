@@ -42,8 +42,10 @@
 package org.netbeans.modules.maven;
 
 import java.util.prefs.BackingStoreException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -65,6 +67,7 @@ import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
@@ -73,6 +76,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
@@ -365,10 +369,28 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
         }
         String artifactId = XMLUtil.findText(artifactIdE);
-        if (groupId.contains("${")) {
-            LOGGER.log(Level.FINE, "Unevaluated groupId in {0}", basedir);
-        } else if (artifactId.contains("${")) {
-            LOGGER.log(Level.FINE, "Unevaluated artifactId in {0}", basedir);
+        if (groupId.contains("${") || artifactId.contains("${")) {
+            LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId in {0}", basedir);
+            FileObject basedirFO = FileUtil.toFileObject(basedir);
+            if (basedirFO != null) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject(basedirFO);
+                    if (p != null) {
+                        NbMavenProjectImpl nbmp = p.getLookup().lookup(NbMavenProjectImpl.class);
+                        if (nbmp != null) {
+                            MavenFileOwnerQueryImpl.getInstance().registerProject(nbmp);
+                        } else {
+                            LOGGER.log(Level.FINE, "not a Maven project in {0}", basedir);
+                        }
+                    } else {
+                        LOGGER.log(Level.FINE, "no project in {0}", basedir);
+                    }
+                } catch (IOException x) {
+                    LOGGER.log(Level.FINE, null, x);
+                }
+            } else {
+                LOGGER.log(Level.FINE, "no FileObject for {0}", basedir);
+            }
         } else {
             try {
                 MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, basedir.toURI().toURL());

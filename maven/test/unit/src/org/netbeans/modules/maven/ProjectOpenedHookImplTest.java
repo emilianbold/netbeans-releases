@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,6 +63,14 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
+    }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override protected String logRoot() {
+        return "org.netbeans.modules.maven";
     }
 
     public void testGeneratedSources() throws Exception { // #187595
@@ -113,9 +122,14 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
         FileObject src = d.createFolder("src");
         FileObject tsrc = d.createFolder("tsrc");
         Project prj = ProjectManager.getDefault().findProject(p);
-        new ProjectOpenedHookImpl((NbMavenProjectImpl) prj).projectOpened();
-        assertEquals(prj, FileOwnerQuery.getOwner(src));
-        assertEquals(prj, FileOwnerQuery.getOwner(tsrc));
+        ProjectOpenedHookImpl pohi = new ProjectOpenedHookImpl((NbMavenProjectImpl) prj);
+        pohi.projectOpened();
+        try {
+            assertEquals(prj, FileOwnerQuery.getOwner(src));
+            assertEquals(prj, FileOwnerQuery.getOwner(tsrc));
+        } finally {
+            pohi.projectClosed();
+        }
     }
 
     public void testRegistrationOfSubmodules() throws Exception { // #200445
@@ -128,19 +142,25 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
                 "<packaging>pom</packaging><modules><module>m</module></modules>" +
                 "</project>");
         TestFileUtils.writeFile(d, "p2/m/pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
-                "<groupId>g</groupId><artifactId>m</artifactId><version>0</version>" +
+                "<groupId>g</groupId><properties><my.name>m</my.name></properties><artifactId>${my.name}</artifactId><version>0</version>" +
                 "</project>");
         Project p = ProjectManager.getDefault().findProject(d);
-        new ProjectOpenedHookImpl((NbMavenProjectImpl) p).projectOpened();
-        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
-        File mArt = new File(repo, "g/m/0/m-0.jar");
-        Project m = FileOwnerQuery.getOwner(mArt.toURI());
-        assertNotNull(m);
-        assertEquals(d.getFileObject("p2/m"), m.getProjectDirectory());
-        File p2Art = new File(repo, "g/p2/0/p2-0.pom");
-        Project p2 = FileOwnerQuery.getOwner(p2Art.toURI());
-        assertNotNull(p2);
-        assertEquals(d.getFileObject("p2"), p2.getProjectDirectory());
+        ProjectOpenedHookImpl pohi = new ProjectOpenedHookImpl((NbMavenProjectImpl) p);
+        pohi.projectOpened();
+        try {
+            File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+            File mArt = new File(repo, "g/m/0/m-0.jar");
+            // XXX verify that p2 has not yet been loaded
+            Project m = FileOwnerQuery.getOwner(mArt.toURI());
+            assertNotNull(m);
+            assertEquals(d.getFileObject("p2/m"), m.getProjectDirectory());
+            File p2Art = new File(repo, "g/p2/0/p2-0.pom");
+            Project p2 = FileOwnerQuery.getOwner(p2Art.toURI());
+            assertNotNull(p2);
+            assertEquals(d.getFileObject("p2"), p2.getProjectDirectory());
+        } finally {
+            pohi.projectClosed();
+        }
     }
 
 }
