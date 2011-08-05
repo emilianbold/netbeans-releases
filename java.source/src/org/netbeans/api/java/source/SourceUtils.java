@@ -260,7 +260,7 @@ public class SourceUtils {
      */
     @NonNull
     public static String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
-        return ElementHandleAccessor.INSTANCE.getVMSignature(handle);
+        return ElementHandleAccessor.INSTANCE.getJVMSignature(handle);
     }
     
     /**Resolve full qualified name in the given context. Adds import statement as necessary.
