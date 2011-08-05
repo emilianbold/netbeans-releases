@@ -93,6 +93,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
         FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
         SSH("ssh", "ssh://host.xz[:port]/path/to/repo.git/"),                   // NOI18N    
+        SFTP("sftp", "sftp://host.xz[:port]/path/to/repo.git/"),              // NOI18N
         GIT("git", "git://host.xz[:port]/path/to/repo.git/"),                   // NOI18N
         RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");                    // NOI18N
         
