@@ -61,7 +61,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -736,7 +735,7 @@ public class MakeConfiguration extends Configuration {
     
     public String getSourceBaseDir() {        
         if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-            FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
+            FileObject projectDirFO = getBaseFSPath().getFileObject();
             try {                
                 Project project = ProjectManager.getDefault().findProject(projectDirFO);
                 if (project != null) {

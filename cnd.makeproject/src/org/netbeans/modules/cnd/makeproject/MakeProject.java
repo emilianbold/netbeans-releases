@@ -1143,15 +1143,20 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         if (!isOpenHookDone) {
             FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
-                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
+                final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
                 if (env != null && env.isRemote()) {
-                    try {
-                        ConnectionManager.getInstance().connectTo(env);
-                    } catch (IOException ex) {
-                        
-                    } catch (CancellationException ex) {
-                        // don't log CancellationException
-                    }
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ConnectionManager.getInstance().connectTo(env);
+                            } catch (IOException ex) {
+
+                            } catch (CancellationException ex) {
+                                // don't log CancellationException
+                            }
+                        }
+                    });
                 }
             }            
             helper.addMakeProjectListener(MakeProject.this);
