@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.analyzer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -102,7 +103,17 @@ public class SQLStatementAnalyzer {
         if (!nextToken(seq)) {
             return null;
         }
-        if (isKeyword("SELECT", seq)) { // NOI18N
+        if (isKeyword("DECLARE", seq) || isKeyword("SET", seq)) {
+            // find SELECT keyword below
+            while (isKeyword("DECLARE", seq) || isKeyword("SET", seq)) {
+                if (!nextToken(seq, SQLTokenId.COMMA, SQLTokenId.OPERATOR, SQLTokenId.IDENTIFIER, SQLTokenId.STRING)) {
+                    return null;
+                }
+            }
+            if (isKeyword("SELECT", seq)) { // NOI18N
+                return SQLStatementKind.SELECT;
+            }
+        } else if (isKeyword("SELECT", seq)) { // NOI18N
             return SQLStatementKind.SELECT;
         } else if (isKeyword("INSERT", seq)) {  //NOI18N
             return SQLStatementKind.INSERT;
@@ -124,11 +135,15 @@ public class SQLStatementAnalyzer {
 
     /** Skip whitespace and comments and move to next token. Returns true, if
      * token is available, false otherwise. */
-    private static boolean nextToken(TokenSequence<SQLTokenId> seq) {
+    private static boolean nextToken(TokenSequence<SQLTokenId> seq, SQLTokenId... toSkip) {
         boolean move;
         skip:
         while (move = seq.moveNext()) {
-            switch (seq.token().id()) {
+            SQLTokenId id = seq.token().id();
+            if (toSkip != null && Arrays.asList(toSkip).contains(id)) {
+                continue;
+            }
+            switch (id) {
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
@@ -313,7 +328,7 @@ public class SQLStatementAnalyzer {
         }
 
         /** Compares aliases if both exist, table names otherwise. */
-        public int compareTo(TableIdent that) {
+         public int compareTo(TableIdent that) {
             if (this.getAlias() != null && that.getAlias() != null) {
                 return this.getAlias().compareToIgnoreCase(that.getAlias());
             } else {

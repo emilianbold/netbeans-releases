@@ -119,6 +119,10 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         revertNewFilesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         revertNewFilesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        cbRecursiveRevert.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbRecursiveRevert, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "CTL_RevertPanel_Recursive.text")); // NOI18N
+        cbRecursiveRevert.setToolTipText(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "CTL_RevertPanel_Recursive.TTtext")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,6 +130,9 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addComponent(cbRecursiveRevert))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(17, 17, 17)
                         .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -149,7 +156,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(startSearchButton)
                             .addComponent(endSearchButton)))
-                    .addComponent(revertNewFilesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE))
+                    .addComponent(revertNewFilesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -158,6 +165,8 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(localChangesRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbRecursiveRevert)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(oneCommitRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -178,7 +187,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                     .addComponent(endSearchButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(revertNewFilesCheckBox)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         localChangesRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RevertPanel_RevertLocal")); // NOI18N
@@ -196,6 +205,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.ButtonGroup buttonGroup = new javax.swing.ButtonGroup();
+    final javax.swing.JCheckBox cbRecursiveRevert = new javax.swing.JCheckBox();
     final javax.swing.JTextField endRevisionTextField = new javax.swing.JTextField();
     final javax.swing.JButton endSearchButton = new javax.swing.JButton();
     private javax.swing.JLabel jLabel2;

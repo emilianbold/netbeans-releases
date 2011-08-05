@@ -160,6 +160,15 @@ public class RevertModifications implements PropertyChangeListener {
         }
         return false;
     }      
+
+    public boolean revertRecursively () {
+        for (RevertType type : types) {
+            if(type.isSelected()) {
+                return type.revertRecursively();
+            }
+        }
+        return false;
+    }   
     
     public boolean showDialog() {
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertDialog")); // NOI18N
@@ -198,6 +207,10 @@ public class RevertModifications implements PropertyChangeListener {
         getPanel().oneRevisionSearchButton.setEnabled(b);
         getPanel().oneRevisionTextField.setEnabled(b);
     }
+
+    protected final void setLocalModificationsFieldsEnabled (boolean b) {
+        getPanel().cbRecursiveRevert.setEnabled(b);
+    }
         
     private abstract class RevertType implements ActionListener, DocumentListener {
         private JRadioButton button;
@@ -215,6 +228,10 @@ public class RevertModifications implements PropertyChangeListener {
             return panel.revertNewFilesCheckBox.isSelected();
         }
         
+        boolean revertRecursively () {
+            return true;
+        }
+
         @Override
         public void insertUpdate(DocumentEvent e) {
             validateUserInput();
@@ -273,8 +290,14 @@ public class RevertModifications implements PropertyChangeListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            setLocalModificationsFieldsEnabled(true);
             setOneCommitFieldsEnabled(false);
             setMoreCommitsFieldsEnabled(false);
+        }
+
+        @Override
+        boolean revertRecursively () {
+            return getPanel().cbRecursiveRevert.isSelected();
         }
     }
 
@@ -309,6 +332,7 @@ public class RevertModifications implements PropertyChangeListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            setLocalModificationsFieldsEnabled(false);
             setOneCommitFieldsEnabled(true);
             setMoreCommitsFieldsEnabled(false);
             validateUserInput();
@@ -367,6 +391,7 @@ public class RevertModifications implements PropertyChangeListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            setLocalModificationsFieldsEnabled(false);
             setMoreCommitsFieldsEnabled(true);
             setOneCommitFieldsEnabled(false);
             validateUserInput();

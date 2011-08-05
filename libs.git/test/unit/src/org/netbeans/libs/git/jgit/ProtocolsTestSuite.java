@@ -39,58 +39,42 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.jgit.commands;
 
-import java.net.URISyntaxException;
-import java.util.Collection;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.eclipse.jgit.errors.TransportException;
-import org.eclipse.jgit.lib.Ref;
+package org.netbeans.libs.git.jgit;
+
+import java.io.File;
+import java.io.IOException;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.transport.FetchConnection;
 import org.eclipse.jgit.transport.Transport;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.eclipse.jgit.transport.URIish;
 
 /**
  *
  * @author ondra
  */
-abstract class ListRemoteObjectsCommand extends TransportCommand {
-    private Collection<Ref> refs;
-    
-    public ListRemoteObjectsCommand (Repository repository, String remoteRepositoryUrl, ProgressMonitor monitor) {
-        super(repository, remoteRepositoryUrl, monitor);
+public class ProtocolsTestSuite extends AbstractGitTestCase {
+    private Repository repository;
+    private File workDir;
+
+    public ProtocolsTestSuite (String testName) throws IOException {
+        super(testName);
     }
 
     @Override
-    protected final void run () throws GitException {
-        Transport t = null;
-        FetchConnection conn = null;
-        try {
-            t = openTransport(false);
-            conn = t.openFetch();
-            refs = conn.getRefs();
-        } catch (URISyntaxException ex) {
-            throw new GitException(ex.getMessage(), ex);
-        } catch (NotSupportedException ex) {
-            throw new GitException(ex.getMessage(), ex);
-        } catch (TransportException e) {
-            handleException(e);
-        } finally {
-            if (conn != null) {
-                conn.close();
-            }
-            if (t != null) {
-                t.close();
-            }
-        }
-        processRefs();
+    protected void setUp() throws Exception {
+        super.setUp();
+        workDir = getWorkingDirectory();
+        repository = getRepository(getLocalGitRepository());
     }
-
-    protected abstract void processRefs ();
     
-    protected final Collection<Ref> getRefs () {
-        return refs;
+    public void testFtpProtocol () throws Exception {
+        Transport t = Transport.open(repository, new URIish("ftp://ftphost/abc"));
+        try {
+            t.openFetch();
+            fail("JGit ftp support fixed, fix #200693 workaround");
+            // ftp support fixed, wa in TransportCommand.openTransport should be removed 
+        } catch (ClassCastException ex) {
+            // jgit has a bug that prevents from using ftp protocol
+        }
     }
 }
