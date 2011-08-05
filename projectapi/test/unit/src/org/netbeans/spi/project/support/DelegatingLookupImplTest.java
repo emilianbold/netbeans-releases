@@ -106,7 +106,7 @@ public class DelegatingLookupImplTest extends NbTestCase {
 
     }
 
-    private class LookupMergerImpl implements LookupMerger<JButton> {
+    private static class LookupMergerImpl implements LookupMerger<JButton> {
 
         int expectedCount;
 
@@ -126,7 +126,7 @@ public class DelegatingLookupImplTest extends NbTestCase {
 
     }
 
-    private class LookupProviderImpl implements LookupProvider {
+    private static class LookupProviderImpl implements LookupProvider {
         InstanceContent ic = new InstanceContent();
         boolean wasAlreadyCalled = false;
         @Override public Lookup createAdditionalLookup(Lookup baseContext) {
