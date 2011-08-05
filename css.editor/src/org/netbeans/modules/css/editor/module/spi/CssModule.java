@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +59,12 @@ import org.netbeans.modules.web.common.api.Pair;
  * @author mfukala@netbeans.org
  */
 public abstract class CssModule {
+    
+    public Collection<RenderingEngine> getExtraRenderingEngines() {
+        return null;
+    }
+    
+    public abstract Collection<PropertyDescriptor> getPropertyDescriptors();
     
     public abstract List<CompletionProposal> complete(CompletionContext context);    
   

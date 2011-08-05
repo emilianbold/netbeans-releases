@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,31 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.css.editor.csl;
-
-
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+package org.netbeans.modules.css.editor.properties.parser;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class CssPropertyElement extends CssElement {
+public class ValueGrammarElement extends GrammarElement {
 
-    private PropertyDescriptor propertyDescriptor;
-    
-    public CssPropertyElement(PropertyDescriptor propertyDescriptor) {
-        super(propertyDescriptor.getName());
-        this.propertyDescriptor = propertyDescriptor;
+    public ValueGrammarElement(GroupGrammarElement parent) {
+        super(parent);
     }
     
-    public PropertyDescriptor getPropertyDescriptor() {
-        return this.propertyDescriptor;
+    boolean isUnit = false;
+    String value = null;
+
+    /** true for 'unit' values like length, angle etc. Simply for those which has no fixed value. */
+    public boolean isUnit() {
+        return isUnit;
     }
+
+    void setIsUnit(boolean isUnit) {
+        this.isUnit = isUnit;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    void setValue(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return (isUnit() ? "!" : "") + value() + super.toString(); //NOI18N
+    }
+    
 }
