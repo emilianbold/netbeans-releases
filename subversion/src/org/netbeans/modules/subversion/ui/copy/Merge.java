@@ -118,6 +118,10 @@ public class Merge extends CopyDialog implements ItemListener {
         return getSelectedType().getMergeEndRevision();
     }
 
+    boolean isStartRevisionIncluded () {
+        return getSelectedType().isStartRevisionIncluded();
+    }
+
     private MergeType getSelectedType() {
         return (MergeType) getMergePanel().typeComboBox.getSelectedItem();
     }
@@ -282,6 +286,10 @@ public class Merge extends CopyDialog implements ItemListener {
             return null;
         }
 
+        public boolean isStartRevisionIncluded () {
+            return false;
+        }
+
         RepositoryPaths getMergeStartRepositoryPath() {
             return mergeStartRepositoryPaths;
         }
@@ -359,6 +367,11 @@ public class Merge extends CopyDialog implements ItemListener {
             previewPanel.localFolderTextField.setText(root.getAbsolutePath());
             ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+        }
+
+        @Override
+        public boolean isStartRevisionIncluded () {
+            return panel.cbIncludeStartRevision.isSelected();
         }
 
         public String getDisplayName() {
@@ -440,6 +453,11 @@ public class Merge extends CopyDialog implements ItemListener {
         public RepositoryFile getMergeStartRepositoryFile() {
             // in this case its the same folder url
             return getMergeEndRepositoryFile();
+        }
+
+        @Override
+        public boolean isStartRevisionIncluded () {
+            return panel.cbIncludeStartRevision.isSelected();
         }
 
         public String getDisplayName() {
