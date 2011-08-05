@@ -320,7 +320,7 @@ public class EditablePropertiesTest extends NbTestCase {
         assertEquals("Label:", p.get("k5"));
         p.put("k2", "more");
         p.put("k4", "more");
-        assertEquals(text.replace("k3=whatever", "k2=more\nk3=whatever\nk4=more"), getAsString(p));
+        assertEquals(text.replace("k3=whatever", "k2=more\nk3=whatever\nk4=more").replace("\n", System.getProperty("line.separator")), getAsString(p));
     }
     
     // test that iterator implementation is OK
