@@ -59,10 +59,10 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import oracle.nuviaq.api.ApplicationManager;
 import oracle.nuviaq.api.ApplicationManagerConnectionFactory;
-import oracle.nuviaq.api.ManagerException;
-import oracle.nuviaq.model.xml.ApplicationDeploymentType;
-import oracle.nuviaq.model.xml.JobType;
-import oracle.nuviaq.model.xml.LogType;
+import oracle.nuviaq.exception.ManagerException;
+import oracle.nuviaq.model.xml.ApplicationDeployment;
+import oracle.nuviaq.model.xml.Job;
+import oracle.nuviaq.model.xml.Log;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -263,7 +263,7 @@ public class OracleInstance {
             }
             String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
-            ApplicationDeploymentType adt =new ApplicationDeploymentType();
+            ApplicationDeployment adt =new ApplicationDeployment();
             
             // XXXX: nuviaq API problem:
             adt.setInstanceId(tenantId + "." + serviceName);
@@ -275,8 +275,8 @@ public class OracleInstance {
             adt.setArchiveUrl(f.getName());
             
             boolean redeploy = false;
-            List<ApplicationDeploymentType> apps = am.listApplications(tenantId, serviceName);
-            for (ApplicationDeploymentType app : apps) {
+            List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
+            for (ApplicationDeployment app : apps) {
                 if (app.getApplicationId().equals(appContext)) {
                     redeploy = true;
                     adt = app;
@@ -284,7 +284,7 @@ public class OracleInstance {
                 }
             }
             
-            JobType jt;
+            Job jt;
             if (redeploy) {
                 LOG.log(Level.INFO, "redeploying: archive="+f+" "+adt); // NOI18N
                 jt = am.redeployApplication(is, tenantId, serviceName, adt);
@@ -310,7 +310,7 @@ public class OracleInstance {
                     Exceptions.printStackTrace(ex);
                 }
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, redeploy ? "MSG_REDEPLOYING_APP" : "MSG_DEPLOYING_APP"));
-                JobType latestJob = am.describeJob(jt.getJobId());
+                Job latestJob = am.describeJob(jt.getJobId());
                 String jobStatus = latestJob.getStatus();
                 numberOfJobsToIgnore = dumpLog(am, ow, owe, latestJob, numberOfJobsToIgnore);
                 if ("Complete".equals(jobStatus)) {
@@ -360,9 +360,9 @@ public class OracleInstance {
         }
     }
     
-    private static int dumpLog(ApplicationManager am, OutputWriter ow, OutputWriter owe, JobType latestJob, int numberOfJobsToIgnore) {
+    private static int dumpLog(ApplicationManager am, OutputWriter ow, OutputWriter owe, Job latestJob, int numberOfJobsToIgnore) {
         int i = 0;
-        for (LogType lt : latestJob.getLogs().getLogs()) {
+        for (Log lt : latestJob.getLogs()) {
             i++;
             if (numberOfJobsToIgnore > 0) {
                 numberOfJobsToIgnore--;
@@ -397,12 +397,12 @@ public class OracleInstance {
     
 //    private static List<Future> tasks = new ArrayList<Future>();
 
-    public List<ApplicationDeploymentType> getApplications() {
+    public List<ApplicationDeployment> getApplications() {
         assert !SwingUtilities.isEventDispatchThread();
         return getApplicationManager().listApplications(getTenantId(), getServiceName());
     }
 
-    public void undeploy(ApplicationDeploymentType app) {
+    public void undeploy(ApplicationDeployment app) {
         assert !SwingUtilities.isEventDispatchThread();
         getApplicationManager().undeployApplication(getTenantId(), getServiceName(), app.getApplicationId());
     }

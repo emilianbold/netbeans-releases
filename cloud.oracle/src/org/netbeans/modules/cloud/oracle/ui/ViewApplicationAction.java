@@ -43,7 +43,7 @@ package org.netbeans.modules.cloud.oracle.ui;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import oracle.nuviaq.model.xml.ApplicationDeploymentType;
+import oracle.nuviaq.model.xml.ApplicationDeployment;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.awt.HtmlBrowser;
 import org.openide.nodes.Node;
@@ -59,7 +59,7 @@ public class ViewApplicationAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
-        ApplicationDeploymentType app = activatedNodes[0].getLookup().lookup(ApplicationDeploymentType.class);
+        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
         String appContext = app.getArchiveUrl().substring(0, app.getArchiveUrl().lastIndexOf('.'));
         String url = "http://localhost:7001/"+appContext+"/";
         try {
@@ -75,7 +75,7 @@ public class ViewApplicationAction extends NodeAction {
             return false;
         }
         return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
-                activatedNodes[0].getLookup().lookup(ApplicationDeploymentType.class) != null;
+                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
     }
 
     @Override

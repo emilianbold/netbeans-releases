@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.Action;
-import oracle.nuviaq.model.xml.ApplicationDeploymentType;
+import oracle.nuviaq.model.xml.ApplicationDeployment;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
@@ -113,13 +113,13 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }
 
-    private static class OracleJ2EEInstanceChildren extends Children.Keys<ApplicationDeploymentType> {
+    private static class OracleJ2EEInstanceChildren extends Children.Keys<ApplicationDeployment> {
 
         private OracleJ2EEInstance aij;
 
         public OracleJ2EEInstanceChildren(OracleJ2EEInstance aij) {
             this.aij = aij;
-            setKeys(Collections.<ApplicationDeploymentType>emptySet());
+            setKeys(Collections.<ApplicationDeployment>emptySet());
         }
         
         @Override
@@ -129,15 +129,15 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
 
         @Override
         protected void removeNotify() {
-            setKeys(Collections.<ApplicationDeploymentType>emptySet());
+            setKeys(Collections.<ApplicationDeployment>emptySet());
         }
         
         @Override
-        protected Node[] createNodes(ApplicationDeploymentType key) {
+        protected Node[] createNodes(ApplicationDeployment key) {
             return new Node[]{new ApplicationNode(aij, key)};
         }
         
-        private List<ApplicationDeploymentType> getKeys () {
+        private List<ApplicationDeployment> getKeys () {
             return null;
         }
         
@@ -145,7 +145,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             OracleInstance.runAsynchronously(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    List<ApplicationDeploymentType> apps = aij.getOracleInstance().getApplications();
+                    List<ApplicationDeployment> apps = aij.getOracleInstance().getApplications();
                     OracleJ2EEInstanceChildren.this.setKeys(apps);
                     return null;
                 }
@@ -157,7 +157,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
 
         // TODO: impl this properly
 
-        public ApplicationNode(OracleJ2EEInstance aij, ApplicationDeploymentType app) {
+        public ApplicationNode(OracleJ2EEInstance aij, ApplicationDeployment app) {
             super(Children.LEAF, Lookups.fixed(aij, app));
             setName(""); // NOI18N
             setDisplayName(app.getApplicationId());

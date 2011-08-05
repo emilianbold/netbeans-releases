@@ -146,6 +146,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <package>oracle.nuviaq.api</package>
+                <package>oracle.nuviaq.exception</package>
                 <package>oracle.nuviaq.model.xml</package>
                 <package>org.netbeans.modules.libs.cloud9.api</package>
             </friend-packages>
