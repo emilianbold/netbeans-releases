@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form;
+package org.netbeans.modules.form.refactoring;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;

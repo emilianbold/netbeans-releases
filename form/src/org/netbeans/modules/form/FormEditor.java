@@ -242,7 +242,7 @@ public class FormEditor {
         return formLoaded;
     }
     
-    boolean loadForm() {
+    public boolean loadForm() {
         if (!formLoaded) {
             Runnable r = new Runnable() {
                 @Override
@@ -403,7 +403,7 @@ public class FormEditor {
         }
     }
     
-    void saveFormData() throws PersistenceException {
+    public void saveFormData() throws PersistenceException {
         if (formLoaded && !formDataObject.formFileReadOnly() && !formModel.isReadOnly()) {
             formModel.fireFormToBeSaved();
 
@@ -499,7 +499,7 @@ public class FormEditor {
         logPersistenceError(t, -1);
     }
 
-    boolean anyPersistenceError() {
+    public boolean anyPersistenceError() {
         return persistenceErrors != null && !persistenceErrors.isEmpty();
     }
 

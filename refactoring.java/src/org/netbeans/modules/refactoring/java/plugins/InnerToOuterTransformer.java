@@ -149,12 +149,25 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
             if (thisString != null && currentElement instanceof ExecutableElement) {
                 ExecutableElement constr = (ExecutableElement) currentElement;
-                if (constr.isVarArgs()) {
-                    int index = constr.getParameters().size() - 1;
-                    rewrite(arg0, make.insertNewClassArgument(arg0, index, make.Identifier(thisString)));
-                } else {
-                    rewrite(arg0, make.addNewClassArgument(arg0, make.Identifier(thisString)));
+                ExpressionTree enclosingExpression = arg0.getEnclosingExpression();
+                boolean removeEnclosingExpression = false;
+                if(enclosingExpression != null) {
+                    Element enclosingElement = workingCopy.getTrees().getElement(workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), enclosingExpression));
+                    if(workingCopy.getTypes().isSameType(enclosingElement.asType(), outer.asType())) {
+                        thisString = enclosingExpression.toString();
+                        removeEnclosingExpression = true;
+                    }
                 }
+                
+                int index = constr.getParameters().size();
+                if (constr.isVarArgs()) {
+                    index--;
+                }
+                NewClassTree newClassTree = make.insertNewClassArgument(arg0, index, make.Identifier(thisString));
+                if(removeEnclosingExpression) {
+                    newClassTree = make.NewClass(null, (List<? extends ExpressionTree>)newClassTree.getTypeArguments(), newClassTree.getIdentifier(), newClassTree.getArguments(), newClassTree.getClassBody());
+                }
+                rewrite(arg0, newClassTree);
             }
         } else if (refactoring.getReferenceName() != null && currentElement != null
                 // nested class will be moved to new file
