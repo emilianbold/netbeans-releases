@@ -43,19 +43,58 @@ package org.netbeans.spi.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import org.netbeans.api.java.queries.SourceJavadocAttacher;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * A SPI for attaching source roots and javadoc roots to binary roots.
+ * The implementations of this interface are registered in global {@link Lookup}
+ * @see ServiceProvider
+ * @since 1.35
  * @author Tomas Zezula
  */
 public interface SourceJavadocAttacherImplementation {
 
+    /**
+     * Result of the attaching sources (javadoc) to binary root.
+     */
     enum Result {
+        /**
+         * The source (javadoc) root was successfully attached to
+         * the binary root.
+         */
         ATTACHED,
+
+        /**
+         * User canceled the attaching, no other SPI provider
+         * is called and {@link SourceJavadocAttacher} returns false.
+         */
         CANCELED,
+
+        /**
+         * The SPI is not able to attach sources (javadoc) to given
+         * binary root (it does not handle it), next SPI provider is
+         * called.
+         */
         UNSUPPORTED
     }
 
+    /**
+     * Attaches a source root provided by this SPI to given binary root.
+     * Called by event dispatch thread, it's safe to show an UI to select source root(s).
+     * @param root the binary root to attach sources to
+     * @return {@link SourceJavadocAttacherImplementation.Result} the result of
+     * attach operation.
+     */
     Result attachSources(URL root) throws IOException;
+
+    /**
+     * Attaches a javadoc root provided by this SPI to given binary root.
+     * Called by event dispatch thread, it's safe to show an UI to select javadoc root(s).
+     * @param root the binary root to attach javadoc to
+     * @return {@link SourceJavadocAttacherImplementation.Result} the result of
+     * attach operation.
+     */
     Result attachJavadoc(URL root) throws IOException;
 }

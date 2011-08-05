@@ -76,6 +76,25 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="source-javadoc-attacher">
+            <api name="queries"/>
+            <summary>Added SourceJavadocAttacher to allow clients to attach source (javadoc) roots to binary root</summary>
+            <version major="1" minor="35"/>
+            <date day="11" month="8" year="2011"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added an API to allow clients to attach source roots and javadoc roots to binary roots.
+                    The API delegates to SPI implementations which provide specific behavior depending on
+                    type of binary root (platform, library, maven artifact). There is also fallback implementation
+                    handling unknown binary roots by storing the bindings into IDE's userdir.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="SourceJavadocAttacher" />
+            <class package="org.netbeans.spi.java.queries" name="SourceJavadocAttacherImplementation" />
+            <issue number="47498"/>
+        </change>
         <change id="source-level-changes">
             <api name="queries"/>
             <summary>Added notifications about source level changes into SourceLevelQuery</summary>

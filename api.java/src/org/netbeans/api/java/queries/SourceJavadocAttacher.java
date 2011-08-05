@@ -43,6 +43,7 @@ package org.netbeans.api.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.Exceptions;
@@ -51,20 +52,41 @@ import org.openide.util.Lookup;
 /**
  *
  * @author Tomas Zezula
+ * A support for attaching source roots and javadoc roots to binary roots.
+ * @since 1.35
  */
 public final class SourceJavadocAttacher {
 
     private SourceJavadocAttacher() {}
 
+    /**
+     * Attaches a source root provided by the SPI {@link SourceJavadocAttacherImplementation}
+     * to given binary root.
+     * Has to be called by event dispatch thread as the SPI implementation may need to show
+     * an UI to select source root(s).
+     * @param root the binary root to attach sources to
+     * @return true if the source root was successfully attached
+     */
     public static boolean attachSources(@NonNull final URL root) {
         return attach(root,0);
     }
 
+    /**
+     * Attaches a javadoc root provided by the SPI {@link SourceJavadocAttacherImplementation}
+     * to given binary root.
+     * Has to be called by event dispatch thread as the SPI implementation may need to show
+     * an UI to select javadoc root(s).
+     * @param root the binary root to attach javadoc to
+     * @return true if the javadoc root was successfully attached
+     */
     public static boolean attachJavadoc(@NonNull final URL root) {
         return attach(root,1);
     }
 
     private static boolean attach(final URL root, final int mode) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Has to be called by EDT.");    //NOI18N
+        }
         try {
             for (SourceJavadocAttacherImplementation attacher : Lookup.getDefault().lookupAll(SourceJavadocAttacherImplementation.class)) {
                 final SourceJavadocAttacherImplementation.Result res =
