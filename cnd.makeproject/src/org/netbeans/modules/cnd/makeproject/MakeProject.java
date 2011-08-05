@@ -1162,7 +1162,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 case MakeConfiguration.TYPE_QT_STATIC_LIB:
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
                     break;
-                case MakeConfiguration.TYPE_CUSTOM: // <== FIXUP
+                case MakeConfiguration.TYPE_CUSTOM:
                     MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
                     icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
                     break;

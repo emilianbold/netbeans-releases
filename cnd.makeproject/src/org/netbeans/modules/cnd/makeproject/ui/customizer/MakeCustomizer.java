@@ -539,8 +539,8 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                                 for (int i = 0; i < selectedConfigurations.length; i++) {
                                     Sheet sheet = propNode.getSheet(selectedConfigurations[i]);
                                     
-                                    if (((MakeConfigurationDescriptor)projectDescriptor).getActiveConfiguration().isCustomConfiguration()) {
-                                        MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor)projectDescriptor).getActiveConfiguration().getProjectCustomizer();
+                                    if (((MakeConfigurationDescriptor)projectDescriptor).hasProjectCustomizer()) {
+                                        MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor)projectDescriptor).getProjectCustomizer();
                                         sheet = makeProjectCustomizer.getPropertySheet(sheet);
                                     }
                                     

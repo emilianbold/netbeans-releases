@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
@@ -1601,6 +1602,19 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             setVersion(currentVersion);
         }
         return true;
+    }
+    
+    public boolean hasProjectCustomizer() {
+        boolean ret = getActiveConfiguration().isCustomConfiguration();
+        return ret;
+    }
+    
+    public MakeProjectCustomizer getProjectCustomizer() {
+        MakeProjectCustomizer makeprojectCustomizer = null;
+        if (hasProjectCustomizer()) {
+            makeprojectCustomizer = getActiveConfiguration().getProjectCustomizer();
+        }
+        return makeprojectCustomizer;
     }
 
     /** Look up i18n strings here */

@@ -130,8 +130,8 @@ public class ProjectNodeFactory {
 
         
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)context.getConfigurationDescriptor();
-        if (makeConfigurationDescriptor.getActiveConfiguration().isCustomConfiguration()) {
-            MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getActiveConfiguration().getProjectCustomizer();
+        if (makeConfigurationDescriptor.hasProjectCustomizer()) {
+            MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getProjectCustomizer();
             rootDescription = makeprojectCustomizer.getRootPropertyNode(rootDescription);
         }
         
