@@ -68,7 +68,6 @@ public class TopComponentOperatorTest extends JellyTestCase {
         "testRestore",
         "testCloneDocument",
         "testPushMenuOnTab",
-        "testSaveDocument",
         "testSave",
         "testCloseDiscard",
         "testCloseWindow",
