@@ -347,26 +347,34 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
             return;
         }
         Element parent = XMLUtil.findElement(project, "parent", null);
-        Element groupId = XMLUtil.findElement(project, "groupId", null);
-        if (groupId == null) {
-            groupId = XMLUtil.findElement(parent, "groupId", null);
-            if (groupId == null) {
+        Element groupIdE = XMLUtil.findElement(project, "groupId", null);
+        if (groupIdE == null) {
+            groupIdE = XMLUtil.findElement(parent, "groupId", null);
+            if (groupIdE == null) {
                 LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
                 return;
             }
         }
-        Element artifactId = XMLUtil.findElement(project, "artifactId", null);
-        if (artifactId == null) {
-            artifactId = XMLUtil.findElement(parent, "artifactId", null);
-            if (artifactId == null) {
+        String groupId = XMLUtil.findText(groupIdE);
+        Element artifactIdE = XMLUtil.findElement(project, "artifactId", null);
+        if (artifactIdE == null) {
+            artifactIdE = XMLUtil.findElement(parent, "artifactId", null);
+            if (artifactIdE == null) {
                 LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
                 return;
             }
         }
-        try {
-            MavenFileOwnerQueryImpl.getInstance().registerCoordinates(XMLUtil.findText(groupId), XMLUtil.findText(artifactId), basedir.toURI().toURL());
-        } catch (MalformedURLException x) {
-            LOGGER.log(Level.FINE, null, x);
+        String artifactId = XMLUtil.findText(artifactIdE);
+        if (groupId.contains("${")) {
+            LOGGER.log(Level.FINE, "Unevaluated groupId in {0}", basedir);
+        } else if (artifactId.contains("${")) {
+            LOGGER.log(Level.FINE, "Unevaluated artifactId in {0}", basedir);
+        } else {
+            try {
+                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, basedir.toURI().toURL());
+            } catch (MalformedURLException x) {
+                LOGGER.log(Level.FINE, null, x);
+            }
         }
         scanForSubmodulesIn(project, basedir, registered);
         Element profiles = XMLUtil.findElement(project, "profiles", null);
