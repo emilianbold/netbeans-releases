@@ -105,6 +105,10 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(mergeEndBrowseRevisionButton, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Browse1")); // NOI18N
 
+        cbIncludeStartRevision.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cbIncludeStartRevision, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeDialog.includeStartRevision.text")); // NOI18N
+        cbIncludeStartRevision.setToolTipText(org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeDialog.includeStartRevision.TTtext")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -117,24 +121,29 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
                     .addComponent(mergeStartRepositoryFolderLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(mergeEndUrlComboBox, 0, 397, Short.MAX_VALUE)
-                    .addComponent(mergeStartUrlComboBox, 0, 397, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mergeStartRevisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mergeStartSearchButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(mergeStartBrowseRevisionButton))
+                        .addComponent(cbIncludeStartRevision)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mergeEndRevisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(mergeEndUrlComboBox, 0, 397, Short.MAX_VALUE)
+                            .addComponent(mergeStartUrlComboBox, 0, 397, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(mergeStartRevisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(mergeStartSearchButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(mergeStartBrowseRevisionButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(mergeEndRevisionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(mergeEndSearchButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(mergeEndBrowseRevisionButton)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mergeEndSearchButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(mergeEndBrowseRevisionButton)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(mergeEndBrowseButton)
-                    .addComponent(mergeStartBrowseButton)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(mergeEndBrowseButton)
+                            .addComponent(mergeStartBrowseButton)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -150,7 +159,9 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
                     .addComponent(mergeStartSearchButton)
                     .addComponent(jLabel8)
                     .addComponent(mergeStartBrowseRevisionButton))
-                .addGap(15, 15, 15)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbIncludeStartRevision)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(mergeEndRepositoryFolderLabel)
                     .addComponent(mergeEndUrlComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -161,7 +172,7 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
                     .addComponent(mergeEndSearchButton)
                     .addComponent(mergeAfterRevisionLabel)
                     .addComponent(mergeEndBrowseRevisionButton))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         mergeStartRepositoryFolderLabel.getAccessibleContext().setAccessibleDescription("First Repository Folder");
@@ -181,6 +192,7 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JCheckBox cbIncludeStartRevision = new javax.swing.JCheckBox();
     private javax.swing.JLabel jLabel8;
     final javax.swing.JLabel mergeAfterRevisionLabel = new javax.swing.JLabel();
     final javax.swing.JButton mergeEndBrowseButton = new javax.swing.JButton();
