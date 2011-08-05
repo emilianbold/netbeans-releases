@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor;
+package org.netbeans.modules.css.editor.properties.parser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,10 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.css.editor.CssPropertyValue.ResolveContext.ResolveType;
-import org.netbeans.modules.css.editor.PropertyModel.Element;
-import org.netbeans.modules.css.editor.PropertyModel.GroupElement;
-import org.netbeans.modules.css.editor.PropertyModel.ValueElement;
+import org.netbeans.modules.css.editor.properties.parser.PropertyValue.ResolveContext.ResolveType;
 import org.netbeans.modules.css.editor.properties.Acceptors;
 import org.netbeans.modules.css.editor.properties.CssPropertyValueAcceptor;
 import org.netbeans.modules.css.editor.properties.KeywordUtil;
@@ -65,13 +62,13 @@ import org.netbeans.modules.css.editor.properties.KeywordUtil;
  *
  * @author mfukala@netbeans.org
  */
-public class CssPropertyValue {
+public class PropertyValue {
 
-    final GroupElement groupElement;
+    final GroupGrammarElement groupGrammarElement;
     private final String text;
     private final List<ResolvedToken> resolved = new ArrayList<ResolvedToken>();
-    private Set<Element> resolvedAlternatives;
-    private Set<Element> visibleAlternatives = new HashSet<Element>();
+    private Set<GrammarElement> resolvedAlternatives;
+    private Set<GrammarElement> visibleAlternatives = new HashSet<GrammarElement>();
     private final Stack<String> stack = new Stack<String>();
     private final String propertyDefinition;
     Stack<String> originalStack;
@@ -94,16 +91,16 @@ public class CssPropertyValue {
         return b.toString();
     }
 
-    public CssPropertyValue(Property property, String textOfTheValue) {
-        this.groupElement = property.values();
+    public PropertyValue(PropertyModel property, String textOfTheValue) {
+        this.groupGrammarElement = property.values();
         this.text = filterComments(textOfTheValue);
         this.propertyDefinition = null;
         consume();
     }
 
     /** for unit tests */
-    CssPropertyValue(String propertyValueDefinition, String textOfTheValue) {
-        this.groupElement = PropertyModel.instance().parse(propertyValueDefinition);
+    public PropertyValue(String propertyValueDefinition, String textOfTheValue) {
+        this.groupGrammarElement = GrammarParser.parse(propertyValueDefinition);
         this.text = textOfTheValue;
         this.propertyDefinition = propertyValueDefinition;
         consume();
@@ -138,7 +135,7 @@ public class CssPropertyValue {
         return stack.isEmpty();
     }
 
-    public Set<Element> alternatives() {
+    public Set<GrammarElement> alternatives() {
          if(resolvedAlternatives == null) {
             initAlternatives();
         }
@@ -147,10 +144,10 @@ public class CssPropertyValue {
     
     
     /**
-     * returns list of alternatives narrowed to the elements which 
+     * returns list of alternatives narrowed to the GrammarElements which 
      * may be offered by the completion, e.g. not 'units'
      */
-    public Set<Element> visibleAlternatives() {
+    public Set<GrammarElement> visibleAlternatives() {
         if(resolvedAlternatives == null) {
             initAlternatives();
         }
@@ -158,13 +155,13 @@ public class CssPropertyValue {
     }
     
     /**
-     * returns list of alternatives narrowed to the elements which 
+     * returns list of alternatives narrowed to the GrammarElements which 
      * may be offered by the completion, e.g. not 'units'
      */
     private void computeVisibleAlts() {
-        for (Element e : alternatives()) {
-            if (e instanceof PropertyModel.ValueElement) {
-                if (((PropertyModel.ValueElement) e).isUnit()) {
+        for (GrammarElement e : alternatives()) {
+            if (e instanceof ValueGrammarElement) {
+                if (((ValueGrammarElement) e).isUnit()) {
                     continue; //skip units
                 }
             }
@@ -176,27 +173,27 @@ public class CssPropertyValue {
     private void consume() {
         fillStack(stack, text);
         originalStack = (Stack<String>) stack.clone();
-        resolve(groupElement, stack, resolved);
+        resolve(groupGrammarElement, stack, resolved);
     }
     
     private void initAlternatives()  {
-        resolvedAlternatives = resolveElement(groupElement, new ArrayList<ResolvedToken>(resolved)).alternatives();
+        resolvedAlternatives = resolveGrammarElement(groupGrammarElement, new ArrayList<ResolvedToken>(resolved)).alternatives();
         eliminateDuplicatedAlternatives();
         computeVisibleAlts();
     }
     
     private void eliminateDuplicatedAlternatives() {
         //Under some circumstances especially if 0-sg. multiplicity is used in a sequence
-        //it might happen that there are more alternative elements with the same toString() 
+        //it might happen that there are more alternative GrammarElements with the same toString() 
         //value which in fact comes from various brances of the parse tree.
         //An example if voice-family property.
         //
-        //To eliminate these duplicities it seems to be safe to arbitrary remove the elements
+        //To eliminate these duplicities it seems to be safe to arbitrary remove the GrammarElements
         //which toString() is equals and keep just one of them.
         
         log("\nEliminated duplicate alternatives:\n");//NOI18N
-        HashMap<String, Element> dupes = new HashMap<String, Element>();
-        for(Element e : alternatives()) {
+        HashMap<String, GrammarElement> dupes = new HashMap<String, GrammarElement>();
+        for(GrammarElement e : alternatives()) {
             if(dupes.put(e.toString(), e) != null) {
                 log(e.path() + "\n");//NOI18N
             }
@@ -208,48 +205,48 @@ public class CssPropertyValue {
     }
     
     //------------------------------------------------------------------------
-    private ResolveContext resolveElement(Element element, List<ResolvedToken> resolved) {
+    private ResolveContext resolveGrammarElement(GrammarElement GrammarElement, List<ResolvedToken> resolved) {
 
         ResolveType resolveType = ResolveType.UNEVALUATED;
-        Set<Element> alternatives = new HashSet<Element>();
+        Set<GrammarElement> alternatives = new HashSet<GrammarElement>();
 
-        //repeat the resolvation of the element with respect to its multiplicity
+        //repeat the resolvation of the GrammarElement with respect to its multiplicity
         int repeat;
         
         //previous multiplicity loop resolution
         ResolveType previousPassResolveType;
         
-        multiplicity: for (repeat = 0; repeat < element.getMaximumOccurances(); repeat++) {
+        multiplicity: for (repeat = 0; repeat < GrammarElement.getMaximumOccurances(); repeat++) {
 
             previousPassResolveType = resolveType;
             
-            //break the multiplicity loop if no element was resolved in last cycle
+            //break the multiplicity loop if no GrammarElement was resolved in last cycle
             if(resolveType == ResolveType.UNRESOLVED) {
                 break;
             }
             
             resolveType = ResolveType.UNRESOLVED;
             
-            if (element instanceof ValueElement) {
-                //test if the element is in resolved list and if remove one from there
-                if (consume(element, resolved)) {
-                    //we resolved the element and consumed one entry from the resolved tokens list
+            if (GrammarElement instanceof ValueGrammarElement) {
+                //test if the GrammarElement is in resolved list and if remove one from there
+                if (consume(GrammarElement, resolved)) {
+                    //we resolved the GrammarElement and consumed one entry from the resolved tokens list
                     resolveType = ResolveType.PARTIALLY_RESOLVED;
                 } else {
-                    //no element resolved
+                    //no GrammarElement resolved
                     break; //the main multiplicity loop
                 }
-            } else if (element instanceof GroupElement) {
-                //group element is resolved, adjust the behavior according to 
+            } else if (GrammarElement instanceof GroupGrammarElement) {
+                //group GrammarElement is resolved, adjust the behavior according to 
                 //the group type
-                GroupElement ge = (GroupElement) element;
+                GroupGrammarElement ge = (GroupGrammarElement) GrammarElement;
                 if (!ge.isList() && !ge.isSequence()) {
-                    //SET GROUP - just one of the elements can be resolved
-                    for (Element e : ge.elements()) {
-                        ResolveContext rt = resolveElement(e, resolved);
+                    //SET GROUP - just one of the GrammarElements can be resolved
+                    for (GrammarElement e : ge.elements()) {
+                        ResolveContext rt = resolveGrammarElement(e, resolved);
                         
                         //eof of scanning, if a partially resolved sequence is reached, the only
-                        //possible alternative is the next sequence element, nothing more.
+                        //possible alternative is the next sequence GrammarElement, nothing more.
                         if(rt.resolveType() == ResolveType.PARTIALLY_RESOLVED_SEQUENCE) {
                             resolveType = ResolveType.PARTIALLY_RESOLVED_SEQUENCE;
                             alternatives.clear();
@@ -259,27 +256,27 @@ public class CssPropertyValue {
                         
                         if (rt.resolved()) {
                             //the group memeber is resolved, 
-                            //just alternatives of the element itself are valid
+                            //just alternatives of the GrammarElement itself are valid
                             resolveType = ResolveType.FULLY_RESOLVED;
 
-                            //clean the alts of previously unresolved elements
+                            //clean the alts of previously unresolved GrammarElements
                             alternatives.clear();
                             alternatives.addAll(rt.alternatives());
                             break;
                         } else {
-                            //add alternatives of the unresolved element to my alts
+                            //add alternatives of the unresolved GrammarElement to my alts
                             alternatives.addAll(rt.alternatives());
                         }
                     }
 
                 } else if (ge.isList()) {
                     //LIST GROUP - all alternatives may be resolved
-                    for (Element e : ge.elements()) {
-                        ResolveContext rt = resolveElement(e, resolved);
+                    for (GrammarElement e : ge.elements()) {
+                        ResolveContext rt = resolveGrammarElement(e, resolved);
                         alternatives.addAll(rt.alternatives());
                         
                         //eof of scanning, if a partially resolved sequence is reached, the only
-                        //possible alternative is the next sequence element, nothing more.
+                        //possible alternative is the next sequence GrammarElement, nothing more.
                         if(rt.resolveType() == ResolveType.PARTIALLY_RESOLVED_SEQUENCE) {
                             resolveType = ResolveType.PARTIALLY_RESOLVED_SEQUENCE;
                             alternatives.clear();
@@ -295,25 +292,25 @@ public class CssPropertyValue {
                     
                 } else if (ge.isSequence()) {
                     log("<S> " + ge.path() + "\n");//NOI18N
-                    //sequence - alternatives are all elements after last resolved element
-                    Element firstUnresolved = null;
+                    //sequence - alternatives are all GrammarElements after last resolved GrammarElement
+                    GrammarElement firstUnresolved = null;
                     
-                    HashSet<Element> localAlts = new HashSet<Element>();
+                    HashSet<GrammarElement> localAlts = new HashSet<GrammarElement>();
                     
-                    for (Element e : ge.elements()) {
-                        ResolveContext rt = resolveElement(e, resolved);
+                    for (GrammarElement e : ge.elements()) {
+                        ResolveContext rt = resolveGrammarElement(e, resolved);
                         log("trying " + e.path() + " (MIN=" + e.getMinimumOccurances() + "; MAX=" + e.getMaximumOccurances() + "; resolved=" + rt.resolveType() + "; alts=" + rt.alternatives().size() + ")\n"); //NOI18N
                         if(rt.resolveType() == ResolveType.UNRESOLVED) {
                             localAlts.addAll(rt.alternatives());
                             if(e.getMinimumOccurances() > 0) {
-                                //element not resolved => sequence also unresolved
+                                //GrammarElement not resolved => sequence also unresolved
                                 firstUnresolved = e;
                                 break;
                             } else {
-                                //ignore unresolved elements which may not be present (minMult==0)
+                                //ignore unresolved GrammarElements which may not be present (minMult==0)
                             }
                         } else if(rt.resolveType() == ResolveType.FULLY_RESOLVED) {
-                            //fully resolved, take next element
+                            //fully resolved, take next GrammarElement
                             resolveType = ResolveType.PARTIALLY_RESOLVED_SEQUENCE;
                             
                             localAlts.clear();
@@ -327,7 +324,7 @@ public class CssPropertyValue {
                             
                             log("break on " + e.path() + "\n");//NOI18N
                             
-                            //break the group elements loop
+                            //break the group GrammarElements loop
                             break;
                         }
                     }
@@ -356,19 +353,19 @@ public class CssPropertyValue {
                     }
                     
                 } else {
-                    assert true : "Invalid type of GroupElement " + ge + ". Fix the code!";//NOI18N
+                    assert true : "Invalid type of GroupGrammarElement " + ge + ". Fix the code!";//NOI18N
                 }
             }
 
         }
 
         //test if there are really some alternatives
-        int remainingPossibleOccurances = element.getMaximumOccurances() - repeat;
+        int remainingPossibleOccurances = GrammarElement.getMaximumOccurances() - repeat;
 
-        if (element instanceof ValueElement) {
+        if (GrammarElement instanceof ValueGrammarElement) {
             //VALUES
             if (resolveType == ResolveType.UNRESOLVED || (resolveType == ResolveType.PARTIALLY_RESOLVED && remainingPossibleOccurances > 0)) {
-                alternatives.add(element);
+                alternatives.add(GrammarElement);
             }
             
             //set fully resolved status if appropriate
@@ -381,9 +378,9 @@ public class CssPropertyValue {
 
     }
 
-    private boolean consume(Element e, List<ResolvedToken> resolved) {
+    private boolean consume(GrammarElement e, List<ResolvedToken> resolved) {
         for (ResolvedToken rt : resolved) {
-            if (rt.element().equals(e)) {
+            if (rt.getGrammarElement().equals(e)) {
                 resolved.remove(rt);
                 return true;
             }
@@ -403,13 +400,13 @@ public class CssPropertyValue {
         }
         
         private ResolveType type;
-        private Set<Element> alternatives;
+        private Set<GrammarElement> alternatives;
 
-        public static ResolveContext resolveContext(ResolveType type, Set<Element> alternatives) {
+        public static ResolveContext resolveContext(ResolveType type, Set<GrammarElement> alternatives) {
             return new ResolveContext(type, alternatives);
         }
 
-        private ResolveContext(ResolveType type, Set<Element> alternatives) {
+        private ResolveContext(ResolveType type, Set<GrammarElement> alternatives) {
             this.type = type;
             this.alternatives = alternatives;
         }
@@ -422,7 +419,7 @@ public class CssPropertyValue {
             return type;
         }
         
-        public Set<Element> alternatives() {
+        public Set<GrammarElement> alternatives() {
             return alternatives;
         }
     }
@@ -518,7 +515,7 @@ public class CssPropertyValue {
 
     }
 
-    private boolean resolve(Element e, Stack<String> input, List<ResolvedToken> consumed) {
+    private boolean resolve(GrammarElement e, Stack<String> input, List<ResolvedToken> consumed) {
         log.append(e.path()).append("\n"); //NOI18N
         boolean itemResolved = false;
 
@@ -527,32 +524,32 @@ public class CssPropertyValue {
             return true;
         }
 
-        if (e instanceof GroupElement) {
-            GroupElement ge = (GroupElement) e;
+        if (e instanceof GroupGrammarElement) {
+            GroupGrammarElement ge = (GroupGrammarElement) e;
 
             //resolve all group members
-            boolean resolved = false;
+            boolean isResolved = false;
 
             for (int i = 0; i <
                     e.getMaximumOccurances(); i++) {
                 //do not enter the same path twice
-                Collection<Element> elementsToProcess = new ArrayList<Element>(ge.elements());
+                Collection<GrammarElement> GrammarElementsToProcess = new ArrayList<GrammarElement>(ge.elements());
 
                 loop:
                 do { //try to loop until something gets resolved
-                    for (Element member : elementsToProcess) {
+                    for (GrammarElement member : GrammarElementsToProcess) {
                         //consume just one token if set or arbitrary number if list
-                        resolved = resolve(member, input, consumed);
-                        if (resolved) {
+                        isResolved = resolve(member, input, consumed);
+                        if (isResolved) {
                             itemResolved = true;
                             if (!ge.isSequence()) {
                                 if (!ge.isList()) {
                                     //if we are set break the whole main loop
                                     break loop;
                                 } else {
-                                    //remember we resolved something under this element so we do not enter it again
+                                    //remember we resolved something under this GrammarElement so we do not enter it again
                                     log.append("sg resolved in ").append(member.path()).append("\n"); //NOI18N
-                                    elementsToProcess.remove(member);
+                                    GrammarElementsToProcess.remove(member);
                                     //start resolving the group from the beginning
                                     break;
 
@@ -563,23 +560,23 @@ public class CssPropertyValue {
                         } else {
                             //sequence logic
                             if (ge.isSequence() && member.getMinimumOccurances() > 0) {
-                                //we didn't resolve the next element in row so quit if the element was mandatory (min occurences >0)
+                                //we didn't resolve the next GrammarElement in row so quit if the GrammarElement was mandatory (min occurences >0)
                                 break;
                             }
 
                         }
                     }
-                } while (!input.isEmpty() && resolved && !elementsToProcess.isEmpty() && ge.isList()); //of course just for lists
+                } while (!input.isEmpty() && isResolved && !GrammarElementsToProcess.isEmpty() && ge.isList()); //of course just for lists
 
-                if (!resolved || input.isEmpty()) {
+                if (!isResolved || input.isEmpty()) {
                     break;
                 }
 
             }
 
-        } else if (e instanceof ValueElement) {
+        } else if (e instanceof ValueGrammarElement) {
             String token = input.peek();
-            ValueElement ve = (ValueElement) e;
+            ValueGrammarElement ve = (ValueGrammarElement) e;
 
             if (ve.isUnit() && !KeywordUtil.isKeyword(token)) {
                 String unitName = ve.value();
@@ -613,19 +610,19 @@ public class CssPropertyValue {
     public class ResolvedToken {
 
         private String token;
-        private Element element;
+        private GrammarElement GrammarElement;
 
-        private ResolvedToken(String token, Element element) {
+        private ResolvedToken(String token, GrammarElement GrammarElement) {
             this.token = token;
-            this.element = element;
+            this.GrammarElement = GrammarElement;
         }
 
         public String token() {
             return token;
         }
 
-        public Element element() {
-            return element;
+        public GrammarElement getGrammarElement() {
+            return GrammarElement;
         }
     }
 }

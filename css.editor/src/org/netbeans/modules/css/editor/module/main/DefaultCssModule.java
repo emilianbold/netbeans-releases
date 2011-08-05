@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -91,6 +93,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultCssModule extends CssModule {
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
+
+    @Override
+    public Collection<PropertyDescriptor> getPropertyDescriptors() {
+        return DefaultProperties.properties();
+    }
 
     @Override
     public List<CompletionProposal> complete(CompletionContext context) {

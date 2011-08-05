@@ -71,16 +71,18 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.editor.CssHelpResolver;
 import org.netbeans.modules.css.editor.CssProjectSupport;
-import org.netbeans.modules.css.editor.CssPropertyValue;
-import org.netbeans.modules.css.editor.Property;
-import org.netbeans.modules.css.editor.PropertyModel;
+import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
+import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.HtmlTags;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
@@ -100,7 +102,6 @@ import org.openide.filesystems.FileObject;
  */
 public class CssCompletion implements CodeCompletionHandler {
 
-    private final PropertyModel PROPERTIES = PropertyModel.instance();
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
     private static char firstPrefixChar; //read getPrefix() comment!
 
@@ -333,7 +334,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         } else if (node.type() == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
             //css property name completion with prefix
-            Collection<Property> possibleProps = filterProperties(PROPERTIES.properties(), prefix);
+            Collection<PropertyDescriptor> possibleProps = filterProperties(CssModuleSupport.getPropertyDescriptors().values(), prefix);
             return wrapProperties(possibleProps, CssCompletionItem.Kind.PROPERTY, snapshot.getOriginalOffset(node.from()));
 
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
@@ -344,7 +345,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //h1 { color:red; | font: bold }
             //
             //should be no prefix 
-            return wrapProperties(PROPERTIES.properties(), CssCompletionItem.Kind.PROPERTY, caretOffset);
+            return wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), CssCompletionItem.Kind.PROPERTY, caretOffset);
         } else if (node.type() == NodeType.declaration) {
             //value cc without prefix
             //find property node
@@ -395,14 +396,14 @@ public class CssCompletion implements CodeCompletionHandler {
 
             }
 
-            Property prop = PROPERTIES.getProperty(property.image().toString().trim());
+            PropertyModel prop = CssModuleSupport.getProperty(property.image().toString().trim());
             if (prop != null) {
 
-                CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
+                PropertyValue propVal = new PropertyValue(prop, expressionText);
 
-                Collection<Element> alts = propVal.alternatives();
+                Collection<GrammarElement> alts = propVal.alternatives();
 
-                Collection<Element> filteredByPrefix = filterElements(alts, prefix);
+                Collection<GrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
                 int completionItemInsertPosition = prefix.trim().length() == 0
                         ? caretOffset
@@ -423,7 +424,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 return wrapPropertyValues(context,
                         prefix,
-                        prop,
+                        prop.getPropertyDescriptor(),
                         filteredByPrefix,
                         CssCompletionItem.Kind.VALUE,
                         completionItemInsertPosition,
@@ -479,8 +480,8 @@ public class CssCompletion implements CodeCompletionHandler {
 
             Node property = result[0];
 
-            Property prop = PROPERTIES.getProperty(property.image().toString());
-            if (prop == null) {
+            PropertyDescriptor propertyDescriptor = CssModuleSupport.getPropertyDescriptors().get(property.image().toString());
+            if (propertyDescriptor == null) {
                 return CodeCompletionResult.NONE;
             }
 
@@ -500,11 +501,12 @@ public class CssCompletion implements CodeCompletionHandler {
                 expressionText = expressionText.substring(0, eolIndex);
             }
 
-            CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
+            PropertyModel propertyModel = CssModuleSupport.getProperty(propertyDescriptor.getName());
+            PropertyValue propVal = new PropertyValue(propertyModel, expressionText);
 
-            Collection<Element> alts = propVal.alternatives();
+            Collection<GrammarElement> alts = propVal.alternatives();
 
-            Collection<Element> filteredByPrefix = filterElements(alts, prefix);
+            Collection<GrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
             int completionItemInsertPosition = prefix.trim().length() == 0
                     ? caretOffset
@@ -533,7 +535,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
             return wrapPropertyValues(context,
                     prefix,
-                    prop,
+                    propertyDescriptor,
                     filteredByPrefix,
                     CssCompletionItem.Kind.VALUE,
                     completionItemInsertPosition,
@@ -608,8 +610,8 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private CodeCompletionResult wrapPropertyValues(CodeCompletionContext context,
             String prefix,
-            Property property,
-            Collection<Element> props,
+            PropertyDescriptor propertyDescriptor,
+            Collection<GrammarElement> props,
             CssCompletionItem.Kind kind,
             int anchor,
             boolean addSemicolon,
@@ -617,13 +619,13 @@ public class CssCompletion implements CodeCompletionHandler {
             boolean extendedItemsOnly) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         boolean colorChooserAdded = false;
-        for (Element e : props) {
-            if (e instanceof PropertyModel.ValueElement) {
-                if (((PropertyModel.ValueElement) e).isUnit()) {
+        for (GrammarElement e : props) {
+            if (e instanceof ValueGrammarElement) {
+                if (((ValueGrammarElement) e).isUnit()) {
                     continue; //skip units
                 }
             }
-            CssValueElement handle = new CssValueElement(property, e);
+            CssValueElement handle = new CssValueElement(propertyDescriptor, e);
             String origin = e.getResolvedOrigin();
             if("color".equals(origin)) { //NOI18N
                 if(!colorChooserAdded) {
@@ -692,10 +694,10 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private Collection<Element> filterElements(Collection<Element> values, String propertyNamePrefix) {
+    private Collection<GrammarElement> filterElements(Collection<GrammarElement> values, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<Element> filtered = new ArrayList<Element>();
-        for (Element value : values) {
+        List<GrammarElement> filtered = new ArrayList<GrammarElement>();
+        for (GrammarElement value : values) {
             if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
             }
@@ -703,24 +705,24 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private CodeCompletionResult wrapProperties(Collection<Property> props, CssCompletionItem.Kind kind, int anchor) {
+    private CodeCompletionResult wrapProperties(Collection<PropertyDescriptor> props, CssCompletionItem.Kind kind, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (Property p : props) {
+        for (PropertyDescriptor p : props) {
             //filter out non-public properties
-            if (!p.name().startsWith("-")) { //NOI18N
+            if (!p.getName().startsWith("-")) { //NOI18N
                 CssElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), kind, anchor, false);
                 proposals.add(proposal);
             }
         }
         return new DefaultCompletionResult(proposals, false);
     }
 
-    private Collection<Property> filterProperties(Collection<Property> props, String propertyNamePrefix) {
+    private Collection<PropertyDescriptor> filterProperties(Collection<PropertyDescriptor> props, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<Property> filtered = new ArrayList<Property>();
-        for (Property p : props) {
-            if (p.name().toLowerCase().startsWith(propertyNamePrefix)) {
+        List<PropertyDescriptor> filtered = new ArrayList<PropertyDescriptor>();
+        for (PropertyDescriptor p : props) {
+            if (p.getName().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(p);
             }
         }
@@ -733,12 +735,12 @@ public class CssCompletion implements CodeCompletionHandler {
             CssValueElement e = (CssValueElement) element;
 
 //            System.out.println("property = " + e.property().name() + "\n value = " + e.value());
-            return CssHelpResolver.instance().getPropertyHelp(e.property().name());
+            return CssHelpResolver.instance().getPropertyHelp(e.getPropertyDescriptor().getName());
 
         } else if (element instanceof CssPropertyElement) {
             CssPropertyElement e = (CssPropertyElement) element;
 //            System.out.println("property = " + e.property().name());
-            return CssHelpResolver.instance().getPropertyHelp(e.property().name());
+            return CssHelpResolver.instance().getPropertyHelp(e.getPropertyDescriptor().getName());
         }
         // fix for #137696
         else if ( element instanceof ElementHandle.UrlHandle){
@@ -801,7 +803,7 @@ public class CssCompletion implements CodeCompletionHandler {
             if ( index ==0 || link.charAt(index-1) =='/'){
                 String helpZipUrl = CssHelpResolver.getHelpZIPURL().getPath();
                 if ( handle instanceof CssPropertyElement ){
-                    String name = ((CssPropertyElement)handle).property().name();
+                    String name = ((CssPropertyElement)handle).getPropertyDescriptor().getName();
                     URL propertyHelpURL = CssHelpResolver.instance().
                         getPropertyHelpURL(name);
                     String path = propertyHelpURL.getPath();
