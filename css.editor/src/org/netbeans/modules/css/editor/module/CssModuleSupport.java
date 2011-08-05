@@ -59,6 +59,8 @@ import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.Pair;
 import org.openide.util.Lookup;
@@ -68,6 +70,8 @@ import org.openide.util.Lookup;
  * @author marekfukala
  */
 public class CssModuleSupport {
+    
+    private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
     
     public static Collection<? extends CssModule> getModules() {
         return Lookup.getDefault().lookupAll(CssModule.class);
@@ -214,6 +218,29 @@ public class CssModuleSupport {
         NodeVisitor.visitChildren(context.getParseTreeRoot(), visitors);
         
         return all;
+        
+    }
+    
+    //todo cache
+    public static Map<String, PropertyDescriptor> getPropertyDescriptors() {
+        Map<String, PropertyDescriptor> all = new HashMap<String, PropertyDescriptor>();
+        for(CssModule module : getModules()) {
+            for(PropertyDescriptor pd: module.getPropertyDescriptors()) {
+                all.put(pd.getName(), pd);
+            }
+        }
+        return all;
+    }
+    
+    public static PropertyModel getProperty(String name) {
+        synchronized (PROPERTY_MODELS) {
+            PropertyModel model = PROPERTY_MODELS.get(name);
+            if(model == null) {
+                model = new PropertyModel(getPropertyDescriptors().get(name));
+                PROPERTY_MODELS.put(name, model);
+            }
+            return model;
+        }
         
     }
     

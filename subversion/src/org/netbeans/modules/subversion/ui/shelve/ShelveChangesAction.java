@@ -156,7 +156,7 @@ public class ShelveChangesAction extends ContextAction {
         @Override
         protected void postExportCleanup () {
             support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.reverting")); //NOI18N
-            RevertModificationsAction.performRevert(null, true, context, support);
+            RevertModificationsAction.performRevert(null, true, false, context, support);
         }
 
         @Override

@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.css.editor.PropertyModel;
+import org.netbeans.modules.css.editor.module.main.DefaultProperties;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
@@ -71,7 +71,7 @@ public class CssAnalyser {
     
     public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
         final ArrayList<Error> errors = new ArrayList<Error>();
-        final PropertyModel model = PropertyModel.instance();
+//        final DefaultProperties model = DefaultProperties.instance();
 //        NodeVisitor visitor = new NodeVisitor() {
 //
 //            @Override

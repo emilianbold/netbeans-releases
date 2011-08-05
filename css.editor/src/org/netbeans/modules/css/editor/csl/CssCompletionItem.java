@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.csl.CssColor;
-import org.netbeans.modules.css.editor.csl.CssElement;
-import org.netbeans.modules.css.editor.csl.CssValueElement;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -61,8 +58,8 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
-import org.netbeans.modules.css.editor.Property;
-import org.netbeans.modules.css.editor.PropertyModel.Element;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
 
@@ -83,7 +80,7 @@ public class CssCompletionItem implements CompletionProposal {
     protected boolean addSemicolon;
 
     public static  CssCompletionItem createValueCompletionItem(CssValueElement element,
-            Element value,
+            GrammarElement value,
             CssCompletionItem.Kind kind, 
             int anchorOffset,
             boolean addSemicolon,
@@ -93,7 +90,7 @@ public class CssCompletionItem implements CompletionProposal {
     }
 
     public static CssCompletionItem createColorValueCompletionItem(CssValueElement element,
-            Element value,
+            GrammarElement value,
             CssCompletionItem.Kind kind,
             int anchorOffset,
             boolean addSemicolon,
@@ -158,7 +155,7 @@ public class CssCompletionItem implements CompletionProposal {
     }
 
     protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
-    protected static int SORT_PRIORITY = 300;
+    protected static final int SORT_PRIORITY = 300;
 
     private CssCompletionItem() {
     }
@@ -339,8 +336,8 @@ public class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            Property owningProperty = ((CssValueElement) getElement()).property();
-            String initialValue = owningProperty.initialValue();
+            PropertyDescriptor owningProperty = ((CssValueElement) getElement()).getPropertyDescriptor();
+            String initialValue = owningProperty.getInitialValue();
             if (initialValue != null && initialValue.equals(getName())) {
                 //initial value
                 return "<i>" + super.getLhsHtml(formatter) + "</i>"; //NOI18N
@@ -375,7 +372,7 @@ public class CssCompletionItem implements CompletionProposal {
 
     static class HashColorCompletionItem extends ColorCompletionItem {
 
-        private static int HASH_COLOR_SORT_PRIORITY = SORT_PRIORITY - 10;
+        private static final int HASH_COLOR_SORT_PRIORITY = SORT_PRIORITY - 10;
 
         private boolean usedInCurrentFile;
 
@@ -580,7 +577,6 @@ public class CssCompletionItem implements CompletionProposal {
         private ImageIcon icon;
         private String colorCode;
         private boolean addQuotes;
-        private boolean addSemicolon;
 
         private FileCompletionItem(CssElement element,
                 String value,
