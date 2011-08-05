@@ -228,7 +228,10 @@ Other names may be trademarks of their respective owners.
 <mapID target="text.plain" url="editing/editor_quickref.html" />
 
 <!--CSH for css text editor-->
-<mapID target="text.x-css" url="xml/css/css_edit.html" />
+<mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
+
+<!-- CSH for HTML text editor -->
+<mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>
