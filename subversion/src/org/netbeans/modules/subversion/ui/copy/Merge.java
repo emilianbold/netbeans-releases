@@ -132,6 +132,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
     private ListCellRenderer createTypeRenderer() {
         return new DefaultListCellRenderer() {
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if(value instanceof MergeType) {
@@ -142,6 +143,7 @@ public class Merge extends CopyDialog implements ItemListener {
         };
     }
     
+    @Override
     public void itemStateChanged(ItemEvent e) {        
         final MergeType type = (MergeType) e.getItem();                
         
@@ -298,14 +300,17 @@ public class Merge extends CopyDialog implements ItemListener {
             return mergeEndRepositoryPaths;
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             setPreviewLabels();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             setPreviewLabels();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             setPreviewLabels();
         }
@@ -314,6 +319,7 @@ public class Merge extends CopyDialog implements ItemListener {
             return repositoryFile;
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {                                        
                 boolean valid = ((Boolean) evt.getNewValue()).booleanValue();
@@ -374,30 +380,37 @@ public class Merge extends CopyDialog implements ItemListener {
             return panel.cbIncludeStartRevision.isSelected();
         }
 
+        @Override
         public String getDisplayName() {
             return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_TwoRepositoryFolders"); // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_TwoFoldersDesc"); // NOI18N
         }
 
+        @Override
         public JPanel getFieldsPanel() {
             return panel;
         }
 
+        @Override
         public JPanel getPreviewPanel() {
             return previewPanel;
         }
 
+        @Override
         public JComboBox getStartUrlComboBox() {
             return panel.mergeStartUrlComboBox;
         }
 
+        @Override
         public JComboBox getEndUrlComboBox() {
             return panel.mergeEndUrlComboBox;
         }
 
+        @Override
         protected void setPreviewLabels() {
             previewPanel.repositoryFolderTextField1.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
             previewPanel.repositoryFolderTextField2.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
@@ -460,30 +473,37 @@ public class Merge extends CopyDialog implements ItemListener {
             return panel.cbIncludeStartRevision.isSelected();
         }
 
+        @Override
         public String getDisplayName() {
             return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolder"); // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolderDesc"); // NOI18N
         }
 
+        @Override
         public JPanel getFieldsPanel() {
             return panel;
         }
 
+        @Override
         public JPanel getPreviewPanel() {
             return previewPanel;
         }
         
+        @Override
         public JComboBox getStartUrlComboBox() {
             return panel.mergeStartUrlComboBox;
         }
 
+        @Override
         public JComboBox getEndUrlComboBox() {
             return null;
         }    
 
+        @Override
         protected void setPreviewLabels() {            
             previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + org.openide.util.NbBundle.getMessage(Merge.class, "/") + panel.mergeStartUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
@@ -517,18 +537,22 @@ public class Merge extends CopyDialog implements ItemListener {
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);                     
         }
 
+        @Override
         public String getDisplayName() {
             return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolderSinceOrigin"); // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return org.openide.util.NbBundle.getMessage(Merge.class, "CTL_Merge_OneRepositoryFolderSinceOriginDesc"); // NOI18N
         }
 
+        @Override
         public JPanel getFieldsPanel() {
             return panel;
         }
 
+        @Override
         public JPanel getPreviewPanel() {
             return previewPanel;
         }
@@ -538,6 +562,7 @@ public class Merge extends CopyDialog implements ItemListener {
             return null;
         }
 
+        @Override
         public SVNRevision getMergeStartRevision() {
             return null;
         }
@@ -553,6 +578,7 @@ public class Merge extends CopyDialog implements ItemListener {
             return null;
         }
 
+        @Override
         public SVNRevision getMergeEndRevision() {
             try {
                 return mergeEndRepositoryPaths.getRepositoryFiles()[0].getRevision();
@@ -564,22 +590,27 @@ public class Merge extends CopyDialog implements ItemListener {
             return null;
         }
 
+        @Override
         RepositoryPaths getMergeStartRepositoryPath() {
             return null;
         }
 
+        @Override
         RepositoryPaths getMergeEndRepositoryPath() {
             return mergeEndRepositoryPaths;
         }
 
+        @Override
         public JComboBox getStartUrlComboBox() {
             return null;
         }
 
+        @Override
         public JComboBox getEndUrlComboBox() {
             return panel.mergeEndUrlComboBox;
         }
 
+        @Override
         protected void setPreviewLabels() {            
             previewPanel.repositoryFolderTextField.setText(getRepositoryFile().getRepositoryUrl() + "/" + panel.mergeEndUrlComboBox.getEditor().getItem().toString()); // NOI18N
         }
