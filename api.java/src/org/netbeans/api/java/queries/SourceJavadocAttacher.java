@@ -50,9 +50,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author Tomas Zezula
  * A support for attaching source roots and javadoc roots to binary roots.
+ * @author Tomas Zezula
  * @since 1.35
  */
 public final class SourceJavadocAttacher {
