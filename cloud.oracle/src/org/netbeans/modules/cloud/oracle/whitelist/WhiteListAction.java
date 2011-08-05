@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
@@ -133,7 +134,7 @@ public class WhiteListAction extends AbstractAction {
                 return this;
             }
             J2eePlatform j2eePlatformLocal = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-            if (j2eePlatformLocal == null || j2eePlatformLocal.getLookup().lookup(OracleJ2eePlatformImpl2.Marker.class) == null) {
+            if (j2eePlatformLocal == null || j2eePlatformLocal.getLookup().lookup(WhiteListQueryImplementation.class) == null) {
                 return this;
             }
             return new WhiteListAction(project);
