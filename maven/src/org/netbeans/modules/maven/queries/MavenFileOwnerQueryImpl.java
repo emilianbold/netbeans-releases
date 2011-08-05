@@ -106,6 +106,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         String groupId = model.getGroupId();
         String artifactId = model.getArtifactId();
         if (groupId.equals("error") && artifactId.equals("error")) {
+            LOG.log(Level.FINE, "will not register malformed {0}", project);
             return;
         }
         try {
