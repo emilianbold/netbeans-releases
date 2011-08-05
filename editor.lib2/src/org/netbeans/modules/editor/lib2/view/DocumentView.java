@@ -839,15 +839,15 @@ public final class DocumentView extends EditorView
                     int pViewIndex = getViewIndex(startOffset);
                     ParagraphView pView = getParagraphView(pViewIndex);
                     if (endOffset <= pView.getEndOffset()) {
+                        Shape pViewAlloc = getChildAllocation(pViewIndex, docViewRect);
                         if (pView.children != null) { // Do local repaint
                             Shape s = pView.modelToViewChecked(startOffset, Bias.Forward,
-                                    endOffset, Bias.Forward, docViewRect);
+                                    endOffset, Bias.Forward, pViewAlloc);
                             repaintRect = ViewUtils.shapeAsRect(s);
                             children.checkChildrenSpanChange(this, pViewIndex);
                             
                         } else { // Repaint single paragraph
-                            repaintRect = extendToVisibleWidth(ViewUtils.shape2Bounds(
-                                    getChildAllocation(pViewIndex, docViewRect)));
+                            repaintRect = extendToVisibleWidth(ViewUtils.shape2Bounds(pViewAlloc));
                         }
                     } else { // Spans paragraphs
                         docViewRect.y = getY(pViewIndex);

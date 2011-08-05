@@ -282,6 +282,7 @@
                 <package>org.netbeans.modules.versioning.history</package>
                 <package>org.netbeans.modules.versioning.historystore</package>
                 <package>org.netbeans.modules.versioning.hooks</package>
+                <package>org.netbeans.modules.versioning.shelve</package>
                 <package>org.netbeans.modules.versioning.util</package>
                 <package>org.netbeans.modules.versioning.util.common</package>
                 <package>org.netbeans.modules.versioning.util.status</package>

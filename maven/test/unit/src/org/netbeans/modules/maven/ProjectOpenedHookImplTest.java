@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.maven;
 
+import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -114,6 +116,31 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
         new ProjectOpenedHookImpl((NbMavenProjectImpl) prj).projectOpened();
         assertEquals(prj, FileOwnerQuery.getOwner(src));
         assertEquals(prj, FileOwnerQuery.getOwner(tsrc));
+    }
+
+    public void testRegistrationOfSubmodules() throws Exception { // #200445
+        TestFileUtils.writeFile(d, "pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId><artifactId>p</artifactId><version>0</version>" +
+                "<packaging>pom</packaging><profiles><profile><id>special</id><modules><module>p2</module></modules></profile></profiles>" +
+                "</project>");
+        TestFileUtils.writeFile(d, "p2/pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent><artifactId>p2</artifactId>" +
+                "<packaging>pom</packaging><modules><module>m</module></modules>" +
+                "</project>");
+        TestFileUtils.writeFile(d, "p2/m/pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId><artifactId>m</artifactId><version>0</version>" +
+                "</project>");
+        Project p = ProjectManager.getDefault().findProject(d);
+        new ProjectOpenedHookImpl((NbMavenProjectImpl) p).projectOpened();
+        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        File mArt = new File(repo, "g/m/0/m-0.jar");
+        Project m = FileOwnerQuery.getOwner(mArt.toURI());
+        assertNotNull(m);
+        assertEquals(d.getFileObject("p2/m"), m.getProjectDirectory());
+        File p2Art = new File(repo, "g/p2/0/p2-0.pom");
+        Project p2 = FileOwnerQuery.getOwner(p2Art.toURI());
+        assertNotNull(p2);
+        assertEquals(d.getFileObject("p2"), p2.getProjectDirectory());
     }
 
 }

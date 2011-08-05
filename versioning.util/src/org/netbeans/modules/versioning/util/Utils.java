@@ -1256,6 +1256,24 @@ public final class Utils {
         }
     }
 
+    /**
+     * Determines versioning systems that manage files in given context.
+     * 
+     * @param ctx VCSContext to examine
+     * @return VersioningSystem systems that manage this context or an empty array if the context is not versioned
+     */
+    public static VersioningSystem[] getOwners(VCSContext ctx) {
+        Set<File> files = ctx.getRootFiles();
+        Set<VersioningSystem> owners = new HashSet<VersioningSystem>();
+        for (File file : files) {
+            VersioningSystem vs = VersioningSupport.getOwner(file);
+            if (vs != null) {
+                owners.add(vs);
+            }
+        }
+        return (VersioningSystem[]) owners.toArray(new VersioningSystem[owners.size()]);
+    }
+
     private static class LogTask implements Runnable {
         @Override
         public void run() {

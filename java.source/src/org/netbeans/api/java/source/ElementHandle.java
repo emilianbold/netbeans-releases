@@ -49,7 +49,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
-import java.security.Signature;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -558,9 +557,11 @@ public final class ElementHandle<T extends Element> {
         }
 
         @Override
-        public String[] getVMSignature(ElementHandle<?> handle) {
+        @NonNull
+        public String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
             return Arrays.copyOf(handle.signatures, handle.signatures.length);
         }
+
     }
     
     private static Element getTypeElementByBinaryName (final String signature, final JavacTaskImpl jt) {

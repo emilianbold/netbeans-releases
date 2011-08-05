@@ -76,11 +76,12 @@ public class WhiteListTool {
     private static final ExecutionDescriptor TOOL_DESCRIPTOR =
             new ExecutionDescriptor().controllable(false).frontWindow(true);
     
-    public static boolean execute(File file) {
-        return execute(file, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"));
+    public static boolean execute(File file, File weblogicJar) {
+        return execute(file, NbBundle.getMessage(WhiteListTool.class, "MSG_WhiteListOutput"), weblogicJar);
     }
     
-    public static boolean execute(File file, String displayName) {
+    public static boolean execute(File file, String displayName, File weblogicJar) {
+        assert weblogicJar != null;
         // the tool is not very friendly in order to be used in-jvm so far
         // it si configuring loggers etc.
         File jarFo = InstalledFileLocator.getDefault().locate(
@@ -109,7 +110,8 @@ public class WhiteListTool {
         if (propertiesFile != null) {
             builder = builder.addArgument("-Djava.util.logging.config.file=" + propertiesFile.getAbsolutePath()); // NOI18N
         }
-        builder = builder.addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
+        builder = builder.addArgument("-cp").addArgument(weblogicJar.getAbsolutePath()) // NOI18N
+                .addArgument("-jar").addArgument(jarFo.getAbsolutePath()) // NOI18N
                 .addArgument(file.getAbsolutePath())
                 .redirectErrorStream(true)
                 .workingDirectory(file.getParentFile());

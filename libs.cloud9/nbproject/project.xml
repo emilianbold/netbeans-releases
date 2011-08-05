@@ -133,11 +133,20 @@ made subject to such option by the copyright holder.
                         <specification-version>8.16</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.10</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <package>oracle.nuviaq.api</package>
+                <package>oracle.nuviaq.exception</package>
                 <package>oracle.nuviaq.model.xml</package>
                 <package>org.netbeans.modules.libs.cloud9.api</package>
             </friend-packages>

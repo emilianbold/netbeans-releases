@@ -90,7 +90,7 @@ public class NewFileActionTest extends JellyTestCase {
         new NewFileAction().performPopup(node);
         new NewFileWizardOperator().close();
         // test constructor with parameter
-        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java");
+        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java");
         new NewFileAction(javaClassLabel).performPopup(node);
         new WizardOperator(javaClassLabel).close();
     }

@@ -114,6 +114,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         return getEditorSupport();
     }
     
+    protected String getEditorMimeType() {
+        return null;
+    }
+
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
         if (clazz.isAssignableFrom(XmlMultiViewEditorSupport.class)) {
             return getEditorSupport();
@@ -176,7 +180,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     /** MultiViewDesc for MultiView editor
      */
-    protected abstract DesignMultiViewDesc[] getMultiViewDesc();
+    protected DesignMultiViewDesc[] getMultiViewDesc() {
+        return new DesignMultiViewDesc[0];
+    }
     
     public void setLastOpenView(int index) {
         getEditorSupport().setLastOpenView(index);

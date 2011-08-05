@@ -66,8 +66,8 @@ public final class InspectionComboModel extends AbstractListModel implements Com
     private Object selected;
     private final ArrayList<Object> hintsList;
 
-    public InspectionComboModel() {
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode) constructTM(Utilities.getBatchSupportedHints(), false).getRoot();
+    public InspectionComboModel(Collection<? extends HintMetadata> hints) {
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) constructTM(hints, false).getRoot();
         Enumeration enumeration = root.preorderEnumeration();
         
         hintsList = new ArrayList<Object>();

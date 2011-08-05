@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -224,7 +225,11 @@ public final class ConnectionBuilder {
      * May need to retry to handle redirects and/or authentication.
      * @return an open and valid connection, ready for {@link URLConnection#getInputStream},
      *         {@link URLConnection#getHeaderField(String)}, etc.
-     * @throws IOException for various reasons, including non-200 response code
+     * @throws FileNotFoundException in case of {@link HttpURLConnection#HTTP_NOT_FOUND}
+     * @throws HttpRetryException in case of other non-{@link HttpURLConnection#HTTP_OK} status codes
+     *                             (not including redirects even if {@link #followRedirects} is false,
+     *                             but including {@link HttpURLConnection#HTTP_FORBIDDEN} if {@link #authentication} is false)
+     * @throws IOException for various other reasons
      */
     public URLConnection connection() throws IOException {
         if (url == null) {
@@ -354,7 +359,7 @@ public final class ConnectionBuilder {
                         }
                     }
                 }
-                IOException x = new IOException("403 on " + url); // NOI18N
+                IOException x = new HttpRetryException("403 on " + url, responseCode); // NOI18N
                 Exceptions.attachLocalizedMessage(x, ConnectionBuilder_log_in(url));
                 throw x;
             case HttpURLConnection.HTTP_NOT_FOUND:
@@ -363,7 +368,7 @@ public final class ConnectionBuilder {
                 break RETRY;
             default:
                 // XXX are there other legitimate response codes?
-                throw new IOException("Server rejected connection to " + curr + " with code " + responseCode); // NOI18N
+                throw new HttpRetryException("Server rejected connection to " + curr + " with code " + responseCode, responseCode); // NOI18N
             }
         }
         return conn;
@@ -371,7 +376,7 @@ public final class ConnectionBuilder {
 
     /**
      * Like {@link #connection} but coerced to an HTTP connection.
-     * @throws IOException for the usual reasons, or if a non-HTTP connection resulted
+     * @throws IOException see {@link #connection} for subtype description
      */
     public HttpURLConnection httpConnection() throws IOException {
         URLConnection c = connection();

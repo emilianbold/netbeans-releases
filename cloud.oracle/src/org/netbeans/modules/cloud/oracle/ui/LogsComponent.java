@@ -64,8 +64,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import oracle.nuviaq.api.ApplicationManager;
-import oracle.nuviaq.model.xml.JobType;
-import oracle.nuviaq.model.xml.LogType;
+import oracle.nuviaq.model.xml.Job;
+import oracle.nuviaq.model.xml.Log;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -81,7 +81,7 @@ persistenceType = TopComponent.PERSISTENCE_NEVER)
 //preferredID = "LogsTopComponent")
 public class LogsComponent extends TopComponent {
 
-    private List<JobType> jobs;
+    private List<Job> jobs;
     private ApplicationManager am;
     
     /** Creates new form LogsComponent */
@@ -92,8 +92,8 @@ public class LogsComponent extends TopComponent {
         this.am = oi.getApplicationManager();
 //        jobs = pm.listJobs();
 //        Collections.reverse(jobs);
-        jobs = new ArrayList<JobType>();
-        JobType jt = new JobType();
+        jobs = new ArrayList<Job>();
+        Job jt = new Job();
         jt.setOperation("loading...");
         jobs.add(jt);
         jobsTable.setModel(new JobsModel(jobs));
@@ -110,11 +110,11 @@ public class LogsComponent extends TopComponent {
         OracleInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final List<JobType> jobs_ = am.listJobs();
+                final List<Job> jobs_ = am.listJobs();
                 Collections.reverse(jobs_);
-                final List<JobType> jobs = new ArrayList<JobType>();
+                final List<Job> jobs = new ArrayList<Job>();
                 int i = 0;
-                for (JobType jt: jobs_) {
+                for (Job jt: jobs_) {
                     jobs.add(jt);
                     i++;
                     if (i > 50) {
@@ -141,13 +141,13 @@ public class LogsComponent extends TopComponent {
             logs.setText("");
             return;
         }
-        final JobType jt = jobs.get(jobsTable.getSelectedRow());
+        final Job jt = jobs.get(jobsTable.getSelectedRow());
         if (jt.getJobId() == null) {
             // in "loading..." state
             logs.setText("");
             return;
         }
-        if (jt.getLogs().getLogs().size() == 0) {
+        if (jt.getLogs().size() == 0) {
             logs.setText("no logs was generated");
             return;
         }
@@ -158,9 +158,9 @@ public class LogsComponent extends TopComponent {
             @Override
             public Void call() throws Exception {
                 final StringBuffer sb = new StringBuffer();
-                List<LogType> logs = jt.getLogs().getLogs();
+                List<Log> logs = jt.getLogs();
                 sb.append(""+logs.size()+ " log file(s) found:\n\n");
-                for (LogType lt : logs) {
+                for (Log lt : logs) {
                     sb.append("==================== Log file: "+lt.getName()+"==========================\n\n");
                     ByteArrayOutputStream os = new ByteArrayOutputStream(8000);
                     try {
@@ -303,9 +303,9 @@ public class LogsComponent extends TopComponent {
     
     private static class JobsModel implements TableModel {
 
-        private List<JobType> jobs;
+        private List<Job> jobs;
 
-        public JobsModel(List<JobType> jobs) {
+        public JobsModel(List<Job> jobs) {
             this.jobs = new ArrayList(jobs);
         }
         
@@ -339,7 +339,7 @@ public class LogsComponent extends TopComponent {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            JobType jt = jobs.get(rowIndex);
+            Job jt = jobs.get(rowIndex);
             if (columnIndex == 0) {
                 return jt.getJobId();
             } else if (columnIndex == 1) {

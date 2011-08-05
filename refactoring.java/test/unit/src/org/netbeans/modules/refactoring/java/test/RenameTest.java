@@ -133,6 +133,22 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class BTest extends TestCase {\n"
                 + "}"));
     }
+    
+    public void test111953() throws Exception {
+        writeFilesAndWaitForScan(src, new File("t/B.java", "class B { public void m(){};}"),
+                new File("t/A.java", "class A extends B implements I{ public void m(){};}"),
+                new File("t/I.java", "interface I { void m();}"),
+                new File("t/J.java", "interface J { void m();}"),
+                new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
+                new File("t/D.java", "class D { public void m(){};}"));
+        performRename(src.getFileObject("t/B.java"), 1, "k", null, new Problem(false, "ERR_IsOverridden"), new Problem(false, "ERR_IsOverriddenOverrides"));
+        verifyContent(src, new File("t/B.java", "class B { public void k(){};}"),
+                new File("t/A.java", "class A extends B implements I{ public void k(){};}"),
+                new File("t/I.java", "interface I { void m();}"),
+                new File("t/J.java", "interface J { void m();}"),
+                new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
+                new File("t/D.java", "class D { public void m(){};}"));
+    }
 
     private void performRename(FileObject source, final int position, final String newname, final JavaRenameProperties props, Problem... expectedProblems) throws Exception {
         final RenameRefactoring[] r = new RenameRefactoring[1];
@@ -145,7 +161,7 @@ public class RenameTest extends RefactoringTestBase {
                 CompilationUnitTree cut = javac.getCompilationUnit();
 
                 Tree method = cut.getTypeDecls().get(0);
-                if (position > 0) {
+                if (position >= 0) {
                     method = ((ClassTree) method).getMembers().get(position);
                 }
 

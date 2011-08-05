@@ -66,7 +66,7 @@ public class ClientDataNode extends DataNode {
     private static final String DEPLOYMENT = "deployment"; // NOI18N
     private static final java.awt.Image ERROR_BADGE = 
         ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/client/error-badge.gif" ); //NOI18N
-    private static final java.awt.Image CLIETN_XML = 
+    private static final java.awt.Image CLIENT_XML = 
         ImageUtilities.loadImage( "org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif" ); //NOI18N
  
     private ClientDataObject dataObject;
@@ -150,9 +150,9 @@ public class ClientDataNode extends DataNode {
 
     public java.awt.Image getIcon(int type) {
         if (dataObject.getSaxError()==null)
-            return CLIETN_XML;
+            return CLIENT_XML;
         else 
-            return ImageUtilities.mergeImages(CLIETN_XML, ERROR_BADGE, 6, 6);
+            return ImageUtilities.mergeImages(CLIENT_XML, ERROR_BADGE, 6, 6);
     }
     
     public String getShortDescription() {

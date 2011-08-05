@@ -42,6 +42,12 @@
 
 package org.netbeans.modules.diff;
 
+import java.io.File;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -61,6 +67,26 @@ public class Utils {
     public static Task postParallel (Runnable runnable) {
         RequestProcessor rp = getParallelRequestProcessor();
         return rp.post(runnable);
+    }
+
+    /**
+     * Opens a file in the editor area.
+     *
+     * @param file a File to open
+     */
+    public static void openFile (File file) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                OpenCookie oc = dao.getCookie(OpenCookie.class);
+                if (oc != null) {
+                    oc.open();
+                }
+            } catch (DataObjectNotFoundException e) {
+                // nonexistent DO, do nothing
+            }
+        }
     }
 
     private static RequestProcessor getParallelRequestProcessor() {

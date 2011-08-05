@@ -103,4 +103,12 @@
             </folder>
         </folder>
     </folder>
+    
+    <folder name="SaaSServices">
+        <folder name="Oracle">
+            <!-- <file name="Opportunity.xml" url="/org/netbeans/modules/cloud/oracle/resources/Opportunity.xml"/> -->
+            <file name="CustomerAccount.xml" url="/org/netbeans/modules/cloud/oracle/resources/CustomerAccount.xml"/>
+        </folder>
+    </folder>
+    
 </filesystem>
