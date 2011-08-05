@@ -989,9 +989,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     layoutInitialized = true;
                     newLayout = Boolean.TRUE;
                     
-                    // Issue 200093
+                    // Issue 200093, 200665
                     Integer lctSetting = (Integer)formModel.getSettings().get(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET);
-                    if (lctSetting == null) {
+                    if (lctSetting == null && !FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
                         // Old form that has no layout code target set, but
                         // it uses Free Design => it was created before
                         // layout code target property was added, i.e.,

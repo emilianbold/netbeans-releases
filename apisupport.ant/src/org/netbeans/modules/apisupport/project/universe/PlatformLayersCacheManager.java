@@ -79,6 +79,7 @@ import static org.netbeans.modules.apisupport.project.universe.Bundle.*;
 import org.netbeans.modules.apisupport.project.universe.PlatformLayersCacheManager.PLFSCacheEntry;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -88,7 +89,7 @@ import org.openide.util.RequestProcessor;
  * @author Richard Michalsky
  */
 public class PlatformLayersCacheManager {
-    static final String CACHE_PATH = "var/cache/nbplfsc";
+    static final String CACHE_PATH = "nbplfsc";
 
     static class PLFSCacheEntry {
         private File jarFile;
@@ -182,11 +183,7 @@ public class PlatformLayersCacheManager {
     }
 
     private static void resetCacheLocation() {
-        cacheLocation = new File(System.getProperty("netbeans.user"),CACHE_PATH);
-        if (! cacheLocation.exists()) {
-            if (! cacheLocation.mkdirs())
-                throw new RuntimeException("Cannot create cache dir " + System.getProperty("netbeans.user") + CACHE_PATH);
-        }
+        cacheLocation = Places.getCacheSubdirectory(CACHE_PATH);
     }
 
     /**

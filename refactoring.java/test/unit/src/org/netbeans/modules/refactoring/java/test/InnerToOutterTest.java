@@ -404,6 +404,15 @@ public class InnerToOutterTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
+    public void test177996() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = t.new Inner(); } class Inner { }}"));
+        performInnerToOuterTest(true);
+        verifyContent(src,
+                      new File("t/Inner.java", "package t; class Inner { private final A outer; Inner(final A outer) { this.outer = outer; } } "),
+                      new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = new Inner(t); }}"));
+    }
+    
     private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
         
