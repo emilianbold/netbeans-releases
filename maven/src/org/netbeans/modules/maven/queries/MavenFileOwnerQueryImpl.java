@@ -97,21 +97,20 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
 
     public void registerCoordinates(String groupId, String artifactId, URL owner) {
         String key = groupId + ':' + artifactId;
-        if (key.equals("error:error")) {
-            return;
-        }
-        if (key.contains("${")) {
-            LOG.log(Level.FINE, "Will not associate {0} with unevaluated key {1}", new Object[] {owner, key});
-            return;
-        }
         prefs().put(key, owner.toString());
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
     }
     
     public void registerProject(NbMavenProjectImpl project) {
         MavenProject model = project.getOriginalMavenProject();
+        String groupId = model.getGroupId();
+        String artifactId = model.getArtifactId();
+        if (groupId.equals("error") && artifactId.equals("error")) {
+            LOG.log(Level.FINE, "will not register unloadable {0}", project.getPOMFile());
+            return;
+        }
         try {
-            registerCoordinates(model.getGroupId(), model.getArtifactId(), project.getProjectDirectory().getURL());
+            registerCoordinates(groupId, artifactId, project.getProjectDirectory().getURL());
         } catch (FileStateInvalidException x) {
             LOG.log(Level.INFO, null, x);
         }
