@@ -66,7 +66,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     };
     // Matches the attribute name used in org.netbeans.modules.hibernate.cfg.model.SessionFactory
     private static final String attrName = "Name"; // NOI18N
-    private static final String jpa_prefix = "hibernate."; // NO18N
+    private static final String jpa_prefix = "javax.persistence."; // NO18N
     private PropertiesPanel.PropertiesParamHolder propParam;
     private ArrayList<PropertyData> propsData;
 
@@ -80,6 +80,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         return columnNames[column];
     }
 
+    @Override
     public Object getValueAt(int row, int column) {
 
         if (propParam == null || propParam.getPU()==null) {
@@ -93,6 +94,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public int getRowCount() {
         if (propParam == null || propParam.getPU()==null) {
             return 0;
@@ -101,6 +103,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public int getColumnCount() {
         return columnNames.length;
     }
@@ -148,7 +151,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         propsData = new ArrayList<PropertyData>();
         
         // Get all the properties in this catetory
-        List<String> allPropsOfThisCat = Arrays.asList(Util.getAllPropNames(propParam.getProvider()));
+        List<String> allPropsOfThisCat = Util.getPropsNamesExceptGeneral(propParam.getProvider());
       
         if (propParam.getPU() != null) {
             for (int i = 0; i < propParam.getPU().getProperties().sizeProperty2(); i++) {
