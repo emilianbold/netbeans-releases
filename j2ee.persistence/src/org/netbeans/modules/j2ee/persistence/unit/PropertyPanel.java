@@ -65,9 +65,9 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
 
         // The comb box only contains the property names that are not defined yet when adding
         if (add) {
-            nameComboBox.setModel(new DefaultComboBoxModel(Util.getAvailPropNames(propParam.getProvider(), propParam.getPU())));
+            nameComboBox.setModel(new DefaultComboBoxModel(Util.getAvailPropNames(propParam.getProvider(), propParam.getPU()).toArray(new String[]{})));
         } else {
-            nameComboBox.setModel(new DefaultComboBoxModel(Util.getAllPropNames(propParam.getProvider())));
+            nameComboBox.setModel(new DefaultComboBoxModel(Util.getPropsNamesExceptGeneral(propParam.getProvider()).toArray(new String[]{})));
             nameComboBox.setSelectedItem(propName);
         }
 

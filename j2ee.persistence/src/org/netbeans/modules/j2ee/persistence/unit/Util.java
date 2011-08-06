@@ -69,14 +69,26 @@ public class Util {
     private static final String[] defaultJPA20Keys=new String[]{"javax.persistence.lock.timeout", "javax.persistence.query.timeout", "javax.persistence.validation.group.pre-persist", "javax.persistence.validation.group.pre-update", "javax.persistence.validation.group.pre-remove"};
 
     
-    
-    public static String[] getAllPropNames(Provider propCat) {
+    /*
+     * return all properties for specific provider, except some handled specially
+     */
+    public static ArrayList<String> getAllPropNames(Provider propCat) {
         ArrayList<String> results = new ArrayList<String>();
         if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(propCat))){
             Collections.addAll(results, defaultJPA20Keys);
         }
         results.addAll(propCat.getPropertyNames());
-        return results.toArray(new String[]{});
+        return results;
+    }
+    
+    public static ArrayList<String> getPropsNamesExceptGeneral(Provider propCat){
+        ArrayList<String> propsList = getAllPropNames(propCat);
+        propsList.remove(propCat.getJdbcDriver());
+        propsList.remove(propCat.getJdbcUsername());
+        propsList.remove(propCat.getJdbcUrl());
+        propsList.remove(propCat.getJdbcPassword());
+        propsList.remove(propCat.getTableGenerationPropertyName());
+        return propsList;
     }
     
     /**
@@ -86,17 +98,13 @@ public class Util {
      * @param sessionFactory The session factory that contains the properties
      * @return Array of property names
      */
-    public static String[] getAvailPropNames(Provider propCat, PersistenceUnit pu) {
+    public static ArrayList<String> getAvailPropNames(Provider propCat, PersistenceUnit pu) {
 
-        List<String> propsList = Arrays.asList(getAllPropNames(propCat));
+        List<String> propsList = getPropsNamesExceptGeneral(propCat);
         
         if (pu != null) {
             ArrayList<String> availProps = new ArrayList<String>(propsList);
-            availProps.remove(propCat.getJdbcDriver());
-            availProps.remove(propCat.getJdbcUsername());
-            availProps.remove(propCat.getJdbcUrl());
-            availProps.remove(propCat.getJdbcPassword());
-            availProps.remove(propCat.getTableGenerationPropertyName());
+
             for (int i = 0; i < pu.getProperties().sizeProperty2(); i++) {
                 String propName = pu.getProperties().getProperty2(i).getName();
                 if (!availProps.remove(propName) &&
@@ -105,10 +113,10 @@ public class Util {
                 }
             }
 
-            return availProps.toArray(new String[0]);
+            return availProps;
         }
 
-        return new String[0];
+        return new ArrayList<String>();
     }
     
 //    // Gets the list of mapping files from HibernateEnvironment.
