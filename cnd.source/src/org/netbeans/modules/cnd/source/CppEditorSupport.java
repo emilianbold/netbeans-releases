@@ -80,6 +80,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.TopComponent;
@@ -272,7 +273,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
         @Override
         public String getDisplayName() {
-            return "Source";
+            return NbBundle.getMessage(CppEditorSupport.class, "TabLabel_Source"); // NOI18N
         }
 
         @Override
@@ -292,7 +293,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
         @Override
         public String preferredID() {
-            return "header.source";
+            return "header.source"; // NOI18N
         }        
     }
 
