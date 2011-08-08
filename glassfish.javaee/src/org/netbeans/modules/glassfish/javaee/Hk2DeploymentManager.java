@@ -73,6 +73,7 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.glassfish.javaee.ide.UpdateContextRoot;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -121,15 +122,28 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
     @Override
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
-        return distribute(targetList, moduleArchive, deploymentPlan, new File[0]);
+        return distribute(targetList, moduleArchive, deploymentPlan, new File[0], null);
     }
 
     @Override
     public ProgressObject distribute(Target[] targets, DeploymentContext context) {
-        return distribute(targets, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries());
+        String cr = null;
+        String moduleFilePath = context.getModuleFile().getAbsolutePath();
+        if (moduleFilePath.endsWith(".war")) {
+            // compute cr 
+            ModuleConfigurationImpl mci = ModuleConfigurationImpl.get(context.getModule());
+            if (null != mci) {
+                try {
+                    cr = mci.getContextRoot();
+                } catch (ConfigurationException ex) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, "could not getContextRoot() for {0}",moduleFilePath);
+                }
+            }
+        }
+        return distribute(targets, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries(), cr);
     }
     
-    private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
+    private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries, String cr)
             throws IllegalStateException {
         String t = moduleArchive.getName();
         final GlassfishModule commonSupport = getCommonServerSupport();
@@ -177,9 +191,9 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
             return updateCRProgress;
         } else {
             if (commonSupport2 != null && requiredLibraries.length > 0) {
-                commonSupport2.deploy(deployProgress, moduleArchive, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+                commonSupport2.deploy(deployProgress, moduleArchive, moduleName, cr, Collections.<String, String>emptyMap(), requiredLibraries);
             } else {
-                commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+                commonSupport.deploy(deployProgress, moduleArchive, moduleName, cr);
             }
             return updateCRProgress;
         }
