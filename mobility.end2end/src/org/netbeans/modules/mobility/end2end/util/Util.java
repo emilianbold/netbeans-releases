@@ -62,8 +62,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
-//import org.netbeans.jmi.javamodel.JavaClass;
-//import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.mobility.e2e.mapping.ServerJavonTemplate;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.output.OutputLogger;
@@ -73,7 +72,6 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-//import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.modules.mobility.project.J2MEProject;
@@ -100,56 +98,54 @@ import org.openide.windows.WindowManager;
 public final class Util {
 
     private Util() {
-        //to avoid instantiation
-    } 
-    
+    }
+
     public static SourceGroup getPreselectedGroup(final SourceGroup[] groups, final String preselectedFolder) {
         if (preselectedFolder != null) {
             for (int i = 0; i < groups.length; i++) {
-                if (groups[i].getName().equals(preselectedFolder)){
+                if (groups[i].getName().equals(preselectedFolder)) {
                     return groups[i];
                 }
             }
         }
         return groups.length >= 0 ? groups[0] : null;
     }
-    
-    
+
     public static Project openProject() {
         return openProject(null);
     }
-    
+
     public static Project openProject(final String projectFolder) {
         Project project = null;
-        if (projectFolder != null){
+        if (projectFolder != null) {
             final File folder = new File(projectFolder);
-            if (folder.exists() && folder.isDirectory()){
+            if (folder.exists() && folder.isDirectory()) {
                 ProjectChooser.setProjectsFolder(folder);
             }
         }
         final JFileChooser chooser = ProjectChooser.projectChooser();
         final NotifyDescriptor.Message message1 = new NotifyDescriptor.Message(
-                            NbBundle.getMessage( Util.class, "MSG_notProjectDir" ), // NOI18N
-                            NotifyDescriptor.WARNING_MESSAGE );
-        final NotifyDescriptor.Message message2 =new NotifyDescriptor.Message(
-                                NbBundle.getMessage( Util.class, "ERR_NoWebProject" ), // NOI18N
-                                NotifyDescriptor.WARNING_MESSAGE );
-        
-        while( true ) {  // Cycle while users does some reasonable action e.g.
+                NbBundle.getMessage(Util.class, "MSG_notProjectDir"), // NOI18N
+                NotifyDescriptor.WARNING_MESSAGE);
+        final NotifyDescriptor.Message message2 = new NotifyDescriptor.Message(
+                NbBundle.getMessage(Util.class, "ERR_NoWebProject"), // NOI18N
+                NotifyDescriptor.WARNING_MESSAGE);
+
+        while (true) {  // Cycle while users does some reasonable action e.g.
             // select project dir or cancel the chooser
-            final int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow()); // Sow the chooser
-            
-            if( option == JFileChooser.APPROVE_OPTION ) {
-                final File projectDir = FileUtil.normalizeFile( chooser.getSelectedFile());
-                
-                project = fileToProject( projectDir );
-                if( project == null ) {
-                    DialogDisplayer.getDefault().notify( message1 );
+            final int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow()); // Show the chooser
+
+            if (option == JFileChooser.APPROVE_OPTION) {
+                final File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
+
+                project = fileToProject(projectDir);
+                if (project == null) {
+                    DialogDisplayer.getDefault().notify(message1);
                 } else {
-                    if( !isWebProject( project )) {
-                        DialogDisplayer.getDefault().notify( message2 );
+                    if (!isWebProject(project)) {
+                        DialogDisplayer.getDefault().notify(message2);
                     } else {
-                        OpenProjects.getDefault().open( new Project[] { project }, true );
+                        OpenProjects.getDefault().open(new Project[]{project}, true);
                         break; // and exit the loop
                     }
                 }
@@ -158,117 +154,137 @@ public final class Util {
                 // Don't remeber the last selected dir
             }
         }
-        
+
         return project;
     }
-    
-    public static boolean isWebProject( final Project p ) {
-        if( p == null ) {
+
+    public static boolean isWebProject(final Project p) {
+        if (p == null) {
             return false;
         }
-        final WebModuleProvider provider =
-                p.getLookup().lookup( WebModuleProvider.class );
-        if( provider != null ) {
+        final WebModuleProvider provider = p.getLookup().lookup(WebModuleProvider.class);
+        if (provider != null) {
             return true;
         }
         return false;
     }
-    
-    public static Project fileToProject( final File projectDir ) {
+
+    public static Project fileToProject(final File projectDir) {
         try {
-            final FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile(projectDir) );
-            if( fo != null ) {
-                return ProjectManager.getDefault().findProject( fo );
+            final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectDir));
+            if (fo != null) {
+                return ProjectManager.getDefault().findProject(fo);
             }
             return null;
-        } catch( IOException e ) {
+        } catch (IOException e) {
             return null;
         }
-        
     }
-    
+
     public static Project getServerProject(final Configuration configuration) {
         Project result = null;
         final OpenProjects openProject = OpenProjects.getDefault();
         final Project[] openedProjects = openProject.getOpenProjects();
         final String serverProjectName = configuration.getServerConfigutation().getProjectName();
-        //for( int i = 0; i < openedProjects.length; i++ ) {
-        for ( final Project p : openedProjects) {
-            final ProjectInformation pi = p.getLookup().lookup( ProjectInformation.class );
+        for (final Project p : openedProjects) {
+            final ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
             final String webProjectName = pi.getName();
-            if( serverProjectName.equals( webProjectName )) {
+            if (serverProjectName.equals(webProjectName)) {
                 result = p;
                 break;
             }
         }
         return result;
     }
-    public static void addServletToWebProject( final Project project, JavonMapping mapping ){
+
+    public static void addServletToWebProject(final Project project, JavonMapping mapping) {
         /* mark Servlet */
-        try{
+        try {
             boolean servlet = false;
-            
+
             String servletName = mapping.getServerMapping().getClassName();
             String packageName = mapping.getServerMapping().getPackageName();
             String servletClassFQN = packageName.length() != 0 ? packageName + '.' + servletName : servletName;
-            FileObject fo = null;
-            final WebModuleProvider provider = project.getLookup().lookup( WebModuleProvider.class );
+            final WebModuleProvider provider = project.getLookup().lookup(WebModuleProvider.class);
             final WebModule wm = provider.findWebModule(project.getProjectDirectory());
-            final WebApp webApp = DDProvider.getDefault().getDDRootCopy(fo = wm.getDeploymentDescriptor());
+
+            FileObject ddFO = wm.getDeploymentDescriptor();
+            if (ddFO == null) { // no web.xml exists
+                // TODO for EE6 register servlet through annotations
+                ddFO = createWebXml(wm);
+            }
+            if (ddFO == null) {
+                throw new IllegalStateException(NbBundle.getMessage(Util.class, "ERR_NoDeploymentDescriptor")); // NOI18N
+            }
+            
+            final WebApp webApp = DDProvider.getDefault().getDDRootCopy(ddFO);
             final Servlet[] servlets = webApp.getServlet();
-            for (int i = 0; i < servlets.length; i++){
-                if( servlets[i].getServletClass().equals( servletClassFQN )) {
+            for (int i = 0; i < servlets.length; i++) {
+                if (servlets[i].getServletClass().equals(servletClassFQN)) {
                     servlet = true; //already contains
                 }
             }
-            
-            if( !servlet ){
+
+            if (!servlet) {
                 servletName = findFreeName(servletName, webApp);
                 OutputLogger.getInstance().log(MessageFormat.format(
                         NbBundle.getMessage(ServerJavonTemplate.class,
-                            "MSG_AddServlet" ) , servletName,
-                            FileUtil.toFile(project.getProjectDirectory())));//NOI18N
-                final Servlet newServlet = (Servlet) webApp.createBean( "Servlet" ); //NOI18N
-                newServlet.setServletName( servletName );
-                newServlet.setServletClass( servletClassFQN );
-                newServlet.setDescription( NbBundle.getMessage( Util.class, "TXT_servletElementDescription" ));
-                newServlet.setDisplayName( "Javon service for  " +servletClassFQN ); // NOI18N
+                        "MSG_AddServlet"), servletName, // NOI18N
+                        FileUtil.toFile(project.getProjectDirectory())));
+                final Servlet newServlet = (Servlet) webApp.createBean("Servlet"); // NOI18N
+                newServlet.setServletName(servletName);
+                newServlet.setServletClass(servletClassFQN);
+                newServlet.setDescription(NbBundle.getMessage(Util.class, "TXT_servletElementDescription")); // NOI18N
+                newServlet.setDisplayName("Javon service for  " + servletClassFQN); // NOI18N
                 webApp.addServlet(newServlet);
 
-                final ServletMapping newServletMapping = (ServletMapping) webApp.createBean( "ServletMapping" ); //NOI18N
-                newServletMapping.setServletName( servletName );
-                newServletMapping.setUrlPattern( "/servlet/" + servletClassFQN); //NOI18N
-                webApp.addServletMapping( newServletMapping );
-            }
-            
+                final ServletMapping newServletMapping = (ServletMapping) webApp.createBean("ServletMapping"); // NOI18N
+                newServletMapping.setServletName(servletName);
+                newServletMapping.setUrlPattern("/servlet/" + servletClassFQN); // NOI18N
+                webApp.addServletMapping(newServletMapping);
 
-            if( !servlet ) {
-                webApp.write(fo);
+                webApp.write(ddFO);
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
+
+    //#198444
+    private static FileObject createWebXml(WebModule wm) throws IOException {
+        FileObject ddFO = null;
+        FileObject webInf = wm.getWebInf();
+        if (webInf == null) {
+            FileObject docBase = wm.getDocumentBase();
+            if (docBase != null) {
+                webInf = docBase.createFolder("WEB-INF"); //NOI18N
+            }
+        }
+        if (webInf != null) {
+            ddFO = DDHelper.createWebXml(wm.getJ2eeProfile(), webInf);
+        }
+        return ddFO;
+    }
+
     private static String findFreeName(String servletName, WebApp webApp) {
         int nameIndex = 0;
         final Servlet[] servlets = webApp.getServlet();
-        for (int i = 0; i < servlets.length; i++){
-            if( !servlets[i].getServletName().equals( servletName )) {
+        for (int i = 0; i < servlets.length; i++) {
+            if (!servlets[i].getServletName().equals(servletName)) {
                 break;
             }
             servletName = servletName + (++nameIndex);
         }
         final ServletMapping[] servletsMapping = webApp.getServletMapping();
-        for (int i = 0; i < servletsMapping.length; i++){
-            if (!servletsMapping[i].getServletName().equals( servletName )){
+        for (int i = 0; i < servletsMapping.length; i++) {
+            if (!servletsMapping[i].getServletName().equals(servletName)) {
                 break;
             }
             servletName = servletName + (++nameIndex);
         }
         return servletName;
     }
-    
+
 //    public static JavaClass resolveWebServiceClass( final FileObject projectFolder, final String fqn ) {
 //        assert projectFolder != null;
 //        assert fqn != null;
@@ -279,32 +295,29 @@ public final class Util {
 //        return (JavaClass)res.getClassifiers().get(0);
 //    }
     
-    public static String getServerURL(final Project p, final Configuration configuration){
+    public static String getServerURL(final Project p, final Configuration configuration) {
         String port = "8080"; //NOI18N
-        final J2eeModuleProvider provider  = p.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null){
+        final J2eeModuleProvider provider = p.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
             final InstanceProperties ip = provider.getInstanceProperties();
-            if( ip != null ) {
+            if (ip != null) {
                 port = ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER) != null ? ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER) : "8080";//NOI18N
             }
         }
         return "http://localhost:" + port + "/" + configuration.getServerConfigutation().getProjectName() + "/servlet/" + //NOI18N
                 configuration.getServerConfigutation().getClassDescriptor().getType();
-        
+
     }
-    
-    public static boolean isSuitableProjectConfiguration(final Project project){
-        if ( !(project instanceof J2MEProject)){
+
+    public static boolean isSuitableProjectConfiguration(final Project project) {
+        if (!(project instanceof J2MEProject)) {
             return false;
         }
-        final String profile = evaluateProjectProperty( (J2MEProject) project, DefaultPropertiesDescriptor.PLATFORM_PROFILE);
-        
-        if ("MIDP-2.0".equals(profile)){ //NOI18N
-            return true;
-        }
-        return false;
+        final String profile = evaluateProjectProperty((J2MEProject) project, DefaultPropertiesDescriptor.PLATFORM_PROFILE);
+
+        return "MIDP-2.0".equals(profile); // NOI18N
     }
-    
+
     /**
      * Gets currently used device screen size from J2ME project
      * @param project
@@ -315,52 +328,53 @@ public final class Util {
         final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final ProjectConfigurationsHelper confs = project.getConfigurationHelper();
         final String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getDisplayName() : null;
-        
+
         return evaluateProperty(ep, property, activeConfiguration);
     }
-    
+
     private static String evaluateProperty(final EditableProperties ep, final String propertyName, final String configuration) {
-        if (configuration == null)
+        if (configuration == null) {
             return ep.getProperty(propertyName);
+        }
         final String value = ep.getProperty("configs." + configuration + "." + propertyName); // NOI18N
         return value != null ? value : evaluateProperty(ep, propertyName, null);
     }
-    
+
     /**
      * 
      * @param project 
      * @return 
      */
-    public static String getServerLocation( final Project project ) {
-        return "localhost";
+    public static String getServerLocation(final Project project) {
+        return "localhost"; // NOI18N
     }
-    
-    public static String getServerPort( final Project project ) {
-        String port = "8080"; //NOI18N
-        final J2eeModuleProvider provider  = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (provider != null){
+
+    public static String getServerPort(final Project project) {
+        String port = "8080"; // NOI18N
+        final J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
             final InstanceProperties ip = provider.getInstanceProperties();
-            if( ip != null ) {
+            if (ip != null) {
                 port = ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER) != null ? ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER) : "8080";//NOI18N
             }
         }
         return port;
-    }    
-    
+    }
+
     /**
      * Appends DataBinding library to the libraries
      * 
      */
-    public static boolean registerDataBindingLibrary( Project p ) {
-        ProjectClassPathExtender pcpe = p.getLookup().lookup( ProjectClassPathExtender.class );
+    public static boolean registerDataBindingLibrary(Project p) {
+        ProjectClassPathExtender pcpe = p.getLookup().lookup(ProjectClassPathExtender.class);
         Library[] libraries = LibraryManager.getDefault().getLibraries();
-        for( Library library : libraries ) {
-            if( library.getName().equals( "DataBindingME" )) {
+        for (Library library : libraries) {
+            if (library.getName().equals("DataBindingME")) { // NOI18N
                 try {
-                    pcpe.addLibrary( library );
+                    pcpe.addLibrary(library);
                     return true;
-                } catch( IOException ex ) {
-                    Exceptions.printStackTrace( ex );
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                     return false;
                 }
             }

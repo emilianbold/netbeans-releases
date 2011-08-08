@@ -39,71 +39,38 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.openide.loaders;
+package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
-import java.util.concurrent.CountDownLatch;
-import junit.framework.Test;
-import org.netbeans.junit.RandomlyFails;
+import java.io.IOException;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Mutex;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class FolderChildrenInEQTest extends FolderChildrenTest {
 
-    public FolderChildrenInEQTest(String testName) {
-        super(testName);
-    }
+public class DesignSupportTest extends NbTestCase {
+    private FileObject fo;
     
-    public static Test suite() {
-        return new FolderChildrenInEQTest("testCountNumberOfNodesWhenUsingFormLikeLoader");
+    public DesignSupportTest(String n) {
+        super(n);
     }
     
     @Override
-    protected boolean runInEQ() {
-        return true;
+    protected void setUp() throws IOException {
+        FileSystem ms = FileUtil.createMemoryFileSystem();
+        fo = ms.getRoot().createData("my.wsmode");
+        OutputStream os = fo.getOutputStream();
+        FileUtil.copy(DesignSupportTest.class.getResourceAsStream("testWsmode.xml"), os);
+        os.close();
     }
-    
-    public void testDeadlockWaitingForDelayedNode() throws Exception {
-        Pool.setLoader(FormKitDataLoader.class);
-        
-        FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/A");
-        
-        FileObject bb = FileUtil.getConfigFile("/FK");
-        final DataFolder folder = DataFolder.findFolder(bb);
-        final Node node = folder.getNodeDelegate();
-        
-        
-        Node[] one = node.getChildren().getNodes(true);
-        assertNodes(one, "A");
-        
-        FormKitDataLoader.waiter = new CountDownLatch(1);
-        FileUtil.createData(FileUtil.getConfigRoot(), "FK/B");
-        Node[] arr = Children.MUTEX.readAccess(new Mutex.ExceptionAction<Node[]>() {
-            @Override
-            public Node[] run() throws Exception {
-                // don't deadlock
-                return node.getChildren().getNodes(true);
-            }
-        });
-        
-        FormKitDataLoader.waiter.countDown();
-        arr = node.getChildren().getNodes(true);
-        
-        assertNotNull("We have data object now", arr[1].getLookup().lookup(DataObject.class));
-        
-        assertFalse("No leaf", arr[0].isLeaf());
-        assertTrue("File B is leaf", arr[1].isLeaf());
+    public void testReadingOfAMode() throws Exception {
+        String read = DesignSupport.readMode(fo);
+        if (read.contains("active-tc")) {
+            fail("No active-tc:\n" + read);
+        }
+        if (read.indexOf("path orientation") == -1) {
+            fail("<path orientation= should be there:\n" + read);
+        }
     }
-
-    @RandomlyFails // NB-Core-Build #6728: Accepts only Ahoj expected:<1> but was:<2>
-    @Override public void testChildrenCanGC() throws Exception {
-        super.testChildrenCanGC();
-    }
-    
 }

@@ -62,6 +62,8 @@ import org.openide.windows.TopComponent;
 interface ModeModel {
 
     // Mutators
+    /** Change name of the mode */
+    public void setName(String name);
     /** Sets state. */
     public void setState(int state);
     /** Sets bounds. */
