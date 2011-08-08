@@ -26,12 +26,14 @@ Navigator window.
 <dl>
   <dd><a href="#tabs">Tabs</a></dd>
   <dd><a href="#toolbar">Toolbar</a></dd>
+  <dd><a href="#palette">HTML Palette</a></dd>
   <dd><a href="#margins">Left Margin</a></dd>
   <dd><a href="#errorstripe">Error Stripe</a></dd>  
   <dd><a href="#status">Status Line</a></dd>
   <dd><a href="#colors">Syntax Coloring</a></dd>
-  <dd><a href="#completion">Code Completion</a></dd>
+  <dd><a href="#completion">Code Completion and HTML Text Hints</a></dd>
   <dd><a href="#pair">Pair Completion</a></dd>
+  <dd><a href="#surround-tags">Surround with HTML Tags</a></dd>
   <dd><a href="#insert">Insert Mode and Overwrite Mode</a></dd>
 </dl>
 <h3><a name="tabs">Source Editor Tabs</a></h3>
@@ -76,6 +78,14 @@ file or revert those changes.</li>
   buttons for various navigating and editing shortcuts, which vary according
   to the type of file you are editing. Hold the cursor over a button to display
   a description of the command. </p>
+<h3><a name="palette"></a>HTML Palette</h3>
+<p>Go to Window &gt; Palette or press Ctrl-Shift-8 and the Palette opens on the right side of the Source Editor. Code snippets for many of the most common HTML tags
+are provided, grouped according to their function:
+<ul>
+	<li><b>HTML.</b> Table, Ordered List, Unordered List, Image, Link, MetaData.
+	<li><b>HTML Forms.</b> Form, Multi-line Input, Checkbox, File Select, Text Input, Drop-down list,
+            Radio Button, Button.</li>
+</ul>
 <h3><a name="margins">Left Margin</a></h3>
 <p> The left margin displays annotation glyphs that indicate line status, such
   as breakpoints. See <a href="editor_glyphs.html">Margin
@@ -100,15 +110,33 @@ a mark in the error stripe to jump to the line that the mark refers to.</p>
 <h3><a name="colors">Syntax Coloring</a></h3>
 <p> Source code displayed in the Source Editor is syntactically colored. For example,
   all PHP keywords are shown in blue and all PHP comments in light gray.  </p>
-<h3><a name="completion">Code Completion</a></h3>
+<h3><a name="completion">Code Completion and HTML Text Hints</a></h3>
 <p>The IDE's code completion feature helps you fill in code and tags as you are typing. 
 Code completion is available for PHP, HTML, and XML files.
   </p>
+  <ul class="note">
+      <li>If code completion does not appear, press Ctrl-Space.</li>
+  </ul>
+  
+  <p>With your cursor inside text in an HTML block, press Ctrl-Space and a menu 
+      of hints appears. The hints include spell checking and HTML objects (the 
+      selection of objects is the same as in the <a href="#palette">palette</a>.</p>
+  <img src="../../images/html-inline-hints.png" width="195" height="201" alt="html inline hints, showing spellchecking and HTML object choices"/>
+  <p>Use the left and right arrows to move your cursor, and a new set of context-relevant hints 
+      or code completion options appears for every cursor position.</p>
+  <p>Select an item from the list of hints and the IDE inserts this item into your document. 
+      After you select an item, code completion closes. Press Ctrl-Space to reopen 
+      code completion.</p>
 <h3><a name="pair">Pair Completion</a></h3>
 <p>When you edit PHP, the Source Editor does matching of pair characters
   such as brackets, parentheses, and quotation marks. Closing characters are
   not duplicated if you type them yourself rather than letting the editor add
   them for you. </p>
+<h3><a name="surround-tags"></a>Surround With HTML Tags</h3>
+  <p>You can surround text with HTML tags. Select text in the editor and press 
+      Alt-Enter, then select Surround With Tags. The selected text is surrounded 
+      with tags and the cursor is in the opening tag. Type the tag you want and 
+      the closing tag automatically changes to match.</p>
 <h3><a name="insert">Insert Mode and Overwrite Mode</a></h3>
 <p>When the Source Editor is in insert mode, the default insertion point is a vertical
   bar, and text that you type is inserted. In overwrite mode, the default insertion
