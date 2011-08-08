@@ -189,6 +189,48 @@ public class ConstructorRenameTest extends GeneratorTestBase {
         System.err.println(res);
         assertEquals(golden, res);
     }
+
+    public void testRenameWithAnnotation200593() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    @SuppressWarnings(\"\") Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test2 {\n" +
+            "    @SuppressWarnings(\"\") Test2() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // ensure that it is correct type declaration, i.e. class
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
+                        ClassTree copy = make.setLabel((ClassTree) typeDecl, "Test2");
+                        workingCopy.rewrite(typeDecl, copy);
+                    }
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
     
     public void testEnumRename() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");

@@ -160,19 +160,6 @@ public class ClientDataObject extends  DDMultiViewDataObject
         }
         srcRoots = (FileObject []) srcRootList.toArray(new FileObject [srcRootList.size()]);
     }
-    
-    private String getPackageName(FileObject clazz) {
-        for (int i = 0; i < srcRoots.length; i++) {
-            String rp = FileUtil.getRelativePath(srcRoots [i], clazz);
-            if (rp != null) {
-                if (clazz.getExt().length() > 0) {
-                    rp = rp.substring(0, rp.length() - clazz.getExt().length() - 1);
-                }
-                return rp.replace('/', '.');
-            }
-        }
-        return null;
-    }
 
     @Override
     protected String getEditorMimeType() {

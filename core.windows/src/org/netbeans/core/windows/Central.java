@@ -557,6 +557,10 @@ final class Central implements ControllerHandler {
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManager.PROP_MODES, null, null);
     }
+    
+    final void setModeName(ModeImpl mode, String text) {
+        model.setModeName(mode, text);
+    }
 
     /** Removes mode from model and requests view (if needed). */
     public void removeMode(ModeImpl mode) {
