@@ -62,6 +62,8 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     static final String TYPE = "type"; // NOI18N
     static final String HOST = "host"; // NOI18N
     static final String PORT = "port"; // NOI18N
+    static final String ENCRYPTION = "encryption"; // NOI18N
+    static final String ONLY_LOGIN_ENCRYPTED = "onlyLoginEncrypted"; // NOI18N
     static final String USER = "user"; // NOI18N
     static final String PASSWORD = "password"; // NOI18N
     static final String ANONYMOUS_LOGIN = "anonymousLogin"; // NOI18N
@@ -75,6 +77,8 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         TYPE,
         HOST,
         PORT,
+        ENCRYPTION,
+        ONLY_LOGIN_ENCRYPTED,
         USER,
         PASSWORD,
         ANONYMOUS_LOGIN,
@@ -85,6 +89,8 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         IGNORE_DISCONNECT_ERRORS
     ));
     private static final int DEFAULT_PORT = 21;
+    static final FtpConfiguration.Encryption DEFAULT_ENCRYPTION = FtpConfiguration.Encryption.NONE;
+    static final boolean DEFAULT_ONLY_LOGIN_ENCRYPTED = false;
     private static final int DEFAULT_TIMEOUT = 30;
     static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
@@ -111,6 +117,8 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         configuration.putValue(TYPE, FTP_CONNECTION_TYPE);
         configuration.putValue(HOST, ""); // NOI18N
         configuration.putValue(PORT, String.valueOf(DEFAULT_PORT));
+        configuration.putValue(ENCRYPTION, DEFAULT_ENCRYPTION.name());
+        configuration.putValue(ONLY_LOGIN_ENCRYPTED, String.valueOf(DEFAULT_ONLY_LOGIN_ENCRYPTED));
         configuration.putValue(USER, ""); // NOI18N
         configuration.putValue(PASSWORD, ""); // NOI18N
         configuration.putValue(ANONYMOUS_LOGIN, String.valueOf(false));
