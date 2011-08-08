@@ -31,8 +31,7 @@ Navigator window.
   <dd><a href="#errorstripe">Error Stripe</a></dd>  
   <dd><a href="#status">Status Line</a></dd>
   <dd><a href="#colors">Syntax Coloring</a></dd>
-  <dd><a href="#completion">Code Completion</a></dd>
-  <dd><a href="#inline-hints">Inline Hints</a></dd>
+  <dd><a href="#completion">Code Completion and Text Hints</a></dd>
   <dd><a href="#surround-tags">Surround With Tags</a></dd>
   <dd><a href="#tag-rename">Renaming Tags</a></dd>
   <dd><a href="#insert">Insert Mode and Overwrite Mode</a></dd>
@@ -110,17 +109,30 @@ a mark in the error stripe to jump to the line that the mark refers to.</p>
 <h3><a name="colors">Syntax Coloring</a></h3>
 <p> Source code displayed in the Source Editor is syntactically colored. For example,
   all HTML keywords are shown in blue and all HTML comments in light gray.  </p>
-<h3><a name="completion">Code Completion</a></h3>
+<h3><a name="completion">Code Completion and Text Hints</a></h3>
 <p>The IDE's code completion feature helps you fill in code and tags as you are typing. 
-Code completion is available for PHP, HTML, and XML files.
+Code completion is available for PHP, HTML, and XML files. Code completion applies both to 
+tag names and attributes.
   </p>
-  <h3><a name="inline-hints"></a>Inline Hints</h3>
-  <p>With your cursor inside HTML tags, press Ctrl-Space and a menu of hints appears. The hints include spell checking and HTML objects (the selection of objects is the same as in the <a href="#palette">palette</a>.</p>
+  <ul class="note">
+      <li>If code completion does not appear, press Ctrl-Space.</li>
+  </ul>
+  
+  <p>With your cursor inside text in an HTML document, press Ctrl-Space and a menu 
+      of hints appears. The hints include spell checking and HTML objects (the 
+      selection of objects is the same as in the <a href="#palette">palette</a>.</p>
   <img src="../../images/html-inline-hints.png" width="195" height="201" alt="html inline hints, showing spellchecking and HTML object choices"/>
-  <p>Use the arrows to move your cursor, and a new set of context-relevant hints appears for every cursor position.</p>
-  <p>Select an item from the list of hints and the IDE inserts this item into your document. After you select an item, Inline Hints close. Press Ctrl-Space to reopen Inline Hints.</p>
+  <p>Use the left and right arrows to move your cursor, and a new set of context-relevant hints 
+      or code completion options appears for every cursor position.</p>
+  <p>Select an item from the list of hints and the IDE inserts this item into your document. 
+      After you select an item, code completion closes. Press Ctrl-Space to reopen 
+      code completion.</p>
   <h3><a name="surround-tags"></a>Surround With Tags</h3>
-  <p>You can surround text with HTML tags. Select text in the editor and press Alt-Enter, then select Surround With Tags. The selected text is surrounded with tags and the cursor is in the opening tag. Type the tag you want and the closing tag automatically changes to match. See also <a href="#tag-rename">Renaming Tags</a>. </p>
+  <p>You can surround text with HTML tags. Select text in the editor and press 
+      Alt-Enter, then select Surround With Tags. The selected text is surrounded 
+      with tags and the cursor is in the opening tag. Type the tag you want and 
+      the closing tag automatically changes to match. See also 
+      <a href="#tag-rename">Renaming Tags</a>. </p>
   <h3><a name="tag-rename"></a>Renaming Tags</h3>
   <p>To rename a tag, place your cursor inside either the opening or closing tag and press Ctrl-R. The name of the tag is surrounded by a red box. <img src="../../images/html-rename1.png" width="161" height="19" alt="Tags after CTRL-R is pressed"/>
   </p>
