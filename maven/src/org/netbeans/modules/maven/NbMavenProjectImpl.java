@@ -1318,7 +1318,7 @@ public final class NbMavenProjectImpl implements Project {
             this(Lookup.EMPTY);
         }
 
-        @Messages("ACT_Reload_Projects=Reload {0} Projects")
+        @Messages("ACT_Reload_Projects=Reload {0} POMs")
         private RefreshAction(Lookup lkp) {
             context = lkp;
             Collection<? extends NbMavenProjectImpl> col = context.lookupAll(NbMavenProjectImpl.class);
