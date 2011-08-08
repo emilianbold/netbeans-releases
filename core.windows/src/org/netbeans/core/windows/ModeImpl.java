@@ -565,6 +565,10 @@ public final class ModeImpl implements Mode {
     // Utility methods<<
     ////////////////////
 
+    public void setModeName(String text) {
+        getCentral().setModeName(this, text);
+    }
+
     
 }
 

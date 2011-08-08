@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import org.openide.util.Task;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteBrandingModel;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.spi.BrandingModel;
+import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
@@ -94,7 +96,18 @@ import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
  * Defines actions available on a suite.
  * @author Jesse Glick
  */
-public final class SuiteActions implements ActionProvider {
+public final class SuiteActions implements ActionProvider, ExecProject {
+    @Override
+    public Task execute(String... args) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (String r : args) {
+            sb.append(r).append(' ');
+        }
+        Properties p = new Properties();
+        p.setProperty("run.args", sb.substring(0, sb.length() - 1));
+
+        return ActionUtils.runTarget(findBuildXml(project), new String[]{"run"}, p);
+    }
     
     static Action[] getProjectActions(SuiteProject project) {
         NbPlatform platform = project.getPlatform(true); //true -> #96095
