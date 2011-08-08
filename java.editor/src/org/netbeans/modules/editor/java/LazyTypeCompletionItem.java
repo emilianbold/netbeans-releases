@@ -61,6 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -73,10 +74,10 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  *
  * @author Dusan Balek
  */
-public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCompletionItem {
+public class LazyTypeCompletionItem extends JavaCompletionItem.WhiteListJavaCompletionItem implements LazyCompletionItem {
     
-    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends) {
-        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, addTypeVars, afterExtends);
+    public static final LazyTypeCompletionItem create(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
+        return new LazyTypeCompletionItem(handle, kinds, substitutionOffset, source, insideNew, addTypeVars, afterExtends, whiteList);
     }
     
     private ElementHandle<TypeElement> handle;
@@ -92,8 +93,8 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
     private CharSequence sortText;
     private int prefWidth = -1;
     
-    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends) {
-        super(substitutionOffset);
+    private LazyTypeCompletionItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
+        super(substitutionOffset, whiteList);
         this.handle = handle;
         this.kinds = kinds;
         this.source = source;
@@ -120,7 +121,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
                         Elements elements = controller.getElements();
                         if (e != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) && controller.getTrees().isAccessible(scope, e)) {
                             if (isOfKind(e, kinds) && (!afterExtends || !e.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(e) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(e.getQualifiedName()))
-                                delegate = JavaCompletionItem.createTypeItem(controller, e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false, false, false);
+                                delegate = JavaCompletionItem.createTypeItem(controller, e, (DeclaredType)e.asType(), substitutionOffset, true, controller.getElements().isDeprecated(e), insideNew, addTypeVars, false, false, false, getWhiteList());
                         }
                     }
                 });

@@ -881,6 +881,14 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             throw new ConfigurationException(msg);
         }
         
+        ModuleConfiguration conf = getModuleConfiguration();
+        if (conf == null) {
+            return null;
+        }
+        DeploymentPlanConfiguration deploymentPlanConfiguration = conf.getLookup().lookup(DeploymentPlanConfiguration.class);
+        if (deploymentPlanConfiguration == null) {
+            return null;
+        }
         FileLock lock = null;
         OutputStream out = null;
         try {
@@ -897,15 +905,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             }
             lock = plan.lock();
             out = plan.getOutputStream(lock);
-            ModuleConfiguration conf = getModuleConfiguration();
-            if (conf != null) {
-                DeploymentPlanConfiguration deploymentPlanConfiguration = conf.getLookup().lookup(DeploymentPlanConfiguration.class);
-                if (deploymentPlanConfiguration != null) {
-                    deploymentPlanConfiguration.save(out);
-                    return FileUtil.toFile(plan);
-                }
-            }
-            return null;
+            deploymentPlanConfiguration.save(out);
+            return FileUtil.toFile(plan);
         } finally {
             if (lock != null) lock.releaseLock();
             try {

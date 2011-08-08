@@ -239,10 +239,10 @@ final class OnePassCompileWorker extends CompileWorker {
                 javaContext.fqn2Files.set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.sa.analyse(Collections.singleton(unit.first), jt, fileManager, unit.second, aTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, aTypes, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }
@@ -254,7 +254,7 @@ final class OnePassCompileWorker extends CompileWorker {
                         // presumably should not happen
                     }
                 }
-                JavaCustomIndexer.setErrors(context, active, dc);
+                JavaCustomIndexer.setErrors(context, javaContext, active, dc);
                 Log.instance(jt.getContext()).nerrors = 0;
                 finished.add(active.indexable);
             }
