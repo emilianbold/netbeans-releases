@@ -51,6 +51,7 @@ public class WhiteListPackageImportHandler extends DefaultHandler2 {
 
     private String startElement = null;
     private String fileName;
+    private String pkg;
     private List<String> otherFiles;
 
     public WhiteListPackageImportHandler(List<String> otherFiles) {
@@ -65,6 +66,9 @@ public class WhiteListPackageImportHandler extends DefaultHandler2 {
         if ("Import".equals(qName)) {
             fileName = "";
         }
+        if ("Package".equals(qName)) {
+            pkg = "";
+        }
     }
 
     public void characters(char[] ch, int start, int length) throws SAXException {
@@ -72,12 +76,18 @@ public class WhiteListPackageImportHandler extends DefaultHandler2 {
         if ("Import".equals(startElement)) {
             fileName += value;
         }
+        if ("Package".equals(startElement)) {
+            pkg += value;
+        }
     }
 
     public void endElement(String uri, String localName, String qName) throws SAXException {
         startElement = null;
         if ("Import".equals(qName)) {
             otherFiles.add(fileName);
+        }
+        if ("Package".equals(qName)) {
+            WhiteListConfigReader.getBuilder().addCheckedPackage(pkg.toString().replace('\\', '.'));
         }
     }
 }

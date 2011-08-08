@@ -42,7 +42,9 @@
 package org.netbeans.spi.whitelist.support;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
@@ -130,6 +132,22 @@ public final class WhiteListImplementationBuilder {
         Parameters.notNull("argumentTypes", argumentTypes); //NOI18N
         checkPreconditions();
         model.addMethod(classBinaryName, methodName, argumentTypes, OVERRIDE);
+        return this;
+    }
+
+    @NonNull
+    public WhiteListImplementationBuilder addAllowedPackage(@NonNull final String packageName, boolean includingSubpackages) {
+        Parameters.notNull("checkedPackage", packageName);   //NOI18N
+        checkPreconditions();
+        model.addAllowedPackage(includingSubpackages ? packageName + "." : packageName);
+        return this;
+    }
+
+    @NonNull
+    public WhiteListImplementationBuilder addDisallowedPackage(@NonNull final String packageName, boolean includingSubpackages) {
+        Parameters.notNull("checkedPackage", packageName);   //NOI18N
+        checkPreconditions();
+        model.addDisallowedPackage(includingSubpackages ? packageName + "." : packageName);
         return this;
     }
 
@@ -337,6 +355,8 @@ public final class WhiteListImplementationBuilder {
         private static final String DEF_NAMES = PackedNames.class.getName();
         private String whiteListName;
         private Union2<StringBuilder,Pattern> checkedPkgs;
+        private List<String> allowedPackages; // silly: if package ends with dot then it handles subpackages as well
+        private List<String> disallowedPackages; // silly: if package ends with dot then it handles subpackages as well
         private final Names names;
         private final IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>> root =
                 new IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<IntermediateCacheNode<CacheNode>>>>();
@@ -352,6 +372,8 @@ public final class WhiteListImplementationBuilder {
                     throw new IllegalStateException("Cannot instantiate names", ex);    //NOI18N
                 }
                 checkedPkgs = Union2.<StringBuilder,Pattern>createFirst(new StringBuilder());
+                allowedPackages = new ArrayList<String>();
+                disallowedPackages = new ArrayList<String>();
         }
 
         void addCheckedPackage(
@@ -362,6 +384,16 @@ public final class WhiteListImplementationBuilder {
             checkedPkgs.first().append(Pattern.quote(pkg+'.')).append(".*"); //NOI18N
         }
 
+        void addAllowedPackage(
+                @NonNull final String pkg) {
+            allowedPackages.add(pkg);
+        }
+        
+        void addDisallowedPackage(
+                @NonNull final String pkg) {
+            disallowedPackages.add(pkg);
+        }
+        
         void addClass(
                 @NonNull final String binaryName,
                 final byte mode) {
@@ -414,11 +446,34 @@ public final class WhiteListImplementationBuilder {
             return this;
         }
 
+        private boolean isThere(List<String> packages, String pkg) {
+            String pkg2 = pkg+"."; // silly
+            for (String s : packages) {
+                if (pkg2.startsWith(s)) {
+                    // if subpackages are handled then all is OK
+                    if (s.endsWith(".")) {
+                        return true;
+                    } else if (pkg.equals(s)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
         boolean isAllowed(
                 @NonNull final ElementHandle<?> element,
                 final byte mode) {
             final String[] vmSignatures = SourceUtils.getJVMSignature(element);
             final String[] pkgNamePair = splitName(vmSignatures[0],'.');  //NOI18N
+            
+            if (isThere(allowedPackages, pkgNamePair[0])) {
+                return true;
+            }
+            if (isThere(disallowedPackages, pkgNamePair[0])) {
+                return false;
+            }
+            
             if (!checkedPkgs.second().matcher(pkgNamePair[0]+'.').matches()) {  //NOI18N
                 return true;
             }
