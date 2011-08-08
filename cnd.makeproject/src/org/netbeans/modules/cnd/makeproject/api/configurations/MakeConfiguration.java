@@ -669,7 +669,7 @@ public class MakeConfiguration extends Configuration {
     @Override
     public MakeConfiguration clone() {
         MakeConfiguration clone = new MakeConfiguration(getBaseFSPath(), getName(),
-                getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
+                getConfigurationType().getValue(), getCustomizerId(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
@@ -1122,6 +1122,9 @@ public class MakeConfiguration extends Configuration {
     }
     
     public MakeProjectCustomizer getProjectCustomizer() {
+        if (getCustomizerId() == null){
+            return null;
+        }
         MakeProjectCustomizer makeProjectCustomizer = null;
         Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
         for (MakeProjectCustomizer instance : mwc) {
