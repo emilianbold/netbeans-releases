@@ -571,6 +571,23 @@ public abstract class FileObject extends Object implements Serializable {
         String mimeType = FileUtil.getMIMEType(this);
         return  mimeType == null ? "content/unknown" : mimeType;  //NOI18N
     }
+    
+    /** Resolves MIME type from the list of acceptable ones. By default
+     * calls {@link FileUtil#getMIMEType(org.openide.filesystems.FileObject, java.lang.String[])},
+     * but subclasses may override this method to be more effective.
+     * 
+     * @param withinMIMETypes 
+     *   A hint to the underlaying infrastructure to 
+     *   limit the search to given array of MIME types. 
+     * @return the MIME type for the FileObject, or <code>null</code> if 
+     *   the FileObject is unrecognized. It may return {@code content/unknown} instead of {@code null}.
+     *   It is possible for the resulting MIME type to not be a member of given <code>withinMIMETypes</code>
+     *   list.
+     * @since 7.50
+     */
+    public String getMIMEType(String... withinMIMETypes) {
+        return FileUtil.getMIMEType(this, withinMIMETypes);
+    }
 
     /** Get the size of the file.
     * @return the size of the file in bytes or zero if the file does not contain data (does not

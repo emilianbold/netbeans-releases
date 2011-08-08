@@ -79,6 +79,15 @@ public class NbPresenterLeakTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #1189
     public void testLeakingNbPresenterDescriptor () throws InterruptedException, InvocationTargetException {
+        try {
+            Class.forName("java.lang.AutoCloseable");
+        } catch (ClassNotFoundException ex) {
+            // this test is known to fail due to JDK bugs 7070542 & 7072167
+            // which are unlikely to be fixed on JDK6. Thus, if AutoCloseable
+            // is not present, skip the test
+            return;
+        }
+        
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels(), null);
         wizardDescriptor.setModal (false);
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
