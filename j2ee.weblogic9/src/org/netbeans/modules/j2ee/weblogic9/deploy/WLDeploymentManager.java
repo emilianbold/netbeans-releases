@@ -151,9 +151,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     /* GuardedBy("this") */
     private Version domainVersion;
-    
-    /* GuardedBy("this") */
-    private boolean webProfile;
 
     /* GuardedBy("this") */
     private boolean initialized;
@@ -204,11 +201,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         init();
         return domainVersion;
     }    
-
-    public synchronized boolean isWebProfile() {
-        init();
-        return webProfile;
-    }
 
     /**
      * Returns the InstanceProperties object for the current server instance.
@@ -262,7 +254,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         serverVersion = WLPluginProperties.getServerVersion(WLPluginProperties.getServerRoot(this, true));
         domainVersion = WLPluginProperties.getDomainVersion(instanceProperties);
-        webProfile = WLPluginProperties.isWebProfile(WLPluginProperties.getServerRoot(this, true));
     }
 
     private <T> T executeAction(final Action<T> action) throws Exception {
@@ -425,10 +416,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        if (isWebProfile()) {
-            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
-            return wpDeployer.getAvailableModules(moduleType, target);
-        }
         
         try {
             return executeAction(new Action<TargetModuleID[]>() {
@@ -458,10 +445,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     public TargetModuleID[] getNonRunningModules(final ModuleType moduleType, final Target[] target) throws TargetException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
-        }
-        if (isWebProfile()) {
-            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
-            return wpDeployer.getNonRunningModules(moduleType, target);
         }
 
         try {
@@ -493,10 +476,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        if (isWebProfile()) {
-            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
-            return wpDeployer.getRunningModules(moduleType, target);
-        }
         
         try {
             return executeAction(new Action<TargetModuleID[]>() {
@@ -526,11 +505,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     public Target[] getTargets() throws IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
-        }
-        // FIXME DWP fix this when we find a way how to connect to DWP
-        if (isWebProfile()) {
-            // DWP is single server according to presentation
-            return new Target[] {DWP_TARGET}; // NOI18N
         }
 
         try {
@@ -624,10 +598,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     public ProgressObject redeploy(final TargetModuleID[] targetModuleID) throws UnsupportedOperationException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
-        }
-        if (isWebProfile()) {
-            WebProfileDeployer wpDeployer = new WebProfileDeployer(this);
-            return wpDeployer.redeploy(targetModuleID);
         }
         
         try {

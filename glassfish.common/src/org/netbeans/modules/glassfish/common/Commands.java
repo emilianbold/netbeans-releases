@@ -453,7 +453,7 @@ public class Commands {
 
         public UndeployCommand(final String name, String target) {
             super("undeploy"); // NOI18N
-            query = "name=" + Utils.sanitizeName(name); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
             if (null != target) {
                 query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
             }
