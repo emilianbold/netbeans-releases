@@ -162,13 +162,8 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.FALSE.toString());
         
-        boolean isWebProfile = WLPluginProperties.isWebProfile(new File(serverRoot));
-        if (Utilities.isMac() && !isWebProfile) {
+        if (Utilities.isMac()) {
             props.put(WLPluginProperties.MEM_OPTS, DEFAULT_MAC_MEM_OPTS);
-        // FIXME temporary hack WL guys should fix that
-        // https://bug.oraclecorp.com/pls/bug/webbug_print.show?c_rptno=12612642
-        } else if ((Utilities.isUnix() || Utilities.isMac()) && isWebProfile) {
-            props.put(WLPluginProperties.MEM_OPTS, DEFAULT_DWP_MEM_OPTS);
         }
 
         InstanceProperties ip = InstanceProperties.createInstanceProperties(

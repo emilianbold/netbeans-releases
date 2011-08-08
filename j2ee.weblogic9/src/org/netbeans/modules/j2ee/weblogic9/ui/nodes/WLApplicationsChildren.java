@@ -61,15 +61,11 @@ public class WLApplicationsChildren extends WLNodeChildren {
     WLApplicationsChildren(Lookup lookup) {
         WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
         assert manager != null;
-        if (manager.isWebProfile()) {
-            setKeys(new Object[] {
-                    createWebApplicationsNode(lookup)});            
-        } else {
-            setKeys(new Object[] {
-                    createEarApplicationsNode(lookup),
-                    createEjbModulesNode(lookup),
-                    createWebApplicationsNode(lookup)});
-        }
+
+        setKeys(new Object[] {
+                createEarApplicationsNode(lookup),
+                createEjbModulesNode(lookup),
+                createWebApplicationsNode(lookup)});
     }
     
     /*

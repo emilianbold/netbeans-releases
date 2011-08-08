@@ -42,11 +42,6 @@
 
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -128,17 +123,8 @@ public final class WLConnectionSupport {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = null;
-                if (deploymentManager.isWebProfile()) {
-                    String wpUrl = getWebProfileUrl(resolvedHost, resolvedPort);
-                    if (wpUrl != null) {
-                        url = new JMXServiceURL(wpUrl);
-                    }
-                }
-                if (url == null) {
-                    url = new JMXServiceURL("iiop", resolvedHost, // NOI18N
+                JMXServiceURL url = new JMXServiceURL("iiop", resolvedHost, // NOI18N
                         Integer.parseInt(resolvedPort), action.getPath());
-                }
                 
                 String username = deploymentManager.getInstanceProperties().getProperty(
                         InstanceProperties.USERNAME_ATTR);
@@ -203,22 +189,6 @@ public final class WLConnectionSupport {
         @Override
         public final String getPath() {
             return "/jndi/weblogic.management.mbeanservers.edit"; // NOI18N
-        }
-    }
-    
-    private String getWebProfileUrl(String host, String port) {
-        try {
-            URL httpURL = new URL("http://" + host + ":" + port + "/bea_wls_management_dwp_jmx_internal/get/url");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(httpURL.openStream()));
-            try {
-                return reader.readLine();
-            } finally {
-                reader.close();
-            }
-        } catch (MalformedURLException ex) {
-            return null;
-        } catch (IOException ex) {
-            return null;
         }
     }
 }

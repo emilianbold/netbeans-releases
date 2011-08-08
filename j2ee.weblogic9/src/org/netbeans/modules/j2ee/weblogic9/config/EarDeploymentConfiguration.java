@@ -78,24 +78,20 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
     
     private final Version serverVersion;
     
-    private final boolean isWebProfile;
-    
     private EarApplicationModel weblogicApplication;
      
     public EarDeploymentConfiguration(J2eeModule j2eeModule) {
-        this(j2eeModule, null, false);
+        this(j2eeModule, null);
     }
     
     /**
      * Creates a new instance of EarDeploymentConfiguration 
      */
-    public EarDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion,
-            boolean isWebProfile) {
+    public EarDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion) {
 
         super(j2eeModule, serverVersion);
         this.j2eeModule = j2eeModule;
         this.serverVersion = serverVersion;
-        this.isWebProfile = isWebProfile;
         file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-application.xml"); // NOI18N
         getWeblogicApplication();
         DataObject dataObject = null;
