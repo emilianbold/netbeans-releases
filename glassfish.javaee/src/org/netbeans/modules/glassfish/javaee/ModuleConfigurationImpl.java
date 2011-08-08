@@ -45,6 +45,8 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.glassfish.javaee.db.ResourcesHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
@@ -81,11 +83,23 @@ public class ModuleConfigurationImpl implements
     private Hk2Configuration config;
     private J2eeModule module;
     private Lookup lookup;
+    
+    private static final Map<J2eeModule,ModuleConfigurationImpl> configs = 
+            new HashMap<J2eeModule,ModuleConfigurationImpl>();
 
     ModuleConfigurationImpl(J2eeModule module, Hk2Configuration config, Hk2DeploymentManager hk2Dm) throws ConfigurationException {
-        this.module = module;
-        this.config = config;
-        ResourcesHelper.addSampleDatasource(module, hk2Dm);
+        synchronized (configs) {
+            this.module = module;
+            this.config = config;
+            ResourcesHelper.addSampleDatasource(module, hk2Dm);
+            configs.put(module, this);
+        }
+    }
+    
+    static ModuleConfigurationImpl get(J2eeModule j2eemodule) {
+        synchronized (configs) {
+            return configs.get(j2eemodule);
+        }
     }
 
     // ------------------------------------------------------------------------

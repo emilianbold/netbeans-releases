@@ -310,9 +310,6 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
                 @Override
                 public String getPath() {
-                    if (dm.isWebProfile()) {
-                        return ""; // NOI18N
-                    }
                     return "/jndi/weblogic.management.mbeanservers.runtime"; // NOI18N
                 }
             });

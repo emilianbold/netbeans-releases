@@ -118,7 +118,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -153,9 +152,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             "^.*javax\\.persistence.*((_2-\\d+-\\d+)|(_2.0))\\.jar$");
     
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
-    
-    private static final FilenameFilter DWP_LIBRARY_FILTER = new PrefixesFilter(
-            "javax.", "glassfish.jsf", "glassfish.jstl", "org.eclipse.persistence"); // NOI18N
     
     private static final FilenameFilter PATCH_DIR_FILTER = new PrefixesFilter("patch_wls"); // NOI18N    
 
@@ -397,11 +393,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             this.dm = dm;
 
             moduleTypes.add(Type.WAR);
-
-            if (!dm.isWebProfile()) {
-                moduleTypes.add(Type.EJB);
-                moduleTypes.add(Type.EAR);
-            }
+            moduleTypes.add(Type.EJB);
+            moduleTypes.add(Type.EAR);
 
             // Allow J2EE 1.4 Projects
             profiles.add(Profile.J2EE_14);
@@ -414,9 +407,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     profiles.add(Profile.JAVA_EE_5);
                 }
                 if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_11)) {
-                    if (!dm.isWebProfile()) {
-                        profiles.add(Profile.JAVA_EE_6_FULL);
-                    }
+                    profiles.add(Profile.JAVA_EE_6_FULL);
                     profiles.add(Profile.JAVA_EE_6_WEB);
                 }
             }
@@ -549,12 +540,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (libraries != null) {
                 return libraries;
             }
-            // FIXME DWP
-            if (dm.isWebProfile()) {
-                initLibrariesForDWP();
-            } else {
-                initLibrariesForWLS();
-            }
+
+            initLibrariesForWLS();
             return libraries;
         }
 
@@ -652,53 +639,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 libraries[0] = library;
             }
         }
-
-        // TODO if this will became same or quite similar to
-        // initLibrariesForWLS merge it
-        private void initLibrariesForDWP() {
-            LibraryImplementation library = new J2eeLibraryTypeProvider().
-                    createLibrary();
-
-            // set its name
-            library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
-                    "LIBRARY_NAME"));
-
-            // add the required jars to the library
-            try {
-                List<URL> list = new ArrayList<URL>();
-                File middleware = getMiddlewareHome();
-
-                if (middleware != null) {
-                    File modules = getMiddlewareModules(middleware);
-                    if (modules.exists() && modules.isDirectory()) {
-                        File[] apis = modules.listFiles(DWP_LIBRARY_FILTER);
-                        if (apis != null) {
-                            for (File file : apis) {
-                                list.add(fileToUrl(file));
-                            }
-                        }
-                    }
-                }
-
-                addPersistenceLibrary(list, middleware, this);
-
-                library.setContent(J2eeLibraryTypeProvider.
-                        VOLUME_TYPE_CLASSPATH, list);
-                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-                if (j2eeDoc != null) {
-                    list = new ArrayList();
-                    list.add(fileToUrl(j2eeDoc));
-                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-                }
-            } catch (MalformedURLException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
-
-            synchronized (this) {
-                libraries = new LibraryImplementation[1];
-                libraries[0] = library;
-            }
-        }
         
         public synchronized boolean isJpa2Available() {
             if (libraries != null) {
@@ -741,11 +681,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
             if (newDefaultJpaProvider == null) {
-                if (dm.isWebProfile()) {
-                    newDefaultJpaProvider = ECLIPSELINK_JPA_PROVIDER;
-                } else {
-                    newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
-                }
+                newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
             }
 
             synchronized (this) {
