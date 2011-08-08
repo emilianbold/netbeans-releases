@@ -739,7 +739,6 @@ public final class DocumentView extends EditorView
                 ViewUtils.log(ViewHierarchy.SPAN_LOG, msg);
             }
 
-            resetRepaintRegion(); // Reset repaint region since revalidate() will do full repaint
             // RootView.preferenceChanged() calls textComponent.revalidate (reposts to EDT if not called in it already)
             super.preferenceChanged(this, widthChange, heightChange);
         }
