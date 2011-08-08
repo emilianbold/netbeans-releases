@@ -54,6 +54,7 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -240,7 +241,7 @@ public abstract class RemoteConfiguration {
      * (or value is not a number), the default value is returned (and set in the configuration).
      * @param key key of the number
      * @param defaultValue default value if any error occurs
-     * @return value of the given key as a numberor defaultValue if any error occurs
+     * @return value of the given key as a number or defaultValue if any error occurs
      */
     protected int readNumber(String key, int defaultValue) {
         try {
@@ -250,6 +251,38 @@ public abstract class RemoteConfiguration {
         }
         cfg.putValue(key, String.valueOf(defaultValue));
         return defaultValue;
+    }
+
+    /**
+     * Read value of the given key as a boolean. If boolean is not found in the given configuration
+     * (or value is not a boolean), the default value is returned (and set in the configuration).
+     * @param key key of the boolean
+     * @param defaultValue default value if any error occurs
+     * @return value of the given key as a boolean or defaultValue if any error occurs
+     */
+    protected boolean readBoolean(String key, boolean defaultValue) {
+        String value = cfg.getValue(key);
+        if (value != null) {
+            return Boolean.valueOf(value);
+        }
+        cfg.putValue(key, String.valueOf(defaultValue));
+        return defaultValue;
+    }
+
+    /**
+     * {@link PhpProjectUtils#resolveEnum(Class, String, Enum) Resolve enum} and remember
+     * it in the configuration.
+     * @param <T> enum type
+     * @param enumClass enum class
+     * @param key key of the enum
+     * @param defaultValue default value if any error occurs
+     * @return value of the given key as an enum or defaultValue if any error occurs
+     * @see PhpProjectUtils#resolveEnum(Class, String, Enum)
+     */
+    protected <T extends Enum<T>> T readEnum(Class<T> enumClass, String key, T defaultValue) {
+        T value = PhpProjectUtils.resolveEnum(enumClass, cfg.getValue(key), defaultValue);
+        cfg.putValue(key, value.name());
+        return value;
     }
 
     protected String readPassword(String key) {
