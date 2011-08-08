@@ -74,7 +74,7 @@ public class MainWindowOperatorTest extends JellyTestCase {
         "testGetToolbarButtonString",
         "testPushToolbarPopupMenu",
         "testPushToolbarPopupMenuNoBlock",
-        "testDragNDropToolbar",
+        // not stable enough - "testDragNDropToolbar",
         "testStatusTextTracer"
     };
     /** Instance of MainWindowOperator (singleton) to test. */
