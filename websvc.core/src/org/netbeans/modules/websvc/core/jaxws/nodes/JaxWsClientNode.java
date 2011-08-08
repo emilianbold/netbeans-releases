@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -356,7 +357,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
      * refresh service information obtained from wsdl (when wsdl file was changed)
      */
     public void refreshService(boolean downloadWsdl) {
-        setValue(CONTEXT, null);
+        setValue(CONTEXT, new HashMap<String, Object>());
         if (downloadWsdl) {
             String result = RefreshClientDialog.open(client.getWsdlUrl());
             if (RefreshClientDialog.CLOSE.equals(result)) return;
