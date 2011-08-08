@@ -64,6 +64,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -77,6 +78,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
@@ -96,18 +98,28 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
     private DialogDescriptor dialog;    
     private RequestProcessor.Task parsingDocumentTask;
     XMLJ2eeDataObject dataObject;
+    SaveCookie saveCookie = new Save();
 
     /** Create a new editor support.
      * @param obj the data object whose primary file will be edited as text
      */
     public XMLJ2eeEditorSupport(XMLJ2eeDataObject obj) {
-        super (obj, new XmlEnv (obj));
+        super (obj, null, new XmlEnv (obj));
         dataObject=obj;
         
         // Set a MIME type as needed, e.g.:
         setMIMEType ("text/xml");   // NOI18N
+
     }
-    
+
+    @Override
+    protected Pane createPane() {
+        if (dataObject.getEditorMimeType() != null) {
+            return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(dataObject.getEditorMimeType(), getDataObject());
+        }
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView("text/xml", getDataObject());
+    }
+
     /**
      * Overridden method from CloneableEditorSupport.
      */
@@ -167,9 +179,9 @@ public class XMLJ2eeEditorSupport extends DataEditorSupport
             return false;
         }
         XMLJ2eeDataObject obj = (XMLJ2eeDataObject) getDataObject ();
-        //System.out.println("notifyModified(), nodeDirty="+obj.isNodeDirty());        
+        //System.out.println("notifyModified(), nodeDirty="+obj.isNodeDirty());
         if (obj.getCookie (SaveCookie.class) == null) {
-            obj.addSaveCookie (new Save ());
+            obj.addSaveCookie (saveCookie);
         }
         if (!obj.isNodeDirty()) restartTimer();
         return true;
