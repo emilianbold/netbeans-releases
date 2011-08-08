@@ -49,14 +49,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,9 +70,13 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.nodes.DependenciesNode;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -75,6 +84,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -82,8 +92,24 @@ import org.openide.util.NbBundle.Messages;
  */
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport> {
     private static final String MISSINGJ2EE = "MISSINGJ2EE"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
+
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
+    private final Set<Artifact> missingArtifacts;
+    private final RequestProcessor.Task reloadTask = RP.create(new Runnable() {
+        @Override public void run() {
+            LOG.log(Level.FINE, "actually reloading {0}", nbproject.getPOMFile());
+            nbproject.fireProjectReload();
+        }
+    });
+    private final FileChangeListener fcl = new FileChangeAdapter() {
+        @Override public void fileDataCreated(FileEvent fe) {
+            LOG.log(Level.FINE, "due to {0} scheduling reload of {1}", new Object[] {fe.getFile(), nbproject.getPOMFile()});
+            reloadTask.schedule(1000);
+        }
+    };
     private final NbMavenProjectImpl nbproject;
     private ModuleInfo j2eeInfo;
     private PropertyChangeListener listener = new PropertyChangeListener() {
@@ -104,6 +130,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     /** Creates a new instance of ProblemReporter */
     public ProblemReporterImpl(NbMavenProjectImpl proj) {
         reports = new TreeSet<ProblemReport>(this);
+        missingArtifacts = new HashSet<Artifact>();
         nbproject = proj;
     }
     
@@ -160,6 +187,31 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
 
+    /**
+     * Note an artifact whose absence in the local repository is implicated among the problems.
+     * Note that some problems are not caused by missing artifacts,
+     * and some problems encapsulate several missing artifacts.
+     * @param a an artifact (scope permitted but ignored)
+     */
+    public void addMissingArtifact(Artifact a) {
+        synchronized (reports) {
+            if (missingArtifacts.add(a)) {
+                File f = a.getFile();
+                if (f == null) {
+                    f = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a).getFile();
+                }
+                LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
+                FileUtil.addFileChangeListener(fcl, f);
+            }
+        }
+    }
+
+    Set<Artifact> getMissingArtifacts() {
+        synchronized (reports) {
+            return new TreeSet<Artifact>(missingArtifacts);
+        }
+    }
+
     public boolean hasReportWithId(String id) {
         return getReportWithId(id) != null;
     }
@@ -181,10 +233,21 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         synchronized (reports) {
             hasAny = !reports.isEmpty();
             reports.clear();
+            Iterator<Artifact> as = missingArtifacts.iterator();
+            while (as.hasNext()) {
+                File f = as.next().getFile();
+                if (f != null) {
+                    LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
+                    FileUtil.removeFileChangeListener(fcl, f);
+                }
+                as.remove();
+            }
+            missingArtifacts.clear();
         }
         if (hasAny) {
             fireChange();
         }
+        nbproject.getEmbedder().lookupComponent(PluginArtifactsCache.class).flush(); // helps with #195440
     }
     
     @Override public int compare(ProblemReport o1, ProblemReport o2) {
@@ -283,6 +346,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 for (Artifact art : project.getArtifacts()) {
                     File file = art.getFile();
                     if (file == null || !file.exists()) {
+                        addMissingArtifact(art);
                         if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
                             //TODO create a correction action for this.
                             ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,

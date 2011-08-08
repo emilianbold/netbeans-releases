@@ -76,7 +76,12 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelProblem;
+import org.apache.maven.model.resolution.UnresolvableModelException;
+import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -484,18 +489,33 @@ public final class NbMavenProjectImpl implements Project {
         for (Throwable e : res.getExceptions()) {
             LOG.log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
             String msg = e.getMessage();
-            if (e instanceof ArtifactResolutionException) {
+            if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         TXT_Artifact_Resolution_problem(), msg, null);
                 problemReporter.addReport(report);
-            } else if (e instanceof ArtifactNotFoundException) {
+                problemReporter.addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
+            } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         TXT_Artifact_Not_Found(), msg, null);
                 problemReporter.addReport(report);
+                problemReporter.addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
             } else if (e instanceof ProjectBuildingException) {
                 //igonre if the problem is in the project validation codebase, we handle that later..
                 problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         TXT_Cannot_Load_Project(), msg, new RevalidateAction(this)));
+                if (e.getCause() instanceof ModelBuildingException) {
+                    ModelBuildingException mbe = (ModelBuildingException) e.getCause();
+                    for (ModelProblem mp : mbe.getProblems()) {
+                        if (mp.getException() instanceof UnresolvableModelException) {
+                            UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
+                            problemReporter.addMissingArtifact(getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
+                        } else if (mp.getException() instanceof PluginResolutionException) {
+                            Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
+                            // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
+                            problemReporter.addMissingArtifact(getEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
+                        }
+                    }
+                }
             } else {
                 LOG.log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
