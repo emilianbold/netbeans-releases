@@ -43,6 +43,7 @@ package org.netbeans.spi.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.openide.util.Lookup;
@@ -85,21 +86,19 @@ public interface SourceJavadocAttacherImplementation {
 
     /**
      * Attaches a source root provided by this SPI to given binary root.
-     * Called by event dispatch thread, it's safe to show an UI to select source root(s).
      * @param root the binary root to attach sources to
-     * @return {@link SourceJavadocAttacherImplementation.Result} the result of
-     * attach operation.
+     * @return a {@link Future} of {@link SourceJavadocAttacherImplementation.Result}
+     * the result of attach operation.
      */
     @NonNull
-    Result attachSources(@NonNull URL root) throws IOException;
+    Future<Result> attachSources(@NonNull URL root) throws IOException;
 
     /**
      * Attaches a javadoc root provided by this SPI to given binary root.
-     * Called by event dispatch thread, it's safe to show an UI to select javadoc root(s).
      * @param root the binary root to attach javadoc to
-     * @return {@link SourceJavadocAttacherImplementation.Result} the result of
-     * attach operation.
+     * @return a {@link Future} of {@link SourceJavadocAttacherImplementation.Result}
+     * the result of attach operation.
      */
     @NonNull
-    Result attachJavadoc(@NonNull URL root) throws IOException;
+    Future<Result> attachJavadoc(@NonNull URL root) throws IOException;
 }

@@ -43,6 +43,8 @@ package org.netbeans.api.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
@@ -61,8 +63,6 @@ public final class SourceJavadocAttacher {
     /**
      * Attaches a source root provided by the SPI {@link SourceJavadocAttacherImplementation}
      * to given binary root.
-     * Has to be called by event dispatch thread as the SPI implementation may need to show
-     * an UI to select source root(s).
      * @param root the binary root to attach sources to
      * @return true if the source root was successfully attached
      */
@@ -73,8 +73,6 @@ public final class SourceJavadocAttacher {
     /**
      * Attaches a javadoc root provided by the SPI {@link SourceJavadocAttacherImplementation}
      * to given binary root.
-     * Has to be called by event dispatch thread as the SPI implementation may need to show
-     * an UI to select javadoc root(s).
      * @param root the binary root to attach javadoc to
      * @return true if the javadoc root was successfully attached
      */
@@ -83,15 +81,13 @@ public final class SourceJavadocAttacher {
     }
 
     private static boolean attach(final URL root, final int mode) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Has to be called by EDT.");    //NOI18N
-        }
         try {
             for (SourceJavadocAttacherImplementation attacher : Lookup.getDefault().lookupAll(SourceJavadocAttacherImplementation.class)) {
-                final SourceJavadocAttacherImplementation.Result res =
+                final Future<SourceJavadocAttacherImplementation.Result> becomeRes =
                         mode == 0 ?
                             attacher.attachSources(root) :
                             attacher.attachJavadoc(root);
+                final SourceJavadocAttacherImplementation.Result res = becomeRes.get();
                 if (res == SourceJavadocAttacherImplementation.Result.ATTACHED) {
                     return true;
                 } else if (res == SourceJavadocAttacherImplementation.Result.CANCELED) {
@@ -100,6 +96,10 @@ public final class SourceJavadocAttacher {
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        } catch (ExecutionException ee) {
+            Exceptions.printStackTrace(ee);
+        } catch (InterruptedException ie) {
+            //canceled - return false
         }
         return false;
     }

@@ -44,10 +44,13 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -59,25 +62,31 @@ import org.openide.util.lookup.ServiceProvider;
 public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
     @Override
-    public Result attachSources(final URL root) throws IOException {
+    public Future<Result> attachSources(final URL root) throws IOException {
         return attach(root, J2SEPlatformCustomizer.SOURCES);
     }
 
     @Override
-    public Result attachJavadoc(final URL root) throws IOException {
+    public Future<Result> attachJavadoc(final URL root) throws IOException {
         return attach(root, J2SEPlatformCustomizer.JAVADOC);
     }
 
-    private Result attach(final URL root, int mode) {
+    private Future<Result> attach(final URL root, final int mode) {
         final J2SEPlatformImpl platform = findOwner(root);
         if (platform == null) {
-            return Result.UNSUPPORTED;
+            return SourceJavadocAttacherUtil.resultAsFuture(Result.UNSUPPORTED);
         }
-        final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
-        if (J2SEPlatformCustomizer.select(model,new File[1],null)) {
-            return Result.ATTACHED;
-        }
-        return Result.CANCELED;
+        final Callable<Result> call = new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
+                if (J2SEPlatformCustomizer.select(model,new File[1],null)) {
+                    return Result.ATTACHED;
+                }
+                return Result.CANCELED;
+            }
+        };
+        return SourceJavadocAttacherUtil.scheduleInEDT(call);
     }
 
     private J2SEPlatformImpl findOwner(final URL root) {

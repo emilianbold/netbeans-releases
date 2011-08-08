@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.classfile;
 
 import java.net.URL;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,15 +53,18 @@ import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 public class AttachSourcePanel extends javax.swing.JPanel {
+
+    private static final RequestProcessor RP =
+            new RequestProcessor(AttachSourcePanel.class);
 
     private final URL root;
     private final URL file;
@@ -82,10 +86,6 @@ public class AttachSourcePanel extends javax.swing.JPanel {
     @NbBundle.Messages({
         "TXT_UnknownRoot=<unknown-root>"
     })
-    private String getFileDisplayName() {
-        final FileObject rootFo = URLMapper.findFileObject(root);
-        return rootFo == null ? Bundle.TXT_UnknownRoot() : FileUtil.getFileDisplayName(rootFo);
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -98,7 +98,6 @@ public class AttachSourcePanel extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AttachSourcePanel.class, "AttachSourcePanel.jLabel1.text")); // NOI18N
 
@@ -109,59 +108,69 @@ public class AttachSourcePanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel2.setText(getFileDisplayName());
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 608, Short.MAX_VALUE)
+                .addGap(22, 22, 22)
                 .addComponent(jButton1)
-                .addGap(17, 17, 17))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(jLabel1)
-                .addComponent(jLabel2)
                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachSources
-        if (SourceJavadocAttacher.attachSources(root)) {
-            final FileObject rootFo = URLMapper.findFileObject(root);
-            final FileObject fileFo = URLMapper.findFileObject(file);
-            if (rootFo != null && fileFo != null) {
-                final FileObject[] fos = SourceForBinaryQuery.findSourceRoots(root).getRoots();
-                if (fos.length > 0) {
-                    final ClassPath cp = ClassPathSupport.createClassPath(fos);
-                    final FileObject newFileFo = cp.findResource(binaryName + ".java"); //NOI18N
-                    if (newFileFo != null) {
-                        try {
-                            final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
-                            final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
-                            if (ec != null && open != null) {
-                                ec.close();
-                                open.open();
+        jButton1.setEnabled(false);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                boolean success = false;
+                if (SourceJavadocAttacher.attachSources(root)) {
+                    final FileObject rootFo = URLMapper.findFileObject(root);
+                    final FileObject fileFo = URLMapper.findFileObject(file);
+                    if (rootFo != null && fileFo != null) {
+                        final FileObject[] fos = SourceForBinaryQuery.findSourceRoots(root).getRoots();
+                        if (fos.length > 0) {
+                            final ClassPath cp = ClassPathSupport.createClassPath(fos);
+                            final FileObject newFileFo = cp.findResource(binaryName + ".java"); //NOI18N
+                            if (newFileFo != null) {
+                                try {
+                                    final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
+                                    final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
+                                    if (ec != null && open != null) {
+                                        ec.close();
+                                        open.open();
+                                        success = true;
+                                    }
+                                } catch (DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
-                        } catch (DataObjectNotFoundException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }
+                if (!success) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            jButton1.setEnabled(true);
+                        }
+                    });
+                }
             }
-        }
+        });
 }//GEN-LAST:event_attachSources
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 }

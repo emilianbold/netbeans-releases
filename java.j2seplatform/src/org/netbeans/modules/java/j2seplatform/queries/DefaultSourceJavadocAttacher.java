@@ -47,8 +47,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileObject;
@@ -65,23 +68,37 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
     @Override
-    public Result attachSources(URL root) throws IOException {
-        final URL[] sources = selectRoots(0);
-        if (sources != null) {
-            QueriesCache.getSources().updateRoot(root, sources);
-            return Result.ATTACHED;
-        }
-        return Result.CANCELED;
+    public Future<Result> attachSources(@NonNull final URL root) throws IOException {
+        return attach(root, 0);
     }
 
     @Override
-    public Result attachJavadoc(URL root) throws IOException {
-        final URL[] javadoc = selectRoots(1);
-        if (javadoc != null) {
-            QueriesCache.getSources().updateRoot(root, javadoc);
-            return Result.ATTACHED;
-        }
-        return Result.CANCELED;
+    public Future<Result> attachJavadoc(@NonNull final URL root) throws IOException {
+        return attach(root, 1);
+    }
+
+    private Future<Result> attach (@NonNull final URL root, final int mode) throws IOException {
+        final Callable<Result> call = new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                final URL[] toAttach = selectRoots(mode);
+                if (toAttach != null) {
+                    switch (mode) {
+                        case 0:
+                            QueriesCache.getSources().updateRoot(root, toAttach);
+                            break;
+                        case 1:
+                            QueriesCache.getJavadoc().updateRoot(root, toAttach);
+                            break;
+                        default:
+                            throw new IllegalArgumentException(Integer.toString(mode));
+                    }
+                    return Result.ATTACHED;
+                }
+                return Result.CANCELED;
+            }
+        };
+        return SourceJavadocAttacherUtil.scheduleInEDT(call);
     }
 
     @NbBundle.Messages({

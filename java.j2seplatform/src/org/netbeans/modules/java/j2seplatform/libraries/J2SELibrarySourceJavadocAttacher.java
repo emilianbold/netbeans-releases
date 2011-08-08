@@ -51,9 +51,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -66,65 +71,71 @@ import org.openide.util.lookup.ServiceProvider;
 public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
     @Override
-    public Result attachSources(@NonNull final URL root) throws IOException {
+    public Future<Result> attachSources(@NonNull final URL root) throws IOException {
         return attach(root, J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
     }
 
     @Override
-    public Result attachJavadoc(@NonNull final URL root) throws IOException {
+    public Future<Result> attachJavadoc(@NonNull final URL root) throws IOException {
         return attach(root, J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
     }
 
-    private Result attach(
+    private Future<Result> attach(
             @NonNull final URL root,
             final String volume) {
         final Pair<LibraryManager,Library> pair = findOwner(root);
         if (pair == null) {
-            return Result.UNSUPPORTED;
+            return SourceJavadocAttacherUtil.resultAsFuture(Result.UNSUPPORTED);
         }
-        final LibraryManager lm = pair.first;
-        final Library lib = pair.second;
-        assert lm != null;
-        assert lib != null;
-        try {
-            final URL areaLocation = lm.getLocation();
-            final File baseFolder = areaLocation == null ? null : new File(areaLocation.toURI()).getParentFile();
-            final URI[] uris = J2SEVolumeCustomizer.select(
-                volume,
-                lib.getName(),
-                new File[1],
-                null,
-                baseFolder);
-            if (uris != null) {
-                final String name = lib.getName();
-                final String displayName = lib.getDisplayName();
-                final String desc = lib.getDescription();
-                final Map<String,List<URI>> volumes = new HashMap<String, List<URI>>();
-                for (String currentVolume : J2SELibraryTypeProvider.VOLUME_TYPES) {
-                    List<URI> content = lib.getURIContent(currentVolume);
-                    if (volume == currentVolume) {
-                        final List<URI> newContent = new ArrayList<URI>(content.size()+uris.length);
-                        newContent.addAll(content);
-                        newContent.addAll(Arrays.asList(uris));
-                        content = newContent;
+        final Callable<Result> call = new Callable<Result>() {
+            @Override
+            public Result call() {
+                final LibraryManager lm = pair.first;
+                final Library lib = pair.second;
+                assert lm != null;
+                assert lib != null;
+                try {
+                    final URL areaLocation = lm.getLocation();
+                    final File baseFolder = areaLocation == null ? null : new File(areaLocation.toURI()).getParentFile();
+                    final URI[] uris = J2SEVolumeCustomizer.select(
+                        volume,
+                        lib.getName(),
+                        new File[1],
+                        null,
+                        baseFolder);
+                    if (uris != null) {
+                        final String name = lib.getName();
+                        final String displayName = lib.getDisplayName();
+                        final String desc = lib.getDescription();
+                        final Map<String,List<URI>> volumes = new HashMap<String, List<URI>>();
+                        for (String currentVolume : J2SELibraryTypeProvider.VOLUME_TYPES) {
+                            List<URI> content = lib.getURIContent(currentVolume);
+                            if (volume == currentVolume) {
+                                final List<URI> newContent = new ArrayList<URI>(content.size()+uris.length);
+                                newContent.addAll(content);
+                                newContent.addAll(Arrays.asList(uris));
+                                content = newContent;
+                            }
+                            volumes.put(currentVolume,content);
+                        }
+                        lm.removeLibrary(lib);
+                        lm.createURILibrary(
+                            J2SELibraryTypeProvider.LIBRARY_TYPE,
+                            name,
+                            displayName,
+                            desc,
+                            volumes);
+                        return Result.ATTACHED;
                     }
-                    volumes.put(currentVolume,content);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                } catch (URISyntaxException use) {
+                    Exceptions.printStackTrace(use);
                 }
-                lm.removeLibrary(lib);
-                lm.createURILibrary(
-                    J2SELibraryTypeProvider.LIBRARY_TYPE,
-                    name,
-                    displayName,
-                    desc,
-                    volumes);
-                return Result.ATTACHED;
+                return Result.CANCELED;
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        } catch (URISyntaxException use) {
-            Exceptions.printStackTrace(use);
-        }
-        return Result.CANCELED;
+        };
+        return SourceJavadocAttacherUtil.scheduleInEDT(call);
     }
 
     private Pair<LibraryManager,Library> findOwner(final URL root) {
