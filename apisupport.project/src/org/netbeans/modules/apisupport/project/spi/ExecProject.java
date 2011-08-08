@@ -39,71 +39,22 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.openide.loaders;
+package org.netbeans.modules.apisupport.project.spi;
 
-import java.util.concurrent.CountDownLatch;
-import junit.framework.Test;
-import org.netbeans.junit.RandomlyFails;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Mutex;
+import java.io.IOException;
+import org.openide.util.Task;
 
-/**
+/** Abstraction over executing a project.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 1.49
  */
-public class FolderChildrenInEQTest extends FolderChildrenTest {
-
-    public FolderChildrenInEQTest(String testName) {
-        super(testName);
-    }
-    
-    public static Test suite() {
-        return new FolderChildrenInEQTest("testCountNumberOfNodesWhenUsingFormLikeLoader");
-    }
-    
-    @Override
-    protected boolean runInEQ() {
-        return true;
-    }
-    
-    public void testDeadlockWaitingForDelayedNode() throws Exception {
-        Pool.setLoader(FormKitDataLoader.class);
-        
-        FileUtil.createFolder(FileUtil.getConfigRoot(), "FK/A");
-        
-        FileObject bb = FileUtil.getConfigFile("/FK");
-        final DataFolder folder = DataFolder.findFolder(bb);
-        final Node node = folder.getNodeDelegate();
-        
-        
-        Node[] one = node.getChildren().getNodes(true);
-        assertNodes(one, "A");
-        
-        FormKitDataLoader.waiter = new CountDownLatch(1);
-        FileUtil.createData(FileUtil.getConfigRoot(), "FK/B");
-        Node[] arr = Children.MUTEX.readAccess(new Mutex.ExceptionAction<Node[]>() {
-            @Override
-            public Node[] run() throws Exception {
-                // don't deadlock
-                return node.getChildren().getNodes(true);
-            }
-        });
-        
-        FormKitDataLoader.waiter.countDown();
-        arr = node.getChildren().getNodes(true);
-        
-        assertNotNull("We have data object now", arr[1].getLookup().lookup(DataObject.class));
-        
-        assertFalse("No leaf", arr[0].isLeaf());
-        assertTrue("File B is leaf", arr[1].isLeaf());
-    }
-
-    @RandomlyFails // NB-Core-Build #6728: Accepts only Ahoj expected:<1> but was:<2>
-    @Override public void testChildrenCanGC() throws Exception {
-        super.testChildrenCanGC();
-    }
-    
+public interface ExecProject {
+    /** Asks the project to execute itself given provided arguments.
+     * 
+     * @param args arguments for the execution
+     * @return task that will finish as soon as execution is over
+     * @throws IOException if the launch fails
+     */
+    public Task execute(String... args) throws IOException;
 }

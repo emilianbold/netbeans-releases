@@ -72,6 +72,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleType;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -97,10 +98,11 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
-public final class ModuleActions implements ActionProvider {
+public final class ModuleActions implements ActionProvider, ExecProject {
     static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.ide";    // NOI18N
     static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
 
@@ -109,6 +111,18 @@ public final class ModuleActions implements ActionProvider {
         COMMAND_DEBUG_SINGLE
     ));
 
+    @Override
+    public Task execute(String... args) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (String r : args) {
+            sb.append(r).append(' ');
+        }
+        Properties p = new Properties();
+        p.setProperty("run.args", sb.substring(0, sb.length() - 1));
+
+        return ActionUtils.runTarget(findBuildXml(project), new String[]{"run"}, p);
+    }
+    
     static Action[] getProjectActions(NbModuleProject project) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(CommonProjectActions.newFileAction());

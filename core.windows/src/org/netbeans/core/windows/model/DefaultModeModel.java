@@ -73,7 +73,7 @@ final class DefaultModeModel implements ModeModel {
 
 
     /** Programatic name of mode. */
-    private final String name;
+    private String name;
     
     private final Set<String> otherNames = new HashSet<String>(3);
 
@@ -123,7 +123,7 @@ final class DefaultModeModel implements ModeModel {
         this.permanent = permanent;
         this.topComponentSubModel = new TopComponentSubModel(kind);
     }
-
+    
     /////////////////////////////////////
     // Mutator methods >>
     /////////////////////////////////////
@@ -379,6 +379,11 @@ final class DefaultModeModel implements ModeModel {
         synchronized(LOCK_TOPCOMPONENTS) {
             return topComponentSubModel.getOpenedTopComponents();
         }
+    }
+
+    @Override
+    public final void setName(String name) {
+        this.name = name;
     }
     
     // XXX
