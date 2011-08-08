@@ -631,17 +631,6 @@ public class Subversion {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.log(Level.FINE, null, ex);
             }
-        } finally {
-            if (original != null) {
-                try {
-                    original.delete();
-                } catch (Exception ex) {
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.log(Level.WARNING, "Failed to delete temporary file {0}", original.getAbsolutePath());
-                    }
-                    //otherwise ignore the exception - leave the file as it is
-                }
-            }
         }
     }
     
