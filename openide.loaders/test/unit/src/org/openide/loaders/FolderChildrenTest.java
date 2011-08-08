@@ -83,6 +83,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.test.MockLookup;
 
 public class FolderChildrenTest extends NbTestCase {
@@ -699,10 +700,21 @@ public class FolderChildrenTest extends NbTestCase {
         FileObject bb = FileUtil.getConfigFile("/FK");
 
         DataFolder folder = DataFolder.findFolder (bb);
+        Task t = DataNode.RP.post(new Runnable() {
 
+                         @Override
+                         public void run() {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                         }
+                     });
         Node[] arr = folder.getNodeDelegate().getChildren().getNodes(true);
-
+        
         assertNodes( arr, new String[] { "A" } );
+        t.waitFinished();
     }
     
     public void testNodesHaveDataObjectInLookup() throws Exception {
