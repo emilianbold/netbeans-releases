@@ -113,11 +113,16 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         cs.add(checkCookie);
     }
+
+    protected String getEditorMimeType() {
+        return null;
+    }
+
     // Issuezilla 23493 - this is the way how to disable the OpenCoookie from this data object
     @Override
     protected EditorCookie createEditorCookie () {
-        return null;
-    }    
+        return getEditorSupport();
+    }
     /** Update the node from document. This method is called after document is changed.
     * @param is Input source for the document
     * @return number of the line with error (document is invalid), 0 (xml document is valid)
@@ -148,6 +153,8 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
         }
         return editor;
     }
+
+
     /** gets the String for status line when parser finds error(s) in xml document
     * @param error info about an error
     * @return String for status line
