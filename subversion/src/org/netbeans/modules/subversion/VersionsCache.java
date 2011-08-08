@@ -259,8 +259,6 @@ public class VersionsCache {
                 if (expanded.canRead() && svnBase.isFile() && (expanded.lastModified() >= svnBase.lastModified())) {
                     return expanded;
                 }
-                SvnClient client = Subversion.getInstance().getClient(referenceFile);
-                InputStream in = client.getContent(referenceFile, SVNRevision.BASE);
                 expanded = getContentBase(referenceFile, expanded);
                 expanded.setLastModified(svnBase.lastModified());
                 return expanded;

@@ -61,7 +61,9 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.FTPSClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encryption;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
@@ -100,7 +102,7 @@ public class FtpClient implements RemoteClient {
         this.configuration = configuration;
 
         LOGGER.log(Level.FINE, "FTP client creating");
-        ftpClient = new FTPClient();
+        ftpClient = createFtpClient(configuration);
         if (io != null) {
             protocolCommandListener = new PrintCommandListener(io);
             addProtocolCommandListener();
@@ -115,6 +117,18 @@ public class FtpClient implements RemoteClient {
                 keepAlive();
             }
         });
+    }
+
+    private FTPClient createFtpClient(FtpConfiguration configuration) {
+        FtpConfiguration.Security security = configuration.getSecurity();
+        if (!security.isPresent()) {
+            LOGGER.log(Level.FINE, "No encryption used");
+            return new FTPClient();
+        }
+        Encryption encryption = security.getEncryption();
+        LOGGER.log(Level.FINE, "Used encryption {0}", encryption.name());
+        // can be debugged by setting -J-Djavax.net.debug=all
+        return new FTPSClient(encryption.getProtocol(), encryption.isImplicit());
     }
 
     private void addProtocolCommandListener() {
@@ -171,6 +185,17 @@ public class FtpClient implements RemoteClient {
                 throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpLoginFailed"), getReplyString());
             }
             LOGGER.fine("Login successful");
+
+            // set ssl commands?
+            if (configuration.getSecurity().isPresent()) {
+                FTPSClient ftpsClient = (FTPSClient) ftpClient;
+                // set protection buffer size
+                ftpsClient.execPBSZ(0);
+                if (!configuration.getSecurity().isOnlyLoginEncrypted()) {
+                    // set data channel protection to private
+                    ftpsClient.execPROT("P"); // NOI18N
+                }
+            }
 
             if (configuration.isPassiveMode()) {
                 LOGGER.fine("Setting passive mode");
