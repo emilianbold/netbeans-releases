@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.ftp;
 
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Class representing an FTP configuration.
@@ -57,6 +58,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
 
     private final String host;
     private final int port;
+    private final Security security;
     private final String userName;
     private final boolean anonymousLogin;
     private final String initialDirectory;
@@ -74,6 +76,9 @@ public final class FtpConfiguration extends RemoteConfiguration {
 
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
+        security = new Security(
+                readEnum(Encryption.class, FtpConnectionProvider.ENCRYPTION, FtpConnectionProvider.DEFAULT_ENCRYPTION),
+                readBoolean(FtpConnectionProvider.ONLY_LOGIN_ENCRYPTED, FtpConnectionProvider.DEFAULT_ONLY_LOGIN_ENCRYPTED));
         userName = cfg.getValue(FtpConnectionProvider.USER);
         if (createWithSecrets) {
             password = readPassword(FtpConnectionProvider.PASSWORD);
@@ -101,6 +106,10 @@ public final class FtpConfiguration extends RemoteConfiguration {
 
     public int getPort() {
         return port;
+    }
+
+    public Security getSecurity() {
+        return security;
     }
 
     public int getTimeout() {
@@ -232,4 +241,168 @@ public final class FtpConfiguration extends RemoteConfiguration {
         sb.append("]"); // NOI18N
         return sb.toString();
     }
+
+    //~ Inner classes
+
+    /**
+     * Security of the FTP connection.
+     */
+    public final class Security {
+
+        private final Encryption encryption;
+        private final boolean onlyLoginEncrypted;
+
+        /**
+         *
+         * @param encryption {@link Encryption encryption}
+         * @param onlyLoginEncrypted {@code true} if only authentication process is encrypted,
+         * {@code false} if the whole connection is encrypted
+         */
+        public Security(Encryption encryption, boolean onlyLoginEncrypted) {
+            this.encryption = encryption;
+            this.onlyLoginEncrypted = onlyLoginEncrypted;
+        }
+
+        /**
+         * See {@link Encryption#isPresent()}.
+         */
+        public boolean isPresent() {
+            return encryption.isPresent();
+        }
+
+        /**
+         * Get {@link Encryption encryption} of the FTP connection.
+         * @return {@link Encryption encryption} of the FTP connection.
+         */
+        public Encryption getEncryption() {
+            return encryption;
+        }
+
+        /**
+         * Return {@code true} if encryption {@link Encryption#isPresent() is present} and
+         * if only authentication process is encrypted, {@code false} if the whole connection is encrypted.
+         * @return {@code true} if encryption {@link Encryption#isPresent() is present} and
+         * if only authentication process is encrypted, {@code false} if the whole connection is encrypted
+         */
+        public boolean isOnlyLoginEncrypted() {
+            return onlyLoginEncrypted;
+        }
+
+    }
+
+    /**
+     * Enum representing encryption of FTP connection.
+     */
+    @Messages({
+        "LBL_EncryptionNone=Pure FTP",
+        "LBL_EncryptionTlsExplicit=Explicit FTP using TLS",
+        "LBL_EncryptionTlsImplicit=Implicit FTP using TLS"
+    })
+    public static enum Encryption {
+
+        /**
+         * No encryption, pure FTP.
+         */
+        NONE(Bundle.LBL_EncryptionNone()) {
+
+            @Override
+            public boolean isPresent() {
+                return false;
+            }
+
+            @Override
+            public String getProtocol() {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+
+            @Override
+            public boolean isImplicit() {
+                throw new UnsupportedOperationException("Not supported.");
+            }
+
+        },
+
+        /**
+         * Encryption using TLS protocol, explicitly invoked.
+         */
+        TLS_EXPLICIT(Bundle.LBL_EncryptionTlsExplicit()) {
+
+            @Override
+            public boolean isPresent() {
+                return true;
+            }
+
+            @Override
+            public String getProtocol() {
+                return TLS;
+            }
+
+            @Override
+            public boolean isImplicit() {
+                return false;
+            }
+
+        },
+
+        /**
+         * Encryption using TLS protocol, implicitly invoked.
+         */
+        TLS_IMPLICIT(Bundle.LBL_EncryptionTlsImplicit()) {
+
+            @Override
+            public boolean isPresent() {
+                return true;
+            }
+
+            @Override
+            public String getProtocol() {
+                return TLS;
+            }
+
+            @Override
+            public boolean isImplicit() {
+                return true;
+            }
+
+        };
+
+        private static final String TLS = "TLS"; // NOI18N
+
+        private final String label;
+
+
+        private Encryption(String title) {
+            this.label = title;
+        }
+
+        /**
+         * Return {@code true} if the connection is encrypted, {@code false} otherwise.
+         * @return {@code true} if the connection is encrypted, {@code false} otherwise
+         */
+        public abstract boolean isPresent();
+
+        /**
+         * Get the protocol as a string (e.g. "TLS", "SSL").
+         * @return the protocol as a string
+         * @throws UnsupportedOperationException if there is {@link #isPresent() no encryption}
+         */
+        public abstract String getProtocol();
+
+        /**
+         * Return {@code true} if the encryption is implicitly invoked, {@code false} otherwise.
+         * @return {@code true} if the encryption is implicit, {@code false} otherwise
+         * @throws UnsupportedOperationException if there is {@link #isPresent() no encryption}
+         */
+        public abstract boolean isImplicit();
+
+        /**
+         * Get the human-readable label of the encryption.
+         * @return the human-readable label of the encryption.
+         */
+        public String getLabel() {
+            return label;
+        }
+
+    }
+
 }

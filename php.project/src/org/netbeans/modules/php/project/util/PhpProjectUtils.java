@@ -265,6 +265,26 @@ public final class PhpProjectUtils {
         return true;
     }
 
+    /**
+     * Resolve enum from the given {@code value}. If the enum cannot be resolved,
+     * the {@code defaultValue} is returned.
+     * @param <T> enum type
+     * @param enumClass enum class
+     * @param value value to be resolved, can be {@code null}
+     * @param defaultValue default value, can be {@code null}
+     * @return enum from the given {@code value} or the {@code defaultValue} if enum cannot be resolved
+     */
+    public static <T extends Enum<T>> T resolveEnum(Class<T> enumClass, String value, T defaultValue) {
+        if (value == null) {
+            return defaultValue;
+        }
+        try {
+            return Enum.valueOf(enumClass, value);
+        } catch (Exception exc) {
+            return defaultValue;
+        }
+    }
+
     // http://wiki.netbeans.org/UsageLoggingSpecification
     /**
      * Logs usage data.
