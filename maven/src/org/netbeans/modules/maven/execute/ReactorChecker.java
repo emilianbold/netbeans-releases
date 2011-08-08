@@ -82,6 +82,9 @@ public class ReactorChecker implements PrerequisitesChecker {
             // Unloadable?
             return true;
         }
+        if (mavenprj.getMavenProject().getId().equals("error:error:pom:0")) {
+            return true; // broken project
+        }
         NbMavenProject reactor = findReactor(mavenprj);
         File reactorRoot = reactor.getMavenProject().getBasedir();
         if (reactor != mavenprj) {
