@@ -588,7 +588,7 @@ public class CasualDiff {
             // compute the position. Find the parameters closing ')', its
             // start position is important for us. This is used when 
             // there was not any parameter in original tree.
-            int startOffset = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
+            int startOffset = oldT.pos;
 
             moveFwdToToken(tokenSequence, startOffset, JavaTokenId.RPAREN);
             posHint = tokenSequence.offset();
