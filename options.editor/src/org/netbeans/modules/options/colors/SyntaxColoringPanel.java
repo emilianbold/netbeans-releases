@@ -72,13 +72,16 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -396,7 +399,8 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                 }
                 Integer size = (Integer) getDefault (currentLanguage, category, StyleConstants.FontSize);
                 
-                f = new Font (fontName, style, size == null ? getDefaultFontSize() : size);
+                assert(size != null);
+                f = new Font (fontName, style,  size);
                 category = modifyFont (category, f);
                 replaceCurrrentCategory (category);
                 setToBeSaved (currentProfile, currentLanguage);
@@ -914,17 +918,20 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                 return getValue (ColorModel.ALL_LANGUAGES, defaultAS, key);
         }
         
-        if (key == StyleConstants.FontFamily) return "Monospaced";    // NOI18N
-        if (key == StyleConstants.FontSize) return getDefaultFontSize ();
-        return null;
+        // CompositeFCS will fill default values if there are not.
+        if (key == StyleConstants.FontFamily || key == StyleConstants.FontSize) {
+            FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+            return fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(key);
+        }
+        else
+            return null;
     }
     
     private Font getFont (AttributeSet category) {
         String name = (String) getValue (currentLanguage, category, StyleConstants.FontFamily);
-        if (name == null) name = "Monospaced";                        // NOI18N
+        assert(name != null);
         Integer size = (Integer) getValue (currentLanguage, category, StyleConstants.FontSize);
-        if (size == null)
-            size = getDefaultFontSize ();
+        assert(size != null);
         Boolean bold = (Boolean) getValue (currentLanguage, category, StyleConstants.Bold);
         if (bold == null) bold = Boolean.FALSE;
         Boolean italic = (Boolean) getValue (currentLanguage, category, StyleConstants.Italic);
@@ -1050,19 +1057,6 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         convertALC.put("errors", "error"); //NOI18N
         convertALC.put("literal", "keyword"); //NOI18N
         convertALC.put("keyword-directive", "keyword"); //NOI18N
-    }
-    
-    private static Integer defaultFontSize;
-    private static Integer getDefaultFontSize () {
-        if (defaultFontSize == null) {
-            defaultFontSize = (Integer) UIManager.get("customFontSize"); // NOI18N
-            if (defaultFontSize == null) {
-                int s = UIManager.getFont ("TextField.font").getSize (); // NOI18N
-                if (s < 12) s = 12;
-                defaultFontSize = new Integer (s);
-            }
-        }
-        return defaultFontSize;
     }
     
     private static final class LanguagesComparator implements Comparator<String> {
