@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.Exceptions;
