@@ -54,7 +54,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 public class SaveActionTest extends JellyTestCase {
 
     public static final String[] tests = new String[]{
-        "testPerformPopup", "testPerformMenu", "testPerformAPI", "testPerformShortcut"
+        "testPerformMenu", "testPerformAPI", "testPerformShortcut"
     };
 
     /** constructor required by JUnit
