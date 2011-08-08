@@ -36,11 +36,6 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-/*
- * AttachSourcePanel.java
- *
- * Created on Aug 1, 2011, 4:54:38 PM
- */
 package org.netbeans.modules.java.classfile;
 
 import java.net.URL;
@@ -57,7 +52,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -82,10 +76,6 @@ public class AttachSourcePanel extends javax.swing.JPanel {
         this.binaryName = binaryName;
         initComponents();
     }
-
-    @NbBundle.Messages({
-        "TXT_UnknownRoot=<unknown-root>"
-    })
 
     /** This method is called from within the constructor to
      * initialize the form.
