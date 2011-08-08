@@ -183,10 +183,10 @@ class OWSMPoliciesEditor implements WSEditor {
         List<String> fqns = new ArrayList<String>(2);
         fqns.add( PoliciesVisualPanel.OWSM_SECURITY_POLICY);
         if ( policyIds.size() >1 ){
-            Project project = FileOwnerQuery.getOwner(myFileObject);
             fqns.add(PoliciesVisualPanel.OWSM_SECURITY_POLICIES);
-            mySupport.extendsProjectClasspath(project, fqns);
         }
+        Project project = FileOwnerQuery.getOwner(myFileObject);
+        mySupport.extendsProjectClasspath(project, fqns);
         try {
             javaSource.runModificationTask(new Task<WorkingCopy>() {
 
