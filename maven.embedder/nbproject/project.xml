@@ -137,6 +137,11 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -230,6 +235,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.embedder</package>
                 <package>org.netbeans.modules.maven.embedder.exec</package>
                 <package>org.sonatype.aether</package>
+                <package>org.sonatype.aether.artifact</package>
                 <package>org.sonatype.aether.impl.internal</package>
                 <package>org.sonatype.aether.repository</package>
                 <package>org.sonatype.aether.transfer</package>
