@@ -942,6 +942,17 @@ PKGINST=${pkg.svr4.pkginst}</echo>
           description="Try running the IDE interactively.
 It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in debug mode" 
    >
+    <script language="js">
+        v = ''
+        i = new java.util.TreeMap(project.properties).entrySet().iterator()
+        while (i.hasNext()) {
+            e = i.next()
+            if (e.key.startsWith('tryme.arg.')) {
+                v += ' ' + e.value
+            }
+        }
+        project.setNewProperty('tryme.args', v)
+    </script>
     <property name="tryme.debug.args" value="" />
     <property environment="env"/>
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
