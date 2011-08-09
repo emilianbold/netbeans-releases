@@ -66,6 +66,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataLoader;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataObject;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -75,12 +77,22 @@ import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 /**
  * The source editor element for JaxWs node.
  *
  * @author Ajit Bhate
+ * @author changed by ads
  */
+@MultiViewElement.Registration(
+        displayName ="#LBL_sourceView_name",// NOI18N
+    iconBase=JaxWsDataObject.CLASS_GIF,
+    persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+    preferredID=MultiViewSupport.SOURCE_VIEW_ID,
+    mimeType=JaxWsDataLoader.JAXWS_MIME_TYPE,            
+    position=1000
+        )
 public class SourceMultiViewElement extends CloneableEditor
         implements MultiViewElement {
     private static final long serialVersionUID = 4403502726950453345L;
@@ -101,8 +113,8 @@ public class SourceMultiViewElement extends CloneableEditor
      * 
      * @param support 
      */
-    public SourceMultiViewElement(DataEditorSupport support) {
-        super(support);
+    public SourceMultiViewElement(Lookup context) {
+        super( context.lookup(DataEditorSupport.class));
         initialize();
    }
     

@@ -56,6 +56,8 @@ import org.openide.awt.UndoRedo;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataLoader;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataObject;
 import org.netbeans.modules.websvc.design.navigator.WSDesignNavigatorHint;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.openide.loaders.DataObject;
@@ -67,7 +69,16 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  * @author Ajit Bhate
+ * @author changed by ads
  */
+@MultiViewElement.Registration(
+    displayName ="#LBL_designView_name",// NOI18N
+    iconBase=JaxWsDataObject.CLASS_GIF,
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=MultiViewSupport.DESIGN_VIEW_ID,
+    mimeType=JaxWsDataLoader.JAXWS_MIME_TYPE,            
+    position=2000
+)
 public class DesignMultiViewElement extends TopComponent
         implements MultiViewElement {
     /** silence compiler warnings */
@@ -81,8 +92,8 @@ public class DesignMultiViewElement extends TopComponent
      * 
      * @param mvSupport 
      */
-    public DesignMultiViewElement(DataObject dataObject) {
-        this.dataObject = dataObject;
+    public DesignMultiViewElement(Lookup context) {
+        this.dataObject = context.lookup(JaxWsDataObject.class);
         initialize();
     }
     
