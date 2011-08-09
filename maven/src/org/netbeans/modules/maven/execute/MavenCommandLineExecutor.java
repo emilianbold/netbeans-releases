@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
@@ -300,26 +301,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.isUpdateSnapshots()) {
             toRet.add("--update-snapshots");//NOI18N
         }
-        boolean react = false;
-        if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE) {
-            toRet.add("--also-make");
-            react = true;
-        }
-        if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE_DEPENDENTS) {
-            toRet.add("--also-make-dependents");
-            react = true;
-        }
-        if (react) {
-            toRet.add("--projects");
-            // Prefer relative directory when possible since that works even with broken projects (error:error).
+        if (config.getReactorStyle() != RunConfig.ReactorStyle.NONE) {
             File basedir = config.getExecutionDirectory();
-            File projdir = config.getMavenProject().getBasedir();
+            MavenProject mp = config.getMavenProject();
+            String id = mp.getGroupId() + ':' + mp.getArtifactId();
+            File projdir = id.equals("error:error") ? basedir : mp.getBasedir();
             String rel = basedir != null && projdir != null ? FileUtilities.relativizeFile(basedir, projdir) : null;
-            if (rel != null) {
-                // XXX if rel == '.' we do not need to use -am or -amd or -pl at all
-                toRet.add(rel);
-            } else {
-                toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
+            if (!".".equals(rel)) {
+                toRet.add(config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE ? "--also-make" : "--also-make-dependents");
+                toRet.add("--projects");
+                toRet.add(rel != null ? rel : id);
             }
         }
 
