@@ -39,7 +39,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.util.ArrayList;
@@ -65,23 +64,26 @@ import org.openide.filesystems.FileUtil;
  * @author Dongmei Cao
  */
 public class Util {
-    
-    private static final String[] defaultJPA20Keys=new String[]{"javax.persistence.lock.timeout", "javax.persistence.query.timeout", "javax.persistence.validation.group.pre-persist", "javax.persistence.validation.group.pre-update", "javax.persistence.validation.group.pre-remove"};
 
-    
+    private static final String[] defaultJPA20Keys = new String[]{"javax.persistence.lock.timeout", "javax.persistence.query.timeout", "javax.persistence.validation.group.pre-persist", "javax.persistence.validation.group.pre-update", "javax.persistence.validation.group.pre-remove"};
+    private static final String[] eclipselink20Keys = new String[]{"eclipselink.temporal.mutable", "eclipselink.cache.type.default", "eclipselink.cache.size.default", "eclipselink.cache.shared.default", "eclipselink.flush-clear.cache", "eclipselink.orm.throw.exceptions", "eclipselink.exception-handler", "eclipselink.weaving", "eclipselink.weaving.lazy", "eclipselink.weaving.changetracking", "eclipselink.weaving.fetchgroups", "eclipselink.weaving.internal", "eclipselink.weaving.eager", "eclipselink.session.customizer", "eclipselink.validation-only", "eclipselink.classloader", "eclipselink.profiler", "eclipselink.persistence.context.reference-mode", "eclipselink.jdbc.bind-parameters", "eclipselink.jdbc.native-sql", "eclipselink.jdbc.batch-writing", "eclipselink.jdbc.cache-statements", "eclipselink.jdbc.cache-statements.size", "eclipselink.jdbc.exclusive-connection.is-lazy", "eclipselink.jdbc.exclusive-connection.mode", "eclipselink.jdbc.read-connections.max", "eclipselink.jdbc.read-connections.min", "eclipselink.jdbc.read-connections.shared", "eclipselink.jdbc.write-connections.max", "eclipselink.jdbc.write-connections.min", "eclipselink.logging.logger", "eclipselink.logging.level", "eclipselink.logging.timestamp", "eclipselink.logging.thread", "eclipselink.logging.session", "eclipselink.logging.exceptions", "eclipselink.logging.file", "eclipselink.session-name", "eclipselink.sessions-xml", "eclipselink.session-event-listener", "eclipselink.session.include.descriptor.queries", "eclipselink.target-database", "eclipselink.target-server", "eclipselink.application-location", "eclipselink.create-ddl-jdbc-file-name", "eclipselink.drop-ddl-jdbc-file-name", "eclipselink.ddl-generation.output-mode", "eclipselink.weaving.changetracking", "eclipselink.canonicalmodel.prefix", "eclipselink.canonicalmodel.suffix", "eclipselink.canonicalmodel.subpackage"};//TODO: handle properties {propname.entityname}
+
     /*
      * return all properties for specific provider, except some handled specially
      */
     public static ArrayList<String> getAllPropNames(Provider propCat) {
         ArrayList<String> results = new ArrayList<String>();
-        if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(propCat))){
+        if (Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(propCat))) {
             Collections.addAll(results, defaultJPA20Keys);
         }
         results.addAll(propCat.getPropertyNames());
+        if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(propCat)) {
+            Collections.addAll(results, eclipselink20Keys);//TODO: should it be moved into a provider
+        }
         return results;
     }
-    
-    public static ArrayList<String> getPropsNamesExceptGeneral(Provider propCat){
+
+    public static ArrayList<String> getPropsNamesExceptGeneral(Provider propCat) {
         ArrayList<String> propsList = getAllPropNames(propCat);
         propsList.remove(propCat.getJdbcDriver());
         propsList.remove(propCat.getJdbcUsername());
@@ -90,7 +92,7 @@ public class Util {
         propsList.remove(propCat.getTableGenerationPropertyName());
         return propsList;
     }
-    
+
     /**
      * Gets the properties that are not defined in the configuration file yet
      * 
@@ -101,14 +103,14 @@ public class Util {
     public static ArrayList<String> getAvailPropNames(Provider propCat, PersistenceUnit pu) {
 
         List<String> propsList = getPropsNamesExceptGeneral(propCat);
-        
+
         if (pu != null) {
             ArrayList<String> availProps = new ArrayList<String>(propsList);
 
             for (int i = 0; i < pu.getProperties().sizeProperty2(); i++) {
                 String propName = pu.getProperties().getProperty2(i).getName();
-                if (!availProps.remove(propName) &&
-                        availProps.contains("javax.persistence." + propName)) {
+                if (!availProps.remove(propName)
+                        && availProps.contains("javax.persistence." + propName)) {
                     availProps.remove(propName);
                 }
             }
@@ -118,7 +120,7 @@ public class Util {
 
         return new ArrayList<String>();
     }
-    
+
 //    // Gets the list of mapping files from HibernateEnvironment.
 //    public static String[] getMappingFilesFromProject(FileObject fileObj) {
 //        Project enclosingProject = FileOwnerQuery.getOwner(fileObj);
@@ -129,11 +131,11 @@ public class Util {
 //            return new String[0];
 //        }
 //    }
-
-    
     public static SourceGroup[] getJavaSourceGroups(PUDataObject dObj) throws java.io.IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
-        if (proj==null) return new SourceGroup[]{};
+        if (proj == null) {
+            return new SourceGroup[]{};
+        }
         Sources sources = ProjectUtils.getSources(proj);
         SourceGroup[] toRet = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
         if (toRet != null && toRet.length != 0) {
@@ -141,25 +143,29 @@ public class Util {
         }
         return sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
-    
-     public static String getResourcePath(SourceGroup[] groups, FileObject fo) {
+
+    public static String getResourcePath(SourceGroup[] groups, FileObject fo) {
         return getResourcePath(groups, fo, '.', false);
     }
-     
-     public static String getResourcePath(SourceGroup[] groups, FileObject fo, char separator) {
+
+    public static String getResourcePath(SourceGroup[] groups, FileObject fo, char separator) {
         return getResourcePath(groups, fo, separator, false);
     }
-     
-     public static String getResourcePath(SourceGroup[] groups, FileObject fo, char separator, boolean withExt) {
-        for (int i=0;i<groups.length;i++) {
+
+    public static String getResourcePath(SourceGroup[] groups, FileObject fo, char separator, boolean withExt) {
+        for (int i = 0; i < groups.length; i++) {
             FileObject root = groups[i].getRootFolder();
-            if (FileUtil.isParentOf(root,fo)) {
-                String relativePath = FileUtil.getRelativePath(root,fo);
-                if (relativePath!=null) {
-                    if (separator!='/') relativePath = relativePath.replace('/',separator);
+            if (FileUtil.isParentOf(root, fo)) {
+                String relativePath = FileUtil.getRelativePath(root, fo);
+                if (relativePath != null) {
+                    if (separator != '/') {
+                        relativePath = relativePath.replace('/', separator);
+                    }
                     if (!withExt) {
-                        int index = relativePath.lastIndexOf((int)'.');
-                        if (index>0) relativePath = relativePath.substring(0,index);
+                        int index = relativePath.lastIndexOf((int) '.');
+                        if (index > 0) {
+                            relativePath = relativePath.substring(0, index);
+                        }
                     }
                     return relativePath;
                 } else {
@@ -169,5 +175,4 @@ public class Util {
         }
         return "";
     }
-
 }

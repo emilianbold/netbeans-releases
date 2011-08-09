@@ -1018,10 +1018,14 @@ abstract class EntrySupport {
             super(ch);
         }
 
-        private final Object LOCK = new Object();
+        /** lock to guard creation of snapshots */
+        protected final Object LOCK = new Object();
         private boolean initInProgress = false;
         private boolean inited = false;
         private Thread initThread;
+        /** @GuardedBy("LOCK")*/
+        private int snapshotCount;
+        
         public boolean checkInit() {
             if (inited) {
                 return true;
@@ -1089,6 +1093,21 @@ abstract class EntrySupport {
             }
             return true;
         }
+        
+        final int getSnapshotCount() {
+            assert Thread.holdsLock(LOCK);
+            return snapshotCount;
+        }
+        
+        final void incrementCount() {
+            assert Thread.holdsLock(LOCK);
+            snapshotCount++;
+        }
+
+        final void decrementCount() {
+            assert Thread.holdsLock(LOCK);
+            snapshotCount++;
+        }
 
         @Override
         List<Node> snapshot() {
@@ -1110,7 +1129,7 @@ abstract class EntrySupport {
                     synchronized (Lazy.this.LOCK) {
                         int cnt = 0;
                         boolean found = false;
-                        cnt += snapshotCount;
+                        cnt += getSnapshotCount();
                         if (cnt == 0) {
                             for (Entry entry : notNull(visibleEntries)) {
                                 EntryInfo info = entryToInfo.get(entry);
@@ -1700,7 +1719,6 @@ abstract class EntrySupport {
                 info.lazy().registerNode(-1, info);
             }
         }
-        volatile int snapshotCount;
 
         /** Dummy node class for entries without any node */
         static class DummyNode extends AbstractNode {
@@ -1831,7 +1849,9 @@ abstract class EntrySupport {
         }
         
         protected LazySnapshot createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
-            return delayed ? new DelayedLazySnapshot(entries, e2i) : new LazySnapshot(entries, e2i);
+            synchronized (LOCK) {
+                return delayed ? new DelayedLazySnapshot(entries, e2i) : new LazySnapshot(entries, e2i);
+            }
         }
         
 
@@ -1840,7 +1860,7 @@ abstract class EntrySupport {
             final Map<Entry, EntryInfo> entryToInfo;
             
             public LazySnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i) {
-                snapshotCount++;
+                incrementCount();
                 this.entries = entries;
                 this.entryToInfo = e2i != null ? e2i : Collections.<Entry, EntryInfo>emptyMap();
             }
@@ -1871,7 +1891,14 @@ abstract class EntrySupport {
 
             @Override
             protected void finalize() throws Throwable {
-                if (--snapshotCount == 0) {
+                boolean unregister = false;
+                synchronized (LOCK) {
+                    decrementCount();
+                    if (getSnapshotCount() == 0) {
+                        unregister = true;
+                    }
+                }
+                if (unregister) {
                     registerNode(-1, null);
                 }
             }
