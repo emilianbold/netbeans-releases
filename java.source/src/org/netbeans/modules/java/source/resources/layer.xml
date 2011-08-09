@@ -285,6 +285,13 @@ made subject to such option by the copyright holder.
                     <attr name="regex5" stringvalue="\s*else[\s\{]"/>
                     <attr name="regex6" stringvalue="\s*\w*\s*:"/>
                 </file>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-java-classfile-SideBarFactoryImpl.instance">
+                        <attr name="location" stringvalue="North" />
+                        <attr name="scrollable" boolvalue="false" />
+                        <attr name="position" intvalue="7000"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
         <folder name="application">

@@ -67,7 +67,7 @@ class J2SEPlatformNode extends AbstractNode {
     }
 
     public String getHtmlDisplayName() {
-        if (isBroken()) {
+        if (platform.isBroken()) {
             return "<font color=\"#A40000\">"+this.platform.getDisplayName()+"</font>";
         }
         else {
@@ -103,24 +103,12 @@ class J2SEPlatformNode extends AbstractNode {
     }
 
     public java.awt.Component getCustomizer () {
-        if (isBroken()) {
+        if (platform.isBroken()) {
             return new BrokenPlatformCustomizer (this.platform);
         }
         else {
             return new J2SEPlatformCustomizer (this.platform);
         }
-    }
-
-    private boolean isBroken () {
-        if (this.platform.getInstallFolders().size()==0) {
-            return true;
-        }
-        for (String tool : PlatformConvertor.IMPORTANT_TOOLS) {
-            if (platform.findTool(tool) == null) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

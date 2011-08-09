@@ -55,9 +55,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
@@ -67,6 +69,9 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
@@ -114,6 +119,112 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         this.removeButton.setEnabled(enabled && indices.length > 0);
         this.downButton.setEnabled(enabled && indices.length > 0 && indices[indices.length-1]<model.getSize()-1);
         this.upButton.setEnabled(enabled && indices.length>0 && indices[0]>0);
+    }
+
+    @CheckForNull
+    static String[] select(
+            @NonNull final String volumeType,
+            @NonNull final String libName,
+            @NonNull final File[] lastFolder,
+            @NullAllowed final Component owner,
+            @NullAllowed final File baseFolder) {
+        assert volumeType != null;
+        assert lastFolder != null;
+        assert lastFolder.length == 1;
+        final File libFolder = baseFolder == null ?
+            null:
+            FileUtil.normalizeFile(new File(baseFolder, libName));
+        FileChooser chooser = new FileChooser(baseFolder, libFolder);
+        // for now variable based paths are disabled in library definition
+        // can be revisit if it is needed
+        chooser.setFileHidingEnabled(false);
+        chooser.setAcceptAllFileFilterUsed(false);
+        if (volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+            chooser.setMultiSelectionEnabled (true);
+            chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenClasses"));
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
+                    J2SEVolumeCustomizer.class,"TXT_Classpath"),new String[] {"ZIP","JAR"}));   //NOI18N
+            chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectCP"));
+            chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectCP").charAt(0));
+        } else if (volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
+            chooser.setMultiSelectionEnabled (true);
+            chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenJavadoc"));
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
+                    J2SEVolumeCustomizer.class,"TXT_Javadoc"),new String[] {"ZIP","JAR"}));     //NOI18N
+            chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectJD"));
+            chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectJD").charAt(0));
+        } else if (volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
+            chooser.setMultiSelectionEnabled (true);
+            chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenSources"));
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
+                    J2SEVolumeCustomizer.class,"TXT_Sources"),new String[] {"ZIP","JAR"}));     //NOI18N
+            chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectSRC"));
+            chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectSRC").charAt(0));
+        }
+        if (lastFolder[0] != null) {
+            chooser.setCurrentDirectory (lastFolder[0]);
+        } else if (baseFolder != null) {
+            chooser.setCurrentDirectory (baseFolder);
+        }
+        if (chooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {
+            try {
+                lastFolder[0] = chooser.getCurrentDirectory();
+                return chooser.getSelectedPaths();
+            } catch (MalformedURLException mue) {
+                Exceptions.printStackTrace(mue);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+
+    static URI pathToURI(
+            final File baseFolder,
+            final String fileName,
+            final String volume) throws MalformedURLException, URISyntaxException {
+        File f = new File(fileName);
+        URI uri = LibrariesSupport.convertFilePathToURI(fileName);
+        if (baseFolder != null) {
+            File realFile = f;
+            if (!f.isAbsolute()) {
+                    realFile = FileUtil.normalizeFile(new File(
+                        baseFolder, f.getPath()));
+            }
+            String jarPath = checkFile(realFile, volume);
+            if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
+                uri = LibrariesSupport.getArchiveRoot(uri);
+                if (jarPath != null) {
+                    assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
+                    uri = URI.create(uri.toString() + encodePath(jarPath));
+                }
+            } else if (!uri.toString().endsWith("/")){ //NOI18N
+                try {
+                    uri = new URI(uri.toString()+"/"); //NOI18N
+                } catch (URISyntaxException ex) {
+                    throw new AssertionError(ex);
+                }
+            }
+            return uri;
+        } else {
+            assert f.isAbsolute() : f.getPath();
+            f = FileUtil.normalizeFile (f);
+            String jarPath = checkFile(f, volume);
+            uri = f.toURI();
+            if (FileUtil.isArchiveFile(uri.toURL())) {
+                uri = LibrariesSupport.getArchiveRoot(uri);
+                if (jarPath != null) {
+                    assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
+                    uri = URI.create(uri.toString() + encodePath(jarPath));
+                }
+            } else if (!uri.toString().endsWith("/")){ //NOI18N
+                uri = URI.create(uri.toString()+"/"); //NOI18N
+            }
+            return uri;
+        }
     }
 
 
@@ -346,54 +457,21 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }//GEN-LAST:event_removeResource
 
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
-        File baseFolder = null;
-        File libFolder = null;
-        if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
-            baseFolder = FileUtil.normalizeFile(new File(URI.create(area.getLocation().toExternalForm())).getParentFile());
-            libFolder = FileUtil.normalizeFile(new File(baseFolder, impl.getName()));
-        }
-        FileChooser chooser = new FileChooser(baseFolder, libFolder);
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        // for now variable based paths are disabled in library definition
-        // can be revisit if it is needed
-        chooser.setFileHidingEnabled(false);
-        chooser.setAcceptAllFileFilterUsed(false);
-        if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
-            chooser.setMultiSelectionEnabled (true);
-            chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenClasses"));
-            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
-                    J2SEVolumeCustomizer.class,"TXT_Classpath"),new String[] {"ZIP","JAR"}));   //NOI18N
-            chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectCP"));
-            chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectCP").charAt(0));
-        }
-        else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-            chooser.setMultiSelectionEnabled (true);
-            chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenJavadoc"));
-            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
-                    J2SEVolumeCustomizer.class,"TXT_Javadoc"),new String[] {"ZIP","JAR"}));     //NOI18N
-            chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectJD"));
-            chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectJD").charAt(0));
-        }
-        else if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
-            chooser.setMultiSelectionEnabled (true);
-            chooser.setDialogTitle(NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_OpenSources"));
-            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-            chooser.setFileFilter (new ArchiveFileFilter(NbBundle.getMessage(
-                    J2SEVolumeCustomizer.class,"TXT_Sources"),new String[] {"ZIP","JAR"}));     //NOI18N
-            chooser.setApproveButtonText(NbBundle.getMessage(J2SEVolumeCustomizer.class,"CTL_SelectSRC"));
-            chooser.setApproveButtonMnemonic(NbBundle.getMessage(J2SEVolumeCustomizer.class,"MNE_SelectSRC").charAt(0));
-        }
-        if (lastFolder != null) {
-            chooser.setCurrentDirectory (lastFolder);
-        } else if (baseFolder != null) {
-            chooser.setCurrentDirectory (baseFolder);
-        }
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+        final boolean arp = allowRelativePaths != null && allowRelativePaths.booleanValue();
+        final File baseFolder = arp ?
+            FileUtil.normalizeFile(new File(URI.create(area.getLocation().toExternalForm())).getParentFile()):
+            null;
+        final File[] cwd = new File[]{lastFolder};
+        final String[] paths = select(volumeType, impl.getName(), cwd, this, baseFolder);
+        if (paths != null) {
             try {
-                lastFolder = chooser.getCurrentDirectory();
-                addFiles (chooser.getSelectedPaths(), area != null ? area.getLocation() : null, this.volumeType);
+                lastFolder = cwd[0];
+                addFiles (
+                    pathsToURIs (
+                        paths,
+                        volumeType,
+                        baseFolder),
+                    arp);
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);
             } catch (URISyntaxException ue) {
@@ -435,51 +513,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         }
     }//GEN-LAST:event_addURLButtonActionPerformed
 
-    private void addFiles (String[] fileNames, URL libraryLocation, String volume) throws MalformedURLException, URISyntaxException {
+    private void addFiles (URI[] toAdd, boolean  allowRelativePaths) throws MalformedURLException, URISyntaxException {
         int firstIndex = this.model.getSize();
-        for (int i = 0; i < fileNames.length; i++) {
-            File f = new File(fileNames[i]);
-            URI uri = LibrariesSupport.convertFilePathToURI(fileNames[i]);
-            if (allowRelativePaths != null && allowRelativePaths.booleanValue()) {
-                File realFile = f;
-                if (!f.isAbsolute()) {
-                    assert area != null;
-                    if (area != null) {
-                        realFile = FileUtil.normalizeFile(new File(
-                            new File(URI.create(area.getLocation().toExternalForm())).getParentFile(), f.getPath()));
-                    }
-                }
-                String jarPath = checkFile(realFile, volume);
-                if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
-                    uri = LibrariesSupport.getArchiveRoot(uri);
-                    if (jarPath != null) {
-                        assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
-                        uri = URI.create(uri.toString() + encodePath(jarPath));
-                    }
-                } else if (!uri.toString().endsWith("/")){ //NOI18N
-                    try {
-                        uri = new URI(uri.toString()+"/"); //NOI18N
-                    } catch (URISyntaxException ex) {
-                        throw new AssertionError(ex);
-                    }
-                }
+        for (URI uri : toAdd) {
+            if (allowRelativePaths) {
                 model.addResource(uri);
             } else {
-                assert f.isAbsolute() : f.getPath(); 
-                f = FileUtil.normalizeFile (f);
-                String jarPath = checkFile(f, volume);
-                uri = f.toURI();
-                if (FileUtil.isArchiveFile(uri.toURL())) {
-                    uri = LibrariesSupport.getArchiveRoot(uri);
-                    if (jarPath != null) {
-                        assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
-                        uri = URI.create(uri.toString() + encodePath(jarPath));
-                    }
-                } else if (!uri.toString().endsWith("/")){ //NOI18N
-                    uri = URI.create(uri.toString()+"/"); //NOI18N
-                }
                 model.addResource(uri.toURL()); //Has to be added as URL, model asserts it
-
             }
         }
         int lastIndex = this.model.getSize()-1;
@@ -501,7 +541,19 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         return new URI(null, null, path, null).getRawPath();
     }
 
-    private String checkFile(File f, String volume) {
+    @NonNull
+    private static URI[] pathsToURIs(
+            @NonNull final String[] fileNames,
+            @NonNull final String volume,
+            @NullAllowed final File baseFolder) throws MalformedURLException, URISyntaxException {
+        final List<URI> result = new ArrayList<URI>(fileNames.length);
+        for (String fileName : fileNames) {
+            result.add(pathToURI(baseFolder,fileName,volume));
+        }
+        return result.toArray(new URI[result.size()]);
+    }
+
+    private static String checkFile(File f, String volume) {
         FileObject fo = FileUtil.toFileObject(f);
         if (volume.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
             if (fo != null) {
