@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import javax.swing.LayoutStyle;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Query;
 import static java.lang.Math.max;
 import static javax.swing.SwingConstants.EAST;
@@ -76,7 +76,7 @@ class RepoPanel extends ViewportWidthAwarePanel {
 
         queriesPanel.setBackground(new Color(224, 224, 224));
 
-        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        LayoutStyle layoutStyle = LayoutStyle.getInstance();
         setBorder(BorderFactory.createEmptyBorder(
                       0, layoutStyle.getContainerGap(this, WEST, getParent()),
                       0, layoutStyle.getContainerGap(this, EAST, getParent())));

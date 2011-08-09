@@ -57,6 +57,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -93,7 +94,9 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( Description description ) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), prepareLookup(description));
+        super(
+            description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()),
+            description.elementHandle == null ? null : prepareLookup(description));
         this.description = description;
         setDisplayName( description.name ); 
     }
@@ -392,11 +395,15 @@ public class ElementNode extends AbstractNode {
             this.isInherited = false;
         }
          
-        Description(ClassMemberPanelUI ui,
-                    String name,
-                    ElementHandle<? extends Element> elementHandle,
-                    ElementKind kind,
+        Description(@NonNull ClassMemberPanelUI ui,
+                    @NonNull String name,
+                    @NonNull ElementHandle<? extends Element> elementHandle,
+                    @NonNull ElementKind kind,
                     boolean inherited ) {
+            assert ui != null;
+            assert name != null;
+            assert elementHandle != null;
+            assert kind != null;
             this.ui = ui;
             this.name = name;
             this.elementHandle = elementHandle;

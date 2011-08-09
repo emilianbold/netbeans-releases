@@ -77,7 +77,7 @@ public class CheckoutUI extends javax.swing.JPanel {
     public CheckoutUI(MavenProject proj) {
         this.project = proj;
         this.scm = proj.getScm();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("<b>");//NOI18N
 
         buffer.append(proj.getArtifactId());

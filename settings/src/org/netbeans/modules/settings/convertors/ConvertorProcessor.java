@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.settings.convertors;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -93,7 +94,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
         for (Element e : env.getElementsAnnotatedWith(ConvertAsProperties.class)) {
             ConvertAsProperties reg = e.getAnnotation(ConvertAsProperties.class);
 
-            String convElem = instantiableClassOrMethod(e, true);
+            String convElem = instantiableClassOrMethod(e, true, reg);
             final String dtd = reg.dtd();
 
             String dtdCode = convertPublicId(dtd);
@@ -146,7 +147,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
 
         for (Element e : env.getElementsAnnotatedWith(ConvertAsJavaBean.class)) {
             ConvertAsJavaBean reg = e.getAnnotation(ConvertAsJavaBean.class);
-            String convElem = instantiableClassOrMethod(e, false);
+            String convElem = instantiableClassOrMethod(e, false, reg);
             File f = layer(e).file("xml/memory/" + convElem.replace('.', '/'));
             f.stringvalue("settings.providerPath", "xml/lookups/NetBeans/DTD_XML_beans_1_0.instance");
             if (reg.subclasses()) {
@@ -228,12 +229,12 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
         return f.stringvalue("xmlproperties.ignoreChanges", sb.toString());
     }
 
-    private String instantiableClassOrMethod(Element e, boolean checkMethods) throws IllegalArgumentException, LayerGenerationException {
+    private String instantiableClassOrMethod(Element e, boolean checkMethods, Annotation r) throws IllegalArgumentException, LayerGenerationException {
         switch (e.getKind()) {
             case CLASS: {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
                 if (e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    throw new LayerGenerationException(clazz + " must not be abstract", e);
+                    throw new LayerGenerationException(clazz + " must not be abstract", e, processingEnv, r);
                 }
                 {
                     boolean hasDefaultCtor = false;
@@ -244,7 +245,7 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                         }
                     }
                     if (!hasDefaultCtor) {
-                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", e);
+                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", e, processingEnv, r);
                     }
                 }
                 if (checkMethods) {
@@ -270,16 +271,16 @@ public class ConvertorProcessor extends LayerGeneratingProcessor {
                         }
                     }
                     if (!hasRead) {
-                        throw new LayerGenerationException(clazz + " must have proper readProperties method", e);
+                        throw new LayerGenerationException(clazz + " must have proper readProperties method", e, processingEnv, r);
                     }
                     if (!hasWrite) {
-                        throw new LayerGenerationException(clazz + " must have proper writeProperties method", e);
+                        throw new LayerGenerationException(clazz + " must have proper writeProperties method", e, processingEnv, r);
                     }
                 }
                 return clazz;
             }
             default:
-                throw new LayerGenerationException("Annotated element is not loadable as an instance: " + e);
+                throw new LayerGenerationException("Annotated element is not loadable as an instance", e, processingEnv, r);
         }
     }
 }

@@ -154,46 +154,54 @@ public final class FolderObj extends BaseFileObj {
     }
     
     private FileObject[] computeChildren(boolean onlyExisting) {
-        final Map<FileNaming,FileObject> results = new LinkedHashMap<FileNaming,FileObject>();
+        LOOP: for (int counter = 0; ; counter++) {
+            final Map<FileNaming,FileObject> results = new LinkedHashMap<FileNaming,FileObject>();
 
-        final ChildrenCache childrenCache = getChildrenCache();
-        final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
+            final ChildrenCache childrenCache = getChildrenCache();
+            final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
 
-        Set<FileNaming> fileNames = null;
-        Runnable[] task = new Runnable[1];
-        while (fileNames == null) {
-            if (task[0] != null) {
-                task[0].run();
+            Set<FileNaming> fileNames = null;
+            Runnable[] task = new Runnable[1];
+            while (fileNames == null) {
+                if (task[0] != null) {
+                    task[0].run();
+                }
+                mutexPrivileged.enterWriteAccess();
+                try {
+                    Set<FileNaming> res = childrenCache.getChildren(false, task);
+                    if (res != null) {
+                        fileNames = new HashSet<FileNaming>(res);
+                    }   
+                } finally {
+                    mutexPrivileged.exitWriteAccess();
+                }
             }
-            mutexPrivileged.enterWriteAccess();
-            try {
-                Set<FileNaming> res = childrenCache.getChildren(false, task);
-                if (res != null) {
-                    fileNames = new HashSet<FileNaming>(res);
-                }   
-            } finally {
-                mutexPrivileged.exitWriteAccess();
+            // sends message to TwoFileNamesForASingleFileTest to delay execution
+            LOG.log(Level.FINEST, "computeChildren, filenames: {0}", fileNames); // NOI18N
+
+            final FileObjectFactory lfs = getFactory();        
+            for (FileNaming fileName : fileNames) {
+                FileInfo fInfo = new FileInfo (fileName.getFile(), 1);
+                fInfo.setFileNaming(fileName);
+
+                final FileObject fo = onlyExisting ?
+                    lfs.getCachedOnly(fileName.getFile()) :
+                    lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
+                if (fo != null) {
+                    final FileNaming foFileName = ((BaseFileObj)fo).getFileName();
+                    if (fileName != foFileName && counter < 10) {
+                        continue LOOP;
+                    }
+                    assert fileName == foFileName : 
+                        dumpFileNaming(fileName) + "\n" + 
+                        dumpFileNaming(((BaseFileObj)fo).getFileName()) + "\nfo: " +
+                        fo + "\nContent of the nameMap cache:\n" +
+                        NamingFactory.dumpId(fInfo.getID());
+                    results.put(fileName, fo);
+                }
             }
+            return results.values().toArray(new FileObject[0]);
         }
-
-        final FileObjectFactory lfs = getFactory();        
-        for (FileNaming fileName : fileNames) {
-            FileInfo fInfo = new FileInfo (fileName.getFile(), 1);
-            fInfo.setFileNaming(fileName);
-            
-            final FileObject fo = onlyExisting ?
-                lfs.getCachedOnly(fileName.getFile()) :
-                lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
-            if (fo != null) {
-                assert fileName == ((BaseFileObj)fo).getFileName() : 
-                    dumpFileNaming(fileName) + "\n" + 
-                    dumpFileNaming(((BaseFileObj)fo).getFileName()) + "\nfo: " +
-                    fo + "\nContent of the nameMap cache:\n" +
-                    NamingFactory.dumpId(fInfo.getID());
-                results.put(fileName, fo);
-            }
-        }
-        return results.values().toArray(new FileObject[0]);
     }
     
     private static String dumpFileNaming(FileNaming fn) {

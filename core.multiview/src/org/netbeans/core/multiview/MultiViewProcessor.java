@@ -95,10 +95,10 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         for (Element e : roundEnv.getElementsAnnotatedWith(MultiViewElement.Registration.class)) {
             MultiViewElement.Registration mvr = e.getAnnotation(MultiViewElement.Registration.class);
             if (mvr.mimeType().length == 0) {
-                throw new LayerGenerationException("You must specify mimeType", e);
+                throw new LayerGenerationException("You must specify mimeType", e, processingEnv, mvr, "mimeType");
             }
             TypeMirror[] exprType = new TypeMirror[1];
-            String[] binAndMethodNames = findDefinition(e, exprType);
+            String[] binAndMethodNames = findDefinition(e, exprType, mvr);
             String fileBaseName = binAndMethodNames[0].replace('.', '-');
             if (binAndMethodNames[1] != null) {
                 fileBaseName += "-" + binAndMethodNames[1];
@@ -108,7 +108,7 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 f.methodvalue("instanceCreate", MultiViewFactory.class.getName(), "createMultiViewDescription");
                 f.stringvalue("instanceClass", ContextAwareDescription.class.getName());
                 f.stringvalue("class", binAndMethodNames[0]);
-                f.bundlevalue("displayName", mvr.displayName());
+                f.bundlevalue("displayName", mvr.displayName(), mvr, "displayName");
                 f.stringvalue("iconBase", mvr.iconBase());
                 f.stringvalue("preferredID", mvr.preferredID());
                 f.intvalue("persistenceType", mvr.persistenceType());
@@ -125,13 +125,13 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
         return true;
     }
 
-    private String[] findDefinition(Element e, TypeMirror[] type) throws LayerGenerationException {
+    private String[] findDefinition(Element e, TypeMirror[] type, MultiViewElement.Registration mvr) throws LayerGenerationException {
         final TypeMirror lkp = processingEnv.getElementUtils().getTypeElement(Lookup.class.getCanonicalName()).asType();
         final TypeMirror mve = processingEnv.getElementUtils().getTypeElement(MultiViewElement.class.getName()).asType();
         if (e.getKind() == ElementKind.CLASS) {
             TypeElement clazz = (TypeElement) e;
             if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), mve)) {
-                throw new LayerGenerationException("Not assignable to " + mve, e);
+                throw new LayerGenerationException("Not assignable to " + mve, e, processingEnv, mvr);
             }
             int constructorCount = 0;
             CONSTRUCTOR: for (ExecutableElement constructor : ElementFilter.constructorsIn(clazz.getEnclosedElements())) {
@@ -149,32 +149,32 @@ public class MultiViewProcessor extends LayerGeneratingProcessor {
                 }
             }
             if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("Class must be public", e);
+                throw new LayerGenerationException("Class must be public", e, processingEnv, mvr);
             }
             type[0] = e.asType();
             return new String[] {processingEnv.getElementUtils().getBinaryName(clazz).toString(), null};
         } else {
             ExecutableElement meth = (ExecutableElement) e;
             if (!processingEnv.getTypeUtils().isAssignable(meth.getReturnType(), mve)) {
-                throw new LayerGenerationException("Not assignable to " + mve, e);
+                throw new LayerGenerationException("Not assignable to " + mve, e, processingEnv, mvr);
             }
             if (!meth.getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("Method must be public", e);
+                throw new LayerGenerationException("Method must be public", e, processingEnv, mvr);
             }
             if (!meth.getModifiers().contains(Modifier.STATIC)) {
-                throw new LayerGenerationException("Method must be static", e);
+                throw new LayerGenerationException("Method must be static", e, processingEnv, mvr);
             }
             List<? extends VariableElement> params = meth.getParameters();
             if (params.size() > 1) {
-                throw new LayerGenerationException("Method must take at most one parameter", e);
+                throw new LayerGenerationException("Method must take at most one parameter", e, processingEnv, mvr);
             }
             for (VariableElement param : params) {
                 if (!param.asType().equals(lkp)) {
-                    throw new LayerGenerationException("Method parameters may be either Lookup or Project", e);
+                    throw new LayerGenerationException("Method parameters may be either Lookup or Project", e, processingEnv, mvr);
                 }
             }
             if (!meth.getEnclosingElement().getModifiers().contains(Modifier.PUBLIC)) {
-                throw new LayerGenerationException("Class must be public", e);
+                throw new LayerGenerationException("Class must be public", e, processingEnv, mvr);
             }
             type[0] = meth.getReturnType();
             return new String[] {

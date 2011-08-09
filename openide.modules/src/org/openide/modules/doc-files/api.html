@@ -93,7 +93,6 @@ authors.
 <li> <a href="#related-files">Related Files</a>
 <li> <a href="#deprecation">Deprecation</a>
 <li> <a href="#refactoring">Refactoring</a>
-<li> <a href="#downloading">Downloading</a>
 <li> <a href="#order">Module install order</a>
 <li> <a href="#listing">List of all modules</a>
 <li> <a href="#security">Security</a>
@@ -387,20 +386,6 @@ It is a module author's responsibility to make sure that new versions of a
 module are capable of "cleaning up" obsoleted installations created by older
 versions, as far back as a user is likely to be directly upgrading.
 
-<p>Some module installer classes may desire to keep state across
-sessions, for example if they require specific instructions on
-what to uninstall that can only be gotten during the installation
-process. All installers are automatically
-
-<a href="@JDK@/java/io/Externalizable.html"><code>Externalizable</code></a>
-
-and module authors may decide to override the two methods of this interface
-to read and write its state from an
-object source. Typically you would want to serialize and deserialize
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)">shared class fields</a>
-in the object using these methods.
-It is a good idea to call the super methods as the first action when overriding.
-
 <p>In some cases, a module relies on some external resource to be present
 in order for it to be used. For example, an external application may need
 to be installed in order for it to do anything. Or it may require a valid
@@ -437,11 +422,6 @@ definition of an "installation-clean module":
 initializers or initializer blocks or the <code>initialize</code>
 method).
 
-<li>Does not override the <code>readExternal</code> nor
-<code>writeExternal</code> methods, nor any other related methods such
-as <code>readResolve</code> or <code>writeReplace</code>. Thus it has
-no externalized state.
-
 <li>Does not override <code>installed</code> nor <code>updated</code>
 (these will then just call <code>restored</code>).
 
@@ -477,7 +457,8 @@ particular time):
 these cannot be added to or reloaded while NetBeans is running.
 
 <li>Using the <samp>docs/</samp> directory as a place to store module
-JavaHelp rather than inside the JAR.
+JavaHelp rather than inside the JAR. (<code>@HelpSetRegistration</code>
+makes this obsolete anyway.)
 
 <li>Using <code>Class-Path</code> from within the module JAR or its
 extensions to point to resources which are not in or below the
@@ -515,6 +496,9 @@ Its contents specify some files that the module will add to the
 controlling much of NetBeans' configuration. This filesystem is composed of many read-only XML layer filesystems
 as well as a writable layer corresponding to the <code>config</code> subdirectory of the user directory.</p>
 
+<p>For many APIs, there is no need to write a layer explicitly; layer-generating
+"registration" annotations do everything you need.</p>
+
 <p>The XML format is relatively simple. There is an
 
 <a href="http://www.netbeans.org/dtds/filesystem-1_1.dtd">online DTD</a>
@@ -539,38 +523,6 @@ or a static method (the method may be passed the file object in
 question and/or the attribute name, if you wish).</p>
 
 <div class="nonnormative">
-
-<p>So as an example to install a template:
-
-<pre>
-&lt;?<span class="keyword">xml</span> <span class="variable-name">version</span>=<span class="constant">"1.0"</span>?&gt;
-&lt;!<span class="keyword">DOCTYPE</span> <span class="type">filesystem</span> <span class="keyword">PUBLIC</span>
-    <span class="constant">"-//NetBeans//DTD Filesystem 1.0//EN"</span>
-    <span class="constant">"http://www.netbeans.org/dtds/filesystem-1_0.dtd"</span>&gt;
-&lt;<span class="type">filesystem</span>&gt;
-    &lt;<span class="type">folder</span> <span class="variable-name">name</span>=<span class="constant">"Templates"</span>&gt;
-        &lt;<span class="type">folder</span> <span class="variable-name">name</span>=<span class="constant">"Other"</span>&gt;
-            &lt;<span class="type">file</span> <span class="variable-name">name</span>=<span class="constant">"foo.txt"</span> <span class="variable-name">url</span>=<span class="constant">"actual-contents.txt"</span>&gt;
-                <span class="comment">&lt;!-- Make it a template: --&gt;</span>
-                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"template"</span> <span class="variable-name">boolvalue</span>=<span class="constant">"true"</span>/&gt;
-                <span class="comment">&lt;!-- Localized display name of data node: --&gt;</span>
-                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"SystemFileSystem.localizingBundle"</span>
-                      <span class="variable-name">stringvalue</span>=<span class="constant">"com.foo.module.Bundle"</span>/&gt;
-                <span class="comment">&lt;!-- HTML description of template for wizard to display: --&gt;</span>
-                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"templateWizardURL"</span>
-                      <span class="variable-name">urlvalue</span>=<span class="constant">"nbresloc:/com/foo/module/foo-template-help.html"</span>/&gt;
-                <span class="comment">&lt;!-- Set an iterator; complex object, so --&gt;</span>
-                <span class="comment">&lt;!-- easiest to create thus: --&gt;</span>
-                &lt;<span class="type">attr</span> <span class="variable-name">name</span>=<span class="constant">"templateWizardIterator"</span>
-                      <span class="variable-name">newvalue</span>=<span class="constant">"com.foo.module.FooTemplateIterator"</span>/&gt;
-            &lt;/<span class="type">file</span>&gt;
-        &lt;/<span class="type">folder</span>&gt;
-    &lt;/<span class="type">folder</span>&gt;
-&lt;/<span class="type">filesystem</span>&gt;
-</pre>
-
-<p>where <code>FooTemplateIterator</code> contains a public constructor
-taking no arguments.</p>
 
 <p>The primary advantage of using layers is that they are declarative
 rather than procedural, so you can install many kinds of extensions to
@@ -668,7 +620,7 @@ any bearing on the ordering.
 
 <p>There is also an older, now-deprecated system based on relative ordering attributes.</p>
 
-<p>More details are available in <a href="http://wiki.netbeans.org/wiki/view/FolderOrdering103187">wiki</a>.</p>
+<p>More details are available in <a href="@org-openide-filesystems@/org/openide/filesystems/FileUtil.html#getOrder(java.util.Collection,%20boolean)"><code>FileUtil.getOrder</code></a>.</p>
 
 <p>The resource path pointing to the layer is automatically localized
 by NetBeans every time the module is installed or restored; if there
@@ -685,51 +637,12 @@ precedence over B's layers, and it may replace or remove files
 installed by B. In the same way, any module may replace or remove
 files installed by the core.
 
-<div class="nonnormative">
-
 <h4>Display-oriented file attributes</h4>
 
-<p>NetBeans recognizes two special file attributes, typically set in layers, which can improve UI.</p>
-
-<dl>
-
-<dt><code>SystemFileSystem.localizingBundle</code>
-
-<dd><p>If set on a file object in the default filesystem serving as
-the primary file for a data object, the data node's display name as
-annotated by the filesystem will be taken from that resource bundle
-(given as a string). The bundle will be found using
-
-<a href="@org-openide-util@/org/openide/util/NbBundle.html#getBundle(java.lang.String)"><code>NbBundle.getBundle(String)</code></a>,
-
-meaning that it should be of the form
-<samp>org.domain.pkg.Bundle</samp> and will be found using the
-default classloader and locale. The key in the bundle should be the
-full resource path of the file.</p>
-
-<dt><code>SystemFileSystem.icon</code>
-
-<dd><p>If set on a file object on the default filesystem, the data
-node as above will be given the 16x16 icon supplied by the attribute
-value, given as a URL (<code>java.net.URL</code>, not
-<code>java.lang.String</code>). Similarly
-<code>SystemFileSystem.icon32</code> for the 32x32 icon, if desired.
-A <code>java.awt.Image</code> may also be
-given.</p>
-
-</dl>
-
-<p>By using these attributes, modules may provide a more pleasant and
-localized user interface for files they install (typically via layer)
-whose data nodes would be seen by a user (for example, templates or
-services). If support for these file attributes is removed or
-incompatibly changed in the future, such data nodes (and anything
-driven by display aspects of data nodes, for example the labels of
-menus created from folders beneath <samp>Menu/</samp>) will still
-appear and be functional, however the names and icons will be
-unattractive.</p>
-
-</div>
+<p>NetBeans recognizes several special file attributes, typically set in layers, which can control UI.
+For example, the labels of menus created from folders beneath <samp>Menu/</samp>
+are derived from the "localized display name" of the layer folder, when defined.
+See <a href="@org-openide-filesystems@/org/openide/filesystems/FileSystem.html#getStatus()"><code>FileSystem.getStatus()</code></a> for details.</p>
 
 <h4>Reverting user's modifications</h4>
 
@@ -1239,51 +1152,6 @@ in the system filesystem under <samp>ModuleAutoDeps/</samp>
 must be available before any module is even loaded.</p>
 
 <p><em>As of 3.33</em></p>
-
-<div class="nonnormative">
-
-<h3><a name="downloading">Downloading</a></h3>
-
-One scenario is that the user will just download an NBM and install from the Module Manager.
-
-<p>More user-friendly is the Update Center, a feature specific to
-the NetBeans core implementation (i.e. its mechanism is not specified by
-the APIs), which presents guided dialogs prompting users to
-automatically upgrade modules or install new ones from an update server.
-This functionality is provided by the Auto Update module.
-
-<h4>Upgrades</h4>
-
-Upgrades of modules can be customized by calling <code>ModuleInstall.updated()</code>.
-This permits you to manually remove obsoleted actions, delete old
-templates, etc. - remove anything not handled by the module manifest
-which is nevertheless part of NetBeans' persistent state.
-With the advent of XML layers, most of these reasons for using <code>updated()</code>
-have disappeared.
-
-<p>A proper module will store all of its configurable state using
-options
-(excepting service types, module externalization, etc.), and the
-contents of these will be automatically carried over, one option at
-a time (according to
-
-<a href="@org-openide-options@/org/openide/options/SystemOption.html#getName()">option name</a>
-
-and
-
-<a href="@JDK@/java/beans/FeatureDescriptor.html#getName()">property name</a>)
-
-into the new module version using Externalization - so as long as your
-option values can be externalized and reread into the new version, you
-need not worry. Similarly, if the
-
-<a href="../ModuleInstall.html"><code>ModuleInstall</code></a>
-
-class is externalizable and there is non-project state being stored
-this way, you must ensure as usual that your externalization is
-forward-compatible for upgrading to proceed smoothly.
-
-</div>
 
 <h3><a name="order">Module install order</a></h3>
 

@@ -43,13 +43,23 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 public class ReactorChecker implements PrerequisitesChecker {
     
@@ -72,21 +82,78 @@ public class ReactorChecker implements PrerequisitesChecker {
             // Unloadable?
             return true;
         }
-        MavenProject prj = mavenprj.getMavenProject();
-        while (true) {
-            MavenProject parent = prj.getParent();
-            if (parent == null) {
-                break;
-            }
-            if (parent.getBasedir() == null) {
-                // This is the root POM.
-                break;
-            }
-            // XXX also verify that parent contains prj as a module? may not work in case modules are activated by profile
-            prj = parent;
+        if (mavenprj.getMavenProject().getId().equals("error:error:pom:0")) {
+            return true; // broken project
         }
-        config.setExecutionDirectory(prj.getBasedir());
+        NbMavenProject reactor = findReactor(mavenprj);
+        File reactorRoot = reactor.getMavenProject().getBasedir();
+        if (reactor != mavenprj) {
+            try {
+                M2Configuration cfg = ProjectManager.getDefault().findProject(FileUtil.toFileObject(reactorRoot)).getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration();
+                if (cfg != null) {
+                    List<String> reactorProfiles = cfg.getActivatedProfiles();
+                    if (!reactorProfiles.isEmpty()) {
+                        List<String> profiles = new ArrayList<String>(config.getActivatedProfiles());
+                        profiles.addAll(reactorProfiles);
+                        config.setActivatedProfiles(profiles);
+                    }
+                }
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+        config.setExecutionDirectory(reactorRoot);
         return true;
     }
     
+    /**
+     * Tries to find the reactor root starting from what may be just a submodule.
+     * The intent is that running {@code mvn -f $reactor/pom.xml --projects $module} would work.
+     * @param module a project to start the search at
+     * @return its apparent reactor root; maybe just the same project
+     */
+    public static @NonNull NbMavenProject findReactor(@NonNull NbMavenProject module) { // #197232
+        MavenProject prj = module.getMavenProject();
+        File moduleDir = prj.getBasedir();
+        if (moduleDir != null) {
+            MavenProject parent = prj.getParent();
+            if (parent != null) {
+                File parentDir = parent.getBasedir();
+                if (parentDir != null && listsModule(parentDir, moduleDir, parent.getModules())) {
+                    NbMavenProject loaded = load(parentDir);
+                    if (loaded != null) {
+                        return findReactor(loaded);
+                    }
+                }
+            }
+            NbMavenProject p = load(moduleDir.getParentFile());
+            if (p != null && listsModule(moduleDir.getParentFile(), moduleDir, p.getMavenProject().getModules())) {
+                return findReactor(p);
+            }
+        }
+        return module;
+    }
+    private static boolean listsModule(File parentDir, File moduleDir, List<String> modules) {
+        for (String module : modules) {
+            if (moduleDir.equals(FileUtilities.resolveFilePath(parentDir, module))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static @CheckForNull NbMavenProject load(File parentDir) {
+        FileObject d = FileUtil.toFileObject(parentDir);
+        if (d != null) {
+            try {
+                Project p = ProjectManager.getDefault().findProject(d);
+                if (p != null) {
+                    return p.getLookup().lookup(NbMavenProject.class);
+                }
+            } catch (IOException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
+        return null;
+    }
+
 }

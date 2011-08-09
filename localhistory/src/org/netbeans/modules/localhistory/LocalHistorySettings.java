@@ -59,7 +59,8 @@ public class LocalHistorySettings {
     
     private static final String LAST_SELECTED_ENTRY = "RevertFileChanges.lastSelected";         // NOI18N  
     private static final String PROP_TTL = "timeToLive";                                        // NOI18N  
-    private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                       // NOI18N  
+    private static final String PROP_CLEANUP_LABELED = "noLabelCleanUp";                        // NOI18N  
+    private static final String PROP_KEEP_FOREVER = "keepForever";                              // NOI18N  
     private static final String PROP_KEEP_STORED = "filesToKeepStored";                         // NOI18N  
     
             
@@ -101,6 +102,14 @@ public class LocalHistorySettings {
     
     public long getLastSelectedEntry(File file) {
         return getPreferences().getLong(LAST_SELECTED_ENTRY  + "#" + file.getAbsoluteFile(), -1);
+    }
+
+    public boolean getKeepForever() {
+        return getPreferences().getBoolean(PROP_KEEP_FOREVER, false);
+    }
+
+    public void setKeepForever(boolean forever) {
+        getPreferences().putBoolean(PROP_KEEP_FOREVER, forever);
     }
     
 }

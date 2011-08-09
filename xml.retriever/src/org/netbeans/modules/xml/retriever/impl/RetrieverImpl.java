@@ -65,6 +65,7 @@ import org.netbeans.modules.xml.retriever.*;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -123,8 +124,14 @@ public class RetrieverImpl extends Retriever {
         }
         URI cfuri = null;
         if(!relativePathToCatalogFile.isAbsolute()){
-            FileObject prjRtFO = prj.getProjectDirectory();
-            cfuri = FileUtil.toFile(prjRtFO).toURI().resolve(relativePathToCatalogFile);
+            if (prj != null) {
+                FileObject prjRtFO = prj.getProjectDirectory();
+                cfuri = FileUtil.toFile(prjRtFO).toURI().resolve(relativePathToCatalogFile);
+            } else {
+                // For Maven based projects the project directory doesn't contain cached catalogs. 
+                //  In these cases should be used catalog.xml within destination directory.
+                cfuri = destinationDir.getParent().getURL().toURI().resolve(Utilities.PRIVATE_CATALOG_URI_STR);
+            }
         }else{
             cfuri = relativePathToCatalogFile;
         }

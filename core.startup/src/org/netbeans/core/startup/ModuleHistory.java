@@ -57,6 +57,7 @@ package org.netbeans.core.startup;
 public final class ModuleHistory {
     
     private final String jar;
+    private String info;
     
     /** Create a module history with essential information.
      * You also need to specify a relative or absolute JAR name.
@@ -65,6 +66,11 @@ public final class ModuleHistory {
         assert jar != null;
         this.jar = jar;
     }
+
+    ModuleHistory(String jar, String info) {
+        this(jar);
+        this.info = info;
+    }
     
     /**
      * The name of the JAR relative to the installation, or
@@ -72,6 +78,10 @@ public final class ModuleHistory {
      */
     String getJar() {
         return jar;
+    }
+
+    @Override public String toString() {
+        return info != null ? info : jar;
     }
     
 }

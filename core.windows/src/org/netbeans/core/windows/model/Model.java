@@ -108,6 +108,8 @@ public interface Model {
     public void addModeAroundEditor(ModeImpl mode, String side);
     /** Removes mode. */
     public void removeMode(ModeImpl mode);
+    /** Renames a mode */
+    public void setModeName(ModeImpl mode, String name);
     /** Sets mode constraints. */
     public void setModeConstraints(ModeImpl mode, SplitConstraint[] constraints);
     /** Adds top component group. */

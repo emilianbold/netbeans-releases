@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.34.1
+#Version 6.35
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1763,7 +1763,7 @@ meth public void setTreeHorizontalScrollBarPolicy(int)
 meth public void setTreeSortable(boolean)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
-hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,manager,managerListener,model,outline,popupFactory,popupListener,rowModel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
+hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,manager,managerListener,managerLock,model,outline,popupFactory,popupListener,rowModel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
 hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineScrollLayout,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,ScrollListener,Selection,TableSelectionListener
 
 CLSS public org.openide.explorer.view.TableView

@@ -64,7 +64,7 @@ public class CloseWindowAction extends AbstractAction
 implements PropertyChangeListener {
 
     public CloseWindowAction() {
-        putValue(NAME, NbBundle.getMessage(CloseWindowAction.class, "CTL_CloseWindowAction"));
+        putValue(NAME, NbBundle.getMessage(CloseWindowAction.class, "CTL_CloseWindowAction_MainMenu"));
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         // #161406 WindowsAPI to be called from AWT thread only.

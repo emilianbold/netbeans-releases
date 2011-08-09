@@ -127,13 +127,13 @@ public class PushCommand extends TransportCommand {
             }
             result = new GitPushResult(remoteRepositoryUpdates, localRepositoryUpdates);
         } catch (NotSupportedException e) {
-            throw new GitException(e);
+            throw new GitException(e.getMessage(), e);
         } catch (URISyntaxException e) {
-            throw new GitException(e);
+            throw new GitException(e.getMessage(), e);
         } catch (TransportException e) {
             handleException(e);
         } catch (IOException e) {
-            throw new GitException(e);
+            throw new GitException(e.getMessage(), e);
         } finally {
             if (transport != null) {
                 transport.close();

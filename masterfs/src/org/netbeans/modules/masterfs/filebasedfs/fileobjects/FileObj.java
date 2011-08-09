@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -154,7 +156,9 @@ public class FileObj extends BaseFileObj {
         LOGGER.log(Level.FINEST,"FileObj.getInputStream_after_is_valid");   //NOI18N - Used by unit test
         final File f = getFileName().getFile();
         if (!f.exists()) {
-            throw new FileNotFoundException();
+            FileNotFoundException ex = new FileNotFoundException("Can't read " + f); // NOI18N
+            dumpFileInfo(f, ex);
+            throw ex;
         }
         InputStream inputStream;
         MutualExclusionSupport.Closeable closeableReference = null;

@@ -572,7 +572,6 @@ public final class WLStartServer extends StartServer {
                         startup = new File(new File(domainHome, "bin"), STARTUP_SH_DWP_ALTERNATIVE); // NOI18N
                     }
                 }
-                boolean needsJavaHome = dm.isWebProfile();
 
                 ExternalProcessBuilder builder = new ExternalProcessBuilder(startup.getAbsolutePath());
                 builder = builder.workingDirectory(domainHome)
@@ -581,10 +580,6 @@ public final class WLStartServer extends StartServer {
                 String mwHome = dm.getProductProperties().getMiddlewareHome();
                 if (mwHome != null) {
                     builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
-                }
-                
-                if (needsJavaHome) {
-                    builder = builder.addEnvironmentVariable("JAVA_HOME", WLPluginProperties.getDefaultPlatformHome());
                 }
 
                 builder = initBuilder(builder);
@@ -651,14 +646,8 @@ public final class WLStartServer extends StartServer {
             String memoryOptions = dm.getInstanceProperties().getProperty(
                     WLPluginProperties.MEM_OPTS);
             if (memoryOptions != null && memoryOptions.trim().length() >0) {
-                // FIXME DWP
-                if (dm.isWebProfile()) {
-                    result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE_11_WEB,
-                            memoryOptions.trim());
-                } else {
-                    result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
-                            memoryOptions.trim());
-                }
+                result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
+                        memoryOptions.trim());
             }  
             return result;
         }

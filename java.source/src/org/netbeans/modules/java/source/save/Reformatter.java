@@ -50,6 +50,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
@@ -63,6 +64,7 @@ import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -369,6 +371,28 @@ public class Reformatter implements ReformatTask {
         private static final String EMPTY = ""; //NOI18N
         private static final String SPACE = " "; //NOI18N
         private static final String NEWLINE = "\n"; //NOI18N
+        private static final String LEADING_STAR = "*"; //NOI18N
+        private static final String P_TAG = "<p/>"; //NOI18N
+        private static final String CODE_TAG = "<code>"; //NOI18N
+        private static final String CODE_END_TAG = "</code>"; //NOI18N
+        private static final String PRE_TAG = "<pre>"; //NOI18N
+        private static final String PRE_END_TAG = "</pre>"; //NOI18N
+        private static final String JDOC_AUTHOR_TAG = "@author"; //NOI18N
+        private static final String JDOC_CODE_TAG = "@code"; //NOI18N
+        private static final String JDOC_DEPRECATED_TAG = "@deprecated"; //NOI18N
+        private static final String JDOC_EXCEPTION_TAG = "@exception"; //NOI18N
+        private static final String JDOC_LINK_TAG = "@link"; //NOI18N
+        private static final String JDOC_LINKPLAIN_TAG = "@linkplain"; //NOI18N
+        private static final String JDOC_LITERAL_TAG = "@literal"; //NOI18N
+        private static final String JDOC_PARAM_TAG = "@param"; //NOI18N
+        private static final String JDOC_RETURN_TAG = "@return"; //NOI18N
+        private static final String JDOC_SEE_TAG = "@see"; //NOI18N
+        private static final String JDOC_SERIAL_TAG = "@serial"; //NOI18N
+        private static final String JDOC_SERIAL_DATA_TAG = "@serialData"; //NOI18N
+        private static final String JDOC_SERIAL_FIELD_TAG = "@serialField"; //NOI18N
+        private static final String JDOC_SINCE_TAG = "@since"; //NOI18N
+        private static final String JDOC_THROWS_TAG = "@throws"; //NOI18N
+        private static final String JDOC_VERSION_TAG = "@version"; //NOI18N
         private static final String ERROR = "<error>"; //NOI18N
         private static final int ANY_COUNT = -1;
 
@@ -400,6 +424,7 @@ public class Reformatter implements ReformatTask {
         private int startOffset;
         private int endOffset;
         private int tpLevel;
+        private int lastCommentIndex = -1;
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
@@ -2508,7 +2533,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
-                        indentComment();
+                        reformatComment();
                         after = 2; //javadoc comment
                         break;
                     case BLOCK_COMMENT:
@@ -2541,7 +2566,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
-                        indentComment();
+                        reformatComment();
                         after = 0;
                         break;
                     default:
@@ -2653,7 +2678,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
-                        indentComment();
+                        reformatComment();
                         after = 2; //javadoc comment
                         break;
                     case BLOCK_COMMENT:
@@ -2698,7 +2723,7 @@ public class Reformatter implements ReformatTask {
                         if (idx >= 0)
                             tokenText = tokenText.substring(idx + 1);
                         col += getCol(tokenText);
-                        indentComment();
+                        reformatComment();
                         after = 0;
                         break;
                     default:
@@ -2795,13 +2820,14 @@ public class Reformatter implements ReformatTask {
                                 lastIdx = idx + 1;
                             }
                             if (lastIdx > 0) {
-                                String indent = getIndent();
-                                if (!indent.contentEquals(text.substring(lastIdx)))
-                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
+                                String ind = getIndent();
+                                if (!ind.contentEquals(text.substring(lastIdx)))
+                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
+                                col = indent;
                             }
                             lastToken = null;
                         }
-                        indentComment();
+                        reformatComment();
                         after = 3;
                         break;
                     case JAVADOC_COMMENT:
@@ -2827,18 +2853,20 @@ public class Reformatter implements ReformatTask {
                             if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = count == ANY_COUNT ? 1 : 0;
                             }
-                            String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
-                            if (!indent.contentEquals(text.substring(lastIdx)))
-                                addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
+                            String ind = after == 3 ? SPACE : getNewlines(count) + getIndent();
+                            if (!ind.contentEquals(text.substring(lastIdx)))
+                                addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
+                            col = after == 3 ? col + 1 : indent;
                         } else {
                             if (lastBlankLines < 0 && count == ANY_COUNT)
                                 count = lastBlankLines = 1;
                             String text = getNewlines(count) + getIndent();
                             if (text.length() > 0)
                                 addDiff(new Diff(tokens.offset(), tokens.offset(), text));
+                            col = indent;
                         }
-                        indentComment();
+                        reformatComment();
                         count = 0;
                         after = 2;
                         break;
@@ -3253,22 +3281,454 @@ public class Reformatter implements ReformatTask {
             }
         }
         
-        private void indentComment() {
-            if (tokens.token().id() != BLOCK_COMMENT && tokens.token().id() != JAVADOC_COMMENT)
+        private void reformatComment() {
+            if ((tokens.token().id() != BLOCK_COMMENT && tokens.token().id() != JAVADOC_COMMENT)
+                    || tokens.index() <= lastCommentIndex)
                 return;
-            String indent = getIndent();
+            lastCommentIndex = tokens.index();
             String text = tokens.token().text().toString();
-            int idx = 0;
-            while ((idx = text.indexOf('\n', idx)) >= 0) { //NOI18N
-                int i = idx + 1;
-                while(i < text.length() && text.charAt(i) <= ' ' && text.charAt(i) != '\n') //NOI18N
-                    i++;
-                if (i >= text.length())
-                    break;
-                String s = text.charAt(i) == '*' ? indent + SPACE : indent;
-                if (!s.equals(text.substring(idx + 1, i)))
-                    addDiff(new Diff(tokens.offset() + idx + 1, tokens.offset() + i, s)); //NOI18N
-                idx = i;
+            int offset = tokens.offset();
+            TokenSequence<JavadocTokenId> javadocTokens = tokens.embedded(JavadocTokenId.language());
+            LinkedList<Pair<Integer, Integer>> marks = new LinkedList<Pair<Integer, Integer>>();
+            int maxParamNameLength = 0;
+            int maxExcNameLength = 0;
+            if (javadocTokens != null) {
+                int state = 0; // 0 - initial text, 1 - after param tag, 2 - param description, 3 - return description,
+                               // 4 - after throws tag, 5 - exception description, 6 - after pre tag, 7 - after other tag
+                int currWSOffset = -1;
+                int lastWSOffset = -1;
+                boolean afterText = false;
+                boolean insideTag = false;
+                while (javadocTokens.moveNext()) {
+                    switch (javadocTokens.token().id()) {
+                        case TAG:
+                            String tokenText = javadocTokens.token().text().toString();
+                            int newState;
+                            if (JDOC_PARAM_TAG.equalsIgnoreCase(tokenText)) {
+                                newState = 1;
+                            } else if (JDOC_RETURN_TAG.equalsIgnoreCase(tokenText)) {
+                                newState = 3;
+                            } else if (JDOC_THROWS_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_EXCEPTION_TAG.equalsIgnoreCase(tokenText)) {
+                                newState = 4;
+                            } else if (JDOC_AUTHOR_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_DEPRECATED_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SEE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SERIAL_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SERIAL_DATA_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SERIAL_FIELD_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_SINCE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_VERSION_TAG.equalsIgnoreCase(tokenText)) {
+                                newState = 7;
+                            } else if (JDOC_LINK_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_LINKPLAIN_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_CODE_TAG.equalsIgnoreCase(tokenText)
+                                    || JDOC_LITERAL_TAG.equalsIgnoreCase(tokenText)) {
+                                insideTag = true;
+                                marks.add(Pair.of(lastWSOffset >= 0 ? lastWSOffset : javadocTokens.offset() - offset, 5));
+                                lastWSOffset = currWSOffset = -1;
+                                break;
+                            } else {
+                                lastWSOffset = currWSOffset = -1;
+                                break;
+                            }
+                            if (currWSOffset >= 0) {
+                                marks.add(Pair.of(currWSOffset, afterText && (state == 0 && cs.blankLineAfterJavadocDescription()
+                                        || state == 2 && newState != 1 && cs.blankLineAfterJavadocParameterDescriptions()
+                                        || state == 3 && cs.blankLineAfterJavadocReturnTag()) ? 0 : 1));
+                            }
+                            state = newState;
+                            if (state == 3 && cs.alignJavadocReturnDescription()) {
+                                marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 3));
+                            }
+                            lastWSOffset = currWSOffset = -1;
+                            break;
+                        case IDENT:
+                            if (state == 1) {
+                                int len = javadocTokens.token().length();
+                                if (len > maxParamNameLength)
+                                    maxParamNameLength = len;
+                                if (cs.alignJavadocParameterDescriptions())
+                                    marks.add(Pair.of(javadocTokens.offset() + len - offset, 2));
+                                state = 2;
+                            } else if (state == 4) {
+                                int len = javadocTokens.token().length();
+                                if (len > maxExcNameLength)
+                                    maxExcNameLength = len;
+                                if (cs.alignJavadocExceptionDescriptions())
+                                    marks.add(Pair.of(javadocTokens.offset() + len - offset, 4));
+                                state = 5;
+                            }
+                            lastWSOffset = currWSOffset = -1;
+                            afterText = true;
+                            break;
+                        case OTHER_TEXT:
+                            lastWSOffset = currWSOffset = -1;
+                            CharSequence cseq = javadocTokens.token().text();
+                            int nlNum = 1;
+                            int insideTagEndOffset = -1;
+                            for (int i = cseq.length(); i >= 0; i--) {
+                                if (i == 0) {
+                                    if (lastWSOffset < 0)
+                                        lastWSOffset = javadocTokens.offset() - offset;
+                                    if (currWSOffset < 0 && nlNum >= 0)
+                                        currWSOffset = javadocTokens.offset() - offset;
+                                } else {
+                                    char c = cseq.charAt(i - 1);
+                                    if (Character.isWhitespace(c)) {
+                                        if (c == '\n')
+                                            nlNum--;
+                                        if (lastWSOffset < 0 && currWSOffset >= 0)
+                                            lastWSOffset = -2;
+                                    } else if (c != '*') {
+                                        if (insideTag && c == '}') {
+                                            insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
+                                            insideTag = false;
+                                        }
+                                        if (lastWSOffset == -2)
+                                            lastWSOffset = javadocTokens.offset() + i - offset;
+                                        if (currWSOffset < 0 && nlNum >= 0)
+                                            currWSOffset = javadocTokens.offset() + i - offset;
+                                        afterText = true;
+                                    }
+                                }
+                            }
+                            if (insideTagEndOffset >= 0)
+                                marks.add(Pair.of(insideTagEndOffset, 6));
+                            break;
+                        case HTML_TAG:
+                            tokenText = javadocTokens.token().text().toString();
+                            if (P_TAG.equalsIgnoreCase(tokenText)) {
+                                if (currWSOffset >= 0) {
+                                    marks.add(Pair.of(currWSOffset, 1));
+                                }
+                                afterText = false;
+                            } else if (PRE_TAG.equalsIgnoreCase(tokenText)
+                                    || CODE_TAG.equalsIgnoreCase(tokenText)) {
+                                if (currWSOffset >= 0) {
+                                    marks.add(Pair.of(currWSOffset, 1));
+                                }
+                                marks.add(Pair.of(javadocTokens.offset() - offset, 5));
+                            } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
+                                    || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
+                                marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
+                            }
+                            lastWSOffset = currWSOffset = -1;
+                            break;
+                    }
+                }
+            }
+            int checkOffset, actionType; // 0 - add blank line, 1 - add newline, 2 - align params, 3 - align return,
+                                         // 4 - align exceptions, 5 - no format, 6 - format
+            Iterator<Pair<Integer, Integer>> it = marks.iterator();
+            if (it.hasNext()) {
+                Pair<Integer, Integer> next = it.next();
+                checkOffset = next.first;
+                actionType = next.second;
+            } else {
+                checkOffset = Integer.MAX_VALUE;
+                actionType = -1;
+            }
+            String indentString = getIndent();
+            String lineStartString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE : indentString + SPACE;
+            String blankLineString;
+            if (javadocTokens != null && cs.generateParagraphTagOnBlankLines()) {
+                blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE + P_TAG : indentString + SPACE + P_TAG;
+            } else {
+                blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR : EMPTY;
+            }
+            int currNWSPos = -1;
+            int lastNWSPos = -1;
+            int currWSPos = -1;
+            int lastWSPos = -1;
+            int lastNewLinePos = -1;
+            Diff pendingDiff = null;
+            int start = javadocTokens != null ? 3 : 2;
+            col += start;
+            boolean preserveNewLines = true;
+            boolean firstLine = true;
+            boolean enableCommentFormatting = javadocTokens != null ? cs.enableJavadocFormatting() : cs.enableBlockCommentFormatting();
+            boolean noFormat = false;
+            int align = -1;
+            for (int i = start; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (Character.isWhitespace(c)) {
+                    if (enableCommentFormatting) {
+                        if (currNWSPos >= 0) {
+                            lastNWSPos = currNWSPos;
+                            currNWSPos = -1;
+                        }
+                        if (currWSPos < 0) {
+                            currWSPos = i;
+                            if (col > cs.getRightMargin() && cs.wrapCommentText() && !noFormat && lastWSPos >= 0) {
+                                int endOff = pendingDiff != null ? pendingDiff.getEndOffset() - offset : lastWSPos + 1;
+                                String s = NEWLINE + lineStartString;
+                                col = getCol(lineStartString) + i - endOff;
+                                if (align > 0) {
+                                    int num = align - lineStartString.length();
+                                    if (num > 0) {
+                                        s += getSpaces(num);
+                                        col += num;
+                                    }
+                                }
+                                if (!s.equals(text.substring(lastWSPos, endOff)))
+                                    addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
+                            } else if (pendingDiff != null) {
+                                addDiff(pendingDiff);
+                                col++;
+                            } else {
+                                col++;
+                            }
+                            pendingDiff = null;
+                        }
+                    }
+                    if (c == '\n') {
+                        if (lastNewLinePos >= 0) {
+                            if (enableCommentFormatting) {
+                                String subs = text.substring(lastNewLinePos + 1, i);
+                                if (!blankLineString.equals(subs)) {
+                                    addDiff(new Diff(offset + lastNewLinePos + 1, offset + i, blankLineString));
+                                }
+                            }
+                            preserveNewLines = true;
+                            lastNewLinePos = i;
+                        } else {
+                            lastNewLinePos = currWSPos >= 0 ? currWSPos : i;                            
+                        }
+                        firstLine = false;
+                    }
+                    if (i >= checkOffset && actionType == 5) {
+                        noFormat = true;
+                        align = -1;
+                        if (it.hasNext()) {
+                            Pair<Integer, Integer> next = it.next();
+                            checkOffset = next.first;
+                            actionType = next.second;
+                        } else {
+                            checkOffset = Integer.MAX_VALUE;
+                            actionType = -1;
+                        }
+                    }
+                } else {
+                    if (enableCommentFormatting) {
+                        if (currNWSPos < 0) {
+                            currNWSPos = i;
+                        }
+                        if (i >= checkOffset) {
+                            noFormat = false;                                    
+                            switch (actionType) {
+                                case 0:
+                                    pendingDiff = new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, NEWLINE + blankLineString + NEWLINE);
+                                    lastNewLinePos = i - 1;
+                                    preserveNewLines = true;
+                                    align = -1;
+                                    break;
+                                case 1:
+                                    pendingDiff = new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, NEWLINE);
+                                    lastNewLinePos = i - 1;
+                                    preserveNewLines = true;
+                                    align = -1;
+                                    break;
+                                case 2:
+                                    int num = maxParamNameLength + lastNWSPos - currWSPos;
+                                    if (num > 0) {
+                                        pendingDiff = new Diff(offset + i, offset + i, getSpaces(num));
+                                        col += num;
+                                    }
+                                    align = col;
+                                    break;
+                                case 3:
+                                    align = col;
+                                    break;
+                                case 4:
+                                    num = maxExcNameLength + lastNWSPos - currWSPos;
+                                    if (num > 0) {
+                                        pendingDiff = new Diff(offset + i, offset + i, getSpaces(num));
+                                        col += num;
+                                    }
+                                    align = col;
+                                    break;
+                                case 5:
+                                    noFormat = true;
+                                    align = -1;
+                                    break;
+                                case 6:
+                                    lastWSPos = -1;
+                                    preserveNewLines = true;
+                                    align = -1;
+                                    break;
+                            }
+                            if (it.hasNext()) {
+                                Pair<Integer, Integer> next = it.next();
+                                checkOffset = next.first;
+                                actionType = next.second;
+                            } else {
+                                checkOffset = Integer.MAX_VALUE;
+                                actionType = -1;
+                            }
+                        }
+                    }
+                    if (lastNewLinePos >= 0) {
+                        if (!preserveNewLines && !noFormat && i < text.length() - 2 && enableCommentFormatting && !cs.preserveNewLinesInComments() && cs.wrapCommentText()) {
+                            lastWSPos = lastNewLinePos;
+                            if (pendingDiff != null) {
+                                pendingDiff.text += SPACE;
+                            } else {
+                                pendingDiff = new Diff(offset + lastNewLinePos, offset + i, SPACE);
+                            }
+                            lastNewLinePos = -1;
+                            if (c == '*') {
+                                while(++i < text.length()) {
+                                    col++;
+                                    c = text.charAt(i);
+                                    if (c == '\n') {
+                                        pendingDiff.start++;
+                                        pendingDiff.text = blankLineString;
+                                        preserveNewLines = true;
+                                        lastNewLinePos = i;
+                                        break;
+                                    } else if (!Character.isWhitespace(c)) {
+                                        break;
+                                    }
+                                }
+                                if (pendingDiff != null) {
+                                    String sub = text.substring(pendingDiff.start - offset, i);
+                                    if (sub.equals(pendingDiff.text)) {
+                                        pendingDiff = null;
+                                    } else {
+                                        pendingDiff.end = offset + i;
+                                    }
+                                }
+                            }
+                        } else {
+                            String s = indentString + SPACE;
+                            if (pendingDiff != null) {
+                                pendingDiff.text += s;
+                                String subs = text.substring(pendingDiff.start - offset, i);
+                                if (pendingDiff.text.equals(subs))
+                                    pendingDiff = null;
+                            } else {
+                                String subs = text.substring(lastNewLinePos + 1, i);
+                                if (!s.equals(subs))
+                                    pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, s);
+                            }
+                            lastWSPos = currWSPos = -1;
+                            lastNewLinePos = -1;
+                            col = getCol(s);
+                            if (enableCommentFormatting) {
+                                if (c == '*') {
+                                    col++;
+                                    while (++i < text.length()) {
+                                        c = text.charAt(i);
+                                        if (c == '\n') {
+                                            if (!cs.addLeadingStarInComment()) {
+                                                String subs = text.substring(lastNewLinePos + 1, i);
+                                                if (blankLineString.equals(subs)) {
+                                                    pendingDiff = null;
+                                                } else {
+                                                    if (pendingDiff != null) {
+                                                        pendingDiff.end = offset + i;
+                                                        pendingDiff.text = blankLineString;
+                                                    } else {
+                                                        pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, blankLineString);
+                                                    }
+                                                }
+                                            } else if (currWSPos >= 0) {
+                                                if (pendingDiff != null) {
+                                                    addDiff(pendingDiff);
+                                                }
+                                                pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
+                                            }
+                                            currWSPos = -1;
+                                            lastNewLinePos = i;
+                                            break;
+                                        } else if (Character.isWhitespace(c)) {
+                                            if (currWSPos < 0) {
+                                                currWSPos = i;
+                                                col++;
+                                            }
+                                        } else if (c == '*' || c == '/') {
+                                            col++;
+                                            break;
+                                        } else {
+                                            if (!cs.addLeadingStarInComment()) {
+                                                if (noFormat) {
+                                                    if (pendingDiff != null) {
+                                                        pendingDiff.end = currWSPos >= 0 ? offset + currWSPos + 1 : pendingDiff.end + 1;
+                                                    } else {
+                                                        pendingDiff = new Diff(offset + lastNewLinePos + 1, currWSPos >= 0 ? offset + currWSPos + 1 : offset + i, indentString);
+                                                    }
+                                                    
+                                                } else {
+                                                    if (pendingDiff != null) {
+                                                        pendingDiff.end = offset + i;
+                                                    } else {
+                                                        pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, indentString);
+                                                    }
+                                                    col = indent;
+                                                }
+                                            } else { 
+                                                if (currWSPos < 0) {
+                                                    currWSPos = i;
+                                                    col++;
+                                                }
+                                                String subs = text.substring(currWSPos, i);
+                                                if (!noFormat && !SPACE.equals(subs)) {
+                                                    if (pendingDiff != null)
+                                                        addDiff(pendingDiff);
+                                                    pendingDiff = new Diff(offset + currWSPos, offset + i, SPACE);                                                    
+                                                }
+                                            }
+                                            currWSPos = -1;
+                                            break;
+                                        }
+                                    }
+                                } else if (cs.addLeadingStarInComment()) {
+                                    if (pendingDiff != null) {
+                                        pendingDiff.text += (LEADING_STAR + SPACE);
+                                    } else {
+                                        pendingDiff = new Diff(offset + i, offset + i, LEADING_STAR + SPACE);
+                                    }
+                                    col += 2;
+                                }
+                            }
+                            if (pendingDiff != null) {
+                                addDiff(pendingDiff);
+                                pendingDiff = null;
+                            }
+                        }
+                    } else if (enableCommentFormatting) {
+                        if (firstLine) {
+                            String s = cs.wrapOneLineComments() ? NEWLINE + lineStartString : SPACE;
+                            String sub = currWSPos >= 0 ? text.substring(currWSPos, i) : null;
+                            if (!s.equals(sub))
+                                addDiff(new Diff(currWSPos >= 0 ? offset + currWSPos : offset + i, offset + i, s));
+                            col = getCol(s);
+                            firstLine = false;
+                        } else if (currWSPos >= 0) {
+                            lastWSPos = currWSPos;
+                            if (currWSPos < i - 1)
+                                pendingDiff = new Diff(offset + currWSPos + 1, offset + i, null);
+                        } else if (c != '*') {
+                            preserveNewLines = false;
+                        }
+                    } else if (c != '*') {
+                        preserveNewLines = false;
+                    }
+                    currWSPos = -1;
+                    col++;
+                }
+            }
+            if (enableCommentFormatting) {
+                for (int i = text.length() - 3; i >= 0; i--) {
+                    char c = text.charAt(i);
+                    if (c == '\n') {
+                        break;
+                    } else if (!Character.isWhitespace(c)) {
+                        addDiff(new Diff(offset + i + 1, offset + text.length() - 2, cs.wrapOneLineComments() ? NEWLINE + indentString + SPACE : SPACE));
+                        break;
+                    }
+                }
             }
         }
 

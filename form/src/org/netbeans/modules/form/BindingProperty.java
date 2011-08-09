@@ -53,8 +53,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.beansbinding.Converter;
-import org.jdesktop.beansbinding.Validator;
 import org.openide.nodes.Node;
 
 import org.openide.nodes.PropertySupport;
@@ -87,14 +85,15 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
             }
         }
         if (prop != null) {
+            BindingDesignSupport bindingSupport = FormEditor.getBindingSupport(getFormModel());
             String name = FormUtils.getBundleString("MSG_Binding_NullProperty"); // NOI18N
             nullValueProperty = new Property(prop, "nullValue", desc.getValueType(), name, name, false); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_IncompletePathProperty"); // NOI18N
             incompleteValueProperty = new Property(prop, "incompletePathValue", desc.getValueType(), name, name, false); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Validator"); // NOI18N
-            validatorProperty = new Property(prop, "validator", Validator.class, name, name, true); // NOI18N
+            validatorProperty = new Property(prop, "validator", bindingSupport.getValidatorClass(), name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Converter"); // NOI18N
-            converterProperty = new Property(prop, "converter", Converter.class, name, name, true); // NOI18N
+            converterProperty = new Property(prop, "converter", bindingSupport.getConverterClass(), name, name, true); // NOI18N
             name = FormUtils.getBundleString("MSG_Binding_Name"); // NOI18N
             nameProperty = new Property(prop, "name", String.class, name, name, true); // NOI18N
         }
@@ -244,23 +243,23 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
         return bindingComponent.getFormModel();
     }
 
-    FormProperty getNullValueProperty() {
+    public FormProperty getNullValueProperty() {
         return nullValueProperty;
     }
 
-    FormProperty getIncompleteValueProperty() {
+    public FormProperty getIncompleteValueProperty() {
         return incompleteValueProperty;
     }
 
-    FormProperty getValidatorProperty() {
+    public FormProperty getValidatorProperty() {
         return validatorProperty;
     }
 
-    FormProperty getConverterProperty() {
+    public FormProperty getConverterProperty() {
         return converterProperty;
     }
 
-    FormProperty getNameProperty() {
+    public FormProperty getNameProperty() {
         return nameProperty;
     }
 

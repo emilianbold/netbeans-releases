@@ -75,7 +75,6 @@ import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Utility methods.
@@ -84,9 +83,6 @@ import org.openide.util.Utilities;
 public final class PhpProjectUtils {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.php"); //NOI18N
-
-    private static final boolean IS_UNIX = Utilities.isUnix();
-    private static final boolean IS_MAC = Utilities.isMac();
 
     private PhpProjectUtils() {
     }
@@ -270,29 +266,23 @@ public final class PhpProjectUtils {
     }
 
     /**
-     * Test whether the given file is a folder and is a symlink.
-     * <p>
-     * In other words, a file is never considered to be a symlink. Directory is checked
-     * and correct result is returned.
-     * @param directory file to be checked, cannot be {@code null}
-     * @return {@code true} if the file is a folder and a symlink, {@code false} otherwise
+     * Resolve enum from the given {@code value}. If the enum cannot be resolved,
+     * the {@code defaultValue} is returned.
+     * @param <T> enum type
+     * @param enumClass enum class
+     * @param value value to be resolved, can be {@code null}
+     * @param defaultValue default value, can be {@code null}
+     * @return enum from the given {@code value} or the {@code defaultValue} if enum cannot be resolved
      */
-    public static boolean isLink(File directory) {
-        if (!IS_UNIX && !IS_MAC) {
-            return false;
+    public static <T extends Enum<T>> T resolveEnum(Class<T> enumClass, String value, T defaultValue) {
+        if (value == null) {
+            return defaultValue;
         }
-        if (!directory.isDirectory()) {
-            return false;
-        }
-        final File canDirectory;
         try {
-            canDirectory = directory.getCanonicalFile();
-        } catch (IOException ioe) {
-            return false;
+            return Enum.valueOf(enumClass, value);
+        } catch (Exception exc) {
+            return defaultValue;
         }
-        final String dirPath = directory.getAbsolutePath();
-        final String canDirPath = canDirectory.getAbsolutePath();
-        return IS_MAC ? !dirPath.equalsIgnoreCase(canDirPath) : !dirPath.equals(canDirPath);
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification
@@ -323,7 +313,7 @@ public final class PhpProjectUtils {
             if (buffer.length() > 0) {
                 buffer.append("|"); // NOI18N
             }
-            buffer.append(provider.getName());
+            buffer.append(provider.getIdentifier());
         }
         return buffer.toString();
     }

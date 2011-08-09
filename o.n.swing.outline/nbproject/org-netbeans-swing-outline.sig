@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.13.1
+#Version 1.14
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1094,6 +1094,7 @@ fld public final static java.lang.String PROP_QUICK_FILTER = "quickFilter"
 innr public final static RowMapping
 meth protected boolean acceptByQuickFilter(javax.swing.table.TableModel,int)
 meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
+meth protected javax.swing.ListSelectionModel createDefaultSelectionModel()
 meth protected javax.swing.table.TableColumn createColumn(int)
 meth protected javax.swing.table.TableColumnModel createDefaultColumnModel()
 meth protected void configureEnclosingScrollPane()

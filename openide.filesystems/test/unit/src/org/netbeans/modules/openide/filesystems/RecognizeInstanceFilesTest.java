@@ -62,7 +62,7 @@ import org.openide.util.lookup.NamedServicesLookupTest;
 /** Test finding services from manifest and .instance files.
  * @author Jaroslav Tulach
  */
-public class RecognizeInstanceFilesTest extends NamedServicesLookupTest{
+public class RecognizeInstanceFilesTest extends NamedServicesLookupTest {
     private FileObject root;
     private Logger LOG;
     
@@ -230,9 +230,17 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest{
 
     public void testSharedClassObject() throws Exception {
         Shared instance = SharedClassObject.findObject(Shared.class, true);
-        FileUtil.createData(root, "dir/" + Shared.class.getName().replace('.', '-') + ".instance");
+        FileObject data = FileUtil.createData(root, "dir/" + Shared.class.getName().replace('.', '-') + ".instance");
         Lookup l = Lookups.forPath("dir");
         assertSame(instance, l.lookup(Shared.class));
+        
+        Shared created = FileUtil.getConfigObject(data.getPath(), Shared.class);
+        assertSame("Config file found", instance, created);
+    }
+    public void testNullForFolders() throws Exception {
+        FileObject data = FileUtil.createFolder(root, "dir/" + Shared.class.getName().replace('.', '-') + ".instance");
+        Shared nul = FileUtil.getConfigObject(data.getPath(), Shared.class);
+        assertNull("No object for folders", nul);
     }
 
     public static final class Shared extends SharedClassObject {}

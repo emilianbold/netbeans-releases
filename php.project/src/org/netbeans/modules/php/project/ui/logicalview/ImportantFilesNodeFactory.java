@@ -261,7 +261,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                         if (fileObject != null) {
                             if (fileObject.isFolder()) {
                                 Exception ex = new IllegalStateException("No folders allowed among configuration files ["
-                                        + fileObject.getNameExt() + " for " + frameworkProvider.getName() + "]");
+                                        + fileObject.getNameExt() + " for " + frameworkProvider.getIdentifier() + "]");
                                 LOGGER.log(Level.INFO, ex.getMessage(), ex);
                                 continue;
                             }

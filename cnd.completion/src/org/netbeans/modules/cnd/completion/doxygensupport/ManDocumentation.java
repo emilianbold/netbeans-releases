@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -179,15 +180,6 @@ public class ManDocumentation {
 //
 //        return "";
 //    }
-    private static File getCacheDir() {
-        String nbuser = System.getProperty("netbeans.user"); //XXX // NOI18N
-        File cache = new File(nbuser, "var/cache/cnd/manpages"); // NOI18N
-
-        cache.mkdirs();
-
-        return cache;
-    }
-
     private static File getCacheFile(String name, int chapter, String platformName) {
         // name might look like "operator /=", so we need to escape it
         String safeName;
@@ -197,7 +189,7 @@ public class ManDocumentation {
             // UTF-8 should always be supported, but anyway...
             safeName = name;
         }
-        return new File(getCacheDir(), safeName + "." + platformName + "." + chapter); // NOI18N
+        return Places.getCacheSubfile("cnd/manpages/" + safeName + "." + platformName + "." + chapter); // NOI18N
     }
 
     static NativeProject getNativeProject(CsmFile csmFile) {

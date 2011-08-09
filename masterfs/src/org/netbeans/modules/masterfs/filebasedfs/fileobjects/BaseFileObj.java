@@ -59,6 +59,7 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -72,6 +73,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 
@@ -294,6 +296,19 @@ public abstract class BaseFileObj extends FileObject {
         File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) : new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));
         return to;
     }
+    
+    static void dumpFileInfo(final File f, Throwable ex) {
+        for (File p = f.getParentFile(); p != null; p = p.getParentFile()) {
+            if (p.exists()) {
+                Exceptions.attachMessage(ex, "\nParent exists: " + p); // NOI18N
+                Exceptions.attachMessage(ex, "\nHas children " + Arrays.toString(p.list())); // NOI18N
+                break;
+            } else {
+                Exceptions.attachMessage(ex, "\nParent does not exist " + p); // NOI18N
+            }
+        }
+    }
+
 
     private BaseFileObj handleMoveCopy(FolderObj target, String name, String ext, IOHandler handler) throws IOException {
         handler.handle();
@@ -301,9 +316,9 @@ public abstract class BaseFileObj extends FileObject {
         target.getChildrenCache().getChild(nameExt, true);
         //TODO: review
         BaseFileObj result = null;
+        final File file = new File(target.getFileName().getFile(), nameExt);
         for (int i = 0; i < 10; i++) {
-            result = (BaseFileObj) FileBasedFileSystem.getFileObject(
-                    new File(target.getFileName().getFile(), nameExt));
+            result = (BaseFileObj) FileBasedFileSystem.getFileObject(file);
             if (result != null) {
                 if (result.isData()) {
                     result.fireFileDataCreatedEvent(false);
@@ -320,7 +335,13 @@ public abstract class BaseFileObj extends FileObject {
                 // ignore
             }
         }
-        assert result != null : "FileObject for " + new File(target.getFileName().getFile(), nameExt) + " not found.";
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (result == null && assertsOn) {
+            AssertionError ae = new AssertionError("FileObject for " + file + " not found.");
+            dumpFileInfo(file, ae);
+            throw ae;
+        }
         FolderObj parent = getExistingParent();
         if (parent != null) {
             parent.refresh(true);
@@ -354,6 +375,9 @@ public abstract class BaseFileObj extends FileObject {
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
+        
+        final String originalName = getName();
+        final String originalExt = getExt();
         if (Utils.equals(file2Rename, file)) {
             boolean success;
             if (handler != null) {
@@ -369,7 +393,7 @@ public abstract class BaseFileObj extends FileObject {
             }
             // just a case sensitive update of the file name
             NamingFactory.checkCaseSensitivity(fileName, file2Rename);
-            fireFileRenamedEvent(file.getName(), file2Rename.getName());
+            fireFileRenamedEvent(originalName, originalExt);
             return;
         }
         
@@ -381,8 +405,6 @@ public abstract class BaseFileObj extends FileObject {
             FSException.io("EXC_CannotRename", file.getName(), parentPath, newNameExt);// NOI18N
         }
 
-        final String originalName = getName();
-        final String originalExt = getExt();
 
         //TODO: no lock used
         FileObjectFactory fs = getFactory();

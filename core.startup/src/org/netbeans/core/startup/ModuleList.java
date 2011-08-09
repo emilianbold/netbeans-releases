@@ -67,6 +67,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarFile;
@@ -91,6 +93,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -1247,18 +1250,38 @@ final class ModuleList implements Stamps.Updater {
                     if (xmlfile == null || ! xmlfile.canRead ()) {
                         continue;
                     }
-                    InputStream is = xmlfile.getInputStream();
-                    try {
-                        InputSource src = new InputSource(is);
-                        src.setSystemId(xmlfile.getURL().toString());
+                    Random eth = null;
+                    for (int repeats = 0; ; repeats++) {
+                        InputStream is = xmlfile.getInputStream();
                         try {
-                            dirtyprops.put(cnb, readStatus(src, null));
-                        } catch (SAXException saxe) {
-                            throw (IOException) new IOException("Parse error:\n---%<--- " + xmlfile.getPath() + "\n" +
-                                    xmlfile.asText("UTF-8") + "\n---%<---\ngot: " + saxe).initCause(saxe);
+                            InputSource src = new InputSource(is);
+                            src.setSystemId(xmlfile.getURL().toString());
+                            try {
+                                dirtyprops.put(cnb, readStatus(src, null));
+                            } catch (SAXException saxe) {
+                                final String msg = "Parse error:\n---%<--- " + xmlfile.getPath() + "\n" +
+                                    xmlfile.asText("UTF-8") + "\n---%<---\ngot: " + saxe;
+                                if (repeats < 10) {
+                                    int wait;
+                                    if (eth == null) {
+                                        eth = new Random();
+                                    }
+                                    wait = eth.nextInt(90) + 10;
+                                    LOG.warning(msg);
+                                    LOG.log(Level.INFO, "Retry: {0} after waiting {1}", new Object[] { repeats, wait });
+                                    try {
+                                        Thread.sleep(wait);
+                                    } catch (InterruptedException ignore) {
+                                        // not that important
+                                    }
+                                    continue;
+                                }
+                                throw new IOException(msg, saxe);
+                            }
+                        } finally {
+                            is.close();
                         }
-                    } finally {
-                        is.close();
+                        break;
                     }
                 }
             }
@@ -1319,7 +1342,7 @@ final class ModuleList implements Stamps.Updater {
                     boolean eager = (eagerB != null ? eagerB.booleanValue() : false);
                     Module m;
                     try {
-                        m = mgr.create(jarFile, new ModuleHistory(jar), reloadable, autoload, eager);
+                        m = mgr.create(jarFile, new ModuleHistory(jar, "created from " + xmlfile), reloadable, autoload, eager);
                     } catch (DuplicateException dupe) {
                         // XXX should this be tolerated somehow? In case the original is
                         // in fact scheduled for deletion anyway?
@@ -1345,6 +1368,11 @@ final class ModuleList implements Stamps.Updater {
         }
         private void stepEnable(Map<String,Map<String,Object>> dirtyprops) throws IOException {
             LOG.fine("ModuleList: stepEnable");
+            if (LOG.isLoggable(Level.FINEST)) {
+                for (Entry<String, Map<String, Object>> e : dirtyprops.entrySet()) {
+                    LOG.log(Level.FINEST, "{0} = {1}", new Object[]{e.getKey(), e.getValue()}); // NOI18N
+                }
+            }
             Set<Module> toenable = new HashSet<Module>();
             for (Map.Entry<String,Map<String,Object>> entry : dirtyprops.entrySet()) {
                 String cnb = entry.getKey();
@@ -1356,6 +1384,11 @@ final class ModuleList implements Stamps.Updater {
                         if (status.module.isEnabled()) throw new IllegalStateException("Already enabled: " + status.module); // NOI18N
                         toenable.add(status.module);
                     }
+                }
+            }
+            if (LOG.isLoggable(Level.FINEST)) {
+                for (Module m : toenable) {
+                    LOG.log(Level.FINEST, "About to enable {0}", m); // NOI18N
                 }
             }
             installNew(toenable);
@@ -1599,7 +1632,7 @@ final class ModuleList implements Stamps.Updater {
                         }
                         continue;
                     }
-                    ModuleHistory history = new ModuleHistory(jar); // NOI18N
+                    ModuleHistory history = new ModuleHistory(jar, "loaded from " + f); // NOI18N
                     Boolean reloadableB = (Boolean) props.get("reloadable"); // NOI18N
                     boolean reloadable = reloadableB != null ? reloadableB.booleanValue() : false;
                     boolean enabled = enabledB != null ? enabledB.booleanValue() : false;

@@ -108,6 +108,47 @@ is the proper place.
 
 <changes>
 
+    <change id="restore_group_button_ui">
+      <api name="tabcontrol"/>
+      <summary>Allow custom UI for 'restore window group' button.</summary>
+      <version major="1" minor="28"/>
+      <date day="14" month="7" year="2011"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Button to restore the whole window group from minimized bar now supports
+        custom UI implementations. Simply provide own <code>ButtonUI</code> for 
+        <code>restoreGroupButtonUI</code> key in UIManager.</p>
+      </description>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="TabControlButtonFactory"/>
+    </change>
+
+    <change id="new_window_group_operations">
+      <api name="tabcontrol"/>
+      <summary>New methods to support operations with window groups.</summary>
+      <version major="1" minor="27"/>
+      <date day="24" month="6" year="2011"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        <p>Added new methods to support operations with window groups, e.g. close
+        window group or minimize window group.
+        </p>
+        <p>Also the implementation of look and feels for all supported
+        platform switches to non-stretching tab layout.</p>
+      </description>
+      <class package="org.netbeans.swing.tabcontrol" name="WinsysInfoForTabbedContainer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="SlideBarDataModel"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabbedContainer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayerUI"/>
+      <class package="org.netbeans.swing.tabcontrol.event" name="TabActionEvent"/>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="AbstractViewTabDisplayerUI"/>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="TabControlButton"/>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="TabControlButtonFactory"/>
+      <issue number="199677"/>
+    </change>
+
     <change id="topcomponent_level_winsys_customizations">
       <api name="tabcontrol"/>
       <summary>Added new methods to WinsysInfoForTabbedContainer class which can

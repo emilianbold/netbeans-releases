@@ -49,9 +49,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
-import org.netbeans.modules.css.editor.model.CssModel;
-import org.netbeans.modules.css.editor.model.CssRule;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.lib.api.model.Rule;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.NbBundle;
 
@@ -91,12 +91,12 @@ public class CssPreviewGenerator {
         StringBuilder sb = new StringBuilder();
 
         //extract all rules from all included models
-        Collection<CssModel> models = new ArrayList<CssModel>();
+        Collection<Stylesheet> models = new ArrayList<Stylesheet>();
         models.add(content.model());
         models.addAll(content.model().getImportedFileModels());
 
-        for (CssModel model : models) {
-            for (CssRule rule : model.rules()) {
+        for (Stylesheet model : models) {
+            for (Rule rule : model.rules()) {
                 //pseudo classes hack ( A:link { color: red; }
                 //we need to generate an artificial element so we can spot various states of the element (a:visited, active etc.)
                 //which depends on the state of the browser.
@@ -115,7 +115,7 @@ public class CssPreviewGenerator {
         }
         preview.append((CharSequence)sb);
         preview.append(HTML_MIDDLE);
-        CssRule selected = content.selectedRuleContent().rule();
+        Rule selected = content.selectedRuleContent().rule();
         String ruleName = selected.name();
         ruleName = ruleName.replace('\n', ' '); //hotfix #117690 (selectors on multiple lines break the css previrew)
         

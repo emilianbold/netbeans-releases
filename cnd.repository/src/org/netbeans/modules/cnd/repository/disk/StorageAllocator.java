@@ -50,6 +50,7 @@ import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.openide.modules.Places;
 
 /**
  *
@@ -57,20 +58,14 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public class StorageAllocator {
     private final static StorageAllocator instance = new StorageAllocator();
-    private String diskRepositoryPath;
+    private final File diskRepository;
     
     private StorageAllocator() {
-        diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-        if (diskRepositoryPath == null) {
-            diskRepositoryPath = System.getProperty("netbeans.user") + //NOI18N
-                                 File.separator + "var" + File.separator + "cache" +  //NOI18N
-                                 File.separator + "cnd" + File.separator + "model";  //NOI18N
-            // create directory if needed
-            File diskRepositoryFile = new File(diskRepositoryPath);
-            if (!diskRepositoryFile.exists()) {
-                diskRepositoryFile.mkdirs();
-            }
-            diskRepositoryPath = diskRepositoryFile.getAbsolutePath();
+        String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
+        if (diskRepositoryPath != null) {
+            diskRepository = new File(diskRepositoryPath);
+        } else {
+            diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
         }
     };
     
@@ -79,10 +74,6 @@ public class StorageAllocator {
     }
     
     private Map<CharSequence, String> unit2path = new ConcurrentHashMap<CharSequence, String>();
-    
-    public String getCachePath() {
-        return diskRepositoryPath;
-    }
     
     public String reduceString (String name) {
         if (name.length() > 128) {
@@ -105,9 +96,9 @@ public class StorageAllocator {
             
             prefix = reduceString(prefix);
             
-            path = getCachePath() + File.separator + prefix + File.separator; // NOI18N
-            
-            File pathFile = new File (path);
+            File pathFile = new File(diskRepository, prefix);
+
+            path = pathFile + File.separator;
             
             if (!pathFile.exists()) {
                 pathFile.mkdirs();
@@ -151,8 +142,7 @@ public class StorageAllocator {
         }
     }
     public void cleanRepositoryCaches() {
-        File repositoryPath = new File(diskRepositoryPath);
-        deleteDirectory(repositoryPath, false);
+        deleteDirectory(diskRepository, false);
     }
 
     /**
@@ -160,8 +150,7 @@ public class StorageAllocator {
      * have not been modified within last 2 weeks are considered outdated.
      */
     public void purgeCaches() {
-        File repositoryDir = new File(diskRepositoryPath);
-        File[] unitDirs = repositoryDir.listFiles();
+        File[] unitDirs = diskRepository.listFiles();
         if (unitDirs != null && 0 < unitDirs.length) {
             long now = System.currentTimeMillis();
             for (File unitDir : unitDirs) {

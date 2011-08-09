@@ -89,6 +89,9 @@ public class InitMessage extends DbgpMessage {
         setMaxDataSize(session);
         
         setBreakpoints( session );
+        negotiateOutputStream(session);
+        negotiateRequestedUrls(session);
+       
         final String transactionId = session.getTransactionId();        
         DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ? 
             new StepIntoCommand(transactionId) : new RunCommand(transactionId);
@@ -130,10 +133,10 @@ public class InitMessage extends DbgpMessage {
         setFeature(session, Feature.SHOW_HIDDEN, "1");//NOI18N
     }
     private void setMaxDepth(DebugSession session) {
-        setFeature(session, Feature.MAX_DEPTH, "3");//NOI18N
+        setFeature(session, Feature.MAX_DEPTH, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxStructuresDepth()));
     }
     private void setMaxChildren(DebugSession session) {
-        setFeature(session, Feature.MAX_CHILDREN, "31");//NOI18N
+        setFeature(session, Feature.MAX_CHILDREN, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxChildren()));
     }
     private void setFeature(DebugSession session, Feature feature, String value) {
         FeatureSetCommand setCommand = new FeatureSetCommand(
@@ -142,6 +145,20 @@ public class InitMessage extends DbgpMessage {
         setCommand.setValue(value);
         DbgpResponse response = session.sendSynchronCommand(setCommand);
         assert response instanceof FeatureSetResponse : response;
+    }
+
+    private void negotiateOutputStream(DebugSession session) {
+        if (DebuggerOptions.getGlobalInstance().showDebuggerConsole()) {
+            StreamCommand streamCommand = new StreamCommand(DbgpStream.StreamType.STDOUT, session.getTransactionId());
+            streamCommand.setOperation(StreamCommand.Operation.COPY);
+            session.sendCommandLater(streamCommand);
+        }
+    }
+
+    private void negotiateRequestedUrls(DebugSession session) {
+        if (DebuggerOptions.getGlobalInstance().showRequestedUrls()) {
+            session.sendCommandLater(new RequestedUrlEvalCommand(session.getTransactionId()));
+        }
     }
 
     private void setBreakpoints( DebugSession session ) {

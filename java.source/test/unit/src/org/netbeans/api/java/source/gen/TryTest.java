@@ -46,6 +46,7 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
@@ -529,6 +530,68 @@ public class TryTest extends GeneratorTestMDRCompat {
                         return super.visitVariable(node, p);
                     }
                 }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test200708() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try\n" +
+            "        {\n" +
+            "            File f = new File(\"auto\");\n" +
+            "            FileInputStream fis = new FileInputStream(f);\n" +
+            "        }\n" +
+            "        catch (FileNotFoundException ex)\n" +
+            "        {\n" +
+            "        }\n" +
+            "        catch (NullPointerException ex)\n" +
+            "        {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try\n" +
+            "        {\n" +
+            "            File f = new File(\"auto\");\n" +
+            "            FileInputStream fis = new FileInputStream(f);\n" +
+            "        }\n" +
+            "        catch (FileNotFoundException | NullPointerException ex)\n" +
+            "        {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TryTree tt = (TryTree) method.getBody().getStatements().get(0);
+                CatchTree ct = tt.getCatches().get(0);
+                workingCopy.rewrite(ct.getParameter().getType(), make.UnionType(Arrays.asList(make.Identifier("FileNotFoundException"), make.Identifier("NullPointerException"))));
+                workingCopy.rewrite(tt, make.removeTryCatch(tt, 1));
             }
 
         };

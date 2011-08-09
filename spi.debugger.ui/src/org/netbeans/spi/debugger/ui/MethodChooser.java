@@ -742,7 +742,7 @@ public class MethodChooser {
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[] {
                 HighlightsLayer.create(MethodChooser.class.getName(),
-                        ZOrder.TOP_RACK, false, MethodChooser.getHighlightsBag(context.getDocument()))
+                        ZOrder.SYNTAX_RACK.forPosition(10000), false, MethodChooser.getHighlightsBag(context.getDocument()))
             };
         }
 

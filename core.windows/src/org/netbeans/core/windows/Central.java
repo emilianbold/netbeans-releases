@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -214,7 +216,9 @@ final class Central implements ControllerHandler {
             boolean left = (impl == null || impl.getSelectedTopComponent() == null);
             impl = model.getSlidingMode(Constants.RIGHT);
             boolean right = (impl == null || impl.getSelectedTopComponent() == null);
-            if (bottom && left && right) {
+            impl = model.getSlidingMode(Constants.TOP);
+            boolean top = (impl == null || impl.getSelectedTopComponent() == null);
+            if (bottom && left && right && top) {
                 return;
             }
         }
@@ -552,6 +556,10 @@ final class Central implements ControllerHandler {
         
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManager.PROP_MODES, null, null);
+    }
+    
+    final void setModeName(ModeImpl mode, String text) {
+        model.setModeName(mode, text);
     }
 
     /** Removes mode from model and requests view (if needed). */
@@ -1077,6 +1085,17 @@ final class Central implements ControllerHandler {
             }
         }
         slid = model.getSlidingMode(Constants.RIGHT);
+        if (slid != null) {
+            TopComponent[] tcs = slid.getTopComponents();
+            for (int i = 0; i < tcs.length; i++) {
+                String tcID = WindowManagerImpl.getInstance().findTopComponentID(tcs[i]);
+                ModeImpl impl = model.getModeTopComponentPreviousMode(slid, tcID);
+                if (impl == mode) {
+                    return false;
+                }
+            }
+        }        
+        slid = model.getSlidingMode(Constants.TOP);
         if (slid != null) {
             TopComponent[] tcs = slid.getTopComponents();
             for (int i = 0; i < tcs.length; i++) {
@@ -1655,8 +1674,8 @@ final class Central implements ControllerHandler {
     }
 
     /** Creates new mode on side of specified one and puts there the TopComponentS. */
-    private ModeImpl attachModeToSide(ModeImpl attachMode, String side) {
-        return attachModeToSide( attachMode, side, ModeImpl.getUnusedModeName(), attachMode.getKind(), false);
+    private ModeImpl attachModeToSide(ModeImpl attachMode, String side, int modeKind) {
+        return attachModeToSide( attachMode, side, ModeImpl.getUnusedModeName(), modeKind, false);
     }
 
     /** Creates new mode on side of desktop */
@@ -2081,11 +2100,15 @@ final class Central implements ControllerHandler {
     
     @Override
     public void userDroppedTopComponents(ModeImpl mode, TopComponentDraggable draggable, String side) {
-        ModeImpl newMode = attachModeToSide( mode, side );
+        ModeImpl newMode = attachModeToSide( mode, side, mode.getKind() );
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode( newMode, draggable.getTopComponent() );
         } else {
-            dockMode( newMode, draggable.getMode() );
+            if( newMode.getKind() != draggable.getKind() ) {
+                mergeModes( draggable.getMode(), newMode, -1 );
+            } else {
+                dockMode( newMode, draggable.getMode() );
+            }
         }
         
         updateViewAfterDnD(true);
@@ -2196,6 +2219,8 @@ final class Central implements ControllerHandler {
         }
         model.setModeConstraints( mode, new SplitConstraint[0] );
         updateViewAfterDnD(false);
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     /**
@@ -2260,6 +2285,8 @@ final class Central implements ControllerHandler {
         updateViewAfterDnD(false);
         if( null != selectedTC )
             selectedTC.requestActive();
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
     
     /**
@@ -2293,9 +2320,11 @@ final class Central implements ControllerHandler {
                 tmpIndex++;
             TopComponentTracker.getDefault().add( tc, target );
         }
-        target.addOtherName( source.getName() );
-        for( String otherName : source.getOtherNames() ) {
-            target.addOtherName( otherName );
+        if( source.isPermanent() ) {
+            target.addOtherName( source.getName() );
+            for( String otherName : source.getOtherNames() ) {
+                target.addOtherName( otherName );
+            }
         }
         if( source.isPermanent() )
             model.makeModePermanent( target );
@@ -2398,6 +2427,31 @@ final class Central implements ControllerHandler {
         setModeMinimized( mode, true );
     }
 
+    /**
+     * User restored a Mode from minimized state in given sliding Mode.
+     * @param slidingMode
+     * @param modeToRestore 
+     * @since 2.35
+     */
+    void userRestoredMode( ModeImpl slidingMode, ModeImpl modeToRestore ) {
+        setModeMinimized( modeToRestore, false );
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        for( TopComponent tc : slidingMode.getOpenedTopComponents() ) {
+            String id = wm.findTopComponentID( tc );
+            ModeImpl prevMode = model.getModeTopComponentPreviousMode( slidingMode, id );
+            if( null != prevMode && prevMode.equals( modeToRestore ) ) {
+                int prevIndex = model.getModeTopComponentPreviousIndex(slidingMode, id);
+                moveTopComponentIntoMode(prevMode, tc, prevIndex);
+
+            }
+        }
+        if(isVisible()) {
+            viewRequestor.scheduleRequest(
+                new ViewRequest(null, View.CHANGE_TOPCOMPONENT_AUTO_HIDE_DISABLED, null, null));
+        }
+        setActiveMode( modeToRestore );
+    }
+
     @Override
     public void userUndockedTopComponent(TopComponent tc, ModeImpl mode) {
         Point tcLoc = tc.getLocation();
@@ -2418,6 +2472,8 @@ final class Central implements ControllerHandler {
         ModeImpl newMode = createFloatingMode( bounds, modeKind );
         moveTopComponentIntoMode( newMode, tc );
         updateViewAfterDnD(false);
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
     }
 
     @Override
@@ -2453,6 +2509,17 @@ final class Central implements ControllerHandler {
         }
         moveTopComponentIntoMode(dockTo, tc, dockIndex);
         updateViewAfterDnD(false);
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
+    }
+    
+    /**
+     * 
+     * @param draggable 
+     * @since 2.37
+     */
+    void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        viewRequestor.userStartedKeyboardDragAndDrop( draggable );
     }
 
     private ModeImpl findJoinedMode( int modeKind, SplitConstraint[] constraints ) {
@@ -2536,6 +2603,7 @@ final class Central implements ControllerHandler {
             model.setActiveMode(mode);
             model.setModeSelectedTopComponent(mode, tc);
         } else {
+            sortSlidedOutTopComponentsByPrevModes( mode );
             // don't activate sliding modes, it means the component slides out, that's a bad thing..
             // make some other desktop mode active
             if(prevMode != null && prevMode == getActiveMode() 
@@ -2552,6 +2620,12 @@ final class Central implements ControllerHandler {
         return moved;
     }
 
+    private void sortSlidedOutTopComponentsByPrevModes( ModeImpl slidingMode ) {
+        if( !Switches.isModeSlidingEnabled() )
+            return;
+        
+        List<String> opened = slidingMode.getOpenedTopComponentsIDs();
+    }
     
     private void updateViewAfterDnD(boolean unmaximize) {
         if( unmaximize ) {
@@ -2644,7 +2718,7 @@ final class Central implements ControllerHandler {
         String side = model.getSlidingModeConstraints( mode );
         model.setSlideInSize( side, 
                 mode.getSelectedTopComponent(), 
-                Constants.BOTTOM.equals( side ) ? rect.height : rect.width );
+                Constants.BOTTOM.equals( side ) || Constants.TOP.equals(side) ? rect.height : rect.width );
         if( null != mode.getSelectedTopComponent() ) {
             String tcID = WindowManagerImpl.getInstance().findTopComponentID( mode.getSelectedTopComponent() );
             model.setTopComponentMaximizedWhenSlidedIn( tcID, false );
@@ -2910,7 +2984,22 @@ final class Central implements ControllerHandler {
      * Slide out all non-editor TopComponents.
      */
     private void slideAllViews() {
+        //find appropriate sliding bars first, otherwise the split hierarchy
+        //will change while sliding some windows so the sliding positions would be wrong
+        Map<TopComponent, String> tc2slideSide = new HashMap<TopComponent, String>(30);
         Set<? extends Mode> modes = getModes();
+        for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
+            ModeImpl modeImpl = (ModeImpl)i.next();
+            if( modeImpl.getKind() == Constants.MODE_KIND_VIEW 
+                    && modeImpl != getViewMaximizedMode()
+                    && modeImpl.getState() != Constants.MODE_STATE_SEPARATED ) {
+                List<TopComponent> views = getModeOpenedTopComponents( modeImpl );
+                for( Iterator<TopComponent> j=views.iterator(); j.hasNext(); ) {
+                    TopComponent tc = j.next();
+                    tc2slideSide.put( tc, guessSlideSide( tc ) );
+                }
+            }
+        }
         for( Iterator<? extends Mode> i=modes.iterator(); i.hasNext(); ) {
             ModeImpl modeImpl = (ModeImpl)i.next();
             if( modeImpl.getKind() == Constants.MODE_KIND_VIEW 
@@ -2920,7 +3009,7 @@ final class Central implements ControllerHandler {
                 Collections.reverse( views );
                 for( Iterator<TopComponent> j=views.iterator(); j.hasNext(); ) {
                     TopComponent tc = j.next();
-                    slide( tc, modeImpl, guessSlideSide( tc ) );
+                    slide( tc, modeImpl, tc2slideSide.get( tc ) );
                 }
             }
         }
@@ -2929,7 +3018,97 @@ final class Central implements ControllerHandler {
     // ControllerHandler <<
     ////////////////////////////
     
-    private static void debugLog(String message) {
-        Debug.log(Central.class, message);
+    /**
+     * Creates a new mode and moves the given TopComponent into it.
+     * @param tc 
+     */
+    void newTabGroup( TopComponent tc ) {
+        ModeImpl currentMode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
+        if( null == currentMode ) 
+            return;
+        ModeImpl newMode = attachModeToSide( currentMode, null, currentMode.getKind() );
+        moveTopComponentIntoMode( newMode, tc );
+        tc.requestActive();
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
+    }
+
+    /**
+     * Removes the given mode and moves all its TopComponents to some other mode.
+     * @param mode 
+     */
+    void collapseTabGroup( ModeImpl mode ) {
+        ModeImpl neighbor = findClosestNeighbor( mode );
+        if( null == neighbor )
+            return;
+        TopComponent selTC = mode.getSelectedTopComponent();
+        mergeModes( mode, neighbor, -1 );
+        if( null != selTC )
+            selTC.requestActive();
+        updateViewAfterDnD( true );
+        WindowManagerImpl.getInstance().doFirePropertyChange(
+            WindowManager.PROP_MODES, null, null);
+    }
+
+    /**
+     * Find mode that is closest to the given mode. Usually it's a neighbor at the 
+     * same level in the split hierarchy.
+     * @param mode
+     * @return Closest neighbor to the given mode or null.
+     */
+    private ModeImpl findClosestNeighbor( ModeImpl mode ) {
+        ArrayList<ModeImpl> modes = new ArrayList<ModeImpl>( model.getModes().size() );
+        ModeImpl inSplitLeftNeighbor = null;
+        ModeImpl inSplitRightNeighbor = null;
+        SplitConstraint[] sc = mode.getConstraints();
+        int index = sc[sc.length-1].index;
+        for( ModeImpl m : model.getModes() ) {
+            if( mode == m || m.getKind() != mode.getKind() || m.getState() != mode.getState() )
+                continue;
+            SplitConstraint[] otherSc = m.getConstraints();
+            if( sameSplit( sc, otherSc) ) {
+                int otherIndex = otherSc[sc.length-1].index;
+                if( index < otherIndex ) {
+                    if( null == inSplitLeftNeighbor || otherIndex > inSplitLeftNeighbor.getConstraints()[sc.length-1].index )
+                        inSplitLeftNeighbor = m;
+                } else {
+                    if( null == inSplitRightNeighbor || otherIndex < inSplitRightNeighbor.getConstraints()[sc.length-1].index )
+                        inSplitRightNeighbor = m;
+                }
+            }
+            modes.add( m );
+        }
+        if( modes.isEmpty() )
+            return null;
+        if( null != inSplitLeftNeighbor )
+            return inSplitLeftNeighbor;
+        if( null != inSplitRightNeighbor )
+            return inSplitRightNeighbor;
+        Collections.sort( modes, new Comparator<ModeImpl>() {
+            @Override
+            public int compare( ModeImpl o1, ModeImpl o2 ) {
+                SplitConstraint[] sc1 = o1.getConstraints();
+                SplitConstraint[] sc2 = o2.getConstraints();
+                return sc1.length - sc2.length;
+            }
+        });
+        return modes.get( 0 );
+    }
+    
+    /**
+     * Check if the given constraints point to docking areas at the same level
+     * in the split hierarchy.
+     * @param sc1
+     * @param sc2
+     * @return 
+     */
+    private boolean sameSplit( SplitConstraint[] sc1, SplitConstraint[] sc2 ) {
+        if( sc1.length != sc2.length )
+            return false;
+        for( int i=0; i<sc1.length-1; i++ ) {
+            if( sc1[i].orientation != sc2[i].orientation || sc1[i].index != sc2[i].index )
+                return false;
+        }
+        return sc1[sc1.length-1].orientation == sc2[sc2.length-1].orientation;
     }
 }

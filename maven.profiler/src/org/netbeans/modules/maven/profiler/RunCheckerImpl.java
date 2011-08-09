@@ -43,14 +43,16 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.lib.profiler.common.ProfilingSettings;
+import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
-import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.RequestProcessor;
 
@@ -68,14 +70,25 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     
 //    private static final String EXEC_ARGS = "exec.args"; // NOI18N
     private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
+    private static final String PROFILER_ARGS_PREFIXED = "${profiler.args.prefixed}"; // NOI18N
 //    private static final String EXEC_EXECUTABLE = "exec.executable"; // NOI18N
     private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
+    private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
     
-    private Project project;
+    private final Project project;
+    private static final Map<Project, Properties> properties = new WeakHashMap();
+    private static final Map<Project, ProfilingSettings> profilingSettings = new WeakHashMap();
+    private static final Map<Project, SessionSettings> sessionSettings = new WeakHashMap();
 
     
     public RunCheckerImpl(Project prj) {
         project = prj;
+    }
+    
+    static void configureProject(Project project, Properties p, ProfilingSettings ps, SessionSettings ss) {
+        properties.put(project, p);
+        profilingSettings.put(project, ps);
+        sessionSettings.put(project, ss);
     }
     
     public boolean checkRunConfig(RunConfig config, ExecutionContext context) {
@@ -84,11 +97,10 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         if (   ACTION_PROFILE.equals(config.getActionName()) ||
                ACTION_PROFILE_TESTS.equals(config.getActionName()) ||
               (config.getActionName() != null && config.getActionName().startsWith(ACTION_PROFILE_SINGLE))) { // action "profile"
-            // Get the ProjectTypeProfiler for Maven project
-            final ProjectTypeProfiler ptp = ProjectUtilities.getProjectTypeProfiler(project);
-            if (!(ptp instanceof MavenProjectTypeProfiler)) return false;
+            // Resolve profiling configuration
+            Properties sessionProperties = properties.get(project);
+            if (sessionProperties == null) return false;
             // Resolve profiling session properties
-            Properties sessionProperties = ((MavenProjectTypeProfiler)ptp).getLastSessionProperties();
             for (Object k : configProperties.keySet()) {
                 String key = (String)k;
                 
@@ -99,10 +111,28 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                             + " " + agentArg); // NOI18N
                     configProperties.setProperty(key, value.trim());
                 }
+                if (value.contains(PROFILER_ARGS_PREFIXED)) {
+                    String agentArg = fixAgentArg(sessionProperties.getProperty("profiler.info.jvmargs.agent"));
+                    value = value.replace(PROFILER_ARGS_PREFIXED,
+                            (sessionProperties.getProperty("profiler.info.jvmargs") + " " + agentArg).trim().replaceAll("^|(?<= +)(?! )", "-J"));
+                    configProperties.setProperty(key, value);
+                }
                 if (value.contains(PROFILER_JAVA)) {
                     String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
                     value = value.replace(PROFILER_JAVA,
                             (profilerJava != null && new File(profilerJava).isFile()) ? profilerJava : "java"); // NOI18N
+                    configProperties.setProperty(key, value.trim());
+                }
+                if (value.contains(PROFILER_JDKHOME_OPT)) {
+                    String opt = "";
+                    String profilerJava = sessionProperties.getProperty("profiler.info.jvm"); // NOI18N
+                    if (profilerJava != null) {
+                        File binJava = new File(profilerJava);
+                        if (binJava.isFile() && binJava.getName().matches("java([.]exe)?") && binJava.getParentFile().getName().equals("bin")) {
+                            opt = "--jdkhome " + binJava.getParentFile().getParent();
+                        }
+                    }
+                    value = value.replace(PROFILER_JDKHOME_OPT, opt);
                     configProperties.setProperty(key, value.trim());
                 }
             }
@@ -112,7 +142,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    Profiler.getDefault().connectToStartedApp(((MavenProjectTypeProfiler)ptp).getLastProfilingSettings(), ((MavenProjectTypeProfiler)ptp).getLastSessionSettings());
+                    ProfilingSettings ps = profilingSettings.get(project);
+                    SessionSettings ss = sessionSettings.get(project);
+                    Profiler.getDefault().connectToStartedApp(ps, ss);
                 }
             });
             

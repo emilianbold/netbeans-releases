@@ -103,7 +103,7 @@ public final class SlidingButton extends JToggleButton {
         data = buttonData;
         setFocusable(false);
         setRolloverEnabled(true);
-        setIconTextGap(3);
+        setIconTextGap(4);
         setVerticalAlignment(SwingConstants.CENTER);
         setHorizontalAlignment(SwingConstants.CENTER);
         if ("Nimbus".equals(UIManager.getLookAndFeel().getID())) {

@@ -57,18 +57,19 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
-import static org.jdesktop.layout.GroupLayout.*;
+import static javax.swing.GroupLayout.Alignment.*;
+import static javax.swing.GroupLayout.*;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.javacard.common.GuiUtils;
 import org.netbeans.modules.javacard.common.Utils;
@@ -149,34 +150,34 @@ public final class PlatformAndDevicePanel extends JPanel implements ActionListen
         cardsLabel.setLabelFor(devices);
         layout.setHorizontalGroup(
             layout.createParallelGroup(LEADING)
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(LEADING)
-                    .add(cardsLabel)
-                    .add(platformsLabel))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(LEADING)
-                    .add(platforms, 0, 190, Short.MAX_VALUE)
-                    .add(devices, 0, 190, Short.MAX_VALUE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(LEADING, false)
-                    .add(TRAILING, manageCardsButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(TRAILING, managePlatformsButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(LEADING)
+                    .addComponent(cardsLabel)
+                    .addComponent(platformsLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(LEADING)
+                    .addComponent(platforms, 0, 190, Short.MAX_VALUE)
+                    .addComponent(devices, 0, 190, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(LEADING, false)
+                    .addComponent(manageCardsButton, TRAILING, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(managePlatformsButton,TRAILING, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(LEADING)
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(platformsLabel)
-                    .add(platforms, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-                    .add(managePlatformsButton))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(cardsLabel)
-                    .add(devices, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-                    .add(manageCardsButton))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(platformsLabel)
+                    .addComponent(platforms, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    .addComponent(managePlatformsButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(cardsLabel)
+                    .addComponent(devices, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                    .addComponent(manageCardsButton))
                 .addContainerGap(DEFAULT_SIZE, Short.MAX_VALUE))
         );
         manageCardsButton.addActionListener(this);

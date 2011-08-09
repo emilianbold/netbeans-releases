@@ -32,8 +32,8 @@ package org.netbeans.modules.css.visual.api;
 
 import java.io.File;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.editor.model.CssModel;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.visual.CssRuleContent;
 
 /**
  * A context class representig a parsed css source. 
@@ -47,7 +47,7 @@ public final class CssRuleContext {
     private File file;
     private Document doc;
     private CssRuleContent selectedRule;
-    private CssModel model;
+    private Stylesheet model;
 
     /**
      * Creates an instance of CssRuleContext. 
@@ -57,7 +57,7 @@ public final class CssRuleContext {
      * @param doc source editor document for the model
      * @param file 
      */
-    public CssRuleContext(CssRuleContent selectedRule, CssModel model, Document doc, File basePath) {
+    public CssRuleContext(CssRuleContent selectedRule, Stylesheet model, Document doc, File basePath) {
         this.selectedRule = selectedRule;
         this.model = model;
         this.file = basePath;
@@ -70,7 +70,7 @@ public final class CssRuleContext {
     }
 
     /** @param return an instance of CssModel which is this CssRuleContext based on. */
-    public CssModel model() {
+    public Stylesheet model() {
         return model;
     }
 

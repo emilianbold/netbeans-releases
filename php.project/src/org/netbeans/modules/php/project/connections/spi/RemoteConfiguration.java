@@ -54,19 +54,25 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * Class representing a remote configuration (e.g. FTP, SFTP).
+ * <p>
+ * This class is thread-safe, all subclasses should stay thread-safe as well.
  * @author Tomas Mysik
  * @see org.netbeans.modules.php.project.connections.RemoteConnections
  * @see org.netbeans.modules.php.project.connections.RemoteConnections#getRemoteConfigurations()
  */
 public abstract class RemoteConfiguration {
 
-    static final Logger LOGGER = Logger.getLogger(RemoteConfiguration.class.getName());
+    protected static final Logger LOGGER = Logger.getLogger(RemoteConfiguration.class.getName());
     static final RequestProcessor KEYRING_ACCESS = new RequestProcessor();
+
+    protected final ConfigManager.Configuration cfg;
+    protected final boolean createWithSecrets;
 
     private final String displayName;
     private final String name;
@@ -78,20 +84,35 @@ public abstract class RemoteConfiguration {
     /**
      * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}.
      * @param cfg {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} with configuration data.
+     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
      */
-    public RemoteConfiguration(final ConfigManager.Configuration cfg) {
-        this(cfg.getName(), cfg.getDisplayName());
+    public RemoteConfiguration(final ConfigManager.Configuration cfg, boolean createWithSecrets) {
+        if (cfg == null) {
+            throw new NullPointerException("Configuration cannot be null");
+        }
+
+        this.cfg = cfg;
+        this.createWithSecrets = createWithSecrets;
+        name = cfg.getName();
+        displayName = cfg.getDisplayName();
+        deprecatedPasswordKey = getClass().getName() + "." + name + ".password"; // NOI18N
+        passwordKey = "php.remote." + name + ".password"; // NOI18N
     }
 
-    protected RemoteConfiguration(String name, String displayName) {
+    /**
+     * Constructor for "dummy" remote configurations, see {@link Empty empty configuration}.
+     */
+    RemoteConfiguration(String name, String displayName) {
         assert name != null;
         assert displayName != null;
 
-        deprecatedPasswordKey = getClass().getName() + "." + name + ".password"; // NOI18N
-        passwordKey = "php.remote." + name + ".password"; // NOI18N
-
         this.name = name;
         this.displayName = displayName;
+
+        this.cfg = null;
+        this.createWithSecrets = false;
+        deprecatedPasswordKey = null;
+        passwordKey = null;
     }
 
     /**
@@ -215,13 +236,66 @@ public abstract class RemoteConfiguration {
         }
     }
 
-    protected String readPassword(ConfigManager.Configuration cfg, String key) {
+    /**
+     * Read value of the given key as a number. If number is not found in the given configuration
+     * (or value is not a number), the default value is returned (and set in the configuration).
+     * @param key key of the number
+     * @param defaultValue default value if any error occurs
+     * @return value of the given key as a number or defaultValue if any error occurs
+     */
+    protected int readNumber(String key, int defaultValue) {
+        try {
+            return Integer.parseInt(cfg.getValue(key));
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.FINE, "Exception while parsing number of '" + key + "'", nfe);
+        }
+        cfg.putValue(key, String.valueOf(defaultValue));
+        return defaultValue;
+    }
+
+    /**
+     * Read value of the given key as a boolean. If boolean is not found in the given configuration
+     * (or value is not a boolean), the default value is returned (and set in the configuration).
+     * @param key key of the boolean
+     * @param defaultValue default value if any error occurs
+     * @return value of the given key as a boolean or defaultValue if any error occurs
+     */
+    protected boolean readBoolean(String key, boolean defaultValue) {
+        String value = cfg.getValue(key);
+        if (value != null) {
+            return Boolean.valueOf(value);
+        }
+        cfg.putValue(key, String.valueOf(defaultValue));
+        return defaultValue;
+    }
+
+    /**
+     * {@link PhpProjectUtils#resolveEnum(Class, String, Enum) Resolve enum} and remember
+     * it in the configuration.
+     * @param <T> enum type
+     * @param enumClass enum class
+     * @param key key of the enum
+     * @param defaultValue default value if any error occurs
+     * @return value of the given key as an enum or defaultValue if any error occurs
+     * @see PhpProjectUtils#resolveEnum(Class, String, Enum)
+     */
+    protected <T extends Enum<T>> T readEnum(Class<T> enumClass, String key, T defaultValue) {
+        T value = PhpProjectUtils.resolveEnum(enumClass, cfg.getValue(key), defaultValue);
+        cfg.putValue(key, value.name());
+        return value;
+    }
+
+    protected String readPassword(String key) {
+        if (cfg == null) {
+            throw new IllegalStateException("Cannot read password, no configuration provided");
+        }
         String oldPassword = cfg.getValue(key, true);
         if (oldPassword != null) {
             return oldPassword;
         }
         String password = readPasswordFromKeyring();
         if (password != null) {
+            // password must be present in the configuration (option panel reads it)
             cfg.putValue(key, password, true);
         }
         return password;
@@ -249,7 +323,7 @@ public abstract class RemoteConfiguration {
                 if (!result.isDone()) {
                     try {
                         // let's wait in awt to avoid flashing dialogs
-                        result.get(200, TimeUnit.MILLISECONDS);
+                        result.get(99, TimeUnit.MILLISECONDS);
                     } catch (TimeoutException ex) {
                         ProgressUtils.showProgressDialogAndRun(new Runnable() {
                             @Override

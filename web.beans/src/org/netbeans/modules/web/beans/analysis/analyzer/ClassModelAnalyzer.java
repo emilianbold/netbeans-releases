@@ -50,6 +50,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.DeclaredIBindingsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.InterceptedBeanAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.ManagedBeansAnalizer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.NamedModelAnalyzer;
@@ -96,6 +97,7 @@ public class ClassModelAnalyzer implements ModelAnalyzer {
         ANALYZERS.add( new SessionBeanAnalyzer());
         ANALYZERS.add( new InterceptedBeanAnalyzer() );
         ANALYZERS.add( new NamedModelAnalyzer() );
+        ANALYZERS.add( new DeclaredIBindingsAnalyzer());
     }
 
 }

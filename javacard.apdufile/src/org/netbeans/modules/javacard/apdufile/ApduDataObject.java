@@ -42,22 +42,25 @@
 package org.netbeans.modules.javacard.apdufile;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 public class ApduDataObject extends MultiDataObject {
+
+    public static final String MIME_TYPE = "text/x-apduscr"; // NOI18N
+
     public ApduDataObject(FileObject pf, MultiFileLoader loader) throws IOException {
         super(pf, loader);
-        getCookieSet().add((Cookie) DataEditorSupport.create(
-                ApduDataObject.this, getPrimaryEntry(), getCookieSet()));
+        registerEditor(MIME_TYPE, true);
     }
 
     @Override
@@ -66,7 +69,19 @@ public class ApduDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
+    }
+
+    @Messages("Source=&Source") // NOI18N
+    @MultiViewElement.Registration(displayName = "#Source", // NOI18N
+            iconBase = "org/netbeans/modules/javacard/apdufile/apdufile.png", // NOI18N
+            persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+            mimeType = MIME_TYPE,
+            preferredID = "scr.source", // NOI18N
+            position = 1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 }

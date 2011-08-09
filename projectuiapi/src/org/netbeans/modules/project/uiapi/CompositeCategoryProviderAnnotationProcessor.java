@@ -97,10 +97,10 @@ public class CompositeCategoryProviderAnnotationProcessor extends LayerGeneratin
         }
         if (e.getKind() == ElementKind.PACKAGE) {
             if (!addsFolder) {
-                throw new LayerGenerationException("Must specify categoryLabel", e);
+                throw new LayerGenerationException("Must specify categoryLabel", e, processingEnv, r);
             }
         } else {
-            File f = layer(e).instanceFile(path, addsFolder ? "Self" : null, CompositeCategoryProvider.class);
+            File f = layer(e).instanceFile(path, addsFolder ? "Self" : null, CompositeCategoryProvider.class, r, null);
             f.position(addsFolder ? 0 : r.position());
             f.write();
         }
@@ -108,9 +108,9 @@ public class CompositeCategoryProviderAnnotationProcessor extends LayerGeneratin
 
     private void handleFolder(String path, Element e, Registration r) throws LayerGenerationException {
         if (r.category().length() == 0) {
-            throw new LayerGenerationException("Must specify category", e);
+            throw new LayerGenerationException("Must specify category", e, processingEnv, r);
         }
-        layer(e).folder(path).bundlevalue("displayName", r.categoryLabel()).position(r.position()).write();
+        layer(e).folder(path).bundlevalue("displayName", r.categoryLabel(), r, "categoryLabel").position(r.position()).write();
     }
 
 }

@@ -115,6 +115,10 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     public static final String PROP_GENERATE_FQN = "generateFQN"; // NOI18N
     /** Property name of the pad empty property. */
     public static final String PROP_PAD_EMPTY_CELLS = "padEmptyCells"; // NOI18N
+    /** Property name of the GridDesigner gap support gap width property. */
+    public static final String PROP_GAP_WIDTH = "gapWidth"; // NOI18N
+    /** Property name of the GridDesigner gap support gap height property. */
+    public static final String PROP_GAP_HEIGHT = "gapHeight"; // NOI18N
 
     /** Name of the property for automatic resources/i18n management.
      * The name refers only to i18n for compatibility reasons. */
@@ -596,6 +600,22 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
 
     public void setPadEmptyCells(boolean padEmptyCells) {
         getPreferences().putBoolean(PROP_PAD_EMPTY_CELLS, padEmptyCells);
+    }
+   
+    public int getGapWidth() {
+        return getPreferences().getInt(PROP_GAP_WIDTH, -1);
+    }
+
+    public void setGapWidth(int gapWidth) {
+        getPreferences().putInt(PROP_GAP_WIDTH, gapWidth);
+    }
+   
+    public int getGapHeight() {
+        return getPreferences().getInt(PROP_GAP_HEIGHT, -1);
+    }
+
+    public void setGapHeight(int gapHeight) {
+        getPreferences().putInt(PROP_GAP_HEIGHT, gapHeight);
     }
    
     private static String[] toArray(String esp) {

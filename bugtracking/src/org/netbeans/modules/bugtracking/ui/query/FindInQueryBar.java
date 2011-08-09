@@ -171,7 +171,6 @@ class FindInQueryBar extends javax.swing.JPanel {
         closeButton.setContentAreaFilled(false);
         closeButton.setFocusable(false);
         closeButton.setMargin(new java.awt.Insets(2, 1, 0, 1));
-        closeButton.setRolloverEnabled(true);
         closeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 closeButtonMouseExited(evt);
@@ -210,36 +209,36 @@ class FindInQueryBar extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(findLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(findCombo, 0, 105, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(machCaseChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(wholeWordsChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(regularExpressionChoice)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(highlightResultsChoice)
-                .add(41, 41, 41)
-                .add(closeButton))
+                .addComponent(findLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(findCombo, 0, 105, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(machCaseChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(wholeWordsChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(regularExpressionChoice)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(highlightResultsChoice)
+                .addGap(41, 41, 41)
+                .addComponent(closeButton))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(findLabel)
-                .add(findCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(machCaseChoice)
-                .add(wholeWordsChoice)
-                .add(regularExpressionChoice)
-                .add(highlightResultsChoice))
-            .add(closeButton)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(findLabel)
+                .addComponent(findCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(machCaseChoice)
+                .addComponent(wholeWordsChoice)
+                .addComponent(regularExpressionChoice)
+                .addComponent(highlightResultsChoice))
+            .addComponent(closeButton)
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.19</specification-version>
+                        <specification-version>7.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -140,7 +140,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.core.osgi</friend>
                 <friend>org.netbeans.core.registry</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
-                <friend>org.netbeans.modules.apisupport.project</friend>
                 <friend>org.netbeans.modules.autoupdate.services</friend>
                 <friend>org.netbeans.modules.ide.ergonomics</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>

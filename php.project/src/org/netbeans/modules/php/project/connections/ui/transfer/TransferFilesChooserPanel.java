@@ -44,7 +44,7 @@ package org.netbeans.modules.php.project.connections.ui.transfer;
 
 import java.util.Set;
 import javax.swing.JPanel;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
 @SuppressWarnings("serial")
 public abstract class TransferFilesChooserPanel extends JPanel {

@@ -564,13 +564,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         for (RepositoryRevision revision : revisions) {
             RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(revision.getLog().getRevision());
             final Context ctx = new Context(master.getRoots());
-            RevertModificationsAction.performRevert(revisionInterval, false, ctx, progress);
+            RevertModificationsAction.performRevert(revisionInterval, false, false, ctx, progress);
         }
         for (RepositoryRevision.Event event : events) {
             if (event.getFile() == null) continue;
             RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(event.getLogInfoHeader().getLog().getRevision());
             final Context ctx = new Context(event.getFile());
-            RevertModificationsAction.performRevert(revisionInterval, false, ctx, progress);
+            RevertModificationsAction.performRevert(revisionInterval, false, false, ctx, progress);
         }
     }
 

@@ -44,13 +44,6 @@
 
 package org.netbeans.modules.form;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
 import java.awt.EventQueue;
 import java.beans.*;
 import java.io.IOException;
@@ -60,18 +53,11 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.actions.EditContainerAction;
@@ -90,6 +76,8 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Form editor.
@@ -97,9 +85,6 @@ import org.netbeans.modules.form.project.ClassPathUtils;
  * @author Jan Stola
  */
 public class FormEditor {
-    static final int LOADING = 1; // TODO: move to FormEditorSupport
-    static final int SAVING = 2;
-
     /** The FormModel instance holding the form itself */
     private FormModel formModel;
 
@@ -124,6 +109,7 @@ public class FormEditor {
     private ResourceSupport resourceSupport;
 
     /** Instance of binding support for the form.*/
+    private boolean bindingSupportInitialized;
     private BindingDesignSupport bindingSupport;
 
     /** List of exceptions occurred during the last persistence operation */
@@ -131,6 +117,7 @@ public class FormEditor {
     
     /** Persistence manager responsible for saving the form */
     private PersistenceManager persistenceManager;
+    private String prefetchedSuperclassName;
     
     /** An indicator whether the form has been loaded (from the .form file) */
     private boolean formLoaded = false;
@@ -163,10 +150,6 @@ public class FormEditor {
 
     // -----
 
-    FormEditor(FormDataObject formDataObject) {
-        this.formDataObject = formDataObject;
-    }
-
     public FormEditor(FormDataObject formDataObject, EditorSupport sourceEditor) {
         this.formDataObject = formDataObject;
         this.editorSupport = sourceEditor;
@@ -192,9 +175,6 @@ public class FormEditor {
     }
 
     private EditorSupport getEditorSupport() {
-        if (editorSupport == null) {
-            editorSupport = formDataObject.getFormEditorSupport();
-        }
         return editorSupport;
     }
 
@@ -214,10 +194,17 @@ public class FormEditor {
         return getGuardedSectionManager().findSimpleSection("initComponents"); // NOI18N
     }
 
-    private FormJavaSource getFormJavaSource() {
+    FormJavaSource getFormJavaSource() {
+        return getFormJavaSource(false);
+    }
+
+    private FormJavaSource getFormJavaSource(boolean create) {
+        if (formJavaSource == null && create) {
+            formJavaSource = new FormJavaSource(formDataObject.getPrimaryFile(), editorSupport.getJavaContext());
+        }
         return formJavaSource;
     }
-    
+
     CodeGenerator getCodeGenerator() {
         if (!formLoaded)
             return null;
@@ -242,54 +229,77 @@ public class FormEditor {
     }
 
     BindingDesignSupport getBindingSupport() {
-        if (bindingSupport == null && formModel != null) {
-            bindingSupport = new BindingDesignSupport(formModel);
+        if (!bindingSupportInitialized && formModel != null) {
+            BindingDesignSupportProvider provider = Lookup.getDefault().lookup(BindingDesignSupportProvider.class);
+            if (provider != null) {
+                bindingSupport = provider.create(formModel);
+            }
         }
         return bindingSupport;
-    }
-
-    /**
-     * To be used just before loading a form to set a persistence manager that
-     * already has the form recognized and superclass determined
-     * (i.e. potentially long java parsing already done).
-     */
-    void setPersistenceManager(PersistenceManager pm) {
-        persistenceManager = pm;
     }
 
     public boolean isFormLoaded() {
         return formLoaded;
     }
     
-    boolean loadForm() {
-        if (formLoaded)
-            return true;
-
-        if (java.awt.EventQueue.isDispatchThread()) {
-            loadFormData();
-        } else { // loading must be done in AWT event dispatch thread
-            try {
-                java.awt.EventQueue.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadFormData();
-                    }
-                });
-            }
-            catch (Exception ex) {
-                ex.printStackTrace();
+    public boolean loadForm() {
+        if (!formLoaded) {
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    loadFormData();
+                }
+            };
+            if (java.awt.EventQueue.isDispatchThread()) {
+                r.run();
+            } else { // loading must be done in AWT event dispatch thread
+                try {
+                    java.awt.EventQueue.invokeAndWait(r);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
-
         return formLoaded;
     }
-    
-    /** This method performs the form data loading. All open/load methods go
-     * through this one.
+
+    /**
+     * Called in EDT to prepare loading of the form.
+     * @return true on success (so loading can proceed), false if some error happened
      */
-    public void loadFormData() {
-        if (formLoaded)
-            return; // form already loaded
+    public boolean prepareLoading() {
+        resetPersistenceErrorLog();
+        if (persistenceManager == null) {
+            try {
+                persistenceManager = recognizeForm(formDataObject);
+            } catch (PersistenceException ex) {
+                logPersistenceError(ex, 0);
+                return false;
+            }
+        }
+        getFormJavaSource(true);
+        prefetchedSuperclassName = null;
+        return true;
+    }
+
+    /**
+     * Optional part of loading, called in a background thread.
+     */
+    public void loadOnBackground() {
+        FormJavaSource javaSource = getFormJavaSource();
+        if (javaSource != null) { // i.e. form not closed meanwhile
+            prefetchedSuperclassName = javaSource.getSuperClassName();
+        }
+    }
+
+    /** 
+     * Called in EDT to perform the actual form data loading.
+     */
+    public boolean loadFormData() {
+        assert !formLoaded;
+        if (persistenceManager == null && !prepareLoading()) {
+            return false;
+        }
 
         // Issue 151166 - hack
         Project p = FileOwnerQuery.getOwner(formDataObject.getFormFile());
@@ -302,26 +312,18 @@ public class FormEditor {
                 ClassPathUtils.resetFormClassLoader(p);
             }
         }
- 
-        resetPersistenceErrorLog(); // clear log of errors
 
-        // first find PersistenceManager for loading the form
-        if (persistenceManager == null) {
-            try {
-                persistenceManager = recognizeForm(formDataObject);
-            } catch (PersistenceException ex) {
-                logPersistenceError(ex, 0);
-                return;
-            }
+        if (persistenceManager instanceof GandalfPersistenceManager) {
+            ((GandalfPersistenceManager)persistenceManager).setPrefetchedSuperclassName(prefetchedSuperclassName);
+            prefetchedSuperclassName = null;
         }
 
         // create and register new FormModel instance
         formModel = new FormModel();
         formModel.setName(formDataObject.getName());        
         formModel.setReadOnly(formDataObject.isReadOnly());		
-        formJavaSource = new FormJavaSource(formDataObject);
-	formModel.getCodeStructure().setFormJavaSource(formJavaSource);
-	
+	formModel.getCodeStructure().setFormJavaSource(getFormJavaSource(true));
+
         openForms.put(formModel, this);
 
         Logger.getLogger("TIMER").log(Level.FINE, "FormModel", new Object[] { formDataObject.getPrimaryFile(), formModel}); // NOI18N
@@ -345,23 +347,21 @@ public class FormEditor {
             });
         }
         catch (PersistenceException ex) { // some fatal error occurred
-            persistenceManager = null;
             openForms.remove(formModel);
-            formModel = null;
+            closeForm();
             logPersistenceError(ex, 0);
-            return;
+            return false;
         }
         catch (Exception ex) { // should not happen, but for sure...
-            ex.printStackTrace();
-            persistenceManager = null;
+            Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             openForms.remove(formModel);
-            formModel = null;
-            return;
+            closeForm();
+            return false;
         }
-                                
+
         // form is successfully loaded...
         formLoaded = true;
-	
+
         getCodeGenerator().initialize(formModel);
         ResourceSupport resupport = getResourceSupport(); // make sure ResourceSupport is created and initialized
         if (resupport.getDesignLocale() != null) {
@@ -381,6 +381,8 @@ public class FormEditor {
         attachDataObjectListener();
         attachSettingsListener();
         attachPaletteListener();
+
+        return true;
     }
     
     /** Public method for saving form data to file. Does not save the
@@ -401,7 +403,7 @@ public class FormEditor {
         }
     }
     
-    void saveFormData() throws PersistenceException {
+    public void saveFormData() throws PersistenceException {
         if (formLoaded && !formDataObject.formFileReadOnly() && !formModel.isReadOnly()) {
             formModel.fireFormToBeSaved();
 
@@ -436,14 +438,7 @@ public class FormEditor {
         Iterator<PersistenceManager> it = PersistenceManager.getManagers();
         if (!it.hasNext()) { // there's no PersistenceManager available
             PersistenceException ex = new PersistenceException(
-                                      "No persistence manager registered"); // NOI18N
-            ErrorManager.getDefault().annotate(
-                ex,
-                ErrorManager.ERROR,
-                null,
-                FormUtils.getBundleString("MSG_ERR_NoPersistenceManager"), // NOI18N
-                null,
-                null);
+                    FormUtils.getBundleString("MSG_ERR_NoPersistenceManager")); // NOI18N
             throw ex;
         }
 
@@ -468,14 +463,7 @@ public class FormEditor {
         PersistenceException ex;
         if (!anyPersistenceError()) {
             // no error occurred, the format is just unknown
-            ex = new PersistenceException("Form file format not recognized"); // NOI18N
-            ErrorManager.getDefault().annotate(
-                ex,
-                ErrorManager.ERROR,
-                null,
-                FormUtils.getBundleString("MSG_ERR_NotRecognizedForm"), // NOI18N
-                null,
-                null);
+            ex = new PersistenceException(FormUtils.getBundleString("MSG_ERR_NotRecognizedForm")); // NOI18N
         }
         else { // some errors occurred when recognizing the form file format
             Throwable annotateT = null;
@@ -511,15 +499,19 @@ public class FormEditor {
         logPersistenceError(t, -1);
     }
 
-    boolean anyPersistenceError() {
+    public boolean anyPersistenceError() {
         return persistenceErrors != null && !persistenceErrors.isEmpty();
     }
-    
-    /** Reports errors occurred during loading or saving the form.
-     * 
-     * @param operation operation being performed.
-     */
-    public String reportErrors(int operation) {        
+
+    public void reportSavingErrors() { // TODO can get rid of this? (throw exc on failed saving)
+        reportErrors(false);
+    }
+
+    public String reportLoadingErrors() {
+        return reportErrors(formLoaded);
+    }
+
+    private String reportErrors(boolean checkNonFatalLoadingErrors) {
         if (!anyPersistenceError()) {
             return null; // no errors or warnings logged
         }
@@ -528,22 +520,28 @@ public class FormEditor {
         final GandalfPersistenceManager persistManager = 
                     (GandalfPersistenceManager) persistenceManager;
 
-        boolean checkLoadingErrors = operation == LOADING && formLoaded;
-        boolean anyNonFatalLoadingError = false; // was there a real error?
+        boolean dataLossError = false;
 
         StringBuilder userErrorMsgs = new StringBuilder();
-        
+
         for (Iterator it=persistenceErrors.iterator(); it.hasNext(); ) {
-            Throwable t  = (Throwable) it.next();      
+            Throwable t  = (Throwable) it.next();
+            String originalMessage = null;
             if (t instanceof PersistenceException) {
                 Throwable th = ((PersistenceException)t).getOriginalException();
-                if (th != null)
-                    t = th;
-            }     
-            
-            if (checkLoadingErrors && !anyNonFatalLoadingError) {
-                // was there a real loading error (not just warnings) causing
-                // some data not loaded?
+                if (th != null) {
+                    // log the original exception so the user has a chance to find it in the log
+                    Logger.getLogger("").log(Level.INFO, null, th); // NOI18N
+                    if (checkNonFatalLoadingErrors) {
+                        t = th;
+                    } else {
+                        originalMessage = th.getLocalizedMessage();
+                    }
+                }
+            }
+
+            if (checkNonFatalLoadingErrors && !dataLossError) {
+                // Loaded, but wasn't there an error causing some data missing?
                 ErrorManager.Annotation[] annotations = 
                         errorManager.findAnnotations(t);
                 int severity = 0;
@@ -559,25 +557,28 @@ public class FormEditor {
                 else severity = ErrorManager.EXCEPTION;
 
                 if (severity > ErrorManager.WARNING)
-                    anyNonFatalLoadingError = true;
+                    dataLossError = true;
             }
-            errorManager.notify(ErrorManager.INFORMATIONAL, t);
 
-            if (persistManager != null) {
-                // form file was recognized, there is instance of persistance managager
+            if (checkNonFatalLoadingErrors && persistManager != null) {
                 // creating report about problems while loading components, 
                 // setting props of components, ...
                 userErrorMsgs.append(persistManager.getExceptionAnnotation(t));
                 userErrorMsgs.append("\n\n");  // NOI18N
-            } else {
-                // form file was not recognized
-                errorManager.notify(ErrorManager.WARNING, t);
+            } else { // fatal error
+                String message = t.getLocalizedMessage();
+                if (originalMessage != null && originalMessage.length() > 0) {
+                    message = message != null && message.length() > 0 ?
+                              (message + "\n\n" + originalMessage) : originalMessage; // NOI18N
+                }
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        message, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
 
         resetPersistenceErrorLog();
 
-        if (checkLoadingErrors && anyNonFatalLoadingError) {
+        if (checkNonFatalLoadingErrors && dataLossError) {
             // the form was loaded with some non-fatal errors - some data
             // was not loaded - show a warning about possible data loss
             return userErrorMsgs.append(FormUtils.getBundleString("MSG_FormLoadedWithErrors")).toString();  // NOI18N
@@ -626,35 +627,16 @@ public class FormEditor {
         // see o.n.m.f.w.TemplateWizardIterator.instantiate()
     }
 
-    void preCreationUpdate() {
-        FileObject fob = formDataObject.getPrimaryFile();
-        Object libName = fob.getAttribute("requiredLibrary"); // NOI18N
-        if (libName != null) {
-            Object className = fob.getAttribute("requiredClass"); // NOI18N
-            if ((className == null) || !ClassPathUtils.isOnClassPath(fob, className.toString())) {
-                try {
-                    Library lib = LibraryManager.getDefault().getLibrary((String)libName);
-                    ClassPathUtils.updateProject(fob, new ClassSource(
-                            (className == null) ? null : className.toString(),
-                            new ClassSource.LibraryEntry(lib))
-                    );
-                } catch (IOException ioex) {
-                    Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);
-                }
-            }
-        }
-    }
-
     /**
      * Form just created by the user via the New wizard may need some additional
      * setup that can't be ensured by the static template. For example the type
      * of layout code generation needs to be honored, or properties
      * internationalized or converted to resources.
      */
-    void postCreationUpdate() {
+    public boolean postCreationUpdate() {
         if (formLoaded && formModel != null && !formModel.isReadOnly()
-            && needPostCreationUpdate()) // just created via New wizard
-        {   // detect settings, update the form, regenerate code, save
+                && !anyPersistenceError() && needPostCreationUpdate()) {
+            // detect settings, update the form, regenerate code, save
             // make sure no upgrade warning is shown
             formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
             // switch to resources if needed
@@ -670,22 +652,15 @@ public class FormEditor {
             // - needs to be forced since there might be no change fired
             // - don't wait for the next round, we want to save now
             formModel.fireFormChanged(true);
-            // remove SuppressWarnings annotation if necessary
-            checkSuppressWarningsAnnotation();
-            // save the form if changed
-            FormEditorSupport fes = formDataObject.getFormEditorSupport();
             try {
-                if (fes.isModified()) {
-                    saveFormData();
-                    fes.saveSourceOnly();
-                }
                 formDataObject.getPrimaryFile().setAttribute("justCreatedByNewWizard", null); // NOI18N
                 formDataObject.getPrimaryFile().setAttribute("nonEditableTemplate", null); // NOI18N
+            } catch (IOException ex) {
+                Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
-            catch (Exception ex) { // no problem should happen for just created form
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
+            return true;
         }
+        return false;
     }
 
     /** @return the last activated FormDesigner for this form */
@@ -733,18 +708,17 @@ public class FormEditor {
                 }
                 floatingWindows = null;
             }
-            
-            // reset references
-            formRootNode = null;
-            formDesigner = null;
-            persistenceManager = null;
-            persistenceErrors = null;
-            formModel = null;
-            codeGenerator = null;
-	    formJavaSource = null;
-            resourceSupport = null;
-            bindingSupport = null;
         }
+        // cleanup just for sure
+        formRootNode = null;
+        formDesigner = null;
+        persistenceManager = null;
+        formModel = null;
+        codeGenerator = null;
+        formJavaSource = null;
+        prefetchedSuperclassName = null;
+        resourceSupport = null;
+        bindingSupport = null;
     }
     
     private void attachFormListener() {
@@ -1067,14 +1041,14 @@ public class FormEditor {
      * @param formModel form model.
      * @return JEditorPane set up with the actuall forms java source*/
     public static JEditorPane createCodeEditorPane(FormModel formModel) {                        
-        FormDataObject dobj = getFormDataObject(formModel);
-        JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
+        FormEditor formEditor = FormEditor.getFormEditor(formModel);
+        JavaCodeGenerator codeGen = (JavaCodeGenerator) formEditor.getCodeGenerator();
         codeGen.regenerateCode();
 
         JEditorPane codePane = new JEditorPane();
-        SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
+        SimpleSection sec = formEditor.getInitComponentSection();
         int pos = sec.getText().indexOf('{') + 2 + sec.getStartPosition().getOffset();
-        FormUtils.setupEditorPane(codePane, dobj.getPrimaryFile(), pos);
+        FormUtils.setupEditorPane(codePane, formEditor.getFormDataObject().getPrimaryFile(), pos);
         return codePane;
     }
 
@@ -1239,94 +1213,14 @@ public class FormEditor {
      */
     public static boolean updateProjectForBeansBinding(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
-        if (formEditor != null
-                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.beansbinding.Binding.class.getName())) {
-            try {
-                Library lib = LibraryManager.getDefault().getLibrary("beans-binding"); // NOI18N
-                if (lib == null) {
-                    return false;
-                }
-                ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                                                 new ClassSource.LibraryEntry(lib));
-                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
-            }
-            catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-            }
+        if (formEditor != null) {
+            return formEditor.getBindingSupport().updateProjectForBeansBinding();
         }
         return false;
     }
 
     public static boolean isNonVisualTrayEnabled() {
         return Boolean.getBoolean("netbeans.form.non_visual_tray"); // NOI18N
-    }
-
-    private void checkSuppressWarningsAnnotation() {
-        FileObject fo = getFormDataObject().getPrimaryFile();
-        String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
-        boolean invalidSL = (sourceLevel != null) && ("1.5".compareTo(sourceLevel) > 0); // NOI18N
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.BOOT);
-        if (invalidSL || cp.findResource("java/lang/SuppressWarnings.class") == null) { // NOI18N
-            // The project's bootclasspath doesn't contain SuppressWarnings class.
-            // So, remove this annotation from initComponents() method.
-            final String foName = fo.getName();
-            JavaSource js = JavaSource.forFileObject(fo);
-            final int[] positions = new int[] {-1,-1};
-            try {
-                js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                    @Override
-                    public void cancel() {
-                    }
-                    @Override
-                    public void run(WorkingCopy wcopy) throws Exception {
-                        wcopy.toPhase(JavaSource.Phase.RESOLVED);
-
-                        ClassTree clazz = null;
-                        CompilationUnitTree cu = wcopy.getCompilationUnit();
-                        for (Tree tree : cu.getTypeDecls()) {
-                            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
-                                ClassTree cand = (ClassTree)tree;
-                                if (foName.equals(cand.getSimpleName().toString())) {
-                                    clazz = cand;
-                                }
-                            }
-                        }
-                        if (clazz == null) return;
-                        
-                        for (Tree tree : clazz.getMembers()) {
-                            if (tree.getKind() == Tree.Kind.METHOD) {
-                                MethodTree method = (MethodTree)tree;
-                                if ("initComponents".equals(method.getName().toString()) // NOI18N
-                                        && (method.getParameters().isEmpty())) {
-                                    ModifiersTree modifiers = method.getModifiers();
-                                    for (AnnotationTree annotation : modifiers.getAnnotations()) {
-                                        if (annotation.getAnnotationType().toString().contains("SuppressWarnings")) { // NOI18N
-                                            SourcePositions sp = wcopy.getTrees().getSourcePositions();
-                                            positions[0] = (int)sp.getStartPosition(cu, annotation);
-                                            positions[1] = (int)sp.getEndPosition(cu, annotation);
-                                            // We cannot use the following code because
-                                            // part of the modifier is in guarded block
-                                            //ModifiersTree newModifiers = wcopy.getTreeMaker().removeModifiersAnnotation(method.getModifiers(), annotation);
-                                            //wcopy.rewrite(modifiers, newModifiers);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                }).commit();
-            } catch (IOException ioex) {
-                Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);
-            }
-            if (positions[0] != -1) {
-                try {
-                    getFormDataObject().getFormEditorSupport().getDocument().remove(positions[0], positions[1]-positions[0]);
-                } catch (BadLocationException blex) {
-                    Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, blex.getLocalizedMessage(), blex);
-                }
-            }
-        }
     }
 
 }

@@ -63,8 +63,6 @@ import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
-import org.netbeans.modules.git.ui.actions.ConnectAction;
-import org.netbeans.modules.git.ui.actions.DisconnectAction;
 import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
@@ -132,15 +130,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         boolean noneVersioned = (roots == null || roots.isEmpty());
 
         List<Action> actions = new LinkedList<Action>();
-        ConnectAction ca = SystemAction.get(ConnectAction.class);
         if (destination.equals(ActionDestination.MainMenu)) {
             if (noneVersioned) {
-                if (ca.isEnabled()) {
-                    actions.add(ca);
-                } else {
-                    addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
-                    addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
-                }
+                addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
+                addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
                 actions.add(null);
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
             } else {            
@@ -162,11 +155,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     }
                 }
                 actions.add(null);
-                if (ca.isEnabled()) {
-                    actions.add(SystemAction.get(ConnectAction.class));
-                } else {
-                    actions.add(SystemAction.get(DisconnectAction.class));
-                }
                 actions.add(SystemAction.get(RepositoryBrowserAction.class));
                 actions.add(SystemAction.get(OpenOutputAction.class));
                 actions.add(null);
@@ -190,11 +178,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         } else {
             Lookup lkp = context.getElements();
             if (noneVersioned) {                    
-                if (ca.isEnabled()) {
-                    actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
-                } else {
-                    addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
-                }
+                addAction("org-netbeans-modules-git-ui-init-InitAction", context, actions);
             } else {
                 Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
@@ -224,15 +208,6 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                     actions.add(null);
                     actions.add(a);
                 }
-                DisconnectAction da = SystemAction.get(DisconnectAction.class);
-                if (da.isEnabled()) {
-                    actions.add(null);
-                    actions.add(SystemActionBridge.createAction(da, NbBundle.getMessage(da.getClass(), "LBL_DisconnectAction_PopupName"), lkp)); //NOI18N
-                }
-                if (ca.isEnabled()) {
-                    actions.add(null);
-                    actions.add(SystemActionBridge.createAction(ca, NbBundle.getMessage(ca.getClass(), "LBL_ConnectAction_PopupName"), lkp)); //NOI18N
-                }
                 actions.add(null);
                 addAction("org-netbeans-modules-git-ui-clone-CloneAction", context, actions);
                 actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp));
@@ -247,7 +222,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     }
 
     private void addAction(String name, VCSContext context, List<Action> actions) {
-        Action action = (Action) FileUtil.getConfigFile("Actions/Git/" + name + ".instance").getAttribute("instanceCreate");
+        Action action = (Action) FileUtil.getConfigObject("Actions/Git/" + name + ".instance", Action.class);
             if(action instanceof ContextAwareAction) {
                 action = ((ContextAwareAction)action).createContextAwareInstance(Lookups.singleton(context));
             }            
@@ -321,7 +296,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         }
         if(mostImportantInfo == null) return null;
         String tooltip = null;
-        String statusText = mostImportantInfo.getStatusText(FileInformation.Mode.HEAD_VS_INDEX.HEAD_VS_WORKING_TREE);
+        String statusText = mostImportantInfo.getStatusText(FileInformation.Mode.HEAD_VS_WORKING_TREE);
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             // File is IGNORED
             tooltip = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });

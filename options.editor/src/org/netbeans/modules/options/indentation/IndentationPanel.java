@@ -100,8 +100,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
-    private final boolean lineWrapOn;
-
     private final MimePath mimePath;
     private final CustomizerSelector.PreferencesFactory prefsFactory;
     private final Preferences allLangPrefs;
@@ -114,18 +112,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
      */
     @SuppressWarnings("LeakingThisInConstructor")
     public IndentationPanel(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
-        boolean lwo;
-        try {
-            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
-            Class clazz = cl.loadClass("org.netbeans.modules.editor.lib2.highlighting.HighlightingManager"); //NOI18N
-            Field field = clazz.getField("LINEWRAP_ENABLED"); //NOI18N
-            lwo = (Boolean) field.get(null);
-        } catch (Exception e) {
-            LOG.log(Level.INFO, null, e);
-            lwo = false;
-        }
-        lineWrapOn = lwo;
-
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
         this.prefs = prefs;
@@ -170,11 +156,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sTabSize.setModel(new SpinnerNumberModel(4, 1, 50, 1));
         sRightMargin.setModel(new SpinnerNumberModel(120, 0, 200, 10));
         cboLineWrap.setRenderer(new LineWrapRenderer(cboLineWrap.getRenderer()));
-        if (lineWrapOn) {
-            cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none", "words", "chars" })); //NOI18N
-        } else {
-            cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none" })); //NOI18N
-        }
+        cboLineWrap.setModel(new DefaultComboBoxModel(new Object [] { "none", "words", "chars" })); //NOI18N
 
         // initialize controls
         if (showOverrideGlobalOptions &&
@@ -191,12 +173,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sNumberOfSpacesPerIndent.addChangeListener(this);
         sTabSize.addChangeListener(this);
         sRightMargin.addChangeListener(this);
-        if (lineWrapOn) {
-            cboLineWrap.addActionListener(this);
-        } else {
-            ((ControlledComboBox) cboLineWrap).setEnabledInternal(false);
-            ((ControlledLabel) lLineWrap).setEnabledInternal(false);
-        }
+        cboLineWrap.addActionListener(this);
     }
 
     public PreviewProvider getPreviewProvider() {
@@ -224,7 +201,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     public @Override void actionPerformed (ActionEvent e) {
         if (cbOverrideGlobalOptions == e.getSource()) {
-            prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, cbOverrideGlobalOptions.isSelected());
+            prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, !cbOverrideGlobalOptions.isSelected());
         } else if (cbExpandTabsToSpaces == e.getSource()) {
             prefs.putBoolean(SimpleValueNames.EXPAND_TABS, cbExpandTabsToSpaces.isSelected());
         } else if (cboLineWrap == e.getSource()) {
@@ -301,7 +278,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             needsRefresh = true;
         }
 
-        if (lineWrapOn && (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
+        if (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key)) {
             String nue = prefs.get(SimpleValueNames.TEXT_LINE_WRAP, getDef(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
             if (nue != cboLineWrap.getSelectedItem()) {
                 cboLineWrap.setSelectedItem(nue);
@@ -312,8 +289,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         if (showOverrideGlobalOptions) {
             if (key == null || FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
                 boolean nue = prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
-                if (nue != cbOverrideGlobalOptions.isSelected()) {
-                    cbOverrideGlobalOptions.setSelected(nue);
+                if (nue == cbOverrideGlobalOptions.isSelected()) {
+                    cbOverrideGlobalOptions.setSelected(!nue);
                 }
                 
                 if (!nue) {
@@ -322,9 +299,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                     prefs.putInt(SimpleValueNames.SPACES_PER_TAB, allLangPrefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4));
                     prefs.putInt(SimpleValueNames.TAB_SIZE, allLangPrefs.getInt(SimpleValueNames.TAB_SIZE, 4));
                     prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
-                    if (lineWrapOn) {
-                        prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
-                    }
+                    prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
                 }
                 
                 needsRefresh = true;
@@ -335,10 +310,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 ((ControlledSpinner) sTabSize).setEnabledInternal(nue);
                 ((ControlledLabel) lRightMargin).setEnabledInternal(nue);
                 ((ControlledSpinner) sRightMargin).setEnabledInternal(nue);
-                if (lineWrapOn) {
-                    ((ControlledLabel) lLineWrap).setEnabledInternal(nue);
-                    ((ControlledComboBox) cboLineWrap).setEnabledInternal(nue);
-                }
+                ((ControlledLabel) lLineWrap).setEnabledInternal(nue);
+                ((ControlledComboBox) cboLineWrap).setEnabledInternal(nue);
             }
         }
 
@@ -389,7 +362,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
         }
 
-        if (lineWrapOn && (key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
+        if ((key == null || SimpleValueNames.TEXT_LINE_WRAP.equals(key))) {
             prefs.put(SimpleValueNames.TEXT_LINE_WRAP, allLangPrefs.get(SimpleValueNames.TEXT_LINE_WRAP, "none")); //NOI18N
         }
     }
@@ -434,62 +407,62 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         cboLineWrap.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 53, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(lRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(lLineWrap, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cboLineWrap, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lNumberOfSpacesPerIndent, javax.swing.GroupLayout.PREFERRED_SIZE, 207, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sNumberOfSpacesPerIndent, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lTabSize, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lRightMargin, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sRightMargin, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lLineWrap, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cboLineWrap, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                .add(54, 54, 54))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(cbExpandTabsToSpaces, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                .addGap(54, 54, 54))
         );
 
-        jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        jPanel1Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize});
 
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lNumberOfSpacesPerIndent))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lTabSize))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lRightMargin))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lLineWrap)
-                    .add(cboLineWrap, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(cbExpandTabsToSpaces, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sNumberOfSpacesPerIndent, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lNumberOfSpacesPerIndent))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lTabSize))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sRightMargin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lRightMargin))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lLineWrap)
+                    .addComponent(cboLineWrap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        jPanel1Layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize});
 
         cbExpandTabsToSpaces.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_Expand_Tabs")); // NOI18N
         lNumberOfSpacesPerIndent.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_Indent")); // NOI18N
@@ -505,21 +478,21 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sRightMargin.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_sRightMargin")); // NOI18N
         sRightMargin.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AD_sRightMargin")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(cbOverrideGlobalOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
-                .add(66, 66, 66))
-            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(cbOverrideGlobalOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .addGap(66, 66, 66))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(cbOverrideGlobalOptions)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(cbOverrideGlobalOptions)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         cbOverrideGlobalOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IndentationPanel.class, "AN_Override_Global_Options")); // NOI18N
@@ -565,7 +538,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.SPACES_PER_TAB, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TAB_SIZE, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LIMIT_WIDTH, mimeType) ||
-            (lineWrapOn && prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LINE_WRAP, mimeType));
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LINE_WRAP, mimeType);
     }
 
     private boolean getDefBoolean(String key, boolean def) {

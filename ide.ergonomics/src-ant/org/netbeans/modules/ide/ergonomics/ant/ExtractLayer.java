@@ -452,8 +452,10 @@ implements FileNameMapper, URIResolver, EntityResolver {
                         String bundle = bundlevalue.substring(0, idx);
                         String key = bundlevalue.substring(idx + 1);
                         String bundlepath = bundle.replace('.', '/') + ".*properties";
+                        if (!additionalKeys.add(key)) {
+                            throw new IllegalStateException("key " + key + " from " + bundlepath + " was already defined among " + concat);
+                        }
                         concat.add(bundlepath);
-                        additionalKeys.add(key);
                     } else {
                         addResource(attributes.getValue("urlvalue"), false);
                     }

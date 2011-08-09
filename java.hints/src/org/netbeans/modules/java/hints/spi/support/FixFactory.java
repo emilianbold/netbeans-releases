@@ -61,6 +61,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.impl.SyntheticFix;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -125,7 +127,7 @@ public final class FixFactory {
         if (treePath.getLeaf().getKind() != Kind.MODIFIERS) {
             return null;
         }
-        return new ChangeModifiersFixImpl(TreePathHandle.create(treePath, compilationInfo), toAdd, toRemove, text);
+        return JavaFix.toEditorFix(new ChangeModifiersFixImpl(compilationInfo, treePath, toAdd, toRemove, text));
     }
 
     /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
@@ -203,7 +205,7 @@ public final class FixFactory {
         return info.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0;
     }
     
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl implements Fix, SyntheticFix {
 
         private String keys[];
         private TreePathHandle handle;
@@ -372,15 +374,14 @@ public final class FixFactory {
         }
     }
 
-    private static final class ChangeModifiersFixImpl implements Fix {
+    private static final class ChangeModifiersFixImpl extends JavaFix {
 
-        private final TreePathHandle modsHandle;
         private final Set<Modifier> toAdd;
         private final Set<Modifier> toRemove;
         private final String text;
 
-        public ChangeModifiersFixImpl(TreePathHandle modsHandle, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
-            this.modsHandle = modsHandle;
+        public ChangeModifiersFixImpl(CompilationInfo info, TreePath mods, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
+            super(info, mods);
             this.toAdd = toAdd;
             this.toRemove = toRemove;
             this.text = text;
@@ -390,28 +391,19 @@ public final class FixFactory {
             return text;
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(modsHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    TreePath path = modsHandle.resolve(wc);
-                    if (path == null) {
-                        return;
-                    }
-                    ModifiersTree mt = (ModifiersTree) path.getLeaf();
-                    Set<Modifier> modifiers = (mt.getFlags().isEmpty()) ?
-                        EnumSet.noneOf(Modifier.class) :
-                        EnumSet.copyOf(mt.getFlags());
-                    modifiers.addAll(toAdd);
-                    modifiers.removeAll(toRemove);
-                    ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
-                    wc.rewrite(mt, newMod);
-                }
-            }).commit();
-            return null;
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
+            ModifiersTree mt = (ModifiersTree) path.getLeaf();
+            Set<Modifier> modifiers = (mt.getFlags().isEmpty()) ?
+                EnumSet.noneOf(Modifier.class) :
+                EnumSet.copyOf(mt.getFlags());
+            modifiers.addAll(toAdd);
+            modifiers.removeAll(toRemove);
+            ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
+            wc.rewrite(mt, newMod);
         }
 
+        //TODO: the following is currently not used by JavaFix, is it really needed?
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -421,9 +413,9 @@ public final class FixFactory {
                 return false;
             }
             final ChangeModifiersFixImpl other = (ChangeModifiersFixImpl) obj;
-            if (this.modsHandle != other.modsHandle && (this.modsHandle == null || !this.modsHandle.equals(other.modsHandle))) {
-                return false;
-            }
+//            if (this.modsHandle != other.modsHandle && (this.modsHandle == null || !this.modsHandle.equals(other.modsHandle))) {
+//                return false;
+//            }
             if (this.toAdd != other.toAdd && (this.toAdd == null || !this.toAdd.equals(other.toAdd))) {
                 return false;
             }
@@ -436,7 +428,7 @@ public final class FixFactory {
         @Override
         public int hashCode() {
             int hash = 5;
-            hash = 71 * hash + (this.modsHandle != null ? this.modsHandle.hashCode() : 0);
+//            hash = 71 * hash + (this.modsHandle != null ? this.modsHandle.hashCode() : 0);
             hash = 71 * hash + (this.toAdd != null ? this.toAdd.hashCode() : 0);
             hash = 71 * hash + (this.toRemove != null ? this.toRemove.hashCode() : 0);
             return hash;

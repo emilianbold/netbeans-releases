@@ -78,6 +78,10 @@ public class RulesManager {
     }
 
     private RulesManager() {
+        reload();
+    }
+    
+    public void reload() {
         for (HintProvider p : Lookup.getDefault().lookupAll(HintProvider.class)) {
             Map<HintMetadata, ? extends Collection<? extends HintDescription>> pHints = p.computeHints();
 

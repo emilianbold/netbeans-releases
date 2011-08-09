@@ -45,7 +45,6 @@ package org.netbeans.modules.javahelp;
 import com.sun.java.help.search.Indexer;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,6 +67,7 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.javahelp.HelpSetRegistration;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -94,7 +94,8 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
             HelpSetRegistration r = e.getAnnotation(HelpSetRegistration.class);
             String pkg = ((PackageElement) e).getQualifiedName().toString();
             String hs = pkg.replace('.', '/') + '/' + r.helpSet();
-            layer(e).file("Services/JavaHelp/" + pkg.replace('.', '-') + ".xml").contents(""
+            LayerBuilder builder = layer(e);
+            builder.file("Services/JavaHelp/" + pkg.replace('.', '-') + ".xml").contents(""
                     + "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                     + "<!DOCTYPE helpsetref PUBLIC \"-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN\" \"http://www.netbeans.org/dtds/helpsetref-1_0.dtd\">\n"
                     + "<helpsetref url=\"nbdocs:/" + hs + "\" merge=\"" + r.merge() + "\"/>\n"
@@ -103,13 +104,7 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
             Document doc;
             URI loc;
             try {
-                FileObject hsf = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", hs);
-                try { // #181355
-                    hsf.openInputStream().close();
-                } catch (FileNotFoundException x) {
-                    hsf = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", hs);
-                }
-                loc = hsf.toUri();
+                loc = builder.validateResource(hs, e, r, "helpSet", false).toUri();
                 if (loc.getScheme() == null) {
                     // JDK #6419926: FileObject.toUri() generates URI without schema
                     loc = new File(loc.toString()).toURI();
@@ -126,9 +121,9 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
                     }
                 });
             } catch (IOException x) {
-                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e);
+                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e, processingEnv, r, "helpSet");
             } catch (SAXException x) {
-                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e);
+                throw new LayerGenerationException("Could not parse " + hs + ": " + x, e, processingEnv, r, "helpSet");
             }
             String searchDir = null;
             for (Element view : XMLUtil.findSubElements(doc.getDocumentElement())) {

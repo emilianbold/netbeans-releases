@@ -94,17 +94,13 @@ public class UtilsTest extends NbTestCase {
     @Test
     public void testGetHttpListenerProtocol() {
         System.out.println("getHttpListenerProtocol");
-        String hostname = "glassfish.dev.java.net";
+        String hostname = "glassfish.java.net";
         int port = 443;
         String expResult = "https";
         String result = Utils.getHttpListenerProtocol(hostname, port);
         assertEquals(expResult, result);
         port = 80;
         expResult = "http";
-        result = Utils.getHttpListenerProtocol(hostname, port);
-        assertEquals(expResult, result);
-        hostname = "this.is.a.bogus.name.edu";
-        port = 443;
         result = Utils.getHttpListenerProtocol(hostname, port);
         assertEquals(expResult, result);
     }
@@ -115,14 +111,10 @@ public class UtilsTest extends NbTestCase {
     @Test
     public void testIsSecurePort() throws Exception {
         System.out.println("isSecurePort");
-        String hostname = "glassfish.dev.java.net";
+        String hostname = "glassfish.java.net";
         int port = 443;
         boolean expResult = true;
         boolean result = Utils.isSecurePort(hostname, port);
-        assertEquals(expResult, result);
-        port = 80;
-        expResult = false;
-        result = Utils.isSecurePort(hostname, port);
         assertEquals(expResult, result);
     }
 

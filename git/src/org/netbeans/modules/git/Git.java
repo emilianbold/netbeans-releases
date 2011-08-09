@@ -124,9 +124,10 @@ public final class Git {
 
             @Override
             public File getTopmostManagedAncestor (File file) {
-                return Git.this.getTopmostManagedAncestor(file, false);
+                return Git.this.getTopmostManagedAncestor(file);
             }
         }, Logger.getLogger("org.netbeans.modules.git.RootsToFile"), statisticsFrequency); //NOI18N
+        ModuleLifecycleManager.getInstance().disableOtherModules();
     }
 
     void registerGitVCS(GitVCS gitVCS) {
@@ -261,23 +262,6 @@ public final class Git {
         getVCSInterceptor().refreshMetadataTimestamp(repository);
     }
 
-    public void connectRepository (File repository) {
-        assert gitVCS != null;
-        gitVCS.connectRepository(repository);
-        versionedFilesChanged();
-    }
-
-    public void disconnectRepository (File repository) {
-        assert gitVCS != null;
-        gitVCS.disconnectRepository(repository);
-        versionedFilesChanged();
-    }
-
-    public boolean isDisconnected (File repository) {
-        assert gitVCS != null;
-        return gitVCS.isDisconnected(repository);
-    }
-
     /**
      * Returns a set of known repository roots (those visible or open in IDE)
      * @param repositoryRoot
@@ -289,12 +273,8 @@ public final class Git {
     
     private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
-    
-    public File getTopmostManagedAncestor(File file) {
-        return getTopmostManagedAncestor(file, true);
-}
 
-    public File getTopmostManagedAncestor (File file, boolean skipDisconnectedRepositories) {
+    public File getTopmostManagedAncestor (File file) {
         long t = System.currentTimeMillis();
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         if(unversionedParents.contains(file)) {
@@ -304,13 +284,8 @@ public final class Git {
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         File parent = getKnownParent(file);
         if(parent != null) {
-            if (skipDisconnectedRepositories && isDisconnected(parent)) {
-                LOG.log(Level.FINE, "  getTopmostManagedParent returning null, disconnected {0}", parent);
-                return null;
-            } else {
-                LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent {0}", parent);
-                return parent;
-            }
+            LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent {0}", parent);
+            return parent;
         }
 
         if (GitUtils.isPartOfGitMetadata(file)) {
@@ -351,14 +326,14 @@ public final class Git {
             knownRoots.add(topmost);
         }
 
-        return topmost == null || skipDisconnectedRepositories && isDisconnected(topmost) ? null : topmost;
+        return topmost;
     }
     
     private File getKnownParent(File file) {
         File[] roots = knownRoots.toArray(new File[knownRoots.size()]);
         File knownParent = null;
         for (File r : roots) {
-            if(Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
+            if(!Utils.isScanForbidden(file) && Utils.isAncestorOrEqual(r, file) && (knownParent == null || Utils.isAncestorOrEqual(knownParent, r))) {
                 knownParent = r;
             }
         }

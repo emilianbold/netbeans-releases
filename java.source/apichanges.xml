@@ -108,6 +108,37 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ElementHandle-jvm-signature">
+             <api name="general"/>
+             <summary>Added SourceUtils.getJVMSignature to obtain the JVM signature for an ElementHandle</summary>
+             <version major="0" minor="84"/>
+             <date day="1" month="8" year="2011"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added a method <code>SourceUtils.getJVMSignature</code> to obtain the JVM signature for an <code>ElementHandle</code>.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="200237"/>
+        </change>
+        <change id="comments-reformat">
+             <api name="general"/>
+             <summary>Added several methods to <code>CodeStyle</code> to support reformatting of comments.</summary>
+             <version major="0" minor="83"/>
+             <date day="13" month="7" year="2011"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CodeStyle.enableBlockCommentFormatting</code>, <code>CodeStyle.enableJavadocFormatting</code>,
+                 <code>CodeStyle.wrapCommentText</code>, <code>CodeStyle.wrapOneLineComments</code>,
+                 <code>CodeStyle.preserveNewLinesInCommentst</code>, <code>CodeStyle.blankLineAfterJavadocDescription</code>,
+                 <code>CodeStyle.blankLineAfterJavadocParameterDescriptions</code>, <code>CodeStyle.blankLineAfterJavadocReturnTag</code>,
+                 <code>CodeStyle.generateParagraphTagOnBlankLines</code>, <code>CodeStyle.alignJavadocParameterDescriptions</code>,
+                 <code>CodeStyle.alignJavadocReturnDescriptions</code>, <code>CodeStyle.alignJavadocExceptionDescriptions</code>,
+                 to support reformatting of comments.
+             </description>
+             <issue number="20672"/>
+        </change>
         <change id="ClassIndex-package-scope">
              <api name="general"/>
              <summary>Added package search scope into <code>ClassIndex</code> to restrict search in given packages</summary>

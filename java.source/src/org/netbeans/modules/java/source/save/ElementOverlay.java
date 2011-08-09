@@ -45,7 +45,9 @@ package org.netbeans.modules.java.source.save;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -290,8 +292,10 @@ public class ElementOverlay {
             }
         } else if (t instanceof QualIdentTree) {
             return ((QualIdentTree) t).getFQN();
+        } else if (t.getKind() == Kind.PARAMETERIZED_TYPE) {
+            return fqnFor(((ParameterizedTypeTree) t).getType());
         } else {
-            Logger.getLogger(ElementOverlay.class.getName()).log(Level.SEVERE, "No element and no QualIdent");
+            Logger.getLogger(ElementOverlay.class.getName()).log(Level.FINE, "No element and no QualIdent");
             return null;
         }
     }

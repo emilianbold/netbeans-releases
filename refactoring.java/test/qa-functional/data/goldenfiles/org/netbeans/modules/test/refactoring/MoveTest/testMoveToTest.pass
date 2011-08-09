@@ -1,0 +1,18 @@
+Created directory:
+t/dest
+Created file:
+==>MoveToTest.java
+
+package dest;
+
+import moveSource.Reference;
+import static moveSource.StatRef.statRef;
+
+public class MoveToTest {
+    Reference r;
+    {
+        statRef();
+    }
+}
+Deleted file:
+/moveSource/MoveToTest.java

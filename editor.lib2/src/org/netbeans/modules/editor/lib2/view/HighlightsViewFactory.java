@@ -44,21 +44,23 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Font;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.highlighting.DirectMergeContainer;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
-import org.netbeans.modules.editor.lib2.highlighting.HighlightsSequenceEx;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightsList;
+import org.netbeans.modules.editor.lib2.highlighting.HighlightsReader;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.openide.util.WeakListeners;
 
 /**
@@ -75,26 +77,61 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
 
-    private final HighlightsContainer highlightsContainer;
+    private final HighlightingManager highlightingManager;
+
+    private HighlightsContainer highlightsContainer;
+    
+    private HighlightsContainer paintHighlightsContainer;
+    
+    private HighlightsChangeListener weakHL;
+    
+    private HighlightsChangeListener paintWeakHL;
 
     private CharSequence docText;
+
     private Element lineElementRoot;
 
     private int lineIndex;
-
+    
     private int lineEndOffset;
+    
+    /** Line index where tabs and highlights were last updated. */
+    private int hlLineIndex;
 
-    private HighlightsSequence highlightsSequence;
-    private int highlightStartOffset;
-    private int highlightEndOffset;
-    private AttributeSet highlightAttributes;
-
+    private HighlightsReader highlightsReader;
+    
+    private Font defaultFont;
+    
+    private int nextTabOffset;
+    
     private int usageCount = 0; // Avoid nested use of the factory
+    
+    public HighlightsViewFactory(View documentView) {
+        super(documentView);
+        highlightingManager = HighlightingManager.getInstance(textComponent());
+        highlightingManager.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                notifyStaleCreation();
+                updateHighlightsContainer();
+            }
+        });
+        updateHighlightsContainer();
+    }
 
-    public HighlightsViewFactory(JTextComponent component) {
-        super(component);
-        highlightsContainer = HighlightingManager.getInstance().getHighlights(component, null);
-        highlightsContainer.addHighlightsChangeListener(WeakListeners.create(HighlightsChangeListener.class, this, highlightsContainer));
+    private void updateHighlightsContainer() {
+        if (highlightsContainer != null && weakHL != null) {
+            highlightsContainer.removeHighlightsChangeListener(weakHL);
+            paintHighlightsContainer.removeHighlightsChangeListener(paintWeakHL);
+            weakHL = null;
+            paintWeakHL = null;
+        }
+        highlightsContainer = highlightingManager.getBottomHighlights();
+        highlightsContainer.addHighlightsChangeListener(weakHL = WeakListeners.create(
+                HighlightsChangeListener.class, this, highlightsContainer));
+        paintHighlightsContainer = highlightingManager.getTopHighlights();
+        paintHighlightsContainer.addHighlightsChangeListener(paintWeakHL = WeakListeners.create(
+                HighlightsChangeListener.class, this, paintHighlightsContainer));
     }
 
     @Override
@@ -108,7 +145,9 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         assert (lineElementRoot != null) : "lineElementRoot is null."; // NOI18N
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();
-        highlightEndOffset = Integer.MIN_VALUE; // Makes the highlightsSequence to be inited
+        defaultFont = textComponent().getFont();
+        highlightsReader = new HighlightsReader(highlightsContainer, startOffset, Integer.MAX_VALUE);
+        hlLineIndex = lineIndex - 1; // Make it different for updateTabsAndHighlights()
     }
 
     @Override
@@ -121,19 +160,45 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     @Override
     public EditorView createView(int startOffset, int limitOffset) {
         assert (startOffset < limitOffset) : "startOffset=" + startOffset + " >= limitOffset=" + limitOffset; // NOI18N
-        updateHighlight(startOffset);
+        // Possibly update lineEndOffset since updateHighlight() will read till it
         updateLineEndOffset(startOffset);
+        updateTabsAndHighlights(startOffset);
+        HighlightsList hList = highlightsReader.highlightsList();
+        if (hList.startOffset() < startOffset) {
+            hList.skip(startOffset);
+        }
         if (startOffset == lineEndOffset - 1) {
-            return new NewlineView(startOffset, (startOffset >= highlightStartOffset) &&
-                    (startOffset + 1 <= highlightEndOffset) ? highlightAttributes : null);
-        } else if (startOffset < highlightStartOffset) { // Before highlight
-            int endOffset = Math.min(Math.min(highlightStartOffset, limitOffset), lineEndOffset - 1);
-            // Prevent exception thrown from createHighlightsView() when
-            // startOffset=1, newLineOffset=0 => endOffset=0, highlight: <2147483647,2147483647>, docText.length()=1
-            return createHighlightsView(startOffset, endOffset - startOffset, null);
-        } else { // Inside highlight
-            int endOffset = Math.min(Math.min(highlightEndOffset, limitOffset), lineEndOffset - 1);
-            return createHighlightsView(startOffset, endOffset - startOffset, highlightAttributes);
+            AttributeSet attrs = hList.cutSingleChar();
+            return new NewlineView(startOffset, attrs);
+        } else { // Regular view with possible highlight(s) or tab view
+            if (startOffset == nextTabOffset) { // Create TabView
+                int tabsEndOffset;
+                for (tabsEndOffset = nextTabOffset + 1; tabsEndOffset < lineEndOffset - 1; tabsEndOffset++) {
+                    if (docText.charAt(tabsEndOffset) != '\t') {
+                        break;
+                    }
+                }
+                AttributeSet attrs;
+                if (limitOffset < tabsEndOffset) {
+                    attrs = hList.cut(limitOffset);
+                    nextTabOffset = limitOffset;
+                } else {
+                    attrs = hList.cut(tabsEndOffset);
+                    limitOffset = tabsEndOffset;
+                    for (nextTabOffset = tabsEndOffset; nextTabOffset < lineEndOffset - 1; nextTabOffset++) {
+                        if (docText.charAt(nextTabOffset) == '\t') {
+                            break;
+                        }
+                    }
+                }
+                return new TabView(startOffset, limitOffset - startOffset, attrs);
+
+            } else { // Create regular view
+                limitOffset = Math.min(limitOffset, Math.min(nextTabOffset, lineEndOffset - 1));
+                AttributeSet attrs = hList.cutSameFont(defaultFont, limitOffset);
+                int length = hList.startOffset() - startOffset;
+                return createHighlightsView(startOffset, length, attrs);
+            }
         }
     }
 
@@ -144,12 +209,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     }
 
     private EditorView createHighlightsView(int startOffset, int length, AttributeSet attrs) {
-        if (length <= 0) {
-            throw new IllegalStateException("startOffset=" + startOffset // NOI18N
-                    + ", length=" + length + ", highlight: <" + highlightStartOffset // NOI18N
-                    + "," + highlightEndOffset // NOI18N
-                    + ">, lineEndOffset=" + lineEndOffset + ", docText.length()=" + docText.length()); // NOI18N
-        }
         boolean tabs = (docText.charAt(startOffset) == '\t'); //NOI18N
         for (int i = 1; i < length; i++) {
             if (tabs != (docText.charAt(startOffset + i) == '\t')) { //NOI18N
@@ -166,88 +225,86 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         if (usageCount != 1) {
             throw new IllegalStateException("Missing factory restart: usageCount=" + usageCount);
         }
-        while (lineEndOffset <= offset) { // && lineIndex + 1 < lineElementRoot.getElementCount()) {
+        // Several lines may be skipped at once in case there's e.g. a collapsed fold (FoldView gets created)
+        while (offset >= lineEndOffset) {
             lineIndex++;
             Element line = lineElementRoot.getElement(lineIndex);
             lineEndOffset = line.getEndOffset();
         }
     }
 
-    private void updateHighlight(int offset) {
-        if (offset >= highlightEndOffset) { // Covers case when highlightEndOffset==Integer.MIN_VALUE at begining
-            if (highlightsSequence == null && highlightEndOffset == Integer.MIN_VALUE) { // HS not yet created
-                highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
-            }
-            while (highlightsSequence != null) {
-                while (highlightsSequence instanceof HighlightsSequenceEx && ((HighlightsSequenceEx) highlightsSequence).isStale()) {
-                    highlightsSequence = highlightsContainer.getHighlights(offset, Integer.MAX_VALUE);
-                }
-
-                if (highlightsSequence.moveNext()) {
-                    highlightStartOffset = highlightsSequence.getStartOffset();
-                    highlightEndOffset = highlightsSequence.getEndOffset();
-                    highlightAttributes = highlightsSequence.getAttributes();
-
-                    if (highlightStartOffset < highlightEndOffset) {
-                        if (LOG.isLoggable(Level.FINEST)) {
-                            LOG.fine("Highlight: <" + highlightStartOffset + "," + highlightEndOffset + "> " // NOI18N
-                                + ViewUtils.toString(highlightAttributes) + "\n"); //NOI18N
-                        }
-                        if (offset < highlightEndOffset) {
-                            break;
-                        }
-                    } else { // Invalid highlight -> Fetch next
-                        if (highlightStartOffset > highlightEndOffset) {
-                            LOG.info("Invalid highlight: <" + highlightStartOffset + "," + highlightEndOffset + ">\n"); // NOI18N
-                        }
-                    }
-                } else {
-                    highlightsSequence = null;
-                    highlightAttributes = null;
-                    highlightStartOffset = Integer.MAX_VALUE;
-                    highlightEndOffset = Integer.MAX_VALUE; // Marks end of highlights traversal (together with highlightsSequence==null)
+    private void updateTabsAndHighlights(int offset) {
+        if (hlLineIndex != lineIndex) {
+            hlLineIndex = lineIndex;
+            for (nextTabOffset = offset; nextTabOffset < lineEndOffset - 1; nextTabOffset++) {
+                if (docText.charAt(nextTabOffset) == '\t') {
+                    break;
                 }
             }
+            highlightsReader.readUntil(lineEndOffset);
         }
     }
 
     @Override
-    public void finish() {
+    public void finishCreation() {
+        highlightsReader = null;
         docText = null;
         lineElementRoot = null;
         lineIndex = -1;
         lineEndOffset = -1;
-        highlightsSequence = null;
-        highlightStartOffset = Integer.MAX_VALUE;
-        highlightEndOffset = Integer.MAX_VALUE;
-        highlightAttributes = null;
         usageCount--;
     }
 
     @Override
-    public void highlightChanged(HighlightsChangeEvent event) {
-        int startOffset = event.getStartOffset();
-        int endOffset = event.getEndOffset();
-        int docTextLength = document().getLength() + 1;
-        assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
-        assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
-        startOffset = Math.min(startOffset, docTextLength);
-        endOffset = Math.min(endOffset, docTextLength);
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINER, "highlightChanged: event:<{0}{1}{2}>, thread:{3}\n", //NOI18N
-                    new Object[] {startOffset, ',', endOffset, Thread.currentThread()}); // NOI18N
-        }
+    public void highlightChanged(HighlightsChangeEvent evt) {
+        int startOffset = evt.getStartOffset();
+        int endOffset = evt.getEndOffset();
+        if (evt.getSource() == highlightsContainer) {
+            if (usageCount != 0) { // When views are being created => notify stale creation
+                notifyStaleCreation();
+            }
+            int docTextLength = document().getLength() + 1;
+            assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
+            assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
+            startOffset = Math.min(startOffset, docTextLength);
+            endOffset = Math.min(endOffset, docTextLength);
+            if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+                HighlightsChangeEvent layerEvent = (highlightsContainer instanceof DirectMergeContainer)
+                        ? ((DirectMergeContainer) highlightsContainer).layerEvent()
+                        : null;
+                String layerInfo = (layerEvent != null)
+                        ? " " + highlightingManager.findLayer((HighlightsContainer)layerEvent.getSource()) // NOI18N
+                        : ""; // NOI18N
+                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
+                        startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
+            }
 
-        if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
-            fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
+            if (startOffset <= endOffset) { // May possibly be == e.g. for cut-line action
+                fireEvent(Collections.singletonList(createChange(startOffset, endOffset)));
+            }
+
+        } else { // Paint highlights change
+            assert (evt.getSource() == paintHighlightsContainer);
+            if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+                HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
+                        ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
+                        : null;
+                String layerInfo = (layerEvent != null)
+                        ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
+                        : ""; // NOI18N
+                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
+                        startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
+            }
+
+            offsetRepaint(startOffset, endOffset);
         }
     }
 
     public static final class HighlightsFactory implements EditorViewFactory.Factory {
 
         @Override
-        public EditorViewFactory createEditorViewFactory(JTextComponent component) {
-            return new HighlightsViewFactory(component);
+        public EditorViewFactory createEditorViewFactory(View documentView) {
+            return new HighlightsViewFactory(documentView);
         }
 
         @Override

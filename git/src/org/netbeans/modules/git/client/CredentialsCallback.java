@@ -45,6 +45,9 @@ import java.util.Arrays;
 import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.utils.GitURI;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -90,7 +93,9 @@ public class CredentialsCallback implements GitClientCallback {
 
     @Override
     public Boolean askYesNoQuestion (String uri, String prompt) {
-        return null;
+        return NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(prompt, 
+                NbBundle.getMessage(CredentialsCallback.class, "LBL_CredentialsCallback.question.title", uri), //NOI18N
+                NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE));
     }
     
     private void getCredentials (String uri) {

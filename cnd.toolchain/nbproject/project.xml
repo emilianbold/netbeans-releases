@@ -231,6 +231,12 @@
                 <friend>com.sun.tools.dlight.remotesupport</friend>
                 <friend>com.sun.tools.dlight.target</friend>
                 <friend>com.sun.tools.dlight.xyplot</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
+                <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
@@ -239,11 +245,6 @@
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
-                <friend>com.sun.tools.ide.analysis.common</friend>
-                <friend>com.sun.tools.ide.analysis.analytics</friend>
-                <friend>com.sun.tools.ide.analysis.previse</friend>
-                <friend>com.sun.tools.ide.analysis.discover</friend>
-                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>

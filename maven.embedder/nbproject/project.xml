@@ -137,6 +137,11 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -148,6 +153,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
+                <friend>org.netbeans.modules.maven.checkstyle</friend>
                 <friend>org.netbeans.modules.maven.coverage</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>
@@ -159,6 +165,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.model</friend>
                 <friend>org.netbeans.modules.maven.osgi</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
+                <friend>org.netbeans.modules.maven.refactoring</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
@@ -209,6 +216,7 @@ made subject to such option by the copyright holder.
                 <package>org.codehaus.plexus</package>
                 <package>org.codehaus.plexus.classworlds</package>
                 <package>org.codehaus.plexus.classworlds.realm</package>
+                <package>org.codehaus.plexus.component.composition</package>
                 <package>org.codehaus.plexus.component.configurator.expression</package>
                 <package>org.codehaus.plexus.component.repository</package>
                 <package>org.codehaus.plexus.component.repository.exception</package>
@@ -227,6 +235,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.embedder</package>
                 <package>org.netbeans.modules.maven.embedder.exec</package>
                 <package>org.sonatype.aether</package>
+                <package>org.sonatype.aether.artifact</package>
                 <package>org.sonatype.aether.impl.internal</package>
                 <package>org.sonatype.aether.repository</package>
                 <package>org.sonatype.aether.transfer</package>

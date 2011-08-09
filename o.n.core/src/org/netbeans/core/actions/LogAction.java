@@ -47,6 +47,7 @@ package org.netbeans.core.actions;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.modules.Places;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -61,12 +62,11 @@ public class LogAction extends CallableSystemAction {
 
 
     public void performAction() {
-        // FIXME This may not be used this way anymore.
-        String userDir = System.getProperty("netbeans.user");
-	if (userDir == null)
+        File userDir = Places.getUserDirectory();
+        if (userDir == null) {
             return;
-        // FIXME the same as above
-	File f = new File(userDir + "/var/log/messages.log"); // TEMP
+        }
+        File f = new File(userDir, "/var/log/messages.log");
         LogViewerSupport p = new LogViewerSupport(f, NbBundle.getMessage(LogAction.class, "MSG_ShortLogTab_name"));
 	try {
             p.showLogViewer();

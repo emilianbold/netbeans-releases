@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 - 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -99,6 +99,7 @@ import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.netbeans.modules.db.sql.history.SQLHistoryModel;
 import org.netbeans.modules.db.sql.history.SQLHistoryModelImpl;
 import org.netbeans.modules.db.sql.history.SQLHistoryPersistenceManager;
+import org.netbeans.modules.db.sql.loader.SQLDataLoader;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -456,7 +457,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     sqlToInsert = sqlHistory.getSql().trim();
                     JEditorPane pane = (JEditorPane)EditorRegistry.lastFocusedComponent();
                     String mime = pane.getContentType();
-                    if (mime.equals("text/x-sql")) {  // NOI18N
+                    if (mime.equals(SQLDataLoader.SQL_MIME_TYPE)) {
                         editorPane = pane;
                     }
                     insertUtility.insert(sqlToInsert, editorPane);

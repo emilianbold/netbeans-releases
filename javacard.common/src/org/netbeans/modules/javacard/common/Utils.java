@@ -570,7 +570,7 @@ public final class Utils {
     }
 
     private static final Pattern EXE_ARGS_SPLIT = Pattern.compile(
-            "^(.*?)\\s*\\-(\\-*\\w.*)"); //NOI18N
+            "^(.*?)\\s+\\-(\\-*\\w.*)"); //NOI18N
     private static final Pattern EXE_NOARGS_SPLIT = Pattern.compile(
             "^(.*?)\\s(.*)$"); //NOI18N
     private static final Pattern EXE_PREFIX_SPLIT = Pattern.compile("(\\S*" + //NOI18N

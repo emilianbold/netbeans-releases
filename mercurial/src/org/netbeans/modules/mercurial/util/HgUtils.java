@@ -65,7 +65,6 @@ import java.util.HashSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -91,6 +90,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
@@ -288,7 +288,7 @@ public class HgUtils {
     }
 
     public static JComponent addContainerBorder(JComponent comp) {
-        final LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        final LayoutStyle layoutStyle = LayoutStyle.getInstance();
 
         JPanel panel = new JPanel();
         panel.add(comp);
@@ -976,6 +976,15 @@ itor tabs #66700).
         if(ctx != null) {
             files = rootFiles ? ctx.getRootFiles() : ctx.getFiles();
         }
+        return sortUnderRepository(files);
+    }
+
+    /**
+     * Returns root files sorted per their repository roots
+     * @param files
+     * @return
+     */
+    public static Map<File, Set<File>> sortUnderRepository (Set<File> files) {
         Map<File, Set<File>> sortedRoots = null;
         if (files != null) {
             sortedRoots = new HashMap<File, Set<File>>();
@@ -1426,12 +1435,16 @@ itor tabs #66700).
         String lbChangeset = NbBundle.getMessage(HgUtils.class, "LB_CHANGESET");   // NOI18N
         String lbUser =      NbBundle.getMessage(HgUtils.class, "LB_AUTHOR");      // NOI18N
         String lbBranch =    NbBundle.getMessage(HgUtils.class, "LB_BRANCH");      // NOI18N
+        String lbTags =      NbBundle.getMessage(HgUtils.class, "LB_TAGS");      // NOI18N
         String lbDate =      NbBundle.getMessage(HgUtils.class, "LB_DATE");        // NOI18N
         String lbSummary =   NbBundle.getMessage(HgUtils.class, "LB_SUMMARY");     // NOI18N
         int l = 0;
         List<String> list = new LinkedList<String>(Arrays.asList(new String[] {lbChangeset, lbUser, lbDate, lbSummary}));
         if (log.getBranches().length > 0) {
             list.add(lbBranch);
+        }
+        if (log.getTags().length > 0) {
+            list.add(lbTags);
         }
         for (String s : list) {
             if(l < s.length()) l = s.length();
@@ -1446,6 +1459,13 @@ itor tabs #66700).
             sb.append(formatlabel(lbBranch, l));
             for (String branch : log.getBranches()) {
                 sb.append(branch);
+            }
+            sb.append('\n'); // NOI18N
+        }
+        if (log.getTags().length > 0) {
+            sb.append(formatlabel(lbTags, l));
+            for (String tag : log.getTags()) {
+                sb.append(tag).append(' ');
             }
             sb.append('\n'); // NOI18N
         }

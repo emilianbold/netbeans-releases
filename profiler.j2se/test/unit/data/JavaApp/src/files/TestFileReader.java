@@ -41,18 +41,23 @@
 package files;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
 
 
 /**
  * @author ads
  *
  */
-public class TestFileReader extends FileReader {
+public class TestFileReader extends FileInputStream {
 
     public TestFileReader( File arg0 ) throws FileNotFoundException {
         super(arg0);
     }
 
+    @Override
+    public long skip(long n) throws IOException {
+        return super.skip(n);
+    }
 }

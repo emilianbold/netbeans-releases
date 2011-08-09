@@ -78,7 +78,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         
         putProperty("Integer VCS.Priority", Utils.getPriority("mercurial"));
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        Mercurial.getInstance().attachListeners(this);        
+        Mercurial.getInstance().register(this);        
     }
 
     public static String getDisplayName() {
@@ -149,8 +149,6 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
             Mercurial.LOG.fine("cleaning unversioned parents cache");   //NOI18N
             Mercurial.getInstance().clearAncestorCaches();
             fireVersionedFilesChanged();
-        } else if (event.getPropertyName().equals(MercurialAnnotator.PROP_ICON_BADGE_CHANGED)) {
-            fireStatusChanged((Set<File>) event.getNewValue());
         }
     }
 

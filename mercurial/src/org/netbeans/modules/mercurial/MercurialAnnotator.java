@@ -57,23 +57,27 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.Utils;
 import javax.swing.*;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
+import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.menu.ExportMenu;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.menu.BranchMenu;
+import org.netbeans.modules.mercurial.ui.menu.TagMenu;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
@@ -95,7 +99,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Maros Sandor
  */
-public class MercurialAnnotator extends VCSAnnotator {
+public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeListener {
     
     private static final int INITIAL_ACTION_ARRAY_LENGTH = 25;
     
@@ -123,14 +127,12 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     public static final String ANNOTATION_STATUS      = "status";       //NOI18N
     public static final String ANNOTATION_FOLDER      = "folder";       //NOI18N
-    public static final String PROP_ICON_BADGE_CHANGED = "event.badgeChanged"; //NOI18N
 
     public static String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_FOLDER};
 
     private FileStatusCache cache;
     private MessageFormat format;
     private String emptyFormat;
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
     private static final String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
@@ -211,10 +213,11 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         
         if (folderAnnotation == false) {
-            return annotateFileIcon(context, icon);
+            icon = annotateFileIcon(context, icon);
         } else {
-            return annotateFolderIcon(context, icon);
+            icon = annotateFolderIcon(context, icon);
         }
+        return addToolTip(icon, context);
     }
 
     private Image annotateFileIcon(VCSContext context, Image icon) throws IllegalArgumentException {
@@ -231,7 +234,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 mostImportantFile = file;
             }
         }
-        if(mostImportantInfo == null) return null; 
+        if(mostImportantInfo == null) return icon; 
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
@@ -262,7 +265,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : icon;
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
@@ -279,7 +282,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
         }
         if (!isVersioned) {
-            return null;
+            return icon;
         }
         Image badge = null;
         if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true)) {
@@ -309,56 +312,61 @@ public class MercurialAnnotator extends VCSAnnotator {
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance").getAttribute("instanceCreate");
+            Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
             if(a instanceof ContextAwareAction) {
                 a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
             }            
             if(a != null) actions.add(a);
-            actions.add(null);
-            actions.add(SystemAction.get(StatusAction.class));
-            actions.add(SystemAction.get(DiffAction.class));
-            actions.add(SystemAction.get(UpdateAction.class));
-            actions.add(SystemAction.get(CommitAction.class));
-            actions.add(null);
-            actions.add(new ExportMenu());
-            actions.add(SystemAction.get(ImportDiffAction.class));
+            if (noneVersioned) {
+                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                if(a != null) actions.add(a);
+            } else {
+                actions.add(null);
+                actions.add(SystemAction.get(StatusAction.class));
+                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(SystemAction.get(UpdateAction.class));
+                actions.add(SystemAction.get(CommitAction.class));
+                actions.add(SystemAction.get(AddAction.class));
+                actions.add(null);
+                actions.add(new ExportMenu());
+                actions.add(SystemAction.get(ImportDiffAction.class));
 
-            actions.add(null);
-            if (!noneVersioned) {
+                actions.add(null);
                 actions.add(SystemAction.get(CloneAction.class));
-            }
-            a = (Action) FileUtil.getConfigFile("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance").getAttribute("instanceCreate");
-            if(a != null) actions.add(a);
+                a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-clone-CloneExternalAction.instance", Action.class);
+                if(a != null) actions.add(a);
 
-            actions.add(SystemAction.get(FetchAction.class));
-            actions.add(new ShareMenu());
-            actions.add(new MergeMenu(false));
-            actions.add(null);
-            actions.add(SystemAction.get(LogAction.class));
-            if (!onlyProjects  && !onlyFolders) {
-                AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
-                if (tempA.visible(nodes)) {
-                    actions.add(new ShowMenu(true, true));
-                } else {
-                    actions.add(new ShowMenu(true, false));
+                actions.add(SystemAction.get(FetchAction.class));
+                actions.add(new ShareMenu());
+                actions.add(new MergeMenu(false));
+                actions.add(null);
+                actions.add(SystemAction.get(LogAction.class));
+                if (!onlyProjects  && !onlyFolders) {
+                    AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
+                    if (tempA.visible(nodes)) {
+                        actions.add(new ShowMenu(true, true));
+                    } else {
+                        actions.add(new ShowMenu(true, false));
+                    }
+                }else{
+                    actions.add(new ShowMenu(false, false));
                 }
-            }else{
-                actions.add(new ShowMenu(false, false));
+                actions.add(null);
+                actions.add(SystemAction.get(RevertModificationsAction.class));
+                actions.add(new RecoverMenu());
+                if (!onlyProjects) {
+                    actions.add(SystemAction.get(IgnoreAction.class));
+                }
+                actions.add(null);
+                actions.add(new BranchMenu(null));
+                actions.add(new TagMenu(null));
+                actions.add(null);
+                actions.add(SystemAction.get(PropertiesAction.class));
             }
-            actions.add(null);
-            actions.add(SystemAction.get(RevertModificationsAction.class));
-            actions.add(new RecoverMenu());
-            if (!onlyProjects) {
-                actions.add(SystemAction.get(IgnoreAction.class));
-            }
-            actions.add(null);
-            actions.add(new BranchMenu(null));
-            actions.add(null);
-            actions.add(SystemAction.get(PropertiesAction.class));
         } else {
             Lookup context = ctx.getElements();
             if (noneVersioned){
-                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                Action a = (Action) FileUtil.getConfigObject("Actions/Mercurial/org-netbeans-modules-mercurial-ui-create-CreateAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            
@@ -367,6 +375,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"), context)); //NOI18N
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_Resolve"), context)); //NOI18N
                 if (!onlyProjects  && !onlyFolders) {
@@ -395,6 +404,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(null);
                 actions.add(new ShareMenu());
                 actions.add(new BranchMenu(context));
+                actions.add(new TagMenu(context));
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }
@@ -520,33 +530,29 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
         }
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
-        String fileName = mostImportantFile.getName();
-        if (fileName.equals(name)){
-            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
-        }
 
         final Set<File> rootFiles = context.getRootFiles();
         File repo = null;        
-        String folderAnotation = null;
+        String folderAnotation = ""; //NOI18N
+        File root = null; 
+        boolean isRepoRoot = false;
         if(rootFiles.size() == 1) {
-            File root = null; 
-            for (File file : rootFiles) {
-                repo = Mercurial.getInstance().getRepositoryRoot(file);
-                if(repo == null) {
-                    Mercurial.LOG.warning("Couldn't find repository root for file " + file);
-                } else {
-                    root = file;
-                    break;
-                }
+            File file = rootFiles.iterator().next();
+            repo = Mercurial.getInstance().getRepositoryRoot(file);
+            if(repo == null) {
+                Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
+            } else {
+                root = file;
+                isRepoRoot = repo.equals(root);
             }
             // repo = null iff the file' status is actually unversioned, but cache has not yet have the right value
-            if (repo == null || !repo.getAbsolutePath().equals(root.getAbsolutePath())) {
+            if (repo == null || !isRepoRoot) {
                 // not from repo root => do not annnotate with folder name 
                 return uptodateFormat.format(new Object [] { nameHtml, ""});
             }             
         } else {
-        
             // Label top level repository nodes with a repository name label when:
             // Display Name (name) is different from its repo name (repo.getName())        
             File parentFile = null;
@@ -555,7 +561,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                     parentFile = file.getParentFile();
                 } else {
                     File p = file.getParentFile();
-                    if(p == null || !parentFile.getAbsolutePath().equals(p.getAbsolutePath())) {
+                    if(p == null || !parentFile.equals(p)) {
                         // not comming from the same parent => do not annnotate with folder name
                         return uptodateFormat.format(new Object [] { nameHtml, ""});
                     }
@@ -564,22 +570,59 @@ public class MercurialAnnotator extends VCSAnnotator {
             for (File file : rootFiles) {            
                 repo = Mercurial.getInstance().getRepositoryRoot(file);
                 if(repo == null) {
-                    Mercurial.LOG.warning("Couldn't find repository root for file " + file);
-                } else if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
-                    // not from repo root => do not annnotate with folder name 
-                    return uptodateFormat.format(new Object [] { nameHtml, ""});
+                    Mercurial.LOG.log(Level.WARNING, "Couldn''t find repository root for file {0}", file);
                 } else {
+                    root = file;
                     break;
                 }
             }
+            isRepoRoot = parentFile != null && parentFile.equals(repo);
         }
 
-        // file is versioned
-        if (repo != null && !repo.getName().equals(name)){
-            folderAnotation = repo.getName();
+        if (annotationsVisible && repo != null) {
+            if (isRepoRoot && !repo.getName().equals(name)) {
+                folderAnotation = repo.getName();
+            }
+            WorkingCopyInfo info = WorkingCopyInfo.getInstance(repo);
+            addFileWithRepositoryAnnotation(info, root);
+            HgLogMessage[] parents = info.getWorkingCopyParents();
+            StringBuilder label = new StringBuilder();
+            if (parents.length == 1) {
+                HgLogMessage parent = parents[0];
+                for (String b : parent.getBranches()) {
+                    label.append(b);
+                }
+                if (label.length() == 0) {
+                    label.append(HgBranch.DEFAULT_NAME);
+                }
+                if (parent.getTags().length == 0) {
+                    label.append(' ').append(parent.getCSetShortID().substring(0, Math.min(7, parent.getCSetShortID().length())));
+                } else {
+                    for (String b : parent.getTags()) {
+                        label.append(' ').append(b);
+                    }
+                }
+            } else if (parents.length > 1) {
+                String b1 = parents[0].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[0].getBranches()[0];
+                String b2 = parents[1].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[1].getBranches()[0];
+                if (b1.equals(b2)) {
+                    label.append(NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.label.merged.oneBranch", new Object[] { //NOI18N
+                        parents[0].getCSetShortID().substring(0, Math.min(7, parents[0].getCSetShortID().length())), 
+                        parents[1].getCSetShortID().substring(0, Math.min(7, parents[1].getCSetShortID().length())), 
+                        b1
+                    }));
+                } else {
+                    label.append(NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.label.merged.twoBranches", new Object[] { b1, b2 })); //NOI18N
+                }
+            }
+            if (!folderAnotation.isEmpty() && label.length() > 0) {
+                label.insert(0, ", "); //NOI18N
+            }
+            label.insert(0, folderAnotation);
+            folderAnotation = label.toString();
         }
 
-        return uptodateFormat.format(new Object [] { nameHtml, folderAnotation != null ? " [" + folderAnotation + "]" : ""}); // NOI18N
+        return uptodateFormat.format(new Object [] { nameHtml, folderAnotation.isEmpty() ? "" : " [" + folderAnotation + "]" }); //NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {
@@ -627,21 +670,6 @@ public class MercurialAnnotator extends VCSAnnotator {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
     }
-
-    /**
-     * MercurialAnnotator fires these events:
-     * <ul>
-     * <li>PROP_ICON_BADGE_CHANGED - returned file/folder badge should be repainted again, it has changed (e.g. modified files changed)</li>
-     * </ul>
-     * @param listener
-     */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
     
     private static boolean onlyProjects(Node[] nodes) {
         if (nodes == null) return false;
@@ -665,5 +693,90 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private AnnotationColorProvider getAnnotationProvider() {
         return AnnotationColorProvider.getInstance();
+    }
+    
+    private final Map<WorkingCopyInfo, Set<File>> filesWithRepositoryAnnotations = new HashMap<WorkingCopyInfo, Set<File>>(3);
+    
+    private void addFileWithRepositoryAnnotation (WorkingCopyInfo info, File file) {
+        info.removePropertyChangeListener(this);
+        info.addPropertyChangeListener(this);
+        synchronized (filesWithRepositoryAnnotations) {
+            Set<File> files = filesWithRepositoryAnnotations.get(info);
+            if (files == null) {
+                filesWithRepositoryAnnotations.put(info, files = new HashSet<File>());
+            }
+            files.add(file);
+        }
+    }
+
+    @Override
+    public void propertyChange (final PropertyChangeEvent evt) {
+        if (WorkingCopyInfo.PROPERTY_WORKING_COPY_PARENT.equals(evt.getPropertyName())) {
+            Utils.post(new Runnable() {
+                @Override
+                public void run() {
+                    WorkingCopyInfo info = (WorkingCopyInfo) evt.getSource();
+                    Set<File> filesToRefresh;
+                    synchronized (filesWithRepositoryAnnotations) {
+                        filesToRefresh = filesWithRepositoryAnnotations.remove(info);
+                    }
+                    if (filesToRefresh != null && !filesToRefresh.isEmpty()) {
+                        Mercurial.getInstance().refreshAnnotations(filesToRefresh);
+                    }
+                }
+            }, 400);
+        }
+    }
+
+    private Image addToolTip (Image icon, VCSContext context) {
+        if (!VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false)) {
+            return icon;
+        }
+        File root = null;
+        File repository = null;
+        for (File f : context.getRootFiles()) {
+            File repo = Mercurial.getInstance().getRepositoryRoot(f);
+            if (repo != null) {
+                if (repository == null) {
+                    repository = repo;
+                    root = f;
+                } else if (!repository.equals(repo)) {
+                    // root files are from different repositories, do not annotate icon
+                    return icon;
+                }
+            }
+        }
+        if (repository != null) {
+            WorkingCopyInfo info = WorkingCopyInfo.getInstance(repository);
+            addFileWithRepositoryAnnotation(info, root);
+            HgLogMessage[] parents = info.getWorkingCopyParents();
+            String label = null;
+            if (parents.length == 1) {
+                HgLogMessage parent = parents[0];
+                String branchName = null;
+                for (String b : parent.getBranches()) {
+                    branchName = b;
+                }
+                if (branchName != null) {
+                    label = NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.currentBranch.toolTip", branchName); //NOI18N
+                }
+            } else if (parents.length > 1) {
+                String b1 = parents[0].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[0].getBranches()[0];
+                String b2 = parents[1].getBranches().length == 0 ? HgBranch.DEFAULT_NAME : parents[1].getBranches()[0];
+                if (b1.equals(b2)) {
+                    label = NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.mergeNeeded.oneBranch.toolTip", new Object[] { //NOI18N
+                        parents[0].getCSetShortID().substring(0, Math.min(7, parents[0].getCSetShortID().length())), 
+                        parents[1].getCSetShortID().substring(0, Math.min(7, parents[1].getCSetShortID().length())), 
+                        b1
+                    });
+                } else {
+                    label = NbBundle.getMessage(MercurialAnnotator.class, "LBL_Annotator.mergeNeeded.twoBranches.toolTip", new Object[] { b1, b2 }); //NOI18N
+                }
+            }
+            if (label != null) {
+                icon = ImageUtilities.addToolTipToImage(icon, label.toString());
+            }
+        }
+        return icon;
     }
 }

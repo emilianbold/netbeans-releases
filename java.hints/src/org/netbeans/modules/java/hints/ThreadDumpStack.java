@@ -50,18 +50,14 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 
@@ -80,28 +76,26 @@ public class ThreadDumpStack {
             ctx,
             treePath,
             NbBundle.getMessage (ThreadDumpStack.class, "MSG_ThreadDumpStack"),
-            new FixImpl (
+            JavaFix.toEditorFix(new FixImpl (
                 NbBundle.getMessage (
                     LoggerNotStaticFinal.class,
                     "MSG_ThreadDumpStack_fix"
                 ),
                 TreePathHandle.create (treePath, compilationInfo)
-            )
+            ))
         );
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
 
         private final String    text;
-        private final TreePathHandle
-                                treePathHandle;
 
         public FixImpl (
             String              text,
             TreePathHandle      loggerFieldHandle
         ) {
+            super(loggerFieldHandle);
             this.text = text;
-            this.treePathHandle = loggerFieldHandle;
         }
 
         @Override
@@ -110,28 +104,18 @@ public class ThreadDumpStack {
         }
 
         @Override
-        public ChangeInfo implement () throws Exception {
-            JavaSource.forFileObject (treePathHandle.getFileObject ()).runModificationTask (new Task<WorkingCopy> () {
-
-                @Override
-                public void run (WorkingCopy wc) throws Exception {
-                    wc.toPhase (Phase.RESOLVED);
-                    TreePath tp = treePathHandle.resolve (wc);
-                    if (tp == null) return;
-                    Tree expressionStatementTree = tp.getParentPath ().getLeaf ();
-                    Tree parent2 = tp.getParentPath ().getParentPath ().getLeaf ();
-                    if (!(parent2 instanceof BlockTree)) return;
-                    BlockTree blockTree = (BlockTree) parent2;
-                    List<? extends StatementTree> statements = blockTree.getStatements ();
-                    List<StatementTree> newStatements = new ArrayList<StatementTree> ();
-                    for (StatementTree statement : statements)
-                        if (statement != expressionStatementTree)
-                            newStatements.add (statement);
-                    BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, blockTree.isStatic());
-                    wc.rewrite (blockTree, newBlockTree);
-                }
-            }).commit ();
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            Tree expressionStatementTree = tp.getParentPath ().getLeaf ();
+            Tree parent2 = tp.getParentPath ().getParentPath ().getLeaf ();
+            if (!(parent2 instanceof BlockTree)) return;
+            BlockTree blockTree = (BlockTree) parent2;
+            List<? extends StatementTree> statements = blockTree.getStatements ();
+            List<StatementTree> newStatements = new ArrayList<StatementTree> ();
+            for (StatementTree statement : statements)
+                if (statement != expressionStatementTree)
+                    newStatements.add (statement);
+            BlockTree newBlockTree = wc.getTreeMaker ().Block (newStatements, blockTree.isStatic());
+            wc.rewrite (blockTree, newBlockTree);
         }
     } // End of FixImpl class
 }

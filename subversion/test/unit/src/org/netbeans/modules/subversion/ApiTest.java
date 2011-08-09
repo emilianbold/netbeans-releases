@@ -48,9 +48,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
@@ -76,11 +75,9 @@ public class ApiTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
-//        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-//        username = br.readLine();
-//        password = br.readLine();
-//        br.close();
-        workDir = FileUtils.createTmpFolder("svncoapi");
+        MockServices.setServices(new Class[] {
+            SubversionVCS.class});
+        workDir = new File(getWorkDir(), "wc");
 
         File dataRootDir = new File(getWorkDirPath()); ;
         repoDir = new File(dataRootDir, "repo");
@@ -88,7 +85,7 @@ public class ApiTest extends NbTestCase {
         TestKit.initRepo(repoDir, workDir);
 
         System.setProperty("svnClientAdapterFactory", "commandline");
-        System.setProperty("netbeans.user", dataRootDir.getAbsolutePath());
+        System.setProperty("netbeans.user", getDataDir().getAbsolutePath());
         
         BufferedReader br = null;
         try {
@@ -173,7 +170,7 @@ public class ApiTest extends NbTestCase {
                 username,
                 password,
                 true,
-                true);
+                false);
 
         assertTrue(workDir.exists());
         String[] files = workDir.list();

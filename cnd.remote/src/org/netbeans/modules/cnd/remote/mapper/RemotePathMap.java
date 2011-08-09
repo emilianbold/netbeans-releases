@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,6 +55,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Timer;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -187,6 +190,9 @@ public abstract class RemotePathMap extends PathMap {
                     max = key.length();
                     String mpoint = entry.getValue();
                     String rest = key.length() > lpath.length() ? "" : lpath.substring(key.length()).replace('\\', '/'); //NOI18N
+                    if (!mpoint.endsWith("/")) { // NOI18N
+                        mpoint += '/';
+                    }
                     rpath = mpoint + rest;
                 }
             }
@@ -210,6 +216,9 @@ public abstract class RemotePathMap extends PathMap {
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 String rest = (value.length() > rpath.length()) ? "" : rpath.substring(value.length()); //NOI18N
+                if (mpoint.length() > 0 && !mpoint.endsWith("/")) { //NOI18N
+                    mpoint += '/';
+                }
                 return mpoint + rest;
             }
         }        
@@ -449,6 +458,8 @@ public abstract class RemotePathMap extends PathMap {
 
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
+        private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000); // NOI18N
+        
         private CustomizableRemotePathMap(ExecutionEnvironment exc) {
             super(exc);
         }
@@ -457,9 +468,18 @@ public abstract class RemotePathMap extends PathMap {
         public void init() {
             if (!loadFromPrefs()) {
                 // 2. Automated mappings gathering entry point
-                HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
+                final HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
+                Timer timer = new Timer(TIMEOUT, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        ham.cancel();
+                    }
+                });
+                timer.setRepeats(false);
+                timer.start();
+                Map<String, String> mappings = ham.getMappings();
                 synchronized( map ) {
-                    map.putAll(ham.getMappings());
+                    map.putAll(mappings);
                 }
                 // TODO: what about consequent runs. User may share something, we need to check it
             }

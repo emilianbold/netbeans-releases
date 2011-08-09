@@ -90,7 +90,9 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     private SymfonyPhpFrameworkProvider() {
-        super(NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
+        super("Symfony PHP Web Framework", // NOI18N
+                NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkName"),
+                NbBundle.getMessage(SymfonyPhpFrameworkProvider.class, "LBL_FrameworkDescription"));
         badgeIcon = new BadgeIcon(
                 ImageUtilities.loadImage(ICON_PATH),
                 SymfonyPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
@@ -170,7 +172,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
         }
         return files.toArray(new File[files.size()]);
     }
-    
+
     private List<FileObject> getConfigFilesRecursively(FileObject parent) {
         List<FileObject> result = new LinkedList<FileObject>();
         for (FileObject child : parent.getChildren()) {

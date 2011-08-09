@@ -48,7 +48,10 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.channels.Channels;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -74,7 +77,9 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        File userdir = new File(getWorkDir().getParentFile(), "userdir");
+        userdir.mkdirs();
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
         super.setUp();
         repositoryLocation = new File(getWorkDir(), "work");
         clearWorkDir();
@@ -242,5 +247,49 @@ public abstract class AbstractGitTestCase extends NbTestCase {
             return new HashSet<String>(interestingFiles);
         }
 
+    }
+
+    protected final void runExternally (File workdir, List<String> command) throws Exception {
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(workdir);
+        Process p = pb.start();
+        final BufferedReader outReader = new BufferedReader(Channels.newReader(Channels.newChannel(p.getInputStream()), "UTF-8"));
+        final BufferedReader errReader = new BufferedReader(Channels.newReader(Channels.newChannel(p.getErrorStream()), "UTF-8"));
+        final List<String> output = new LinkedList<String>();
+        final List<String> err = new LinkedList<String>();
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    for (String line = outReader.readLine(); line != null; line = outReader.readLine()) {
+                        output.add(line);
+                    }
+                } catch (IOException ex) {
+                    
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    for (String line = errReader.readLine(); line != null; line = errReader.readLine()) {
+                        err.add(line);
+                    }
+                } catch (IOException ex) {
+                    
+                }
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        p.waitFor();
+        outReader.close();
+        errReader.close();
+        if (!err.isEmpty()) {
+            throw new Exception(err.toString());
+        }
     }
 }

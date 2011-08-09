@@ -57,8 +57,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
@@ -89,22 +90,20 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Michal Mocnak
  */
-public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
+public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
 
     private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(HudsonInstanceImpl.class.getName(),
-            // Permit concurrent connections to several servers; semaphore serializes per server.
-            10);
-    
+
     private HudsonInstanceProperties properties;
     private final HudsonConnector connector;
     
     private HudsonVersion version;
     private boolean connected;
+    private boolean forbidden;
     private boolean terminated;
     
-    private final Synchronization synchronization;
-    private final Semaphore semaphore;
+    private final RequestProcessor RP;
+    private final Task synchronization;
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
@@ -118,21 +117,29 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     private final Map<String,Reference<RemoteFileSystem>> workspaces = new HashMap<String,Reference<RemoteFileSystem>>();
     private final Map<String,Reference<RemoteFileSystem>> artifacts = new HashMap<String,Reference<RemoteFileSystem>>();
     
-    private HudsonInstanceImpl(HudsonInstanceProperties properties) {
+    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive) {
         this.properties = properties;
         this.connector = new HudsonConnector(this);
-        this.synchronization = new Synchronization();
-        this.semaphore = new Semaphore(1, true);
-        this.terminated = false;
-        
-        // Start synchronization
-        synchronization.start();
-        
-        // Add property listener for synchronization
+        RP = new RequestProcessor(getUrl(), 1, true);
+        final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
+        synchronization = RP.create(new Runnable() {
+            @Override public void run() {
+                String s = getProperties().get(INSTANCE_SYNC);
+                int pause = Integer.parseInt(s) * 60 * 1000;
+                if (pause > 0 || firstSynch.compareAndSet(true, false)) {
+                    doSynchronize(false);
+                }
+                if (pause > 0) {
+                    synchronization.schedule(pause);
+                }
+            }
+        });
+        synchronization.schedule(0);
         this.properties.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(INSTANCE_SYNC))
-                    synchronization.start();
+            @Override public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(INSTANCE_SYNC)) {
+                    synchronization.schedule(0);
+                }
             }
         });
         
@@ -206,11 +213,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     }
     
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
-        return createHudsonInstance(new HudsonInstanceProperties(name, url, sync));
+        return createHudsonInstance(new HudsonInstanceProperties(name, url, sync), true);
     }
     
-    public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties) {
-        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties);
+    public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive) {
+        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive);
         assert instance.getName() != null;
         assert instance.getUrl() != null;
         assert Integer.parseInt(instance.getProperties().get(INSTANCE_SYNC)) >= 0;
@@ -223,9 +230,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     public void terminate() {
         // Clear all
-        synchronization.stop();
+        RP.stop();
         terminated = true;
         connected = false;
+        forbidden = false;
         version = null;
         jobs.clear();
         views.clear();
@@ -247,7 +255,11 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public boolean isConnected() {
         return connected;
     }
-    
+
+    public boolean isForbidden() {
+        return forbidden;
+    }
+
     public HudsonInstanceProperties getProperties() {
         return properties;
     }
@@ -304,9 +316,24 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
         this.primaryView = primaryView;
     }
 
+    /**
+     * Initiate synchronization: fetching refreshed job data from the server.
+     * Will run asynchronously.
+     * @param authentication to prompt for login if the anonymous user cannot even see the job list; set to true for explicit user gesture, false otherwise
+     */
+    public void synchronize(final boolean authentication) {
+        if (terminated) {
+            return;
+        }
+        RP.post(new Runnable() {
+            @Override public void run() {
+                doSynchronize(authentication);
+            }
+        });
+    }
+
     @Messages("MSG_Synchronizing=Synchronizing {0}")
-    public synchronized void synchronize() {
-        if (semaphore.tryAcquire()) {
+    private void doSynchronize(final boolean authentication) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
             final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
             handle.set(ProgressHandleFactory.createHandle(
@@ -315,7 +342,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                 public boolean cancel() {
                     Thread t = synchThread.get();
                     if (t != null) {
-                        LOG.fine("Cancelling synchronization of " + getUrl());
+                        LOG.log(Level.FINE, "Cancelling synchronization of {0}", getUrl());
+                        if (!isPersisted()) {
+                            properties.put(INSTANCE_SYNC, "0");
+                        }
                         t.interrupt();
                         handle.get().finish();
                         return true;
@@ -327,15 +357,13 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             
             handle.get().start();
             
-            RP.post(new Runnable() {
-                public void run() {
                     synchThread.set(Thread.currentThread());
                     try {
                         // Get actual views
                         Collection<HudsonView> oldViews = getViews();
                         
                         // Retrieve jobs
-                        Collection<HudsonJob> retrieved = getConnector().getAllJobs();
+                        Collection<HudsonJob> retrieved = getConnector().getAllJobs(authentication);
                         
                         // Exit when instance is terminated
                         if (terminated)
@@ -343,7 +371,8 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         
                         // Set connected and version
                         connected = getConnector().isConnected();
-                        version = getConnector().getHudsonVersion();
+                        version = getConnector().getHudsonVersion(authentication);
+                        forbidden = getConnector().forbidden;
                         
                         // Update state
                         fireStateChanges();
@@ -375,13 +404,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                         fireContentChanges();
                     } finally {
                         handle.get().finish();
-                        
-                        // Release synchronization lock
-                        semaphore.release();
                     }
-                }
-            });
-        }
     }
     
     public void addHudsonChangeListener(HudsonChangeListener l) {
@@ -482,31 +505,6 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
             }
             return fs;
         }
-    }
-
-    private class Synchronization implements Runnable {
-        
-        private final RequestProcessor processor = new RequestProcessor(getUrl(), 1, true);
-        private final Task task = processor.create(this);
-        
-        public synchronized void start() {
-            task.schedule(0);
-        }
-        
-        public synchronized void stop() {
-            task.cancel();
-        }
-        
-        public void run() {
-            synchronize();
-            // Refresh wait time
-            String s = getProperties().get(INSTANCE_SYNC);
-            int pause = Integer.parseInt(s) * 60 * 1000;
-            if (pause > 0) {
-                task.schedule(pause);
-            }
-        }
-
     }
 
 }

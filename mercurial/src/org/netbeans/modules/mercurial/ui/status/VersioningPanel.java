@@ -360,7 +360,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         if(context == null || context.getRootFiles().size() == 0) {
             return;
         }
-        UpdateAction.update(context);
+        UpdateAction.update(context, null);
         parentTopComponent.contentRefreshed();
     }
     

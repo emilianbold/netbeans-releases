@@ -487,36 +487,36 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
         enableAsyncMappingCB.setContentAreaFilled(false);
         enableAsyncMappingCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(23, 23, 23)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(enableAsyncMappingCB)
-                    .add(enableWrapperStyleCB)
-                    .add(layout.createSequentialGroup()
-                        .add(javaClassLabel)
-                        .add(16, 16, 16)
-                        .add(javaClassText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 237, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(21, 21, 21)
-                        .add(defaultJavaClassCB)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(23, 23, 23)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(enableAsyncMappingCB)
+                    .addComponent(enableWrapperStyleCB)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(javaClassLabel)
+                        .addGap(16, 16, 16)
+                        .addComponent(javaClassText, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(21, 21, 21)
+                        .addComponent(defaultJavaClassCB)))
                 .addContainerGap(33, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(26, 26, 26)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(javaClassLabel)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(javaClassText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(defaultJavaClassCB)))
-                .add(18, 18, 18)
-                .add(enableWrapperStyleCB)
-                .add(15, 15, 15)
-                .add(enableAsyncMappingCB)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(javaClassLabel)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(javaClassText, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(defaultJavaClassCB)))
+                .addGap(18, 18, 18)
+                .addComponent(enableWrapperStyleCB)
+                .addGap(15, 15, 15)
+                .addComponent(enableAsyncMappingCB)
                 .addContainerGap(25, Short.MAX_VALUE))
         );
 

@@ -36,4 +36,4 @@ public class RenamedCtor {
 
 }
 Deleted file:
-/space/nb-hg/jet-main/refactoring.java/build/test/qa-functional/data/projects/RefactoringTest/src/renameClass/RenameCtor.java
+/renameClass/RenameCtor.java

@@ -41,6 +41,9 @@
  */
 package org.netbeans.core.spi.multiview.text;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.io.ByteArrayInputStream;
@@ -49,14 +52,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.multiview.MultiViewProcessorTest.LP;
 import org.netbeans.junit.NbTestCase;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 
 
 /**
@@ -83,9 +95,7 @@ public class MultiViewEditorElementTest extends NbTestCase {
         InstanceContent ic = new InstanceContent();
         Lookup context = new AbstractLookup(ic);
         
-        Env env = new Env();
-        CES ces = new CES(env, context);
-        env.setSupport(ces);
+        CloneableEditorSupport ces = createSupport(context);
         ic.add(ces);
         ic.add(10);
         
@@ -101,6 +111,59 @@ public class MultiViewEditorElementTest extends NbTestCase {
         assertEquals("ces", ces, deser.getLookup().lookup(CloneableEditorSupport.class));
     }
     
+    public void testLookupProvidersAreConsistent() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        Lookup context = new AbstractLookup(ic);
+
+        CloneableEditorSupport ces = createSupport(context);
+        ic.add(ces);
+        ic.add(10);
+
+        final CloneableTopComponent tc = MultiViews.createCloneableMultiView("text/plaintest", new LP(context));
+        final CloneableEditorSupport.Pane p = (CloneableEditorSupport.Pane) tc;
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                tc.open();
+                tc.requestActive();
+                p.updateName();
+            }
+        });
+
+        assertNull("No icon yet", tc.getIcon());
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+        final MultiViewPerspective[] one = handler.getPerspectives();
+        assertEquals("One element only" + Arrays.asList(one), 1, handler.getPerspectives().length);
+        assertEquals("First one is source", "source", one[0].preferredID());
+        handler.requestVisible(one[0]);
+        
+        List<Lookup.Provider> arr = new ArrayList<Provider>();
+        findProviders(tc, arr);
+        assertEquals("Two providers: " + arr, 2, arr.size());
+
+        assertSame("Both return same lookup", arr.get(0).getLookup(), arr.get(1).getLookup());
+    }    
+    
+    public static CloneableEditorSupport createSupport(Lookup lkp) {
+        final Env env = new Env();
+        CES ces = new CES(env, lkp);
+        env.setSupport(ces);
+        return ces;
+    }
+
+    private void findProviders(Component tc, List<Provider> arr) {
+        System.err.println("test: " + tc);
+        if (tc instanceof Provider) {
+            arr.add((Provider)tc);
+        }
+        if (tc instanceof Container) {
+            Container c = (Container) tc;
+            for (Component child : c.getComponents()) {
+                findProviders(child, arr);
+            }
+        }
+    }
+
     
     static class CES extends CloneableEditorSupport {
         public CES(Env env, Lookup l) {
@@ -173,7 +236,11 @@ public class MultiViewEditorElementTest extends NbTestCase {
          */
         @Override
         public InputStream inputStream() throws IOException {
-            return new ByteArrayInputStream(output.getBytes());
+            byte[] arr = output == null ? null : output.getBytes();
+            if (arr == null) {
+                arr = new byte[0];
+            }
+            return new ByteArrayInputStream(arr);
         }
 
         /** Obtains the output stream.

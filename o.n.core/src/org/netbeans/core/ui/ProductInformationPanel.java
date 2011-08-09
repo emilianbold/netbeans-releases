@@ -68,19 +68,36 @@ import org.netbeans.core.actions.HTMLViewAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
+import static org.netbeans.core.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 public class ProductInformationPanel extends JPanel implements HyperlinkListener {
 
     URL url = null;
     Icon about;
     
+    @Messages({
+        "# {0} - product version",
+        "# {1} - Java version",
+        "# {2} - VM version",
+        "# {3} - OS",
+        "# {4} - encoding",
+        "# {5} - locale",
+        "# {6} - user dir",
+        "# {7} - cache dir",
+        "LBL_description=<div style=\"font-size: 12pt; font-family: Verdana, 'Verdana CE',  Arial, 'Arial CE', 'Lucida Grande CE', lucida, 'Helvetica CE', sans-serif;\">"
+            + "<p style=\"margin: 0\"><b>Product Version:</b> {0}</p>\n "
+            + "<p style=\"margin: 0\"><b>Java:</b> {1}; {2}</p>\n "
+            + "<p style=\"margin: 0\"><b>System:</b> {3}; {4}; {5}</p>\n "
+            + "<p style=\"margin: 0\"><b>User directory:</b> {6}</p>\n "
+            + "<p style=\"margin: 0\"><b>Cache directory:</b> {7}</p></div>"
+    })
     public ProductInformationPanel() {
         initComponents();
         imageLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        description.setText(org.openide.util.NbBundle.getMessage(ProductInformationPanel.class, 
-                "LBL_Description", new Object[] {getProductVersionValue(), getJavaValue(), getVMValue(), 
-                getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue()}));
+        description.setText(LBL_description(getProductVersionValue(), getJavaValue(), getVMValue(), getOperatingSystemValue(), getEncodingValue(), getSystemLocaleValue(), getUserDirValue(), Places.getCacheDirectory().getAbsolutePath()));
         description.setCaretPosition(0); // so that text is not scrolled down
         description.addHyperlinkListener(this);
         copyright.addHyperlinkListener(this);
