@@ -456,9 +456,15 @@ public class LogReader {
     private static int[] foundCompiler(String line, String ... patterns){
         for(String pattern : patterns)    {
             int start = line.indexOf(pattern);
-            if (start>=0) {
-                int end = start + pattern.length();
-                return new int[]{start,end};
+            if (start >=0) {
+                char prev = ' ';
+                if (start > 0) {
+                    prev = line.charAt(start-1);
+                }
+                if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' ) {
+                    int end = start + pattern.length();
+                    return new int[]{start,end};
+                }
             }
         }
         return null;
