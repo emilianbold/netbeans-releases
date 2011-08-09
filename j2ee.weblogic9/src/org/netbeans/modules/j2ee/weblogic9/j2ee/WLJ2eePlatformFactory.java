@@ -157,6 +157,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Version JDK6_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("10.3"); // NOI18N
 
+    private static final Version JPA2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
+
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
@@ -681,7 +683,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
             if (newDefaultJpaProvider == null) {
-                newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
+                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(dm.getServerVersion())) {
+                    newDefaultJpaProvider = ECLIPSELINK_JPA_PROVIDER;
+                } else {
+                    newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
+                }
             }
 
             synchronized (this) {
