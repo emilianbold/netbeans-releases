@@ -232,6 +232,15 @@ class RevisionNode extends AbstractNode {
         public void actionPerformed(ActionEvent e) {
             SummaryView.rollback(event);
         }
+
+        @Override
+        public boolean isEnabled () {
+            boolean enbl = false;
+            if (event != null && event.getFile() != null) {
+                enbl = true;
+            }
+            return enbl;
+        }
     }
 
     private static class RevertModificationsAction extends NodeAction {
