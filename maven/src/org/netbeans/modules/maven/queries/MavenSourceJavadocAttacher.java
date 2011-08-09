@@ -65,27 +65,19 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=SourceJavadocAttacherImplementation.class, position=200)
 public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
-    private static final RequestProcessor RP =
-            new RequestProcessor(MavenSourceJavadocAttacher.class);
+    private static final RequestProcessor RP = new RequestProcessor(MavenSourceJavadocAttacher.class);
 
-    @Override public boolean attachSources(
-            @NonNull final URL root,
-            @NonNull final AttachmentListener listener) throws IOException {
+    @Override public boolean attachSources(@NonNull URL root, @NonNull AttachmentListener listener) throws IOException {
         return attach(root, listener, false);
     }
 
-    @Override public boolean attachJavadoc(
-            @NonNull final URL root,
-            @NonNull final AttachmentListener listener) throws IOException {
+    @Override public boolean attachJavadoc(@NonNull URL root, @NonNull AttachmentListener listener) throws IOException {
         return attach(root, listener, true);
     }
 
     @Messages({"# {0} - artifact ID", "attaching=Attaching {0}"})
-    private boolean attach(
-        @NonNull final URL root,
-        @NonNull final AttachmentListener listener,
-        final boolean javadoc) throws IOException {
-        final File file = FileUtil.archiveOrDirForURL(root);
+    private boolean attach(@NonNull URL root, @NonNull final AttachmentListener listener, final boolean javadoc) throws IOException {
+        File file = FileUtil.archiveOrDirForURL(root);
         if (file == null) {
             return false;
         }
@@ -93,9 +85,8 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         if (coordinates == null) {
             return false;
         }
-        final Runnable call = new Runnable() {
-            @Override
-            public void run() {
+        RP.post(new Runnable() {
+            @Override public void run() {
                 boolean attached = false;
                 try {
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
@@ -119,6 +110,7 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                         }
                     } catch (ThreadDeath d) {
                     } catch (AbstractArtifactResolutionException x) {
+                        // XXX probably ought to display some sort of notification in status bar
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
@@ -131,8 +123,7 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                     }
                 }
             }
-        };
-        RP.post(call);
+        });
         return true;
     }
 }
