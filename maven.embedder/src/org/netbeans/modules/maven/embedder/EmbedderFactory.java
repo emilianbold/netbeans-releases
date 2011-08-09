@@ -74,6 +74,11 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  *
@@ -188,6 +193,8 @@ public final class EmbedderFactory {
         
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         pc.setLoggerManager(new NbLoggerManager());
+
+        addComponentDescriptor(pc, RepositoryConnectorFactory.class, OfflineConnector.class, "offline");
        
         Properties props = new Properties();
         props.putAll(System.getProperties());
@@ -237,6 +244,18 @@ public final class EmbedderFactory {
         return embedder;
     }
 
+    public static final class OfflineConnector implements RepositoryConnectorFactory {
+        @Override public RepositoryConnector newInstance(RepositorySystemSession session, RemoteRepository repository) throws NoRepositoryConnectorException {
+            // Throwing NoRepositoryConnectorException is ineffective because DefaultRemoteRepositoryManager will just skip to WagonRepositoryConnectorFactory.
+            // (No apparent way to suppress WRCF from the Plexus container; using "wagon" as the role hint does not work.)
+            // Could also return a no-op RepositoryConnector which would perform no downloads.
+            // But we anyway want to ensure that related code is consistently setting the offline flag on all Maven structures that require it.
+            throw new AssertionError();
+        }
+        @Override public int getPriority() {
+            return Integer.MAX_VALUE;
+        }
+    }
 
     public synchronized static MavenEmbedder getProjectEmbedder() /*throws MavenEmbedderException*/ {
         if (project == null) {

@@ -57,7 +57,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -1621,17 +1620,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         }
 
-        private WeakReference<MavenEmbedder> embedderRef = null;
-
-        private MavenEmbedder getEmbedder() {
-            MavenEmbedder res = (null!=embedderRef ? embedderRef.get() : null);
-            if (null == res) {
-                res = EmbedderFactory.getOnlineEmbedder();
-                embedderRef = new WeakReference<MavenEmbedder>(res);
-            }
-            return res;
-        }
-
         private final Map<ArtifactInfo,List<Dependency>> dependenciesByArtifact = new WeakHashMap<ArtifactInfo,List<Dependency>>();
 
         public @Override void populateArtifactInfo(ArtifactContext context) throws IOException {
@@ -1676,18 +1664,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private MavenProject load(ArtifactInfo ai) {
             try {
-                Artifact projectArtifact = getEmbedder().createArtifact(
+                MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+                Artifact projectArtifact = embedder.createArtifact(
                         ai.groupId,
                         ai.artifactId,
                         ai.version,
                         ai.packaging != null ? ai.packaging : "jar");
                 DefaultProjectBuildingRequest dpbr = new DefaultProjectBuildingRequest();
-                dpbr.setLocalRepository(getEmbedder().getLocalRepository());
+                dpbr.setLocalRepository(embedder.getLocalRepository());
                 dpbr.setRemoteRepositories(remoteRepos);
                 dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-                dpbr.setSystemProperties(getEmbedder().getSystemProperties());
-                
-                ProjectBuildingResult res = getEmbedder().buildProject(projectArtifact, dpbr);
+                dpbr.setSystemProperties(embedder.getSystemProperties());
+                ProjectBuildingResult res = embedder.buildProject(projectArtifact, dpbr);
                 if (res.getProject() != null) {
                     return res.getProject();
                 } else {

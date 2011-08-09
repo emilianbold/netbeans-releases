@@ -322,7 +322,6 @@ public final class MavenEmbedder {
         }
         
         req.setSystemProperties(getSystemProperties());
-        req.setOffline(isOffline());
         try {
             populator.populateDefaults(req);
             populator.populateFromSettings(req, getSettings());
@@ -330,6 +329,7 @@ public final class MavenEmbedder {
             // XXX where to display this?
             Exceptions.printStackTrace(x);
         }
+        req.setOffline(isOffline());
 
         return req;
     }
