@@ -291,7 +291,7 @@ public class SourceMultiViewElement extends CloneableEditor
                             "MSG_SaveFile", // NOI18N
                             wadlDataObject.getPrimaryFile().getNameExt()));     
         return MultiViewFactory.createUnsafeCloseState(
-                "ID_JAXWS_CLOSING", // NOI18N
+                "ID_TEXT_CLOSING", // NOI18N
                 save,
                 MultiViewFactory.NOOP_CLOSE_ACTION);
         // return a placeholder state - to be sure our CloseHandler is called
