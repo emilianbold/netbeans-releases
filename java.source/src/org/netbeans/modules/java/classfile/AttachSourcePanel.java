@@ -52,7 +52,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 public class AttachSourcePanel extends javax.swing.JPanel {
