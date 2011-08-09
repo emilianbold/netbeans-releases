@@ -191,7 +191,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
     final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
-    
+
     final static String[] PHP_CLASS_KEYWORDS = {
         PHP_CLASS_KEYWORD_THIS, "self::", "parent::" //NOI18N
     };
@@ -499,7 +499,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 NameKind.prefix(prefix);
             Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
             Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
-            
+
             for (MethodElement constructor : constructors) {
                 for (final PHPCompletionItem.NewClassItem newClassItem :
                         PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
@@ -521,7 +521,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                                 completionResult.add(newClassItem);
                             }
                         }
-                        addedExact = true; 
+                        addedExact = true;
                     }
                 } else {
                     // put to the cc just the class
@@ -529,7 +529,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        
+
     }
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,
@@ -570,11 +570,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
         }
     }
-    
+
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         autoCompleteTypeNames(completionResult, request, null, false);
     }
-    
+
     private void autoCompleteAfterUses(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
                 NameKind.prefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
@@ -599,7 +599,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             completionResult.add(new PHPCompletionItem.ConstantItem(element, request));
         }
     }
-    
+
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
         if (request.prefix.trim().length() > 0) {
             autoCompleteClassNames(completionResult, request, endWithDoubleColon, kind);
@@ -696,7 +696,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-        }        
+        }
     }
 
     private static Set<String> toNames(Set<? extends PhpElement> elements) {
@@ -766,7 +766,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (TypeScope typeScope : types) {
                     final StaticOrInstanceMembersFilter staticFlagFilter =
                             new StaticOrInstanceMembersFilter(staticContext, instanceContext, selfContext, staticLateBindingContext);
-                    
+
                     final ElementFilter methodsFilter = ElementFilter.allOf(
                             ElementFilter.forKind(PhpElementKind.METHOD),
                             ElementFilter.forName(NameKind.prefix(request.prefix)),
@@ -884,7 +884,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             } else if (element instanceof ClassElement) {
                 completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, true, null));
-            } else if (element instanceof InterfaceElement) {                
+            } else if (element instanceof InterfaceElement) {
                 completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, true));
             } else if (offerGlobalVariables && element instanceof VariableElement) {
                 globalVariables.add((VariableElement)element);
@@ -906,7 +906,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(className, keyword, request));
                     }
                 }
-            }            
+            }
         }
     }
 
@@ -956,7 +956,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String typeName = typeNames.size() > 1 ? "mixed" : ModelUtils.getFirst(typeNames);//NOI18N
                     final Set<QualifiedName> qualifiedNames = typeName != null
                             ? Collections.singleton(QualifiedName.create(typeName))
-                            : Collections.<QualifiedName>emptySet();                    
+                            : Collections.<QualifiedName>emptySet();
                     if (realFileObject != null) {
                         //#183928 -  Extend model to allow CTRL + click for 'view/action' variables
                         proposals.put(name, new PHPCompletionItem.VariableItem(
@@ -1186,7 +1186,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     return QueryType.ALL_COMPLETION;
                 }
             }
-            if (OptionsUtils.autoCompletionNamespaces()) {                
+            if (OptionsUtils.autoCompletionNamespaces()) {
                 if(t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
                     return isPhp_53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
                 }
@@ -1244,7 +1244,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         private final boolean staticAllowed;
         private final boolean nonstaticAllowed;
         private final boolean forStaticLateBinding;
-        public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext, 
+        public StaticOrInstanceMembersFilter(final boolean forStaticContext, final boolean forInstanceContext,
                 final boolean forSelfContext, final boolean forStaticLateBinding) {
             this.forStaticContext = forStaticContext;
             this.forInstanceContext = forInstanceContext;
@@ -1277,7 +1277,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             final boolean isStatic = element.getPhpModifiers().isStatic();
             return isStatic || (nonstaticAllowed && !forStaticLateBinding && element.getPhpElementKind().equals(PhpElementKind.METHOD));
         }
-        
+
         private boolean isAcceptedForSelfContext(final PhpElement element) {
             return forSelfContext && nonstaticAllowed && !element.getPhpElementKind().equals(PhpElementKind.FIELD);
         }
