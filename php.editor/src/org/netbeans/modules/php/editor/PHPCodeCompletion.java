@@ -188,11 +188,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
 
     final static String[] PHP_CLASS_KEYWORDS = {
-        PHP_CLASS_KEYWORD_THIS, "self::", "parent::" //NOI18N
+        PHP_CLASS_KEYWORD_THIS, "self::", "parent::", "static::" //NOI18N
     };
 
     final static String[] PHP_STATIC_CLASS_KEYWORDS = {
-        "self::", "parent::"
+        "self::", "parent::", "static::" //NOI18N
     };
 
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
