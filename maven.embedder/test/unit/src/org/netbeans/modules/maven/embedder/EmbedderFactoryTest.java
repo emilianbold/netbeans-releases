@@ -66,8 +66,6 @@ public class EmbedderFactoryTest extends NbTestCase {
         clearWorkDir();
     }
 
-    // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
-
     public void testCreateModelLineage() throws Exception {
         File pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
             "<modelVersion>4.0.0</modelVersion>" +
