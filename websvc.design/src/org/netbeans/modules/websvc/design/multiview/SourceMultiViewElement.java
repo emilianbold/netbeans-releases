@@ -55,6 +55,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
@@ -75,6 +76,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -298,9 +300,7 @@ public class SourceMultiViewElement extends CloneableEditor
             return CloseOperationState.STATE_OK;
         }
         // return a state which will save/discard changes and is called by close handler
-        return MultiViewFactory.createUnsafeCloseState(
-                MultiViewSupport.SOURCE_UNSAFE_CLOSE,
-                new AbstractAction() {
+        AbstractAction save = new AbstractAction(){
                     public void actionPerformed(ActionEvent arg0) {
                         //save changes
                         try {
@@ -309,12 +309,15 @@ public class SourceMultiViewElement extends CloneableEditor
                         } catch (IOException ex) {
                         }
                     }
-                },
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent arg0) {
-                        //discard changes
-                    }
-                });
+
+                };
+        save.putValue(Action.LONG_DESCRIPTION, NbBundle.getMessage(DataObject.class,
+                            "MSG_SaveFile", // NOI18N
+                            getEditorSupport().getDataObject().getPrimaryFile().getNameExt()));     
+        return MultiViewFactory.createUnsafeCloseState(
+                "ID_JAXWS_CLOSING", // NOI18N
+                save,
+                MultiViewFactory.NOOP_CLOSE_ACTION);
     }
     
     private DataEditorSupport getEditorSupport() {

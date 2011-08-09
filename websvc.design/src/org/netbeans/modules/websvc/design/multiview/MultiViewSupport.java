@@ -75,6 +75,7 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.loader.JaxWsDataLoader;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.openide.util.Lookup;
 
 /**
  * Class for creating the Multiview
@@ -313,7 +314,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * reference to DataObject only - to be serializable with the multiview
      * TopComponent without problems.
      */
-    @MimeRegistration(mimeType=JaxWsDataLoader.JAVA_MIME_TYPE, 
+/*    @MimeRegistration(mimeType=JaxWsDataLoader.JAXWS_MIME_TYPE, 
             service=CloseOperationHandler.class)
     public static class CloseHandler implements CloseOperationHandler, Serializable {
 
@@ -321,15 +322,15 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         private DataObject sourceDataObject;
 
         private CloseHandler() {
-            super();
+            int a =0;
         }
 
-        public CloseHandler(DataObject sourceDataObject) {
-            this.sourceDataObject = sourceDataObject;
+        public CloseHandler(DataObject dataObject) {
+            this.sourceDataObject = dataObject;
         }
 
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            StringBuffer message = new StringBuffer();
+            StringBuilder message = new StringBuilder();
             for (CloseOperationState state : elements) {
                 if (state.getCloseWarningID().equals(SOURCE_UNSAFE_CLOSE)) {
                     message.append(NbBundle.getMessage(DataObject.class,
@@ -356,5 +357,5 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             return true;
         }
     }
-
+*/
 }
