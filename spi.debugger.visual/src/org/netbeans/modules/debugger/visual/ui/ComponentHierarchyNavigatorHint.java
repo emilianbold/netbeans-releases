@@ -39,56 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.actions;
+package org.netbeans.modules.debugger.visual.ui;
 
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import org.netbeans.spi.navigator.NavigatorLookupHint;
 
 /**
- * Show the list of listeners attached to a remote component.
+ * A content type for Navigator.
  * 
  * @author Martin Entlicher
  */
-public class ShowListenersAction extends NodeAction {
+public class ComponentHierarchyNavigatorHint implements NavigatorLookupHint {
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(GoToSourceAction.class, "CTL_ShowListeners");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowListenersAction.class);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
+    public String getContentType() {
+        return "text/x-debugger-visual-component";
     }
     
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node n : activatedNodes) {
-            AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
-            if (ci != null) {
-                TopComponent tc = WindowManager.getDefault().findTopComponent("eventsView");
-                if (tc == null) {
-                    throw new IllegalArgumentException("eventsView");
-                }
-                tc.open();
-                tc.requestActive();
-            }
-        }
-    }
-
 }

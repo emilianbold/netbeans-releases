@@ -75,6 +75,7 @@ import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -83,21 +84,26 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
+import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
+import org.netbeans.spi.debugger.visual.ComponentInfo;
+import org.netbeans.spi.debugger.visual.RemoteScreenshot;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Takes screenshot of a remote application.
  * 
  * @author Martin Entlicher
  */
-public class RemoteScreenshot {
+public class RemoteAWTScreenshot {
     
-    private static final Logger logger = Logger.getLogger(RemoteScreenshot.class.getName());
+    private static final Logger logger = Logger.getLogger(RemoteAWTScreenshot.class.getName());
     
     private static final String AWTThreadName = "AWT-EventQueue-";  // NOI18N
     
@@ -106,10 +112,10 @@ public class RemoteScreenshot {
     private DebuggerEngine engine;
     private String title;
     private BufferedImage image;
-    private ComponentInfo componentInfo;
+    private AWTComponentInfo componentInfo;
     
-    private RemoteScreenshot(DebuggerEngine engine, String title, int width, int height,
-                             int[] dataArray, ComponentInfo componentInfo) {
+    private RemoteAWTScreenshot(DebuggerEngine engine, String title, int width, int height,
+                             int[] dataArray, AWTComponentInfo componentInfo) {
         this.engine = engine;
         this.title = title;
         final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -117,6 +123,13 @@ public class RemoteScreenshot {
         raster.setDataElements(0, 0, width, height, dataArray);
         this.image = bi;
         this.componentInfo = componentInfo;
+    }
+    
+    private static RemoteScreenshot createRemoteAWTScreenshot(DebuggerEngine engine, String title, int width, int height, int[] dataArray, AWTComponentInfo componentInfo) {
+        final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        WritableRaster raster = bi.getRaster();
+        raster.setDataElements(0, 0, width, height, dataArray);
+        return new RemoteScreenshot(engine, title, width, height, bi, componentInfo);
     }
     
     public DebuggerEngine getDebuggerEngine() {
@@ -131,7 +144,7 @@ public class RemoteScreenshot {
         return image;
     }
     
-    public ComponentInfo getComponentInfo() {
+    public AWTComponentInfo getComponentInfo() {
         return componentInfo;
     }
     
@@ -192,7 +205,7 @@ public class RemoteScreenshot {
         final Method getWindows = windowClass.concreteMethodByName("getWindows", "()[Ljava/awt/Window;");
         if (getWindows == null) {
             logger.fine("No getWindows() method!");
-            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
+            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getWindows()");
             throw new RetrievalException(msg);
         }
 
@@ -226,38 +239,38 @@ public class RemoteScreenshot {
                         Method isVisible = windowClass.concreteMethodByName("isVisible", "()Z");
                         if (isVisible == null) {
                             logger.fine("No isVisible() method!");
-                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.isVisible()");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.isVisible()");
                             throw new RetrievalException(msg);
                         }
                         Method getOwner = windowClass.concreteMethodByName("getOwner", "()Ljava/awt/Window;");
                         if (getOwner == null) {
                             logger.fine("No getOwner() method!");
-                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getOwner()");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getOwner()");
                             throw new RetrievalException(msg);
                         }
                         Method getSize = windowClass.concreteMethodByName("getSize", "()Ljava/awt/Dimension;");
                         if (getSize == null) {
                             logger.fine("No getSize() method!");
-                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getSize()");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Window.getSize()");
                             throw new RetrievalException(msg);
                         }
                         ClassType dimensionClass = RemoteServices.getClass(vm, "java.awt.Dimension");
                         if (dimensionClass == null) {
                             logger.fine("No Dimension");
-                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.Dimension");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.Dimension");
                             throw new RetrievalException(msg);
                         }
                         ClassType bufferedImageClass = RemoteServices.getClass(vm, "java.awt.image.BufferedImage");
                         if (bufferedImageClass == null) {
                             logger.fine("No BufferedImage class.");
-                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.image.BufferedImage");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingClass", "java.awt.image.BufferedImage");
                             throw new RetrievalException(msg);
                         }
                         Method bufferedImageConstructor = bufferedImageClass.concreteMethodByName("<init>", "(III)V");
                         Method createGraphics = bufferedImageClass.concreteMethodByName("createGraphics", "()Ljava/awt/Graphics2D;");
                         if (createGraphics == null) {
                             logger.fine("createGraphics() method is not found!");
-                            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.image.BufferedImage.createGraphics()");
+                            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.image.BufferedImage.createGraphics()");
                             throw new RetrievalException(msg);
                         }
 
@@ -346,9 +359,9 @@ public class RemoteScreenshot {
                             }
 
                             ClassType containerClass = RemoteServices.getClass(vm, "java.awt.Container");
-                            ComponentInfo componentInfo = retrieveComponentTree((JPDAThreadImpl) t, containerClass, window);
+                            AWTComponentInfo componentInfo = retrieveComponentTree((JPDAThreadImpl) t, containerClass, window);
 
-                            screenshots.add(new RemoteScreenshot(engine, title, width, height, dataArray, componentInfo));
+                            screenshots.add(createRemoteAWTScreenshot(engine, title, width, height, dataArray, componentInfo));
                         }
                     } catch (RetrievalException rex) {
                         retrievalExceptionPtr[0] = rex;
@@ -371,6 +384,7 @@ public class RemoteScreenshot {
                         retrievalExceptionPtr[0] =  new RetrievalException(itsex.getMessage(), itsex);
                     }
                 }
+
             });
             
         } catch (PropertyVetoException pvex) {
@@ -383,7 +397,7 @@ public class RemoteScreenshot {
         return screenshots.toArray(new RemoteScreenshot[] {});
     }
     
-    private static ComponentInfo retrieveComponentTree(JPDAThreadImpl t,
+    private static AWTComponentInfo retrieveComponentTree(JPDAThreadImpl t,
                                                        ClassType containerClass, ObjectReference window)
                                                        throws InvalidTypeException, ClassNotLoadedException,
                                                               IncompatibleThreadStateException, InvocationException,
@@ -396,10 +410,10 @@ public class RemoteScreenshot {
         Method getComponents = containerClass.concreteMethodByName("getComponents", "()[Ljava/awt/Component;");
         if (getComponents == null) {
             logger.fine("No getComponents() method!");
-            String msg = NbBundle.getMessage(RemoteScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Container.getComponents()");
+            String msg = NbBundle.getMessage(RemoteAWTScreenshot.class, "MSG_ScreenshotNotTaken_MissingMethod", "java.awt.Container.getComponents()");
             throw new RetrievalException(msg);
         }
-        ComponentInfo ci = new ComponentInfo(t);
+        AWTComponentInfo ci = new AWTComponentInfo(t);
         retrieveComponents(ci, t, vm, componentClass, containerClass, window, getComponents, getBounds,
                            Integer.MIN_VALUE, Integer.MIN_VALUE, ((JPDAThreadImpl) t).getDebugger());
         ci.bounds.x = 0; // Move to the origin, we do not care where it's on the screen.
@@ -407,7 +421,7 @@ public class RemoteScreenshot {
         return ci;
     }
     
-    private static void retrieveComponents(final ComponentInfo ci, JPDAThreadImpl t, VirtualMachine vm,
+    private static void retrieveComponents(final AWTComponentInfo ci, JPDAThreadImpl t, VirtualMachine vm,
                                            ClassType componentClass, ClassType containerClass, ObjectReference component,
                                            Method getComponents, Method getBounds,
                                            int shiftx, int shifty, JPDADebuggerImpl debugger)
@@ -478,10 +492,10 @@ public class RemoteScreenshot {
             List<Value> components = componentsArray.getValues();
             logger.fine("Have "+components.size()+" component(s).");
             if (components.size() > 0) {
-                ComponentInfo[] cis = new ComponentInfo[components.size()];
+                AWTComponentInfo[] cis = new AWTComponentInfo[components.size()];
                 int i = 0;
                 for(Value cv : components) {
-                    cis[i] = new ComponentInfo(t);
+                    cis[i] = new AWTComponentInfo(t);
                     ObjectReference c = (ObjectReference) cv;
                     retrieveComponents(cis[i], t, vm, componentClass, containerClass, c, getComponents, getBounds,
                                        shiftx, shifty, debugger);
@@ -492,7 +506,7 @@ public class RemoteScreenshot {
         }
     }
     
-    private static void addProperties(ComponentInfo ci, JPDAThreadImpl t, VirtualMachine vm,
+    private static void addProperties(AWTComponentInfo ci, JPDAThreadImpl t, VirtualMachine vm,
                                       ClassType componentClass, ObjectReference component,
                                       JPDADebuggerImpl debugger) {
         // TODO: Try to find out the BeanInfo of the class
@@ -544,7 +558,7 @@ public class RemoteScreenshot {
         private String propertyName;
         private Method getter;
         private Method setter;
-        private ComponentInfo ci;
+        private AWTComponentInfo ci;
         private ObjectReference component;
         private JPDAThreadImpl t;
         private ThreadReference tawt;
@@ -554,7 +568,7 @@ public class RemoteScreenshot {
         private final String valueCalculating = new String("calculating");
         
         ComponentProperty(String propertyName, Method getter, Method setter,
-                          ComponentInfo ci, ObjectReference component,
+                          AWTComponentInfo ci, ObjectReference component,
                           JPDAThreadImpl t, JPDADebuggerImpl debugger) {
             super(String.class);
             this.propertyName = propertyName;
@@ -675,7 +689,7 @@ public class RemoteScreenshot {
     }
     
     /*
-    private static ComponentInfo[] retrieveComponents(ThreadReference tawt, VirtualMachine vm,
+    private static AWTComponentInfo[] retrieveComponents(ThreadReference tawt, VirtualMachine vm,
                                                       ClassType containerClass, ObjectReference window,
                                                       Method getBounds)
                                                       throws InvalidTypeException, ClassNotLoadedException,
@@ -684,16 +698,16 @@ public class RemoteScreenshot {
         Method getComponents = containerClass.concreteMethodByName("getComponents", "()[Ljava/awt/Component;");
         if (getComponents == null) {
             logger.severe("No getComponents() method!");
-            return new ComponentInfo[] {};
+            return new AWTComponentInfo[] {};
         }
         ArrayReference componentsArray = (ArrayReference) window.invokeMethod(tawt, getComponents, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         List<Value> components = componentsArray.getValues();
         logger.severe("Have "+components.size()+" component(s).");
         
-        ComponentInfo[] cis = new ComponentInfo[components.size()];
+        AWTComponentInfo[] cis = new AWTComponentInfo[components.size()];
         int i = 0;
         for(Value cv : components) {
-            cis[i] = new ComponentInfo();
+            cis[i] = new AWTComponentInfo();
             ObjectReference c = (ObjectReference) cv;
             ObjectReference rectangle = (ObjectReference) c.invokeMethod(tawt, getBounds, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
             ClassType rectangleClass = getClass(vm, "java.awt.Rectangle");
@@ -731,23 +745,23 @@ public class RemoteScreenshot {
         return isInstanceOfClass(c1, c2);
     }
     
-    public static class ComponentInfo {
+    public static class AWTComponentInfo implements ComponentInfo {
         
-        private static final ComponentInfo[] NO_SUBCOMPONENTS = new ComponentInfo[] {};
+        private static final AWTComponentInfo[] NO_SUBCOMPONENTS = new AWTComponentInfo[] {};
         
-        //private ComponentInfo parent;
+        //private AWTComponentInfo parent;
         private Rectangle bounds;
         private Rectangle windowBounds;
         private String name;
         private String type;
-        private ComponentInfo[] subComponents;
+        private AWTComponentInfo[] subComponents;
         private List<PropertySet> propertySets = new ArrayList<PropertySet>();
         private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
         
         private JPDAThreadImpl thread;
         private ObjectReference component;
         
-        public ComponentInfo(JPDAThreadImpl t) {
+        public AWTComponentInfo(JPDAThreadImpl t) {
             this.thread = t;
         }
         
@@ -764,7 +778,14 @@ public class RemoteScreenshot {
         }
         
         public String getDisplayName() {
-            return name;
+            int d = type.lastIndexOf('.');
+            String typeName;
+            if (d > 0) {
+                typeName = type.substring(d + 1);
+            } else {
+                typeName = type;
+            }
+            return "["+typeName+"]";
         }
         
         public String getType() {
@@ -783,6 +804,12 @@ public class RemoteScreenshot {
             }
         }
         
+        @Override
+        public Action[] getActions(boolean context) {
+            return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
+                                        ShowListenersAction.get(ShowListenersAction.class) };
+        }
+        
         void addPropertySet(PropertySet ps) {
             propertySets.add(ps);
         }
@@ -791,7 +818,7 @@ public class RemoteScreenshot {
             return propertySets.toArray(new PropertySet[] {});
         }
         
-        void setSubComponents(ComponentInfo[] subComponents) {
+        void setSubComponents(AWTComponentInfo[] subComponents) {
             this.subComponents = subComponents;
             /*
             int sx = getWindowBounds().x;
@@ -806,7 +833,7 @@ public class RemoteScreenshot {
              */
         }
         
-        public ComponentInfo[] getSubComponents() {
+        public AWTComponentInfo[] getSubComponents() {
             if (subComponents == null) {
                 return NO_SUBCOMPONENTS;
             } else {
@@ -815,18 +842,18 @@ public class RemoteScreenshot {
         }
         
         /** The component info or <code>null</code> */
-        public ComponentInfo findAt(int x, int y) {
+        public AWTComponentInfo findAt(int x, int y) {
             if (!bounds.contains(x, y)) {
                 return null;
             }
             x -= bounds.x;
             y -= bounds.y;
-            ComponentInfo ci = this;
+            AWTComponentInfo ci = this;
             if (subComponents != null) {
                 for (int i = 0; i < subComponents.length; i++) {
                     Rectangle sb = subComponents[i].bounds;
                     if (sb.contains(x, y)) {
-                        ComponentInfo tci = subComponents[i].findAt(x, y);
+                        AWTComponentInfo tci = subComponents[i].findAt(x, y);
                         if (tci.bounds.width < ci.bounds.width || tci.bounds.height < ci.bounds.height) {
                             ci = tci;
                         }
@@ -847,6 +874,7 @@ public class RemoteScreenshot {
         protected void firePropertyChange(String name, Object o, Object n) {
             pchs.firePropertyChange(name, o, n);
         }
+
     }
     
     public static class RetrievalException extends Exception {

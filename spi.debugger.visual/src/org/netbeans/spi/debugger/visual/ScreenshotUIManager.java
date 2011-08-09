@@ -39,56 +39,74 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.actions;
+package org.netbeans.spi.debugger.visual;
 
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.debugger.visual.ui.ScreenshotComponent;
 
 /**
- * Show the list of listeners attached to a remote component.
  * 
  * @author Martin Entlicher
  */
-public class ShowListenersAction extends NodeAction {
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(GoToSourceAction.class, "CTL_ShowListeners");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowListenersAction.class);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
+public final class ScreenshotUIManager {
+    
+    public static final String ACTION_TAKE_SCREENSHOT = "takeScreenshot";   // NOI18N
+    
+    private RemoteScreenshot rs;
+    private ScreenshotComponent sc;
+    
+    ScreenshotUIManager(RemoteScreenshot rs) {
+        this.rs = rs;
     }
     
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node n : activatedNodes) {
-            AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
-            if (ci != null) {
-                TopComponent tc = WindowManager.getDefault().findTopComponent("eventsView");
-                if (tc == null) {
-                    throw new IllegalArgumentException("eventsView");
-                }
-                tc.open();
-                tc.requestActive();
-            }
+    /**
+     * Get an active opened remote screenshot.
+     * @return The active screenshot or <code>null</code>.
+     */
+    public static ScreenshotUIManager getActive() {
+        ScreenshotComponent activeComponent = ScreenshotComponent.getActive();
+        if (activeComponent != null) {
+            return activeComponent.getManager();
         }
+        return null;
     }
-
+    
+    public RemoteScreenshot getScreenshot() {
+        return rs;
+    }
+    
+    public void open() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    open();
+                }
+            });
+            return;
+        }
+        if (sc == null) {
+            sc = new ScreenshotComponent(rs, this);
+        }
+        sc.open();
+        sc.requestActive();
+    }
+    
+    public void requestActive() {
+        sc.requestActive();
+    }
+    
+    public boolean close() {
+        return sc.close();
+    }
+    
+    /**
+     * Get the component selected in the screenshot or <code>null</code>.
+     * @return the component or <code>null</code>
+     */
+    public ComponentInfo getSelectedComponent() {
+        if (sc == null) return null;
+        return sc.getSelectedComponent();
+    }
+    
 }

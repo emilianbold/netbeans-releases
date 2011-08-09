@@ -51,10 +51,10 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.RetrievalException;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.RetrievalException;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
-import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
+import org.netbeans.spi.debugger.visual.RemoteScreenshot;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -108,9 +108,11 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
     public void run() {
         String msg = null;
         try {
-            final RemoteScreenshot[] screenshots = RemoteScreenshot.takeCurrent();
+            final RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent();
             for (int i = 0; i < screenshots.length; i++) {
                 final RemoteScreenshot screenshot = screenshots[i];
+                screenshot.getScreenshotUIManager().open();
+                /*
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -118,7 +120,7 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
                         sc.open();
                         sc.requestActive();
                     }
-                });
+                });*/
             }
             if (screenshots.length == 0) {
                 msg = NbBundle.getMessage(ScreenshotGrabAction.class, "MSG_NoScreenshots");

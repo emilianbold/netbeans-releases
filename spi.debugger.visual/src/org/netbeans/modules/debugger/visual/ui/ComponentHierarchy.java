@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.ui;
+package org.netbeans.modules.debugger.visual.ui;
 
 import java.awt.BorderLayout;
 import java.lang.ref.WeakReference;
@@ -47,7 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
+import org.netbeans.spi.debugger.visual.ComponentInfo;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -111,7 +111,7 @@ public class ComponentHierarchy extends JPanel implements NavigatorPanel, Explor
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("panelActivated("+context+") ci = "+ci+", tc = "+context.lookup(ScreenshotComponent.class));
             if (ci != null) {
-                logger.fine("  ci name = "+ci.getName()+", type = "+ci.getType());
+                logger.fine("  ci name = "+ci.getDisplayName());
             }
         }
         ExplorerUtils.activateActions(explorerManager, true);

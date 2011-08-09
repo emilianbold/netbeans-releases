@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.ui;
+package org.netbeans.modules.debugger.visual.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
@@ -67,8 +67,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
+import org.netbeans.spi.debugger.visual.ComponentInfo;
+import org.netbeans.spi.debugger.visual.RemoteScreenshot;
+import org.netbeans.spi.debugger.visual.ScreenshotUIManager;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
@@ -78,7 +79,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * This component draws the screenshot of a remote application.
@@ -91,15 +94,18 @@ public class ScreenshotComponent extends TopComponent {
     
     private static final Map<DebuggerEngine, Set<ScreenshotComponent>> openedScreenshots =
                          new HashMap<DebuggerEngine, Set<ScreenshotComponent>>();
+    private static volatile ScreenshotComponent activeScreenshotComponent;
     
     private RemoteScreenshot screenshot;
+    private ScreenshotUIManager manager;
     private NavigatorLookupHint componentHierarchyNavigatorHint = new ComponentHierarchyNavigatorHint();
     private ComponentNode componentNodes;
     private ScreenshotCanvas canvas;
     private JScrollPane scrollPane;
     
-    public ScreenshotComponent(RemoteScreenshot screenshot) {
+    public ScreenshotComponent(RemoteScreenshot screenshot, ScreenshotUIManager manager) {
         this.screenshot = screenshot;
+        this.manager = manager;
         screenshot.getImage();
         ScreenshotCanvas c = new ScreenshotCanvas(screenshot.getImage());
         scrollPane = new JScrollPane(c);
@@ -116,6 +122,36 @@ public class ScreenshotComponent extends TopComponent {
         ComponentHierarchy.getInstance().getExplorerManager().setRootContext(componentNodes);
         setActivatedNodes(new Node[] { componentNodes });
     }
+    
+    public static ScreenshotComponent getActive() {
+        return activeScreenshotComponent;
+        /*
+        WindowManager wm = WindowManager.getDefault();
+        synchronized (openedScreenshots) {
+            for (Set<ScreenshotComponent> ssc : openedScreenshots.values()) {
+                for (ScreenshotComponent sc : ssc) {
+                    Mode m = wm.findMode(sc);
+                    if (m != null && m.getSelectedTopComponent() == sc) {
+                        return sc;
+                    }
+                }
+            }
+        }
+        return null;
+         */
+    }
+    
+    public ScreenshotUIManager getManager() {
+        return manager;
+    }
+    
+    public ComponentInfo getSelectedComponent() {
+        Node[] nodes = getActivatedNodes();
+        if (nodes.length > 0) {
+            return nodes[0].getLookup().lookup(ComponentInfo.class);
+        }
+        return null;
+    }
 
     @Override
     public Lookup getLookup() {
@@ -126,6 +162,7 @@ public class ScreenshotComponent extends TopComponent {
     @Override
     protected void componentActivated() {
         logger.fine("componentActivated() root = "+componentNodes+", ci = "+componentNodes.getLookup().lookup(ComponentInfo.class));
+        activeScreenshotComponent = this;
         ComponentHierarchy.getInstance().getExplorerManager().setRootContext(componentNodes);
         ComponentHierarchy.getInstance().getExplorerManager().setExploredContext(componentNodes);
         canvas.activated();
@@ -151,6 +188,9 @@ public class ScreenshotComponent extends TopComponent {
     
     @Override
     protected void componentClosed() {
+        if (activeScreenshotComponent == this) {
+            activeScreenshotComponent = null;
+        }
         synchronized (openedScreenshots) {
             Set<ScreenshotComponent> components = openedScreenshots.get(screenshot.getDebuggerEngine());
             if (components != null) {
@@ -309,8 +349,8 @@ public class ScreenshotComponent extends TopComponent {
             private void selectComponentAt(int x, int y, boolean reActivated) {
                 x -= 1;
                 y -= 1;
-                RemoteScreenshot.ComponentInfo ci = screenshot.getComponentInfo().findAt(x, y);
-                logger.fine("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getType() : null));
+                ComponentInfo ci = screenshot.findAt(x, y);
+                logger.fine("Component Info at "+x+", "+y+" is: "+((ci != null) ? ci.getDisplayName() : null));
                 selectComponent(ci, reActivated);
             }
             
