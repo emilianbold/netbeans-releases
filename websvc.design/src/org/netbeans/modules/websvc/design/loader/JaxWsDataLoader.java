@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 public final class JaxWsDataLoader extends MultiFileLoader {
     
     public static final String JAVA_MIME_TYPE = "text/x-java";  //NOI18N
+    public static final String JAXWS_MIME_TYPE = "text/x-jaxws";  //NOI18N
     
     /** The standard extension for Java source files. */
     public static final String JAVA_EXTENSION = "java"; // NOI18N
@@ -81,7 +82,7 @@ public final class JaxWsDataLoader extends MultiFileLoader {
     }
     
     protected @Override String defaultDisplayName() {
-        return NbBundle.getMessage(JaxWsDataLoader.class, "PROP_JaxWsLoader_Name");
+        return NbBundle.getMessage(JaxWsDataLoader.class, "PROP_JaxWsLoader_Name"); // NOI18N
     }
     
     /** Create the <code>JaxWsDataObject</code>.
@@ -92,8 +93,9 @@ public final class JaxWsDataLoader extends MultiFileLoader {
     */
     protected MultiDataObject createMultiObject (FileObject primaryFile)
     throws DataObjectExistsException, java.io.IOException {
-        if (primaryFile.getExt().equals(JAVA_EXTENSION))
+        if (primaryFile.getExt().equals(JAVA_EXTENSION)) {
             return new JaxWsDataObject(primaryFile, this);
+        }
         return null;
     }
 
@@ -107,13 +109,20 @@ public final class JaxWsDataLoader extends MultiFileLoader {
     */
     protected FileObject findPrimaryFile (FileObject fo) {
 	// never recognize folders.
-        if (fo.isFolder()) return null;
+        if (fo.isFolder()) {
+            return null;
+        }
         
         // ignore templates using scripting
-        if (fo.getAttribute("template") != null && fo.getAttribute("javax.script.ScriptEngine") != null) // NOI18N
+        if (fo.getAttribute("template") != null && 
+                fo.getAttribute("javax.script.ScriptEngine") != null) {// NOI18N
             return null;
+        }
         
-        if (fo.getExt().equals(JAVA_EXTENSION) && fo.getAttribute("jax-ws-service")!=null && fo.getAttribute("jax-ws-service-provider")==null) {
+        if (fo.getExt().equals(JAVA_EXTENSION) && 
+                fo.getAttribute("jax-ws-service")!=null && 
+                fo.getAttribute("jax-ws-service-provider")==null) 
+        {
             return fo;
         }
         return null;
@@ -127,7 +136,9 @@ public final class JaxWsDataLoader extends MultiFileLoader {
     * @param primaryFile primary file recognized by this loader
     * @return primary entry for that file
     */
-    protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
+    protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, 
+            FileObject primaryFile) 
+    {
         if (JAVA_EXTENSION.equals(primaryFile.getExt())) {
             return JavaDataSupport.createJavaFileEntry(obj, primaryFile);
         }
@@ -143,10 +154,12 @@ public final class JaxWsDataLoader extends MultiFileLoader {
     * @param secondaryFile secondary file to create entry for
     * @return the entry
     */
-    protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
+    protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, 
+            FileObject secondaryFile) {
         //The JavaDataObject itself has no secondary entries, but its subclasses have.
         //So we have to keep it as MultiFileLoader
-        ErrorManager.getDefault().log ("Subclass of JavaDataLoader ("+this.getClass().getName()
+        ErrorManager.getDefault().log ("Subclass of JavaDataLoader ("+
+                this.getClass().getName()
                 +") has secondary entries but does not override createSecondaryEntries (MultidataObject, FileObject) method."); // NOI18N
         return new FileEntry.Numb(obj, secondaryFile);
     }   
