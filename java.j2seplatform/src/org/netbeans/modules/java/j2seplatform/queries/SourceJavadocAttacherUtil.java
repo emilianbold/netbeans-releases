@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -71,17 +70,6 @@ import org.openide.util.Utilities;
 public final class SourceJavadocAttacherUtil {
 
     private SourceJavadocAttacherUtil() {}
-
-    @NonNull
-    public static void scheduleInEDT(
-        @NonNull final Runnable call) {
-        assert call != null;
-        if (SwingUtilities.isEventDispatchThread()) {
-            call.run();
-        } else {
-            SwingUtilities.invokeLater(call);
-        }
-    }
 
     public static void callListener(
         @NullAllowed final AttachmentListener listener,

@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
@@ -61,6 +60,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -150,7 +150,7 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                 }
             }
         };
-        SourceJavadocAttacherUtil.scheduleInEDT(call);
+        Mutex.EVENT.writeAccess(call);
         return true;
     }
 

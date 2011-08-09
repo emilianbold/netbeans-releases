@@ -53,6 +53,7 @@ import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -109,7 +110,7 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
                 }
             }
         };
-        SourceJavadocAttacherUtil.scheduleInEDT(call);
+        Mutex.EVENT.writeAccess(call);
         return true;
     }
 
