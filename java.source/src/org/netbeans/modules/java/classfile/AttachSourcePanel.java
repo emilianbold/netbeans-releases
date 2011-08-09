@@ -57,9 +57,6 @@ import org.openide.util.RequestProcessor;
 
 public class AttachSourcePanel extends javax.swing.JPanel {
 
-    private static final RequestProcessor RP =
-            new RequestProcessor(AttachSourcePanel.class);
-
     private final URL root;
     private final URL file;
     private final String binaryName;
@@ -119,42 +116,49 @@ public class AttachSourcePanel extends javax.swing.JPanel {
 
 private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachSources
         jButton1.setEnabled(false);
-        RP.post(new Runnable() {
+        SourceJavadocAttacher.attachSources(root, new SourceJavadocAttacher.AttachmentListener() {
             @Override
-            public void run() {
+            public void attachmentSucceeded() {
                 boolean success = false;
-                if (SourceJavadocAttacher.attachSources(root)) {
-                    final FileObject rootFo = URLMapper.findFileObject(root);
-                    final FileObject fileFo = URLMapper.findFileObject(file);
-                    if (rootFo != null && fileFo != null) {
-                        final FileObject[] fos = SourceForBinaryQuery.findSourceRoots(root).getRoots();
-                        if (fos.length > 0) {
-                            final ClassPath cp = ClassPathSupport.createClassPath(fos);
-                            final FileObject newFileFo = cp.findResource(binaryName + ".java"); //NOI18N
-                            if (newFileFo != null) {
-                                try {
-                                    final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
-                                    final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
-                                    if (ec != null && open != null) {
-                                        ec.close();
-                                        open.open();
-                                        success = true;
-                                    }
-                                } catch (DataObjectNotFoundException ex) {
-                                    Exceptions.printStackTrace(ex);
+                final FileObject rootFo = URLMapper.findFileObject(root);
+                final FileObject fileFo = URLMapper.findFileObject(file);
+                if (rootFo != null && fileFo != null) {
+                    final FileObject[] fos = SourceForBinaryQuery.findSourceRoots(root).getRoots();
+                    if (fos.length > 0) {
+                        final ClassPath cp = ClassPathSupport.createClassPath(fos);
+                        final FileObject newFileFo = cp.findResource(binaryName + ".java"); //NOI18N
+                        if (newFileFo != null) {
+                            try {
+                                final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
+                                final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
+                                if (ec != null && open != null) {
+                                    ec.close();
+                                    open.open();
+                                    success = true;
                                 }
+                            } catch (DataObjectNotFoundException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                         }
                     }
                 }
                 if (!success) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            jButton1.setEnabled(true);
-                        }
-                    });
+                    enableAttach();
                 }
+            }
+
+            @Override
+            public void attachmentFailed() {
+                enableAttach();
+            }
+
+            private void enableAttach() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        jButton1.setEnabled(true);
+                    }
+                });
             }
         });
 }//GEN-LAST:event_attachSources

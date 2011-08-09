@@ -192,7 +192,7 @@ public class ElementJavadoc {
         if (link.startsWith(ASSOCIATE_JDOC)) {
             final String root = link.substring(ASSOCIATE_JDOC.length());
             try {
-                SourceJavadocAttacher.attachJavadoc(new URL(root));
+                SourceJavadocAttacher.attachJavadoc(new URL(root), null);
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }

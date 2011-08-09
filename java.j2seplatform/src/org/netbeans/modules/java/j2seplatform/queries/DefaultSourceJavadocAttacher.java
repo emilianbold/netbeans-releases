@@ -47,11 +47,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -63,37 +64,53 @@ import org.openide.util.lookup.ServiceProvider;
 public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
     @Override
-    public Future<Result> attachSources(@NonNull final URL root) throws IOException {
-        return attach(root, 0);
+    public boolean attachSources(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) throws IOException {
+        return attach(root, listener, 0);
     }
 
     @Override
-    public Future<Result> attachJavadoc(@NonNull final URL root) throws IOException {
-        return attach(root, 1);
+    public boolean attachJavadoc(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) throws IOException {
+        return attach(root, listener, 1);
     }
 
-    private Future<Result> attach (@NonNull final URL root, final int mode) throws IOException {
-        final Callable<Result> call = new Callable<Result>() {
+    private boolean attach (
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener,
+            final int mode) throws IOException {
+        final Runnable call = new Runnable() {
             @Override
-            public Result call() throws Exception {
-                final URL[] toAttach = selectRoots(root, mode);
-                if (toAttach != null) {
-                    switch (mode) {
-                        case 0:
-                            QueriesCache.getSources().updateRoot(root, toAttach);
-                            break;
-                        case 1:
-                            QueriesCache.getJavadoc().updateRoot(root, toAttach);
-                            break;
-                        default:
-                            throw new IllegalArgumentException(Integer.toString(mode));
+            public void run() {
+                boolean success = false;
+                try {
+                    final URL[] toAttach = selectRoots(root, mode);
+                    if (toAttach != null) {
+                        switch (mode) {
+                            case 0:
+                                QueriesCache.getSources().updateRoot(root, toAttach);
+                                break;
+                            case 1:
+                                QueriesCache.getJavadoc().updateRoot(root, toAttach);
+                                break;
+                            default:
+                                throw new IllegalArgumentException(Integer.toString(mode));
+                        }
+                        success = true;
                     }
-                    return Result.ATTACHED;
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                } catch (FileStateInvalidException e) {
+                    Exceptions.printStackTrace(e);
+                } finally {
+                    SourceJavadocAttacherUtil.callListener(listener,success);
                 }
-                return Result.CANCELED;
             }
         };
-        return SourceJavadocAttacherUtil.scheduleInEDT(call);
+        SourceJavadocAttacherUtil.scheduleInEDT(call);
+        return true;
     }
 
     @NbBundle.Messages({

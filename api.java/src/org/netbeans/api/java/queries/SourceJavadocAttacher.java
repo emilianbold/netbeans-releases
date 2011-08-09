@@ -43,12 +43,12 @@ package org.netbeans.api.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * A support for attaching source roots and javadoc roots to binary roots.
@@ -63,43 +63,62 @@ public final class SourceJavadocAttacher {
      * Attaches a source root provided by the SPI {@link SourceJavadocAttacherImplementation}
      * to given binary root.
      * @param root the binary root to attach sources to
-     * @return true if the source root was successfully attached
+     * @param a listener notified about result when attaching is done
      */
-    public static boolean attachSources(@NonNull final URL root) {
-        return attach(root,0);
+    public static void attachSources(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) {
+            attach(root, listener, 0);
     }
 
     /**
      * Attaches a javadoc root provided by the SPI {@link SourceJavadocAttacherImplementation}
      * to given binary root.
      * @param root the binary root to attach javadoc to
-     * @return true if the javadoc root was successfully attached
+     * @param a listener notified about result  when attaching is done
      */
-    public static boolean attachJavadoc(@NonNull final URL root) {
-        return attach(root,1);
+    public static void attachJavadoc(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) {
+            attach(root, listener, 1);
     }
 
-    private static boolean attach(final URL root, final int mode) {
+    /**
+     * Listener notified by {@link SourceJavadocAttacher} about a result
+     * of attaching source (javadoc) to binary root.
+     */
+    public interface AttachmentListener {
+        /**
+         * Invoked when the source (javadoc) was successfully attached to
+         * binary root.
+         */
+        void attachmentSucceeded();
+        /**
+         * Invoked when the source (javadoc) was not attached to
+         * binary root. The attaching either failed or was canceled by user.
+         */
+        void attachmentFailed();
+    }
+
+    private static void attach(
+            final URL root,
+            final AttachmentListener listener,
+            final int mode) {
+        Parameters.notNull("root", root);   //NOI18N
         try {
             for (SourceJavadocAttacherImplementation attacher : Lookup.getDefault().lookupAll(SourceJavadocAttacherImplementation.class)) {
-                final Future<SourceJavadocAttacherImplementation.Result> becomeRes =
-                        mode == 0 ?
-                            attacher.attachSources(root) :
-                            attacher.attachJavadoc(root);
-                final SourceJavadocAttacherImplementation.Result res = becomeRes.get();
-                if (res == SourceJavadocAttacherImplementation.Result.ATTACHED) {
-                    return true;
-                } else if (res == SourceJavadocAttacherImplementation.Result.CANCELED) {
-                    return false;
+                final boolean handles  = mode == 0 ?
+                    attacher.attachSources(root, listener) :
+                    attacher.attachJavadoc(root, listener);
+                if (handles) {
+                    return;
                 }
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
-        } catch (ExecutionException ee) {
-            Exceptions.printStackTrace(ee);
-        } catch (InterruptedException ie) {
-            //canceled - return false
         }
-        return false;
+        if (listener != null) {
+            listener.attachmentFailed();
+        }
     }
 }

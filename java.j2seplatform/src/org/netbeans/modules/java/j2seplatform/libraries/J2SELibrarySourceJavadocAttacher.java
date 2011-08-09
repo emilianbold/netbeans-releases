@@ -55,6 +55,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
@@ -70,29 +71,35 @@ import org.openide.util.lookup.ServiceProvider;
 public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
     @Override
-    public Future<Result> attachSources(@NonNull final URL root) throws IOException {
-        return attach(root, J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
+    public boolean attachSources(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) throws IOException {
+        return attach(root, listener, J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
     }
 
     @Override
-    public Future<Result> attachJavadoc(@NonNull final URL root) throws IOException {
-        return attach(root, J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
+    public boolean attachJavadoc(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) throws IOException {
+        return attach(root, listener, J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
     }
 
-    private Future<Result> attach(
+    private boolean attach(
             @NonNull final URL root,
-            final String volume) {
+            @NullAllowed final AttachmentListener listener,
+            @NonNull final String volume) {
         final Pair<LibraryManager,Library> pair = findOwner(root);
         if (pair == null) {
-            return SourceJavadocAttacherUtil.resultAsFuture(Result.UNSUPPORTED);
+            return false;
         }
-        final Callable<Result> call = new Callable<Result>() {
+        final Runnable call = new Runnable() {
             @Override
-            public Result call() {
+            public void run() {
                 final LibraryManager lm = pair.first;
                 final Library lib = pair.second;
                 assert lm != null;
                 assert lib != null;
+                boolean success = false;
                 try {
                     final URL areaLocation = lm.getLocation();
                     final File baseFolder = areaLocation == null ? null : new File(areaLocation.toURI()).getParentFile();
@@ -132,17 +139,19 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                             displayName,
                             desc,
                             volumes);
-                        return Result.ATTACHED;
+                        success = true;
                     }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 } catch (URISyntaxException use) {
                     Exceptions.printStackTrace(use);
+                } finally {
+                    SourceJavadocAttacherUtil.callListener(listener, success);
                 }
-                return Result.CANCELED;
             }
         };
-        return SourceJavadocAttacherUtil.scheduleInEDT(call);
+        SourceJavadocAttacherUtil.scheduleInEDT(call);
+        return true;
     }
 
     private Pair<LibraryManager,Library> findOwner(final URL root) {

@@ -44,25 +44,18 @@ package org.netbeans.modules.java.j2seplatform.queries;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
-import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation.Result;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -80,26 +73,26 @@ public final class SourceJavadocAttacherUtil {
     private SourceJavadocAttacherUtil() {}
 
     @NonNull
-    public static final Future<Result> scheduleInEDT(
-        @NonNull final Callable<Result> call) {
+    public static void scheduleInEDT(
+        @NonNull final Runnable call) {
         assert call != null;
-        final Future<Result> res;
         if (SwingUtilities.isEventDispatchThread()) {
-            res = new Now(call);
+            call.run();
         } else {
-            final FutureTask<Result> ft =
-                    new FutureTask<Result>(call);
-            SwingUtilities.invokeLater(ft);
-            res = ft;
+            SwingUtilities.invokeLater(call);
         }
-        return res;
     }
 
-    @NonNull
-    public static final Future<Result> resultAsFuture(
-        @NonNull final Result result) {
-        assert result != null;
-        return new Fixed(result);
+    public static void callListener(
+        @NullAllowed final AttachmentListener listener,
+        final boolean success) {
+        if (listener != null) {
+            if (success) {
+                listener.attachmentSucceeded();
+            } else {
+                listener.attachmentFailed();
+            }
+        }
     }
 
     @CheckForNull
@@ -248,95 +241,5 @@ public final class SourceJavadocAttacherUtil {
         }
         final FileObject fo = URLMapper.findFileObject(file);
         return fo != null ? fo.getNameExt() : file.getPath();
-    }
-
-    private static class Now implements Future<Result> {
-
-        private final Callable<Result> call;
-        private final AtomicReference<Result> result =
-                new AtomicReference<Result>();
-        private volatile boolean canceled;
-
-        private Now(@NonNull final Callable<Result> call) {
-            assert  call != null;
-            this.call = call;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            canceled = true;
-            return true;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return canceled;
-        }
-
-        @Override
-        public boolean isDone() {
-            return result.get() != null;
-        }
-
-        @Override
-        public Result get() throws InterruptedException, ExecutionException {
-            if (canceled) {
-                throw new CancellationException();
-            }
-            Result res = result.get();
-            if (res != null) {
-                return res;
-            }
-            try {
-                res = call.call();
-                result.compareAndSet(null, res);
-                return result.get();
-            } catch (Exception e) {
-                throw new ExecutionException(e);
-            }
-        }
-
-        @Override
-        public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return get();
-        }
-    }
-
-    private static class Fixed implements Future<Result> {
-
-        private final Result result;
-        private volatile boolean canceled;
-
-        private Fixed(@NonNull final Result result) {
-            assert result != null;
-            this.result = result;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            canceled = true;
-            return true;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return canceled;
-        }
-
-        @Override
-        public boolean isDone() {
-            return true;
-        }
-
-        @Override
-        public Result get() throws InterruptedException, ExecutionException {
-            return result;
-        }
-
-        @Override
-        public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return get();
-        }
-
     }
 }

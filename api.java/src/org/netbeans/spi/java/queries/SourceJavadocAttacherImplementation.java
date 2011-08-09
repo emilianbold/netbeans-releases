@@ -43,8 +43,8 @@ package org.netbeans.spi.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -60,45 +60,22 @@ import org.openide.util.lookup.ServiceProvider;
 public interface SourceJavadocAttacherImplementation {
 
     /**
-     * Result of the attaching sources (javadoc) to binary root.
-     */
-    enum Result {
-        /**
-         * The source (javadoc) root was successfully attached to
-         * the binary root.
-         */
-        ATTACHED,
-
-        /**
-         * User canceled the attaching, no other SPI provider
-         * is called and {@link SourceJavadocAttacher} returns false.
-         */
-        CANCELED,
-
-        /**
-         * The SPI is not able to attach sources (javadoc) to given
-         * binary root (it does not handle it), next SPI provider is
-         * called.
-         */
-        UNSUPPORTED
-    }
-
-
-    /**
      * Attaches a source root provided by this SPI to given binary root.
      * @param root the binary root to attach sources to
-     * @return a {@link Future} of {@link SourceJavadocAttacherImplementation.Result}
-     * the result of attach operation.
+     * @param a listener notified about result when attaching is done
+     * @throws IOException in case of error
      */
-    @NonNull
-    Future<Result> attachSources(@NonNull URL root) throws IOException;
+    boolean attachSources(
+            @NonNull URL root,
+            @NullAllowed SourceJavadocAttacher.AttachmentListener listener) throws IOException;
 
     /**
      * Attaches a javadoc root provided by this SPI to given binary root.
      * @param root the binary root to attach javadoc to
-     * @return a {@link Future} of {@link SourceJavadocAttacherImplementation.Result}
-     * the result of attach operation.
+     * @param a listener notified about result when attaching is done
+     * @throws IOException in case of error
      */
-    @NonNull
-    Future<Result> attachJavadoc(@NonNull URL root) throws IOException;
+    boolean attachJavadoc(
+            @NonNull URL root,
+            @NullAllowed SourceJavadocAttacher.AttachmentListener listener) throws IOException;
 }

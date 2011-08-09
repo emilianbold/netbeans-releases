@@ -54,6 +54,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -65,117 +67,82 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=SourceJavadocAttacherImplementation.class, position=200)
 public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
-    @Override public Future<Result> attachSources(URL root) throws IOException {
-        return attach(root, false);
+    private static final RequestProcessor RP =
+            new RequestProcessor(MavenSourceJavadocAttacher.class);
+
+    @Override public boolean attachSources(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) throws IOException {
+        return attach(root, listener, false);
     }
 
-    @Override public Future<Result> attachJavadoc(URL root) throws IOException {
-        return attach(root, true);
+    @Override public boolean attachJavadoc(
+            @NonNull final URL root,
+            @NullAllowed final AttachmentListener listener) throws IOException {
+        return attach(root, listener, true);
     }
 
     @Messages({"# {0} - artifact ID", "attaching=Attaching {0}"})
-    private Future<Result> attach(final URL root, final boolean javadoc) throws IOException {
-        final Callable<Result> call = new Callable<Result>() {
+    private boolean attach(
+        @NonNull final URL root,
+        @NullAllowed final AttachmentListener listener,
+        final boolean javadoc) throws IOException {
+        final File file = FileUtil.archiveOrDirForURL(root);
+        if (file == null) {
+            return false;
+        }
+        final String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
+        if (coordinates == null) {
+            return false;
+        }
+        final Runnable call = new Runnable() {
             @Override
-            public Result call() throws Exception {
-                File file = FileUtil.archiveOrDirForURL(root);
-                if (file == null) {
-                    return Result.UNSUPPORTED;
-                }
-                String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
-                if (coordinates == null) {
-                    return Result.UNSUPPORTED;
-                }
-                MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                Artifact art = online.createArtifactWithClassifier(coordinates[0], coordinates[1], coordinates[2], "jar", javadoc ? "javadoc" : "sources");
-                AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Bundle.attaching(art.getId()),
+            public void run() {
+                boolean attached = false;
+                try {
+                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+                    Artifact art = online.createArtifactWithClassifier(coordinates[0], coordinates[1], coordinates[2], "jar", javadoc ? "javadoc" : "sources");
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Bundle.attaching(art.getId()),
                         new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("attach")},
                         ProgressTransferListener.cancellable(), null);
-                ProgressTransferListener.setAggregateHandle(hndl);
-                try {
-                    hndl.start();
-                    List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
-                    // XXX is there some way to determine from local metadata which remote repo it is from? (i.e. API to read _maven.repositories)
-                    for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-                        if (info.isRemoteDownloadable()) {
-                            repos.add(EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId()));
+                    ProgressTransferListener.setAggregateHandle(hndl);
+                    try {
+                        hndl.start();
+                        List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                        // XXX is there some way to determine from local metadata which remote repo it is from? (i.e. API to read _maven.repositories)
+                        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+                            if (info.isRemoteDownloadable()) {
+                                repos.add(EmbedderFactory.createRemoteRepository(online, info.getRepositoryUrl(), info.getId()));
+                            }
+                        }
+                        online.resolve(art, repos, online.getLocalRepository());
+                        if (art.getFile().isFile()) {
+                            attached = true;
+                        }
+                    } catch (ThreadDeath d) {
+                    } catch (AbstractArtifactResolutionException x) {
+                    } finally {
+                        hndl.finish();
+                        ProgressTransferListener.clearAggregateHandle();
+                    }
+                } finally {
+                    if (listener != null) {
+                        if (attached) {
+                            listener.attachmentSucceeded();
+                        } else {
+                            listener.attachmentFailed();
                         }
                     }
-                    online.resolve(art, repos, online.getLocalRepository());
-                    if (art.getFile().isFile()) {
-                        return Result.ATTACHED;
-                    } else {
-                        return Result.CANCELED;
-                    }
-                } catch (ThreadDeath d) {
-                    return Result.CANCELED;
-                } catch (AbstractArtifactResolutionException x) {
-                    return Result.CANCELED;
-                } finally {
-                    hndl.finish();
-                    ProgressTransferListener.clearAggregateHandle();
                 }
             }
         };
-        return new Now(call);
+        RP.post(call);
+        return true;
     }
-
-
-    private static class Now implements Future<Result> {
-
-        private final Callable<Result> call;
-        private final AtomicReference<Result> result =
-                new AtomicReference<Result>();
-        private volatile boolean canceled;
-
-        private Now(@NonNull final Callable<Result> call) {
-            assert  call != null;
-            this.call = call;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            canceled = true;
-            return true;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return canceled;
-        }
-
-        @Override
-        public boolean isDone() {
-            return result.get() != null;
-        }
-
-        @Override
-        public Result get() throws InterruptedException, ExecutionException {
-            if (canceled) {
-                throw new CancellationException();
-            }
-            Result res = result.get();
-            if (res != null) {
-                return res;
-            }
-            try {
-                res = call.call();
-                result.compareAndSet(null, res);
-                return result.get();
-            } catch (Exception e) {
-                throw new ExecutionException(e);
-            }
-        }
-
-        @Override
-        public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return get();
-        }
-    }
-
 }
