@@ -44,8 +44,11 @@ package org.netbeans.modules.maven.queries;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -85,6 +88,42 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
     public void testJarify() throws Exception {
         assertEquals("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar", MavenForBinaryQueryImpl.jarify("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar"));
         assertEquals("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.jar", MavenForBinaryQueryImpl.jarify("org/jvnet/hudson/plugins/analysis-core/1.24/analysis-core-1.24.hpi"));
+    }
+
+    public void testForeignClassBundler() throws Exception { // #155091 and deps
+        TestFileUtils.writeFile(d,
+                "a/pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject src = FileUtil.createFolder(d, "a/src/main/java");
+        SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(new URL(d.getURL(), "a/target/classes/"));
+        assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
+        assertTrue(r.preferSources());
+        TestFileUtils.writeFile(d,
+                "b/pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>war</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        src = FileUtil.createFolder(d, "b/src/main/java");
+        r = SourceForBinaryQuery.findSourceRoots2(new URL(d.getURL(), "b/target/classes/"));
+        assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
+        assertFalse(r.preferSources());
+    }
+
+    @ProjectServiceProvider(service=ForeignClassBundler.class, projectType="org-netbeans-modules-maven/war")
+    public static class ForeignClassBundlerMock implements ForeignClassBundler {
+        @Override public boolean preferSources() {
+            return false;
+        }
     }
 
 }
