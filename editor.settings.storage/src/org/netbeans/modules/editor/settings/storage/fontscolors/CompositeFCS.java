@@ -437,11 +437,12 @@ public final class CompositeFCS extends FontColorSettings {
     }
 
     private static AttributeSet hardCodedDefaultColoring = null;
+    private static final int DEFAULT_FONTSIZE = 13;
     private static AttributeSet getHardcodedDefaultColoring() {
         if (hardCodedDefaultColoring == null) {
             int defaultFontSize;
             if (GraphicsEnvironment.isHeadless()) {
-                defaultFontSize = 12;
+                defaultFontSize = DEFAULT_FONTSIZE;
             } else {
                 Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
                 defaultFontSize = (i != null) ? i : UIManager.getFont("TextField.font").getSize(); //NOI18N
@@ -452,7 +453,7 @@ public final class CompositeFCS extends FontColorSettings {
                     StyleConstants.Foreground, Color.black,
                     StyleConstants.Background, Color.white,
                     StyleConstants.FontFamily, "Monospaced", //NOI18N
-                    StyleConstants.FontSize, defaultFontSize);
+                    StyleConstants.FontSize, Math.max(defaultFontSize, DEFAULT_FONTSIZE));
         }
         assert hardCodedDefaultColoring != null;
         return hardCodedDefaultColoring;

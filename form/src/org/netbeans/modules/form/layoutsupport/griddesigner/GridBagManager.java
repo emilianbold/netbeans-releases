@@ -693,8 +693,8 @@ public class GridBagManager implements GridManager {
         int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
         int columnCount = 0;
         int rowCount = 0;
-        int lastGapColumnIndex = info.getLastGapColumn() - 1;
-        int lastGapRowIndex = info.getLastGapRow() - 1;
+        int lastGapColumnIndex = Math.max( info.getLastGapColumn() - 1, -1 );
+        int lastGapRowIndex = Math.max( info.getLastGapRow() - 1, -1 );
         if(updateComponents) {
             // this is to compensate possible breaches of GridBagLayout gap support
             // consistency caused by edits outside the customizer. This may 
