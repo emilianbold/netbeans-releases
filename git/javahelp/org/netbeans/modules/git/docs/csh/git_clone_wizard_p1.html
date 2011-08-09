@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--
+Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css">
+        <meta content="Helen" name="generator">
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-color: black;
+                border-left-style: solid;
+                border-left: thin;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+<title>Clone Repository Wizard: Repository</title>
+</head>
+
+<body>
+<h2>Clone Repository Wizard: Repository</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You use the Clone Repository wizard to get a copy of an already existing Git repository.</p>
+<p>To open the Clone Repository wizard, choose Team &gt; Git &gt; Clone.</p>
+<p>At the Repository page, you have to set the following properties:</p>
+<ul>
+          <li><b>Repository URL.</b> Select a Git root protocol and location from 
+                the drop-down list. The drop-down list contains a list of 
+                <a href="#protocolTypes">supported protocols</a>, as well as previous Git root 
+                locations used in the IDE.</li>
+		  <li><b>User.</b> Enter your user name for access to the repository. (Required 
+                for <tt>http</tt> and <tt>https</tt> protocols.)</li>
+		  <li><b>Password.</b> Enter your password for access to the repository. (Required 
+                for <tt>http</tt> and <tt>https</tt> protocols.)</li>
+		<li><b>Save Username and Password.</b> Select the option if you want the IDE to remember your user name and password. </li>
+		  <li><b>Proxy Configuration.</b> Click the Proxy configuration button to specify 
+                details of your proxy configuration to connect to the Git repository.</li>
+</ul>	
+ <p><a name="protocolTypes"></a>The IDE supports the following Git protocol types:</p>	 
+   <table border="1" cellpadding="5">
+            <tr align="center"><th>Protocol</th><th>Access Method</th><th>Example</th></tr>
+            <tr><td align="center"><strong>file</strong></td><td>Direct repository access (on local 
+                disk)</td>
+            <td><tt>file:///path_to_repository</tt><br>or<br><tt>path_to_repository</tt></td>
+            </tr>
+            <tr><td align="center"><strong>http</strong></td><td>Access via HTTP protocol </td><td><tt>http://hostname/path_to_repository</tt></td></tr>
+            <tr><td align="center"><strong>https</strong></td><td>Access via HTTP protocol with SSL 
+                encryption</td><td><tt>https://hostname/path_to_repository</tt></td>
+            </tr>
+            <tr><td align="center"><strong>ssh</strong></td>
+            <td>Access via SSH protocol</td><td><tt>ssh://hostname/path_to_repository</tt></td>
+            </tr>
+			 <tr><td align="center"><strong>sftp</strong></td>
+            <td>Access via SFTP protocol</td><td><tt>sftp://hostname/path_to_repository</tt></td>
+            </tr>
+			 <tr><td align="center"><strong>git</strong></td>
+            <td>Access via GIT protocol</td><td><tt>git://hostname/path_to_repository</tt></td>
+            </tr>
+        </table>  
+		<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd><a href="../git_initialize.html">Initializing a Git Repository</a></dd> 
+	    <dd><a href="../git_setup.html">Setting Up Git</a></dd>
+	</dl>  
+<hr>
+        <p>
+            <small><a href="../../credits.html">Legal Notices</a></small>
+        </p>
+</body>
+</html>
