@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <!-- #146541, do not set font size. By default it has to pick up value of
          the "fontsize" command line option. -->
-
+    <fontcolor name="default" foreColor="black" bgColor="white"/>
     <fontcolor name="char" foreColor="ffCE7B00"/>
     <fontcolor name="comment" foreColor="ff969696"/>
     <fontcolor name="error" waveUnderlined="red"/>
