@@ -48,12 +48,8 @@ import java.util.Set;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -89,6 +85,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
+        @Override
         public boolean areCollocated(File a, File b) {
             File fra = getTopmostManagedAncestor(a);
             File frb = getTopmostManagedAncestor(b);
@@ -98,6 +95,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
             return true;
         }
 
+        @Override
         public File findRoot(File file) {
             // TODO: we should probably return the closest common ancestor
             return getTopmostManagedAncestor(file);
@@ -121,6 +119,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
     /**
      * Coloring label, modifying icons, providing action on file
      */
+    @Override
     public VCSAnnotator getVCSAnnotator() {
         return Mercurial.getInstance().getMercurialAnnotator();
     }
@@ -128,15 +127,18 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
     /**
      * Handle file system events such as delete, create, remove etc.
      */
+    @Override
     public VCSInterceptor getVCSInterceptor() {
         return Mercurial.getInstance().getMercurialInterceptor();
     }
 
+    @Override
     public void getOriginalFile(File workingCopy, File originalFile) {
         Mercurial.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
     @SuppressWarnings("unchecked") // Property Change event.getNewValue returning Object
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (event.getPropertyName().equals(FileStatusCache.PROP_FILE_STATUS_CHANGED)) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) event.getNewValue();
@@ -150,6 +152,7 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(HgModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             fireStatusChanged((Set<File>) null);
