@@ -80,6 +80,8 @@ public class Util {
         results.addAll(propCat.getPropertyNames());
         if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(propCat)) {
             Collections.addAll(results, eclipselink20Keys);//TODO: should it be moved into a provider
+        } else if(ProviderUtil.HIBERNATE_PROVIDER2_0.equals(propCat)){
+            Collections.addAll(results, hibernate20Keys);//TODO: should it be moved into a provider
         }
         return results;
     }
