@@ -135,7 +135,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         bar.setString("@@@"); // NOI18N
         label.setText("@@@"); // NOI18N
         preferredHeight = Math.max(label.getPreferredSize().height, bar.getPreferredSize().height) + 2;
-        
+        setOpaque(false);
         discardLabel();
         discardBar();
         
