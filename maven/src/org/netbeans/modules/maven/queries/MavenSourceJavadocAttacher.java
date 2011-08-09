@@ -65,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=SourceJavadocAttacherImplementation.class, position=200)
 public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
 
-    private static final RequestProcessor RP = new RequestProcessor(MavenSourceJavadocAttacher.class);
+    private static final RequestProcessor RP = new RequestProcessor(MavenSourceJavadocAttacher.class.getName(), 5);
 
     @Override public boolean attachSources(@NonNull URL root, @NonNull AttachmentListener listener) throws IOException {
         return attach(root, listener, false);
