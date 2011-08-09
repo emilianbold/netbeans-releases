@@ -1300,7 +1300,7 @@ public final class ModuleManager extends Modules {
                 // Should never happen:
                 if (other == null) throw new IllegalStateException("Should have found module: " + codeNameBase); // NOI18N
                 if (!couldBeEnabledWithEagers(other, willEnable, recursion)) return false;
-            } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
+            } else if (dep.getType() == Dependency.TYPE_REQUIRES || dep.getType() == Dependency.TYPE_NEEDS) {
                 Set<Module> providers = providersOf.get(dep.getName());
                 if (providers == null) throw new IllegalStateException("Should have found a provider of: " + dep.getName()); // NOI18N
                 // Just need *one* to match.
