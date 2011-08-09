@@ -52,7 +52,6 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.DialogDescriptor;
@@ -72,14 +71,12 @@ public final class SourceJavadocAttacherUtil {
     private SourceJavadocAttacherUtil() {}
 
     public static void callListener(
-        @NullAllowed final AttachmentListener listener,
+        @NonNull final AttachmentListener listener,
         final boolean success) {
-        if (listener != null) {
-            if (success) {
-                listener.attachmentSucceeded();
-            } else {
-                listener.attachmentFailed();
-            }
+        if (success) {
+            listener.attachmentSucceeded();
+        } else {
+            listener.attachmentFailed();
         }
     }
 

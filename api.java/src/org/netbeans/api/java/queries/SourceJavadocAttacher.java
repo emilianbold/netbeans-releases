@@ -63,7 +63,7 @@ public final class SourceJavadocAttacher {
      * Attaches a source root provided by the SPI {@link SourceJavadocAttacherImplementation}
      * to given binary root.
      * @param root the binary root to attach sources to
-     * @param a listener notified about result when attaching is done
+     * @param listener notified about result when attaching is done
      */
     public static void attachSources(
             @NonNull final URL root,
@@ -75,7 +75,7 @@ public final class SourceJavadocAttacher {
      * Attaches a javadoc root provided by the SPI {@link SourceJavadocAttacherImplementation}
      * to given binary root.
      * @param root the binary root to attach javadoc to
-     * @param a listener notified about result  when attaching is done
+     * @param listener notified about result when attaching is done
      */
     public static void attachJavadoc(
             @NonNull final URL root,
@@ -102,9 +102,15 @@ public final class SourceJavadocAttacher {
 
     private static void attach(
             final URL root,
-            final AttachmentListener listener,
+            @NullAllowed AttachmentListener listener,
             final int mode) {
         Parameters.notNull("root", root);   //NOI18N
+        if (listener == null) {
+            listener = new AttachmentListener() {
+                @Override public void attachmentSucceeded() {}
+                @Override public void attachmentFailed() {}
+            };
+        }
         try {
             for (SourceJavadocAttacherImplementation attacher : Lookup.getDefault().lookupAll(SourceJavadocAttacherImplementation.class)) {
                 final boolean handles  = mode == 0 ?

@@ -44,7 +44,6 @@ package org.netbeans.spi.java.queries;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -67,7 +66,7 @@ public interface SourceJavadocAttacherImplementation {
      */
     boolean attachSources(
             @NonNull URL root,
-            @NullAllowed SourceJavadocAttacher.AttachmentListener listener) throws IOException;
+            @NonNull SourceJavadocAttacher.AttachmentListener listener) throws IOException;
 
     /**
      * Attaches a javadoc root provided by this SPI to given binary root.
@@ -77,5 +76,5 @@ public interface SourceJavadocAttacherImplementation {
      */
     boolean attachJavadoc(
             @NonNull URL root,
-            @NullAllowed SourceJavadocAttacher.AttachmentListener listener) throws IOException;
+            @NonNull SourceJavadocAttacher.AttachmentListener listener) throws IOException;
 }

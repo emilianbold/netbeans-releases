@@ -73,20 +73,20 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
     @Override
     public boolean attachSources(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener) throws IOException {
+            @NonNull final AttachmentListener listener) throws IOException {
         return attach(root, listener, J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
     }
 
     @Override
     public boolean attachJavadoc(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener) throws IOException {
+            @NonNull final AttachmentListener listener) throws IOException {
         return attach(root, listener, J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
     }
 
     private boolean attach(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener,
+            @NonNull final AttachmentListener listener,
             @NonNull final String volume) {
         final Pair<LibraryManager,Library> pair = findOwner(root);
         if (pair == null) {

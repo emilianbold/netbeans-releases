@@ -43,18 +43,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
@@ -78,20 +70,20 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
 
     @Override public boolean attachSources(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener) throws IOException {
+            @NonNull final AttachmentListener listener) throws IOException {
         return attach(root, listener, false);
     }
 
     @Override public boolean attachJavadoc(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener) throws IOException {
+            @NonNull final AttachmentListener listener) throws IOException {
         return attach(root, listener, true);
     }
 
     @Messages({"# {0} - artifact ID", "attaching=Attaching {0}"})
     private boolean attach(
         @NonNull final URL root,
-        @NullAllowed final AttachmentListener listener,
+        @NonNull final AttachmentListener listener,
         final boolean javadoc) throws IOException {
         final File file = FileUtil.archiveOrDirForURL(root);
         if (file == null) {
@@ -132,12 +124,10 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                         ProgressTransferListener.clearAggregateHandle();
                     }
                 } finally {
-                    if (listener != null) {
-                        if (attached) {
-                            listener.attachmentSucceeded();
-                        } else {
-                            listener.attachmentFailed();
-                        }
+                    if (attached) {
+                        listener.attachmentSucceeded();
+                    } else {
+                        listener.attachmentFailed();
                     }
                 }
             }

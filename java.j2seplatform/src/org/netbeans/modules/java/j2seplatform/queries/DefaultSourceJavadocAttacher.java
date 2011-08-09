@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileStateInvalidException;
@@ -67,20 +66,20 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
     @Override
     public boolean attachSources(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener) throws IOException {
+            @NonNull final AttachmentListener listener) throws IOException {
         return attach(root, listener, 0);
     }
 
     @Override
     public boolean attachJavadoc(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener) throws IOException {
+            @NonNull final AttachmentListener listener) throws IOException {
         return attach(root, listener, 1);
     }
 
     private boolean attach (
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener,
+            @NonNull final AttachmentListener listener,
             final int mode) throws IOException {
         final Runnable call = new Runnable() {
             @Override

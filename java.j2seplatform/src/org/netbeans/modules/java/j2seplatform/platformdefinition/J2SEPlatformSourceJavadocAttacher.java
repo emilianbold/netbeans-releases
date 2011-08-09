@@ -48,7 +48,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -71,14 +70,14 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
     @Override
     public boolean attachSources(
             @NonNull final URL root,
-            @NullAllowed AttachmentListener listener) throws IOException {
+            @NonNull AttachmentListener listener) throws IOException {
         return attach(root, listener, J2SEPlatformCustomizer.SOURCES);
     }
 
     @Override
     public boolean attachJavadoc(
             @NonNull final URL root,
-            @NullAllowed AttachmentListener listener) throws IOException {
+            @NonNull AttachmentListener listener) throws IOException {
         return attach(root, listener, J2SEPlatformCustomizer.JAVADOC);
     }
 
@@ -89,7 +88,7 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
     })
     private boolean attach(
             @NonNull final URL root,
-            @NullAllowed final AttachmentListener listener,
+            @NonNull final AttachmentListener listener,
             final int mode) {
         final J2SEPlatformImpl platform = findOwner(root);
         if (platform == null) {
