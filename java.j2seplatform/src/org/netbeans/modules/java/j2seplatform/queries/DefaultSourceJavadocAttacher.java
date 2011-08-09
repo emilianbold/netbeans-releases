@@ -44,19 +44,14 @@ package org.netbeans.modules.java.j2seplatform.queries;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -81,7 +76,7 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
         final Callable<Result> call = new Callable<Result>() {
             @Override
             public Result call() throws Exception {
-                final URL[] toAttach = selectRoots(mode);
+                final URL[] toAttach = selectRoots(root, mode);
                 if (toAttach != null) {
                     switch (mode) {
                         case 0:
@@ -104,53 +99,40 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
     @NbBundle.Messages({
         "TXT_Title=Browse ZIP/Folder",
         "TXT_Javadoc=Library Javadoc (folder, ZIP or JAR file)",
-        "TXT_Sources=Library Sources (folder, ZIP or JAR file)",
-        "TXT_Select=Add ZIP/Folder",
-        "MNE_Select=A"
+        "TXT_Sources=Library Sources (folder, ZIP or JAR file)"
     })
-    private static URL[] selectRoots(final int mode) throws MalformedURLException, FileStateInvalidException {
-        final JFileChooser chooser = new JFileChooser();
-        chooser.setMultiSelectionEnabled (true);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setDialogTitle(Bundle.TXT_Title());
-        chooser.setFileFilter (new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                try {
-                    return f.isDirectory() ||
-                        FileUtil.isArchiveFile(f.toURI().toURL());
-                } catch (MalformedURLException ex) {
-                    return false;
-                }
-            }
+    private static URL[] selectRoots(final URL root, final int mode) throws MalformedURLException, FileStateInvalidException {
+        final File[] cfh = new File[]{currentFolder};
+        final List<? extends URI> selected;
+        if (mode == 0) {
+            selected = SourceJavadocAttacherUtil.selectSources(
+                root,
+                SourceJavadocAttacherUtil.createDefaultBrowseCall(
+                    Bundle.TXT_Title(),
+                    Bundle.TXT_Sources(),
+                    cfh),
+                SourceJavadocAttacherUtil.createDefaultURIConvertor(true));
+        } else if (mode == 1) {
+            selected = SourceJavadocAttacherUtil.selectJavadoc(
+                root,
+                SourceJavadocAttacherUtil.createDefaultBrowseCall(
+                    Bundle.TXT_Title(),
+                    Bundle.TXT_Javadoc(),
+                    cfh),
+                SourceJavadocAttacherUtil.createDefaultURIConvertor(false));
+        } else {
+            throw new IllegalStateException(Integer.toString(mode));
+        }
 
-            @Override
-            public String getDescription() {
-                return mode == 0 ? Bundle.TXT_Sources() : Bundle.TXT_Javadoc();
-            }
-        });
-        chooser.setApproveButtonText(Bundle.TXT_Select());
-        chooser.setApproveButtonMnemonic(Bundle.MNE_Select().charAt(0));
-        if (currentFolder != null) {
-            chooser.setCurrentDirectory(currentFolder);
+        if (selected == null) {
+            return null;
         }
-        if (chooser.showOpenDialog(null) == chooser.APPROVE_OPTION) {
-            currentFolder = chooser.getCurrentDirectory();
-            final File[] files = chooser.getSelectedFiles();
-            final List<URL> result = new ArrayList<URL>(files.length);
-            for (File f : files) {
-                FileObject fo = FileUtil.toFileObject(f);
-                if (fo.isData()) {
-                    fo = FileUtil.getArchiveRoot(fo);
-                }
-                fo = mode == 0 ?
-                    JavadocAndSourceRootDetection.findSourceRoot(fo) :
-                    JavadocAndSourceRootDetection.findJavadocRoot(fo);
-                result.add(fo.getURL());
-            }
-            return result.toArray(new URL[result.size()]);
+        currentFolder = cfh[0];
+        final URL[] result = new URL[selected.size()];
+        for (int i=0; i< result.length; i++) {
+            result[i] = selected.get(i).toURL();
         }
-        return null;
+        return result;
     }
 
     private static File currentFolder;

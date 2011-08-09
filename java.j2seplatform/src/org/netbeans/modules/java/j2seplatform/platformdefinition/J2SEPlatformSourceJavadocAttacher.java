@@ -43,7 +43,9 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -52,6 +54,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,6 +74,11 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
         return attach(root, J2SEPlatformCustomizer.JAVADOC);
     }
 
+    @NbBundle.Messages({
+        "TXT_Title=Browse ZIP/Folder",
+        "TXT_JavadocFilterName=Library Javadoc (folder, ZIP or JAR file)",
+        "TXT_SourcesFilterName=Library Sources (folder, ZIP or JAR file)"
+    })
     private Future<Result> attach(final URL root, final int mode) {
         final J2SEPlatformImpl platform = findOwner(root);
         if (platform == null) {
@@ -79,11 +87,34 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
         final Callable<Result> call = new Callable<Result>() {
             @Override
             public Result call() throws Exception {
-                final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
-                if (J2SEPlatformCustomizer.select(model,new File[1],null)) {
-                    return Result.ATTACHED;
+                final List<? extends URI> selected;
+                if (mode == J2SEPlatformCustomizer.SOURCES) {
+                    selected = SourceJavadocAttacherUtil.selectSources(
+                        root,
+                        SourceJavadocAttacherUtil.createDefaultBrowseCall(
+                            Bundle.TXT_Title(),
+                            Bundle.TXT_SourcesFilterName(),
+                            new File[1]),
+                        SourceJavadocAttacherUtil.createDefaultURIConvertor(true));
+                } else if (mode == J2SEPlatformCustomizer.JAVADOC) {
+                    selected = SourceJavadocAttacherUtil.selectJavadoc(
+                        root,
+                        SourceJavadocAttacherUtil.createDefaultBrowseCall(
+                            Bundle.TXT_Title(),
+                            Bundle.TXT_JavadocFilterName(),
+                            new File[1]),
+                        SourceJavadocAttacherUtil.createDefaultURIConvertor(false));
+                } else {
+                    throw new IllegalStateException(Integer.toString(mode));
                 }
-                return Result.CANCELED;
+                if (selected == null) {
+                    return Result.CANCELED;
+                }
+                final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
+                for (URI uri : selected) {
+                    model.addPath(uri.toURL());
+                }
+                return Result.ATTACHED;
             }
         };
         return SourceJavadocAttacherUtil.scheduleInEDT(call);

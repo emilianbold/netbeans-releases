@@ -122,7 +122,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }
 
     @CheckForNull
-    static URI[] select(
+    static String[] select(
             @NonNull final String volumeType,
             @NonNull final String libName,
             @NonNull final File[] lastFolder,
@@ -172,19 +172,59 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         if (chooser.showOpenDialog(owner) == JFileChooser.APPROVE_OPTION) {
             try {
                 lastFolder[0] = chooser.getCurrentDirectory();
-                return pathsToURIs (
-                        chooser.getSelectedPaths(),
-                        volumeType,
-                        baseFolder);
+                return chooser.getSelectedPaths();
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);
-            } catch (URISyntaxException ue) {
-                Exceptions.printStackTrace(ue);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
         return null;
+    }
+
+    static URI pathToURI(
+            final File baseFolder,
+            final String fileName,
+            final String volume) throws MalformedURLException, URISyntaxException {
+        File f = new File(fileName);
+        URI uri = LibrariesSupport.convertFilePathToURI(fileName);
+        if (baseFolder != null) {
+            File realFile = f;
+            if (!f.isAbsolute()) {
+                    realFile = FileUtil.normalizeFile(new File(
+                        baseFolder, f.getPath()));
+            }
+            String jarPath = checkFile(realFile, volume);
+            if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
+                uri = LibrariesSupport.getArchiveRoot(uri);
+                if (jarPath != null) {
+                    assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
+                    uri = URI.create(uri.toString() + encodePath(jarPath));
+                }
+            } else if (!uri.toString().endsWith("/")){ //NOI18N
+                try {
+                    uri = new URI(uri.toString()+"/"); //NOI18N
+                } catch (URISyntaxException ex) {
+                    throw new AssertionError(ex);
+                }
+            }
+            return uri;
+        } else {
+            assert f.isAbsolute() : f.getPath();
+            f = FileUtil.normalizeFile (f);
+            String jarPath = checkFile(f, volume);
+            uri = f.toURI();
+            if (FileUtil.isArchiveFile(uri.toURL())) {
+                uri = LibrariesSupport.getArchiveRoot(uri);
+                if (jarPath != null) {
+                    assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
+                    uri = URI.create(uri.toString() + encodePath(jarPath));
+                }
+            } else if (!uri.toString().endsWith("/")){ //NOI18N
+                uri = URI.create(uri.toString()+"/"); //NOI18N
+            }
+            return uri;
+        }
     }
 
 
@@ -422,11 +462,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             FileUtil.normalizeFile(new File(URI.create(area.getLocation().toExternalForm())).getParentFile()):
             null;
         final File[] cwd = new File[]{lastFolder};
-        final URI[] res = select(volumeType, impl.getName(), cwd, this, baseFolder);
-        if (res != null) {
+        final String[] paths = select(volumeType, impl.getName(), cwd, this, baseFolder);
+        if (paths != null) {
             try {
                 lastFolder = cwd[0];
-                addFiles (res, arp);
+                addFiles (
+                    pathsToURIs (
+                        paths,
+                        volumeType,
+                        baseFolder),
+                    arp);
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);
             } catch (URISyntaxException ue) {
@@ -502,46 +547,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             @NonNull final String volume,
             @NullAllowed final File baseFolder) throws MalformedURLException, URISyntaxException {
         final List<URI> result = new ArrayList<URI>(fileNames.length);
-        for (int i = 0; i < fileNames.length; i++) {
-            File f = new File(fileNames[i]);
-            URI uri = LibrariesSupport.convertFilePathToURI(fileNames[i]);
-            if (baseFolder != null) {
-                File realFile = f;
-                if (!f.isAbsolute()) {
-                        realFile = FileUtil.normalizeFile(new File(
-                            baseFolder, f.getPath()));
-                }
-                String jarPath = checkFile(realFile, volume);
-                if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
-                    uri = LibrariesSupport.getArchiveRoot(uri);
-                    if (jarPath != null) {
-                        assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
-                        uri = URI.create(uri.toString() + encodePath(jarPath));
-                    }
-                } else if (!uri.toString().endsWith("/")){ //NOI18N
-                    try {
-                        uri = new URI(uri.toString()+"/"); //NOI18N
-                    } catch (URISyntaxException ex) {
-                        throw new AssertionError(ex);
-                    }
-                }
-                result.add(uri);
-            } else {
-                assert f.isAbsolute() : f.getPath();
-                f = FileUtil.normalizeFile (f);
-                String jarPath = checkFile(f, volume);
-                uri = f.toURI();
-                if (FileUtil.isArchiveFile(uri.toURL())) {
-                    uri = LibrariesSupport.getArchiveRoot(uri);
-                    if (jarPath != null) {
-                        assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
-                        uri = URI.create(uri.toString() + encodePath(jarPath));
-                    }
-                } else if (!uri.toString().endsWith("/")){ //NOI18N
-                    uri = URI.create(uri.toString()+"/"); //NOI18N
-                }
-                result.add(uri);
-            }
+        for (String fileName : fileNames) {
+            result.add(pathToURI(baseFolder,fileName,volume));
         }
         return result.toArray(new URI[result.size()]);
     }

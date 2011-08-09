@@ -53,9 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
@@ -97,13 +96,21 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                 try {
                     final URL areaLocation = lm.getLocation();
                     final File baseFolder = areaLocation == null ? null : new File(areaLocation.toURI()).getParentFile();
-                    final URI[] uris = J2SEVolumeCustomizer.select(
-                        volume,
-                        lib.getName(),
-                        new File[1],
-                        null,
-                        baseFolder);
-                    if (uris != null) {
+                    final List<? extends URI> selected;
+                    if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_SRC) {
+                        selected = SourceJavadocAttacherUtil.selectSources(
+                            root,
+                            new SelectFolder(volume, lib.getName(), baseFolder),
+                            new Convertor(volume, baseFolder));
+                    } else if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC) {
+                        selected = SourceJavadocAttacherUtil.selectJavadoc(
+                            root,
+                            new SelectFolder(volume, lib.getName(), baseFolder),
+                            new Convertor(volume, baseFolder));
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                    if (selected != null) {
                         final String name = lib.getName();
                         final String displayName = lib.getDisplayName();
                         final String desc = lib.getDescription();
@@ -111,9 +118,9 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                         for (String currentVolume : J2SELibraryTypeProvider.VOLUME_TYPES) {
                             List<URI> content = lib.getURIContent(currentVolume);
                             if (volume == currentVolume) {
-                                final List<URI> newContent = new ArrayList<URI>(content.size()+uris.length);
+                                final List<URI> newContent = new ArrayList<URI>(content.size()+selected.size());
                                 newContent.addAll(content);
-                                newContent.addAll(Arrays.asList(uris));
+                                newContent.addAll(selected);
                                 content = newContent;
                             }
                             volumes.put(currentVolume,content);
@@ -165,6 +172,52 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
         public static <F,S> Pair<F,S> of(F first, S second) {
             return new Pair<F,S>(first,second);
         }
+    }
+
+    private static class SelectFolder implements Callable<List<? extends String>> {
+
+        private final String volume;
+        private final String libName;
+        private final File baseFolder;
+
+        private SelectFolder(
+                @NonNull final String volume,
+                @NonNull final String libName,
+                @NullAllowed final File baseFolder) {
+            this.volume = volume;
+            this.libName = libName;
+            this.baseFolder = baseFolder;
+        }
+
+        @Override
+        public List<? extends String> call() throws Exception {
+            final String[] paths = J2SEVolumeCustomizer.select(
+                volume,
+                libName,
+                new File[1],
+                null,
+                baseFolder);
+            return paths == null ? null : Arrays.<String>asList(paths);
+        }
+    }
+
+    private static class Convertor implements SourceJavadocAttacherUtil.Function<String, URI> {
+
+        private final String volume;
+        private final File baseFolder;
+
+        private Convertor(
+                @NonNull final String volume,
+                @NullAllowed final File baseFolder) {
+            this.volume = volume;
+            this.baseFolder = baseFolder;
+        }
+
+        @Override
+        public URI call(String param) throws Exception {
+            return J2SEVolumeCustomizer.pathToURI(baseFolder, param, volume);
+        }
+
     }
 
 }
