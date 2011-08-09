@@ -12,6 +12,7 @@ VARIABLE   ? $name                         [PUBLIC]   issue153707.php
 KEYWORD    Book $this->                               null
 KEYWORD    parent::                                   null
 KEYWORD    self::                                     null
+KEYWORD    static::                                   null
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
