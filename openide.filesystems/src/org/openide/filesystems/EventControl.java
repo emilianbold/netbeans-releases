@@ -67,7 +67,9 @@ class EventControl {
     /** Holds current propagation ID and link to previous*/
     private AtomicActionLink currentAtomAction;
 
-    /** List of requests */
+    /** List of requests 
+     * @GuardedBy("this") 
+     */
     private LinkedList<FileSystem.EventDispatcher> requestsQueue;
 
     /**
@@ -140,7 +142,7 @@ class EventControl {
         }
 
         if (requests++ == 0) {
-            requestsQueue = new LinkedList<FileSystem.EventDispatcher>();
+            setRequestsQueue(new LinkedList<FileSystem.EventDispatcher>());
         }
     }
 
@@ -169,11 +171,15 @@ class EventControl {
             }
 
             if (fireAll || firePriority) {
-                reqQueueCopy = requestsQueue;
-                requestsQueue = null;
+                reqQueueCopy = getRequestsQueue();
+                setRequestsQueue(null);
                 priorityRequests = 0;
             } else {
                 return;
+            }
+            
+            if (firePriority && !fireAll) {
+                setRequestsQueue(new LinkedList<FileSystem.EventDispatcher>());
             }
         }
 
@@ -185,17 +191,16 @@ class EventControl {
         }
 
         if (firePriority) {
-            requestsQueue = new LinkedList<FileSystem.EventDispatcher>();
 
             LinkedList<FileSystem.EventDispatcher> newReqQueue = invokeDispatchers(true, reqQueueCopy);
 
             synchronized (this) {
-                while ((requestsQueue != null) && !requestsQueue.isEmpty()) {
-                    FileSystem.EventDispatcher r = requestsQueue.removeFirst();
+                while ((getRequestsQueue() != null) && !getRequestsQueue().isEmpty()) {
+                    FileSystem.EventDispatcher r = getRequestsQueue().removeFirst();
                     newReqQueue.add(r);
                 }
 
-                requestsQueue = newReqQueue;
+                setRequestsQueue(newReqQueue);
             }
         }
     }
@@ -225,15 +230,25 @@ class EventControl {
             disp.dispatch(true, null);
         }
 
-        if (requestsQueue != null) {
+        if (getRequestsQueue() != null) {
             // run later
             disp.setAtomicActionLink(currentAtomAction);
-            requestsQueue.add(disp);
+            getRequestsQueue().add(disp);
 
             return true;
         }
 
         return false;
+    }
+
+    private LinkedList<FileSystem.EventDispatcher> getRequestsQueue() {
+        assert Thread.holdsLock(this);
+        return requestsQueue;
+    }
+
+    private void setRequestsQueue(LinkedList<FileSystem.EventDispatcher> requestsQueue) {
+        assert Thread.holdsLock(this);
+        this.requestsQueue = requestsQueue;
     }
 
     /** Container that holds hierarchy of propagation IDs related to atomic actions

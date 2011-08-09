@@ -12,6 +12,7 @@ VARIABLE   ? $name                         [PUBLIC]   issue153707.php
 KEYWORD    Book $this->                               null
 KEYWORD    parent::                                   null
 KEYWORD    self::                                     null
+KEYWORD    static::                                   null
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
@@ -211,11 +212,6 @@ VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
 CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
-KEYWORD    __CLASS__                                  null
-KEYWORD    __FILE__                                   null
-KEYWORD    __FUNCTION__                               null
-KEYWORD    __LINE__                                   null
-KEYWORD    __METHOD__                                 null
 KEYWORD    abstract                                   null
 KEYWORD    array                                      null
 KEYWORD    break                                      null

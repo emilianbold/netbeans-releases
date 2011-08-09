@@ -39,17 +39,15 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.ui;
+package org.netbeans.modules.debugger.visual.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
-import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
-import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
+import javax.swing.Action;
+import org.netbeans.spi.debugger.visual.ComponentInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -77,20 +75,14 @@ public class ComponentNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        String type = ci.getType();
-        int d = type.lastIndexOf('.');
-        if (d > 0) {
-            type = type.substring(d + 1);
-        }
-        return "["+type+"]";//ci.getName();
+        return ci.getDisplayName();
     }
 
     @Override
-    public SystemAction[] getActions() {
-        return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
-                                    ShowListenersAction.get(ShowListenersAction.class) };
+    public Action[] getActions(boolean context) {
+        return ci.getActions(context);
     }
-
+    
     @Override
     public PropertySet[] getPropertySets() {
         return ci.getPropertySets();

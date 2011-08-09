@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.logging.Logger;
 import javax.swing.Action;
 
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
@@ -72,7 +73,9 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataLoader;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
+import org.openide.util.Lookup;
 
 /**
  * Class for creating the Multiview
@@ -83,9 +86,12 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
     static final long serialVersionUID = 1L;
     private DataObject dataObject;
     private Service service;
-    private DataObject wsdlDo;
+    //private DataObject wsdlDo;
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
-    private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
+    //private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
+    
+    public static final String DESIGN_VIEW_ID = "webservice-designview";  // NOI18N
+    public static final String SOURCE_VIEW_ID = "webservice-sourceview";
 
     /**
      * MultiView enum
@@ -157,7 +163,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @return CloneableTopComponent new multiview.
      */
     public CloneableTopComponent createMultiView() {
-        MultiViewDescription views[];
+        /*MultiViewDescription views[];
         if (service != null && service.getLocalWsdlFile() != null) {
             views = new MultiViewDescription[2];
 
@@ -180,7 +186,9 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
                 views,
-                views[0], new CloseHandler(getDataObject()));
+                views[0], new CloseHandler(getDataObject()));*/
+        CloneableTopComponent multiview = MultiViews.createCloneableMultiView(
+                JaxWsDataLoader.JAXWS_MIME_TYPE, dataObject);
 
         String displayName = getDataObject().getNodeDelegate().getDisplayName();
         multiview.setDisplayName(displayName);
@@ -211,10 +219,10 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         getEditorSupport().open();
         switch (view) {
             case SOURCE:
-                requestMultiviewActive(SourceMultiViewDesc.PREFERRED_ID);
+                requestMultiviewActive(SOURCE_VIEW_ID);
                 break;
             case DESIGN:
-                requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
+                requestMultiviewActive(DESIGN_VIEW_ID);
                 break;
             case PREVIEW:
                 requestMultiviewActive(PreviewMultiViewDesc.PREFERRED_ID);
@@ -297,7 +305,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             }
 
         }           
-        wsdlDo = dataObj;
+        //wsdlDo = dataObj;
     }
 
     /**
@@ -306,21 +314,23 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * reference to DataObject only - to be serializable with the multiview
      * TopComponent without problems.
      */
+/*    @MimeRegistration(mimeType=JaxWsDataLoader.JAXWS_MIME_TYPE, 
+            service=CloseOperationHandler.class)
     public static class CloseHandler implements CloseOperationHandler, Serializable {
 
         private static final long serialVersionUID = -3838395157610633251L;
         private DataObject sourceDataObject;
 
         private CloseHandler() {
-            super();
+            int a =0;
         }
 
-        public CloseHandler(DataObject sourceDataObject) {
-            this.sourceDataObject = sourceDataObject;
+        public CloseHandler(DataObject dataObject) {
+            this.sourceDataObject = dataObject;
         }
 
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            StringBuffer message = new StringBuffer();
+            StringBuilder message = new StringBuilder();
             for (CloseOperationState state : elements) {
                 if (state.getCloseWarningID().equals(SOURCE_UNSAFE_CLOSE)) {
                     message.append(NbBundle.getMessage(DataObject.class,
@@ -347,5 +357,5 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             return true;
         }
     }
-
+*/
 }

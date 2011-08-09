@@ -39,20 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.ui;
+package org.netbeans.modules.debugger.visual;
 
-import org.netbeans.spi.navigator.NavigatorLookupHint;
+import java.util.logging.Logger;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.modules.debugger.visual.ui.ScreenshotComponent;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
- * A content type for Navigator.
- * 
+ *
  * @author Martin Entlicher
  */
-public class ComponentHierarchyNavigatorHint implements NavigatorLookupHint {
+@DebuggerServiceRegistration(path="", types=LazyDebuggerManagerListener.class)
+public class VisualDebuggerListener extends DebuggerManagerAdapter {
+    
+    private static final Logger logger = Logger.getLogger(VisualDebuggerListener.class.getName());
 
     @Override
-    public String getContentType() {
-        return "text/x-debugger-visual-component";
+    public void engineAdded(DebuggerEngine engine) {
+    }
+
+    @Override
+    public void engineRemoved(DebuggerEngine engine) {
+        ScreenshotComponent.closeScreenshots(engine);
     }
     
 }

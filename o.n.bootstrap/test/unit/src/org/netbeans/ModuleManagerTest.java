@@ -1237,6 +1237,31 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testProvNeedsWithEager() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            // m1 is regular (disabled) module, providing foo
+            Module m1 = mgr.create(new File(jars, "prov-foo.jar"), null, false, false, false);
+            // m2 is autoload module, which needs foo
+            Module m2 = mgr.create(new File(jars, "needs-foo.jar"), null, false, true, false);
+            // m3 is eager module, which depends on m2
+            Module m3 = mgr.create(new File(jars, "dep-on-needs_foo-simple.jar"), null, false, false, true);
+            
+            mgr.enable(Collections.EMPTY_SET);
+            // since m1 is disabled, eager module m3 should be still disabled
+            assertFalse("Incorrectly enabled m1",m1.isEnabled());
+            assertFalse("Incorrectly enabled m2",m2.isEnabled());
+            assertFalse("Incorrectly enabled m3",m3.isEnabled());
+        } catch (IllegalArgumentException ex) {
+            fail(ex.getMessage());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     public void testComplexProvNeeds() throws Exception {
         doComplexProvNeeds(false, false, false);
     }

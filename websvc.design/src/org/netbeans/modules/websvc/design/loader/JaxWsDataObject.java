@@ -80,6 +80,8 @@ import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
     
+    public static final String CLASS_GIF = "org/netbeans/modules/java/resources/class.gif";
+    
     private static final String BUILD_IMPL_XML_PATH = "nbproject/build-impl.xml"; // NOI18N
     private transient JaxWsJavaEditorSupport jes;    
     private transient MultiViewSupport mvc;
@@ -236,9 +238,10 @@ public final class JaxWsDataObject extends MultiDataObject {
     }            
     
     static class JaxWsDataNode extends DataNode {
+
         public JaxWsDataNode(DataObject dobj) {
             super(dobj, Children.LEAF);
-            setIconBaseWithExtension("org/netbeans/modules/java/resources/class.gif");
+            setIconBaseWithExtension(CLASS_GIF);
         }
 
         @Override
@@ -319,7 +322,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         
         public JaxWsJavaEditorSupport(JaxWsDataObject dataObject) {
             super(dataObject, new Environment(dataObject));
-            setMIMEType("text/x-java"); // NOI18N
+            setMIMEType(JaxWsDataLoader.JAVA_MIME_TYPE); // NOI18N
         }
         
         @Override 

@@ -46,19 +46,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     
-    <folder name="Navigator">
-        <folder name="Panels">
-            <folder name="text">
-                <folder name="x-debugger-visual-component">
-                    <file name="org-netbeans-modules-debugger-jpda-visual-ui-ComponentHierarchy.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.jpda.visual.ui.ComponentHierarchy"/>
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.jpda.visual.ui.ComponentHierarchy.getInstance"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Windows2">
         <folder name="Components">
             <file name="eventsView.settings" url="resources/events.settings"/>

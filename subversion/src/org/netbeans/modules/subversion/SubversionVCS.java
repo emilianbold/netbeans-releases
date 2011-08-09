@@ -64,7 +64,6 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -88,7 +87,6 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName());
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
-        putProperty("Integer VCS.Priority", Utils.getPriority("subversion"));
     
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         Subversion.getInstance().attachListeners(this);
