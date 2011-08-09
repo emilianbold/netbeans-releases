@@ -105,69 +105,6 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         this.initComponents ();
     }
 
-
-    static boolean select(
-            final PathModel model,
-            final File[] currentDir,
-            final Component parentComponent) {
-        final JFileChooser chooser = new JFileChooser ();
-        chooser.setMultiSelectionEnabled (true);
-        String title = null;
-        String message = null;
-        String approveButtonName = null;
-        String approveButtonNameMne = null;
-        if (model.type == SOURCES) {
-            title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
-            message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
-            approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
-            approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenSources");
-        } else if (model.type == JAVADOC) {
-            title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
-            message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
-            approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
-            approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenJavadoc");
-        }
-        chooser.setDialogTitle(title);
-        chooser.setApproveButtonText(approveButtonName);
-        chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        if (Utilities.isMac()) {
-            //New JDKs and JREs are bundled into package, allow JFileChooser to navigate in
-            chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
-        }
-        //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
-        chooser.setAcceptAllFileFilterUsed( false );
-        chooser.setFileFilter (new ArchiveFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
-        if (currentDir[0] != null) {
-            chooser.setCurrentDirectory(currentDir[0]);
-        }
-        if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
-            File[] fs = chooser.getSelectedFiles();
-            boolean addingFailed = false;
-            for (File f : fs) {
-                //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
-                // E.g. for /foo/src it returns /foo/src/src
-                // Try to convert it back by removing last invalid name component
-                if (!f.exists()) {
-                    File parent = f.getParentFile();
-                    if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
-                        f = parent;
-                    }
-                }
-                if (f.exists()) {
-                    addingFailed|=!model.addPath (f);
-                }
-            }
-            if (addingFailed) {
-                new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
-                        NotifyDescriptor.ERROR_MESSAGE);
-            }
-            currentDir[0] = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-            return true;
-        }
-        return false;
-    }
-
     private void initComponents () {
         this.getAccessibleContext().setAccessibleName (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AN_J2SEPlatformCustomizer"));
         this.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_J2SEPlatformCustomizer"));
@@ -446,6 +383,68 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }
 
+        private static boolean select(
+            final PathModel model,
+            final File[] currentDir,
+            final Component parentComponent) {
+            final JFileChooser chooser = new JFileChooser ();
+            chooser.setMultiSelectionEnabled (true);
+            String title = null;
+            String message = null;
+            String approveButtonName = null;
+            String approveButtonNameMne = null;
+            if (model.type == SOURCES) {
+                title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
+                message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
+                approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
+                approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenSources");
+            } else if (model.type == JAVADOC) {
+                title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
+                message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
+                approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
+                approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenJavadoc");
+            }
+            chooser.setDialogTitle(title);
+            chooser.setApproveButtonText(approveButtonName);
+            chooser.setApproveButtonMnemonic (approveButtonNameMne.charAt(0));
+            chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            if (Utilities.isMac()) {
+                //New JDKs and JREs are bundled into package, allow JFileChooser to navigate in
+                chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
+            }
+            //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+            chooser.setAcceptAllFileFilterUsed( false );
+            chooser.setFileFilter (new ArchiveFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
+            if (currentDir[0] != null) {
+                chooser.setCurrentDirectory(currentDir[0]);
+            }
+            if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
+                File[] fs = chooser.getSelectedFiles();
+                boolean addingFailed = false;
+                for (File f : fs) {
+                    //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
+                    // E.g. for /foo/src it returns /foo/src/src
+                    // Try to convert it back by removing last invalid name component
+                    if (!f.exists()) {
+                        File parent = f.getParentFile();
+                        if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
+                            f = parent;
+                        }
+                    }
+                    if (f.exists()) {
+                        addingFailed|=!model.addPath (f);
+                    }
+                }
+                if (addingFailed) {
+                    new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                }
+                currentDir[0] = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+                return true;
+            }
+            return false;
+        }
+
         private void removePathElement () {
             int[] indices = this.resources.getSelectedIndices();
             if (indices.length == 0) {
@@ -576,7 +575,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }       
 
-        private boolean addPath (URL url) {
+        boolean addPath (URL url) {
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
             }

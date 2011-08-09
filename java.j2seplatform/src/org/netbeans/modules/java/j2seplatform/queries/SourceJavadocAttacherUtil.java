@@ -41,6 +41,13 @@
  */
 package org.netbeans.modules.java.j2seplatform.queries;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -49,9 +56,20 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation.Result;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -82,6 +100,154 @@ public final class SourceJavadocAttacherUtil {
         @NonNull final Result result) {
         assert result != null;
         return new Fixed(result);
+    }
+
+    @CheckForNull
+    @NbBundle.Messages({
+        "TXT_SelectJavadoc=Select Javadoc"
+    })
+    public static List<? extends URI> selectJavadoc(
+            @NonNull final URL root,
+            @NonNull final Callable<List<? extends String>> browseCall,
+            @NonNull final Function<String,URI> convertor) {
+        assert root != null;
+        assert browseCall != null;
+        assert convertor != null;
+        final SelectJavadocPanel selectJavadoc = new SelectJavadocPanel(
+                getDisplayName(root),
+                browseCall,
+                convertor);
+        final DialogDescriptor dd = new DialogDescriptor(selectJavadoc, Bundle.TXT_SelectJavadoc());
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            try {
+                return selectJavadoc.getJavadoc();
+            } catch (Exception e) {
+                //todo:
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    @NbBundle.Messages({
+        "TXT_SelectSources=Select Sources"
+    })
+    public static List<? extends URI> selectSources(
+            @NonNull final URL root,
+            @NonNull final Callable<List<? extends String>> browseCall,
+            @NonNull final Function<String,URI> convertor) {
+        assert root != null;
+        assert browseCall != null;
+        assert convertor != null;
+        final SelectSourcesPanel selectSources = new SelectSourcesPanel(
+                getDisplayName(root),
+                browseCall,
+                convertor);
+        final DialogDescriptor dd = new DialogDescriptor(selectSources, Bundle.TXT_SelectSources());
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            try {
+                return selectSources.getSources();
+            } catch (Exception e) {
+                //todo:
+            }
+        }
+        return null;
+    }
+
+    @NonNull
+    @NbBundle.Messages({
+        "TXT_Select=Add ZIP/Folder",
+        "MNE_Select=A"
+    })
+    public static Callable<List<? extends String>> createDefaultBrowseCall(
+            @NonNull final String title,
+            @NonNull final String filterDescription,
+            @NonNull final File[] currentFolder) {
+        assert title != null;
+        assert filterDescription != null;
+        assert currentFolder != null;
+        final Callable<List<? extends String>> call = new Callable<List<? extends String>>() {
+            @Override
+            public List<? extends String> call() throws Exception {
+                final JFileChooser chooser = new JFileChooser();
+                chooser.setMultiSelectionEnabled (true);
+                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                if (Utilities.isMac()) {
+                    //New JDKs and JREs are bundled into package, allow JFileChooser to navigate in
+                    chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
+                }
+                chooser.setDialogTitle(title);
+                chooser.setFileFilter (new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        try {
+                            return f.isDirectory() ||
+                                FileUtil.isArchiveFile(f.toURI().toURL());
+                        } catch (MalformedURLException ex) {
+                            return false;
+                        }
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return filterDescription;
+                    }
+                });
+                chooser.setApproveButtonText(Bundle.TXT_Select());
+                chooser.setApproveButtonMnemonic(Bundle.MNE_Select().charAt(0));
+                if (currentFolder[0] != null) {
+                    chooser.setCurrentDirectory(currentFolder[0]);
+                }
+                if (chooser.showOpenDialog(null) == chooser.APPROVE_OPTION) {
+                    currentFolder[0] = chooser.getCurrentDirectory();
+                    final File[] files = chooser.getSelectedFiles();
+                    final List<String> result = new ArrayList<String>(files.length);
+                    for (File f : files) {
+                        result.add(f.getAbsolutePath());
+                    }
+                    return result;
+                }
+                return null;
+            }
+        };
+        return call;
+    }
+
+    public static Function<String,URI> createDefaultURIConvertor(final boolean forSources) {
+        return new Function<String, URI>() {
+            @Override
+            public URI call(String param) throws Exception {
+                final File f = new File (param);
+                assert f.isAbsolute();
+                FileObject fo = FileUtil.toFileObject(f);
+                if (fo.isData()) {
+                    fo = FileUtil.getArchiveRoot(fo);
+                }
+                FileObject root = forSources ?
+                    JavadocAndSourceRootDetection.findSourceRoot(fo) :
+                    JavadocAndSourceRootDetection.findJavadocRoot(fo);
+                if (root == null) {
+                    root = fo;
+                }
+                return root.getURL().toURI();
+            }
+        };
+    }
+
+    public static interface Function<P,R> {
+        R call (P param) throws Exception;
+    }
+
+    @NonNull
+    private static String getDisplayName(@NonNull final URL root) {
+        final URL file;
+        if (FileUtil.getArchiveFile(root) != null) {
+            file = FileUtil.getArchiveFile(root);
+        } else {
+            file = root;
+        }
+        final FileObject fo = URLMapper.findFileObject(file);
+        return fo != null ? fo.getNameExt() : file.getPath();
     }
 
     private static class Now implements Future<Result> {
