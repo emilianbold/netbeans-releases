@@ -142,7 +142,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                                         File toScan = null;
                                         REPO: for (RepositoryInfo repo : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                                             LOG.log(Level.FINE, "checking {0}", repo);
-                                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar, repo)) {
+                                            for (NBVersionInfo analogue : RepositoryQueries.findBySHA1(jar, Collections.singletonList(repo))) {
                                                 toScan = RepositoryUtil.createArtifact(analogue).getFile();
                                                 LOG.log(Level.FINE, "found {0}", toScan);
                                                 break REPO;

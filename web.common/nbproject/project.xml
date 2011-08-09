@@ -153,19 +153,21 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>
-                <friend>org.netbeans.modules.web.flyingsaucer</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
+                <friend>org.netbeans.modules.css.lib</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.el</friend>
+                <friend>org.netbeans.modules.web.flyingsaucer</friend>
+                <friend>org.netbeans.modules.web.indent</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>
-                <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
-                <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.web.common.api</package>
                 <package>org.netbeans.modules.web.common.refactoring</package>
                 <package>org.netbeans.modules.web.common.spi</package>

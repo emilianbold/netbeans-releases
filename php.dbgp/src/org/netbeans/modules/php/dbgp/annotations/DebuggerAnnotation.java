@@ -84,8 +84,10 @@ public abstract class DebuggerAnnotation extends Annotation {
      * </pre> 
      * @see org.openide.text.Annotation#getAnnotationType()
      */
+    @Override
     public abstract String getAnnotationType();
 
+    @Override
     public String getShortDescription(){
         return myMessage;
     }

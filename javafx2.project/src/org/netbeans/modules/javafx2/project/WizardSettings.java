@@ -44,7 +44,7 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.javafx2.project.NewJ2SEProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator.WizardType;
 import org.openide.util.NbPreferences;
 
 /**

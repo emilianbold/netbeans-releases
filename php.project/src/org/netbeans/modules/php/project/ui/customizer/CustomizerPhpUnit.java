@@ -72,12 +72,13 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public final class CustomizerPhpUnit extends JPanel {
+public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 2171421712032630826L;
 
     private final Category category;
@@ -97,6 +98,7 @@ public final class CustomizerPhpUnit extends JPanel {
         initFile(uiProps.getPhpUnitConfiguration(), configurationCheckBox, configurationTextField);
         initFile(uiProps.getPhpUnitSuite(), suiteCheckBox, suiteTextField);
         runTestUsingUnitCheckBox.setSelected(uiProps.getPhpUnitRunTestFiles());
+        askForTestGroupsCheckBox.setSelected(uiProps.getPhpUnitAskForTestGroups());
 
         enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
         enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
@@ -104,6 +106,11 @@ public final class CustomizerPhpUnit extends JPanel {
 
         addListeners();
         validateData();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerPhpUnit.class);
     }
 
     void enableFile(boolean enabled, JComponent... components) {
@@ -140,6 +147,7 @@ public final class CustomizerPhpUnit extends JPanel {
         uiProps.setPhpUnitConfiguration(configuration);
         uiProps.setPhpUnitSuite(suite);
         uiProps.setPhpUnitRunTestFiles(runTestUsingUnitCheckBox.isSelected());
+        uiProps.setPhpUnitAskForTestGroups(askForTestGroupsCheckBox.isSelected());
 
         category.setErrorMessage(null);
         category.setValid(true);
@@ -188,12 +196,14 @@ public final class CustomizerPhpUnit extends JPanel {
         });
         suiteTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
-        runTestUsingUnitCheckBox.addItemListener(new ItemListener() {
+        final ItemListener validateItemListener = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 validateData();
             }
-        });
+        };
+        runTestUsingUnitCheckBox.addItemListener(validateItemListener);
+        askForTestGroupsCheckBox.addItemListener(validateItemListener);
     }
 
     private String getValidFile(String name, JTextField textField) {
@@ -280,6 +290,7 @@ public final class CustomizerPhpUnit extends JPanel {
         suiteBrowseButton = new JButton();
         suiteInfoLabel = new JLabel();
         runTestUsingUnitCheckBox = new JCheckBox();
+        askForTestGroupsCheckBox = new JCheckBox();
 
         setFocusTraversalPolicy(null);
 
@@ -287,7 +298,6 @@ public final class CustomizerPhpUnit extends JPanel {
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.text")); // NOI18N
 
         bootstrapLabel.setLabelFor(bootstrapTextField);
-
 
         Mnemonics.setLocalizedText(bootstrapLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(bootstrapBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.text"));
@@ -307,8 +317,6 @@ public final class CustomizerPhpUnit extends JPanel {
 
         configurationLabel.setLabelFor(configurationTextField);
 
-
-
         Mnemonics.setLocalizedText(configurationLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(configurationBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.text"));
         configurationBrowseButton.addActionListener(new ActionListener() {
@@ -326,7 +334,6 @@ public final class CustomizerPhpUnit extends JPanel {
         Mnemonics.setLocalizedText(suiteCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.text"));
 
         suiteLabel.setLabelFor(suiteTextField);
-
         Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text"));
         Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text"));
         suiteBrowseButton.addActionListener(new ActionListener() {
@@ -336,13 +343,12 @@ public final class CustomizerPhpUnit extends JPanel {
         });
 
         suiteInfoLabel.setLabelFor(this);
-
-
         Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text"));
         Mnemonics.setLocalizedText(runTestUsingUnitCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runTestUsingUnitCheckBox.text"));
+        Mnemonics.setLocalizedText(askForTestGroupsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.askForTestGroupsCheckBox.text"));
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addComponent(configurationCheckBox)
@@ -391,6 +397,9 @@ public final class CustomizerPhpUnit extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(runTestUsingUnitCheckBox)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(askForTestGroupsCheckBox)
+                .addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, suiteBrowseButton});
@@ -428,6 +437,8 @@ public final class CustomizerPhpUnit extends JPanel {
                 .addComponent(suiteInfoLabel)
                 .addGap(18, 18, 18)
                 .addComponent(runTestUsingUnitCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(askForTestGroupsCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -465,6 +476,7 @@ public final class CustomizerPhpUnit extends JPanel {
         suiteBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
         suiteInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleName")); // NOI18N
         suiteInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
@@ -509,6 +521,7 @@ public final class CustomizerPhpUnit extends JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox askForTestGroupsCheckBox;
     private JButton bootstrapBrowseButton;
     private JCheckBox bootstrapCheckBox;
     private JCheckBox bootstrapForCreateTestsCheckBox;

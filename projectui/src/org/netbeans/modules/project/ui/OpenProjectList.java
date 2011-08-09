@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.EventQueue;
-import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,7 +53,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.Collator;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,9 +81,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.JDialog;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
@@ -98,13 +92,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -116,6 +109,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -313,6 +307,7 @@ public final class OpenProjectList {
                     }
                     updateGlobalState();
                     ProjectsRootNode.checkNoLazyNode();
+                    Group.projectsLoaded();
                     return;
                 case 2:
                     // finished, oK
@@ -553,8 +548,7 @@ public final class OpenProjectList {
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously) {
         open(projects, openSubprojects, asynchronously, null);
     }
-    
-    @Messages("LBL_Opening_Projects_Progress=Opening Projects")
+
     public void open(final Project[] projects, final boolean openSubprojects, final boolean asynchronously, final Project/*|null*/ mainProject) {
         if (projects.length == 0) {
             //nothing to do:
@@ -563,56 +557,35 @@ public final class OpenProjectList {
         
         long start = System.currentTimeMillis();
         
-	if (asynchronously) {
-            if (!EventQueue.isDispatchThread()) { // #89935
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        open(projects, openSubprojects, asynchronously, mainProject);
+        if (asynchronously) {
+            class Cancellation extends AtomicBoolean implements Cancellable {
+                Thread t;
+                @Override public boolean cancel() {
+                    if (t != null) {
+                        t.interrupt();
                     }
-                });
-                return;
+                    return compareAndSet(false, true);
+                }
             }
-	    final ProgressHandle handle = ProgressHandleFactory.createHandle(CAP_Opening_Projects());
-        final OpeningProjectPanel panel = new OpeningProjectPanel();
-        panel.setProjectName(projects[0].getProjectDirectory().getNameExt());
-        final DialogDescriptor dd = new DialogDescriptor(panel, LBL_Opening_Projects_Progress(), true, null);
-        dd.setLeaf(true);
-        dd.setOptions(new Object[0]);
-	    final JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(
-            dd);
-	    dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-	    
-	    OPENING_RP.post(new Runnable() {
-		public void run() {
-		    try {
-			doOpen(projects, openSubprojects, handle, panel);
-                        if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
-                            setMainProject(mainProject);
-                        }
-		    } finally {
-			SwingUtilities.invokeLater(new Runnable() {
-			    public void run() {
-                                //fix for #67114:
-                                try {
-                                    Thread.sleep(50);
-                                } catch (InterruptedException e) {
-                                    // ignored
-                                }
-                                dialog.setVisible(false);
-                                dialog.dispose();
-			    }
-			});
-		    }
-		}
-	    });
-	    
-	    dialog.setVisible(true);
-	} else {
-	    doOpen(projects, openSubprojects, null, null);
+            final Cancellation cancellation = new Cancellation();
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(CAP_Opening_Projects(), cancellation);
+            handle.start();
+            handle.progress(projects[0].getProjectDirectory().getNameExt());
+            OPENING_RP.post(new Runnable() {
+                @Override public void run() {
+                    cancellation.t = Thread.currentThread();
+                    doOpen(projects, openSubprojects, handle, cancellation);
+                    if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
+                        setMainProject(mainProject);
+                    }
+                }
+            });
+        } else {
+            doOpen(projects, openSubprojects, null, null);
             if (mainProject != null && Arrays.asList(projects).contains(mainProject) && openProjects.contains(mainProject)) {
                 setMainProject(mainProject);
             }
-	}
+        }
         
         long end = System.currentTimeMillis();
         
@@ -620,8 +593,9 @@ public final class OpenProjectList {
             log(Level.FINE, "opening projects took: " + (end - start) + "ms");
         }
     }
-    
-    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, OpeningProjectPanel panel) {
+
+    @Messages({"# {0} - project display name", "OpenProjectList.finding_subprojects=Finding required projects of {0}"})
+    private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
@@ -635,21 +609,19 @@ public final class OpenProjectList {
         Collection<Project> projectsToOpen = new LinkedHashSet<Project>();
         
 	if (handle != null) {
-	    handle.start(maxWork);
+	    handle.switchToDeterminate(maxWork);
 	    handle.progress(0);
 	}
-        
-        if (panel != null) {
-            assert projects.length > 0 : "at least one project to open";
-            
-            panel.setProjectName(ProjectUtils.getInformation(projects[0]).getDisplayName());
-        }
         
         Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
 
         List<Project> toHandle = new LinkedList<Project>(Arrays.asList(projects));
         
         while (!toHandle.isEmpty()) {
+            if (canceled != null && canceled.get()) {
+                break;
+            }
+
             Project p = toHandle.remove(0);
             assert p != null;
             Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
@@ -657,6 +629,9 @@ public final class OpenProjectList {
             if (subprojects == null) {
                 SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                 if (spp != null) {
+                    if (handle != null) {
+                        handle.progress(OpenProjectList_finding_subprojects(ProjectUtils.getInformation(p).getDisplayName()));
+                    }
                     subprojects = spp.getSubprojects();
                 } else {
                     subprojects = Collections.emptySet();
@@ -695,9 +670,11 @@ public final class OpenProjectList {
         });
         
         for (Project p: projectsToOpen) {
-            
-            if (panel != null) {
-                panel.setProjectName(ProjectUtils.getInformation(p).getDisplayName());
+            if (canceled != null && canceled.get()) {
+                break;
+            }
+            if (handle != null) {
+                handle.progress(ProjectUtils.getInformation(p).getDisplayName());
             }
             
             recentProjectsChanged |= doOpenProject(p);
@@ -710,6 +687,8 @@ public final class OpenProjectList {
                 handle.progress((int) currentWork);
             }
         }
+
+        Thread.interrupted(); // just to clear status
 
         final boolean _recentProjectsChanged = recentProjectsChanged;
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
@@ -906,12 +885,12 @@ public final class OpenProjectList {
         });
     }
     
-    public void setMainProject( final Project mainProject ) {
-        LOGGER.finer("Setting main project: " + mainProject); // NOI18N
+    public void setMainProject( final Project project ) {
+        LOGGER.finer("Setting main project: " + project); // NOI18N
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
-            Project main = mainProject;
+            Project main = project;
             if (main != null && !openProjects.contains(main)) {
                 //#139965 the project passed in here can be different from the current one.
                 // eg when the ManProjectAction shows a list of opened projects, it lists the "non-loaded skeletons"
@@ -936,7 +915,7 @@ public final class OpenProjectList {
                         }
                         if (fail) {
                             logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                            IllegalArgumentException x = new IllegalArgumentException("Project " + ProjectUtils.getInformation(project).getDisplayName() + " is not open and cannot be set as main.");
                             Exceptions.attachSeverity(x, Level.INFO);
                             throw x;
                         }
@@ -946,7 +925,7 @@ public final class OpenProjectList {
                 }
             }
         
-            OpenProjectList.this.mainProject = main;
+            mainProject = main;
             saveMainProject(main);
             return null;
         }
@@ -1146,7 +1125,7 @@ public final class OpenProjectList {
         }
         if (System.getProperty("test.whitelist.stage") == null) { // NOI18N
             // disable warming up of templates when running ide.kit/test/whitelist
-            prepareTemplates(null, null, null, null, p, p.getLookup());
+            prepareTemplates(p, p.getLookup());
         }
         return ok;
     }
@@ -1162,29 +1141,27 @@ public final class OpenProjectList {
             }
         }
     }
-    
-    public static boolean prepareTemplates(
-            JMenu menuItem, ActionListener menuListener,
-            MessageFormat templateName, String propertyName,
-            Project project, Lookup lookup) {
+
+    /** @see #prepareTemplates */
+    public static final class TemplateItem {
+        public final DataObject template;
+        public final String displayName;
+        public final Icon icon;
+        TemplateItem(DataObject template, String displayName, Icon icon) {
+            this.template = template;
+            this.displayName = displayName;
+            this.icon = icon;
+        }
+    }
+    public static List<TemplateItem> prepareTemplates(Project project, Lookup lookup) {
         // check the action context for recommmended/privileged templates..
         PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
-        boolean itemAdded = false;
+        final List<TemplateItem> items = new ArrayList<TemplateItem>();
         for (DataObject template : OpenProjectList.getDefault().getTemplatesLRU(project, privs)) {
             Node delegate = template.getNodeDelegate();
-            Icon icon = ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16));
-            String displayName = delegate.getDisplayName();
-            if (templateName != null) {
-                JMenuItem item = new JMenuItem(
-                        templateName.format(new Object[]{displayName}),
-                        icon);
-                item.addActionListener(menuListener);
-                item.putClientProperty(propertyName, template);
-                menuItem.add(item);
-            } // else being warmed up from notifyOpened
-            itemAdded = true;
+            items.add(new TemplateItem(template, delegate.getDisplayName(), ImageUtilities.image2Icon(delegate.getIcon(BeanInfo.ICON_COLOR_16x16))));
         }
-        return itemAdded;
+        return items;
     }
 
     private boolean doOpenProject(final @NonNull Project p) {
@@ -1266,7 +1243,7 @@ public final class OpenProjectList {
             OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
         }
         catch ( FileStateInvalidException e ) {
-            OpenProjectListSettings.getInstance().setMainProjectURL( null );
+            OpenProjectListSettings.getInstance().setMainProjectURL((String) null);
         }
     }
         

@@ -45,8 +45,6 @@ package org.netbeans.modules.profiler.projectsupport.utilities;
 import java.io.InputStream;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -62,7 +60,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -72,7 +69,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,10 +78,16 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.lib.profiler.common.filters.SimpleFilter;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -97,64 +99,7 @@ import org.openide.util.Lookup;
 public class ProjectUtilities {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
     private static final Logger LOGGER = Logger.getLogger(ProjectUtilities.class.getName());
-    private static final String PROFILE_PROJECT_CLASSES_STRING = NbBundle.getMessage(ProjectUtilities.class,
-            "ProjectUtilities_ProfileProjectClassesString"); // NOI18N
-    private static final String PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING = NbBundle.getMessage(ProjectUtilities.class,
-            "ProjectUtilities_ProfileProjectSubprojectClassesString"); // NOI18N
-    public static final SimpleFilter FILTER_PROJECT_ONLY = new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING,
-            SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
-            "{$project.classes.only}"); // NOI18N
-    public static final SimpleFilter FILTER_PROJECT_SUBPROJECTS_ONLY = new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING,
-            SimpleFilter.SIMPLE_FILTER_INCLUSIVE,
-            "{$project.subprojects.classes.only}"); // NOI18N
-
     //~ Methods ------------------------------------------------------------------------------------------------------------------
-    public static ClasspathInfo getClasspathInfo(final Project project) {
-        return getClasspathInfo(project, true);
-    }
-
-    public static ClasspathInfo getClasspathInfo(final Project project, final boolean includeSubprojects) {
-        return getClasspathInfo(project, includeSubprojects, true, true);
-    }
-
-    public static ClasspathInfo getClasspathInfo(final Project project, final boolean includeSubprojects,
-            final boolean includeSources, final boolean includeLibraries) {
-        FileObject[] sourceRoots = getSourceRoots(project, includeSubprojects);
-        Set<FileObject> srcRootSet = new HashSet<FileObject>(sourceRoots.length);
-        java.util.List<URL> urlList = new ArrayList<URL>();
-
-        srcRootSet.addAll(Arrays.asList(sourceRoots));
-
-        if (((sourceRoots == null) || (sourceRoots.length == 0)) && !includeSubprojects) {
-            sourceRoots = getSourceRoots(project, true);
-        }
-
-        final ClassPath cpEmpty = ClassPathSupport.createClassPath(new FileObject[0]);
-
-        if (sourceRoots.length == 0) {
-            return null; // fail early
-        }
-
-        ClassPath cpSource = ClassPathSupport.createClassPath(sourceRoots);
-
-        // cleaning up compile classpatth; we need to get rid off all project's class file references in the classpath
-        ClassPath cpCompile = ClassPath.getClassPath(sourceRoots[0], ClassPath.COMPILE);
-
-        for (ClassPath.Entry entry : cpCompile.entries()) {
-            SourceForBinaryQuery.Result rslt = SourceForBinaryQuery.findSourceRoots(entry.getURL());
-            FileObject[] roots = rslt.getRoots();
-
-            if ((roots == null) || (roots.length == 0)) {
-                urlList.add(entry.getURL());
-            }
-        }
-
-        cpCompile = ClassPathSupport.createClassPath(urlList.toArray(new URL[urlList.size()]));
-
-        return ClasspathInfo.create(includeLibraries ? ClassPath.getClassPath(sourceRoots[0], ClassPath.BOOT) : cpEmpty,
-                includeLibraries ? cpCompile : cpEmpty, includeSources ? cpSource : cpEmpty);
-    }
-
     /**
      * @return The current main project or null if no project is main.
      */
@@ -164,35 +109,6 @@ public class ProjectUtilities {
 
     public static Project[] getOpenedProjects() {
         return OpenProjects.getDefault().getOpenProjects();
-    }
-
-    public static Project[] getSortedProjects(Project[] projects) {
-        ArrayList projectsArray = new ArrayList(projects.length);
-
-        for (int i = 0; i < projects.length; i++) {
-            projectsArray.add(projects[i]);
-        }
-
-        try {
-            Collections.sort(projectsArray,
-                    new Comparator() {
-
-                        public int compare(Object o1, Object o2) {
-                            Project p1 = (Project) o1;
-                            Project p2 = (Project) o2;
-
-                            return ProjectUtils.getInformation(p1).getDisplayName().toLowerCase().compareTo(ProjectUtils.getInformation(p2).getDisplayName().toLowerCase());
-                        }
-                    });
-        } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, e.getMessage()); // just in case ProjectUtils doesn't provide expected information
-        }
-
-        ;
-
-        projectsArray.toArray(projects);
-
-        return projects;
     }
 
     public static boolean hasAction(Project project, String actionName) {
@@ -299,19 +215,19 @@ public class ProjectUtilities {
         }
     }
 
-    public static java.util.List<SimpleFilter> getProjectDefaultInstrFilters(Project project) {
-        java.util.List<SimpleFilter> v = new ArrayList<SimpleFilter>();
-
-        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
-            v.add(FILTER_PROJECT_ONLY);
-        }
-
-        if (hasSubprojects(project)) {
-            v.add(FILTER_PROJECT_SUBPROJECTS_ONLY);
-        }
-
-        return v;
-    }
+//    public static java.util.List<SimpleFilter> getProjectDefaultInstrFilters(Project project) {
+//        java.util.List<SimpleFilter> v = new ArrayList<SimpleFilter>();
+//
+//        if (ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA).length > 0) {
+//            v.add(FILTER_PROJECT_ONLY);
+//        }
+//
+//        if (hasSubprojects(project)) {
+//            v.add(FILTER_PROJECT_SUBPROJECTS_ONLY);
+//        }
+//
+//        return v;
+//    }
 
     public static ClientUtils.SourceCodeSelection[] getProjectDefaultRoots(Project project, String[][] projectPackagesDescr) {
         computeProjectPackages(project, true, projectPackagesDescr);
@@ -322,7 +238,7 @@ public class ProjectUtilities {
             if ("".equals(projectPackagesDescr[1][i])) { //NOI18N
                 ret[i] = new ClientUtils.SourceCodeSelection("", "", ""); //NOI18N
             } else {
-                ret[i] = new ClientUtils.SourceCodeSelection(projectPackagesDescr[1][i] + ".", "", ""); //NOI18N
+                ret[i] = new ClientUtils.SourceCodeSelection(projectPackagesDescr[1][i] + ".**", "", ""); //NOI18N
             }
         }
 
@@ -359,7 +275,7 @@ public class ProjectUtilities {
         return null;
     }
 
-    public static Icon getProjectIcon(Project project) {
+    public static Icon getProjectIcon(Lookup.Provider project) {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
 
         if (info == null) {
@@ -369,7 +285,7 @@ public class ProjectUtilities {
         }
     }
 
-    public static String getProjectName(Project project) {
+    public static String getProjectName(Lookup.Provider project) {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
 
         return (info != null) ? info.getDisplayName() : "UNKNOWN";
@@ -381,7 +297,7 @@ public class ProjectUtilities {
      * @param project The project
      * @return an array of FileObjects that are the source roots for this project
      */
-    public static FileObject[] getSourceRoots(final Project project) {
+    public static FileObject[] getSourceRoots(final Lookup.Provider project) {
         return getSourceRoots(project, true);
     }
 
@@ -392,9 +308,9 @@ public class ProjectUtilities {
      * @param traverse Include subprojects
      * @return an array of FileObjects that are the source roots for this project
      */
-    public static FileObject[] getSourceRoots(final Project project, final boolean traverse) {
+    public static FileObject[] getSourceRoots(final Lookup.Provider project, final boolean traverse) {
         Set<FileObject> set = new HashSet<FileObject>();
-        Set<Project> projects = new HashSet<Project>();
+        Set<Lookup.Provider> projects = new HashSet<Lookup.Provider>();
 
         projects.add(project);
         getSourceRoots(project, traverse, projects, set);
@@ -415,24 +331,24 @@ public class ProjectUtilities {
         }
     }
 
-    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
-            String[][] projectPackagesDescr) {
-        // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages
-        if (FILTER_PROJECT_ONLY.equals(predefinedInstrFilter)) {
-            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, false, projectPackagesDescr));
-        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
-            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, true, projectPackagesDescr));
-        }
-
-        return null;
-    }
+//    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
+//            String[][] projectPackagesDescr) {
+//        // TODO: projectPackagesDescr[1] should only contain packages from subprojects, currently contains also toplevel project packages
+//        if (FILTER_PROJECT_ONLY.equals(predefinedInstrFilter)) {
+//            return new SimpleFilter(PROFILE_PROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, false, projectPackagesDescr));
+//        } else if (FILTER_PROJECT_SUBPROJECTS_ONLY.equals(predefinedInstrFilter)) {
+//            return new SimpleFilter(PROFILE_PROJECT_SUBPROJECT_CLASSES_STRING, SimpleFilter.SIMPLE_FILTER_INCLUSIVE, computeProjectOnlyInstrumentationFilter(project, true, projectPackagesDescr));
+//        }
+//
+//        return null;
+//    }
 
     public static String computeProjectOnlyInstrumentationFilter(Project project, boolean useSubprojects,
             String[][] projectPackagesDescr) {
         if (!useSubprojects) {
             computeProjectPackages(project, false, projectPackagesDescr);
 
-            StringBuffer projectPackages = new StringBuffer();
+            StringBuilder projectPackages = new StringBuilder();
 
             for (int i = 0; i < projectPackagesDescr[0].length; i++) {
                 projectPackages.append("".equals(projectPackagesDescr[0][i]) ? getDefaultPackageClassNames(project)
@@ -443,7 +359,7 @@ public class ProjectUtilities {
         } else {
             computeProjectPackages(project, true, projectPackagesDescr);
 
-            StringBuffer projectPackages = new StringBuffer();
+            StringBuilder projectPackages = new StringBuilder();
 
             for (int i = 0; i < projectPackagesDescr[1].length; i++) {
                 projectPackages.append("".equals(projectPackagesDescr[1][i]) ? getDefaultPackageClassNames(project)
@@ -454,19 +370,31 @@ public class ProjectUtilities {
         }
     }
 
-    public static boolean isIncludeSubprojects(SimpleFilter filter) {
-        return FILTER_PROJECT_SUBPROJECTS_ONLY.equals(filter);
-    }
+//    public static boolean isIncludeSubprojects(SimpleFilter filter) {
+//        return FILTER_PROJECT_SUBPROJECTS_ONLY.equals(filter);
+//    }
 
     public static String getDefaultPackageClassNames(Project project) {
-        Collection<String> classNames = SourceUtils.getDefaultPackageClassNames(project);
-        StringBuffer classNamesBuf = new StringBuffer();
+        Collection<String> classNames = getDefaultPackageClassNamesSet(project);
+        StringBuilder classNamesBuf = new StringBuilder();
 
         for (String className : classNames) {
             classNamesBuf.append(className).append(" "); //NOI18N
         }
 
         return classNamesBuf.toString();
+    }
+    
+    /**
+     * Returns the JavaSource repository of a given project or global JavaSource if no project is provided
+     */
+    public static JavaSource getSources(Project project) {
+        if (project == null) {
+            return getSources((FileObject[]) null);
+        } else {
+            return getSources(ProjectUtilities.getSourceRoots(project, true));
+        }
+
     }
 
     public static void computeProjectPackages(final Project project, boolean subprojects, String[][] storage) {
@@ -551,21 +479,23 @@ public class ProjectUtilities {
         return sourceGroups.length > 0;
     }
     
-    private static void getSourceRoots(final Project project, final boolean traverse, Set<Project> projects, Set<FileObject> roots) {
-        final Sources sources = ProjectUtils.getSources(project);
+    private static void getSourceRoots(final Lookup.Provider project, final boolean traverse, Set<Lookup.Provider> projects, Set<FileObject> roots) {
+        if (project instanceof Project) {
+            final Sources sources = ProjectUtils.getSources((Project)project);
 
-        for (SourceGroup sg : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            roots.add(sg.getRootFolder());
-        }
+            for (SourceGroup sg : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                roots.add(sg.getRootFolder());
+            }
 
-        if (traverse) {
-            // process possible subprojects
-            SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
+            if (traverse) {
+                // process possible subprojects
+                SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
 
-            if (spp != null) {
-                for (Project p : spp.getSubprojects()) {
-                    if (projects.add(p)) {
-                        getSourceRoots(p, traverse, projects, roots);
+                if (spp != null) {
+                    for (Project p : spp.getSubprojects()) {
+                        if (projects.add(p)) {
+                            getSourceRoots(p, traverse, projects, roots);
+                        }
                     }
                 }
             }
@@ -608,7 +538,9 @@ public class ProjectUtilities {
         }
     }
 
-    private static boolean hasSubprojects(Project project) {
+    public static boolean hasSubprojects(Project project) {
+        if (project == null) return false;
+        
         SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
 
         if (spp == null) {
@@ -695,5 +627,75 @@ public class ProjectUtilities {
         pkg = pkg.substring(0, 1).toUpperCase() + pkg.substring(1);
 
         return packageFileName + "/" + pkg + "Test"; // NOI18N
+    }
+    
+    private static Collection<String> getDefaultPackageClassNamesSet(Project project) {
+        final Collection<String> classNames = new ArrayList<String>();
+
+        JavaSource js = getSources(project);
+        final Set<ElementHandle<TypeElement>> types = getProjectTypes(project, js);
+
+        for (ElementHandle<TypeElement> typeHandle : types) {
+            int firstPkgSeparIndex = typeHandle.getQualifiedName().indexOf('.');
+
+            if (firstPkgSeparIndex <= 0) {
+                classNames.add(typeHandle.getQualifiedName().substring(firstPkgSeparIndex + 1));
+            }
+        }
+
+        return classNames;
+    }
+    
+    /**
+     * Returns the JavaSource repository for given source roots
+     */
+    private static JavaSource getSources(FileObject[] roots) {
+        //    findMainClasses(roots);
+        // prepare the classpath based on the source roots
+        ClassPath srcPath;
+        ClassPath bootPath;
+
+        ClassPath compilePath;
+
+        if (roots == null || roots.length == 0) {
+            srcPath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).toArray(new ClassPath[0]));
+            bootPath =
+                    JavaPlatform.getDefault().getBootstrapLibraries();
+            compilePath =
+                    ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE).toArray(new ClassPath[0]));
+        } else {
+            srcPath = ClassPathSupport.createClassPath(roots);
+            bootPath =
+                    ClassPath.getClassPath(roots[0], ClassPath.BOOT);
+            compilePath =
+                    ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
+        }
+
+// create ClassPathInfo for JavaSources only -> (bootPath, classPath, sourcePath)
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
+
+        // create the javasource repository for all the source files
+        return JavaSource.create(cpInfo, Collections.<FileObject>emptyList());
+    }
+    
+        /**
+     * Returns all types (classes) defined on the given source roots
+     */
+    private static Set<ElementHandle<TypeElement>> getProjectTypes(FileObject[] roots, JavaSource js) {
+        final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>();
+        scope.add(ClassIndex.SearchScope.SOURCE);
+
+        if (js != null) {
+            return js.getClasspathInfo().getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, scope); // NOI18N
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns all types (classes) defined within a project
+     */
+    private static Set<ElementHandle<TypeElement>> getProjectTypes(Project project, JavaSource js) {
+        return getProjectTypes(ProjectUtilities.getSourceRoots(project, true), js);
     }
 }

@@ -44,6 +44,13 @@
 
 package org.netbeans.modules.form;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -53,11 +60,8 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
@@ -85,16 +89,23 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.core.spi.multiview.SourceViewMarker;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
@@ -114,7 +125,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -126,9 +136,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
@@ -390,6 +398,21 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         openAt(createPositionRef(pos.getOffset(), Position.Bias.Forward));
     }
 
+    boolean startFormLoading() {
+        if (!formEditor.prepareLoading()) {
+            reportErrors();
+            // switch to Source tab - later because now in middle of switching to Design
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    selectJavaEditor();
+                }
+            });
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Callback from multiview (FormDesignerTC), requiring to load form whose
      * designer is just being opened.
@@ -398,28 +421,21 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     boolean loadOpeningForm() {
         showOpeningStatus("FMT_OpeningForm"); // NOI18N
 
-        formEditor.preCreationUpdate();
+        postCreationUpdate1();
 
-        formEditor.loadFormData();
+        boolean success = formEditor.loadFormData();
 
-        if (!formEditor.isFormLoaded()) { // loading failed - don't keep empty designer opened
-            java.awt.EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    selectJavaEditor();
-                }
-            });
-        }
+        postCreationUpdate2();
 
         hideOpeningStatus();
 
-        // report errors during loading
-        reportErrors(FormEditor.LOADING);
+        reportErrors(); // report errors during loading, fatal or non-fatal
 
-        // may do additional setup for just created form
-        formEditor.postCreationUpdate();
+        if (!success) { // loading failed - don't keep empty designer opened
+            selectJavaEditor();
+        }
 
-        return formEditor.isFormLoaded();
+        return success;
     }
 
     /** Public method for loading form data from file. Does not open the
@@ -429,9 +445,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
      * @return whether the form is loaded (true also if it already was)
      */
     public boolean loadForm() {
-        // Ensure initialization of the formEditor
-        getFormEditor(true);
-        return formEditor.loadForm();
+        return getFormEditor(true).loadForm();
     }
     
     /** @return true if the form is opened, false otherwise */
@@ -467,14 +481,14 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             saving = false; // workaround for bug 75225
         }
         if (formEditor != null) {
-            reportErrors(FormEditor.SAVING);
+            formEditor.reportSavingErrors(); // TODO can't just throw IOException?
         }
         
         if (ioEx != null)
             throw ioEx;
     }
 
-    void saveSourceOnly() throws IOException {
+    public void saveSourceOnly() throws IOException {
         try {
             saving = true; // workaround for bug 75225
             super.saveDocument();
@@ -487,23 +501,22 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
      * Reports errors occurred during loading or saving the form.
      * @param operation operation being performed.
      */
-    private void reportErrors(int operation) {
-        final String errorMsg = formEditor.reportErrors(operation);
-        if (errorMsg != null) {
-            // the form was loaded with some non-fatal errors - some data
-            // was not loaded - show a warning about possible data loss
+    private void reportErrors() {
+        final String errorMsg = formEditor.reportLoadingErrors();
+        if (errorMsg != null && formEditor.isFormLoaded()) {
+            // The form was loaded with some non-fatal errors - some data
+            // was not loaded - show a warning about possible data loss.
+            // The dialog is shown later to let the designer opening complete.
             java.awt.EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    // for some reason this would be displayed before the
-                    // ErrorManager if not invoked later
                     if (formEditor != null && !formEditor.isFormLoaded()) {
-                        return; // issue #164444
+                        return; // quite unlikely, but the form could be closed meanwhile (#164444)
                     }
-                    
+
                     JButton viewOnly = new JButton(FormUtils.getBundleString("CTL_ViewOnly"));		// NOI18N
-                    JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N                                        
-                    
+                    JButton allowEditing = new JButton(FormUtils.getBundleString("CTL_AllowEditing"));	// NOI18N
+
                     Object ret = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                         errorMsg,
                         FormUtils.getBundleString("CTL_FormLoadedWithErrors"), // NOI18N
@@ -511,21 +524,19 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                         NotifyDescriptor.WARNING_MESSAGE,
                         new Object[] { viewOnly, allowEditing, NotifyDescriptor.CANCEL_OPTION },
                         viewOnly ));
-                   
+
                     if (ret == viewOnly) {
                         formEditor.setFormReadOnly();
                         updateMVTCDisplayName();
-                    } else if(ret == allowEditing) {    
+                    } else if(ret == allowEditing) {
                         formEditor.destroyInvalidComponents();
                     } else { // close form, switch to source editor
-                        formEditor.closeForm();
-                        getFormDesignerTC().resetDesigner(false);
-                        selectJavaEditor();
-                    }                                                      
+                        closeFormEditor();
+                    }
                 }
             });
         }
-    }    
+    }
 
     // ------------
     // other interface methods
@@ -551,7 +562,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     
     FormEditor getFormEditor(boolean initialize) {
         if ((formEditor == null) && initialize) {
-            formEditor = new FormEditor(formDataObject);
+            formEditor = new FormEditor(formDataObject, this);
         }
         return formEditor;
     }
@@ -634,15 +645,15 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
         FormDesignerTC designerTC = getFormDesignerTC();
         formEditor.closeForm();
-        loadForm();
+        boolean success = formEditor.loadForm();
         if (designerTC != null) {
-            if (formEditor.isFormLoaded()) {
+            if (success) {
                 designerTC.resetDesigner(true);
             } else {
                 closeFormEditor();
             }
         }
-        reportErrors(FormEditor.LOADING);
+        reportErrors();
         return formEditor;
     }
 
@@ -835,8 +846,110 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
     }
     
+    /**
+     * Additional updates for a newly created form before it gets loaded for the first time.
+     */
+    private void postCreationUpdate1() {
+        FileObject fob = formDataObject.getPrimaryFile();
+        Object libName = fob.getAttribute("requiredLibrary"); // NOI18N
+        if (libName != null) {
+            Object className = fob.getAttribute("requiredClass"); // NOI18N
+            if ((className == null) || !ClassPathUtils.isOnClassPath(fob, className.toString())) {
+                try {
+                    Library lib = LibraryManager.getDefault().getLibrary((String)libName);
+                    ClassPathUtils.updateProject(fob, new ClassSource(
+                            (className == null) ? null : className.toString(),
+                            new ClassSource.LibraryEntry(lib))
+                    );
+                } catch (IOException ioex) {
+                    Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);
+                }
+            }
+        }
+    }
+
+    /**
+     * Additional updates for a newly created form, just loaded for the first time.
+     */
+    private void postCreationUpdate2() {
+        if (formEditor.postCreationUpdate()) {
+            try {
+                checkSuppressWarningsAnnotation();
+                if (isModified()) {
+                    saveDocument();
+                }
+            } catch (IOException ex) { // unlikely for just created form
+                Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
+    }
+
+    private void checkSuppressWarningsAnnotation() throws IOException {
+        FileObject fo = getFormDataObject().getPrimaryFile();
+        String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
+        boolean invalidSL = (sourceLevel != null) && ("1.5".compareTo(sourceLevel) > 0); // NOI18N
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        if (invalidSL || cp.findResource("java/lang/SuppressWarnings.class") == null) { // NOI18N
+            // The project's bootclasspath doesn't contain SuppressWarnings class.
+            // So, remove this annotation from initComponents() method.
+            final String foName = fo.getName();
+            JavaSource js = JavaSource.forFileObject(fo);
+            final int[] positions = new int[] {-1,-1};
+            js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
+                public void cancel() {
+                }
+                @Override
+                public void run(WorkingCopy wcopy) throws Exception {
+                    wcopy.toPhase(JavaSource.Phase.RESOLVED);
+
+                    ClassTree clazz = null;
+                    CompilationUnitTree cu = wcopy.getCompilationUnit();
+                    for (Tree tree : cu.getTypeDecls()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
+                            ClassTree cand = (ClassTree)tree;
+                            if (foName.equals(cand.getSimpleName().toString())) {
+                                clazz = cand;
+                            }
+                        }
+                    }
+                    if (clazz == null) return;
+
+                    for (Tree tree : clazz.getMembers()) {
+                        if (tree.getKind() == Tree.Kind.METHOD) {
+                            MethodTree method = (MethodTree)tree;
+                            if ("initComponents".equals(method.getName().toString()) // NOI18N
+                                    && (method.getParameters().isEmpty())) {
+                                ModifiersTree modifiers = method.getModifiers();
+                                for (AnnotationTree annotation : modifiers.getAnnotations()) {
+                                    if (annotation.getAnnotationType().toString().contains("SuppressWarnings")) { // NOI18N
+                                        SourcePositions sp = wcopy.getTrees().getSourcePositions();
+                                        positions[0] = (int)sp.getStartPosition(cu, annotation);
+                                        positions[1] = (int)sp.getEndPosition(cu, annotation);
+                                        // We cannot use the following code because
+                                        // part of the modifier is in guarded block
+                                        //ModifiersTree newModifiers = wcopy.getTreeMaker().removeModifiersAnnotation(method.getModifiers(), annotation);
+                                        //wcopy.rewrite(modifiers, newModifiers);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }).commit();
+            if (positions[0] != -1) {
+                try {
+                    getFormDataObject().getFormEditorSupport().getDocument().remove(positions[0], positions[1]-positions[0]);
+                } catch (BadLocationException blex) {
+                    Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, blex.getLocalizedMessage(), blex);
+                }
+            }
+        }
+    }
+
     // -------
-    // window system & multiview
+    // multiview & java editor
     
     @Override
     protected CloneableEditorSupport.Pane createPane() {
@@ -1114,7 +1227,12 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
         return -1;
     }
-    
+
+    @Override
+    public Object getJavaContext() {
+        return null; // nothing else than FileObject is needed in NB
+    }
+
     public SimpleSection getVariablesSection() {
         return getGuardedSectionManager().findSimpleSection(SECTION_VARIABLES);
     }

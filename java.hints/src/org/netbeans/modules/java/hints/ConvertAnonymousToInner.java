@@ -448,7 +448,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 ExecutableElement ee = (ExecutableElement) superConstructor;
                 TypeMirror nctTypes = copy.getTrees().getTypeMirror(newClassToConvert);
                 
-                assert nctTypes.getKind() == TypeKind.DECLARED;
+                assert nctTypes.getKind() == TypeKind.DECLARED : nctTypes.getKind() + ":" + nctTypes.toString();
                 
                 ExecutableType et = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) nctTypes, ee);
                 

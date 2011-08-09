@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -63,6 +63,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.core.SQLCoreUILogger;
@@ -89,12 +90,13 @@ import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
-import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
 
 /** 
  * Editor support for SQL data objects. There can be two "kinds" of SQL editors: one for normal
@@ -113,8 +115,6 @@ public class SQLEditorSupport extends DataEditorSupport
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     
     static final String EDITOR_CONTAINER = "sqlEditorContainer"; // NOI18N
-    
-    private static final String MIME_TYPE = "text/x-sql"; // NOI18N
     
     private final PropertyChangeSupport sqlPropChangeSupport = new PropertyChangeSupport(this);
     
@@ -145,8 +145,8 @@ public class SQLEditorSupport extends DataEditorSupport
     };
     
     public SQLEditorSupport(SQLDataObject obj) {
-        super(obj, new Environment(obj));
-        setMIMEType(MIME_TYPE);
+        super(obj, null, new Environment(obj));
+        setMIMEType(SQLDataLoader.SQL_MIME_TYPE);
     }
     
     @Override
@@ -167,6 +167,11 @@ public class SQLEditorSupport extends DataEditorSupport
         return true;
     }
 
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(SQLDataLoader.SQL_MIME_TYPE, getDataObject());
+    }
+    
     @Override
     protected boolean asynchronousOpen() {
         return false;
@@ -255,11 +260,6 @@ public class SQLEditorSupport extends DataEditorSupport
     
     boolean isValid() {
         return getDataObject().isValid();
-    }
-    
-    @Override
-    protected CloneableEditor createCloneableEditor() {
-        return new SQLCloneableEditor(this);
     }
     
     @Override
@@ -403,9 +403,11 @@ public class SQLEditorSupport extends DataEditorSupport
                 
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
-                    SQLCloneableEditor editor = (SQLCloneableEditor)editors.nextElement();
-
-                    editor.setResults(components);
+                    CloneableTopComponent editor = (CloneableTopComponent) editors.nextElement();
+                    SQLCloneableEditor ce = editor.getLookup().lookup(SQLCloneableEditor.class);
+                    if (ce != null) {
+                        ce.setResults(components);
+                    }
                 }
             }
         });

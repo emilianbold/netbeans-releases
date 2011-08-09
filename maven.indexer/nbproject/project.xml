@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.7</specification-version>
+                        <specification-version>7.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -164,6 +164,15 @@ made subject to such option by the copyright holder.
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <test/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
@@ -173,6 +182,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.graph</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.maven.refactoring</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
                 <package>org.netbeans.modules.maven.indexer.api</package>

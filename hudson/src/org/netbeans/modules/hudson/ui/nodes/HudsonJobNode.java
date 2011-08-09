@@ -52,17 +52,21 @@ import javax.swing.Action;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonJobImpl;
+import org.netbeans.modules.hudson.ui.actions.LogInAction;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.actions.ProjectAssociationAction;
 import org.netbeans.modules.hudson.ui.actions.StartJobAction;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import static org.netbeans.modules.hudson.ui.nodes.Bundle.*;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -84,6 +88,9 @@ public class HudsonJobNode extends AbstractNode {
     }
 
     private static Children makeChildren(final HudsonJob job) {
+        if (job.getColor() == Color.secured) {
+            return Children.LEAF;
+        }
         return Children.create(new ChildFactory<Object>() {
             final Object WORKSPACE = new Object();
             LinkedList<HudsonJobBuild> builds;
@@ -122,8 +129,12 @@ public class HudsonJobNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context) {
+        if (job.getColor() == Color.secured) {
+            return new Action[] {new LogInAction((HudsonInstanceImpl) job.getInstance())};
+        }
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(StartJobAction.class));
+        actions.add(new ProjectAssociationAction(job));
         actions.add(null);
         if (job instanceof OpenableInBrowser) {
             actions.add(OpenUrlAction.forOpenable((OpenableInBrowser) job));
@@ -143,6 +154,11 @@ public class HudsonJobNode extends AbstractNode {
         return s;
     }
     
+    @Messages({
+        "HudsonJobNode.running=(running)",
+        "HudsonJobNode.in_queue=(in queue)",
+        "HudsonJobNode.secured=(secured)"
+    })
     private void setHudsonJob(HudsonJob job) {
         this.job = job;
         Color color = job.getColor();
@@ -167,10 +183,14 @@ public class HudsonJobNode extends AbstractNode {
         case blue_anime:
         case grey_anime:
         case aborted_anime:
-            htmlDisplayName += " <font color='!controlShadow'>" + NbBundle.getMessage(HudsonJobNode.class, "HudsonJobNode.running") + "</font>";
+            htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_running() + "</font>";
+            break;
+        case secured:
+            htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_secured() + "</font>";
+            break;
         }
         if (job.isInQueue()) {
-            htmlDisplayName += " <font color='!controlShadow'>" + NbBundle.getMessage(HudsonJobNode.class, "HudsonJobNode.in_queue") + "</font>";
+            htmlDisplayName += " <font color='!controlShadow'>" + HudsonJobNode_in_queue() + "</font>";
         }
         fireDisplayNameChange(oldHtmlDisplayName, htmlDisplayName);
     }

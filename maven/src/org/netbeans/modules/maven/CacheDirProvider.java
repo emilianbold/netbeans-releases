@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.maven;
 
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 
 /**
  * implementation of CacheDirectoryProvider that places the cache directory in the user
@@ -64,7 +64,7 @@ public class CacheDirProvider implements CacheDirectoryProvider {
     @SuppressWarnings("RV_ABSOLUTE_VALUE_OF_HASHCODE") // for compatibility, use this decimal scheme
     public @Override FileObject getCacheDirectory() throws IOException {
         int code = Math.abs(project.getProjectDirectory().getPath().hashCode());
-        return FileUtil.createFolder(FileUtil.createFolder(new File(System.getProperty("netbeans.user"))), "var/cache/mavencachedirs/" + code); // NOI18N
+        return FileUtil.createFolder(Places.getCacheSubdirectory("mavencachedirs/" + code)); // NOI18N
     }
 
 }

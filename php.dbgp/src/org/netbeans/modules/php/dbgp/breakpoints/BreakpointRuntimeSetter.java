@@ -83,6 +83,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
+        breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
         performCommand(breakpoint, Lazy.SET_COMMAND);
     }
 
@@ -91,6 +92,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
+        breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
         performCommand(breakpoint, Lazy.REMOVE_COMMAND );
     }
 
@@ -133,6 +135,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     
     private static class SetBreakpointCommand implements Command {
 
+        @Override
         public void perform( AbstractBreakpoint breakpoint, SessionId id,
                 DebugSession session )
         {
@@ -148,6 +151,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     
     private static class RemoveBreakpointCommand implements Command {
 
+        @Override
         public void perform( AbstractBreakpoint breakpoint, SessionId id,
                 DebugSession session )
         {
@@ -162,6 +166,7 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
     
     private static class UpdateBreakpointCommand implements Command {
 
+        @Override
         public void perform( AbstractBreakpoint breakpoint, SessionId id,
                 DebugSession session )
         {

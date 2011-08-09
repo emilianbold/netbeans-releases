@@ -109,27 +109,23 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     private final FileChangeListener weblogicXmlListener = new WeblogicXmlListener();
     
     private final Version serverVersion;
-    
-    private final boolean isWebProfile;
 
     private WebApplicationModel webLogicWebApp;
 
     private Set<ServerLibraryDependency> originalDeps;
     
     public WarDeploymentConfiguration(J2eeModule j2eeModule) {
-        this(j2eeModule, null, false);
+        this(j2eeModule, null);
     }
 
     /**
      * Creates a new instance of WarDeploymentConfiguration 
      */
-    public WarDeploymentConfiguration(J2eeModule j2eeModule,Version serverVersion,
-            boolean isWebProfile) {
+    public WarDeploymentConfiguration(J2eeModule j2eeModule,Version serverVersion) {
 
         super(j2eeModule, serverVersion);
         this.j2eeModule = j2eeModule;
         this.serverVersion = serverVersion;
-        this.isWebProfile = isWebProfile;
         file = j2eeModule.getDeploymentConfigurationFile("WEB-INF/weblogic.xml"); // NOI18N
         FileUtil.addFileChangeListener(weblogicXmlListener, file);
 
@@ -232,10 +228,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         webApp.setContextRoot("");
         webApp.setKeepJspGenerated(true);
         webApp.setDebug(true);
-        if (!isWebProfile) {
-            // TODO not supported by web profile so far
-            webApp.setFastSwap(true);
-        }
+        webApp.setFastSwap(true);
         return webApp;
     }
     

@@ -86,7 +86,6 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_URL_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.Project_URL"; // NOI18N
-    private static final String STATUS_MESSAGE_KEY = "org.netbeans.modules.project.ui.RecentProjectItem.STATUS_MESSAGE_KEY"; // NOI18N
     private final ProjectDirListener prjDirListener = new ProjectDirListener(); 
 
     private UpdatingMenu subMenu;
@@ -164,7 +163,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                     public @Override void menuSelectionChanged(boolean isIncluded) {
                         super.menuSelectionChanged(isIncluded);
                         if (isIncluded) {
-                            putClientProperty(STATUS_MESSAGE_KEY, StatusDisplayer.getDefault().setStatusText(FileUtil.getFileDisplayName(prjDir), 1));
+                            StatusDisplayer.getDefault().setStatusText(FileUtil.getFileDisplayName(prjDir));
                         }
                     }
                 };
@@ -199,11 +198,8 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
 
-                StatusDisplayer.Message statusMessage = (StatusDisplayer.Message) jmi.getClientProperty(STATUS_MESSAGE_KEY);
-                if (statusMessage != null) {
-                    statusMessage.clear(0);
-                }
-                
+                StatusDisplayer.getDefault().setStatusText("");
+
                 URL url = (URL)jmi.getClientProperty( PROJECT_URL_KEY );                
                 Project project = null;
 

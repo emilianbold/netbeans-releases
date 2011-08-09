@@ -196,6 +196,7 @@ public class BridgeImpl implements BridgeInterface {
             project.addBuildListener(logger);
             project.init();
             project.addTaskDefinition("java", ForkedJavaOverride.class); // #56341
+            project.addTaskDefinition("input", InputOverride.class); // #155056
             try {
                 addCustomDefs(project);
             } catch (IOException e) {

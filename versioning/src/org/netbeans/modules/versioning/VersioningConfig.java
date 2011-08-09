@@ -43,9 +43,20 @@
  */
 package org.netbeans.modules.versioning;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 
 /**
  * Stores Versioning manager configuration.
@@ -55,6 +66,14 @@ import java.util.prefs.Preferences;
 public class VersioningConfig {
     
     private static final VersioningConfig INSTANCE = new VersioningConfig();    
+    private static final Logger LOG = Logger.getLogger(VersioningConfig.class.getName());
+    private final Map<String, Set<File>> allDisconnectedRepositories;
+    private static final String SEP = "###"; //NOI18N
+    private static final String PREF_KEY = "disconnectedFolders"; //NOI18N
+
+    private VersioningConfig () {
+        allDisconnectedRepositories = initializeDisconnectedRepositories();
+    }
     
     public static VersioningConfig getDefault() {
         return VersioningConfig.INSTANCE;
@@ -62,5 +81,122 @@ public class VersioningConfig {
     
     public Preferences getPreferences() {
         return NbPreferences.forModule(VersioningConfig.class);
+    }
+
+    /**
+     * Tests whether the given repository is disconnected from the given versioning system. 
+     * @param vs
+     * @param repository
+     * @return 
+     */
+    boolean isDisconnected (VersioningSystem vs, File repository) {
+        boolean disconnected = false;
+        String className = vs.getClass().getName();
+        synchronized (allDisconnectedRepositories) {
+            Set<File> disconnectedRepositories = allDisconnectedRepositories.get(className);
+            if (disconnectedRepositories != null) {
+                for (File disconnectedRepository : disconnectedRepositories) {
+                    if (disconnectedRepository.equals(repository)) {
+                        disconnected = true;
+                        LOG.log(Level.FINE, "isDisconnected: Folder is disconnected from {0}: {1}, disconnected root: {2}", new Object[] { className, repository, disconnectedRepository }); //NOI18N
+                        break;
+                    }
+                }
+            }
+        }
+        return disconnected;
+    }
+
+    /**
+     * Reconnects the given repository to the given versioning system
+     * @param vs
+     * @param repository 
+     */
+    public void connectRepository (VersioningSystem vs, File repository) {
+        String className = vs.getClass().getName();
+        synchronized (allDisconnectedRepositories) {
+            Set<File> disconnectedRepos = allDisconnectedRepositories.get(className);
+            if (disconnectedRepos != null) {
+                boolean changed = false;
+                for (Iterator<File> it = disconnectedRepos.iterator(); it.hasNext(); ) {
+                    File disconnectedRepository = it.next();
+                    if (disconnectedRepository.equals(repository)) {
+                        LOG.log(Level.FINE, "connectRepository: Connecting repository to {0}: {1}", new Object[] { className, repository }); //NOI18N
+                        it.remove();
+                        changed = true;
+                        break;
+                    }
+                }
+                if (changed) {
+                    saveDisconnectedRepositories();
+                }
+            }
+        }
+    }
+
+    /**
+     * Disconnects the given repository from the given version control system
+     * @param vs
+     * @param repository 
+     */
+    public void disconnectRepository (VersioningSystem vs, File repository) {
+        String className = vs.getClass().getName();
+        synchronized (allDisconnectedRepositories) {
+            Set<File> disconnectedRepos = allDisconnectedRepositories.get(className);
+            if (disconnectedRepos == null) {
+                disconnectedRepos = new HashSet<File>();
+                allDisconnectedRepositories.put(className, disconnectedRepos);
+            }
+            boolean added = disconnectedRepos.add(repository);
+            if (!added) {
+                LOG.log(Level.FINE, "disconnectRepository: Repository already disconnected for {0}: {1}", new Object[] { className, repository }); //NOI18N
+            } else {
+                saveDisconnectedRepositories();
+            }
+        }
+    }
+
+    public File[] getDisconnectedRoots (VersioningSystem vs) {
+        String className = vs.getClass().getName();
+        File[] files;
+        synchronized (allDisconnectedRepositories) {
+            Set<File> disconnectedRepos = allDisconnectedRepositories.get(className);
+            if (disconnectedRepos == null) {
+                files = new File[0];
+            } else {
+                files = disconnectedRepos.toArray(new File[disconnectedRepos.size()]);
+            }
+        }
+        return files;
+    }
+
+    private static Map<String, Set<File>> initializeDisconnectedRepositories () {
+        Map<String, Set<File>> disconnectedFolders = new HashMap<String, Set<File>>(5);
+        List<String> list = Utils.getStringList(NbPreferences.forModule(VersioningConfig.class), PREF_KEY);
+        for (String s : list) {
+            String[] disconnectedFolder = s.split(SEP);
+            if (disconnectedFolder.length == 2) {
+                Set<File> files = disconnectedFolders.get(disconnectedFolder[0]);
+                if (files == null) {
+                    files = new HashSet<File>();
+                    disconnectedFolders.put(disconnectedFolder[0], files);
+                }
+                files.add(new File(disconnectedFolder[1]));
+            }
+        }
+        return disconnectedFolders;
+    }
+
+    private void saveDisconnectedRepositories () {
+        List<String> list = new LinkedList<String>();
+        synchronized (allDisconnectedRepositories) {
+            for (Map.Entry<String, Set<File>> e : allDisconnectedRepositories.entrySet()) {
+                String vsKey = e.getKey();
+                for (File f : e.getValue()) {
+                    list.add(vsKey + SEP + f.getAbsolutePath());
+                }
+            }
+        }
+        Utils.put(NbPreferences.forModule(VersioningConfig.class), PREF_KEY, list);
     }
 }

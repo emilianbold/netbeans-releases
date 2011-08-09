@@ -62,11 +62,14 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     static final String TYPE = "type"; // NOI18N
     static final String HOST = "host"; // NOI18N
     static final String PORT = "port"; // NOI18N
+    static final String ENCRYPTION = "encryption"; // NOI18N
+    static final String ONLY_LOGIN_ENCRYPTED = "onlyLoginEncrypted"; // NOI18N
     static final String USER = "user"; // NOI18N
     static final String PASSWORD = "password"; // NOI18N
     static final String ANONYMOUS_LOGIN = "anonymousLogin"; // NOI18N
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
+    static final String KEEP_ALIVE_INTERVAL = "keepAliveInterval"; // NOI18N
     static final String PASSIVE_MODE = "passiveMode"; // NOI18N
     static final String IGNORE_DISCONNECT_ERRORS = "ignoreDisconnectErrors"; // NOI18N
 
@@ -74,16 +77,22 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         TYPE,
         HOST,
         PORT,
+        ENCRYPTION,
+        ONLY_LOGIN_ENCRYPTED,
         USER,
         PASSWORD,
         ANONYMOUS_LOGIN,
         INITIAL_DIRECTORY,
         TIMEOUT,
+        KEEP_ALIVE_INTERVAL,
         PASSIVE_MODE,
         IGNORE_DISCONNECT_ERRORS
     ));
     private static final int DEFAULT_PORT = 21;
+    static final FtpConfiguration.Encryption DEFAULT_ENCRYPTION = FtpConfiguration.Encryption.NONE;
+    static final boolean DEFAULT_ONLY_LOGIN_ENCRYPTED = false;
     private static final int DEFAULT_TIMEOUT = 30;
+    static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
 
     private FtpConnectionProvider() {
@@ -108,23 +117,26 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         configuration.putValue(TYPE, FTP_CONNECTION_TYPE);
         configuration.putValue(HOST, ""); // NOI18N
         configuration.putValue(PORT, String.valueOf(DEFAULT_PORT));
+        configuration.putValue(ENCRYPTION, DEFAULT_ENCRYPTION.name());
+        configuration.putValue(ONLY_LOGIN_ENCRYPTED, String.valueOf(DEFAULT_ONLY_LOGIN_ENCRYPTED));
         configuration.putValue(USER, ""); // NOI18N
         configuration.putValue(PASSWORD, ""); // NOI18N
         configuration.putValue(ANONYMOUS_LOGIN, String.valueOf(false));
         configuration.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
         configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
+        configuration.putValue(KEEP_ALIVE_INTERVAL, String.valueOf(DEFAULT_KEEP_ALIVE_INTERVAL));
         configuration.putValue(PASSIVE_MODE, String.valueOf(false));
         configuration.putValue(IGNORE_DISCONNECT_ERRORS, String.valueOf(true));
 
         assert accept(configuration) : "Not my configuration?!";
 
-        return new FtpConfiguration(configuration);
+        return new FtpConfiguration(configuration, false);
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets) {
         if (accept(configuration)) {
-            return new FtpConfiguration(configuration);
+            return new FtpConfiguration(configuration, createWithSecrets);
         }
         return null;
     }

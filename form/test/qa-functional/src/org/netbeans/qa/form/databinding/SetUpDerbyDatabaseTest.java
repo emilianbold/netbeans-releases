@@ -80,9 +80,9 @@ public class SetUpDerbyDatabaseTest  extends ExtJellyTestCase {
     public static String DB_CREATE_DB_MENU = JAVA_DB_MENU + "Create Database...";
     public static String DB_SETTINGS_MENU = JAVA_DB_MENU + "Settings";    
     
-    public static String DB_NAME = "testdatabase";
-    public static String DB_USER_NAME = "testuser";
-    public static String DB_PASSWORD = "testpassword";
+    public static String DB_NAME = "sample";
+    public static String DB_USER_NAME = "app";
+    public static String DB_PASSWORD = "";
     
     public static String JDBC_URL = String.format("jdbc:derby://localhost:1527/%s [%s on %s]",DB_NAME,DB_USER_NAME,DB_USER_NAME.toUpperCase());
     public static String DB_EXPLORER_NODE_PATH = "Databases|" + JDBC_URL;

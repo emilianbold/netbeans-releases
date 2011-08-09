@@ -73,6 +73,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String EXECUTABLE_KEY = "executable"; // NOI18N
     public static final String LIBRARIES_KEY = "libraries"; // NOI18N
+    public static final String FIND_MAIN_KEY = "find_main"; // NOI18N
     
     public AnalyzeExecutable() {
         clean();
@@ -124,6 +125,31 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             public void setValue(Object value) {
                 if (value instanceof String[]){
                     myPath = (String[])value;
+                }
+            }
+            @Override
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.BinaryFiles;
+            }
+        });
+        myProperties.put(FIND_MAIN_KEY, new ProviderProperty(){
+            private Boolean findMain = Boolean.TRUE;
+            @Override
+            public String getName() {
+                return ""; // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return ""; // NOI18N
+            }
+            @Override
+            public Object getValue() {
+                return findMain;
+            }
+            @Override
+            public void setValue(Object value) {
+                if (value instanceof Boolean){
+                    findMain = (Boolean)value;
                 }
             }
             @Override
@@ -214,8 +240,9 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "NoExecutable")));
         }
+        boolean findMain = (Boolean)getProperty(FIND_MAIN_KEY).getValue();
         Set<String> dlls = new HashSet<String>();
-        ApplicableImpl applicable = sizeComilationUnit(set, dlls);
+        ApplicableImpl applicable = sizeComilationUnit(set, dlls, findMain);
         if (applicable.isApplicable()) {
             return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 70, applicable.isSunStudio(),
                     applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());
@@ -258,12 +285,12 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set},null, null, myDependencies);
+                                myFileProperties = getSourceFileProperties(new String[]{set},null, null, myDependencies, new CompileLineStorage());
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 System.arraycopy(add, 0, all, 1, add.length);
-                                myFileProperties = getSourceFileProperties(all,null, null, myDependencies);
+                                myFileProperties = getSourceFileProperties(all,null, null, myDependencies, new CompileLineStorage());
                             }
                         }
                     }

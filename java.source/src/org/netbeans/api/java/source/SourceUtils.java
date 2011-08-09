@@ -98,6 +98,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
@@ -245,7 +246,25 @@ public class SourceUtils {
 		
 	return (TypeElement)ec;
     }
-    
+
+    /**
+     * Returns an array containing the JVM signature of the {@link ElementHandle}.
+     * @param handle to obtain the JVM signature for.
+     * @return an array containing the JVM signature. The signature depends on
+     * the {@link ElementHandle}'s {@link ElementKind}. For class or package
+     * it returns a single element array containing the class (package) binary
+     * name (JLS section 13.1). For field (method) it returns three element array
+     * containing owner class binary name (JLS section 13.1) in the first element,
+     * field (method) name in the second element and JVM type (JVM method formal
+     * parameters (JVMS section 2.10.1)) in the third element.
+     */
+    @NonNull
+    public static String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
+        Parameters.notNull("handle", handle);   //NOI18N
+        return ElementHandleAccessor.INSTANCE.getJVMSignature(handle);
+    }
+
+
     /**Resolve full qualified name in the given context. Adds import statement as necessary.
      * Returns name that resolved to a given FQN in given context (either simple name
      * or full qualified name). Handles import conflicts.

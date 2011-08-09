@@ -48,28 +48,19 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
-import org.netbeans.api.java.source.TreeUtilities;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.*;
 import org.openide.xml.XMLUtil;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import org.apache.xerces.parsers.DOMParser;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutsupport.delegates.*;
@@ -79,8 +70,14 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.modules.form.editors.EnumEditor;
+import org.netbeans.modules.form.project.ClassPathUtils;
+import org.netbeans.modules.java.source.queries.api.Function;
+import org.netbeans.modules.java.source.queries.api.Queries;
+import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.openide.nodes.Node.Property;
+import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
+import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -156,6 +153,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String ATTR_PROPERTY_NORES = "noResource"; // NOI18N
     static final String ATTR_PROPERTY_EDITOR = "editor"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+    static final String ATTR_PROPERTY_INVALID_XML_CHARS = "containsInvalidXMLChars"; // NOI18N
     static final String ATTR_PROPERTY_PRE_CODE = "preCode"; // NOI18N
     static final String ATTR_PROPERTY_POST_CODE = "postCode"; // NOI18N
     static final String ATTR_BINDING_SOURCE = "source"; // NOI18N
@@ -252,6 +250,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
         ErrorManager.getDefault().annotate(t,target);
     }
 
+    private DocumentBuilder getDocumentBuilder() throws PersistenceException {
+        // We don't use XMLUtil.parse() because there is a bug
+        // in the default JDK 6 DOM parser, see issue 181955
+        DocumentBuilderFactory factory;
+        try {
+            // We prefer Xerces parser because of issue 181955
+            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+            factory = DocumentBuilderFactory.newInstance("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl", classLoader); // NOI18N
+        } catch (FactoryConfigurationError fce) {
+            factory = DocumentBuilderFactory.newInstance();
+        }
+        try {
+            return factory.newDocumentBuilder();
+        } catch (ParserConfigurationException pcex) {
+            PersistenceException pe = new PersistenceException(pcex, FormUtils.getBundleString("MSG_ERR_XMLParser")); // NOI18N
+            throw pe;
+        }
+    }
     
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
@@ -265,19 +281,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Element mainElement;
         try {
-            // We don't use XMLUtil.parse() because there is a bug
-            // in the default JDK 6 DOM parser, see issue 181955
-            DOMParser parser = new DOMParser();
-            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
-            mainElement = parser.getDocument().getDocumentElement();
+            DocumentBuilder builder = getDocumentBuilder();
+            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
-            throw new PersistenceException(ex, "Cannot open form file"); // NOI18N
+            throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
         }
-        catch (org.xml.sax.SAXException e) {
-            // ignore SAXException?
-            e.printStackTrace();
-            return false;
+        catch (org.xml.sax.SAXException ex) {
+            throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
         }
 
         return mainElement != null && XML_FORM.equals(mainElement.getTagName());
@@ -328,32 +340,25 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            // We don't use XMLUtil.parse() because there is a bug
-            // in the default JDK 6 DOM parser, see issue 181955
-            DOMParser parser = new DOMParser();
-            parser.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
-            mainElement = parser.getDocument().getDocumentElement();
+            DocumentBuilder builder = getDocumentBuilder();
+            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
-            PersistenceException pe = new PersistenceException(
-                                          ex, "Cannot open form file"); // NOI18N
-            annotateException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
+            PersistenceException pe = new PersistenceException(ex,
+                    FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
             throw pe;
         }
         catch (org.xml.sax.SAXException ex) {
-            PersistenceException pe = new PersistenceException(
-                                          ex, "Invalid XML in form file"); // NOI18N
-            annotateException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
+            PersistenceException pe = new PersistenceException(ex,
+                    FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
             throw pe;
         }
 
         // check the main element
         if (mainElement == null || !XML_FORM.equals(mainElement.getTagName())) {
             PersistenceException ex = new PersistenceException(
-                            "Missing expected main XML element"); // NOI18N
-            annotateException(ex, ErrorManager.ERROR,
-                    FormUtils.getBundleString("MSG_ERR_MissingMainElement") // NOI18N
-                    );
+                    FormUtils.getBundleString("MSG_ERR_MissingMainElement")); // NOI18N
             throw ex;
         }
 
@@ -361,13 +366,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String versionString = mainElement.getAttribute(ATTR_FORM_VERSION);
         if (!isSupportedFormatVersion(versionString)) {
             PersistenceException ex = new PersistenceException(
-                                     "Unsupported form version"); // NOI18N
-            annotateException(ex,
-                    ErrorManager.ERROR,
                     FormUtils.getFormattedBundleString(
-                        "FMT_ERR_UnsupportedVersion", // NOI18N
-                        new Object[] { versionString })
-                    );
+                        "FMT_ERR_UnsupportedVersion", new Object[] { versionString }));// NOI18N
             throw ex;
         }
         formModel.setCurrentVersionLevel(FormModel.FormVersion.BASIC);
@@ -398,7 +398,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (!underTest) { // try declared superclass from java source first
             // (don't scan java source in tests, we only use the basic form types)
             try {
-                declaredSuperclassName = getSuperClassName(javaFile);
+                declaredSuperclassName = getSuperClassName(formModel);
                 if (declaredSuperclassName != null) {
                     Class designClass = getFormDesignClass(declaredSuperclassName);
                     if (designClass == null) {
@@ -478,6 +478,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 // after all, we still cannot determine the form base class
                 String annotation;
                 if (declaredSuperclassName != null) {
+                    if (declaredSuperclassName.startsWith("org.jdesktop.application")) { // NOI18N
+                        swingappEncountered();
+                    }
                     // the class from java source at least can be loaded, but
                     // cannot be used as the form type; no substitute available
                     annotation = FormUtils.getFormattedBundleString(
@@ -492,13 +495,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
                 PersistenceException ex;
                 if (formBaseClassEx != null) {
-                    ex = new PersistenceException(formBaseClassEx,
-                                                  "Invalid form base class"); // NOI18N
-                    annotateException(formBaseClassEx, annotation);
+                    ex = new PersistenceException(formBaseClassEx, annotation);
                 }
                 else {
-                    ex = new PersistenceException("Invalid form base class"); // NOI18N
-                    annotateException(ex, ErrorManager.ERROR, annotation);
+                    ex = new PersistenceException(annotation);
                 }
                 throw ex;
             }
@@ -606,73 +606,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
     /**
      * For special use when form superclass is being determined before the form
      * is started to be loaded. Assuming loadForm is called for the form in
-     * the same EDT round then. See FormDesigner.PreLoadTask.
+     * the same EDT round then.
      */
     void setPrefetchedSuperclassName(String clsName) {
         prefetchedSuperclassName = clsName;
     }
 
-    private String getSuperClassName(FileObject javaFile) throws IllegalArgumentException, IOException {
-        return prefetchedSuperclassName != null ? prefetchedSuperclassName : determineSuperClassName(javaFile);
-    }
-
-    /**
-     * gets superclass if the 'extends' keyword is present
-     */
-    static String determineSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
-        final String javaFileName = javaFile.getName();
-        final String[] result = new String[1];
-        JavaSource js = JavaSource.forFileObject(javaFile);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            @Override
-            public void cancel() {
-            }
-            @Override
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                ClassTree formClass = null;
-                for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
-                        ClassTree ct = (ClassTree) t;
-                        if (isClass(ct, controller)) {
-                            if (javaFileName.equals(ct.getSimpleName().toString())) {
-                                formClass = ct;
-                                break;
-                            }
-                            if (formClass == null
-                                    || ct.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
-                                formClass = ct; // find at least something (if not matching file name - issue 105626)
-                            }
-                        }
-                    }
-                }
-                if (formClass != null) {
-                    if (!javaFileName.equals(formClass.getSimpleName().toString())) {
-                        // may happen during refactoring - see issue 105626
-                        Logger.getLogger(GandalfPersistenceManager.class.getName())
-                            .log(Level.INFO, "Form class not matching the java file name: " // NOI18N
-                                + formClass.getSimpleName().toString() + " in " + javaFileName + ".java"); // NOI18N
-                    }
-                    Tree superT = formClass.getExtendsClause();
-                    if (superT != null) {
-                        TreePath superTPath = controller.getTrees().getPath(controller.getCompilationUnit(), superT);
-                        Element superEl = controller.getTrees().getElement(superTPath);
-                        if (superEl != null && superEl.getKind() == ElementKind.CLASS) {
-                            result[0] = controller.getElements().getBinaryName((TypeElement)superEl).toString(); // .getQualifiedName()
-                        }
-                    } else {
-                        result[0] = "java.lang.Object"; // NOI18N
-                    }
-                }
-            }
-        }, true);
-        return result[0];
-    }
-
-    private static boolean isClass(ClassTree ct, CompilationController controller) {
-        return !controller.getTreeUtilities().isEnum(ct)
-                && !controller.getTreeUtilities().isInterface(ct)
-                && !controller.getTreeUtilities().isAnnotation(ct);
+    private String getSuperClassName(FormModel form) throws QueryException, FileStateInvalidException {
+        if (prefetchedSuperclassName != null) {
+            return prefetchedSuperclassName;
+        }
+        FormJavaSource javaSource = FormEditor.getFormJavaSource(form);
+        if (javaSource != null) {
+            return javaSource.getSuperClassName();
+        }
+        return null;
     }
 
     private void setBindingProperties() {
@@ -1040,6 +988,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     layoutSupport = null;
                     layoutInitialized = true;
                     newLayout = Boolean.TRUE;
+                    
+                    // Issue 200093, 200665
+                    Integer lctSetting = (Integer)formModel.getSettings().get(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET);
+                    if (lctSetting == null && !FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
+                        // Old form that has no layout code target set, but
+                        // it uses Free Design => it was created before
+                        // layout code target property was added, i.e.,
+                        // it uses the library, not JDK 6 code
+                        formModel.getSettings().setLayoutCodeTarget(JavaCodeGenerator.LAYOUT_CODE_LIBRARY);
+                    }
                 }
                 catch (Exception ex) {
                     // error occurred - treat this container as with unknown layout
@@ -2013,9 +1971,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     private void loadComponentProperties(org.w3c.dom.Node node,
-                                         RADComponent metacomp,
-                                         String propCategory)
-    {
+            RADComponent metacomp, String propCategory) throws PersistenceException {
 	FormProperty[] properties;                        
         org.w3c.dom.Node[] propNodes = findSubNodes(node, XML_PROPERTY);
         String[] propNames = getPropertyAttributes(propNodes, ATTR_PROPERTY_NAME);
@@ -2038,7 +1994,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property) {
+    /**
+     * Invoked when a reference to Swing Application Framework
+     * has been encountered in the form being loaded.
+     * 
+     * @throws PersistenceException with explanation for the user.
+     */
+    private void swingappEncountered() throws PersistenceException {
+        String msg = FormUtils.getBundleString("MSG_ERR_SwingAppEncountered"); // NOI18N
+        throw new PersistenceException(msg);
+    }
+
+    private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property)
+            throws PersistenceException {
 	Throwable t = null;
 	org.w3c.dom.Node valueNode = null;
 	
@@ -2065,6 +2033,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	String editorStr = getAttribute(propNode, ATTR_PROPERTY_EDITOR);
 	String valueStr = getAttribute(propNode, ATTR_PROPERTY_VALUE);
         String resourceKey = getAttribute(propNode, ATTR_PROPERTY_RES_KEY);
+        if (resourceKey != null) {
+            swingappEncountered();
+        }
 
 	// get the type of stored property value
 	Class propertyType = getPropertyType(typeStr, property, propNode);
@@ -2087,6 +2058,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	Object value = NO_VALUE;
 	if (valueStr != null) { // it is a primitive value
 	    try {
+                boolean containsInvalidXMLChars = "true".equals(getAttribute(propNode, ATTR_PROPERTY_INVALID_XML_CHARS)); // NOI18N
+                if (containsInvalidXMLChars) {
+                    valueStr = decodeInvalidXMLChars(valueStr);
+                }
 		value = decodePrimitiveValue(valueStr, propertyType);
 		if (prEd != null) {
 		    prEd.setValue(value);
@@ -2237,8 +2212,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 		propList.add(property);
 		propList.add(value);
             }
-            if (propList != null)
+            if (propList != null) {
+                if (prEd != null) {
+                    property.setCurrentEditor(prEd);
+                }
                 return;
+            }
 	}
 
 	// set the value to the property
@@ -2309,7 +2288,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         nonfatalErrors.add(ex); 
     }
     
-    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode, boolean reportFailure) {
+    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode, boolean reportFailure)
+            throws PersistenceException {
 	// load the property editor class and create an instance of it
 	PropertyEditor prEd = null;
 	Throwable t = null;	
@@ -2331,6 +2311,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     return prEd;
 
                 if (reportFailure) {
+                    if ("org.netbeans.modules.swingapp.ActionEditor".equals(editorStr)) {
+                        swingappEncountered();
+                    }
                     String msg = createLoadingErrorMessage(
                         FormUtils.getFormattedBundleString(
                             "FMT_ERR_CannotLoadClass3", // NOI18N
@@ -2429,7 +2412,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	
     }
     
-    private void loadBeanProperty(BeanPropertyEditor beanPropertyEditor, org.w3c.dom.Node valueNode) {	
+    private void loadBeanProperty(BeanPropertyEditor beanPropertyEditor, org.w3c.dom.Node valueNode)
+            throws PersistenceException {	
 	if(beanPropertyEditor.valueIsBeanProperty()) {
 	    org.w3c.dom.NodeList children = valueNode.getChildNodes();	
 	    Node.Property[] allBeanProperties = beanPropertyEditor.getProperties();
@@ -2545,9 +2529,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return null;
     }
     
-    private void loadBindingProperties(org.w3c.dom.Node node,
-                                         RADComponent metacomp)
-    {
+    private void loadBindingProperties(org.w3c.dom.Node node, RADComponent metacomp)
+            throws PersistenceException {
         org.w3c.dom.Node[] propNodes = findSubNodes(node, XML_BINDING_PROPERTY);
         for (int i=0; i < propNodes.length; i++) {
             org.w3c.dom.Node propNode = propNodes[i];
@@ -3037,7 +3020,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     if (autoResSetting instanceof Integer && ((Integer)autoResSetting).intValue() == ResourceSupport.AUTO_OFF) {
                         formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }                    
+                }
+                if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)) {
+                    if (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value) {
+                        // Swing Application Framework support has been discontinued
+                        // => changing the setting to I18N. It is just a fallback
+                        // in case the resourcing was not used at all. If it was used
+                        // then we refuse to open the form (this is implemented
+                        // on another place in this class).
+                        formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }
+                }
             } else {
                 // we have a valid name / value pair
                 comp.setAuxValue(name, value);
@@ -3064,6 +3057,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     // -----------
 
+    private void addFormElement(StringBuffer buf) {
+        // add form specification element
+        String formatVersion = versionStringForFormVersion(formModel.getCurrentVersionLevel());
+        String maxVersion = versionStringForFormVersion(formModel.getMaxVersionLevel());
+        String compatFormInfo = getFormInfoForKnownClass(formModel.getFormBaseClass());
+        if (compatFormInfo == null) {
+            addElementOpenAttr(buf, XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION },
+                new String[] { formatVersion, maxVersion });
+        }
+        else { // FormInfo type stored for backward compatibility
+            addElementOpenAttr(buf, XML_FORM,
+                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION, ATTR_FORM_TYPE },
+                new String[] { formatVersion, maxVersion, compatFormInfo });
+        }
+    }
+
     /** This method saves the form to given data object.
      * @param formObject FormDataObject representing the form files
      * @param formModel FormModel to be saved
@@ -3081,11 +3091,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         if (!formFile.canWrite()) { // should not happen
             PersistenceException ex = new PersistenceException(
-                                 "Tried to save read-only form"); // NOI18N
-            String msg = FormUtils.getFormattedBundleString(
-                             "FMT_ERR_SaveToReadOnly", // NOI18N
-                             new Object[] { formFile.getNameExt() });
-            annotateException(ex, ErrorManager.ERROR, msg);
+                    FormUtils.getFormattedBundleString(
+                         "FMT_ERR_SaveToReadOnly", new Object[] { formFile.getNameExt() }));// NOI18N
             throw ex;
         }
 
@@ -3109,24 +3116,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // store XML file header
         final String encoding = "UTF-8"; // NOI18N
-        buf.append("<?xml version=\"1.1\" encoding=\""); // NOI18N
+        buf.append("<?xml version=\"1.0\" encoding=\""); // NOI18N
         buf.append(encoding);
         buf.append("\" ?>\n\n"); // NOI18N
-
-        // add form specification element
-        String formatVersion = versionStringForFormVersion(formModel.getCurrentVersionLevel());
-        String maxVersion = versionStringForFormVersion(formModel.getMaxVersionLevel());
-        String compatFormInfo = getFormInfoForKnownClass(formModel.getFormBaseClass());
-        if (compatFormInfo == null) {
-            addElementOpenAttr(buf, XML_FORM,
-                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION },
-                new String[] { formatVersion, maxVersion });
-        }
-        else { // FormInfo type stored for backward compatibility
-            addElementOpenAttr(buf, XML_FORM,
-                new String[] { ATTR_FORM_VERSION, ATTR_MAX_FORM_VERSION, ATTR_FORM_TYPE },
-                new String[] { formatVersion, maxVersion, compatFormInfo });
-        }
+        
+        int formElementPosition = buf.length();
 
         // store "Other Components"
         Collection<RADComponent> otherComps = formModel.getOtherComponents();
@@ -3164,6 +3158,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             saveAuxValues(auxValues, buf, ONE_INDENT + ONE_INDENT);
             buf.append(ONE_INDENT); addElementClose(buf, XML_AUX_VALUES);
         }
+
+        // Creating Form element at the end to make sure that we have
+        // collected the right versions that are stored there
+        StringBuffer sb = new StringBuffer();
+        addFormElement(sb);
+        buf.insert(formElementPosition, sb);
 
         addElementClose(buf, XML_FORM);
 
@@ -3836,6 +3836,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node valueNode = null;
         String encodedValue = null;
         String encodedSerializeValue = null;
+        boolean containsInvalidXMLChars = false;
 
         PropertyEditor prEd = property.getCurrentEditor();	
         
@@ -3881,6 +3882,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             if (valueNode == null) { // save as primitive or serialized value
                 encodedValue = encodePrimitiveValue(value);
+                String encodedInvalidXMLChars = encodeInvalidXMLChars(encodedValue);
+                if (encodedInvalidXMLChars != null) {
+                    containsInvalidXMLChars = true;
+                    encodedValue = encodedInvalidXMLChars;
+                }
                 if (encodedValue == null) {
                     try {
                         encodedSerializeValue = encodeValue(value);
@@ -3942,27 +3948,132 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addElementClose(buf, XML_PROPERTY);
         }
         else { // primitive value or resource - just one element with attributes
-            addLeafElementOpenAttr(
-                buf,
-                XML_PROPERTY,
-                new String[] {
+            String[] attrs = new String[] {
                     ATTR_PROPERTY_NAME,
                     ATTR_PROPERTY_TYPE,
                     ATTR_PROPERTY_VALUE,
                     ATTR_PROPERTY_RES_KEY,
                     ATTR_PROPERTY_NORES,
                     ATTR_PROPERTY_PRE_CODE,
-                    ATTR_PROPERTY_POST_CODE },
-                new String[] {
+                    ATTR_PROPERTY_POST_CODE };
+            String[] values = new String[] {
                     propertyName,
                     property.getValueType().getName(),
                     encodedValue,
                     resourceKey,
                     noResource,
                     property.getPreCode(),
-                    property.getPostCode() });
+                    property.getPostCode() };
+            if (containsInvalidXMLChars) {
+                formModel.raiseVersionLevel(FormModel.FormVersion.NB71, FormModel.FormVersion.NB71);
+                formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
+                attrs = append(attrs, ATTR_PROPERTY_INVALID_XML_CHARS);
+                values = append(values, "true"); // NOI18N
+            }
+            addLeafElementOpenAttr(buf, XML_PROPERTY, attrs, values);
         }
         return true;
+    }
+
+    /**
+     * Appends specified element at the end of the array.
+     * 
+     * @param array array that should be enlarged.
+     * @param element element that should be appended.
+     * @return new array with the element appended.
+     */
+     private static String[] append(String[] array, String element) {
+        String[] newArray = new String[array.length+1];
+        System.arraycopy(array, 0, newArray, 0, array.length);
+        newArray[array.length] = element;
+        return newArray;
+    }
+
+    /**
+     * Encodes invalid XML 1.0 characters using valid ones.
+     * Note that this method doesn't handle characters like &lt;
+     * %gt; etc. These characters are valid within XML, just
+     * problematic in textual version of the XML. Instead
+     * this method handles characters like \b that must not
+     * appear in XML 1.0 at all.
+     * 
+     * @param xml string to encode.
+     * @return {@code null} if there were no invalid characters
+     * in the given string. It returns encoded
+     * version of the given string otherwise.
+     */
+    private static String encodeInvalidXMLChars(String xml) {
+        if (xml == null) {
+            return null;
+        }
+        boolean containsInvalidXMLChar = false;
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<xml.length(); i++) {
+            char c = xml.charAt(i);
+            if  (isInvalidXMLChar(c) || (c == '\\')) {
+                containsInvalidXMLChar = true;
+                String hex = Integer.toHexString(c);
+                sb.append("\\u"); // NOI18N
+                for (int j=hex.length(); j<4; j++) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            } else {
+                sb.append(c);
+            }
+        }
+        return containsInvalidXMLChar ? sb.toString() : null;
+    }
+
+    /**
+     * Determines whether the specified character is a valid
+     * XML 1.0 character. 
+     * 
+     * @param c character to check.
+     * @return {@code true} when the character is invalid,
+     * returns {@code false} when the character is valid.
+     * @see <a href="http://www.w3.org/TR/2006/REC-xml-20060816/#charsets">XML 1.0 Characters</a>
+     */
+    private static boolean isInvalidXMLChar(char c) {
+        boolean valid = (c == '\t')
+                || (c == '\n')
+                || (c == '\r')
+                || (c >= 0x20 && c <= 0xD7FF)
+                || (c >= 0xE000 && c <= 0xFFFD)
+                || (c >= 0x10000 && c <= 0x10FFFF);
+        return !valid;
+    }
+
+    /**
+     * Decodes string with encoded invalid XML characters.
+     * 
+     * @param xml string with encoded invalid XML characters.
+     * @return string with all characters decoded.
+     */
+    private static String decodeInvalidXMLChars(String xml) {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<xml.length(); i++) {
+            char c = xml.charAt(i);
+            if (c == '\\') {
+                char d = xml.charAt(i+1);
+                if (d == '\\') {
+                    sb.append('\\');
+                    i++;
+                } else {
+                    // expecting uXXXX
+                    if (d != 'u') {
+                        throw new IllegalArgumentException();
+                    }
+                    String code = xml.substring(i+2, i+6);
+                    char ch = (char)Integer.parseInt(code, 16);
+                    sb.append(ch);
+                    i+=5;
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
     
     private org.w3c.dom.Node saveBeanToXML(Class type, org.w3c.dom.Document doc) {

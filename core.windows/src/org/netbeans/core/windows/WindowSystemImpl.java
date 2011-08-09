@@ -48,6 +48,7 @@ package org.netbeans.core.windows;
 
 import java.awt.EventQueue;
 import org.netbeans.core.WindowSystem;
+import org.netbeans.core.windows.design.DesignView;
 import org.netbeans.core.windows.services.DialogDisplayerImpl;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.util.lookup.ServiceProvider;
@@ -64,6 +65,9 @@ public class WindowSystemImpl implements WindowSystem {
     @Override
     public void init() {
         assert !EventQueue.isDispatchThread();
+        if (Boolean.getBoolean("org.netbeans.core.WindowSystem.designMode")) { // NOI18N
+            DesignView.initialize();
+        }
         MainWindow.init();
     }
 

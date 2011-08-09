@@ -222,7 +222,10 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
             if (!d.isModified()) {
                 // #58194: no need to parse the live document.
                 try {
-                    return new InputSource(fo.getURL().toExternalForm());
+                    InputSource s = new InputSource();
+                    s.setSystemId(fo.getURL().toExternalForm());
+                    s.setByteStream(fo.getInputStream());
+                    return s;
                 } catch (FileStateInvalidException e) {
                     assert false : e;
                 }

@@ -200,7 +200,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(RunConfigurationPanel.class);
+        return new HelpCtx(RunConfigurationPanel.class.getName() + "." + wizardType);
     }
 
     @Override

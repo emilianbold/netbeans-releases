@@ -46,6 +46,7 @@ package org.netbeans.modules.hudson.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,19 +64,19 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
-import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
-import org.netbeans.modules.hudson.util.Utilities;
+import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -98,6 +99,8 @@ public class HudsonConnector {
     
     private HudsonVersion version;
     private boolean connected = false;
+    /** #182689: true if have no anon access and need to log in just to see job list */
+    boolean forbidden;
     
     private Map<String, HudsonView> cache = new HashMap<String, HudsonView>();
     
@@ -110,22 +113,23 @@ public class HudsonConnector {
         this.instance = instance;
     }
     
-    private boolean canUseTree() {
-        HudsonVersion v = getHudsonVersion();
+    private boolean canUseTree(boolean authentication) {
+        HudsonVersion v = getHudsonVersion(authentication);
         return v != null && v.compareTo(new HudsonVersion("1.367")) >= 0; // NOI18N
     }
     
-    public synchronized Collection<HudsonJob> getAllJobs() {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + (canUseTree() ?
+    public synchronized Collection<HudsonJob> getAllJobs(boolean authentication) {
+        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + (canUseTree(authentication) ?
                 "?tree=primaryView[name],views[name,url,jobs[name]]," +
                 "jobs[name,url,color,displayName,buildable,inQueue," +
                 "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
-                "modules[name,displayName,url,color]]" :
+                "modules[name,displayName,url,color]]," +
+                "securedJobs[name,url]" : // HUDSON-3924
                 "?depth=1&xpath=/&exclude=//assignedLabel&exclude=//primaryView/job" +
                 "&exclude=//view/job/url&exclude=//view/job/color&exclude=//description&exclude=//job/build&exclude=//healthReport" +
                 "&exclude=//firstBuild&exclude=//keepDependencies&exclude=//nextBuildNumber&exclude=//property&exclude=//action" +
                 "&exclude=//upstreamProject&exclude=//downstreamProject&exclude=//queueItem&exclude=//scm&exclude=//concurrentBuild" +
-                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild")); // NOI18N
+                "&exclude=//job/lastUnstableBuild&exclude=//job/lastUnsuccessfulBuild"), authentication); // NOI18N
         
         if (null == docInstance)
             return new ArrayList<HudsonJob>();
@@ -151,7 +155,7 @@ public class HudsonConnector {
         } finally {
             handle.finish();
         }
-        instance.synchronize();
+        instance.synchronize(false);
     }
 
     /**
@@ -159,9 +163,9 @@ public class HudsonConnector {
      * The changelog ({@code <changeSet>}) can be interpreted separately by {@link HudsonJobBuild#getChanges}.
      */
     Collection<? extends HudsonJobBuild> getBuilds(HudsonJobImpl job) {
-        Document docBuild = getDocument(job.getUrl() + XML_API_URL + (canUseTree() ?
+        Document docBuild = getDocument(job.getUrl() + XML_API_URL + (canUseTree(true) ?
             "?tree=builds[number,result,building]" :
-            "?xpath=/*/build&wrapper=root&exclude=//url"));
+            "?xpath=/*/build&wrapper=root&exclude=//url"), true);
         if (docBuild == null) {
             return Collections.emptySet();
         }
@@ -202,7 +206,7 @@ public class HudsonConnector {
 
     void loadResult(HudsonJobBuildImpl build, AtomicBoolean building, AtomicReference<Result> result) {
         Document doc = getDocument(build.getUrl() + XML_API_URL +
-                "?xpath=/*/*[name()='result'%20or%20name()='building']&wrapper=root");
+                "?xpath=/*/*[name()='result'%20or%20name()='building']&wrapper=root", true);
         if (doc == null) {
             return;
         }
@@ -217,10 +221,10 @@ public class HudsonConnector {
         }
     }
     
-    protected synchronized @CheckForNull HudsonVersion getHudsonVersion() {
-        if (null == version)
-            version = retrieveHudsonVersion();
-        
+    protected synchronized @CheckForNull HudsonVersion getHudsonVersion(boolean authentication) {
+        if (version == null) {
+            version = retrieveHudsonVersion(authentication);
+        }
         return version;
     }
     
@@ -305,11 +309,15 @@ public class HudsonConnector {
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node n = nodes.item(i);
-            if (!n.getNodeName().equals(XML_API_JOB_ELEMENT)) {
+            boolean secured = n.getNodeName().equals(XML_API_SECURED_JOB_ELEMENT);
+            if (!n.getNodeName().equals(XML_API_JOB_ELEMENT) && !secured) {
                 continue;
             }
             
             HudsonJobImpl job = new HudsonJobImpl(instance);
+            if (secured) {
+                job.putProperty(JOB_COLOR, Color.secured);
+            }
             
             NodeList jobDetails = n.getChildNodes();
             for (int k = 0; k < jobDetails.getLength(); k++) {
@@ -384,7 +392,8 @@ public class HudsonConnector {
             }
 
             for (HudsonView v : instance.getViews()) {
-                if (null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
+                if (/* https://github.com/hudson/hudson/commit/105f2b09cf1376f9fe4dbf80c5bdb7a0d30ba1c1#commitcomment-447142 */secured ||
+                        null != cache.get(v.getName() + "/" + job.getName())) // NOI18N
                     job.addView(v);
             }
 
@@ -423,12 +432,12 @@ public class HudsonConnector {
     }
     private static final Map<String,Pattern> tailPatterns = new HashMap<String,Pattern>();
     
-    private synchronized @CheckForNull HudsonVersion retrieveHudsonVersion() {
+    private synchronized @CheckForNull HudsonVersion retrieveHudsonVersion(boolean authentication) {
         HudsonVersion v = null;
         
         try {
 
-            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).httpConnection().getHeaderField("X-Hudson"); // NOI18N
+            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).authentication(authentication).httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
                 v = new HudsonVersion(sVersion);
             }
@@ -438,17 +447,18 @@ public class HudsonConnector {
         
         return v;
     }
-    
-    Document getDocument(String url) {
+
+    Document getDocument(String url, boolean authentication) {
+        forbidden = false;
         Document doc = null;
         
         try {
-            HttpURLConnection conn = new ConnectionBuilder().instance(instance).url(url).httpConnection();
+            HttpURLConnection conn = new ConnectionBuilder().instance(instance).url(url).authentication(authentication).httpConnection();
             
             // Connected successfully
             if (!isConnected()) {
                 connected = true;
-                version = retrieveHudsonVersion();
+                version = retrieveHudsonVersion(authentication);
             }
             
             // Get input stream
@@ -472,8 +482,8 @@ public class HudsonConnector {
             }, null);
             
             // Check for right version
-            if (!Utilities.isSupportedVersion(getHudsonVersion())) {
-                HudsonVersion v = retrieveHudsonVersion();
+            if (!Utilities.isSupportedVersion(getHudsonVersion(authentication))) {
+                HudsonVersion v = retrieveHudsonVersion(authentication);
                 
                 if (!Utilities.isSupportedVersion(v))
                     return null;
@@ -486,6 +496,9 @@ public class HudsonConnector {
             // already reported
         } catch (Exception x) {
             LOG.log(Level.FINE, url, x);
+            if (!authentication && x instanceof HttpRetryException && ((HttpRetryException) x).responseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+                forbidden = true;
+            }
         }
         
         return doc;

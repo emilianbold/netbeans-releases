@@ -187,7 +187,11 @@ final class ThemeValue implements UIDefaults.ActiveValue {
             synthContext = UIUtils.classForName ("javax.swing.plaf.synth.SynthContext"); //NOI18N
             colorType = UIUtils.classForName ("javax.swing.plaf.synth.ColorType"); //NOI18N
             gtkColorType = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKColorType"); //NOI18N
-            synthUI = UIUtils.classForName ("sun.swing.plaf.synth.SynthUI"); //NOI18N
+            try {
+                synthUI = UIUtils.classForName("javax.swing.plaf.synth.SynthUI"); //NOI18N
+            } catch (ClassNotFoundException x) {
+                synthUI = UIUtils.classForName("sun.swing.plaf.synth.SynthUI"); //NOI18N
+            }
 
 
             synthContextConstructor = synthContext.getDeclaredConstructor(

@@ -52,6 +52,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.Stamps;
+import org.openide.modules.Places;
 
 /** Test the NetBeans module installer implementation.
  * Broken into pieces to ensure each runs in its own VM.
@@ -66,7 +67,7 @@ public class NbInstallerTest9 extends SetupHid {
     /** Test #26786/#28755: manifest caching can be buggy.
      */
     public void testManifestCaching() throws Exception {
-        System.setProperty("netbeans.user", getWorkDirPath());
+        Places.setUserDirectory(getWorkDir());
         ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());
         File littleJar = new File(jars, "little-manifest.jar");
         //inst.loadManifest(littleJar).write(System.out);
@@ -76,7 +77,7 @@ public class NbInstallerTest9 extends SetupHid {
         File bigJar = new File(jars, "big-manifest.jar");
         assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));
         Stamps.getModulesJARs().shutdown();
-        File allManifestsDat = new File(new File(new File(getWorkDir(), "var"), "cache"), "all-manifest.dat");
+        File allManifestsDat = Places.getCacheSubfile("all-manifest.dat");
         assertTrue("File " + allManifestsDat + " exists", allManifestsDat.isFile());
         // Create a new NbInstaller, since otherwise it turns off caching...
         inst = new org.netbeans.core.startup.NbInstaller(new MockEvents());

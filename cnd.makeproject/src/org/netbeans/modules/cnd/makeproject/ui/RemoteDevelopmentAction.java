@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -113,6 +114,12 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         final MakeConfiguration mconf = project.getActiveConfiguration();
         ExecutionEnvironment currExecEnv = project.getDevelopmentHostExecutionEnvironment();
         if (mconf == null || currExecEnv == null) {
+            return;
+        }        
+        if (MakeProjectUtils.canChangeHost(project, mconf)) {
+            subMenu.setEnabled(true);
+        } else {
+            subMenu.setEnabled(false);
             return;
         }
 

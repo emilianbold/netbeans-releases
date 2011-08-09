@@ -50,15 +50,6 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.annotations.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -484,7 +475,6 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.eecommon</friend>
-                <friend>org.netbeans.modules.javaee.beanvalidation</friend>
                 <friend>org.netbeans.modules.j2ee.archive</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
@@ -496,6 +486,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.jboss4</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
+                <friend>org.netbeans.modules.javaee.beanvalidation</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
@@ -507,12 +498,13 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.web.freeform</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf.richfaces</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.struts</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
-                <friend>org.netbeans.modules.websvc.restapi</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
+                <friend>org.netbeans.modules.websvc.restapi</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.dd</package>

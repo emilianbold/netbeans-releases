@@ -388,8 +388,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 owner = folderOwners.get(folder);
             }
         }
-        
-        if (owner != null) {
+
+        if (owner == null && VersioningSupport.isExcluded(folder)) {
+            // the owner is not known yet and the folder is excluded/unversioned
+            LOG.log(Level.FINE, " caching NULL_OWNER of excluded {0}", new Object[] { file }); //NOI18N
+            if (isFile) {
+                synchronized(fileOwners) {
+                    fileOwners.put(folder, NULL_OWNER);
+                }
+            }
+            synchronized(folderOwners) {
+                folderOwners.put(folder, NULL_OWNER);
+            }
+            return null;
+        } else if (owner != null) {
             synchronized(fileOwners) {
                 LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
                 fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
@@ -411,9 +423,17 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 File topmost = system.getTopmostManagedAncestor(folder);
                 LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system.getClass().getName(), topmost }) ;
                 if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
-                    LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
-                    owner = system;
-                    closestParent = topmost;
+                    // calls getDelegate, but in this phase the delegate is already ready and loaded (topmost != null), no need to worry about waking it up
+                    system = system instanceof DelegatingVCS ? ((DelegatingVCS) system).getDelegate() : system;
+                    if (VersioningConfig.getDefault().isDisconnected(system, topmost)) {
+                        // repository root is disconnected from this vcs
+                        LOG.log(Level.FINE, " skipping disconnected owner = {0} for {1}", new Object[] { 
+                            system.getClass().getName(), topmost }) ;
+                    } else {
+                        LOG.log(Level.FINE, " owner = {0}", new Object[] { system.getClass().getName() }) ;
+                        owner = system;
+                        closestParent = topmost;
+                    }
                 }
             }
         }

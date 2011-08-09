@@ -73,7 +73,6 @@ import com.sun.source.util.TreePath;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,6 +139,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
      * @throws IOException
      */
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, Integer forPosition, String mimeType) throws IOException {
+        if ("text/x-javahints".equals(mimeType)) {
+            if (info.getText().startsWith("//no-errors")) return Collections.emptyList();
+        }
+
         List<Diagnostic> errors = info.getDiagnostics();
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
         
@@ -153,7 +156,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         for (Diagnostic d : errors) {
             if (isCanceled())
                 return null;
-            
+
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
                 ERR.log(ErrorManager.INFORMATIONAL, "d = " + d );
             

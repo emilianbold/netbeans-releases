@@ -115,9 +115,6 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         this.project = project;
         phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
         proxyOperationFactory = new ProxyOperationFactory(project);
-        ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
-        RemoteConnections remoteConnections = RemoteConnections.get();
-        remoteConnections.addChangeListener(WeakListeners.change(this, remoteConnections));
 
         initTask = COPY_SUPPORT_RP.create(new Runnable() {
             @Override
@@ -128,7 +125,12 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     public static CopySupport getInstance(PhpProject project) {
-        return new CopySupport(project);
+        CopySupport copySupport = new CopySupport(project);
+        ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, copySupport);
+        // XXX could be done in projectOpened() and projectClosed() but see #187060
+        RemoteConnections remoteConnections = RemoteConnections.get();
+        remoteConnections.addChangeListener(WeakListeners.change(copySupport, remoteConnections));
+        return copySupport;
     }
 
     private static RequestProcessor.Task createCopyTask() {
@@ -156,6 +158,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         assert !projectOpened : String.format("Copy Support already opened for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = true;
+        proxyOperationFactory.reset();
 
         initTask.schedule(PROPERTY_CHANGE_DELAY);
     }
@@ -168,6 +171,8 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         assert projectOpened : String.format("Copy Support already closed for project %s (opened: %d, closed: %d)", project.getName(), opened.get(), closed.get());
 
         projectOpened = false;
+        proxyOperationFactory.reset();
+
         unregisterFileChangeListener();
     }
 

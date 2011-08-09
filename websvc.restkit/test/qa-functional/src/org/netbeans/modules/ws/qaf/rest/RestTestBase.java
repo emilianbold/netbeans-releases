@@ -81,8 +81,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
     //don't try to (un)deploy REST apps on windows!!!
     //see: https://jersey.dev.java.net/issues/show_bug.cgi?id=45
     private static final boolean isWindows = Utilities.isWindows(); //NOI18N
-
-
     private static final String HOSTNAME = "localhost"; //NOI18N
     private static final int PORT = resolveServerPort();
     private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver"; //NOI18N
@@ -90,7 +88,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private static final String DB_USERNAME = "app"; //NOI18N
     private static final String DB_PASSWORD = "app"; //NOI18N
     private Connection connection;
-
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("golden");
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
 
@@ -122,6 +119,11 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     public RestTestBase(String name) {
         super(name);
+    }
+
+    public RestTestBase(String name, Server server) {
+        super(name, server);
+//        super(name);
     }
 
     @Override
@@ -257,7 +259,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
             LOGGER.info(nsme.getMessage());
         }
         Field f = null;
-        File restClient= null;
+        File restClient = null;
         try {
             f = c.getDeclaredField("TEST_RESBEANS_HTML"); //NOI18N
             restClient = new File(restClientFolder, (String) f.get(o));
@@ -340,9 +342,9 @@ public abstract class RestTestBase extends WebServicesTestBase {
     @Override
     public File getGoldenFile(String filename) {
         String fullClassName = this.getClass().getName().replace("Mvn", "").replace("JEE6", "");
-        String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
+        String goldenFileName = fullClassName.replace('.', '/') + "/" + filename;
         // golden files are in ${xtest.data}/goldenfiles/${classname}/...
-        File goldenFile = new File(getDataDir()+"/goldenfiles/"+goldenFileName);
+        File goldenFile = new File(getDataDir() + "/goldenfiles/" + goldenFileName);
         assertTrue("Golden file not found in the following locations:\n  " + goldenFile,
                 goldenFile.exists());
         return goldenFile;
@@ -374,7 +376,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     @Override
     protected void deployProject(String projectName) throws IOException {
         if (!isWindows) {
-           super.deployProject(projectName);
+            super.deployProject(projectName);
         }
     }
 
@@ -411,5 +413,4 @@ public abstract class RestTestBase extends WebServicesTestBase {
         File jar = FileUtil.toFile(targetFolder.getFileObject("derbyclient", "jar")); //NOI18N
         LOGGER.info("JDBC Driver was copied to: " + jar.getAbsolutePath()); //NOI18N
     }
-
 }

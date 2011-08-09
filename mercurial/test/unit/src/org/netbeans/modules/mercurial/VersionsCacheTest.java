@@ -62,7 +62,7 @@ import org.netbeans.modules.versioning.util.Utils;
  *
  * @author ondra
  */
-public class VersionsCacheTest extends AbstractHgTest {
+public class VersionsCacheTest extends AbstractHgTestCase {
 
     private File workdir;
 
@@ -72,7 +72,7 @@ public class VersionsCacheTest extends AbstractHgTest {
     
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
         // create
         workdir = getWorkTreeDir();
@@ -128,7 +128,7 @@ public class VersionsCacheTest extends AbstractHgTest {
         Storage storage = StorageManager.getInstance().getStorage(workdir.getAbsolutePath());
         for (File golden : revisions) {
             File content;
-            HgRevision hgRev = HgCommand.getLogMessages(workdir, Collections.singleton(file), String.valueOf(lastRev), String.valueOf(lastRev), false, false, 1, NULL_LOGGER, true)[0].getHgRevision();
+            HgRevision hgRev = HgCommand.getLogMessages(workdir, Collections.singleton(file), String.valueOf(lastRev), String.valueOf(lastRev), false, false, 1, Collections.<String>emptyList(), NULL_LOGGER, true)[0].getHgRevision();
             if (!cacheFilled) {
                 content = storage.getContent(HgUtils.getRelativePath(file), file.getName(), hgRev.getChangesetId());
                 assertEquals(0, content.length());

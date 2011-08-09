@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
@@ -20,9 +19,9 @@ import org.codehaus.jettison.json.JSONString;
  *
  * @author lukas
  */
-
 @Path("Singleton1URI")
 public class Singleton1Cl {
+
     @Context
     private UriInfo context;
 

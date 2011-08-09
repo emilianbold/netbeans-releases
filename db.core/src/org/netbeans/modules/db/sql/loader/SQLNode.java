@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,7 +48,7 @@ import javax.swing.Action;
 import org.openide.actions.OpenAction;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -59,11 +59,12 @@ public class SQLNode extends DataNode {
 
     private final static String ICON_BASE = "org/netbeans/modules/db/sql/loader/resources/sql16.png"; // NOI18N
 
-    public SQLNode(SQLDataObject dataObject) {
-        super(dataObject, Children.LEAF);
+    public SQLNode(SQLDataObject dataObject, Lookup lookup) {
+        super(dataObject, Children.LEAF, lookup);
         setIconBaseWithExtension(ICON_BASE);
     }
     
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }

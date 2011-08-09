@@ -66,6 +66,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -153,14 +154,14 @@ public class RulesManager implements FileChangeListener {
     private void initHints() {
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + HINTS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
-        categorizeTreeRules( rules, HintMetadata.Kind.HINT, HintMetadata.Kind.HINT_NON_GUI, metadata);
+        categorizeTreeRules( rules, HintMetadata.Kind.HINT, metadata);
     }
 
 
     private void initSuggestions() {
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + SUGGESTIONS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
-        categorizeTreeRules( rules, HintMetadata.Kind.SUGGESTION, HintMetadata.Kind.SUGGESTION_NON_GUI, metadata);
+        categorizeTreeRules( rules, HintMetadata.Kind.SUGGESTION, metadata);
     }
 
     /** Read rules from system filesystem */
@@ -236,7 +237,6 @@ public class RulesManager implements FileChangeListener {
 
     private static void categorizeTreeRules( List<Pair<Rule,FileObject>> rules,
                                              HintMetadata.Kind kind,
-                                             HintMetadata.Kind kindNonGui,
                                              Map<HintMetadata, Collection<? extends HintDescription>> metadata) {
         for( Pair<Rule,FileObject> pair : rules ) {
             Rule rule = pair.getA();
@@ -253,32 +253,27 @@ public class RulesManager implements FileChangeListener {
                     toGui = false;
                 }
 
-                HintMetadata hm;
-
                 FileObject parent = fo.getParent();
+                HintMetadata.Builder hmb = HintMetadata.Builder.create(tr.getId())
+                                                               .setCategory(parent.getName())
+                                                               .setKind(kind);
 
+                if (!toGui) hmb = hmb.addOptions(Options.NON_GUI);
+                
                 if (rule instanceof AbstractHint) {
                     final AbstractHint h = (AbstractHint) rule;
-                    hm = HintMetadata.create(h.getId(),
-                                             toGui ? h.getDisplayName() : "",
-                                             toGui ? h.getDescription() : "",
-                                             parent.getName(),
-                                             HintsSettings.HINTS_ACCESSOR.isEnabledDefault(h),
-                                             toGui ? kind : kindNonGui,
-                                             HintsSettings.HINTS_ACCESSOR.severiryDefault(h),
-                                             new CustomizerProviderImpl(h),
-                                             Arrays.asList(HintsSettings.HINTS_ACCESSOR.getSuppressBy(h)));
+                    hmb = hmb.setDescription(toGui ? h.getDisplayName() : "", toGui ? h.getDescription() : "");
+                    hmb = hmb.setEnabled(HintsSettings.HINTS_ACCESSOR.isEnabledDefault(h));
+                    hmb = hmb.setSeverity(HintsSettings.HINTS_ACCESSOR.severiryDefault(h));
+                    hmb = hmb.setCustomizerProvider(new CustomizerProviderImpl(h));
+                    hmb = hmb.addSuppressWarnings(HintsSettings.HINTS_ACCESSOR.getSuppressBy(h));
+                    if (!HintsSettings.HINTS_ACCESSOR.isShowInTaskListDefault(h)) hmb = hmb.addOptions(Options.NO_BATCH);
                 } else {
-                    hm = HintMetadata.create(tr.getId(),
-                                             toGui ? tr.getDisplayName() : "",
-                                             toGui ? tr.getDisplayName() : "",
-                                             parent.getName(),
-                                             true,
-                                             toGui ? kind : kindNonGui,
-                                             AbstractHint.HintSeverity.WARNING,
-                                             Arrays.<String>asList());
+                    hmb = hmb.setDescription(toGui ? tr.getDisplayName() : "", toGui ? tr.getDisplayName() : "");
+                    hmb = hmb.setSeverity(AbstractHint.HintSeverity.WARNING);
                 }
 
+                HintMetadata hm = hmb.build();
                 List<HintDescription> hd = new LinkedList<HintDescription>();
 
                 hd.add(HintDescriptionFactory.create()

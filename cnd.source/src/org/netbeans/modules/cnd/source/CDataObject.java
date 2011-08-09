@@ -44,9 +44,14 @@
 
 package org.netbeans.modules.cnd.source;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 
 /** Represents a C++ object in the Repository.
@@ -61,6 +66,16 @@ public class CDataObject extends SourceDataObject {
     public CDataObject(FileObject pf, SourceAbstractDataLoader loader)
 			    throws DataObjectExistsException {
 	super(pf, loader);
+    }
+    
+    @MultiViewElement.Registration(displayName = "#Source",
+        iconBase = CDataNode.CSrcIcon,
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType = MIMENames.C_MIME_TYPE,
+        preferredID = "c.source", //NOI18N
+        position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -73,6 +73,7 @@ import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2Target;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2TargetModuleID;
 import org.netbeans.modules.glassfish.javaee.ide.UpdateContextRoot;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -121,18 +122,38 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
     @Override
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
-        return distribute(targetList, moduleArchive, deploymentPlan, new File[0]);
+        return distribute(targetList, moduleArchive, deploymentPlan, new File[0], null);
     }
 
     @Override
     public ProgressObject distribute(Target[] targets, DeploymentContext context) {
-        return distribute(targets, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries());
+        String cr = null;
+        String moduleFilePath = context.getModuleFile().getAbsolutePath();
+        if (moduleFilePath.endsWith(".war")) {
+            // compute cr 
+            ModuleConfigurationImpl mci = ModuleConfigurationImpl.get(context.getModule());
+            if (null != mci) {
+                try {
+                    cr = mci.getContextRoot();
+                } catch (ConfigurationException ex) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, "could not getContextRoot() for {0}",moduleFilePath);
+                }
+            }
+        }
+        return distribute(targets, context.getModuleFile(), context.getDeploymentPlan(), context.getRequiredLibraries(), cr);
     }
     
-    private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries)
+    private ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan, File[] requiredLibraries, String cr)
             throws IllegalStateException {
         String t = moduleArchive.getName();
-        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4));
+        final GlassfishModule commonSupport = getCommonServerSupport();
+        String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+        String targ = getTargetFromUri(url);
+        String nameSuffix = ""; // NOI18N
+        if (null != targ)
+            nameSuffix = "_"+targ; // NOI18N
+        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4)) +
+                nameSuffix;
         // 
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
                 null, moduleArchive.getAbsolutePath());
@@ -141,7 +162,6 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
         deployProgress.addProgressListener(new UpdateContextRoot(updateCRProgress, moduleId, getServerInstance(), true));
         MonitorProgressObject restartProgress = new MonitorProgressObject(this, moduleId);
 
-        final GlassfishModule commonSupport = this.getCommonServerSupport();
         final GlassfishModule2 commonSupport2 = (commonSupport instanceof GlassfishModule2 ?
             (GlassfishModule2)commonSupport : null);
         boolean restart = false;
@@ -171,9 +191,9 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
             return updateCRProgress;
         } else {
             if (commonSupport2 != null && requiredLibraries.length > 0) {
-                commonSupport2.deploy(deployProgress, moduleArchive, moduleName, null, Collections.<String, String>emptyMap(), requiredLibraries);
+                commonSupport2.deploy(deployProgress, moduleArchive, moduleName, cr, Collections.<String, String>emptyMap(), requiredLibraries);
             } else {
-                commonSupport.deploy(deployProgress, moduleArchive, moduleName);
+                commonSupport.deploy(deployProgress, moduleArchive, moduleName, cr);
             }
             return updateCRProgress;
         }
@@ -622,5 +642,15 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
         return result;
     }
 
-    
+    public static String getTargetFromUri(String uri) {
+        String target = null;
+            int lastColon = uri.lastIndexOf(':');
+            if (lastColon != -1) {
+                String candidate = uri.substring(lastColon+1);
+                if (!Character.isDigit(candidate.charAt(0))) {
+                    target = candidate;
+                }
+            }
+        return target;
+    }
 }

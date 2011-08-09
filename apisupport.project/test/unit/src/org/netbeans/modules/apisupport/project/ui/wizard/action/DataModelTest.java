@@ -44,35 +44,18 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
-import java.util.Arrays;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
-import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.openide.WizardDescriptor;
+import org.netbeans.junit.NbTestCase;
 import org.openide.awt.ActionReference;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Tests {@link DataModel}.
  *
  * @author Martin Krauskopf
  */
-public class DataModelTest extends LayerTestBase {
+public class DataModelTest extends NbTestCase {
     
     public DataModelTest(String name) {
         super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
     
     public void testActionReferenceCreate() throws Exception {
@@ -84,6 +67,7 @@ public class DataModelTest extends LayerTestBase {
         assertEquals("after", 130, res.separatorAfter());
     }
 
+    /* XXX rewrite to use mock data
     public void testDataModelGenerationForAlwaysEnabledActions() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
@@ -164,6 +148,7 @@ public class DataModelTest extends LayerTestBase {
             fail("separatorAfter shall be there:\n" + text);
         }
     }
+    */
 
 //    XXX: failing test, fix or delete
 //    public void testDataModelGenarationForConditionallyEnabledActions() throws Exception {

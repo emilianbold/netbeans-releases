@@ -74,7 +74,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultFormatter;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BundleKey;
+import org.netbeans.modules.apisupport.project.spi.BrandingSupport.BundleKey;
 import org.openide.util.NbBundle;
 
 /**

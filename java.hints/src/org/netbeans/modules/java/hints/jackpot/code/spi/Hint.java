@@ -48,6 +48,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 
 /**
@@ -64,4 +65,5 @@ public @interface Hint {
     public String[] suppressWarnings() default {};
     public Class<? extends CustomizerProvider> customizerProvider() default CustomizerProvider.class;
     public Kind hintKind() default Kind.HINT;
+    public Options[] options() default {};
 }

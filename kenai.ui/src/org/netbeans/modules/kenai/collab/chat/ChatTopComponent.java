@@ -483,20 +483,20 @@ public class ChatTopComponent extends TopComponent {
             }
         });
 
-        org.jdesktop.layout.GroupLayout loginScreenLayout = new org.jdesktop.layout.GroupLayout(loginScreen);
+        javax.swing.GroupLayout loginScreenLayout = new javax.swing.GroupLayout(loginScreen);
         loginScreen.setLayout(loginScreenLayout);
         loginScreenLayout.setHorizontalGroup(
-            loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(loginScreenLayout.createSequentialGroup()
-                .add(4, 4, 4)
-                .add(loginLink)
+            loginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loginScreenLayout.createSequentialGroup()
+                .addGap(4, 4, 4)
+                .addComponent(loginLink)
                 .addContainerGap(194, Short.MAX_VALUE))
         );
         loginScreenLayout.setVerticalGroup(
-            loginScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(loginScreenLayout.createSequentialGroup()
-                .add(4, 4, 4)
-                .add(loginLink)
+            loginScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loginScreenLayout.createSequentialGroup()
+                .addGap(4, 4, 4)
+                .addComponent(loginLink)
                 .addContainerGap(414, Short.MAX_VALUE))
         );
 
@@ -517,24 +517,24 @@ public class ChatTopComponent extends TopComponent {
             }
         });
 
-        org.jdesktop.layout.GroupLayout errorScreenLayout = new org.jdesktop.layout.GroupLayout(errorScreen);
+        javax.swing.GroupLayout errorScreenLayout = new javax.swing.GroupLayout(errorScreen);
         errorScreen.setLayout(errorScreenLayout);
         errorScreenLayout.setHorizontalGroup(
-            errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(errorScreenLayout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(lblXmppError)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(retryLink)
+            errorScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(errorScreenLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(lblXmppError)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(retryLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(31, Short.MAX_VALUE))
         );
         errorScreenLayout.setVerticalGroup(
-            errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(errorScreenLayout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(errorScreenLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lblXmppError)
-                    .add(retryLink))
+            errorScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(errorScreenLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addGroup(errorScreenLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblXmppError)
+                    .addComponent(retryLink, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(413, Short.MAX_VALUE))
         );
 
@@ -544,21 +544,21 @@ public class ChatTopComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(initLabel, org.openide.util.NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.initLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout initPanelLayout = new org.jdesktop.layout.GroupLayout(initPanel);
+        javax.swing.GroupLayout initPanelLayout = new javax.swing.GroupLayout(initPanel);
         initPanel.setLayout(initPanelLayout);
         initPanelLayout.setHorizontalGroup(
-            initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(initPanelLayout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(initLabel)
-                .addContainerGap(292, Short.MAX_VALUE))
+            initPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(initPanelLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(initLabel)
+                .addContainerGap(263, Short.MAX_VALUE))
         );
         initPanelLayout.setVerticalGroup(
-            initPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(initPanelLayout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(initLabel)
-                .addContainerGap(279, Short.MAX_VALUE))
+            initPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(initPanelLayout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(initLabel)
+                .addContainerGap(280, Short.MAX_VALUE))
         );
 
         add(initPanel, java.awt.BorderLayout.CENTER);

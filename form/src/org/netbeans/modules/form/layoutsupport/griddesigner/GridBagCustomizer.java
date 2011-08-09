@@ -57,7 +57,8 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Stola, Petr Somol
+ * @author Jan Stola
+ * @author Petr Somol
  */
 public class GridBagCustomizer implements GridCustomizer {
 
@@ -2172,6 +2173,7 @@ public class GridBagCustomizer implements GridCustomizer {
      */
     @Override
     public void setContext(DesignerContext context) {
+        GridBagInfoProvider info = manager.getGridInfo();
         Set<Component> components = context.getSelectedComponents();
 
         boolean enableButtons = !components.isEmpty();
@@ -2251,10 +2253,18 @@ public class GridBagCustomizer implements GridCustomizer {
         xGridPlusButton.setEnabled(enableButtons);
         yGridMinusButton.setEnabled(enableButtons);
         yGridPlusButton.setEnabled(enableButtons);
-        xGridRelativeButton.setEnabled(enableButtons);
-        yGridRelativeButton.setEnabled(enableButtons);
-        vGridRelativeButton.setEnabled(enableButtons);
-        hGridRelativeButton.setEnabled(enableButtons);
+        
+        if(info.hasGaps()) {
+            xGridRelativeButton.setEnabled(false);
+            yGridRelativeButton.setEnabled(false);
+            vGridRelativeButton.setEnabled(false);
+            hGridRelativeButton.setEnabled(false);
+        } else {
+            xGridRelativeButton.setEnabled(enableButtons);
+            yGridRelativeButton.setEnabled(enableButtons);
+            vGridRelativeButton.setEnabled(enableButtons);
+            hGridRelativeButton.setEnabled(enableButtons);            
+        }
         vGridRemainderButton.setEnabled(enableButtons);
         hGridRemainderButton.setEnabled(enableButtons);
         hGridMinusButton.setEnabled(enableButtons);
@@ -2271,8 +2281,6 @@ public class GridBagCustomizer implements GridCustomizer {
         vWeightEqualizeButton.setEnabled(multiple);
 
         if(enableButtons) {
-            GridBagInfoProvider info = manager.getGridInfo();
-
             /* set fill/bidi/base buttons as selected only if all selected components have the respective property set */
             int bidi = 0, baseline = 0, center = 0;
             boolean tlAnchor = false, tcAnchor = false, trAnchor = false;
@@ -2396,6 +2404,11 @@ public class GridBagCustomizer implements GridCustomizer {
                 int rows = info.getRowCount();
                 double avgX = 0.0d;
                 double avgY = 0.0d;
+
+                GridUtils.removePaddingComponents(gridManager);
+                gridManager.updateLayout(false);
+                GridUtils.revalidateGrid(gridManager);
+
                 if ( weight != null && (weight.xNorm != 0 || weight.yNorm != 0) ) {
                     double noOfComponents = (double)context.getSelectedComponents().size();
                     if(noOfComponents > 0) {
@@ -2407,7 +2420,28 @@ public class GridBagCustomizer implements GridCustomizer {
                         avgY /= noOfComponents;
                     }
                 }
-                GridUtils.removePaddingComponents(gridManager);
+                // to preserve relative positions of components in group when shifting group up or left
+                GridPositionChange gridPosCorrected = gridPos;
+                if(gridPos != null &&
+                        ((gridPos.xDiff < 0 && gridPos.xRelative == NO_INDIRECT_CHANGE) || 
+                        (gridPos.yDiff < 0 && gridPos.yRelative == NO_INDIRECT_CHANGE)) ) {
+                    int xDiff = gridPos.xDiff;
+                    int yDiff = gridPos.yDiff;
+                    for(Component component : context.getSelectedComponents()) {
+                        int x = info.getGridX(component);
+                        int y = info.getGridY(component);
+                        if(x + xDiff < 0 && gridPos.xRelative == NO_INDIRECT_CHANGE) {
+                            xDiff = -x;
+                        }
+                        if(y + yDiff < 0 && gridPos.yRelative == NO_INDIRECT_CHANGE) {
+                            yDiff = -y;
+                        }
+                    }
+                    if(xDiff != gridPos.xDiff || yDiff != gridPos.yDiff) {
+                        gridPosCorrected = new GridPositionChange(xDiff, gridPos.xRelative, yDiff, gridPos.yRelative, gridPos.reset);
+                    }
+                }
+                // now update component properties
                 for(Component component : context.getSelectedComponents()) {
                     if (anchor != -1) {
                         gridBagManager.setAnchor(component, anchor);
@@ -2425,8 +2459,8 @@ public class GridBagCustomizer implements GridCustomizer {
                     if (gridSize != null) {
                         updateGridSize(gridBagManager, info, component, gridSize);
                     }
-                    if (gridPos != null) {
-                        updateGridPosition(gridBagManager, info, component, gridPos);
+                    if (gridPosCorrected != null) {
+                        updateGridPosition(gridBagManager, info, component, gridPosCorrected);
                     }
                     if (insets != null) {
                         updateInsets(gridBagManager, component, insets);
@@ -2441,7 +2475,12 @@ public class GridBagCustomizer implements GridCustomizer {
                 }
                 gridManager.updateLayout(false);
                 GridUtils.revalidateGrid(gridManager);
-                GridUtils.addPaddingComponents(gridManager, columns, rows);
+                gridManager.updateGaps(false);
+                int newColumns = info.getColumnCount();
+                int newRows = info.getRowCount();
+                int padColumns = Math.max(columns, newColumns);
+                int padRows = Math.max(rows, newRows);
+                GridUtils.addPaddingComponents(gridManager, padColumns, padRows);
                 GridUtils.revalidateGrid(gridManager);
                 return null;
             }
@@ -2470,12 +2509,24 @@ public class GridBagCustomizer implements GridCustomizer {
     /** Updates component grid size based on GridSizeChange
      */
     private void updateGridSize(GridBagManager gridBagManager, GridBagInfoProvider info, Component component, GridSizeChange gridSize) {
+        boolean gapSupport = info.hasGaps();
         if (gridSize.wRelRem == NO_INDIRECT_CHANGE) {
             if (gridSize.wDiff != 0) {
                 if (gridSize.reset) {
                     gridBagManager.setGridWidth(component, 1);
                 } else {
-                    gridBagManager.updateGridWidth(component, gridSize.wDiff);
+                    int wDiff = gridSize.wDiff;
+                    if(gapSupport) {
+                        wDiff *= 2;
+                        if(info.isGapColumn(info.getGridX(component) + info.getGridWidth(component) - 1 + wDiff)) {
+                            if(wDiff < 0) {
+                                wDiff++;
+                            } else {
+                                wDiff--;
+                            }
+                        }
+                    }
+                    gridBagManager.updateGridWidth(component, wDiff);
                 }
             }
         } else {
@@ -2492,7 +2543,18 @@ public class GridBagCustomizer implements GridCustomizer {
                 if (gridSize.reset) {
                     gridBagManager.setGridHeight(component, 1);
                 } else {
-                    gridBagManager.updateGridHeight(component, gridSize.hDiff);
+                    int hDiff = gridSize.hDiff;
+                    if(gapSupport) {
+                        hDiff *= 2;
+                        if(info.isGapRow(info.getGridY(component) + info.getGridHeight(component) - 1 + hDiff)) {
+                            if(hDiff < 0) {
+                                hDiff++;
+                            } else {
+                                hDiff--;
+                            }
+                        }
+                    }
+                    gridBagManager.updateGridHeight(component, hDiff);
                 }
             }
         } else {
@@ -2509,12 +2571,24 @@ public class GridBagCustomizer implements GridCustomizer {
     /** Updates component grid position based on GridPositionChange
      */
     private void updateGridPosition(GridBagManager gridBagManager, GridBagInfoProvider info, Component component, GridPositionChange gridPos) {
+        boolean gapSupport = info.hasGaps();
         if (gridPos.xRelative == NO_INDIRECT_CHANGE) {
             if (gridPos.xDiff != 0) {
                 if (gridPos.reset) {
                     gridBagManager.setGridX(component, 0);
                 } else {
-                    gridBagManager.updateGridX(component, gridPos.xDiff);
+                    int xDiff = gridPos.xDiff;
+                    if(gapSupport) {
+                        xDiff *= 2;
+                        if(info.isGapColumn(info.getGridX(component) + xDiff)) {
+                            if(xDiff < 0) {
+                                xDiff++;
+                            } else {
+                                xDiff--;
+                            }
+                        }
+                    }
+                    gridBagManager.updateGridX(component, xDiff);
                 }
             }
         } else {
@@ -2529,7 +2603,18 @@ public class GridBagCustomizer implements GridCustomizer {
                 if (gridPos.reset) {
                     gridBagManager.setGridY(component, 0);
                 } else {
-                    gridBagManager.updateGridY(component, gridPos.yDiff);
+                    int yDiff = gridPos.yDiff;
+                    if(gapSupport) {
+                        yDiff *= 2;
+                        if(info.isGapRow(info.getGridY(component) + yDiff)) {
+                            if(yDiff < 0) {
+                                yDiff++;
+                            } else {
+                                yDiff--;
+                            }
+                        }
+                    }
+                    gridBagManager.updateGridY(component, yDiff);
                 }
             }
         } else {

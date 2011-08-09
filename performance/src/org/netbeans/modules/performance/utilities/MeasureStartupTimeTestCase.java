@@ -96,15 +96,25 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
     /** Table of the supported platforms. */
     protected static final String [][] SUPPORTED_PLATFORMS = {
         {"Linux,i386",UNIX},
+        {"Linux,amd64",UNIX},
         {"SunOS,sparc",UNIX},
         {"SunOS,x86",UNIX},
         {"Windows_NT,x86",WINDOWS},
+        {"Windows_NT,amd64",WINDOWS},
         {"Windows_2000,x86",WINDOWS},
+        {"Windows_2000,amd64",WINDOWS},
         {"Windows_XP,x86",WINDOWS},
+        {"Windows_XP,amd64",WINDOWS},
         {"Windows_95,x86",WINDOWS},
+        {"Windows_95,amd64",WINDOWS},
         {"Windows_98,x86",WINDOWS},
+        {"Windows_98,amd64",WINDOWS},
         {"Windows_Me,x86",WINDOWS},
+        {"Windows_Me,amd64",WINDOWS},
         {"Windows_Vista,x86",WINDOWS},
+        {"Windows_Vista,amd64",WINDOWS},
+        {"Windows_7,x86",WINDOWS},
+        {"Windows_7,amd64",WINDOWS},
         {"Mac_OS_X,ppc",MAC}
     };
     
@@ -114,10 +124,11 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         {"Preparation finished", "Preparation finished, took ","ms"},
         {"Window system loaded", "Window system loaded dT=", ""},
         {"Window system shown" , "Window system shown dT=",""},
-        {"Start", "IDE starts t=", ""},
+        {"Start", "IDE starts t = ", ""},
         {"End", "IDE is running t=", ""},
         {"Lookups set", "Lookups set dT=", ""}
     };
+    public static final String separator= System.getProperty("file.separator");
     
     /** Define testcase
      * @param testName name of the testcase
@@ -157,10 +168,19 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             long startTime = runIDE(getIdeHome(), userdir, measureFile, timeout);
             Hashtable measuredValues = parseMeasuredValues(measureFile);
 
-            long runTime = ((Long) measuredValues.get("IDE starts t=")).longValue(); // from STARTUP_DATA
-            measuredValues.remove("IDE starts t="); // remove from measured values, the rest we will log as performance data
-            long endTime = ((Long) measuredValues.get("IDE is running t=")).longValue(); // from STARTUP_DATA
-            measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
+            Object tempValue = measuredValues.get("IDE starts t = ");
+            long runTime=0;
+            long endTime=0;
+            if (!(tempValue==null)) {
+                runTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
+                measuredValues.remove("IDE starts t = "); // remove from measured values, the rest we will log as performance data
+            }
+            tempValue = measuredValues.get("IDE is running t=");
+            if (!(tempValue==null)) {
+                endTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
+                measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
+            }
+                   
             long startupTime = endTime - startTime;
 
             System.out.println("\t" + startTime + " -> run from command line (start) ");
@@ -223,6 +243,9 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         
         //add guitracker on classpath
         String classpath = System.getProperty("performance.testutilities.dist.jar");
+        if (classpath == null) {
+            classpath = ideHome.getAbsolutePath()+separator+"extra"+separator+"modules"+separator+"org-netbeans-modules-performance.jar";
+        }
         
         //add property on command line
         String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");
@@ -243,7 +266,12 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         }
         
         // construct command line
-        StringBuffer cmd = new StringBuffer((new File(ideBinDir,executor)).getAbsolutePath());
+        StringBuffer cmd = new StringBuffer();
+        String execDir = System.getProperty("netbeans.performance.exec.dir");
+        if (execDir==null) {
+            execDir= (new File(ideBinDir,executor)).getAbsolutePath();
+        } 
+        cmd.append(execDir);
         
         // add other argumens
         // guiltracker lib
@@ -280,7 +308,8 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // use faster but more consistent random generator
         cmd.append(" -J-Dorg.netbeans.CLIHandler.fast.random=true");
         // wait after startup, need to set longer time for complex startup because rescan rises
-        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup=").append(timeout);
+//        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup=").append(timeout);
+        cmd.append(" -J-Dnetbeans.logger.console=false");
         // disable rescaning after startup
         //        cmd.append(" -J-Dnetbeans.javacore.noscan=true";
         // disable status line displayer - issue 90542
@@ -377,7 +406,11 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      * @return User directory
      */
     protected File getUserdirFile() throws IOException {
-        return new File(new File(System.getProperty("userdir.prepared"),"sys"),"ide");
+        String usdPrep=System.getProperty("userdir.prepared");
+        if (!(usdPrep==null)) {
+            return new File(new File(usdPrep,"sys"),"ide");
+        }
+        return new File(new File(getWorkDir().getAbsolutePath(),"sys"),"ide");
     }
     
     /** Get Sketchpad directory.

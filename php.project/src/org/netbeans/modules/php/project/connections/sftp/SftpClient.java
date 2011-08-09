@@ -114,6 +114,10 @@ public class SftpClient implements RemoteClient {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Connecting to {0} [timeout: {1} ms]", new Object[] {host, timeout});
         }
+        int keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Keep-alive interval is {0} ms", keepAliveInterval);
+        }
         String username = configuration.getUserName();
         String password = configuration.getPassword();
         String knownHostsFile = configuration.getKnownHostsFile();
@@ -139,6 +143,8 @@ public class SftpClient implements RemoteClient {
             }
             sftpSession.setUserInfo(new SftpUserInfo(configuration));
             sftpSession.setTimeout(timeout);
+            // keep-alive
+            sftpSession.setServerAliveInterval(keepAliveInterval);
             sftpSession.connect(timeout);
 
             channel = sftpSession.openChannel("sftp"); // NOI18N
@@ -304,7 +310,7 @@ public class SftpClient implements RemoteClient {
             Collection<ChannelSftp.LsEntry> files = sftpClient.ls(pwd);
             result = new ArrayList<RemoteFile>(files.size());
             for (ChannelSftp.LsEntry entry : files) {
-                result.add(new RemoteFileImpl(entry));
+                result.add(new RemoteFileImpl(entry, pwd));
             }
 
             sftpLogger.info(NbBundle.getMessage(SftpClient.class, "LOG_DirectorySendOk"));
@@ -484,15 +490,23 @@ public class SftpClient implements RemoteClient {
 
     private static final class RemoteFileImpl implements RemoteFile {
         private final ChannelSftp.LsEntry entry;
+        private final String parentDirectory;
 
-        public RemoteFileImpl(ChannelSftp.LsEntry entry) {
+        public RemoteFileImpl(ChannelSftp.LsEntry entry, String parentDirectory) {
             assert entry != null;
+            assert parentDirectory != null;
             this.entry = entry;
+            this.parentDirectory = parentDirectory;
         }
 
         @Override
         public String getName() {
             return entry.getFilename();
+        }
+
+        @Override
+        public String getParentDirectory() {
+            return parentDirectory;
         }
 
         @Override

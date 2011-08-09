@@ -43,24 +43,42 @@
  */
 package org.netbeans.modules.localhistory.ui.actions;
 
+import java.awt.Dialog;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
 import org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
+import org.netbeans.modules.localhistory.ui.actions.FileNode.PlainFileNode;
+import org.netbeans.modules.localhistory.ui.actions.FileNode.StoreEntryNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -74,45 +92,95 @@ public class RevertDeletedAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     protected void performAction(final Node[] activatedNodes) {
                                
         LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 VCSContext ctx = VCSContext.forNodes(activatedNodes);
                 Set<File> rootSet = ctx.getRootFiles();        
                 if(rootSet == null || rootSet.size() < 1) { 
                     return;
                 }                                        
-                for (File file : rootSet) {            
-                    if(VersioningSupport.isFlat(file)) {
-                        revert(file);
-                    } else {
-                        revertRecursively(file);
+                DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
+                for (File root : rootSet) {            
+                    PlainFileNode rfn = new PlainFileNode(root);
+                    populateNode(rfn, root, !VersioningSupport.isFlat(root));
+                    if(rfn.getChildCount() > 0) {
+                        rootNode.add(rfn);
                     }
-                }                                       
-            }
+                }
+                if(rootNode.getChildCount() > 0) {
+                    revert(rootNode);
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(RevertDeletedAction.class, "MSG_NO_FILES")));
+                }
+            }                                       
         });
     }
 
-    private void revertRecursively(File file) {
-        revert(file);
-        File[] files = file.listFiles();
-        if(files != null) {
-            for(File f : files) {
-                if(f.isDirectory()) {
-                    revertRecursively(f);   
+    private List<StoreEntryNode> getDeletedEntries(File file) {
+        StoreEntry[] entries = LocalHistory.getInstance().getLocalHistoryStore().getDeletedFiles(file);
+        if(entries.length == 0) {
+            return new LinkedList<StoreEntryNode>();
                 }            
+        List<StoreEntryNode> l = new LinkedList<StoreEntryNode>();
+        for (StoreEntry e : entries) {
+            if(!e.getFile().exists()) { 
+                // the files version was created by a delete &&
+                // the file wasn't created again.  
+                l.add(new StoreEntryNode(e));
             }
-        } else {
-            LocalHistory.LOG.log(Level.WARNING, "listFiles() for directory {0}returned null", file);
+        }
+        return l;                
+    }
+    
+    private void revert(DefaultMutableTreeNode rootNode) {
+        
+        RevertPanel p = new RevertPanel();
+        p.tree.setCellRenderer(new DeletedListRenderer());
+        FileNodeListener l = new FileNodeListener();
+        p.tree.addMouseListener(l);
+        p.tree.addKeyListener(l);
+                                
+        p.setRoot(rootNode);
+        DialogDescriptor dd = 
+            new DialogDescriptor (
+                p, 
+                NbBundle.getMessage(RevertDeletedAction.class, "LBL_SELECT_FILES"), // NOI18N
+                true, 
+                DialogDescriptor.OK_CANCEL_OPTION, 
+                DialogDescriptor.OK_OPTION, 
+                null); 
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        dialog.setVisible(true);
+
+        if(dd.getValue() != DialogDescriptor.OK_OPTION) {
+            return;
+        }
+
+        List<StoreEntryNode> nodes = getSelectedNodes(rootNode);
+
+        for(StoreEntryNode sen : nodes) {
+            revert(sen.getStoreEntry());
         }
     }
     
-    private void revert(File file) {
-        StoreEntry[] entries = LocalHistory.getInstance().getLocalHistoryStore().getDeletedFiles(file);
-        for(StoreEntry se : entries) {
-            revert(se);
+    private List<StoreEntryNode> getSelectedNodes(TreeNode node) {
+        List<StoreEntryNode> ret = new LinkedList<StoreEntryNode>();
+        int count = node.getChildCount();
+        for (int i = 0; i < count; i++) {
+            TreeNode child = node.getChildAt(i);
+            if(child instanceof StoreEntryNode) {
+                StoreEntryNode sen = (StoreEntryNode) child;
+                if(sen.isSelected()) {
+                    ret.add(sen);
+                }
+            }
+            ret.addAll(getSelectedNodes(child));
         }
+        return ret;
     }
     
     protected boolean enable(Node[] activatedNodes) {     
@@ -130,7 +198,7 @@ public class RevertDeletedAction extends NodeAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(this.getClass(), "CTL_ShowRevertDeleted");        
+        return NbBundle.getMessage(this.getClass(), "CTL_ShowRevertDeleted");   // NOI18N      
     }
     
     public HelpCtx getHelpCtx() {
@@ -142,7 +210,7 @@ public class RevertDeletedAction extends NodeAction {
         if(file.exists()) {
             // created externaly?
             if(file.isFile()) {                
-                LocalHistory.LOG.warning("Skipping revert for file " + file.getAbsolutePath() + " which already exists.");    
+                LocalHistory.LOG.log(Level.WARNING, "Skipping revert for file {0} which already exists.", file.getAbsolutePath());    // NOI18N
             }  
             // fix history
             // XXX create a new entry vs. fixing the entry timestamp and deleted flag?
@@ -188,4 +256,89 @@ public class RevertDeletedAction extends NodeAction {
         }                    
     }
     
+    private void populateNode(FileNode node, File root, boolean recursively) {
+        
+        List<StoreEntryNode> deletedEntries = getDeletedEntries(root);
+        if(!recursively) {
+            for (StoreEntryNode sen : deletedEntries) {
+                node.add(sen);
+            }
+            return;
+        }
+        
+        // check all previosly deleted children files if they by chance 
+        // also contain something deleted
+        for (StoreEntryNode sen : deletedEntries.toArray(new StoreEntryNode[deletedEntries.size()])) {
+            node.add(sen);
+            if(!sen.getStoreEntry().representsFile()) {
+                populateNode(sen, sen.getStoreEntry().getFile(), true);
+            }
+        }
+
+        // check all existing children files if they contain anything deleted
+        File[] files = root.listFiles();
+        if(files != null) {
+            for(File f : files) {
+                if(f.isDirectory()) {
+                    PlainFileNode pfn = new PlainFileNode(f);
+                    populateNode(pfn, f, true);
+                    if(pfn.getChildCount() > 0) {
+                        node.add(pfn);
+                    }
+                }            
+            }
+        } else {
+            LocalHistory.LOG.log(Level.WARNING, "listFiles() for directory {0} returned null", root);
+        }
+    }
+    
+    private class FileNodeListener implements MouseListener, KeyListener {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            JTree tree = (JTree) e.getSource();
+            Point p = e.getPoint();
+            int row = tree.getRowForLocation(e.getX(), e.getY());
+            TreePath path = tree.getPathForRow(row);
+            
+            // if path exists and mouse is clicked exactly once
+            if (path != null) {
+                FileNode node = (FileNode) path.getLastPathComponent();
+                Rectangle chRect = DeletedListRenderer.getCheckBoxRectangle();
+                Rectangle rowRect = tree.getPathBounds(path);
+                chRect.setLocation(chRect.x + rowRect.x, chRect.y + rowRect.y);
+                if (e.getClickCount() == 1 && chRect.contains(p)) {
+                    boolean isSelected = !(node.isSelected());
+                    node.setSelected(isSelected);
+                    ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
+                    if (row == 0) {
+                        tree.revalidate();
+                    }
+                    tree.repaint();
+                }
+            }
+        }
+
+        @Override public void keyTyped(KeyEvent e) { }
+        @Override public void keyReleased(KeyEvent e) { }
+        @Override public void mouseEntered(MouseEvent e) { }
+        @Override public void mouseExited(MouseEvent e) { }
+        @Override public void mouseReleased(MouseEvent e) { }
+        @Override public void mousePressed(MouseEvent event) { }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int keyCode = e.getKeyCode();
+            if (keyCode == KeyEvent.VK_SPACE) {
+                JTree tree = (JTree) e.getSource();
+                TreePath path = tree.getSelectionPath();
+                if (path != null) {
+                    FileNode node = (FileNode) path.getLastPathComponent();
+                    node.setSelected(!node.isSelected());
+                    tree.repaint();
+                    e.consume();
+                }
+            } 
+        }
+    } // end FileNodeListener    
 }

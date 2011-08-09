@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.persistence.PersistenceManager;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.MainWindow;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -427,6 +428,18 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         assertEventDispatchThread();
         
         getCentral().userMinimizedMode( mode );
+    }
+
+    /**
+     * User restored the whole mode from minimized state.
+     * @param slidingMode Sliding mode to be searched for minimized TopComponents
+     * @param modeToRestore Mode to restored from minimized state.
+     * @since 2.35
+     */
+    public void userRestoredMode( ModeImpl slidingMode, ModeImpl modeToRestore ) {
+        assertEventDispatchThread();
+        
+        getCentral().userRestoredMode( slidingMode, modeToRestore );
     }
 
     /**
@@ -1409,6 +1422,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         ModeImpl modeImpl = findModeImpl( mode.getName() );
         return null != modeImpl && modeImpl.getKind() == Constants.MODE_KIND_EDITOR;
     }
+    
+    public void newTabGroup( TopComponent tc ) {
+        assertEventDispatchThread();
+        central.newTabGroup( tc );
+    }
+    
+    public void collapseTabGroup( ModeImpl mode ) {
+        assertEventDispatchThread();
+        central.collapseTabGroup( mode );
+    }
 
     public final void mainWindowPainted () {
         if (!exclusivesCompleted && WindowManagerImpl.getInstance().isVisible()) {
@@ -1887,6 +1910,15 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     //roles
+    
+    /**
+     * 
+     * @param draggable 
+     * @since 2.37
+     */
+    public void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        central.userStartedKeyboardDragAndDrop( draggable );
+    }
     
     void fireEvent( WindowSystemEventType type ) {
         assertEventDispatchThread();

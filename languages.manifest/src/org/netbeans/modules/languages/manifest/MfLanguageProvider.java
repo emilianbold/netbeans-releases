@@ -57,9 +57,10 @@ import org.netbeans.spi.lexer.LanguageProvider;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
 public class MfLanguageProvider extends LanguageProvider {
+    public static final String MIME_TYPE = "text/x-manifest";
     
     public Language<MfTokenId> findLanguage (String mimeType) {
-        if ("text/x-manifest".equals (mimeType))
+        if (MIME_TYPE.equals (mimeType))
             return new MfLanguageHierarchy ().language ();
         return null;
     }

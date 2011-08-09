@@ -44,13 +44,16 @@
 
 package org.netbeans.core.startup;
 
+import java.io.IOException;
 import java.util.Stack;
 import java.util.Arrays;
+import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.TopSecurityManager;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.XMLFormatter;
 
 /** Logger that will enable the logging of important events during the startup
  * annotated with real time and possibly time differences.
@@ -68,25 +71,37 @@ public class StartLog {
     static final Handler impl;
     
     static {
-        logProp = System.getProperty( "org.netbeans.log.startup" ); // NOI18N
-        //if you want to create file with measured values, we do expect the property org.netbeans.log.startup=print
-        logFileProp = System.getProperty( "org.netbeans.log.startup.logfile" ); // NOI18N
+        try {
+            logProp = System.getProperty( "org.netbeans.log.startup" ); // NOI18N
+            // NOI18N
+            logFileProp = System.getProperty( "org.netbeans.log.startup.logfile" ); // NOI18N
 
-        if(logProp == null)
-            impl = new StartImpl();
-        else if("print".equals(logProp))
-            impl = new PrintImpl();
-        else if("tests".equals(logProp))
-            impl = new PerformanceTestsImpl();
-        else
-            throw new Error("Unknown org.netbeans.log.startup value [" + logProp + "], it should be (print or tests) !"); // NOI18N
-        register();
+            if(logProp == null)
+                impl = new StartImpl();
+            else if("print".equals(logProp))
+                impl = new PrintImpl();
+            else if("tests".equals(logProp))
+                impl = new PerformanceTestsImpl();
+            else if("xml".equals(logProp)) {
+                FileHandler h = new FileHandler(logFileProp);
+                h.setFormatter(new SimplerFormatter());
+                impl = h;
+            } else
+                throw new Error("Unknown org.netbeans.log.startup value [" + logProp + "], it should be (print or tests or xml) !"); // NOI18N
+            register();
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
     
     static void register() {
         LOG.setUseParentHandlers(false);
         LOG.addHandler(impl);
         LOG.setLevel(impl.getLevel());
+    }
+    
+    static void unregister() {
+        LOG.removeHandler(impl);
     }
     
     /** Start running some interval action.
@@ -152,6 +167,9 @@ public class StartLog {
      */
     public static void logMeasuredStartupTime(long end){
         LOG.log(Level.FINE, "finish", end);
+        if("tests".equals(logProp)) {
+            impl.flush();
+        }            
     }
     
     /** The dummy, no-op implementation */
@@ -330,5 +348,16 @@ public class StartLog {
                 throw new IllegalStateException("You are trying to log startup logs to unexisting file. You have to set property org.netbeans.log.startup.logfile.");
         }
 
+    }
+
+    private static class SimplerFormatter extends XMLFormatter {
+        @Override
+        public String getHead(Handler h) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<?xml version=\"1.0\"");
+            sb.append(" encoding='UTF-8'?>\n");
+            sb.append("<log>\n");
+            return sb.toString();
+        }
     }
 }

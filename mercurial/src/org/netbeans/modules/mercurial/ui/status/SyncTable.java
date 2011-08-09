@@ -62,7 +62,6 @@ import org.openide.util.NbBundle;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.versioning.util.TableSorter;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -84,11 +83,12 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.ui.add.AddAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
-import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
-import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.swing.etable.ETable;
+import org.netbeans.swing.etable.ETableColumn;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -106,7 +106,6 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     private SyncFileNode [] nodes = new SyncFileNode[0];
     
     private String []   tableColumns; 
-    private TableSorter sorter;
 
     /**
      * Defines labels for Versioning view table columns.
@@ -129,6 +128,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     private static final Comparator NodeComparator = new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
@@ -151,9 +151,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     
     public SyncTable() {
         tableModel = new NodeTableModel();
-        sorter = new TableSorter(tableModel);
-        sorter.setColumnComparator(Node.Property.class, NodeComparator);
-        table = new SortedTable(sorter);
+        table = new ETable(tableModel);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
@@ -174,6 +172,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
         table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
@@ -182,6 +181,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int width = table.getWidth();
                 if (tableColumns.length == 3) {
@@ -207,23 +207,17 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         });
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
-    }
-
-    public SyncFileNode [] getDisplayedNodes() {
-        int n = sorter.getRowCount();
-        SyncFileNode [] ret = new SyncFileNode[n];
-        for (int i = 0; i < n; i++) {
-            ret[i] = nodes[sorter.modelIndex(i)]; 
-        }
-        return ret;
     }
 
     public JComponent getComponent() {
@@ -246,13 +240,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         if (Arrays.equals(columns, tableColumns)) return;
         setModelProperties(columns);
         tableColumns = columns;
-        for (int i = 0; i < tableColumns.length; i++) {
-            sorter.setColumnComparator(i, null);
-            sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
-            if (SyncFileNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
-                sorter.setSortingStatus(i, TableSorter.ASCENDING);
-                break;
-            }
+        for (int i = 0; i < columns.length; ++i) {
+            ((ETableColumn) table.getColumnModel().getColumn(i)).setNestedComparator(NodeComparator);
         }
         setDefaultColumnSizes();        
     }
@@ -269,8 +258,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     void setTableModel(SyncFileNode [] nodes) {
         assert EventQueue.isDispatchThread();
+        Collection<File> selectedFiles = getSelectedFiles();
         this.nodes = nodes;
         tableModel.setNodes(nodes);
+        setSelectedNodes(selectedFiles);
         Mercurial.getInstance().getRequestProcessor().post(new Runnable () {
             @Override
             public void run() {
@@ -299,6 +290,43 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
     }
 
+    private SyncFileNode[] getSelectedNodes () {
+        List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
+        ListSelectionModel selectionModel = table.getSelectionModel();
+        int min = selectionModel.getMinSelectionIndex();
+        if (min != -1) {
+            int max = selectionModel.getMaxSelectionIndex();
+            for (int i = min; i <= max; i++) {
+                if (selectionModel.isSelectedIndex(i)) {
+                    selectedNodes.add(nodes[table.convertRowIndexToModel(i)]);
+                }
+            }
+        }
+        return selectedNodes.toArray(new SyncFileNode[selectedNodes.size()]);
+    }
+
+    private Collection<File> getSelectedFiles () {
+        SyncFileNode[] selectedNodes = getSelectedNodes();
+        Collection<File> files = new HashSet<File>(selectedNodes.length);
+        for (SyncFileNode node : selectedNodes) {
+            files.add(node.getFile());
+        }
+        return files;
+    }
+
+    public final void setSelectedNodes (Collection<File> selectedFiles) {
+        ListSelectionModel selection = table.getSelectionModel();
+        selection.setValueIsAdjusting(true);
+        selection.clearSelection();
+        for (int i = 0; i < table.getRowCount(); ++i) {
+            SyncFileNode node = nodes[table.convertRowIndexToModel(i)];
+            if (selectedFiles.contains(node.getFile())) {
+                selection.addSelectionInterval(i, i);
+            }
+        }
+        selection.setValueIsAdjusting(false);
+    }
+
     private static class ColumnDescriptor extends ReadOnly {
         
         @SuppressWarnings("unchecked")
@@ -306,6 +334,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
@@ -328,6 +357,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             }
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // invoke later so the selection on the table will be set first
                 if (table.isShowing()) {
@@ -349,6 +379,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Open
         -------------------
         Diff                 (default action)
+        Add
         Commit...        
         --------------------
         Conflict Resolved    (on conflicting file)
@@ -368,6 +399,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
@@ -424,29 +457,34 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         return actionsLoc.getString(key);
     }
     
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
             if (row == -1) return;
-            row = sorter.modelIndex(row);
+            row = table.convertRowIndexToModel(row);
             Action action = nodes[row].getPreferredAction();
             if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
             if (action.isEnabled()) {
@@ -455,30 +493,19 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         } 
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent e) {
-        List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
-        ListSelectionModel selectionModel = table.getSelectionModel();
-        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
+        final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
         if (tc == null) return; // table is no longer in component hierarchy
-        
-        int min = selectionModel.getMinSelectionIndex();
-        if (min != -1) {
-            int max = selectionModel.getMaxSelectionIndex();
-            for (int i = min; i <= max; i++) {
-                if (selectionModel.isSelectedIndex(i)) {
-                    int idx = sorter.modelIndex(i);
-                    selectedNodes.add(nodes[idx]);
-                }
-            }
-        }
         // this method may be called outside of AWT if a node fires change events from some other thread, see #79174
-        final Node [] nodes = selectedNodes.toArray(new Node[selectedNodes.size()]);
+        final Node [] nodeArray = getSelectedNodes();
         if (SwingUtilities.isEventDispatchThread()) {
-            tc.setActivatedNodes(nodes);
+            tc.setActivatedNodes(nodeArray);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
-                    tc.setActivatedNodes(nodes);
+                    tc.setActivatedNodes(nodeArray);
                 }
             });
         }
@@ -488,11 +515,12 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
             if (modelColumnIndex == 0) {
-                SyncFileNode node = nodes[sorter.modelIndex(row)];
+                SyncFileNode node = nodes[table.convertRowIndexToModel(row)];
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
@@ -511,7 +539,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
             if (renderer instanceof JComponent) {
-                String path = nodes[sorter.modelIndex(row)].getFile().getAbsolutePath(); 
+                String path = nodes[table.convertRowIndexToModel(row)].getFile().getAbsolutePath(); 
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;

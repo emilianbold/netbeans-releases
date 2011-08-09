@@ -59,7 +59,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser.TransferType;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;
 import org.openide.awt.Mnemonics;

@@ -45,7 +45,7 @@ package org.netbeans.modules.php.project.connections.ui.transfer;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.JButton;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.table.TransferFilter;
 import org.netbeans.modules.php.project.connections.ui.transfer.tree.TransferSelector;
 import org.openide.DialogDescriptor;

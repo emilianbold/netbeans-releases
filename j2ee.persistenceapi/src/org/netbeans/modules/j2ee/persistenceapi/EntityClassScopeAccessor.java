@@ -55,16 +55,5 @@ public abstract class EntityClassScopeAccessor {
 
     public static EntityClassScopeAccessor DEFAULT;
 
-    static {
-        Class c = EntityClassScope.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            // XXX should probably use ErrorManager, but this could
-            // be called very early during the startup, when EM is not initialized yet?
-            ex.printStackTrace();
-        }
-    }
-
     public abstract EntityClassScope createEntityClassScope(EntityClassScopeImplementation impl);
 }

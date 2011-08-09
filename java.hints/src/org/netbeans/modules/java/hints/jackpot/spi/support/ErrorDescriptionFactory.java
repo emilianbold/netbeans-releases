@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.java.hints.jackpot.impl.SyntheticFix;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.options.HintsSettings;
@@ -201,7 +202,7 @@ public class ErrorDescriptionFactory {
         return Arrays.asList(provided);
     }
 
-    private static class DisableConfigure implements Fix {
+    private static class DisableConfigure implements Fix, SyntheticFix {
         private final @NonNull HintMetadata metadata;
         private final boolean disable;
 
@@ -216,11 +217,9 @@ public class ErrorDescriptionFactory {
             String key;
             switch (metadata.kind) {
                 case HINT:
-                case HINT_NON_GUI:
                     key = disable ? "FIX_DisableHint" : "FIX_ConfigureHint";
                     break;
                 case SUGGESTION:
-                case SUGGESTION_NON_GUI:
                     key = disable ? "FIX_DisableSuggestion" : "FIX_ConfigureSuggestion";
                     break;
                 default:

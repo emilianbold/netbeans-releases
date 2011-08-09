@@ -46,15 +46,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.model.CssModel;
-import org.netbeans.modules.css.editor.model.CssRule;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.visual.TestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.lib.api.model.Rule;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -69,15 +69,25 @@ import org.openide.filesystems.FileUtil;
  *
  * @author marekfukala
  */
-public class CssPreviewGeneratorTest extends TestBase {
+public class CssPreviewGeneratorTest extends CslTestBase {
 
     public CssPreviewGeneratorTest(String name) {
         super(name);
     }
 
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new CssLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/x-css";
+    }
+    
     public void testCleanPseudoClass() throws ParseException, IOException {
-       CssModel model = modelFor(":focus { }");
-       CssRule rule = rule(model, 0);
+       Stylesheet model = modelFor(":focus { }");
+       Rule rule = rule(model, 0);
        CssRuleContext context = context(model, rule);
        String preview = CssPreviewGenerator.getPreviewCode(context).toString();
 
@@ -87,8 +97,8 @@ public class CssPreviewGeneratorTest extends TestBase {
     }
 
     public void testPseudoClass() throws ParseException, IOException {
-       CssModel model = modelFor("a:focus { }");
-       CssRule rule = rule(model, 0);
+       Stylesheet model = modelFor("a:focus { }");
+       Rule rule = rule(model, 0);
        CssRuleContext context = context(model, rule);
 
        String preview = CssPreviewGenerator.getPreviewCode(context).toString();
@@ -96,21 +106,21 @@ public class CssPreviewGeneratorTest extends TestBase {
                + "</head><body><a><aXfocus>Sample Text</aXfocus></a></body></html>", preview);
     }
 
-    private CssRuleContext context(CssModel model, CssRule rule) {
+    private CssRuleContext context(Stylesheet model, Rule rule) {
         return new CssRuleContext(CssRuleContent.create(rule), model, null, null);
     }
 
-    private CssRule rule(CssModel model, int index) {
-        List<CssRule> rules = model.rules();
+    private Rule rule(Stylesheet model, int index) {
+        List<Rule> rules = model.rules();
         assertNotNull(rules);
         assertTrue(String.format("No rule for index %s, there's only %s rules", index, rules.size()),
                 rules.size() > index);
-        CssRule rule = rules.get(index);
+        Rule rule = rules.get(index);
         assertNotNull(rule);
         return rule;
     }
 
-    private CssModel modelFor(String code) throws ParseException, IOException {
+    private Stylesheet modelFor(String code) throws ParseException, IOException {
         FileObject fo = createTempFile("test.css", code);
         Document doc = getDocument(fo);
         Source source = Source.create(doc);
@@ -125,9 +135,9 @@ public class CssPreviewGeneratorTest extends TestBase {
 
         Result result = _result[0];
         assertNotNull(result);
-        assertTrue(result instanceof CssParserResult);
+        assertTrue(result instanceof CssCslParserResult);
 
-        CssModel model = CssModel.create((CssParserResult) result);
+        Stylesheet model = Stylesheet.create(((CssCslParserResult) result).getWrappedCssParserResult());
         assertNotNull(model);
 
         return model;

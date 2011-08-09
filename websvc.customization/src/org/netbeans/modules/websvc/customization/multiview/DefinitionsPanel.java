@@ -483,38 +483,38 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         defaultPackageCB.setContentAreaFilled(false);
         defaultPackageCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(packageLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(packageNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 173, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(26, 26, 26)
-                        .add(defaultPackageCB))
-                    .add(enableWrapperStyleCB)
-                    .add(enableMIMEContentCB)
-                    .add(enableAsyncMappingCB))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(packageLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(packageNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(26, 26, 26)
+                        .addComponent(defaultPackageCB))
+                    .addComponent(enableWrapperStyleCB)
+                    .addComponent(enableMIMEContentCB)
+                    .addComponent(enableAsyncMappingCB))
                 .addContainerGap(80, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(packageLabel)
-                    .add(packageNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(defaultPackageCB))
-                .add(20, 20, 20)
-                .add(enableWrapperStyleCB)
-                .add(19, 19, 19)
-                .add(enableMIMEContentCB)
-                .add(19, 19, 19)
-                .add(enableAsyncMappingCB)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(packageLabel)
+                    .addComponent(packageNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(defaultPackageCB))
+                .addGap(20, 20, 20)
+                .addComponent(enableWrapperStyleCB)
+                .addGap(19, 19, 19)
+                .addComponent(enableMIMEContentCB)
+                .addGap(19, 19, 19)
+                .addComponent(enableAsyncMappingCB)
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 

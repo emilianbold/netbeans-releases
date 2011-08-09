@@ -68,7 +68,6 @@ public class TopComponentOperatorTest extends JellyTestCase {
         "testRestore",
         "testCloneDocument",
         "testPushMenuOnTab",
-        "testSaveDocument",
         "testSave",
         "testCloseDiscard",
         "testCloseWindow",
@@ -196,19 +195,6 @@ public class TopComponentOperatorTest extends JellyTestCase {
         new TopComponentOperator("SampleClass1.java", 1).close();
         // need to find again tco1 because clone test can close it instead of cloned version
         tco1 = new TopComponentOperator("SampleClass1.java");  //NOI18N
-    }
-
-    /**
-     * Test of saveDocument method.
-     */
-    public void testSaveDocument() {
-        ProjectsTabOperator.invoke();
-        new OpenAction().performAPI(editableSourceNode);
-        EditorOperator eo = new EditorOperator(editableSourceNode.getText());
-        eo.insert("//dummy\n", 1, 1); // NOI18N
-        eo.saveDocument();
-        boolean modified = eo.isModified();
-        assertFalse("Document is not saved.", modified);//NOI18N
     }
 
     /**

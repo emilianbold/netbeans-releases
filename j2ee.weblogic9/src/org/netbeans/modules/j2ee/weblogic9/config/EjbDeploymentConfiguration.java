@@ -91,26 +91,22 @@ public class EjbDeploymentConfiguration extends WLDeploymentConfiguration
 
     private final DataObject dataObject;
     
-    private final Version serverVersion;
-    
-    private final boolean isWebProfile;    
+    private final Version serverVersion;   
 
     private EjbJarModel weblogicEjbJar;
     
     public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
-        this(j2eeModule, null, false);
+        this(j2eeModule, null);
     }
 
     /**
      * Creates a new instance of EjbDeploymentConfiguration 
      */
-    public EjbDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion,
-            boolean isWebProfile) {
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule, Version serverVersion) {
 
         super(j2eeModule, serverVersion);
         this.j2eeModule = j2eeModule;
         this.serverVersion = serverVersion;
-        this.isWebProfile = isWebProfile;
         file = j2eeModule.getDeploymentConfigurationFile("META-INF/weblogic-ejb-jar.xml"); // NOI18N
         getWeblogicEjbJar();
         DataObject dataObject = null;

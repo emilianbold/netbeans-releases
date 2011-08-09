@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
 
 /**
@@ -99,8 +100,7 @@ public class StorageManager {
     }
 
     private File getBaseFolder() {
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        return new File(new File(new File(userDir, "var"), "cache"), "vcshistory"); // NOI18N
+        return Places.getCacheSubdirectory("vcshistory"); // NOI18N
     }
 
     private void cleanUp() {

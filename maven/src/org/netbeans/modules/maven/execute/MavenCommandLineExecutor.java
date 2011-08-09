@@ -42,34 +42,37 @@
 
 package org.netbeans.modules.maven.execute;
 
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.options.MavenSettings;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
-import org.netbeans.api.extexecution.ExternalProcessSupport;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -99,7 +102,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private Process preProcess;
     private String preProcessUUID;
     
-    private Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MavenCommandLineExecutor.class.getName());
     
     private static final RequestProcessor RP = new RequestProcessor(MavenCommandLineExecutor.class.getName(),1);
     
@@ -244,15 +247,26 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     }
         
     private static List<String> createMavenExecutionCommand(RunConfig config, Constructor base) {
+        List<String> toRet = new ArrayList<String>(base.construct());
+
+        if (Utilities.isUnix()) { // #198997 - defend against symlinks
+            File basedir = config.getExecutionDirectory();
+            try {
+                if (basedir != null && !basedir.equals(basedir.getCanonicalFile())) {
+                    toRet.add("-f");
+                    toRet.add(new File(basedir, "pom.xml").getAbsolutePath());
+                }
+            } catch (IOException x) {
+                LOGGER.log(Level.FINE, "Could not canonicalize " + basedir, x);
+            }
+        }
+
         //#164234
         //if maven.bat file is in space containing path, we need to quote with simple quotes.
         String quote = "\"";
         // the command line parameters with space in them need to be quoted and escaped to arrive
         // correctly to the java runtime on windows
         String escaped = "\\" + quote;
-        List<String> toRet = new ArrayList<String>();
-        toRet.addAll(base.construct());
-        
         for (Object key : config.getProperties().keySet()) {
             String val = config.getProperties().getProperty((String)key);
             String keyStr = (String)key;
@@ -287,18 +301,17 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (config.isUpdateSnapshots()) {
             toRet.add("--update-snapshots");//NOI18N
         }
-        boolean react = false;
-        if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE) {
-            toRet.add("--also-make");
-            react = true;
-        }
-        if (config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE_DEPENDENTS) {
-            toRet.add("--also-make-dependents");
-            react = true;
-        }
-        if (react) {
-            toRet.add("--projects");
-            toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
+        if (config.getReactorStyle() != RunConfig.ReactorStyle.NONE) {
+            File basedir = config.getExecutionDirectory();
+            MavenProject mp = config.getMavenProject();
+            String id = mp.getGroupId() + ':' + mp.getArtifactId();
+            File projdir = id.equals("error:error") ? basedir : mp.getBasedir();
+            String rel = basedir != null && projdir != null ? FileUtilities.relativizeFile(basedir, projdir) : null;
+            if (!".".equals(rel)) {
+                toRet.add(config.getReactorStyle() == RunConfig.ReactorStyle.ALSO_MAKE ? "--also-make" : "--also-make-dependents");
+                toRet.add("--projects");
+                toRet.add(rel != null ? rel : id);
+            }
         }
 
         String opts = MavenSettings.getDefault().getDefaultOptions();

@@ -279,6 +279,9 @@ is divided into following sections:
                 <condition property="is.server.weblogic" value="true">
                     <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
                 </condition>
+                <condition property="is.jars.in.ejbjar" value="true">
+                    <equals arg1="${{jars.in.ejbjar}}" arg2="true"/>
+                </condition>
                 <condition property="jdkBug6558476" else="false"> <!-- Force fork even on default platform http://bugs.sun.com/view_bug.do?bug_id=6558476 on JDK 1.5 and 1.6 on Windows -->
                     <and>
                         <matches string="${{java.specification.version}}" pattern="1\.[56]"/>
@@ -1030,15 +1033,19 @@ exists or setup the property manually. For example like this:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <target name="library-inclusion-in-archive" depends="compile" if="is.server.weblogic">
-<!--                <xsl:for-each select="//ejbjarproject3:included-library">
+            <target name="library-inclusion-in-archive" depends="compile,-library-inclusion-in-archive-weblogic,-library-inclusion-in-archive-by-user">
+            </target>
+            <target name="-library-inclusion-in-archive-by-user" if="is.jars.in.ejbjar">
+                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
                     <copyfiles todir="${{build.classes.dir}}">
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
                     </copyfiles>
-                </xsl:for-each>    -->
+                </xsl:for-each>
+            </target>
+            <target name="-library-inclusion-in-archive-weblogic" if="is.server.weblogic">
                 <xsl:for-each select="//ejbjarproject3:included-library">
                     <basename>
                         <xsl:variable name="included.prop.name">

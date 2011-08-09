@@ -64,6 +64,7 @@ import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Preview design action.
@@ -79,13 +80,19 @@ public class TestAction extends CallableSystemAction implements Runnable {
     private Map<String,Map<String,Frame>> previews = new HashMap<String,Map<String,Frame>>();
 
     public TestAction() {
-//        setEnabled(false);
     }
 
     @Override
     public boolean isEnabled() {
         FormDesigner designer = FormDesigner.getSelectedDesigner();
         return designer != null && designer.getTopDesignComponent() != null;
+    }
+
+    /**
+     * Forces re-evaluation of enabled state.
+     */
+    public void updateEnabled() {
+        firePropertyChange("enabled", null, null); // NOI18N
     }
     
     @Override
@@ -415,7 +422,8 @@ public class TestAction extends CallableSystemAction implements Runnable {
                 if (className == null) {
                     clazz = UIManager.getLookAndFeel().getClass();
                 } else {
-                    clazz = Class.forName(className);
+                    ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                    clazz = Class.forName(className, true, classLoader);
                 }
             } else {
                 clazz = pitem.getComponentClass();

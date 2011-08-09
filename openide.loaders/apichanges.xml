@@ -109,6 +109,68 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="Template">
+          <api name="loaders"/>
+          <summary>Introduced <code>Template</code></summary>
+          <version major="7" minor="29"/>
+          <date day="25" month="7" year="2011"/>
+          <author login="jglick"/>
+          <compatibility addition="yes"/>
+          <description>
+              <p>
+                  Introduced a new annotation for registering (file or project) templates.
+              </p>
+          </description>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <class package="org.netbeans.api.templates" name="TemplateRegistrations"/>
+          <issue number="200175"/>
+      </change>
+    <change id="DataEditorSupport.constr3">
+          <api name="editor"/>
+          <summary>DataEditorSupport constructor with Lookup parameter</summary>
+          <version major="7" minor="28"/>
+          <date day="11" month="7" year="2011"/>
+          <author login="jtulach"/>
+          <compatibility semantic="compatible" binary="compatible" deletion="no"
+            addition="yes" modification="no" source="compatible"/>
+          <description>
+              <p>
+                  One can control what
+                  <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">
+                  Lookup</a> will be associated with 
+                  <a href="@TOP@/org/openide/text/DataEditorSupport.html">
+                  DataEditorSupport</a>.
+              </p>
+          </description>
+          <class package="org.openide.text" name="DataEditorSupport"/>
+          <issue number="199416"/>
+      </change>      
+    <change id="MultiDataObject.associateLookup">
+          <api name="loaders"/>
+          <summary>Simpler way to subclass MultiDataObject</summary>
+          <version major="7" minor="27"/>
+          <date day="21" month="6" year="2011"/>
+          <author login="jtulach"/>
+          <compatibility semantic="compatible" binary="compatible" deletion="no"
+            addition="yes" modification="yes" source="incompatible">
+                Added <code>registerEditor</code> method which might clash
+                with some existing method in subclasses, although it is 
+                hopefully not very likely.
+          </compatibility>
+          <description>
+              <p>
+                  New way to subclass <code>MultiDataObject</code>: override
+                  <a href="@TOP@/org/openide/loaders/MultiDataObject.html#associateLookup()">
+                  int associateLookup()
+                  </a> to return <code>1</code>. In constructor call
+                  <a href="@TOP@/org/openide/loaders/MultiDataObject.html#registerEditor(java.lang.String,%20boolean)">
+                  registerEditor("your/mimetype", ...)</a> to get default
+                  editor support. No need to override any other methods to get
+                  well performing <code>MultiDataObject</code>.
+              </p>
+          </description>
+          <class package="org.openide.loaders" name="MultiDataObject"/>
+      </change>      
       <change id="FileSystemAction.no.nodes">
           <api name="awt"/>
           <summary>lookup(DataObject.class) fallback</summary>

@@ -43,7 +43,9 @@
  */
 package org.netbeans.core.startup;
 
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -104,7 +106,7 @@ public class CLIOptionsTest extends NbTestCase {
         assertFalse("-userdir is not supported", "wrong".equals(System.getProperty("netbeans.user")));
         
         new CLIOptions().cli(new String[] { "--userdir", "correct" });
-        assertTrue("--userdir is supported", "correct".equals(System.getProperty("netbeans.user")));
+        assertEquals("--userdir is supported", FileUtil.normalizeFile(new File("correct")).getAbsolutePath(), System.getProperty("netbeans.user"));
         
         if (orig != null) {
             System.setProperty("netbeans.user", orig);
