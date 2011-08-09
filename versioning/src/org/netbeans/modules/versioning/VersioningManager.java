@@ -64,7 +64,6 @@ import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -197,7 +196,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     
     private void init() {
         try {
-            prioritiesSet = anyPrioritySet();
             systemsLookupResult.addLookupListener(this);
             refreshVersioningSystems();
             filesystemInterceptor.init(this);
@@ -231,7 +229,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
             // inline loadVersioningSystems(systems);
             versioningSystems.addAll(systems);
-            if(prioritiesSet) sortVersioningSystems(); 
             for (VersioningSystem system : versioningSystems) {
                 if (localHistory == null && Utils.isLocalHistory(system)) {
                     localHistory = system;
@@ -244,13 +241,6 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         flushFileOwnerCache();
         refreshDiffSidebars(null);
         VersioningAnnotationProvider.refreshAllAnnotations();
-    }
-
-    void sortVersioningSystems() {
-        synchronized(versioningSystems) {
-            Collections.sort(versioningSystems, new ByPriorityComparator());
-            Collections.reverse(versioningSystems); // systems with higher priority should be at the end of the list, see getOwner logic
-        }
     }
 
     InterceptionListener getInterceptionListener() {
@@ -606,30 +596,5 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         } finally {
             LOG.log(Level.FINE, "needsLocalHistory method [{0}] returns {1}", new Object[] {methodName, ret});
         }
-    }
-
-    /**
-     * Sorts versioning systems according to their priority. Systems with lower value (higher priority) will be stated before those with higher value (lower priority) in the given list.
-     */
-    private static final class ByPriorityComparator implements Comparator<VersioningSystem> {
-        @Override
-        public int compare(VersioningSystem s1, VersioningSystem s2) {
-            return Utils.getPriority(s1).compareTo(Utils.getPriority(s2));
-        }
-    }    
-    
-    private boolean prioritiesSet = false;
-    private boolean anyPrioritySet() {
-        Set<Object> keys = System.getProperties().keySet();
-        for (Object k : keys) {
-            if(k instanceof String) {
-                if(k.toString().startsWith("versioning.") && 
-                   k.toString().endsWith(".priority")) 
-                {
-                    return true;
-                }      
-            }
-        }
-        return false;
     }
 }

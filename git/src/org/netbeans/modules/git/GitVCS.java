@@ -48,7 +48,6 @@ import java.util.MissingResourceException;
 import java.io.File;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -71,8 +70,6 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
     public GitVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); 
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_MainMenu")); // NOI18N
-        
-        putProperty("Integer VCS.Priority", Utils.getPriority("git"));
         
         Git.getInstance().registerGitVCS(this);
     }
