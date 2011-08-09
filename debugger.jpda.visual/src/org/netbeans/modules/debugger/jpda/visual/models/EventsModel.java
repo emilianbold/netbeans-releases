@@ -58,11 +58,12 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import org.netbeans.modules.debugger.jpda.visual.RemoteScreenshot.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.RemoteListener;
-import org.netbeans.modules.debugger.jpda.visual.ui.ComponentHierarchy;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.visual.ComponentInfo;
+import org.netbeans.spi.debugger.visual.ScreenshotUIManager;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -92,21 +93,28 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     
     private Set<ModelListener> listeners = new CopyOnWriteArraySet<ModelListener>();
     
-    private ComponentInfo selectedCI = null;
+    private AWTComponentInfo selectedCI = null;
     private final List<RemoteEvent> events = new ArrayList<RemoteEvent>();
     
     public EventsModel() {
-        Node[] nodes = ComponentHierarchy.getInstance().getExplorerManager().getSelectedNodes();
-        if (nodes.length > 0) {
-            selectedCI = nodes[0].getLookup().lookup(ComponentInfo.class);
+        ScreenshotUIManager uiManager = ScreenshotUIManager.getActive();
+        if (uiManager != null) {
+            ComponentInfo ci = uiManager.getSelectedComponent();
+            if (ci instanceof AWTComponentInfo) {
+                selectedCI = (AWTComponentInfo) ci;
+            }
         }
+        /*Node[] nodes = ComponentHierarchy.getInstance().getExplorerManager().getSelectedNodes();
+        if (nodes.length > 0) {
+            selectedCI = nodes[0].getLookup().lookup(AWTComponentInfo.class);
+        }*/
         final Result<Node> nodeLookupResult = Utilities.actionsGlobalContext().lookupResult(Node.class);
         LookupListener ll = new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 Collection<? extends Node> nodeInstances = nodeLookupResult.allInstances();
                 for (Node n : nodeInstances) {
-                    ComponentInfo ci = n.getLookup().lookup(ComponentInfo.class);
+                    AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
                     if (ci != null) {
                         if (!ci.equals(selectedCI)) {
                             selectedCI = ci;
@@ -134,7 +142,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             return new Object[] { attachedListeners, eventsLog };
         }
         if (parent == attachedListeners) {
-            ComponentInfo ci = selectedCI;
+            AWTComponentInfo ci = selectedCI;
             if (ci != null) {
                 //ObjectReference component = ci.getComponent();
                 List<RemoteListener> componentListeners;
@@ -319,7 +327,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final ComponentInfo ci = selectedCI;
+            final AWTComponentInfo ci = selectedCI;
             if (ci == null) return ;
             String listenerClass;
             if (lc != null) {
@@ -370,7 +378,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
             return clazz;
         }
         
-        private String selectListenerClass(ComponentInfo ci) {
+        private String selectListenerClass(AWTComponentInfo ci) {
             List<ReferenceType> attachableListeners = RemoteServices.getAttachableListeners(ci);
             System.err.println("Attachable Listeners = "+attachableListeners);
             String[] listData = new String[attachableListeners.size()];
@@ -394,7 +402,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
     private class LoggingEventListener implements RemoteServices.LoggingListenerCallBack {
 
         @Override
-        public void eventsData(ComponentInfo ci, String[] data) {
+        public void eventsData(AWTComponentInfo ci, String[] data) {
             RemoteEvent re = new RemoteEvent(data);
             /*
             System.err.println("Have data about "+ci.getType()+":");//\n  "+Arrays.toString(data));

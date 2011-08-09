@@ -345,7 +345,7 @@ public class RemoteServices {
         }
     }
     
-    public static List<RemoteListener> getAttachedListeners(RemoteScreenshot.ComponentInfo ci) throws PropertyVetoException {
+    public static List<RemoteListener> getAttachedListeners(RemoteAWTScreenshot.AWTComponentInfo ci) throws PropertyVetoException {
         final List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
         final JPDAThreadImpl thread = ci.getAWTThread();
         final ObjectReference component = ci.getComponent();
@@ -399,7 +399,7 @@ public class RemoteServices {
         }
     }
     
-    public static List<ReferenceType> getAttachableListeners(RemoteScreenshot.ComponentInfo ci) {
+    public static List<ReferenceType> getAttachableListeners(RemoteAWTScreenshot.AWTComponentInfo ci) {
         ObjectReference component = ci.getComponent();
         ReferenceType clazz = component.referenceType();
         List<Method> visibleMethods = clazz.visibleMethods();
@@ -440,7 +440,7 @@ public class RemoteServices {
         return listenerClasses;
     }
     
-    public static ObjectReference attachLoggingListener(final RemoteScreenshot.ComponentInfo ci,
+    public static ObjectReference attachLoggingListener(final RemoteAWTScreenshot.AWTComponentInfo ci,
                                                         final ClassObjectReference listenerClass,
                                                         final LoggingListenerCallBack listener) throws PropertyVetoException {
         final JPDAThreadImpl thread = ci.getAWTThread();
@@ -649,7 +649,7 @@ public class RemoteServices {
     
     public static interface LoggingListenerCallBack {
         
-        public void eventsData(RemoteScreenshot.ComponentInfo ci, String[] data);
+        public void eventsData(RemoteAWTScreenshot.AWTComponentInfo ci, String[] data);
         
     }
     

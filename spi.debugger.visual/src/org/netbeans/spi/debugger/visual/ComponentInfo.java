@@ -39,56 +39,69 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.actions;
+package org.netbeans.spi.debugger.visual;
 
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
+import java.awt.Rectangle;
+import java.beans.PropertyChangeListener;
+import javax.swing.Action;
+import org.openide.nodes.Node.PropertySet;
 
 /**
- * Show the list of listeners attached to a remote component.
+ * This interface provides information about a remote component.
  * 
  * @author Martin Entlicher
  */
-public class ShowListenersAction extends NodeAction {
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(GoToSourceAction.class, "CTL_ShowListeners");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(ShowListenersAction.class);
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
+public interface ComponentInfo {
     
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node n : activatedNodes) {
-            AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
-            if (ci != null) {
-                TopComponent tc = WindowManager.getDefault().findTopComponent("eventsView");
-                if (tc == null) {
-                    throw new IllegalArgumentException("eventsView");
-                }
-                tc.open();
-                tc.requestActive();
-            }
-        }
-    }
+    /**
+     * Provides the display name of the component.
+     * @return The component display name.
+     */
+    String getDisplayName();
+
+    /**
+     * Provides the actions that are available on the component.
+     * @param context
+     * @return 
+     */
+    Action[] getActions(boolean context);
+
+    /**
+     * Get the component bounds relative to it's parent component.
+     * @return The component bounds.
+     */
+    Rectangle getBounds();
+
+    /**
+     * Get the component bounds relative to the window.
+     * @return The component bounds.
+     */
+    Rectangle getWindowBounds();
+
+    /**
+     * Get property sets of the component.
+     * @return The property sets.
+     */
+    PropertySet[] getPropertySets();
+
+    /**
+     * Get the list of sub-components.
+     * @return The sub-components.
+     */
+    ComponentInfo[] getSubComponents();
+
+    /**
+     * Add a property change listener to listen on changes in component properties.
+     * 
+     * @param propertyChangeListener The property change listener
+     */
+    void addPropertyChangeListener(PropertyChangeListener propertyChangeListener);
+
+    /**
+     * Remove a property change listener.
+     * 
+     * @param propertyChangeListener The property change listener
+     */
+    void removePropertyChangeListener(PropertyChangeListener propertyChangeListener);
 
 }
