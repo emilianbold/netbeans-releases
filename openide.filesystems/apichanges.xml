@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.getMIMEType...">
+            <api name="filesystems"/>
+            <summary>FileObject.getMIMEType(String... withinMIMETypes)</summary>
+            <version major="7" minor="52"/>
+            <date day="5" month="8" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Introducing <a href="@TOP@/org/openide/filesystems/FileObject.html#getMIMEType(java.lang.String...)">
+                    FileObject.getMIMEType(String...)    
+                    </a> that can be overriden by different implementations
+                    of file system API.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="199642"/>
+        </change>
         <change id="validateResource_196452">
             <api name="filesystems"/>
             <summary><code>LayerBuilder</code> can validate resources</summary>
