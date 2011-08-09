@@ -133,11 +133,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     final static Map<String,KeywordCompletionType> PHP_KEYWORDS = new HashMap<String, KeywordCompletionType>();
     static {
-        PHP_KEYWORDS.put("__FILE__", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("__LINE__", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("__FUNCTION__", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("__CLASS__", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("__METHOD__", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("namespace", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("php_user_filter", KeywordCompletionType.SIMPLE);
