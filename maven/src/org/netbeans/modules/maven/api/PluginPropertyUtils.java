@@ -45,6 +45,8 @@ package org.netbeans.modules.maven.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import org.apache.maven.model.Plugin;
@@ -111,16 +113,10 @@ public class PluginPropertyUtils {
         for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null && goal != null) {
-                    for (PluginExecution exe : plug.getExecutions()) {
-                        if (exe.getGoals().contains(goal) || 
-                                ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
-
-                            toRet = checkConfiguration(eval, exe.getConfiguration(), property);
-                            if (toRet != null) {
-                                break;
-                            }
-                        }
+                for (PluginExecution exe : getPluginExecutions(plug, goal)) {
+                    toRet = checkConfiguration(eval, exe.getConfiguration(), property);
+                    if (toRet != null) {
+                        break;
                     }
                 }
                 if (toRet == null) {
@@ -268,16 +264,10 @@ public class PluginPropertyUtils {
         for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null && goal != null) {
-                    for (PluginExecution exe : plug.getExecutions()) {
-                        if (exe.getGoals().contains(goal) ||
-                                ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
-
-                            toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
-                            if (toRet != null) {
-                                break;
-                            }
-                        }
+                for (PluginExecution exe : getPluginExecutions(plug, goal)) {
+                    toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
+                    if (toRet != null) {
+                        break;
                     }
                 }
                 if (toRet == null) {
@@ -401,15 +391,10 @@ public class PluginPropertyUtils {
         for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null && goal != null) {
-                    for (PluginExecution exe : plug.getExecutions()) {
-                        if (exe.getGoals().contains(goal) ||
-                                ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
-                            toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
-                            if (toRet != null) {
-                                break;
-                            }
-                        }
+                for (PluginExecution exe : getPluginExecutions(plug, goal)) {
+                    toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
+                    if (toRet != null) {
+                        break;
                     }
                 }
                 if (toRet == null) {
@@ -508,6 +493,25 @@ public class PluginPropertyUtils {
                 prj,
                 ss,
                 props);
+    }
+
+    /** @see org.apache.maven.lifecycle.internal.DefaultLifecycleExecutionPlanCalculator */
+    private static List<PluginExecution> getPluginExecutions(Plugin plug, String goal) {
+        if (goal == null) {
+            return Collections.emptyList();
+        }
+        List<PluginExecution> exes = new ArrayList<PluginExecution>();
+        for (PluginExecution exe : plug.getExecutions()) {
+            if (exe.getGoals().contains(goal) || /* #179328: Maven 2.2.0+ */ ("default-" + goal).equals(exe.getId())) {
+                exes.add(exe);
+            }
+        }
+        Collections.sort(exes, new Comparator<PluginExecution>() {
+            @Override public int compare(PluginExecution e1, PluginExecution e2) {
+                return e2.getPriority() - e1.getPriority();
+            }
+        });
+        return exes;
     }
 
 }

@@ -110,6 +110,17 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         assertEquals("1.4", SourceLevelQuery.getSourceLevel(source));
     }
 
+    public void testTestSourceLevel() throws Exception { // e.g. org.apache.felix.configadmin
+        TestFileUtils.writeFile(wd, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>test</groupId><artifactId>prj</artifactId><version>1.0</version>"
+                + "<build><pluginManagement><plugin><artifactId>maven-compiler-plugin</artifactId><version>2.3.2</version><configuration><source>1.4</source></configuration></plugin></pluginManagement>"
+                + "<plugins><plugin><artifactId>maven-compiler-plugin</artifactId><configuration><source>1.2</source></configuration>"
+                + "<executions><execution><id>test-compile-java5</id><goals><goal>testCompile</goal></goals><configuration><source>1.6</source></configuration></execution></executions></plugin></plugins>"
+                + "</build></project>");
+        FileObject source = TestFileUtils.writeFile(wd, "src/test/java/p/C.java", "package p; class C {}");
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(source));
+    }
+
     public void testGeneratedSources() throws Exception { // #187595
         TestFileUtils.writeFile(wd,
                 "pom.xml",
