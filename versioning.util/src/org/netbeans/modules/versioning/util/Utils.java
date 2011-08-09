@@ -1060,6 +1060,7 @@ public final class Utils {
      * The property should be defined as {@code versioning.versioningSystem.priority}.
      * @param versioningSystem name of the vcs
      * @return priority or {@link Integer#MAX_VALUE} as default
+     * @deprecated should not be used any more
      */
     public static Integer getPriority (String versioningSystem) {
         Integer value = null;

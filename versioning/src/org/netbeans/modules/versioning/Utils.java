@@ -312,22 +312,6 @@ public class Utils {
         }
     }
 
-    public static Integer getPriority (VersioningSystem vs) {
-        Integer priority = null;
-        if (vs != null) {
-            Object o = vs instanceof DelegatingVCS ? 
-                    ((DelegatingVCS) vs).getPriority() :
-                    vs.getProperty(VersioningManager.PROP_PRIORITY);
-            if (o instanceof Integer) {
-                priority = (Integer) o;
-            }
-        }
-        if (priority == null || priority <= 0) {
-            priority = Integer.MAX_VALUE;
-        }
-        return priority;
-    }
-
     public static File[] getUnversionedFolders () {
         if (unversionedFolders == null) {
             File[] files;

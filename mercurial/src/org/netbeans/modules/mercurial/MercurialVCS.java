@@ -58,7 +58,6 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Extends framework <code>VersioningSystem</code> to Mercurial module functionality.
@@ -76,7 +75,6 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); // NOI18N
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(MercurialVCS.class, "CTL_Mercurial_MainMenu")); // NOI18N
         
-        putProperty("Integer VCS.Priority", Utils.getPriority("mercurial"));
         HgModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         Mercurial.getInstance().register(this);        
     }

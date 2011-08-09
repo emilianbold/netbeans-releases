@@ -99,10 +99,6 @@ public class DelegatingVCS extends VersioningSystem {
         return delegate;
     }
     
-    Integer getPriority() {
-        return Utils.getPriority(getDelegate());
-    }
-    
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
         return getDelegate().getVisibilityQuery();
