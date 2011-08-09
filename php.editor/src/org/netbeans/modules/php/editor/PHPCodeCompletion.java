@@ -939,7 +939,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
             Collection<? extends VariableName> declaredVariables = ModelUtils.filter(variableScope.getDeclaredVariables(),
-                    QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, request.prefix);
+                    nameKind, request.prefix);
             final int caretOffset = request.anchor + request.prefix.length();
             for (VariableName varName : declaredVariables) {
                 final FileObject realFileObject = varName.getRealFileObject();
