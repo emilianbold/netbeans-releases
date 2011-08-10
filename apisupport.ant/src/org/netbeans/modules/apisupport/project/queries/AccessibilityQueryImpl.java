@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
-import java.util.Iterator;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
@@ -66,7 +68,8 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
         this.project = project;
     }
 
-    public Boolean isPubliclyAccessible(FileObject pkg) {
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+      @Override public @CheckForNull Boolean isPubliclyAccessible(@NonNull FileObject pkg) {
         FileObject srcdir = project.getSourceDirectory();
         if (srcdir != null) {
             String path = FileUtil.getRelativePath(srcdir, pkg);
@@ -79,23 +82,21 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
                     pubPkgs = XMLUtil.findElement(config, "friend-packages", NbModuleProject.NAMESPACE_SHARED); // NOI18N
                 }
                 if (pubPkgs != null) {
-                    Iterator it = XMLUtil.findSubElements(pubPkgs).iterator();
-                    while (it.hasNext()) {
-                        Element pubPkg = (Element) it.next();
+                    for (Element pubPkg : XMLUtil.findSubElements(pubPkgs)) {
                         boolean sub = "subpackages".equals(pubPkg.getLocalName()); // NOI18N
                         String pubPkgS = XMLUtil.findText(pubPkg);
                         if (name.equals(pubPkgS) || (sub && name.startsWith(pubPkgS + '.'))) {
                             return true;
                         }
                     }
+                    // Everything else assumed to *not* be public.
+                    return false;
                 } else {
                     Util.err.log(ErrorManager.WARNING, "Invalid project.xml for " + project);
-                    return null;
                 }
             }
         }
-        // Everything else assumed to *not* be public.
-        return false;
+        return null;
     }
 
 }
