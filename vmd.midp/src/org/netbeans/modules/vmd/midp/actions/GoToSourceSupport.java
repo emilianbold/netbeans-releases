@@ -46,6 +46,7 @@ package org.netbeans.modules.vmd.midp.actions;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
@@ -61,7 +62,7 @@ import java.io.IOException;
  * @author Karol Harezlak
  */
 public final class GoToSourceSupport {
-    
+
     private GoToSourceSupport() {
     }
 
@@ -78,6 +79,7 @@ public final class GoToSourceSupport {
         final CloneableEditorSupport[] editorSupport = new CloneableEditorSupport[1];
         final GoToSourcePresenter[] presenter = new GoToSourcePresenter[1];
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
+            @Override
             public void run() {
                 presenter[0] = component.getPresenter(GoToSourcePresenter.class);
                 if (presenter[0] != null) {
@@ -96,6 +98,7 @@ public final class GoToSourceSupport {
         editorSupport[0].edit();
 
         component.getDocument().getTransactionManager().readAccess(new Runnable() {
+            @Override
             public void run() {
                 StyledDocument document = null;
                 try {
@@ -103,19 +106,21 @@ public final class GoToSourceSupport {
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
                 }
-                
-                if (document != null) {
-                    ProjectUtils.requestVisibility(ActiveViewSupport.getDefault().getActiveView().getContext(), ProjectUtils.getSourceEditorViewDisplayName());
+
+                final DataEditorView activeView = ActiveViewSupport.getDefault().getActiveView();
+                if (document != null && activeView != null) {
+                    ProjectUtils.requestVisibility(activeView.getContext(), ProjectUtils.getSourceEditorViewDisplayName());
                     JEditorPane[] panes = editorSupport[0].getOpenedPanes();
-                    
+
                     if (panes != null && panes.length >= 1) {
                         final JEditorPane pane = panes[0];
                         pane.setVisible(true);
                         Iterable<GuardedSection> iterable = GuardedSectionManager.getInstance(document).getGuardedSections();
-                        
+
                         for (final GuardedSection section : iterable) {
                             if (presenter[0].matches(section)) {
                                 SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
                                     public void run() {
                                         pane.setCaretPosition(section.getCaretPosition().getOffset());
                                     }

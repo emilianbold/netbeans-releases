@@ -47,6 +47,7 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -69,7 +70,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
-
 /**
  * @author David Kaspar
  */
@@ -77,113 +77,122 @@ public class ExportFlowAsImageAction extends SystemAction implements DesignDocum
 
     private DesignDocument document;
 
-    public String getName () {
-        return NbBundle.getMessage (ExportFlowAsImageAction.class, "NAME_ExportFlowAsImage"); // NOI18N
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(ExportFlowAsImageAction.class, "NAME_ExportFlowAsImage"); // NOI18N
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (ExportFlowAsImageAction.class);
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ExportFlowAsImageAction.class);
     }
 
-    public boolean isEnabled () {
-        updateDesignDocumentReference ();
-        FlowScene scene = FlowSupport.getFlowSceneForDocument (document);
-
-        if (scene == null)
+    @Override
+    public boolean isEnabled() {
+        updateDesignDocumentReference();
+        FlowScene scene = FlowSupport.getFlowSceneForDocument(document);
+        if (scene == null) {
             return false;
+        }
 
-        JComponent view = scene.getView ();
-        if (view == null  ||  ! view.isShowing ())
+        JComponent view = scene.getView();
+        if (view == null || !view.isShowing()) {
             return false;
-        Rectangle rectangle = scene.getBounds ();
-        return rectangle.width > 0  &&  rectangle.height > 0;
+        }
+        Rectangle rectangle = scene.getBounds();
+        return rectangle.width > 0 && rectangle.height > 0;
     }
 
-    private void updateDesignDocumentReference () {
-        DataObjectContext context = ActiveViewSupport.getDefault ().getActiveView ().getContext ();
-        context.addDesignDocumentAwareness (this);
-        context.removeDesignDocumentAwareness (this);
-    }
-
-    public void actionPerformed (ActionEvent e) {
-        updateDesignDocumentReference ();
-        FlowScene scene = FlowSupport.getFlowSceneForDocument (document);
-        if (scene == null)
+    private void updateDesignDocumentReference() {
+        final DataEditorView activeView = ActiveViewSupport.getDefault().getActiveView();
+        if (activeView == null) {
             return;
-        saveAsImage (scene);
-    }
-
-    private void saveAsImage (Scene scene) {
-        Rectangle rectangle = scene.getBounds ();
-        BufferedImage bi = new BufferedImage (rectangle.width, rectangle.height, BufferedImage.TYPE_4BYTE_ABGR);
-        Graphics2D graphics = bi.createGraphics ();
-        scene.paint (graphics);
-        graphics.dispose ();
-
-        JFileChooser chooser = new JFileChooser ();
-        chooser.setDialogTitle (NbBundle.getMessage (ExportFlowAsImageAction.class, "TITLE_ExportFlowAsImage")); // NOI18N
-        chooser.setDialogType (JFileChooser.SAVE_DIALOG);
-        chooser.setMultiSelectionEnabled (false);
-        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-        chooser.setFileFilter (new FileFilter() {
-            public boolean accept (File file) {
-                return file.isDirectory ()  ||  file.getName ().toLowerCase ().endsWith (".png"); // NOI18N
-            }
-            public String getDescription () {
-                return NbBundle.getMessage (ExportFlowAsImageAction.class, "LBL_FileFilterPNG"); // NOI18N
-            }
-        });
-        if (chooser.showSaveDialog (scene.getView ()) != JFileChooser.APPROVE_OPTION)
-            return;
-
-        File file = chooser.getSelectedFile ();
-        if (! file.getName ().toLowerCase ().endsWith (".png")) // NOI18N
-            file = new File (file.getParentFile (), file.getName () + ".png"); // NOI18N
-        if (file.exists ()) {
-            DialogDescriptor descriptor = new DialogDescriptor (
-                    NbBundle.getMessage (ExportFlowAsImageAction.class, "LBL_AlreadyExists", file.getAbsolutePath ()), // NOI18N
-                    NbBundle.getMessage (ExportFlowAsImageAction.class, "TITLE_AlreadyExists"), // NOI18N
-                    true, DialogDescriptor.YES_NO_OPTION, DialogDescriptor.NO_OPTION, null);
-            DialogDisplayer.getDefault ().createDialog (descriptor).setVisible (true);
-            if (descriptor.getValue () != DialogDescriptor.YES_OPTION)
-                return;
         }
         
-        FileImageOutputStream stream = null;
-        try {
-            stream = new FileImageOutputStream( file );
-            ImageIO.write (bi, "png", stream); // NOI18N
-        }
-        catch (FileNotFoundException e) {
-            NotifyDescriptor descriptor = new NotifyDescriptor.Message( 
-                    NbBundle.getMessage (ExportFlowAsImageAction.class, 
-                            "LBL_NoWrite", file.getAbsolutePath ()) , 
-                    NotifyDescriptor.   ERROR_MESSAGE );
-            DialogDisplayer.getDefault().notify( descriptor );
+        DataObjectContext context = activeView.getContext();
+        context.addDesignDocumentAwareness(this);
+        context.removeDesignDocumentAwareness(this);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        updateDesignDocumentReference();
+        FlowScene scene = FlowSupport.getFlowSceneForDocument(document);
+        if (scene == null) {
             return;
         }
-        catch (IOException e) {
-            throw Debug.error(e);
+        
+        saveAsImage(scene);
+    }
+
+    private void saveAsImage(Scene scene) {
+        Rectangle rectangle = scene.getBounds();
+        BufferedImage bi = new BufferedImage(rectangle.width, rectangle.height, BufferedImage.TYPE_4BYTE_ABGR);
+        Graphics2D graphics = bi.createGraphics();
+        scene.paint(graphics);
+        graphics.dispose();
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(ExportFlowAsImageAction.class, "TITLE_ExportFlowAsImage")); // NOI18N
+        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileFilter(new PNGFileFilter());
+        if (chooser.showSaveDialog(scene.getView()) != JFileChooser.APPROVE_OPTION) {
+            return;
         }
-        finally {
+
+        File file = chooser.getSelectedFile();
+        if (!file.getName().toLowerCase().endsWith(".png")) { // NOI18N
+            file = new File(file.getParentFile(), file.getName() + ".png"); // NOI18N
+        }
+        if (file.exists()) {
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    NbBundle.getMessage(ExportFlowAsImageAction.class, "LBL_AlreadyExists", file.getAbsolutePath()), // NOI18N
+                    NbBundle.getMessage(ExportFlowAsImageAction.class, "TITLE_AlreadyExists"), // NOI18N
+                    true, DialogDescriptor.YES_NO_OPTION, DialogDescriptor.NO_OPTION, null);
+            DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+            if (descriptor.getValue() != DialogDescriptor.YES_OPTION) {
+                return;
+            }
+        }
+
+        FileImageOutputStream stream = null;
+        try {
+            stream = new FileImageOutputStream(file);
+            ImageIO.write(bi, "png", stream); // NOI18N
+        } catch (FileNotFoundException e) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(NbBundle.getMessage(ExportFlowAsImageAction.class,
+                    "LBL_NoWrite", file.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+            DialogDisplayer.getDefault().notify(descriptor);
+            return;
+        } catch (IOException e) {
+            throw Debug.error(e);
+        } finally {
             try {
-                if ( stream != null ){
+                if (stream != null) {
                     stream.close();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 Debug.error(e);
             }
         }
-
-        
-            
-        
-
     }
 
-    public void setDesignDocument (DesignDocument designDocument) {
+    @Override
+    public void setDesignDocument(DesignDocument designDocument) {
         document = designDocument;
     }
 
+    private static class PNGFileFilter extends FileFilter {
+        @Override
+        public boolean accept(File file) {
+            return file.isDirectory() || file.getName().toLowerCase().endsWith(".png"); // NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(ExportFlowAsImageAction.class, "LBL_FileFilterPNG"); // NOI18N
+        }
+    }
 }
