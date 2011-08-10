@@ -66,7 +66,14 @@ public abstract class CssModule {
     
     public abstract Collection<PropertyDescriptor> getPropertyDescriptors();
     
-    public abstract List<CompletionProposal> complete(CompletionContext context);    
+    /**
+     * If one wants to customize the css completion beyond the level which the PropertyDescriptor-s
+     * allows, may use this method to achieve this.
+     * 
+     * @param context the code completion context
+     * @return a list of completion proposals
+     */
+    public abstract List<CompletionProposal> getCompletionProposals(CompletionContext context);    
   
     /**
      * May return null if there are no semantic highlights to show.
