@@ -39,48 +39,75 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
-
-import java.beans.PropertyEditorSupport;
+package org.netbeans.modules.coherence.server;
 
 /**
+ * {@code CoherenceServerProperty} represents one item of Coherence server
+ * property.
  *
  * @author Andrew Hopkinson (Oracle A-Team)
  */
-public class BooleanPropertyEditor extends PropertyEditorSupport {
-    private boolean defaultVal = false;
-    private Boolean value = null;
+public class CoherenceServerProperty {
 
-    public boolean isDefaultVal() {
-        return defaultVal;
+    private String propertyName;
+    private String displayName;
+    private String hint;
+    private Class clazz;
+    private String defaultValue;
+
+    public CoherenceServerProperty(String displayName, String hint, Class clazz) {
+        this(displayName, hint, clazz, null);
     }
 
-    public void setDefaultVal(boolean defaultVal) {
-        this.defaultVal = defaultVal;
+    public CoherenceServerProperty(String displayName, String hint, Class clazz, String defaultValue) {
+        this.displayName = displayName;
+        this.hint = hint;
+        this.clazz = clazz;
+        this.propertyName = displayName.toLowerCase().replace(" ", ".");
+        this.defaultValue = defaultValue;
     }
 
-    public BooleanPropertyEditor() {
+    public Class getClazz() {
+        if (clazz != null) {
+            return clazz;
+        } else {
+            return String.class;
+        }
     }
 
-    public BooleanPropertyEditor(boolean defaultVal) {
-        this.defaultVal = defaultVal;
+    public void setClazz(Class clazz) {
+        this.clazz = clazz;
     }
 
-    @Override
-    public String getAsText() {
-        Boolean flag = (Boolean) getValue();
-        if (flag == null)
-            return "default";
-        else
-            return flag.toString();
+    public String getDisplayName() {
+        return displayName;
     }
 
-    @Override
-    public void setAsText(String text) throws IllegalArgumentException {
-        if (text == null || text.equalsIgnoreCase("default"))
-            setValue(Boolean.FALSE);
-        else
-            setValue(Boolean.parseBoolean(text));
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
+    public String getHint() {
+        return hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public void setPropertyName(String propertyName) {
+        this.propertyName = propertyName;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 }

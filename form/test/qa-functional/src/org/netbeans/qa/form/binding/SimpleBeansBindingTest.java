@@ -100,6 +100,8 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
+        designer.source();
+        designer.design();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         
         // add two labels
@@ -136,8 +138,15 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         
         formnode.select();
         openAction.perform(formnode);
+        designer.source();
+        designer.design();
+        inspector = new ComponentInspectorOperator();
+        String jLabel1Text=ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel1NodePath);
+        designer.source();
+        designer.design();
+        inspector = new ComponentInspectorOperator();
+        String jLabel2Text=ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel2NodePath);
         // get values of text properties of jLabels and test them
-        assertEquals(ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel1NodePath),
-                ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel2NodePath));
+        assertEquals(jLabel1Text,jLabel2Text);
     }
 }

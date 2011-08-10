@@ -39,42 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
+package org.netbeans.modules.coherence.server.wizard;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Andrew Hopkinson (Oracle A-Team)
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class AllServersNotifier {
+public class CoherenceWizardProvider implements ServerWizardProvider {
 
-    private static Logger logger = Logger.getLogger(AllServersNotifier.class.getCanonicalName());
-    private static Set listeners = new HashSet();
+    private String displayName;
 
-    public static void addChangeListener(ChangeListener listener) {
-        listeners.add(listener);
+    private CoherenceWizardProvider(String displayName) {
+        this.displayName = displayName;
     }
 
-    public static void removeChangeListener(ChangeListener listener) {
-        listeners.remove(listener);
+    public static CoherenceWizardProvider create() {
+        return new CoherenceWizardProvider(NbBundle.getMessage(
+                CoherenceWizardProvider.class, "TITLE_CoherenceWizard")); //NOI18N
     }
 
-    public static void changed() {
-        ChangeEvent ev = new ChangeEvent(AllServersNotifier.class);
-        Iterator it = listeners.iterator();
-        ChangeListener cl = null;
-        while (it.hasNext()) {
-            cl = (ChangeListener) it.next();
-            logger.log(Level.INFO,"*** APH-I2 : Event "+cl.toString());
-            cl.stateChanged(ev);
-        }
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
+
+    @Override
+    public InstantiatingIterator getInstantiatingIterator() {
+        return new CoherenceWizardIterator();
+    }
+
 }
-
