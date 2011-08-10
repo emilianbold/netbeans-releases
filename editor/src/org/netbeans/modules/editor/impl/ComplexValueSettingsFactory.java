@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.editor.impl;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.prefs.Preferences;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
@@ -120,6 +122,21 @@ public final class ComplexValueSettingsFactory {
             }
         } else {
             eng = (IndentEngine) SettingsConversions.callFactory(prefs, mimePath, NbEditorDocument.INDENT_ENGINE, null);
+        }
+        
+        if (eng == null) {
+            EditorKit kit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
+            Object legacyFormatter = null;
+            if (kit != null) {
+                try {
+                    Method createFormatterMethod = kit.getClass().getDeclaredMethod("createFormatter"); //NOI18N
+                    legacyFormatter = createFormatterMethod.invoke(kit);
+                } catch (Exception e) {
+                }
+            }
+            if (legacyFormatter == null) {
+                eng = new DefaultIndentEngine();
+            }
         }
 
         return eng;

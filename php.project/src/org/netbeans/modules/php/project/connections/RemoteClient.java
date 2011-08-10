@@ -85,7 +85,7 @@ import org.openide.windows.InputOutput;
  * <p>
  * Every method throws {@link RemoteException} if any error occurs.
  * <p>
- * This class is not threadsafe.
+ * This class is thread-safe.
  * @author Tomas Mysik
  */
 public final class RemoteClient implements Cancellable {
@@ -98,7 +98,6 @@ public final class RemoteClient implements Cancellable {
     private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
     private static final String LOCAL_TMP_NEW_SUFFIX = ".new~"; // NOI18N
-    private static final String LOCAL_TMP_OLD_SUFFIX = ".old~"; // NOI18N
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
@@ -108,7 +107,9 @@ public final class RemoteClient implements Cancellable {
     private final AdvancedProperties properties;
     private final OperationMonitor operationMonitor;
     private final String baseRemoteDirectory;
+    // @GuardedBy(this) to avoid over-complicated code, can be improved
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
+
     private volatile boolean cancelled = false;
 
     /**
@@ -175,7 +176,7 @@ public final class RemoteClient implements Cancellable {
         this.remoteClient = client;
     }
 
-    public void connect() throws RemoteException {
+    public synchronized void connect() throws RemoteException {
         remoteClient.connect();
         assert remoteClient.isConnected() : "Remote client should be connected";
 
@@ -188,7 +189,7 @@ public final class RemoteClient implements Cancellable {
         }
     }
 
-    public void disconnect() throws RemoteException {
+    public synchronized void disconnect() throws RemoteException {
         remoteClient.disconnect();
     }
 
@@ -206,7 +207,7 @@ public final class RemoteClient implements Cancellable {
         cancelled = false;
     }
 
-    public boolean exists(TransferFile file) throws RemoteException {
+    public synchronized boolean exists(TransferFile file) throws RemoteException {
         ensureConnected();
 
         LOGGER.fine(String.format("Checking whether file %s exists", file));
@@ -216,7 +217,7 @@ public final class RemoteClient implements Cancellable {
         return exists;
     }
 
-    public boolean rename(TransferFile from, TransferFile to) throws RemoteException {
+    public synchronized boolean rename(TransferFile from, TransferFile to) throws RemoteException {
         ensureConnected();
 
         LOGGER.fine(String.format("Moving file from %s to %s", from, to));
@@ -355,7 +356,9 @@ public final class RemoteClient implements Cancellable {
 
             int oldPermissions = -1;
             if (properties.isPreservePermissions()) {
-                oldPermissions = remoteClient.getPermissions(fileName);
+                synchronized (this) {
+                    oldPermissions = remoteClient.getPermissions(fileName);
+                }
                 LOGGER.fine(String.format("Original permissions of %s: %d", fileName, oldPermissions));
             } else {
                 LOGGER.fine("Permissions are not preserved.");
@@ -371,14 +374,20 @@ public final class RemoteClient implements Cancellable {
             }
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
+                synchronized (this) {
+                    LOGGER.log(Level.FINE, "Uploading file {0} => {1}", new Object[] {fileName, remoteClient.printWorkingDirectory() + TransferFile.REMOTE_PATH_SEPARATOR + tmpFileName});
+                }
             }
             // XXX lock the file?
             InputStream is = new FileInputStream(new File(baseLocalDir, file.getLocalPath()));
             boolean success = false;
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
-                    if (remoteClient.storeFile(tmpFileName, is)) {
+                    boolean fileStored;
+                    synchronized (this) {
+                        fileStored = remoteClient.storeFile(tmpFileName, is);
+                    }
+                    if (fileStored) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
                             String f = file.getRemotePath() + (properties.isUploadDirectly() ? "" : REMOTE_TMP_NEW_SUFFIX);
@@ -401,14 +410,22 @@ public final class RemoteClient implements Cancellable {
                     }
 
                     if (properties.isPreservePermissions() && success && oldPermissions != -1) {
-                        int newPermissions = remoteClient.getPermissions(fileName);
+                        int newPermissions;
+                        synchronized (this) {
+                            newPermissions = remoteClient.getPermissions(fileName);
+                        }
                         LOGGER.fine(String.format("New permissions of %s: %d", fileName, newPermissions));
                         if (oldPermissions != newPermissions) {
                             LOGGER.fine(String.format("Setting permissions %d for %s.", oldPermissions, fileName));
-                            boolean permissionsSet = remoteClient.setPermissions(oldPermissions, fileName);
+                            boolean permissionsSet;
+                            synchronized (this) {
+                                permissionsSet = remoteClient.setPermissions(oldPermissions, fileName);
+                            }
                             if (LOGGER.isLoggable(Level.FINE)) {
                                 LOGGER.fine(String.format("Permissions for %s set: %s", fileName, permissionsSet));
-                                LOGGER.fine(String.format("Permissions for %s read: %s", fileName, remoteClient.getPermissions(fileName)));
+                                synchronized (this) {
+                                    LOGGER.fine(String.format("Permissions for %s read: %s", fileName, remoteClient.getPermissions(fileName)));
+                                }
                             }
                             if (!permissionsSet) {
                                 transferPartiallyFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_PermissionsNotSet", oldPermissions, file.getName()));
@@ -420,7 +437,10 @@ public final class RemoteClient implements Cancellable {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getOperationFailureMessage(Operation.UPLOAD, fileName));
-                    boolean deleted = remoteClient.deleteFile(tmpFileName);
+                    boolean deleted;
+                    synchronized (this) {
+                        deleted = remoteClient.deleteFile(tmpFileName);
+                    }
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine(String.format("Unsuccessfully uploaded file %s deleted: %s", file.getRemotePath() + REMOTE_TMP_NEW_SUFFIX, deleted));
                     }
@@ -431,7 +451,7 @@ public final class RemoteClient implements Cancellable {
         }
     }
 
-    private boolean moveRemoteFile(String source, String target) throws RemoteException {
+    private synchronized boolean moveRemoteFile(String source, String target) throws RemoteException {
         boolean moved = remoteClient.rename(source, target);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("File %s directly renamed to %s: %s", source, target, moved));
@@ -538,7 +558,11 @@ public final class RemoteClient implements Cancellable {
                         // XXX maybe return somehow ignored files as well?
                         continue;
                     }
-                    for (RemoteFile child : remoteClient.listFiles()) {
+                    List<RemoteFile> remoteFiles;
+                    synchronized (this) {
+                        remoteFiles = remoteClient.listFiles();
+                    }
+                    for (RemoteFile child : remoteFiles) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
                             queue.offer(TransferFile.fromRemoteFile(file, child, baseRemoteDirectory));
@@ -669,7 +693,11 @@ public final class RemoteClient implements Cancellable {
             boolean success = false;
             try {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
-                    if (remoteClient.retrieveFile(file.getName(), os)) {
+                    boolean fileRetrieved;
+                    synchronized (this) {
+                        fileRetrieved = remoteClient.retrieveFile(file.getName(), os);
+                    }
+                    if (fileRetrieved) {
                         success = true;
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine(String.format("The %d. attempt to download '%s' was successful", i, file.getRemotePath()));
@@ -681,8 +709,10 @@ public final class RemoteClient implements Cancellable {
                 }
             } finally {
                 os.close();
-                FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
-                if (FO != null) FO.refresh();
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
+                if (fo != null) {
+                    fo.refresh();
+                }
                 if (success) {
                     // move the file
                     success = moveLocalFile(tmpLocalFile, localFile);
@@ -795,8 +825,10 @@ public final class RemoteClient implements Cancellable {
     // #169778
     private File getLocalFile(File localFile, TransferFile parent, RemoteFile file) {
         File newFile = new File(getLocalFile(localFile, parent), file.getName());
-        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
-        if (FO != null) FO.refresh();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
+        if (fo != null) {
+            fo.refresh();
+        }
         return newFile;
     }
 
@@ -863,7 +895,7 @@ public final class RemoteClient implements Cancellable {
         }
     }
 
-    private void deleteFile(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
+    private synchronized void deleteFile(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
         boolean success = false;
         cdBaseRemoteDirectory();
         if (file.isDirectory()) {
@@ -949,7 +981,7 @@ public final class RemoteClient implements Cancellable {
         }
     }
 
-    private String getOperationFailureMessage(Operation operation, String fileName) {
+    private synchronized String getOperationFailureMessage(Operation operation, String fileName) {
         String message = remoteClient.getNegativeReplyString();
         if (message == null) {
             String key = null;
@@ -971,7 +1003,7 @@ public final class RemoteClient implements Cancellable {
         return message;
     }
 
-    private void ensureConnected() throws RemoteException {
+    private synchronized void ensureConnected() throws RemoteException {
         if (!remoteClient.isConnected()) {
             LOGGER.fine("Client not connected -> connecting");
             connect();
@@ -992,7 +1024,7 @@ public final class RemoteClient implements Cancellable {
         return cdRemoteDirectory(path, create);
     }
 
-    private boolean cdRemoteDirectory(String directory, boolean create) throws RemoteException {
+    private synchronized boolean cdRemoteDirectory(String directory, boolean create) throws RemoteException {
         LOGGER.log(Level.FINE, "Changing directory to {0}", directory);
         boolean success = remoteClient.changeWorkingDirectory(directory);
         if (!success && create) {
@@ -1005,7 +1037,7 @@ public final class RemoteClient implements Cancellable {
      * Create file path on remote server <b>in the current directory</b>.
      * @param filePath file path to create, can be even relative (e.g. "a/b/c/d").
      */
-    private boolean createAndCdRemoteDirectory(String filePath) throws RemoteException {
+    private synchronized boolean createAndCdRemoteDirectory(String filePath) throws RemoteException {
         LOGGER.log(Level.FINE, "Creating file path {0}", filePath);
         if (filePath.startsWith(TransferFile.REMOTE_PATH_SEPARATOR)) {
             // enter root directory
@@ -1133,15 +1165,6 @@ public final class RemoteClient implements Cancellable {
         return fileName.substring(0, index);
     }
 
-    private String getRemoteRelativePath(TransferFile file) {
-        StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
-        if (file.getRemotePath() != TransferFile.REMOTE_PROJECT_ROOT) {
-            relativePath.append(TransferFile.REMOTE_PATH_SEPARATOR);
-            relativePath.append(file.getRemotePath());
-        }
-        return relativePath.toString();
-    }
-
     private Set<TransferFile> getFiles(Set<TransferFile> all) {
         Set<TransferFile> files = new HashSet<TransferFile>();
         for (TransferFile file : all) {
@@ -1209,6 +1232,8 @@ public final class RemoteClient implements Cancellable {
 
     /**
      * Advanced properties for a {@link RemoteClient}.
+     * <p>
+     * This class is thread-safe.
      */
     public static final class AdvancedProperties {
         private final InputOutput io;

@@ -81,6 +81,7 @@ import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.CssIndex;
@@ -107,6 +108,8 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
+        
+        final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
         
         CssCslParserResult info = (CssCslParserResult) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
@@ -173,7 +176,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
             if (hasNext && ts.token().text().charAt(0) == '@') { //NOI18N
                 //complete rules
-                return wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, ts.offset());
+                completionProposals.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, ts.offset()));
             }
 
             return CodeCompletionResult.NONE; //no parse tree, just quit
@@ -182,11 +185,35 @@ public class CssCompletion implements CodeCompletionHandler {
 
         NodeType originalNodeKind = node.type();
         if (node.type() == NodeType.error) {
-            node = (Node) node.parent();
+            node = node.parent();
             if (node == null) {
                 return CodeCompletionResult.NONE;
             }
         }
+        
+        //xxx: handleLexicalBasedCompletion breaks the contract - in the case it is used the css modules are
+        //     not asked for the completion results. The main reason is that the CompletionProposal doesn't 
+        //     allow to move the caret somewhere when the completion item is completed. This functionality
+        //     is achievable onto the CompletionResult. However this means it is not completion item specific
+        //     and as such cannot vary from different items from various css modules.
+        
+        //css modules
+        CompletionContext completionContext = 
+                new CompletionContext(node, 
+                info.getWrappedCssParserResult(), 
+                ts, 
+                context.getQueryType(), 
+                caretOffset, 
+                offset, 
+                astCaretOffset, 
+                astOffset, 
+                prefix);
+        
+        List<CompletionProposal> cssModulesCompletionProposals = CssModuleSupport.getCompletionProposals(completionContext);
+        completionProposals.addAll(cssModulesCompletionProposals);
+        
+        
+        
 //        System.out.println("------------------");
 //        NodeUtil.dumpTree(root);    
 //        System.out.println("------------------");
@@ -243,9 +270,7 @@ public class CssCompletion implements CodeCompletionHandler {
                             offset,
                             refclasses.contains(clazz)));
                     }
-                    if (proposals.size() > 0) {
-                        return new DefaultCompletionResult(proposals, false);
-                    }
+                    completionProposals.addAll(proposals);
 
                 }
             }
@@ -291,9 +316,7 @@ public class CssCompletion implements CodeCompletionHandler {
                                 offset,
                                 refids.contains(id)));
                     }
-                    if (proposals.size() > 0) {
-                        return new DefaultCompletionResult(proposals, false);
-                    }
+                    completionProposals.addAll(proposals);
                 }
             }
         } else if (
@@ -302,13 +325,13 @@ public class CssCompletion implements CodeCompletionHandler {
                 || node.type() == NodeType.styleSheet) {
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
-            all.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, caretOffset).getItems());
+            all.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, caretOffset));
             //complete html selector names
             all.addAll(completeHtmlSelectors(prefix, caretOffset));
-            return new DefaultCompletionResult(all, false);
+            completionProposals.addAll(all);
 
         } else if (node.type() == NodeType.media /*|| node.type() == NodeType.JJTMEDIARULELIST*/) {
-            return new DefaultCompletionResult(completeHtmlSelectors(prefix, caretOffset), false);
+            completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
 
         } else if (node.type() == NodeType.error /*|| node.type() == NodeType.JJTERROR_SKIP_TO_WHITESPACE*/) {
             //complete at keywords with prefix - parse tree broken
@@ -328,14 +351,14 @@ public class CssCompletion implements CodeCompletionHandler {
                     //we are on the right place in the node
 
                     Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-                    return wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(node.from()));
+                    completionProposals.addAll(wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(node.from())));
                 }
             }
 
         } else if (node.type() == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
             //css property name completion with prefix
             Collection<PropertyDescriptor> possibleProps = filterProperties(CssModuleSupport.getPropertyDescriptors().values(), prefix);
-            return wrapProperties(possibleProps, CssCompletionItem.Kind.PROPERTY, snapshot.getOriginalOffset(node.from()));
+            completionProposals.addAll(wrapProperties(possibleProps, CssCompletionItem.Kind.PROPERTY, snapshot.getOriginalOffset(node.from())));
 
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
             //1. in empty rule (NodeType.ruleSet)
@@ -345,7 +368,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //h1 { color:red; | font: bold }
             //
             //should be no prefix 
-            return wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), CssCompletionItem.Kind.PROPERTY, caretOffset);
+            completionProposals.addAll(wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), CssCompletionItem.Kind.PROPERTY, caretOffset));
         } else if (node.type() == NodeType.declaration) {
             //value cc without prefix
             //find property node
@@ -422,7 +445,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     addSpaceBeforeItem = true;
                 }
 
-                return wrapPropertyValues(context,
+                completionProposals.addAll(wrapPropertyValues(context,
                         prefix,
                         prop.getPropertyDescriptor(),
                         filteredByPrefix,
@@ -430,7 +453,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         completionItemInsertPosition,
                         false,
                         addSpaceBeforeItem,
-                        false);
+                        false));
 
 
             }
@@ -533,7 +556,7 @@ public class CssCompletion implements CodeCompletionHandler {
             }
             //<<<
 
-            return wrapPropertyValues(context,
+            completionProposals.addAll(wrapPropertyValues(context,
                     prefix,
                     propertyDescriptor,
                     filteredByPrefix,
@@ -541,39 +564,28 @@ public class CssCompletion implements CodeCompletionHandler {
                     completionItemInsertPosition,
                     false,
                     addSpaceBeforeItem,
-                    extendedItemsOnly);
+                    extendedItemsOnly));
 
 
         } else if (node.type() == NodeType.elementName) {
             //complete selector's element name - with a prefix
-            List<CompletionProposal> proposals = completeHtmlSelectors(prefix, snapshot.getOriginalOffset(node.from()));
-            if (proposals.size() > 0) {
-                return new DefaultCompletionResult(proposals, false);
-            }
+            completionProposals.addAll(completeHtmlSelectors(prefix, snapshot.getOriginalOffset(node.from())));
         } else if((node.type() == NodeType.elementSubsequent  //after class or id selector
                 || node.type() == NodeType.typeSelector)  //after element selector
                 
                 && tokenNodeTokenId == CssTokenId.WS) {
             //complete element name - without a prefix
-            List<CompletionProposal> proposals = completeHtmlSelectors(prefix, caretOffset);
-            if (proposals.size() > 0) {
-                return new DefaultCompletionResult(proposals, false);
-            }
+            completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
             
         } else if (node.type() == NodeType.selectorsGroup ||
                 node.type() == NodeType.combinator ||
                 node.type() == NodeType.selector ||
                 node.type() == NodeType.bodyset) {
             //complete selector list without prefix in selector list e.g. BODY, | { ... }
-//            assert prefix.length() == 0;
-
-            List<CompletionProposal> proposals = completeHtmlSelectors(prefix, caretOffset);
-            if (proposals.size() > 0) {
-                return new DefaultCompletionResult(proposals, false);
-            }
+            completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
         } 
 
-        return CodeCompletionResult.NONE;
+        return new DefaultCompletionResult(completionProposals, false);
     }
 
 
@@ -598,17 +610,17 @@ public class CssCompletion implements CodeCompletionHandler {
 
     }
 
-    private CodeCompletionResult wrapRAWValues(Collection<String> props, CssCompletionItem.Kind kind, int anchor) {
+    private List<CompletionProposal> wrapRAWValues(Collection<String> props, CssCompletionItem.Kind kind, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (String value : props) {
             CssElement handle = new CssElement(value);
             CompletionProposal proposal = CssCompletionItem.createCompletionItem(handle, value, kind, anchor, false);
             proposals.add(proposal);
         }
-        return new DefaultCompletionResult(proposals, false);
+        return proposals;
     }
 
-    private CodeCompletionResult wrapPropertyValues(CodeCompletionContext context,
+    private List<CompletionProposal> wrapPropertyValues(CodeCompletionContext context,
             String prefix,
             PropertyDescriptor propertyDescriptor,
             Collection<GrammarElement> props,
@@ -644,7 +656,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        return new DefaultCompletionResult(proposals, false);
+        return proposals;
     }
 
     private Collection<CompletionProposal> getUsedColorsItems(CodeCompletionContext context, String prefix,
@@ -705,7 +717,7 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private CodeCompletionResult wrapProperties(Collection<PropertyDescriptor> props, CssCompletionItem.Kind kind, int anchor) {
+    private List<CompletionProposal> wrapProperties(Collection<PropertyDescriptor> props, CssCompletionItem.Kind kind, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (PropertyDescriptor p : props) {
             //filter out non-public properties
@@ -715,7 +727,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 proposals.add(proposal);
             }
         }
-        return new DefaultCompletionResult(proposals, false);
+        return proposals;
     }
 
     private Collection<PropertyDescriptor> filterProperties(Collection<PropertyDescriptor> props, String propertyNamePrefix) {

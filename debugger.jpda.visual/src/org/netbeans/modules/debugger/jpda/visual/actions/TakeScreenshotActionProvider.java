@@ -41,74 +41,49 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.actions;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.RetrievalException;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
+import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.visual.RemoteScreenshot;
+import org.netbeans.spi.debugger.visual.ScreenshotUIManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.Presenter;
 
 /**
  * Grabs screenshot of remote application.
  * 
  * @author Martin Entlicher
  */
-@ActionID(id = "org.netbeans.modules.debugger.jpda.visual.actions.ScreenshotGrabAction", category = "Debug")
-@ActionRegistration(displayName = "CTL_ScreenshotGrabAction")
-@ActionReference(path = "Menu/RunProject", position = 1850)
-public class ScreenshotGrabAction extends AbstractAction implements Runnable, Presenter.Popup, Presenter.Menu {
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"takeScreenshot"})
+public class TakeScreenshotActionProvider extends ActionsProviderSupport {
     
-    private static boolean isVisualDBG = !"false".equalsIgnoreCase(System.getProperty("visualDebugger"));    // NOI18N
-    
-    private RequestProcessor rp = new RequestProcessor(ScreenshotGrabAction.class.getName(), 1);
+    private JPDADebugger debugger;
 
-    public ScreenshotGrabAction () {
-        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
-        putValue (
-            Action.NAME, 
-            NbBundle.getMessage (ScreenshotGrabAction.class, "CTL_ScreenshotGrabAction")
-        );
-        //putValue("iconbase", "org/netbeans/modules/debugger/jpda/visual/resources/screenshot.png"); // NOI18N
+    public TakeScreenshotActionProvider (ContextProvider contextProvider) {
+        debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
+        addEngineListener();
     }
     
     @Override
-    public boolean isEnabled() {
-        DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-        if (engine != null) {
-            JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            return debugger != null && RemoteServices.getServiceClass(debugger) != null;
-        } else {
-            return false;
-        }
+    public Set getActions() {
+        return Collections.singleton (ScreenshotUIManager.ACTION_TAKE_SCREENSHOT);
     }
     
     @Override
-    public void actionPerformed(ActionEvent e) {
-        rp.post(this);
-    }
-    
-    @Override
-    public void run() {
+    public void doAction(Object action) {
         String msg = null;
         try {
-            final RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent();
+            final RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
             for (int i = 0; i < screenshots.length; i++) {
                 final RemoteScreenshot screenshot = screenshots[i];
                 screenshot.getScreenshotUIManager().open();
@@ -123,7 +98,7 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
                 });*/
             }
             if (screenshots.length == 0) {
-                msg = NbBundle.getMessage(ScreenshotGrabAction.class, "MSG_NoScreenshots");
+                msg = NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_NoScreenshots");
             }
         } catch (RetrievalException ex) {
             msg = ex.getLocalizedMessage();
@@ -137,26 +112,6 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
         }
     }
 
-    @Override
-    public JMenuItem getPopupPresenter() {
-        if (isVisualDBG) {
-            addEngineListener();
-            return new JMenuItem(this);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public JMenuItem getMenuPresenter() {
-        if (isVisualDBG) {
-            addEngineListener();
-            return new JMenuItem(this);
-        } else {
-            return null;
-        }
-    }
-    
     private DebuggerManagerAdapter enableListener = null;
     
     private void addEngineListener() {
@@ -168,13 +123,14 @@ public class ScreenshotGrabAction extends AbstractAction implements Runnable, Pr
             new DebuggerManagerAdapter() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    firePropertyChange("enabled", null, null);
+                    //firePropertyChange("enabled", null, null);
+                    setEnabled(ScreenshotUIManager.ACTION_TAKE_SCREENSHOT, RemoteServices.getServiceClass(debugger) != null);
                 }
             };
         
-        DebuggerManager.getDebuggerManager().addDebuggerListener(
-                DebuggerManager.PROP_CURRENT_ENGINE, enableListener);
+        //DebuggerManager.getDebuggerManager().addDebuggerListener(
+        //        DebuggerManager.PROP_CURRENT_ENGINE, enableListener);
         RemoteServices.addServiceListener(enableListener);
     }
-    
+
 }

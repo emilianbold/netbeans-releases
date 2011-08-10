@@ -59,6 +59,20 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
         </folder>
     </folder>
 
+    <folder name="Servers">
+        <file name="CoherenceInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.coherence.server.CoherenceInstanceProvider.getCoherenceProvider"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.coherence.server.CoherenceInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+
+        <file name="CoherenceWizardProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.coherence.server.wizard.CoherenceWizardProvider.create"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.coherence.server.wizard.CoherenceWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+        </file>
+    </folder>
+
     <folder name="Loaders">
         <folder name="text">
             <folder name="coh-cache+xml">
@@ -283,14 +297,6 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
             </file>
         </folder>
     </folder>
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org.netbeans.modules.coherence.AllServersNode.instance">
-                <attr name="position" intvalue="444"/>
-            </file>
-            <!--file name="org.netbeans.modules.coherence.properties.AllPropsNode.instance" /-->
-        </folder>
-    </folder>
 
     <!-- Templates -->
     <folder name="Templates">
@@ -327,7 +333,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="30"/>
             </file>
-            
+
             <file name="PortableObject.java" url="templates/PortableObject_java">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>

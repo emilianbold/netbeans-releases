@@ -39,75 +39,53 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
+package org.netbeans.modules.coherence.server.actions;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.coherence.server.CoherenceServer;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
-@OptionsPanelController.SubRegistration(location = "Advanced",
-displayName = "#AdvancedOption_DisplayName_CoherenceLocation",
-keywords = "#AdvancedOption_Keywords_CoherenceLocation",
-keywordsCategory = "Advanced/CoherenceLocation")
-public final class CoherenceLocationOptionsPanelController extends OptionsPanelController {
+/**
+ * Performs start of Coherence server.
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class StartServerAction extends NodeAction {
 
-    private CoherenceLocationPanel panel;
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
-
-    public void update() {
-        getPanel().load();
-        changed = false;
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(StartServerAction.class, "ACTION_ServerStart"); // NOI18N
     }
 
-    public void applyChanges() {
-        getPanel().store();
-        changed = false;
-    }
-
-    public void cancel() {
-        // need not do anything special, if no changes have been persisted yet
-    }
-
-    public boolean isValid() {
-        return getPanel().valid();
-    }
-
-    public boolean isChanged() {
-        return changed;
-    }
-
+    @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return HelpCtx.DEFAULT_HELP;
     }
 
-    public JComponent getComponent(Lookup masterLookup) {
-        return getPanel();
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-
-    private CoherenceLocationPanel getPanel() {
-        if (panel == null) {
-            panel = new CoherenceLocationPanel(this);
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            for (Node node : activatedNodes) {
+                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+                if (coherenceServer != null) {
+                    coherenceServer.start();
+                }
+            }
         }
-        return panel;
     }
 
-    void changed() {
-        if (!changed) {
-            changed = true;
-            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            for (Node node : activatedNodes) {
+                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+                if (coherenceServer != null) {
+                    return !coherenceServer.isRunning();
+                }
+            }
         }
-        pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+        return false;
     }
 }
