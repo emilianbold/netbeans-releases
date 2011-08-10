@@ -1,5 +1,5 @@
 Code completion result for source line:
-extends |Cls2DeclarationTest
+$clazz = new |MyNonAbstractClass();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
@@ -7,9 +7,7 @@ PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    User                            [PUBLIC]   null
-CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
-CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
-CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
+CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 ------------------------------------
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Base                            [PUBLIC]   Brite
@@ -39,8 +37,11 @@ CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
 CLASS      Cls2                            [PUBLIC]   TestCase.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration.php
+CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
+CLASS      Cls3DeclartionTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsBaseDeclarationTest          [PUBLIC]   clsDeclaration.php
 CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration.php
+CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144830.php
 CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
@@ -60,8 +61,6 @@ CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      Magazine                        [PUBLIC]   mixedtypes.php
 CLASS      Magazine_1                      [PUBLIC]   mixedtypes_1.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
-CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
-CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
 CLASS      NewClass                        [PUBLIC]   issue171232_01.php
@@ -71,7 +70,6 @@ CLASS      Person148213                    [PUBLIC]   issue148213.php
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
 CLASS      Request                         [PUBLIC]   Brite\Base
-CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   User
@@ -99,7 +97,6 @@ CLASS      UsageReturnTypeInOtherFile      [PUBLIC]   Usage.php
 CLASS      User                            [PUBLIC]   User
 CLASS      User                            [PUBLIC]   issue142051.php
 CLASS      User147427                      [PUBLIC]   issue147427.php
-CLASS      UserAbstract                    [PUBLIC,   User
 CLASS      VarAdvancedTest                 [PUBLIC]   varAssignment2.php
 CLASS      VarTypeCommentTest              [PUBLIC]   varTypeComment.php
 CLASS      ViewController                  [PUBLIC]   Brite\Controller

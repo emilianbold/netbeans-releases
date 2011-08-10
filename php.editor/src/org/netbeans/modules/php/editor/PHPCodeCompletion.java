@@ -489,22 +489,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         boolean addedExact = false;
         final NameKind query;
         if (classes.size() == 1) {
-            // if there is only once class find constructors for it
-            query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.prefix(prefix);
-            autoCompleteConstructors(completionResult, request, model, query);
+            ClassElement clazz = (ClassElement) classes.toArray()[0];
+            if (!clazz.isAbstract()) {
+                // if there is only once class find constructors for it
+                query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.prefix(prefix);
+                autoCompleteConstructors(completionResult, request, model, query);
+            }
         } else {
             query = NameKind.exact(prefix);
             for (ClassElement clazz : classes) {
-                // check whether the prefix is exactly the class
-                if (clazz.getName().equals(request.prefix)) {
-                    // find constructor of the class
-                    if (!addedExact) { // add the constructors only once
-                        autoCompleteConstructors(completionResult, request, model, query);
-                        addedExact = true;
+                if (!clazz.isAbstract()) {
+                    // check whether the prefix is exactly the class
+                    if (clazz.getName().equals(request.prefix)) {
+                        // find constructor of the class
+                        if (!addedExact) { // add the constructors only once
+                            autoCompleteConstructors(completionResult, request, model, query);
+                            addedExact = true;
+                        }
+                    } else {
+                        // put to the cc just the class
+                        completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, null));
                     }
-                } else {
-                    // put to the cc just the class
-                    completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, null));
                 }
             }
         }
