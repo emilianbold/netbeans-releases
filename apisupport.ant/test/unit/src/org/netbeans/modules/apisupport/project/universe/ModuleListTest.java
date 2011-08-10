@@ -447,9 +447,6 @@ public class ModuleListTest extends TestBase {
 
     public void testNormalizedClassPathExtensions() throws Exception { // #199904
         File cluster = new File(getWorkDir(), "cluster");
-        if (!new File(cluster, "modules").mkdirs()) {
-            throw new IOException();
-        }
         TestFileUtils.writeZipFile(new File(cluster, "modules/m.jar"), "META-INF/MANIFEST.MF:OpenIDE-Module: m\nClass-Path: ../x.jar\n");
         ModuleList ml = ModuleList.scanCluster(cluster, null, false, null);
         ModuleEntry e = ml.getEntry("m");
