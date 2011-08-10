@@ -54,6 +54,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.font.TextLayout;
@@ -110,7 +112,7 @@ import org.openide.util.WeakListeners;
 
 @SuppressWarnings("ClassWithMultipleLoggers") //NOI18N
 public final class DocumentView extends EditorView
-        implements EditorView.Parent, PropertyChangeListener, ChangeListener
+        implements EditorView.Parent, PropertyChangeListener, ChangeListener, MouseWheelListener
 {
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.DocumentView.level=FINE
@@ -162,7 +164,12 @@ public final class DocumentView extends EditorView
      * Value of the property is only examined at time of view.setParent().
      */
     private static final String ACCURATE_SPAN_PROPERTY = "document-view-accurate-span";
-
+    
+    /**
+     * Component's client property (containing Integer) that defines by how many points
+     * the default font size should be increased/decreased.
+     */
+    private static final String TEXT_ZOOM_PROPERTY = "text-zoom";
 
     static enum LineWrapType {
         NONE("none"), //NOI18N
@@ -293,6 +300,10 @@ public final class DocumentView extends EditorView
      */
     private FontRenderContext fontRenderContext;
     
+    private AttributeSet defaultColoring;
+    
+    private int textLimitLine;
+    
     private Font defaultFont;
 
     /**
@@ -322,9 +333,11 @@ public final class DocumentView extends EditorView
 
     private boolean customBackground;
 
-    private Color defaultLimitLine;
+    private Color textLimitLineColor;
 
-    private int defaultLimitLineX;
+    private int textLimitLineX;
+    
+    private boolean nonPrintableCharactersVisible;
     
     private LineWrapType lineWrapType;
 
@@ -355,6 +368,8 @@ public final class DocumentView extends EditorView
     private Map<Font,FontInfo> fontInfos = new HashMap<Font, FontInfo>(4);
     
     private Font fallbackFont;
+    
+    private MouseWheelListener origMouseWheelListener;
     
     public DocumentView(Element elem) {
         super(elem);
@@ -908,9 +923,7 @@ public final class DocumentView extends EditorView
                 @Override
                 public void run() {
                     if (textComponent != null) {
-                        if (listeningOnViewport != null) {
-                            listeningOnViewport.removeChangeListener(DocumentView.this);
-                        }
+                        uninstallFromViewport();
                         textComponent.removePropertyChangeListener(DocumentView.this);
                         textLayoutCache = null;
                         viewUpdates = null;
@@ -988,7 +1001,7 @@ public final class DocumentView extends EditorView
             @Override
             public void run() {
                 if (updateFonts) {
-                    updateDefaultFontAndColors(null); // Includes releaseChildren()
+                    updateDefaultFontAndColors(); // Includes releaseChildren()
                 } else {
                     releaseChildrenUnlocked();
                 }
@@ -1014,11 +1027,21 @@ public final class DocumentView extends EditorView
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             if (listeningOnViewport != viewport) {
-                if (listeningOnViewport != null) {
-                    listeningOnViewport.removeChangeListener(this);
-                }
-                viewport.addChangeListener(this);
+                uninstallFromViewport();
                 listeningOnViewport = viewport;
+                if (listeningOnViewport != null) {
+                    listeningOnViewport.addChangeListener(this);
+                    // Assume JViewport's parent JScrollPane won't change without viewport change as well
+                    Component scrollPane = listeningOnViewport.getParent();
+                    MouseWheelListener[] mwls = scrollPane.getListeners(MouseWheelListener.class);
+                    // Only function in regular setup when there's BasicScrollPaneUI.Handler listening and nothing else
+                    if (mwls.length == 1) {
+                        origMouseWheelListener = mwls[0]; // Component.addMouseWheelListener() checks listener's non-nullity
+                        scrollPane.removeMouseWheelListener(origMouseWheelListener);
+                    }
+                    // Listener in "this" will delegate to origMouseWheelListener when desired (Ctrl not pressed).
+                    listeningOnViewport.getParent().addMouseWheelListener(this);
+                }
             }
             newRect = viewport.getViewRect();
 
@@ -1037,6 +1060,18 @@ public final class DocumentView extends EditorView
                 }
                 children.recomputeChildrenWidths();
             }
+        }
+    }
+    
+    private void uninstallFromViewport() {
+        if (listeningOnViewport != null) {
+            // Assume JViewport's parent JScrollPane won't change without viewport change as well
+            listeningOnViewport.getParent().removeMouseWheelListener(this);
+            if (origMouseWheelListener != null) {
+                listeningOnViewport.getParent().addMouseWheelListener(origMouseWheelListener);
+            }
+            listeningOnViewport.removeChangeListener(this);
+            listeningOnViewport = null;
         }
     }
     
@@ -1065,13 +1100,11 @@ public final class DocumentView extends EditorView
             prefsListener = new PreferenceChangeListener() {
                 @Override
                 public void preferenceChange(PreferenceChangeEvent evt) {
-                    String key = evt.getKey();
-                    if (key ==  null || key.equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
-                        releaseChildren(false);
-                    }
+                    updatePreferencesSettings(true);
                 }
             };
             prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
+            updatePreferencesSettings(false);
         }
 
         if (lookupListener == null) {
@@ -1087,7 +1120,7 @@ public final class DocumentView extends EditorView
                                 @Override
                                 public void run() {
                                     if (textComponent != null) {
-                                        updateDefaultFontAndColors(result);
+                                        updateFontColorSettings(result, true);
                                     }
                                 }
                             });
@@ -1100,7 +1133,8 @@ public final class DocumentView extends EditorView
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
             // Called without explicitly acquiring mutex but it's called only when lookup listener is null
             // so it should be acquired.
-            updateDefaultFontAndColors(result);
+            updateFontColorSettings(result, false);
+            updateDefaultFontAndColors();
 
             result.addLookupListener(WeakListeners.create(LookupListener.class,
                     lookupListener, result));
@@ -1115,12 +1149,61 @@ public final class DocumentView extends EditorView
         }
     }
     
+    /* private */ void updatePreferencesSettings(boolean updateComponent) {
+        boolean nonPrintableCharactersVisibleOrig = nonPrintableCharactersVisible;
+        nonPrintableCharactersVisible = Boolean.TRUE.equals(prefs.getBoolean(
+                SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE, false));
+        boolean releaseChildren = updateComponent && 
+                (nonPrintableCharactersVisible != nonPrintableCharactersVisibleOrig);
+        if (releaseChildren) {
+            releaseChildren(false);
+        }
+    }
+
+    /* private */ void updateFontColorSettings(Lookup.Result<FontColorSettings> result, boolean updateComponent) {
+        AttributeSet defaultColoringOrig = defaultColoring;
+        FontColorSettings fcs = result.allInstances().iterator().next();
+        AttributeSet newDefaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        // Attempt to always hold non-null content of "defaultColoring" variable once it became non-null
+        if (newDefaultColoring != null) {
+            defaultColoring = newDefaultColoring;
+        }
+        Color textLimitLineColorOrig = textLimitLineColor;
+        AttributeSet textLimitLineColoring = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
+        textLimitLineColor = (textLimitLineColoring != null) 
+                ? (Color) textLimitLineColoring.getAttribute(StyleConstants.Foreground)
+                : null;
+        if (textLimitLineColor == null) {
+            textLimitLineColor = Color.PINK;
+        }
+        boolean releaseChildren = updateComponent &&
+                (!defaultColoring.equals(defaultColoringOrig));
+        if (releaseChildren) {
+            releaseChildren(true); // update fonts and colors
+        } else {
+            boolean repaint = updateComponent &&
+                    (textLimitLineColor == null || !textLimitLineColor.equals(textLimitLineColorOrig));
+            if (repaint) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JTextComponent tc = textComponent;
+                        if (tc != null) {
+                            tc.repaint();
+                        }
+                    }
+                });
+                
+            }
+        }
+    }
+    
     private void updateTextLimitLine(Document doc) {
         // #183797 - most likely seeing a non-nb document during the editor pane creation
         Integer dllw = (Integer) doc.getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
         int textLimitLineColumn = (dllw != null) ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
         boolean drawTextLimitLine = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
-        defaultLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
+        textLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
     }
     
     private void updateLineWrapType() {
@@ -1142,41 +1225,34 @@ public final class DocumentView extends EditorView
         availableWidthValid = false;
     }
 
-    /*private*/ void updateDefaultFontAndColors(Lookup.Result<FontColorSettings> result) {
+    /*private*/ void updateDefaultFontAndColors() {
         // This should be called with mutex acquired
         // Called only with textComponent != null
         Font font = textComponent.getFont();
         Color foreColor = textComponent.getForeground();
         Color backColor = textComponent.getBackground();
-        Color limitLineColor = Color.PINK;
-        if (result != null) {
-            FontColorSettings fcs = result.allInstances().iterator().next();
-            AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-            if (attributes != null) {
-                font = ViewUtils.getFont(attributes, new Font(font.getFamily(), 0, font.getSize()));
-                Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
-                if (c != null) {
-                    foreColor = c;
-                }
-                c = (Color) attributes.getAttribute(StyleConstants.Background);
-                if (c != null) {
-                    backColor = c;
-                }
-                renderingHints = (Map<?, ?>) attributes.getAttribute(EditorStyleConstants.RenderingHints);
+        if (defaultColoring != null) {
+            Font validFont = (font != null) ? font : fallbackFont();
+            font = ViewUtils.getFont(defaultColoring, validFont);
+            Integer textZoom = (Integer) textComponent.getClientProperty(TEXT_ZOOM_PROPERTY);
+            if (textZoom != null && textZoom != 0) {
+                int newSize = Math.max(font.getSize() + textZoom, 2);
+                font = new Font(font.getFamily(), font.getStyle(), newSize);
             }
-            attributes = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
-            if (attributes != null) {
-                Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
-                if (c != null) {
-                    limitLineColor = c;
-                }
+            Color c = (Color) defaultColoring.getAttribute(StyleConstants.Foreground);
+            if (c != null) {
+                foreColor = c;
             }
+            c = (Color) defaultColoring.getAttribute(StyleConstants.Background);
+            if (c != null) {
+                backColor = c;
+            }
+            renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
         }
 
         defaultFont = font;
         defaultForeground = foreColor;
         defaultBackground = backColor;
-        defaultLimitLine = limitLineColor;
 
         if (!customFont && textComponent != null) {
             textComponent.setFont(defaultFont);
@@ -1587,7 +1663,7 @@ public final class DocumentView extends EditorView
 
     public boolean isShowNonPrintingCharacters() {
         checkSettingsInfo();
-        return prefs.getBoolean(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE, false);
+        return nonPrintableCharactersVisible;
     }
 
     LineWrapType getLineWrapType() {
@@ -1597,11 +1673,11 @@ public final class DocumentView extends EditorView
 
     Color getTextLimitLineColor() {
         checkSettingsInfo();
-        return defaultLimitLine;
+        return textLimitLineColor;
     }
 
     int getTextLimitLineX() {
-        return defaultLimitLineX;
+        return textLimitLineX;
     }
 
     TextLayout getNewlineCharTextLayout() {
@@ -1773,6 +1849,30 @@ public final class DocumentView extends EditorView
         }
     }
     
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent evt) {
+        // Since consume() idoes not prevent BasicScrollPaneUI.Handler from operation
+        // the code in DocumentView.setParent() removes BasicScrollPaneUI.Handler and stores it
+        // in origMouseWheelListener and installs "this" as MouseWheelListener instead.
+        // This method only calls origMouseWheelListener if Ctrl is not pressed (zooming in/out).
+        if (evt.isControlDown() && evt.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
+            // Subtract rotation (instead of adding) in order to increase the font by rotating wheel up.
+            JTextComponent tc = textComponent;
+            if (tc != null) {
+                Integer textZoom = ((Integer) tc.getClientProperty(TEXT_ZOOM_PROPERTY));
+                if (textZoom == null) {
+                    textZoom = 0;
+                }
+                textZoom -= evt.getWheelRotation();
+                tc.putClientProperty(TEXT_ZOOM_PROPERTY, textZoom);
+            }
+            releaseChildren(true); // Release children with updating the fonts
+//            evt.consume(); // consuming the event has no effect
+        } else {
+            origMouseWheelListener.mouseWheelMoved(evt);
+        }
+    }
+
     @Override
     protected String getDumpName() {
         return "DV";
