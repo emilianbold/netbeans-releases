@@ -170,6 +170,9 @@ public class BaseTest extends ExtJellyTestCase {
         inspector = new ComponentInspectorOperator();
         formnode.select();
         formnode.performPopupAction("Open");
+        FormDesignerOperator designer=new FormDesignerOperator(FILE_NAME);
+        designer.source();
+        designer.design();
         //init property sheet and select the proper "tab"
         PropertySheetOperator pso = cio.properties();
  
@@ -209,6 +212,10 @@ public class BaseTest extends ExtJellyTestCase {
         // change order
         formnode.select();
         formnode.performPopupAction("Open");
+        designer=new FormDesignerOperator(FILE_NAME);
+        designer.source();
+        designer.design();
+        inspector=new ComponentInspectorOperator();
         new ActionNoBlock(null, "Change Order...").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
         NbDialogOperator changeOrder = new NbDialogOperator("Change Order");
         new JListOperator(changeOrder).selectItem(1);
