@@ -56,6 +56,7 @@ import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -82,7 +83,8 @@ public final class SourceJavadocAttacherUtil {
 
     @CheckForNull
     @NbBundle.Messages({
-        "TXT_SelectJavadoc=Select Javadoc"
+        "TXT_SelectJavadoc=Select Javadoc",
+        "TXT_InvalidJavadocRoot=Invalid Javadoc root"
     })
     public static List<? extends URI> selectJavadoc(
             @NonNull final URL root,
@@ -100,7 +102,10 @@ public final class SourceJavadocAttacherUtil {
             try {
                 return selectJavadoc.getJavadoc();
             } catch (Exception e) {
-                //todo:
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            Bundle.TXT_InvalidJavadocRoot(),
+                            NotifyDescriptor.ERROR_MESSAGE));
             }
         }
         return null;
@@ -108,7 +113,8 @@ public final class SourceJavadocAttacherUtil {
 
     @CheckForNull
     @NbBundle.Messages({
-        "TXT_SelectSources=Select Sources"
+        "TXT_SelectSources=Select Sources",
+        "TXT_InvalidSourceRoot=Invalid Source root"
     })
     public static List<? extends URI> selectSources(
             @NonNull final URL root,
@@ -126,7 +132,10 @@ public final class SourceJavadocAttacherUtil {
             try {
                 return selectSources.getSources();
             } catch (Exception e) {
-                //todo:
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            Bundle.TXT_InvalidSourceRoot(),
+                            NotifyDescriptor.ERROR_MESSAGE));
             }
         }
         return null;
