@@ -228,6 +228,35 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
         }
         return -1;
     }
+    
+    @Override
+    public int getOffsetForLine(final FileObject file, final int line) {
+        try {
+            return performOnAWT(new Callable<Integer>() {
+
+                @Override
+                public Integer call() throws Exception {
+                    if (line == -1) {
+                        return -1;
+                    }
+
+                    DataObject dobj = DataObject.find(file);
+
+                    if (dobj != null) {
+                        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+
+                        if (ec != null) {
+                            return NbDocument.findLineOffset(ec.getDocument(), line);
+                        }
+                    }
+
+                    return -1;
+                }
+            });
+        } catch (Exception e) {
+        }
+        return -1;
+    }
 
     @Override
     public boolean isOffsetValid(final FileObject file, final int offset) {

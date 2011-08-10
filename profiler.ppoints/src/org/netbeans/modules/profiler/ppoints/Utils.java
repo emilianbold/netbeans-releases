@@ -48,7 +48,6 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.global.ProfilingSessionStatus;
 import org.netbeans.lib.profiler.ui.components.table.EnhancedTableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
-import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,13 +55,11 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import java.awt.Component;
 import java.awt.Font;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -83,7 +80,6 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.profiler.api.EditorContext;
 import org.netbeans.modules.profiler.api.EditorSupport;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
@@ -566,53 +562,19 @@ public class Utils {
         File file = FileUtil.normalizeFile(new File(location.getFile()));
         FileObject fileObject = FileUtil.toFileObject(file);
 
-        if ((fileObject == null) || !fileObject.isValid()) {
-            return -1;
-        }
+        if ((fileObject == null) || !fileObject.isValid()) return -1;
 
-        DataObject dataObject = null;
-
-        try {
-            dataObject = DataObject.find(fileObject);
-        } catch (DataObjectNotFoundException ex) {
-        }
-
-        if (dataObject == null) {
-            return -1;
-        }
-
-        EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-
-        if (editorCookie == null) {
-            return -1;
-        }
-
-        StyledDocument document = null;
-
-        try {
-            document = editorCookie.openDocument(); // blocks until the document is loaded
-        } catch (IOException ex) {
-        }
-
-        if (document == null) {
-            return -1;
-        }
+        int linePosition = EditorSupport.getOffsetForLine(fileObject, location.getLine() - 1); // Line is 1-based, needs to be 0-based
+        if (linePosition == -1) return -1;
         
-        int linePosition;
         int lineOffset;
-
-        try {
-            linePosition = NbDocument.findLineOffset(document, location.getLine() - 1); // Line is 1-based, needs to be 0-based for NbDocument
-            
-            if (location.isLineStart()) {
-                lineOffset = 0;
-            } else if (location.isLineEnd()) {
-                lineOffset = NbDocument.findLineOffset(document, location.getLine()) - linePosition - 1; // TODO: workaround to get line length, could fail at the end of last line!!!
-            } else {
-                lineOffset = location.getOffset();
-            }
-        } catch (Exception e) {
-            return -1;
+        if (location.isLineStart()) {
+            lineOffset = 0;
+        } else if (location.isLineEnd()) {
+            lineOffset = EditorSupport.getOffsetForLine(fileObject, location.getLine()) - linePosition - 1; // TODO: workaround to get line length, could fail at the end of last line!!!
+            if (lineOffset == -1) return -1;
+        } else {
+            lineOffset = location.getOffset();
         }
 
         return linePosition + lineOffset;
