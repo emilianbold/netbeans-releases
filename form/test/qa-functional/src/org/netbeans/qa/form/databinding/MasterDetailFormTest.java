@@ -123,8 +123,8 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
         n.select();
         n.performPopupAction("Open");
         FormDesignerOperator designer = new FormDesignerOperator(_newFormName);
-        //designer.source();
-        //designer.design();
+        designer.source();
+        designer.design();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
 
         // ... and check the components inside Other Components
