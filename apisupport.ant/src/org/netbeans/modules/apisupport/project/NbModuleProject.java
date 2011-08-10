@@ -621,7 +621,8 @@ public final class NbModuleProject implements Project {
         if (file == null) {
             return null;
         }
-        return NbPlatform.getPlatformByDestDir(file);
+        String harnessDir = evaluator().getProperty("harness.dir");
+        return NbPlatform.getPlatformByDestDir(file, harnessDir != null ? getHelper().resolveFile(harnessDir) : null);
     }
     
     File getPlatformFile() {

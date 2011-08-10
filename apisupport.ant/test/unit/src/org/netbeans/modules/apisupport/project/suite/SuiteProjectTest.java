@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.suite;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,13 +57,16 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * Test basic {@link SuiteProject} stuff.
@@ -144,6 +148,28 @@ public class SuiteProjectTest extends NbTestCase {
         
         assertEquals("nbplatform.active change took effect", "default", eval.getProperty("nbplatform.active"));
         assertEquals("#67628: netbeans.dest.dir change did as well", NbPlatform.getDefaultPlatform().getDestDir(), suite.getHelper().resolveFile(eval.getProperty("netbeans.dest.dir")));
+    }
+
+    public void testGetPlatformVersionedLocation() throws Exception {
+        File plafdir = new File(getWorkDir(), "plaf");
+        TestFileUtils.writeZipFile(new File(plafdir, "platform/core/core.jar"), "j:unk");
+        File harnessdir = new File(getWorkDir(), "harness");
+        TestFileUtils.writeZipFile(new File(harnessdir, "modules/org-netbeans-modules-apisupport-harness.jar"), "META-INF/MANIFEST.MF:OpenIDE-Module-Specification-Version: 1.23\n");
+        File suitedir = new File(getWorkDir(), "suite");
+        SuiteProjectGenerator.createSuiteProject(suitedir, "special", false);
+        FileObject suitedirFO = FileUtil.toFileObject(suitedir);
+        FileObject plafProps = suitedirFO.getFileObject("nbproject/platform.properties");
+        EditableProperties ep = Util.loadProperties(plafProps);
+        ep.setProperty("suite.dir", "${basedir}");
+        ep.setProperty("nbplatform.special.netbeans.dest.dir", "${suite.dir}/../plaf");
+        ep.setProperty("nbplatform.special.harness.dir", "${suite.dir}/../harness");
+        ep.setProperty("cluster.path", new String[] {"${nbplatform.active.dir}/platform:", "${nbplatform.special.harness.dir}"});
+        Util.storeProperties(plafProps, ep);
+        SuiteProject p = (SuiteProject) ProjectManager.getDefault().findProject(suitedirFO);
+        NbPlatform plaf = p.getPlatform(true);
+        assertEquals(plafdir, plaf.getDestDir());
+        assertEquals(harnessdir, plaf.getHarnessLocation());
+        assertEquals(HarnessVersion.V70, plaf.getHarnessVersion());
     }
 
 }
