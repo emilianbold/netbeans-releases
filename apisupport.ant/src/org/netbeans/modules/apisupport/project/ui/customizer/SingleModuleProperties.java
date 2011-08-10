@@ -251,7 +251,8 @@ public final class SingleModuleProperties extends ModuleProperties {
         String nbDestDirS = getEvaluator().getProperty("netbeans.dest.dir"); // NOI18N
         LOG.log(Level.FINE, "Setting NBPlatform for module. '" + getCodeNameBase() + "' in dir '" + nbDestDirS + "'");
         if (nbDestDirS != null) {
-            NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS));
+            String harnessDir = getEvaluator().getProperty("harness.dir");
+            NbPlatform plaf = NbPlatform.getPlatformByDestDir(getHelper().resolveFile(nbDestDirS), harnessDir != null ? getHelper().resolveFile(harnessDir) : null);
             if (!plaf.isValid()) { // #134492
                 NbPlatform def = NbPlatform.getDefaultPlatform();
                 if (def != null) {

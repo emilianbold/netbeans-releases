@@ -66,7 +66,7 @@ final class BinaryEntry extends AbstractBinaryEntry {
     
     //private boolean recurring;
     public File getSourceLocation() {
-        NbPlatform platform = NbPlatform.getPlatformByDestDir(nbdestdir);
+        NbPlatform platform = NbPlatform.getPlatformByDestDir(nbdestdir, null);
             /*
             assert !recurring : jar;
             recurring = true;
