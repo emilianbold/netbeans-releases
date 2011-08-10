@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.hints;
 
 import java.util.Collections;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -59,28 +60,26 @@ import org.openide.util.NbBundle;
  *
  * @author mfukala@netbeans.org
  */
-public class SurroundWithTag extends  Hint {
+public class SurroundWithTag extends Hint {
 
     private static final Rule RULE = new SurroundWithTagRule();
-    
     private static final String DISPLAYNAME = NbBundle.getMessage(SurroundWithTag.class, "MSG_SurroundWithTag");
-    
+
     public SurroundWithTag(RuleContext context, OffsetRange range) {
-        super(RULE, 
-                DISPLAYNAME, 
-                context.parserResult.getSnapshot().getSource().getFileObject(), 
-                range, 
-                Collections.<HintFix>singletonList(new SurroundWithTagHintFix(context)), 
+        super(RULE,
+                DISPLAYNAME,
+                context.parserResult.getSnapshot().getSource().getFileObject(),
+                range,
+                Collections.<HintFix>singletonList(new SurroundWithTagHintFix(context)),
                 10);
     }
-    
+
     private static class SurroundWithTagHintFix implements HintFix {
 
         private static final String OPEN_TAG = "<p>"; //NOI18N
         private static final String CLOSE_TAG = "</p>"; //NOI18N
-        
         RuleContext context;
-        
+
         public SurroundWithTagHintFix(RuleContext context) {
             this.context = context;
         }
@@ -104,28 +103,33 @@ public class SurroundWithTag extends  Hint {
                         //   at the caret which wouldn't happen for the empty tags: <>...</> 
                         //
                         //I may possibly fix both issues later if one complains
-                        
-                        context.doc.insertString(context.selectionStart, OPEN_TAG,null);
-                        context.doc.insertString(context.selectionEnd + OPEN_TAG.length(), CLOSE_TAG,null);
-                        
-                        JTextComponent pane = EditorRegistry.focusedComponent();
-                        
-                        //select the "p" char so it is overwritten once user starts typing
-                        pane.select(context.selectionStart + 1, context.selectionStart + 2);
-                        
-                        //set caret after the opening tag delimiter
-                        pane.setCaretPosition(context.selectionStart + 1); 
-                        
-                        //invoke instant rename
-                        BaseAction instantRenameAction = (BaseAction)CslActions.createInstantRenameAction();
-                        instantRenameAction.actionPerformed(null, pane);
-                        
+
+                        context.doc.insertString(context.selectionStart, OPEN_TAG, null);
+                        context.doc.insertString(context.selectionEnd + OPEN_TAG.length(), CLOSE_TAG, null);
+
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                JTextComponent pane = EditorRegistry.focusedComponent();
+
+                                //select the "p" char so it is overwritten once user starts typing
+                                pane.select(context.selectionStart + 1, context.selectionStart + 2);
+
+                                //set caret after the opening tag delimiter
+                                pane.setCaretPosition(context.selectionStart + 1);
+                                
+                                //invoke instant rename
+                                BaseAction instantRenameAction = (BaseAction) CslActions.createInstantRenameAction();
+                                instantRenameAction.actionPerformed(null, pane);
+                            }
+                        });
+
                     } catch (BadLocationException ex) {
                         //ignore
                     }
-                    
+
                 }
-                
             });
         }
 
@@ -138,9 +142,8 @@ public class SurroundWithTag extends  Hint {
         public boolean isInteractive() {
             return false;
         }
-        
     }
-    
+
     private static class SurroundWithTagRule implements Rule {
 
         @Override
@@ -162,6 +165,5 @@ public class SurroundWithTag extends  Hint {
         public HintSeverity getDefaultSeverity() {
             return HintSeverity.INFO;
         }
-        
     }
 }
