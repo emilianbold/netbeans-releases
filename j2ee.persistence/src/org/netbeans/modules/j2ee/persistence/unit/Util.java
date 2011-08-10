@@ -67,6 +67,7 @@ public class Util {
 
     private static final String[] defaultJPA20Keys = new String[]{"javax.persistence.lock.timeout", "javax.persistence.query.timeout", "javax.persistence.validation.group.pre-persist", "javax.persistence.validation.group.pre-update", "javax.persistence.validation.group.pre-remove"};
     private static final String[] eclipselink20Keys = new String[]{"eclipselink.temporal.mutable", "eclipselink.cache.type.default", "eclipselink.cache.size.default", "eclipselink.cache.shared.default", "eclipselink.flush-clear.cache", "eclipselink.orm.throw.exceptions", "eclipselink.exception-handler", "eclipselink.weaving", "eclipselink.weaving.lazy", "eclipselink.weaving.changetracking", "eclipselink.weaving.fetchgroups", "eclipselink.weaving.internal", "eclipselink.weaving.eager", "eclipselink.session.customizer", "eclipselink.validation-only", "eclipselink.classloader", "eclipselink.profiler", "eclipselink.persistence.context.reference-mode", "eclipselink.jdbc.bind-parameters", "eclipselink.jdbc.native-sql", "eclipselink.jdbc.batch-writing", "eclipselink.jdbc.cache-statements", "eclipselink.jdbc.cache-statements.size", "eclipselink.jdbc.exclusive-connection.is-lazy", "eclipselink.jdbc.exclusive-connection.mode", "eclipselink.jdbc.read-connections.max", "eclipselink.jdbc.read-connections.min", "eclipselink.jdbc.read-connections.shared", "eclipselink.jdbc.write-connections.max", "eclipselink.jdbc.write-connections.min", "eclipselink.logging.logger", "eclipselink.logging.level", "eclipselink.logging.timestamp", "eclipselink.logging.thread", "eclipselink.logging.session", "eclipselink.logging.exceptions", "eclipselink.logging.file", "eclipselink.session-name", "eclipselink.sessions-xml", "eclipselink.session-event-listener", "eclipselink.session.include.descriptor.queries", "eclipselink.target-database", "eclipselink.target-server", "eclipselink.application-location", "eclipselink.create-ddl-jdbc-file-name", "eclipselink.drop-ddl-jdbc-file-name", "eclipselink.ddl-generation.output-mode", "eclipselink.weaving.changetracking", "eclipselink.canonicalmodel.prefix", "eclipselink.canonicalmodel.suffix", "eclipselink.canonicalmodel.subpackage"};//TODO: handle properties {propname.entityname}
+    private static final String[] hibernate20Keys = new String[]{"hibernate.dialect", "hibernate.show_sql", "hibernate.format_sql", "hibernate.transaction.manager_lookup_class", "hibernate.max_fetch_depth", "hibernate.ejb.cfgfile", "hibernate.archive.autodetection", "hibernate.ejb.interceptor", "hibernate.ejb.interceptor.session_scoped", "hibernate.ejb.naming_strategy", "hibernate.ejb.use_class_enhancer", "hibernate.ejb.discard_pc_on_close", "hibernate.ejb.resource_scanner"};//TODO: handle properties {propname.entityname}
 
     /*
      * return all properties for specific provider, except some handled specially
@@ -79,6 +80,8 @@ public class Util {
         results.addAll(propCat.getPropertyNames());
         if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(propCat)) {
             Collections.addAll(results, eclipselink20Keys);//TODO: should it be moved into a provider
+        } else if(ProviderUtil.HIBERNATE_PROVIDER2_0.equals(propCat)){
+            Collections.addAll(results, hibernate20Keys);//TODO: should it be moved into a provider
         }
         return results;
     }

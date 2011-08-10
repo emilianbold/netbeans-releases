@@ -487,44 +487,42 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             completionResult.setFilterable(false);
         }
         boolean addedExact = false;
+        final NameKind query;
         if (classes.size() == 1) {
-            // if there is only once class find constructors for it
-            final NameKind query = isCamelCase ?
-                NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) :
-                NameKind.prefix(prefix);
-            Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
-            Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
-
-            for (MethodElement constructor : constructors) {
-                for (final PHPCompletionItem.NewClassItem newClassItem :
-                        PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
-                    completionResult.add(newClassItem);
-                }
+            ClassElement clazz = (ClassElement) classes.toArray()[0];
+            if (!clazz.isAbstract()) {
+                // if there is only once class find constructors for it
+                query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.prefix(prefix);
+                autoCompleteConstructors(completionResult, request, model, query);
             }
         } else {
-            final NameKind query = NameKind.exact(prefix);
+            query = NameKind.exact(prefix);
             for (ClassElement clazz : classes) {
-                // check whether the prefix is exactly the class
-                if (clazz.getName().equals(request.prefix)) {
-                    // find constructor of the class
-                    if (!addedExact) { // add the constructors only once
-                        Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
-                        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
-                        for (MethodElement constructor : constructors) {
-                            for (final PHPCompletionItem.NewClassItem newClassItem :
-                                    PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
-                                completionResult.add(newClassItem);
-                            }
+                if (!clazz.isAbstract()) {
+                    // check whether the prefix is exactly the class
+                    if (clazz.getName().equals(request.prefix)) {
+                        // find constructor of the class
+                        if (!addedExact) { // add the constructors only once
+                            autoCompleteConstructors(completionResult, request, model, query);
+                            addedExact = true;
                         }
-                        addedExact = true;
+                    } else {
+                        // put to the cc just the class
+                        completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, null));
                     }
-                } else {
-                    // put to the cc just the class
-                    completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, null));
                 }
             }
         }
+    }
 
+    private void autoCompleteConstructors(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request, final Model model, final NameKind query) {
+        Set<AliasedName> aliasedNames = ModelUtils.getAliasedNames(model, request.anchor);
+        Set<MethodElement> constructors = request.index.getConstructors(query, aliasedNames, Trait.ALIAS);
+        for (MethodElement constructor : constructors) {
+            for (final PHPCompletionItem.NewClassItem newClassItem : PHPCompletionItem.NewClassItem.getNewClassItems(constructor, request)) {
+                completionResult.add(newClassItem);
+            }
+        }
     }
 
     private void autoCompleteClassNames(final PHPCompletionResult completionResult,
