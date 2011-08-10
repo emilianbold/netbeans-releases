@@ -90,7 +90,9 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         HlSequence hs = new HlSequence(layers, startOffset, endOffset);
-        activeHlSeqs.add(new WeakReference<HlSequence>(hs));
+        synchronized (activeHlSeqs) {
+            activeHlSeqs.add(new WeakReference<HlSequence>(hs));
+        }
         return hs;
     }
 
