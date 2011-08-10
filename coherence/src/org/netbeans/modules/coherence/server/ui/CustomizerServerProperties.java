@@ -39,74 +39,36 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
+package org.netbeans.modules.coherence.server.ui;
+
+import java.awt.Dimension;
+import javax.swing.JPanel;
+import org.netbeans.api.server.properties.InstanceProperties;
+import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
+ * Panel for setup Coherence server properties. It includes just the {@code Sheet}
+ * of the {@link ServerPropertiesNode}.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CommandlineProperty {
+public class CustomizerServerProperties extends JPanel {
 
-    private String propertyName = null;
-    private String displayName = null;
-    private String hint = null;
-    private Class clazz = null;
-    private String defaultValue = null;
+    public CustomizerServerProperties(InstanceProperties instanceProperties) {
+        // Set panel (tab) name
+        this.setName(NbBundle.getMessage(CustomizerServerProperties.class, "TITLE_Properties")); //NOI18N
 
-    public CommandlineProperty(String displayName, String hint, Class clazz) {
-        this.displayName = displayName;
-        this.hint = hint;
-        this.clazz = clazz;
-        this.propertyName = displayName.toLowerCase().replace(" ", ".");
+        // Include property sheet
+        PropertySheet ps = new PropertySheet();
+        ps.setNodes(new Node[]{new ServerPropertiesNode(instanceProperties)});
+        PropertySheetView psv = new PropertySheetView();
+        psv.add(ps);
+        psv.setPreferredSize(new Dimension(460, 300));
+
+        this.add(psv);
     }
 
-    public CommandlineProperty(String displayName, String hint, Class clazz, String defaultValue) {
-        this.displayName = displayName;
-        this.hint = hint;
-        this.clazz = clazz;
-        this.propertyName = displayName.toLowerCase().replace(" ", ".");
-        this.defaultValue = defaultValue;
-    }
-
-    public Class getClazz() {
-        if (clazz != null)return clazz;
-        else return String.class;
-    }
-
-    public void setClazz(Class clazz) {
-        this.clazz = clazz;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getHint() {
-        return hint;
-    }
-
-    public void setHint(String hint) {
-        this.hint = hint;
-    }
-
-    public String getPropertyName() {
-        return propertyName;
-    }
-
-    public void setPropertyName(String propertyName) {
-        this.propertyName = propertyName;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-    
 }
