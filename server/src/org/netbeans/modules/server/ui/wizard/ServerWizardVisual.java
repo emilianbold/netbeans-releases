@@ -67,6 +67,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -84,10 +85,16 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     private AddServerInstanceWizard wizard;
 
     private boolean updatingDisplayName = false;
+    
+    private ServerRegistry registry;
 
-    public ServerWizardVisual() {
+    public ServerWizardVisual(ServerRegistry registry) {
+        this.registry = registry;
         initComponents();
-
+        if (registry.isCloud()) {
+            Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(ServerWizardVisual.class).getString("LBL_SCV_Cloud")); // NOI18N
+            setName(NbBundle.getBundle(ServerWizardVisual.class).getString("LBL_CCV_Name")); // NOI18N
+        }
         Queue<WizardAdapter> selected = new PriorityQueue<WizardAdapter>(5, new WizardPriority());
         for (int i = 0; i < serverListBox.getModel().getSize(); i++) {
             selected.add((WizardAdapter) serverListBox.getModel().getElementAt(i));
@@ -136,7 +143,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
             displayNameEditField.setText((String) prop);
         }
     }
-
+    
     public void store(AddServerInstanceWizard wizard) {
         wizard.putProperty(AddServerInstanceWizard.PROP_DISPLAY_NAME, displayNameEditField.getText());
         Object selectedItem = serverListBox.getSelectedValue();
@@ -158,7 +165,11 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     private boolean isServerValid() {
         boolean result = serverListBox.getSelectedValue() != null;
         if (!result) {
-            wizard.setErrorMessage(NbBundle.getMessage(ServerWizardVisual.class, "MSG_SCV_ChooseServer"));
+            if (registry.isCloud()) {
+                wizard.setErrorMessage(NbBundle.getMessage(ServerWizardVisual.class, "MSG_SCV_ChooseServer"));
+            } else {
+                wizard.setErrorMessage(NbBundle.getMessage(ServerWizardVisual.class, "MSG_CCV_ChooseServer"));
+            }
         }
         return result;
     }
@@ -180,7 +191,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     }
 
     private boolean existsDisplayName(String displayName) {
-        for (ServerInstanceProvider type : ServerRegistry.getInstance().getProviders()) {
+        for (ServerInstanceProvider type : registry.getProviders()) {
             for (ServerInstance instance : type.getInstances()) {
                 assert instance != null : "ServerInstance returned by provider " + type + " is null";
                 if (instance == null) {
@@ -266,7 +277,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
             }
         });
 
-        serverListBox.setModel(new WizardListModel());
+        serverListBox.setModel(new WizardListModel(registry));
         serverListBox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         serverListBox.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -344,10 +355,12 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
     private static class WizardListModel implements ListModel {
 
         private final List<WizardAdapter> serverWizards = new ArrayList<WizardAdapter>();
+        
+        private ServerRegistry registry;
 
-        public WizardListModel() {
+        public WizardListModel(ServerRegistry registry) {
             for (ServerWizardProvider wizard
-                    : Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class)) {
+                    : Lookups.forPath(registry.getPath()).lookupAll(ServerWizardProvider.class)) {
 
                 // safety precaution shouldn't ever happen - used because of bridging
                 if (wizard.getInstantiatingIterator() != null) {
