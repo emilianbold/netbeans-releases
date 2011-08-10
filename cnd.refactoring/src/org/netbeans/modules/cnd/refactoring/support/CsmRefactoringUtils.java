@@ -100,11 +100,13 @@ public final class CsmRefactoringUtils {
             return false;
         }
         Project p = FileOwnerQuery.getOwner(f);
-        for (NativeProject prj : NativeProjectRegistry.getDefault().getOpenProjects()) {
-            Provider project = prj.getProject();
-            if (project != null) {
-                if (p.equals(project) || project.equals(p)) {
-                    return true;
+        if (p != null) {
+            for (NativeProject prj : NativeProjectRegistry.getDefault().getOpenProjects()) {
+                Provider project = prj.getProject();
+                if (project != null) {
+                    if (p.equals(project) || project.equals(p)) {
+                        return true;
+                    }
                 }
             }
         }
