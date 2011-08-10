@@ -168,6 +168,7 @@ public class HtmlHintsProvider implements HintsProvider {
         }
         
         suggestions.add(new SurroundWithTag(context, new OffsetRange(start, end)));
+        suggestions.add(new RemoveSurroundingTag(context, new OffsetRange(start, end)));
     }
 
     /**
