@@ -215,7 +215,7 @@ public class ElementJavadoc {
                     latch.await();
                     return success.get() ?
                         resolveElement(handle, link):
-                        null;
+                        new ElementJavadoc(NbBundle.getMessage(ElementJavadoc.class, "javadoc_attaching_failed"));
                 }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
@@ -391,6 +391,14 @@ public class ElementJavadoc {
         assert url != null;
         this.content = null;
         this.docURL = url;
+        this.handle = null;
+        this.cpInfo = null;
+    }
+
+    private ElementJavadoc(final String message) {
+        assert message != null;
+        this.content = new Now(message);
+        this.docURL = null;
         this.handle = null;
         this.cpInfo = null;
     }
