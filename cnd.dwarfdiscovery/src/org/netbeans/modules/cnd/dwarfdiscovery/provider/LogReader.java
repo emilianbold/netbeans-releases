@@ -140,7 +140,7 @@ public class LogReader {
         return null;
     }
 
-    private void run(Progress progress, AtomicBoolean isStoped) {
+    private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
         if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
@@ -182,7 +182,7 @@ public class LogReader {
 
                         String[] cmds = pattern.split(line);
                         for (int i = 0; i < cmds.length; i++) {
-                            if (parseLine(cmds[i])){
+                            if (parseLine(cmds[i], storage)){
                                 nFoundFiles++;
                             }
                         }
@@ -209,9 +209,9 @@ public class LogReader {
         }
     }
 
-    public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped) {
+    public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
         if (result == null) {
-            run(progress, isStoped);
+            run(progress, isStoped, storage);
             if (subFolders != null) {
                 subFolders.clear();
                 subFolders = null;
@@ -456,9 +456,15 @@ public class LogReader {
     private static int[] foundCompiler(String line, String ... patterns){
         for(String pattern : patterns)    {
             int start = line.indexOf(pattern);
-            if (start>=0) {
-                int end = start + pattern.length();
-                return new int[]{start,end};
+            if (start >=0) {
+                char prev = ' ';
+                if (start > 0) {
+                    prev = line.charAt(start-1);
+                }
+                if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' ) {
+                    int end = start + pattern.length();
+                    return new int[]{start,end};
+                }
             }
         }
         return null;
@@ -570,7 +576,7 @@ public class LogReader {
         this.guessWorkingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
 
-    private boolean parseLine(String line){
+    private boolean parseLine(String line, CompileLineStorage storage){
        if (checkDirectoryChange(line)) {
            return false;
        }
@@ -583,7 +589,7 @@ public class LogReader {
 
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li);
+           gatherLine(li, storage);
            return true;
        }
        return false;
@@ -674,7 +680,7 @@ public class LogReader {
         }
     }
 
-    private void gatherLine(LineInfo li) {
+    private void gatherLine(LineInfo li, CompileLineStorage storage) {
         String line = li.compileLine;
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
@@ -710,14 +716,14 @@ public class LogReader {
             File f = new File(file);
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha: " + file);}
-                result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached));
+                result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, storage));
                 continue;
             }
             if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
                 f = new File(guessWorkingDir+"/"+what);  //NOI18N
                 if (f.exists() && f.isFile()) {
                     if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                    result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                    result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, storage));
                     continue;
                 }
             }
@@ -728,7 +734,7 @@ public class LogReader {
                     if (TRACE) {System.err.println("** And there is no such file under root");}
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros));
+                        result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros, storage));
                         if (TRACE) {System.err.println("** Gotcha: " + res.get(0) + File.separator + what);}
                         // kinda adventure but it works
                         setGuessWorkingDir(res.get(0));
@@ -754,9 +760,11 @@ public class LogReader {
         private Map<String, String> userMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
+        private CompileLineStorage storage;
+        private int handler;
 
         CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
-                List<String> userIncludes, Map<String, String> userMacros) {
+                List<String> userIncludes, Map<String, String> userMacros, CompileLineStorage storage) {
             language = li.getLanguage();
             if (languageArtifacts.contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
@@ -788,6 +796,10 @@ public class LogReader {
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
             this.userMacros = userMacros;
+            this.storage = storage;
+            if (storage != null) {
+                handler = storage.putCompileLine(li.compileLine);
+            }
         }
 
         @Override
@@ -798,6 +810,15 @@ public class LogReader {
         @Override
         public String getItemPath() {
             return fullName;
+        }
+
+
+        @Override
+        public String getCompileLine() {
+            if (storage != null && handler != -1) {
+                return storage.getCompileLine(handler);
+            }
+            return null;
         }
 
         @Override
@@ -855,7 +876,7 @@ public class LogReader {
         String root = args[1];
         LogReader.TRACE = true;
         LogReader clrf = new LogReader(objFileName, root, null);
-        List<SourceFileProperties> list = clrf.getResults(null, new AtomicBoolean(false));
+        List<SourceFileProperties> list = clrf.getResults(null, new AtomicBoolean(false), null);
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();

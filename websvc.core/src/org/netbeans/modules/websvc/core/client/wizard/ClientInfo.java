@@ -54,6 +54,8 @@ import java.util.List;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
@@ -68,6 +70,7 @@ import javax.swing.JPanel;
 import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -115,6 +118,9 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
+import org.netbeans.modules.websvc.saas.model.Saas.State;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -123,6 +129,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 
@@ -134,9 +141,12 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
     private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
     private static final String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
+    
     private static final int WSDL_FROM_PROJECT = 0;
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_URL = 2;
+    private static final int WSDL_FROM_SAAS =3;
+            
     private static final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
     private static String previousDirectory = ""; //NOI18N
     private WebServiceClientWizardDescriptor descriptorPanel;
@@ -150,6 +160,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     private boolean retrieverFailed = false;
     private Project project;
     private int projectType;
+    private volatile FileObject saasWsdl;
 
     public ClientInfo(WebServiceClientWizardDescriptor panel) {
         descriptorPanel = panel;
@@ -196,6 +207,9 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jLabelJaxVersion = new javax.swing.JLabel();
         jComboBoxJaxVersion = new javax.swing.JComboBox();
         dispatchCB = new javax.swing.JCheckBox();
+        saasWs = new javax.swing.JRadioButton();
+        saasTextField = new javax.swing.JTextField();
+        saasBrowse = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -269,7 +283,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(jTxtWsdlURL, gridBagConstraints);
         jTxtWsdlURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_WsdlSourceUrl")); // NOI18N
         jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceUrl")); // NOI18N
@@ -286,7 +300,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(jBtnProxy, gridBagConstraints);
         jBtnProxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "A11Y_ProxySettings")); // NOI18N
 
@@ -303,7 +317,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         org.openide.awt.Mnemonics.setLocalizedText(jLblPackageDescription, NbBundle.getMessage(ClientInfo.class, "LBL_PackageDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
@@ -312,13 +326,13 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         org.openide.awt.Mnemonics.setLocalizedText(jLblProject, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLblProject, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
@@ -328,7 +342,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         org.openide.awt.Mnemonics.setLocalizedText(jLblPackageName, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_PackageName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLblPackageName, gridBagConstraints);
@@ -336,7 +350,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jCbxPackageName.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
@@ -346,7 +360,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         org.openide.awt.Mnemonics.setLocalizedText(jLblClientType, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ClientType")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipady = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -355,7 +369,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -374,7 +388,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jRbnUrl, gridBagConstraints);
         jRbnUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(ClientInfo.class).getString("A11Y_WsdlURL")); // NOI18N
 
@@ -397,7 +411,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         org.openide.awt.Mnemonics.setLocalizedText(jLabelJaxVersion, org.openide.util.NbBundle.getBundle(ClientInfo.class).getString("LBL_JAX_Version")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
@@ -411,7 +425,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -422,7 +436,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         org.openide.awt.Mnemonics.setLocalizedText(dispatchCB, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_GenerateDispatch")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -431,6 +445,51 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(35, 0, 0, 0);
         add(dispatchCB, gridBagConstraints);
+
+        btnGrpWsdlSource.add(saasWs);
+        org.openide.awt.Mnemonics.setLocalizedText(saasWs, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_Saas")); // NOI18N
+        saasWs.setActionCommand("saas");
+        saasWs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saasSelected(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(saasWs, gridBagConstraints);
+        saasWs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_Saas")); // NOI18N
+        saasWs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_Saas")); // NOI18N
+
+        saasTextField.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
+        add(saasTextField, gridBagConstraints);
+        saasTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_SaasTextField")); // NOI18N
+        saasTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_SaasTextField")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(saasBrowse, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_SaasBrowse")); // NOI18N
+        saasBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saasBrowse(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        add(saasBrowse, gridBagConstraints);
+        saasBrowse.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_Browse")); // NOI18N
+        saasBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_Browse")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_WsdlSource")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -465,7 +524,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnUrlActionPerformed
         // TODO add your handling code here:
         wsdlSource = WSDL_FROM_URL;
-        enableWsdlSourceFields(false, false, true);
+        enableWsdlSourceFields();
         descriptorPanel.fireChangeEvent();
     }//GEN-LAST:event_jRbnUrlActionPerformed
     
@@ -491,28 +550,103 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnFilesystemActionPerformed
         //        System.out.println("get from filesystem selected.");
         wsdlSource = WSDL_FROM_FILE;
-        enableWsdlSourceFields(false, true, false);
+        enableWsdlSourceFields();
         descriptorPanel.fireChangeEvent();
     }//GEN-LAST:event_jRbnFilesystemActionPerformed
     
     private void jRbnProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnProjectActionPerformed
         //        System.out.println("get from url selected.");
         wsdlSource = WSDL_FROM_PROJECT;
-        enableWsdlSourceFields(true, false, false);
+        enableWsdlSourceFields();
         descriptorPanel.fireChangeEvent();
     }//GEN-LAST:event_jRbnProjectActionPerformed
+
+private void saasSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasSelected
+        wsdlSource = WSDL_FROM_SAAS;
+        enableWsdlSourceFields();
+        descriptorPanel.fireChangeEvent();
+}//GEN-LAST:event_saasSelected
+
+private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasBrowse
+        SaasExplorerPanel explorerPanel = new SaasExplorerPanel();
+        DialogDescriptor desc = new DialogDescriptor(explorerPanel,
+                    NbBundle.getMessage(ClientInfo.class,"TTL_SaasResources")); //NOI18N
+        explorerPanel.setDescriptor(desc);  
+        if (DialogDisplayer.getDefault().notify(desc).equals(
+                NotifyDescriptor.OK_OPTION)) 
+        {
+            final WsdlSaas saas = explorerPanel.getWsdlSaas();
+            if ( checkSaasState(saas) ){
+                descriptorPanel.fireChangeEvent();
+                return;
+            }
+            
+            
+            LabelPanel panel = new LabelPanel(
+                    NbBundle.getMessage( ClientInfo.class, "TXT_SaasWait"),
+                    NbBundle.getMessage( ClientInfo.class, "ACSN_SaasWait"),
+                    NbBundle.getMessage( ClientInfo.class, "ACSD_SaasWait"));
+            DialogDescriptor descriptor = new DialogDescriptor( panel,
+                    NbBundle.getMessage( ClientInfo.class, "TXT_SaasTitle"),true,
+                    new Object[]{DialogDescriptor.CANCEL_OPTION}, null, 
+                    DialogDescriptor.DEFAULT_ALIGN, null , null );   // NOI18N
+            final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+            
+            PropertyChangeListener listener = new PropertyChangeListener() {
+                
+                @Override
+                public void propertyChange( PropertyChangeEvent event ) {
+                    if ( event.getSource() == saas ){
+                        if ( checkSaasState(saas)){
+                            SaasServicesModel.getInstance().
+                                removePropertyChangeListener( this );
+                            dialog.setVisible( false );
+                            descriptorPanel.fireChangeEvent();
+                        }
+                    }
+                }
+            };
+            SaasServicesModel.getInstance().addPropertyChangeListener( listener);
+            
+            saas.toStateReady( false );
+            dialog.setVisible( true);
+        }
+}//GEN-LAST:event_saasBrowse
+
+    private boolean checkSaasState( final WsdlSaas saas ) {
+        if ( saas.getState() == State.READY || saas.getState() == State.RETRIEVED ){
+            saasWsdl = saas.getLocalWsdlFile();
+            if ( SwingUtilities.isEventDispatchThread() ){
+                saasTextField.setText( FileUtil.toFile(saasWsdl).getAbsolutePath());
+            }
+            else {
+                SwingUtilities.invokeLater( new Runnable( ) {
+                    
+                    @Override
+                    public void run() {
+                        saasTextField.setText( FileUtil.toFile(saasWsdl).getAbsolutePath());
+                    }
+                });
+            }
+            return true;
+        }
+        return false;
+    }
     
-    private void enableWsdlSourceFields(boolean fromProject, boolean fromFile, boolean fromUrl) {
+    private void enableWsdlSourceFields() {
         // project related fields
-        jTxtWsdlProject.setEnabled(fromProject);
-        jBtnBrowse1.setEnabled(fromProject);
+        jTxtWsdlProject.setEnabled(wsdlSource == WSDL_FROM_PROJECT);
+        jBtnBrowse1.setEnabled(wsdlSource == WSDL_FROM_PROJECT);
         
         // file systam related fields
-        jTxtLocalFilename.setEnabled(fromFile);
-        jBtnBrowse.setEnabled(fromFile);
+        jTxtLocalFilename.setEnabled(wsdlSource == WSDL_FROM_FILE);
+        jBtnBrowse.setEnabled(wsdlSource == WSDL_FROM_FILE);
         
         // service related fields
-        jTxtWsdlURL.setEnabled(fromUrl);
+        jTxtWsdlURL.setEnabled(wsdlSource == WSDL_FROM_URL);
+        
+        saasTextField.setEnabled( wsdlSource == WSDL_FROM_SAAS);
+        saasBrowse.setEnabled( wsdlSource == WSDL_FROM_SAAS );
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -537,6 +671,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextField jTxtLocalFilename;
     private javax.swing.JTextField jTxtWsdlProject;
     private javax.swing.JTextField jTxtWsdlURL;
+    private javax.swing.JButton saasBrowse;
+    private javax.swing.JTextField saasTextField;
+    private javax.swing.JRadioButton saasWs;
     // End of variables declaration//GEN-END:variables
     
     private void initUserComponents() {
@@ -615,11 +752,12 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, getDownloadWsdl());
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_SCHEMAS, getDownloadedSchemas());
             d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
-        } else if(wsdlSource == WSDL_FROM_FILE) {
+        } else if(wsdlSource == WSDL_FROM_FILE || wsdlSource == WSDL_FROM_SAAS) {
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL, null);
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_FILE, null);
             d.putProperty(ClientWizardProperties.WSDL_DOWNLOAD_SCHEMAS, null);
-            d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, jTxtLocalFilename.getText().trim());
+            d.putProperty(ClientWizardProperties.WSDL_FILE_PATH, wsdlSource == WSDL_FROM_FILE ? 
+                    jTxtLocalFilename.getText().trim() : saasTextField.getText().trim());
         }
         d.putProperty(ClientWizardProperties.WSDL_PACKAGE_NAME, getPackageName());
         d.putProperty(ClientWizardProperties.CLIENT_STUB_TYPE, jCbxClientType.getSelectedItem());
@@ -753,7 +891,6 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             jLblProjectName.setText(ProjectUtils.getInformation(project).getDisplayName());
             jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL));
             jTxtLocalFilename.setText(retriever != null ? retriever.getWsdlFileName() : ""); //NOI18N
-            jTxtWsdlURL.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
             
             jCbxPackageName.setModel(getPackageModel(project));
             String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
@@ -767,7 +904,9 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             jCbxPackageName.setSelectedItem(getPackageItem(pName));
             // Normalize selection, in case it's unspecified.
             Integer source = (Integer) d.getProperty(ClientWizardProperties.WSDL_SOURCE);
-            if(source == null || source.intValue() < WSDL_FROM_PROJECT || source.intValue() > WSDL_FROM_URL) {
+            if(source == null || source.intValue() < WSDL_FROM_PROJECT || 
+                    source.intValue() > WSDL_FROM_SAAS) 
+            {
                 source = Integer.valueOf(WSDL_FROM_PROJECT);
             }
             
@@ -776,7 +915,18 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             this.retriever = null;
             this.downloadMsg = null;
             
-            enableWsdlSourceFields(wsdlSource == WSDL_FROM_PROJECT, wsdlSource == WSDL_FROM_FILE, wsdlSource == WSDL_FROM_URL);
+            JTextField fileField = null;
+            if ( wsdlSource == WSDL_FROM_FILE ){
+                fileField = jTxtWsdlURL;
+            }
+            else if ( wsdlSource == WSDL_FROM_SAAS ){
+                fileField = saasTextField;
+            }
+            if ( fileField != null ){
+                fileField.setText((String) d.getProperty(ClientWizardProperties.WSDL_FILE_PATH));
+            }
+            
+            enableWsdlSourceFields();
             btnGrpWsdlSource.setSelected(getSelectedRadioButton(wsdlSource).getModel(), true);
             
             // Retrieve stub list from current project (have to be careful with caching
@@ -861,11 +1011,13 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
         }
         if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)
-                &&  (wsdlSource != WSDL_FROM_FILE)) {
+                &&  wsdlSource != WSDL_FROM_FILE && wsdlSource!= WSDL_FROM_SAAS) 
+        {
             boolean rpcEncoded = false;
             File tmpWsdl = null;
             try {
-                URL tmpWsdlUrl = new URL(wsdlSource == WSDL_FROM_PROJECT ? jTxtWsdlProject.getText() : jTxtWsdlURL.getText().trim());
+                URL tmpWsdlUrl = new URL(wsdlSource == WSDL_FROM_PROJECT ? jTxtWsdlProject.getText() : 
+                    jTxtWsdlURL.getText().trim());
                 tmpWsdl = File.createTempFile("tmp", "wsdl");
                 List<Proxy> proxies = ProxySelector.getDefault().select(tmpWsdlUrl.toURI());
                 Utilities.downloadURLUsingProxyAndSave(tmpWsdlUrl, 
@@ -937,15 +1089,18 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         JRadioButton result = jRbnProject;
         
         switch(selected) {
-        case WSDL_FROM_PROJECT:
-            result = jRbnProject;
-            break;
-        case WSDL_FROM_FILE:
-            result = jRbnFilesystem;
-            break;
-        case WSDL_FROM_URL:
-            result = jRbnUrl;
-            break;
+            case WSDL_FROM_PROJECT:
+                result = jRbnProject;
+                break;
+            case WSDL_FROM_FILE:
+                result = jRbnFilesystem;
+                break;
+            case WSDL_FROM_URL:
+                result = jRbnUrl;
+                break;
+            case WSDL_FROM_SAAS:
+                result = saasWs;
+                break;
         }
         
         return result;
@@ -1090,7 +1245,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             // !PW FIXME what do we want to check it for?  Existence in temp directory?
             
             // Now drop down to do package validation.
-        } else if(wsdlSource == WSDL_FROM_FILE) {
+        } else if(wsdlSource == WSDL_FROM_FILE ) {
             String wsdlFilePath = jTxtLocalFilename.getText().trim();
             
             if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
@@ -1165,8 +1320,23 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             } catch (Exception e) {
                 ErrorManager.getDefault().annotate(e, ErrorManager.WARNING,
                         "Unable to check if wsdl is rpc encoded.", 
-                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),
+                        NbBundle.getMessage(ClientInfo.class, "ERR_UnableToDetermineRPCEncoded"),// NOI18N 
                         e.getCause(), new java.util.Date());
+            }
+        }
+        else if ( wsdlSource == WSDL_FROM_SAAS ){
+            boolean valid = saasWsdl != null;
+            if ( valid ){
+                File file = FileUtil.toFile( saasWsdl );
+                valid = file!= null;
+                if ( valid ){
+                    valid = file.exists();
+                }
+            }
+            if ( !valid ){
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, 
+                        NbBundle.getMessage(ClientInfo.class, "ERR_NotSaasWsdlFile")); // NOI18N 
+                return false;
             }
         }
         

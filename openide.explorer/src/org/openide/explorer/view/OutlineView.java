@@ -1742,7 +1742,7 @@ public class OutlineView extends JScrollPane {
         protected void setTreeValueAt(Object aValue, int rowIndex) {
             Node n = getNodeAt(rowIndex);
             if( null != n ) {
-                n.setName(aValue == null ? "" : aValue.toString());
+                ViewUtil.nodeRename(n, aValue == null ? "" : aValue.toString());
             }
         }
 

@@ -53,7 +53,7 @@ package org.netbeans.modules.css.visual.ui;
 import org.netbeans.modules.css.visual.model.BackgroundModel;
 import org.netbeans.modules.css.visual.model.BackgroundPositionData;
 import org.netbeans.modules.css.visual.model.CssProperties;
-import org.netbeans.modules.css.editor.model.CssRuleContent;
+import org.netbeans.modules.css.visual.CssRuleContent;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import java.awt.BorderLayout;

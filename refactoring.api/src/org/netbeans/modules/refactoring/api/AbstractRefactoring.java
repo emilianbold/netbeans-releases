@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -336,12 +337,12 @@ public abstract class AbstractRefactoring {
     
     private Context scope;
     
-    private volatile boolean cancel;
+    private final AtomicBoolean cancel = new AtomicBoolean();
     /**
      * Asynchronous request to cancel ongoing long-term request (such as preCheck(), checkParameters() or prepare())
      */
     public final void cancelRequest() {
-        cancel = true;
+        cancel.set(true);
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
@@ -352,11 +353,12 @@ public abstract class AbstractRefactoring {
     
     private Problem pluginsPreCheck(Problem problem) {
         try {
+            cancel.set(false);
             progressListener.start();
             Iterator pIt=getPlugins().iterator();
 
             while(pIt.hasNext()) {
-                if (cancel)
+                if (cancel.get())
                     return null;
                 RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
 
@@ -411,7 +413,7 @@ public abstract class AbstractRefactoring {
         Iterator pIt=getPlugins().iterator();
         
         while(pIt.hasNext()) {
-            if (cancel)
+            if (cancel.get())
                 return null;
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
@@ -474,7 +476,7 @@ public abstract class AbstractRefactoring {
             Iterator pIt=getPlugins().iterator();
 
             while(pIt.hasNext()) {
-                if (cancel)
+                if (cancel.get())
                     return null;
 
                 RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
@@ -499,7 +501,7 @@ public abstract class AbstractRefactoring {
             Iterator pIt=getPlugins().iterator();
 
             while(pIt.hasNext()) {
-               if (cancel)
+               if (cancel.get())
                     return null;
 
                 RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();

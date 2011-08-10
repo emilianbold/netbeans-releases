@@ -529,43 +529,43 @@ public class TestMerge extends BaseTest {
         //  Make sure that we do not consume too much memory
         //
 
-        //  Ignore the first one
-        this.getKMemUsage();
-
-        int k1 = this.getKMemUsage();
-		
-        Book newBook;
-
-        this.readDocument("tm01_g3.xml");
-        out("creating the bean graph for memory test");
-        newBook = Book.createGraph(doc);
-		
-        int maxLoop = 50;
-        BaseBean[] aBook = new BaseBean[maxLoop];
-        for(int loop=0; loop<maxLoop; loop++) {
-            aBook[loop] = (BaseBean)newBook.clone();
-        }
-
-        int k2 = this.getKMemUsage() - k1;
-
-        float diff = (float)(k2 - memUsageReference);
-
-        if (diff > 0) {
-            //	We consume more memory than excepted
-            float p = diff/memUsageReference*100;
-            if (p > 20.0) {
-                out("It seems that the last schema2beans code changes have increased the memory consumption by " + p + "%");
-                out("If this is expected and acceptable, change the memUsageReference value in TestMerge.java, to be " + k2);
-            }
-        } else {
-/*            //	We consume less memory than expected
-            float p = Math.abs(diff)/memUsageReference*100;
-            if (p > 25.0) {
-                out("It seems that the last schema2beans code changes have decreased the memory consumption by " + p + "% !!!");
-                out("Please, change the memUsageReference value in TestMerge.java, to be " + k2);
-            }   */
-        }
-        out("memory test done");
+//        //  Ignore the first one
+//        this.getKMemUsage();
+//
+//        int k1 = this.getKMemUsage();
+//		
+//        Book newBook;
+//
+//        this.readDocument("tm01_g3.xml");
+//        out("creating the bean graph for memory test");
+//        newBook = Book.createGraph(doc);
+//		
+//        int maxLoop = 50;
+//        BaseBean[] aBook = new BaseBean[maxLoop];
+//        for(int loop=0; loop<maxLoop; loop++) {
+//            aBook[loop] = (BaseBean)newBook.clone();
+//        }
+//
+//        int k2 = this.getKMemUsage() - k1;
+//
+//        float diff = (float)(k2 - memUsageReference);
+//
+//        if (diff > 0) {
+//            //	We consume more memory than excepted
+//            float p = diff/memUsageReference*100;
+//            if (p > 20.0) {
+//                out("It seems that the last schema2beans code changes have increased the memory consumption by " + p + "%");
+//                out("If this is expected and acceptable, change the memUsageReference value in TestMerge.java, to be " + k2);
+//            }
+//        } else {
+///*            //	We consume less memory than expected
+//            float p = Math.abs(diff)/memUsageReference*100;
+//            if (p > 25.0) {
+//                out("It seems that the last schema2beans code changes have decreased the memory consumption by " + p + "% !!!");
+//                out("Please, change the memUsageReference value in TestMerge.java, to be " + k2);
+//            }   */
+//        }
+//        out("memory test done");
 
         readDocument("tm01_g1.xml");
         b1 = Book.createGraph(doc);

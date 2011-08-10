@@ -43,12 +43,14 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.Customizer;
 import java.io.File;
 import java.util.Collection;
 import java.util.ArrayList;
@@ -56,6 +58,7 @@ import java.util.Arrays;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
+import java.util.Collections;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -82,9 +85,14 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
+
+    private static final String CUSTOMIZERS_PATH =
+        "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
 
     private static final int CLASSPATH = 0;
     private static final int SOURCES = 1;
@@ -104,6 +112,24 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Classes"), createPathTab(CLASSPATH));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Sources"), createPathTab(SOURCES));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Javadoc"), createPathTab(JAVADOC));
+        final Lookup lkp = Lookups.forPath(CUSTOMIZERS_PATH);
+        for (Lookup.Item<? extends Customizer> li : lkp.lookupResult(Customizer.class).allItems()) {
+            final Customizer c = li.getInstance();
+            if (!(c instanceof Component)) {
+                continue;
+            }
+            String name = li.getId();
+            final FileObject fo = FileUtil.getConfigFile(String.format("%s.instance",name));    //NOI18N
+            if (fo != null) {
+                try {
+                    name = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.<FileObject>singleton(fo));
+                } catch (FileStateInvalidException ex) {
+                    name = fo.getName();
+                }
+            }
+            c.setObject(platform);
+            this.addTab(name, (Component)c);
+        }
     }
 
 

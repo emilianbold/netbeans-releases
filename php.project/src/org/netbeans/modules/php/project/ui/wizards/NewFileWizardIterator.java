@@ -100,17 +100,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
-        FileObject targetFolder = Templates.getTargetFolder(wizard);
-        if (targetFolder == null) {
-            Project project = Templates.getProject(wizard);
-            assert project instanceof PhpProject;
-            PhpProject phpProject = (PhpProject) project;
-            FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-            if (srcDir != null) {
-                targetFolder = srcDir;
-                Templates.setTargetFolder(wizard, srcDir);
-            }
-        }
+        setTargetFolder();
         wizardPanels = getPanels();
 
         // Make sure list of steps is accurate.
@@ -124,6 +114,26 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i + beforeStepLength - 1)); // NOI18N
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
+        }
+    }
+
+    private void setTargetFolder() {
+        if (Templates.getTargetFolder(wizard) != null) {
+            // already set
+            return;
+        }
+        Project project = Templates.getProject(wizard);
+        if (project == null) {
+            // no project => ignore
+            return;
+        }
+        if (!(project instanceof PhpProject)) {
+            LOGGER.log(Level.WARNING, "PHP project expected but found {0}", project.getClass().getName());
+            return;
+        }
+        FileObject srcDir = ProjectPropertiesSupport.getSourcesDirectory((PhpProject) project);
+        if (srcDir != null) {
+            Templates.setTargetFolder(wizard, srcDir);
         }
     }
 

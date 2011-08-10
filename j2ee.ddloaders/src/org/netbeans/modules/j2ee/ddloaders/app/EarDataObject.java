@@ -73,9 +73,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.ddloaders.common.DD2beansDataObject;
+import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.filesystems.FileChangeListener;
@@ -89,6 +92,8 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -97,7 +102,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author  mkuchtiak, Ludovic Champenois
  */
-public class EarDataObject extends DD2beansDataObject 
+public class EarDataObject extends DD2beansDataObject
     implements DDChangeListener, ApplicationProxy.OutputProvider, FileChangeListener, ChangeListener {
     private Application ejbJar;
     private FileObject srcRoots[];
@@ -116,15 +121,29 @@ public class EarDataObject extends DD2beansDataObject
     
     private RequestProcessor.Task updateTask;
 
-    private static final int HOME = 10;
-    private static final int REMOTE = 20;
-    private static final int LOCAL_HOME = 30;
-    private static final int LOCAL = 40;
-
     public EarDataObject (FileObject pf, EarDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
         init (pf,loader);
     }
+
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/j2ee/ddloaders/ejb/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="ear.dd",
+        mimeType="text/x-dd-application",
+        position=1
+    )
+    @Messages("CTL_SourceTabCaption=&Source")
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
+    @Override
+    protected String getEditorMimeType() {
+        return "text/x-dd-application";
+    }
+
     @Override
     public boolean isRenameAllowed(){
         return false;
@@ -206,8 +225,9 @@ public class EarDataObject extends DD2beansDataObject
         return new EarDataNode(this);
     }
 
-    public @Override Lookup getLookup() {
-        return getCookieSet().getLookup();
+    @Override
+    protected int associateLookup() {
+        return 1;
     }
 
     /** gets the Icon Base for node delegate when parser accepts the xml document as valid

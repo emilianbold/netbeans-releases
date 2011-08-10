@@ -107,7 +107,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     private static final Logger LOG = Logger.getLogger(GlyphGutter.class.getName());
 
     /** EditorUI which part this gutter is */
-    private EditorUI editorUI;
+    private volatile EditorUI editorUI;
     
     /** Annotations manager responsible for annotations for this line */
     private Annotations annos;
@@ -183,7 +183,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     private Preferences prefs = null;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
         public @Override void preferenceChange(PreferenceChangeEvent evt) {
-            EditorUI eui = editorUI == null ? null : editorUI;
+            EditorUI eui = editorUI;
             JTextComponent c = eui == null ? null : eui.getComponent();
             Rectangle rect = c == null ? null : c.getVisibleRect();
             if (rect != null && rect.width == 0) {
@@ -205,11 +205,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     public GlyphGutter(){}
     
     @SuppressWarnings({"LeakingThisInConstructor", "OverridableMethodCallInConstructor"})
-    public GlyphGutter(EditorUI editorUI) {
+    public GlyphGutter(EditorUI eui) {
         super();
-        this.editorUI = editorUI;
+        this.editorUI = eui;
         init = false;
-        annos = editorUI.getDocument().getAnnotations();
+        annos = eui.getDocument().getAnnotations();
         
         // Annotations class is model for this view, so the listener on changes in
         // Annotations must be added here
@@ -219,15 +219,15 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         init();
         update();
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
+        foldHierarchy = FoldHierarchy.get(eui.getComponent());
         glyphGutterFoldHierarchyListener = new GlyphGutterFoldHierarchyListener();
         foldHierarchy.addFoldHierarchyListener(glyphGutterFoldHierarchyListener);
         editorUIListener = new EditorUIListener();
-        editorUI.addPropertyChangeListener(editorUIListener);
-        editorUI.getComponent().addPropertyChangeListener(editorUIListener);
+        eui.addPropertyChangeListener(editorUIListener);
+        eui.getComponent().addPropertyChangeListener(editorUIListener);
         setOpaque (true);
         
-        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent());
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(eui.getComponent());
         coloringMap = ColoringMap.get(mimeType);
         coloringMap.addPropertyChangeListener(WeakListeners.propertyChange(coloringMapListener, coloringMap));
 
@@ -284,10 +284,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     /** Update colors, fonts, sizes and invalidate itself. This method is
      * called from EditorUI.update() */
     public void update() {
-        if (editorUI == null)
+        EditorUI eui = editorUI;
+        if (eui == null)
             return ;
-        Coloring lineColoring = editorUI.getColoringMap().get(FontColorNames.LINE_NUMBER_COLORING);
-        Coloring defaultColoring = editorUI.getDefaultColoring();
+        Coloring lineColoring = eui.getColoringMap().get(FontColorNames.LINE_NUMBER_COLORING);
+        Coloring defaultColoring = eui.getDefaultColoring();
         
         // fix for issue #16940
         // the real cause of this problem is that closed document is not garbage collected, 
@@ -324,7 +325,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             font = new Font("Monospaced", Font.PLAIN, font.getSize()-1); //NOI18N
         }
 
-        showLineNumbers = editorUI.lineNumberVisibleSetting;
+        showLineNumbers = eui.lineNumberVisibleSetting;
         drawOverLineNumbers = AnnotationTypes.getTypes().isGlyphsOverLineNumbers().booleanValue();
         
         init = true;
@@ -360,8 +361,9 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     /** Return number of lines in the document */
     protected int getLineCount() {
         int lineCnt;
+        EditorUI eui = editorUI;
         try {
-            BaseDocument document = editorUI != null ? editorUI.getDocument() : null;
+            BaseDocument document = eui != null ? eui.getDocument() : null;
             if (document != null) {
                 document.readLock();
                 try {
@@ -385,15 +387,15 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
     protected int getLineNumberWidth() {
         int newWidth = 0;
-        
-        if (editorUI != null) {
+        EditorUI eui = editorUI;
+        if (eui != null) {
             /*
-            Insets insets = editorUI.getLineNumberMargin();
+            Insets insets = eui.getLineNumberMargin();
             if (insets != null) {
                 newWidth += insets.left + insets.right;
             }
              */
-            newWidth += getDigitCount(highestLineNumber) * editorUI.getLineNumberDigitWidth();
+            newWidth += getDigitCount(highestLineNumber) * eui.getLineNumberDigitWidth();
         }
         
         return newWidth;
@@ -422,19 +424,21 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     }
     
     protected int getHeightDimension() {
-        if (editorUI == null)
+        EditorUI eui = editorUI;
+        if (eui == null)
             return 0;
-        JComponent comp = editorUI.getComponent();
+        JComponent comp = eui.getComponent();
         if (comp == null)
             return 0;
-        return highestLineNumber * editorUI.getLineHeight() + (int)comp.getSize().getHeight();
+        return highestLineNumber * eui.getLineHeight() + (int)comp.getSize().getHeight();
     }
     
 
     void paintGutterForView(Graphics g, View view, int y) {
-        if (editorUI == null)
+        EditorUI eui = editorUI;
+        if (eui == null)
             return ;
-        JTextComponent component = editorUI.getComponent();
+        JTextComponent component = eui.getComponent();
         if (component == null) return;
         BaseTextUI textUI = (BaseTextUI)component.getUI();
 
@@ -463,7 +467,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             if ((!glyphHasIcon) ||
                     (!drawOverLineNumbers) || 
                     (drawOverLineNumbers && line != lineWithAnno) ) {
-                g.drawString(String.valueOf(line + 1), glyphGutterWidth - lineNumberWidth - rightGap, y + editorUI.getLineAscent());
+                g.drawString(String.valueOf(line + 1), glyphGutterWidth - lineNumberWidth - rightGap, y + eui.getLineAscent());
             }
         }
 
@@ -478,7 +482,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             }
 
             if (annoGlyph != null) {
-                int lineHeight = editorUI.getLineHeight();
+                int lineHeight = eui.getLineHeight();
                 int glyphHeight = annoGlyph.getHeight(null);
 
                 // draw the glyph only when the annotation type has its own icon (no the default one)
@@ -503,11 +507,12 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     /** Paint the gutter itself */
     public @Override void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (editorUI == null)
+        EditorUI eui = editorUI;
+        if (eui == null)
             return ;
 
         // Possibly apply the rendering hints
-        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent());
+        String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(eui.getComponent());
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         Map hints = (Map) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
         if (!hints.isEmpty()) {
@@ -519,7 +524,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         
         Rectangle clip = g.getClipBounds();   
 
-        JTextComponent component = editorUI.getComponent();
+        JTextComponent component = eui.getComponent();
         if (component == null) return;
         
         BaseTextUI textUI = (BaseTextUI)component.getUI();
@@ -592,7 +597,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     
     /** Data for the line has changed and the line must be redraw. */
     public @Override void changedLine(int line) {
-        if (!init || editorUI == null) //TODO: editorUI neither volatile nor final and accessed unsynchronized from different threads
+        EditorUI eui = editorUI;
+        if (!init || eui == null)
             return;
 
         // reset cache if there was some change
@@ -601,9 +607,13 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         // redraw also lines around - three lines will be redrawn
         if (line > 0)
             line--;
-        JTextComponent component = editorUI.getComponent();
+        JTextComponent component = eui.getComponent();
         if (component!=null){
             BaseTextUI textUI = (BaseTextUI)component.getUI();
+            if (textUI == null) {
+                // #199901
+                return;
+            }
             try{
                 Element rootElem = component.getDocument().getDefaultRootElement();
                 if (line >= rootElem.getElementCount()) { // #42504
@@ -613,7 +623,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 if (lineElem == null) return;
                 int lineOffset = lineElem.getStartOffset();
                 int y = textUI.getYFromPos(lineOffset);
-                Rectangle r = new Rectangle(0, y, (int)getSize().getWidth(), 3*editorUI.getLineHeight());
+                Rectangle r = new Rectangle(0, y, (int)getSize().getWidth(), 3*eui.getLineHeight());
                 
                 //ensuring that the actual repaint will happen in the AWT thread, to prevent deadlocks inside repaint(...)
                 //coalesce the events, so that the AWT thread is not hogged by these requests:
@@ -752,10 +762,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     
     private int getLineFromMouseEvent(MouseEvent e){
         int line = -1;
-        if (editorUI != null) {
+        EditorUI eui = editorUI;
+        if (eui != null) {
             try{
-                JTextComponent component = editorUI.getComponent();
-                BaseDocument document = editorUI.getDocument();
+                JTextComponent component = eui.getComponent();
+                BaseDocument document = eui.getDocument();
                 BaseTextUI textUI = (BaseTextUI)component.getUI();
                 int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
                 line = Utilities.getLineOffset(document, clickOffset);
@@ -774,7 +785,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         private int dragEndOffset;
 
         public @Override void mouseClicked(MouseEvent e) {
-            if (editorUI==null)
+            EditorUI eui = editorUI;
+            if (eui==null)
                 return;
             // cycling button was clicked by left mouse button
             if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
@@ -783,26 +795,26 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     e.consume();
                     annos.activateNextAnnotation(line);
                 } else {
-                    Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions(editorUI.getComponent());
+                    Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions(eui.getComponent());
                     if (actions != null && actions.length >0) {
                         Action a = actions[0]; //TODO - create GUI chooser
                         if (a!=null && a.isEnabled()){
                             int currentLine = -1;
                             int line = getLineFromMouseEvent(e);
                             if (line == -1) return;
-                            BaseDocument document = editorUI.getDocument();
+                            BaseDocument document = eui.getDocument();
                             try {
-                                currentLine = Utilities.getLineOffset(document, editorUI.getComponent().getCaret().getDot());
+                                currentLine = Utilities.getLineOffset(document, eui.getComponent().getCaret().getDot());
                             } catch (BadLocationException ex) {
                                 return;
                             }
                             if (line != currentLine) {
                                 int offset = Utilities.getRowStartFromLineOffset(document, line);
                                 JumpList.checkAddEntry();
-                                editorUI.getComponent().getCaret().setDot(offset);
+                                eui.getComponent().getCaret().setDot(offset);
                             }
                             e.consume();
-                            a.actionPerformed(new ActionEvent(editorUI.getComponent(), 0, ""));
+                            a.actionPerformed(new ActionEvent(eui.getComponent(), 0, ""));
                             repaint();
                         }
                     } else {
@@ -813,7 +825,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         }
 
         private void showPopup(MouseEvent e) {
-            if (editorUI == null)
+            final EditorUI eui = editorUI;
+            if (eui == null)
                 return;
             // annotation glyph was clicked by right mouse button
             if (e.isPopupTrigger()) {
@@ -822,22 +835,22 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 if (annos.getActiveAnnotation(line) != null) {
                     offset = annos.getActiveAnnotation(line).getOffset();
                 } else {
-                    BaseDocument document = editorUI.getDocument();
+                    BaseDocument document = eui.getDocument();
                     offset = Utilities.getRowStartFromLineOffset(document, line);
                 }
-                if (editorUI.getComponent().getCaret().getDot() != offset)
+                if (eui.getComponent().getCaret().getDot() != offset)
                     JumpList.checkAddEntry();
-                editorUI.getComponent().getCaret().setDot(offset);
-                JPopupMenu pm = annos.createPopupMenu(Utilities.getKit(editorUI.getComponent()), line);
+                eui.getComponent().getCaret().setDot(offset);
+                JPopupMenu pm = annos.createPopupMenu(Utilities.getKit(eui.getComponent()), line);
                 if (pm != null) {
                     e.consume();
                     pm.show(GlyphGutter.this, e.getX(), e.getY());
                     pm.addPopupMenuListener( new PopupMenuListener() {
                             public @Override void popupMenuCanceled(PopupMenuEvent e2) {
-                                editorUI.getComponent().requestFocus();
+                                eui.getComponent().requestFocus();
                             }
                             public @Override void popupMenuWillBecomeInvisible(PopupMenuEvent e2) {
-                                editorUI.getComponent().requestFocus();
+                                eui.getComponent().requestFocus();
                             }
                             public @Override void popupMenuWillBecomeVisible(PopupMenuEvent e2) {
                             }
@@ -862,7 +875,11 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         }
         
         public @Override void mouseDragged(MouseEvent e) {
-            JTextComponent component = editorUI.getComponent();
+            EditorUI eui = editorUI;
+            if (eui == null) {
+                return;
+            }
+            JTextComponent component = eui.getComponent();
             BaseTextUI textUI = (BaseTextUI)component.getUI();
             AbstractDocument aDoc = (AbstractDocument)component.getDocument();
             aDoc.readLock();
@@ -955,7 +972,10 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             } else if (evt.getSource() instanceof JTextComponent) {
                 if (evt.getPropertyName() == null || "document".equals(evt.getPropertyName())) { //NOI18N
                     annos.removeAnnotationsListener(GlyphGutter.this);
-                    annos = editorUI.getDocument().getAnnotations();
+                    EditorUI eui = editorUI;
+                    if (eui != null && eui.getDocument() != null) {
+                        annos = eui.getDocument().getAnnotations();
+                    }
                     annos.addAnnotationsListener(GlyphGutter.this);
 
                     update();

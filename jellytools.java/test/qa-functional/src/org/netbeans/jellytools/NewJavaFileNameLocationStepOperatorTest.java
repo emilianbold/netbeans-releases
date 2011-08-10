@@ -97,7 +97,7 @@ public class NewJavaFileNameLocationStepOperatorTest extends JellyTestCase {
         // Java Classes
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // Java Class
-        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java");
+        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java");
         wop.selectCategory(javaClassesLabel);
         wop.selectFileType(javaClassLabel);
         wop.next();

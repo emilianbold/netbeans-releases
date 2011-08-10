@@ -45,9 +45,14 @@
 
 package org.netbeans.modules.cnd.source;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 
 
@@ -60,7 +65,17 @@ public class HDataObject extends SourceDataObject {
     public HDataObject(FileObject pf, HDataLoader loader) throws DataObjectExistsException {
 	super(pf, loader);
     }
-  
+
+    @MultiViewElement.Registration(displayName = "#Source",
+        iconBase = HDataNode.HDataIcon,
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType = MIMENames.HEADER_MIME_TYPE,
+        preferredID = "header.source", //NOI18N
+        position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
     @Override
     protected Node createNodeDelegate() {
 	return new HDataNode(this);

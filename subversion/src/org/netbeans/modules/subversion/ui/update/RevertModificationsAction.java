@@ -142,14 +142,21 @@ public class RevertModificationsAction extends ContextAction {
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             @Override
             public void perform() {
-                performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
+                performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), !revertModifications.revertRecursively(), ctx, this);
             }
         };
         support.start(createRequestProcessor(ctx));
     }
     
-    /** Recursive revert */
-    public static void performRevert(RevertModifications.RevisionInterval revisions, boolean revertNewFiles, Context ctx, SvnProgressSupport support) {
+    /**
+     * Reverts given files
+     * @param revisions
+     * @param revertNewFiles
+     * @param onlySelectedFiles if set to false then the revert will act recursively, otherwise only selected roots will be reverted (without any of their children)
+     * @param ctx
+     * @param support 
+     */
+    public static void performRevert(RevertModifications.RevisionInterval revisions, boolean revertNewFiles, boolean onlySelectedFiles, Context ctx, SvnProgressSupport support) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);
@@ -159,15 +166,27 @@ public class RevertModificationsAction extends ContextAction {
         }
         
         File files[] = ctx.getFiles();
-        File[][] split = Utils.splitFlatOthers(files);
+        File[][] split;
+        if (onlySelectedFiles) {
+            split = new File[2][0];
+        } else {
+            split = Utils.splitFlatOthers(files);
+        }
         for (int c = 0; c<split.length; c++) {
             if(support.isCanceled()) {
                 return;
             }
             files = split[c];
             boolean recursive = c == 1;
-            if (recursive == false) {
-                files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
+            if (!recursive && revisions == null) {
+                // not recursively
+                if (onlySelectedFiles) {
+                    // ONLY the selected files, no children
+                    files = ctx.getFiles();
+                } else {
+                    // get selected files and it's direct descendants for flat folders
+                    files = SvnUtils.flatten(files, FileInformation.STATUS_REVERTIBLE_CHANGE);
+                }
             }
             
             try {
@@ -236,14 +255,17 @@ public class RevertModificationsAction extends ContextAction {
 
         if(revertNewFiles) {
             File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
-            for (int i = 0; i < newfiles.length; i++) {
-                FileObject fo = FileUtil.toFileObject(newfiles[i]);
-                try {
-                    if(fo != null) {
-                        fo.delete();
+            for (File file : newfiles) {
+                // do not act recursively if not allowed
+                if (!onlySelectedFiles || ctx.getRoots().contains(file)) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    try {
+                        if(fo != null) {
+                            fo.delete();
+                        }
+                    } catch (IOException ex) {
+                        Subversion.LOG.log(Level.SEVERE, null, ex);
                     }
-                } catch (IOException ex) {
-                    Subversion.LOG.log(Level.SEVERE, null, ex);
                 }
             }
         }

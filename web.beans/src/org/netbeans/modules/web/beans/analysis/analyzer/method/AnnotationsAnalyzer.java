@@ -42,15 +42,10 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -61,22 +56,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.MetaModelSupport;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
-import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult.ResultKind;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
 
@@ -86,25 +68,27 @@ import org.openide.util.NbBundle;
  */
 public class AnnotationsAnalyzer implements MethodAnalyzer {
     
+    private static final String EJB = "ejb";            // NOI18N
+
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+            TypeElement parent, AtomicBoolean cancel , CdiAnalysisResult result )
     {
         checkProductionObserverDisposerInject( element , parent , 
-                compInfo ,descriptions, cancel );
+                cancel , result );
         if ( cancel.get()){
             return;
         }
     }
 
     private void checkProductionObserverDisposerInject(
-            ExecutableElement element, TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+            ExecutableElement element, TypeElement parent, AtomicBoolean cancel ,
+            CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         boolean isProducer = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.PRODUCES_FQN, compInfo);
         boolean isInitializer = AnnotationUtil.hasAnnotation(element, 
@@ -157,40 +141,85 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
             }
         }
         if ( firstAnnotation != null && secondAnnotation != null  ){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element, NbBundle.getMessage(
                     AnnotationsAnalyzer.class, "ERR_BothAnnotationsMethod", // NOI18N
                     firstAnnotation, secondAnnotation ));
-            descriptions.add( description );
         }
         
         // Test quantity of observer parameters
         if ( observesCount > 1){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element, NbBundle.getMessage(
                 AnnotationsAnalyzer.class, "ERR_ManyObservesParameter" ));   // NOI18N
-            descriptions.add( description );
         }
         // Test quantity of disposes parameters
         else if ( disposesCount >1 ){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element, NbBundle.getMessage(
                 AnnotationsAnalyzer.class, "ERR_ManyDisposesParameter"));    // NOI18N
-            descriptions.add( description );
         }
         
         // A producer/disposer method must be a non-abstract method . 
-        checkAbstractMethod(element, compInfo, descriptions, isProducer,
+        checkAbstractMethod(element, result, isProducer,
                 disposesCount>0);
         
+        checkBusinessMethod( element , result, isProducer, 
+                disposesCount >0 , observesCount > 0);
+        
         if ( isInitializer ){
-            checkInitializerMethod(element, parent , compInfo, descriptions);
+            checkInitializerMethod(element, parent , result );
+        }
+    }
+
+    /**
+     *  A producer/disposer/observer non-static method of a session bean class 
+     *  should be a business method of the session bean.
+     */
+    private void checkBusinessMethod( ExecutableElement element,
+            CdiAnalysisResult result ,boolean isProducer, boolean isDisposer, boolean isObserver )
+    {
+        CompilationInfo compInfo = result.getInfo();
+        if ( !isProducer && !isDisposer && !isObserver ){
+            return;
+        }
+        Set<Modifier> modifiers = element.getModifiers();
+        if ( modifiers.contains(Modifier.STATIC) ){
+            return;
+        }
+        TypeElement containingClass = compInfo.getElementUtilities().
+            enclosingTypeElement(element);
+        if ( !AnnotationUtil.isSessionBean( containingClass, compInfo) ){
+            return;
+        }
+        String methodName = element.getSimpleName().toString();
+        boolean isBusinessMethod = true;
+        if ( methodName.startsWith(EJB)){
+            isBusinessMethod = false;
+        }
+        if (AnnotationUtil.isLifecycleCallback(element, compInfo)){
+            isBusinessMethod = false;
+        }
+        if ( modifiers.contains(Modifier.FINAL) ||
+                !modifiers.contains( Modifier.PUBLIC) )
+        {
+            isBusinessMethod = false;
+        }
+        if ( !isBusinessMethod ){
+            String key = null;
+            if ( isProducer ){
+                key = "ERR_ProducerNotBusiness";         // NOI18N
+            }
+            else if ( isDisposer ){
+                key = "ERR_DisposerNotBusiness";         // NOI18N
+            }
+            else if ( isObserver ){
+                key = "ERR_ObserverNotBusiness";         // NOI18N
+            }
+            result.addError( element, NbBundle.getMessage(
+                AnnotationsAnalyzer.class, key)); 
         }
     }
 
     private void checkInitializerMethod( ExecutableElement element, 
-            TypeElement parent, CompilationInfo compInfo, 
-            List<ErrorDescription> descriptions )
+            TypeElement parent, CdiAnalysisResult result )
     {
         Set<Modifier> modifiers = element.getModifiers();
         boolean isAbstract = modifiers.contains( Modifier.ABSTRACT );
@@ -198,38 +227,31 @@ public class AnnotationsAnalyzer implements MethodAnalyzer {
         if (  isAbstract || isStatic ){
             String key = isAbstract? "ERR_AbstractInitMethod":
                 "ERR_StaticInitMethod";           // NOI18N
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element, NbBundle.getMessage(
                 AnnotationsAnalyzer.class, key ));
-            descriptions.add( description );
         }    
-        TypeMirror method = compInfo.getTypes().asMemberOf(
+        TypeMirror method = result.getInfo().getTypes().asMemberOf(
                 (DeclaredType)parent.asType() , element);
         if ( method instanceof ExecutableType ){
             List<? extends TypeVariable> typeVariables = 
                 ((ExecutableType)method).getTypeVariables();
             if ( typeVariables != null && typeVariables.size() > 0 ){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, NbBundle.getMessage(
-                            AnnotationsAnalyzer.class, "ERR_GenericInitMethod" ));
-                descriptions.add( description );
+                result.addError( element, NbBundle.getMessage(
+                            AnnotationsAnalyzer.class, "ERR_GenericInitMethod" ));// NOI18N
             }
         }
     }
 
     private void checkAbstractMethod( ExecutableElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions,
-            boolean isProducer, boolean isDisposer )
+            CdiAnalysisResult result ,boolean isProducer, boolean isDisposer )
     {
         if ( isProducer || isDisposer ){
             String key = isProducer? "ERR_AbstractProducerMethod":
                 "ERR_AbstractDisposerMethod";           // NOI18N
             Set<Modifier> modifiers = element.getModifiers();
             if ( modifiers.contains( Modifier.ABSTRACT )){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+                result.addError( element, NbBundle.getMessage(
                     AnnotationsAnalyzer.class, key ));
-                descriptions.add( description );
             }
         }
     }

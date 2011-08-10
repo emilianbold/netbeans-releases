@@ -105,6 +105,17 @@ public abstract class NamedServicesProvider {
         namedServicesProviders.put(path, new WeakReference<Lookup>(lkp));
         return lkp;
     }
+    
+    /** Finds a config object under given path.
+     * @param filePath path to .instance or .settings file
+     * @param type the requested type for given object
+     * @return either null or instance of requested type
+     * @since 8.10 
+     */
+    public static <T> T getConfigObject(String filePath, Class<T> type) {
+        NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
+        return prov != null ? prov.lookupObject(filePath, type) : null;
+    }
 
     /** Throws an exception. Prevents unwanted instantiation of this class
      * by unknown subclasses.
@@ -137,4 +148,13 @@ public abstract class NamedServicesProvider {
      */
     protected abstract Lookup create(String path);
     
+    /** Finds a config object under given path. Called from {@link FileUtil#getConfigObject}.
+     * @param filePath path to .instance or .settings file
+     * @param type the requested type for given object
+     * @return either null or instance of requested type
+     * @since 8.10 
+     */
+    protected <T> T lookupObject(String path, Class<T> type) {
+        return create(path).lookup(type);
+    }
 }

@@ -54,9 +54,8 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.util.NbBundle;
 
 /**
- * Action perform undock or dock, either of given or active Mode.
+ * Action perform undock either of given or active Mode.
  * Undock means that all TopCompoments in the given Mode are moved to new, separate floating window,
- * Dock means move into main window area.
  * 
  * @author S. Aubrecht
  * @since 2.30
@@ -66,19 +65,21 @@ public final class UndockModeAction extends AbstractAction {
     private final ModeImpl mode;
 
     /**
-     * Creates instance of action to Undock/Dock the whole mode of currently active top
+     * Creates instance of action to Undock the whole mode of currently active top
      * component in the system. For use in main menu.
      */
     public UndockModeAction () {
         this.mode = null;
+        putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction")); //NOI18N
     }
 
     /**
-     * Undock/Dock of given Mode.
+     * Undock of given Mode.
      * For use in the context menus.
      */
     public UndockModeAction (ModeImpl mode) {
         this.mode = mode;
+        putValue(Action.NAME, NbBundle.getMessage(DockModeAction.class, "CTL_UndockModeAction")); //NOI18N
     }
     
     @Override
@@ -118,21 +119,15 @@ public final class UndockModeAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        updateName();
         ModeImpl contextMode = getMode2WorkWith();
         if( null == contextMode )
+            return false;
+        boolean docked = contextMode.getState() == Constants.MODE_STATE_JOINED;
+        if( !docked )
             return false;
         if( contextMode.getKind() == Constants.MODE_KIND_EDITOR )
             return Switches.isEditorModeUndockingEnabled();
         return contextMode.getKind() == Constants.MODE_KIND_VIEW && Switches.isViewModeUndockingEnabled();
-    }
-
-    private void updateName() {
-        ModeImpl contextMode = getMode2WorkWith();
-        boolean isDocked = null == contextMode || contextMode.getState() == Constants.MODE_STATE_JOINED;
-        putValue(Action.NAME,
-                NbBundle.getMessage(UndockModeAction.class,
-                isDocked ? "CTL_UndockModeAction" : "CTL_UndockModeAction_Dock"));
     }
 
     private ModeImpl getMode2WorkWith () {

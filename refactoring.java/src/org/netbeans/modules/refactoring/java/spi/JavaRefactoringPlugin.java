@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -73,6 +74,7 @@ import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -90,6 +92,21 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     private WorkingTask workingTask = new WorkingTask();
     
 
+    /**
+     * Create Java specific implementation of {@link Transaction}.
+     * 
+     * @param modifications collection of {@link ModificationResult}
+     * @return Java specific Transaction
+     * @see RefactoringElementsBag#registerTransaction(Transaction) 
+     * @since 1.24.0
+     * 
+     * @author Jan Becicka
+     */
+    public static Transaction createTransaction(@NonNull Collection<ModificationResult> modifications) {
+        return new RetoucheCommit(modifications);
+    }
+
+    
     protected Problem preCheck(CompilationController javac) throws IOException {
         return null;
     }
@@ -104,6 +121,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected abstract JavaSource getJavaSource(Phase p);
 
     public Problem preCheck() {
+        cancelRequest = false;
         return workingTask.run(Phase.PRECHECK);
     }
 
@@ -255,7 +273,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected final Problem createAndAddElements(Set<FileObject> files, CancellableTask<WorkingCopy> task, RefactoringElementsBag elements, AbstractRefactoring refactoring, ClasspathInfo info) {
         try {
             final Collection<ModificationResult> results = processFiles(files, task, info);
-            elements.registerTransaction(new RetoucheCommit(results));
+            elements.registerTransaction(createTransaction(results));
             for (ModificationResult result:results) {
                 for (FileObject jfo : result.getModifiedFileObjects()) {
                     for (Difference dif: result.getDifferences(jfo)) {

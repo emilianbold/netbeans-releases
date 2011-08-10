@@ -44,7 +44,6 @@ package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
 import java.lang.annotation.ElementType;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,13 +51,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationModelAnalyzer.AnnotationAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -73,8 +70,8 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
      */
     @Override
     public void analyze( TypeElement element, WebBeansModel model,
-            List<ErrorDescription> descriptions ,
-            CompilationInfo info , AtomicBoolean cancel )
+            AtomicBoolean cancel ,
+            Result result )
     {
         if ( !AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.INTERCEPTOR_BINDING_FQN , model.getCompilationController()))
@@ -82,30 +79,22 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
             return;
         }
         InterceptorTargetAnalyzer analyzer = new InterceptorTargetAnalyzer(
-                element, model, descriptions, info );
+                element, model, result );
         if ( cancel.get() ){
             return;
         }
         if (!analyzer.hasRuntimeRetention()) {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+            result.addError(element, model,   
                             NbBundle.getMessage(InterceptorBindingAnalyzer.class,
                                     INCORRECT_RUNTIME));
-            if ( description != null ){
-                descriptions.add(description);
-            }
         }
         if ( cancel.get() ){
             return;
         }
         if (!analyzer.hasTarget()) {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+            result.addError(element, model,   
                             NbBundle.getMessage(InterceptorBindingAnalyzer.class,
                             "ERR_IncorrectInterceptorBindingTarget")); // NOI18N
-            if ( description != null ){
-                descriptions.add(description);
-            }
         }
         else {
             if ( cancel.get() ){
@@ -116,13 +105,13 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
                 return;
             }
             checkTransitiveInterceptorBindings( element, declaredTargetTypes, 
-                    model , descriptions, info );
+                    model , result );
         }
     }
     
     private void checkTransitiveInterceptorBindings( TypeElement element,
             Set<ElementType> declaredTargetTypes, WebBeansModel model,
-            List<ErrorDescription> descriptions , CompilationInfo info )
+            Result result )
     {
         if (declaredTargetTypes == null || declaredTargetTypes.size() == 1) {
             return;
@@ -142,14 +131,10 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
             if (bindingTargetTypes.size() == 1
                     && bindingTargetTypes.contains(ElementType.TYPE))
             {
-                ErrorDescription description = CdiEditorAnalysisFactory
-                        .createError(element, model , info ,  
+                result.addError(element, model ,  
                                 NbBundle.getMessage(InterceptorBindingAnalyzer.class,
                                         "ERR_IncorrectTransitiveInterceptorBinding", // NOI18N
                                         ((TypeElement) binding).getQualifiedName().toString()));
-                if ( description != null ){
-                    descriptions.add(description);
-                }
             }
 
         }
@@ -158,9 +143,9 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
     private static class InterceptorTargetAnalyzer extends CdiAnnotationAnalyzer {
         
         InterceptorTargetAnalyzer( TypeElement element , WebBeansModel model ,
-                List<ErrorDescription> descriptions, CompilationInfo info)
+                Result result)
         {
-            super( element, model , descriptions , info );
+            super( element, model , result );
         }
 
         /* (non-Javadoc)

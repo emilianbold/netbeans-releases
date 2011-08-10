@@ -61,6 +61,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -69,11 +71,40 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Wizard to create a new Java file.
  */
+@TemplateRegistrations({
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 100, content = "resources/Class.java.template", scriptEngine = "freemarker", displayName = "#Class.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Class.html", category = {"java-classes", "java-classes-basic"}),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 200, content = "resources/Interface.java.template", scriptEngine = "freemarker", displayName = "#Interface.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Interface.html", category = {"java-classes", "java-classes-basic"}),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 300, content = "resources/Enum.java.template", scriptEngine = "freemarker", displayName = "#Enum.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Enum.html", category = {"java-classes", NewJavaFileWizardIterator.JDK_5}),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 400, content = "resources/AnnotationType.java.template", scriptEngine = "freemarker", displayName = "#AnnotationType.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/AnnotationType.html", category = {"java-classes", NewJavaFileWizardIterator.JDK_5}),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 600, content = "resources/Exception.java.template", scriptEngine = "freemarker", displayName = "#Exception.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Exception.html", category = {"java-classes", "java-classes-basic"}),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 700, content = "resources/JApplet.java.template", scriptEngine = "freemarker", displayName = "#JApplet.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/JApplet.html", category = "java-classes"),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 800, content = "resources/Applet.java.template", scriptEngine = "freemarker", displayName = "#Applet.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Applet.html", category = "java-classes"),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 900, content = "resources/Main.java.template", scriptEngine = "freemarker", displayName = "#Main.java", iconBase = "org/netbeans/modules/java/project/resources/main-class.png", description = "resources/Main.html", category = "java-main-class"),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 950, content = "resources/Singleton.java.template", scriptEngine = "freemarker", displayName = "#Singleton.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Singleton.html", category = "java-classes"),
+    @TemplateRegistration(folder = NewJavaFileWizardIterator.FOLDER, position = 1000, content = "resources/Empty.java.template", scriptEngine = "freemarker", displayName = "#Empty.java", iconBase = JavaTemplates.JAVA_ICON, description = "resources/Empty.html", category = {"java-classes", "java-classes-basic"})
+})
+@Messages({
+    "Class.java=Java Class",
+    "Interface.java=Java Interface",
+    "Enum.java=Java Enum",
+    "AnnotationType.java=Java Annotation Type",
+    "Exception.java=Java Exception",
+    "JApplet.java=JApplet",
+    "Applet.java=Applet",
+    "Main.java=Java Main Class",
+    "Singleton.java=Java Singleton Class",
+    "Empty.java=Empty Java File"
+})
 public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
+
+    static final String FOLDER = "Classes";
+
+    static final String JDK_5 = "jdk5";
     
     private static final long serialVersionUID = 1L;
 
@@ -91,10 +122,14 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         this.type = type;
     }    
     
+    @TemplateRegistration(folder = FOLDER, id="Package", position = 1100, displayName = "#packageWizard", iconBase = "org/netbeans/spi/java/project/support/ui/package.gif", description = "resources/Package.html", category = {"java-classes", "java-classes-basic"})
+    @Messages("packageWizard=Java Package")
     public static NewJavaFileWizardIterator packageWizard() {
         return new NewJavaFileWizardIterator(Type.PACKAGE);
     }
     
+    @TemplateRegistration(folder = FOLDER, position = 650, content = "resources/package-info.java.template", scriptEngine = "freemarker", displayName = "#packageInfoWizard", iconBase = JavaTemplates.JAVA_ICON, description = "resources/package-info.html", category = {"java-classes", JDK_5})
+    @Messages("packageInfoWizard=Java Package Info")
     public static NewJavaFileWizardIterator packageInfoWizard () {
         return new NewJavaFileWizardIterator(Type.PKG_INFO);
     }

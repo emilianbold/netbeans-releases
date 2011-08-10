@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Prefill-initial-text-in-type-broser">
+            <api name="general"/>
+            <summary>Overloading TypeBrowser.browse method to allow prefilling of initial type name</summary>
+            <version major="1" minor="25"/>
+            <date day="20" month="7" year="2011"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Adding an overload to TypeBrowser.browse method that allows to specify the initial type name that should appear in the Go to Type dialog.
+            </description>
+            <class package="org.netbeans.api.jumpto.type" name="TypeBrowser"/>
+            <issue number="200163"/>
+        </change>
         <change id="Wildcard-to-Regexp">
             <api name="general"/>
             <summary>Added a method converting Go To Type (File) wildcards into regexp</summary>

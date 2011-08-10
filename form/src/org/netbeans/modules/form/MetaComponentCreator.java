@@ -48,19 +48,7 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.util.*;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -1380,10 +1368,8 @@ public class MetaComponentCreator {
 
     private boolean checkFormClass(Class<?> compClass) {
         if (formModel.getFormBaseClass().isAssignableFrom(compClass)) {
-            String formClassBinaryName = getClassBinaryName(
-                    FormEditor.getFormDataObject(formModel).getPrimaryFile());
-            
-            if (formClassBinaryName.equals(compClass.getName())) {
+            String formClassBinaryName = FormEditor.getFormJavaSource(formModel).getClassBinaryName();
+            if (formClassBinaryName != null && formClassBinaryName.equals(compClass.getName())) {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
                         FormUtils.getBundleString("MSG_ERR_CannotAddForm"), // NOI18N
@@ -1392,36 +1378,6 @@ public class MetaComponentCreator {
             }
         }
         return true;
-    }
-
-    private static String getClassBinaryName(final FileObject fo) {
-        final String[] result = new String[1];
-        JavaSource js = JavaSource.forFileObject(fo);
-        try {
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                @Override
-                public void cancel() {
-                }
-                @Override
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) &&
-                                fo.getName().equals(((ClassTree) t).getSimpleName().toString())) {
-                            TreePath classTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), t);
-                            Element classElm = controller.getTrees().getElement(classTreePath);
-                            result[0] = classElm != null
-                                    ? controller.getElements().getBinaryName((TypeElement) classElm).toString()
-                                    : ""; // NOI18N
-                            break;
-                        }
-                    }
-                }
-            }, true);
-        } catch (IOException ex) {
-            Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-        }
-        return result[0];
     }
 
     private static void showClassLoadingErrorMessage(Throwable ex,

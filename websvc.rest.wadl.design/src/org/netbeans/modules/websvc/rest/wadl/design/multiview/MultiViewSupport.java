@@ -52,6 +52,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.EditCookie;
@@ -67,19 +68,18 @@ import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.websvc.rest.wadl.design.cookies.GetComponentCookie;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.ShowCookie;
+import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlDataLoader;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlDataObject;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlEditorSupport;
 import org.netbeans.modules.websvc.rest.wadl.model.WadlComponent;
 import org.netbeans.modules.xml.xam.Model;
-//import org.netbeans.modules.xml.xam.ui.cookies.GetComponentCookie;
 import org.netbeans.modules.websvc.rest.wadl.model.WadlModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Class for creating the Multiview
@@ -89,8 +89,12 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
 
     static final long serialVersionUID = 1L;
     private WadlDataObject dataObject;
-    public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
+    public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";           // NOI18N
+    
+    public static final String SOURCE_VIEW_ID = "websvc-rest-wadl-sourceview";  // NOI18N
 
+    public static final String DESIGN_VIEW_ID = "websvc-rest-wadl-designview";   // NOI18N
+    
     /**
      * MultiView enum
      */
@@ -122,10 +126,12 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         this.dataObject = dataObject;
     }
 
+    @Override
     public void open() {
         view(View.DESIGN);
     }
 
+    @Override
     public void edit() {
         view(View.SOURCE);
     }
@@ -147,7 +153,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @return CloneableTopComponent new multiview.
      */
     public CloneableTopComponent createMultiView() {
-        MultiViewDescription views[] = new MultiViewDescription[2];
+        /*MultiViewDescription views[] = new MultiViewDescription[2];
 
         // Put the source element first so that client code can find its
         // CloneableEditorSupport.Pane implementation.
@@ -159,7 +165,9 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
                 MultiViewFactory.createCloneableMultiView(
                 views,
                 views[1], new WadlEditorSupport.CloseHandler(getDataObject()));
-
+        */
+        CloneableTopComponent multiview = MultiViews.createCloneableMultiView(
+                WadlDataLoader.MIME_TYPE, dataObject);
         String displayName = getDataObject().getNodeDelegate().getDisplayName();
         multiview.setDisplayName(displayName);
         multiview.setName(displayName);
@@ -176,6 +184,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     viewInSwingThread(view, param);
                 }
@@ -189,10 +198,10 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         getEditorSupport().open();
         switch (view) {
             case SOURCE:
-                requestMultiviewActive(SourceMultiViewDesc.PREFERRED_ID);
+                requestMultiviewActive(SOURCE_VIEW_ID);
                 break;
             case DESIGN:
-                requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
+                requestMultiviewActive(DESIGN_VIEW_ID);
                 break;
         }
         if (parameters != null && parameters.length > 0) {
@@ -304,6 +313,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     viewInSwingThread(view, component, parameters);
                 }
@@ -336,10 +346,10 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             // activate view if needed
             switch (view) {
             case SOURCE:
-                requestMultiviewActive(SourceMultiViewDesc.PREFERRED_ID);
+                requestMultiviewActive(SOURCE_VIEW_ID);
                 break;
             case DESIGN:
-                requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
+                requestMultiviewActive(DESIGN_VIEW_ID);
                     break;
             }
             // show component in current multiview
@@ -371,7 +381,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
                     lookup(WadlDataObject.class);
             if(dataObject==sdobj) { // we can preserve the view
                 String activeMVTCId = getMultiviewActive();
-                if(DesignMultiViewDesc.PREFERRED_ID.equals(activeMVTCId)) {
+                if(DESIGN_VIEW_ID.equals(activeMVTCId)) {
                     WadlModel axiModel = null;
                     if(component instanceof WadlComponent) {
                         axiModel = ((WadlComponent)component).getModel();
@@ -396,13 +406,13 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         
         switch(view) {
             case SOURCE:
-                if(!SourceMultiViewDesc.PREFERRED_ID.equals(
+                if(!SOURCE_VIEW_ID.equals(
                         getMultiviewActive()) ||
                         !getActiveComponents().contains(component)) {
                     return true;
                 } else return false;
             case DESIGN:
-                if(DesignMultiViewDesc.PREFERRED_ID.equals(
+                if(DESIGN_VIEW_ID.equals(
                         getMultiviewActive()) &&
                         getActiveComponents().contains(component)) {
                     TopComponent activeTC = TopComponent.getRegistry().getActivated();
@@ -420,21 +430,23 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * reference to DataObject only - to be serializable with the multiview
      * TopComponent without problems.
      */
+ /*   @MimeRegistration(mimeType=WadlDataLoader.MIME_TYPE, 
+            service=CloseOperationHandler.class)
     public static class CloseHandler implements CloseOperationHandler, Serializable {
 
         private static final long serialVersionUID = -3838395157610633251L;
         private DataObject sourceDataObject;
 
         private CloseHandler() {
-            super();
         }
 
-        public CloseHandler(DataObject sourceDataObject) {
-            this.sourceDataObject = sourceDataObject;
+        public CloseHandler(DataObject dataObject) {
+            this.sourceDataObject = dataObject;
         }
 
+        @Override
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
-            StringBuffer message = new StringBuffer();
+            StringBuilder message = new StringBuilder();
             for (CloseOperationState state : elements) {
                 if (state.getCloseWarningID().equals(SOURCE_UNSAFE_CLOSE)) {
                     message.append(NbBundle.getMessage(DataObject.class,
@@ -460,6 +472,6 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             }
             return true;
         }
-    }
+    }*/
 
 }

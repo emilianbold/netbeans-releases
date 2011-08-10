@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -64,7 +63,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -283,14 +281,16 @@ public class MakeProjectGeneratorImpl {
             task.run();
         }
         if (!prjParams.getFullRemote() && !prjParams.isMakefileProject()) {
+            FileObject baseDirFileObject = projectDescriptor.getBaseDirFileObject();
+            FileObject createData = baseDirFileObject.createData(projectDescriptor.getProjectMakefileName());
             // create Makefile
             copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
-                    projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
+                    createData.getOutputStream());
         }
         return h;
     }
 
-    private static void copyURLFile(String fromURL, String toFile) throws IOException {
+    private static void copyURLFile(String fromURL, OutputStream os) throws IOException {
         InputStream is = null;
         try {
             URL url = new URL(fromURL);
@@ -299,7 +299,6 @@ public class MakeProjectGeneratorImpl {
             // FIXUP
         }
         if (is != null) {
-            FileOutputStream os = new FileOutputStream(toFile);
             copy(is, os);
         }
     }
@@ -315,14 +314,25 @@ public class MakeProjectGeneratorImpl {
      * @throws java.io.IOException
      */
     private static void copy(InputStream is, OutputStream os) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-        String line;
+        BufferedReader br = null;
+        BufferedWriter bw = null;
+        try {
+            br = new BufferedReader(new InputStreamReader(is));
+            bw = new BufferedWriter(new OutputStreamWriter(os));
+            String line;
 
-        while ((line = br.readLine()) != null) {
-            bw.write(line + "\n"); // NOI18N
+            while ((line = br.readLine()) != null) {
+                bw.write(line + "\n"); // NOI18N
+            }
+            bw.flush();
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+            if (os != null) {
+                os.close();
+            }
         }
-        bw.flush();
     }
 
     private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {

@@ -54,10 +54,10 @@ public final class ProblemReport {
     public static final int SEVERITY_MEDIUM = 5;
     public static final int SEVERITY_HIGH = 0;
 
-    private int level = SEVERITY_LOW;
-    private String shortDesc;
-    private String longDesc;
-    private Action action;
+    private final int level;
+    private final String shortDesc;
+    private final String longDesc;
+    private final Action action;
     private String id;
 
     public ProblemReport(int severity, String desc, String longDesc, Action correct) {

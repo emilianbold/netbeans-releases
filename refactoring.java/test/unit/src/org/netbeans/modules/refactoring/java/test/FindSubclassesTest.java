@@ -122,6 +122,7 @@ public class FindSubclassesTest extends RefPerfTestCase {
         }, false).get();
         
         wuq[0].putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
+        wuq[0].putValue(WhereUsedQuery.FIND_REFERENCES, false);
 
         RefactoringSession rs = RefactoringSession.create("Session");
         wuq[0].prepare(rs);

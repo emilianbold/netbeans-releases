@@ -48,7 +48,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
@@ -60,6 +59,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * View with highlights. This is the most used view.
+ * <br/>
+ * It can either have no highlights (attributes == null) or simple attributes
+ * (attributes == non-
  *
  * @author Miloslav Metelka
  */
@@ -70,43 +72,48 @@ public class HighlightsView extends EditorView {
     private static final Logger LOG = Logger.getLogger(HighlightsView.class.getName());
 
     /** Offset of start offset of this view. */
-    private int rawOffset; // 24-super + 4 = 28 bytes
+    private int rawEndOffset; // 24-super + 4 = 28 bytes
 
     /** Length of text occupied by this view. */
     private int length; // 28 + 4 = 32 bytes
 
-    /** Attributes for rendering */
+    /**
+     * Attributes for rendering. It can be CompoundAttributes instance
+     * in which case the getAttributes() methods must return "this".
+     */
     private final AttributeSet attributes; // 32 + 4 = 36 bytes
 
     /**
-     * Either direct TextLayout object or TextLayoutPart or null.
+     * TextLayout or null if not initialized (or cleared).
      */
-    private Object textLayoutOrPart;
+    private TextLayout textLayout; // 36 + 4 = 40
 
     public HighlightsView(int offset, int length, AttributeSet attributes) {
         super(null);
         assert (length > 0) : "length=" + length + " <= 0"; // NOI18N
-        this.rawOffset = offset;
+        this.rawEndOffset = offset + length;
         this.length = length;
         this.attributes = attributes;
     }
 
     @Override
     public float getPreferredSpan(int axis) {
+        checkTextLayoutValid();
         float span = (axis == View.X_AXIS)
-            ? Math.abs(TextLayoutUtils.getWidth(layout(), length)) // Could be negative
-            : TextLayoutUtils.getHeight(layout());
-        return ViewUtils.ceilFractions(span);
+            ? Math.abs(TextLayoutUtils.getWidth(textLayout)) // Could be negative
+            : TextLayoutUtils.getHeight(textLayout);
+        // Round to integer to avoid visual artifacts (one of several lines smaller than others etc.)
+        return (int) Math.ceil(span);
     }
     
     @Override
-    public int getRawOffset() {
-        return rawOffset;
+    public int getRawEndOffset() {
+        return rawEndOffset;
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
-        this.rawOffset = rawOffset;
+    public void setRawEndOffset(int rawOffset) {
+        this.rawEndOffset = rawOffset;
     }
 
     @Override
@@ -116,13 +123,13 @@ public class HighlightsView extends EditorView {
 
     @Override
     public int getStartOffset() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
+        return getEndOffset() - getLength();
     }
 
     @Override
     public int getEndOffset() {
-        return getStartOffset() + getLength();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getViewEndOffset(rawEndOffset) : rawEndOffset;
     }
 
     @Override
@@ -137,30 +144,24 @@ public class HighlightsView extends EditorView {
     }
 
     /**
-     * @return TextLayout instance or TextLayoutPart or null.
+     * @return Valid textLayout instance or TextLayoutPart or null.
      */
-    Object layout() {
-        if (textLayoutOrPart == null) { // Must init whole row
-            getParagraphView().initTextLayouts();
-        }
-        return textLayoutOrPart;
+    TextLayout getTextLayout() {
+        return textLayout;
     }
     
-    Object layoutRaw() {
-        return layout(); // textLayoutOrPart;
-    }
-
-    void setLayout(Object layoutOrPart) {
-        this.textLayoutOrPart = layoutOrPart;
+    void setTextLayout(TextLayout textLayout) {
+        this.textLayout = textLayout;
     }
     
     TextLayout createPartTextLayout(int shift, int length) {
+        checkTextLayoutValid();
         DocumentView docView = getDocumentView();
         Document doc = docView.getDocument();
         CharSequence docText = DocumentUtilities.getText(doc);
         int startOffset = getStartOffset();
         String text = docText.subSequence(startOffset + shift, startOffset + shift + length).toString();
-        return docView.createTextLayout(text, getAttributes());
+        return docView.createTextLayout(text, ViewUtils.getFirstAttributes(getAttributes()));
     }
 
     ParagraphView getParagraphView() {
@@ -174,149 +175,51 @@ public class HighlightsView extends EditorView {
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
-        return modelToViewChecked(offset, alloc, bias, -1);
-    }
-
-    public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias, int index) {
-        Shape ret;
+        checkTextLayoutValid();
         int relOffset = Math.max(0, offset - getStartOffset());
-        Object layout = layout();
-        if (layout instanceof TextLayoutPart) {
-            TextLayoutPart part = (TextLayoutPart) layout;
-            ParagraphView paragraphView = getParagraphView();
-            if (paragraphView != null) {
-                if (index == -1) {
-                    index = paragraphView.getViewIndex(getStartOffset());
-                }
-                int layoutStartViewIndex = index - part.index();
-                Rectangle2D.Double textLayoutBounds = ViewUtils.shape2Bounds(alloc);
-                double relX = paragraphView.getViewVisualOffset(index) -
-                        paragraphView.getViewVisualOffset(layoutStartViewIndex);
-                textLayoutBounds.x -= relX;
-                textLayoutBounds.width = part.textLayoutWidth();
-                ret = HighlightsViewUtils.indexToView(part.textLayout(), textLayoutBounds,
-                        part.offsetShift() + relOffset, bias,
-                        part.offsetShift() + getLength(), alloc);
-            } else {
-                ret = alloc;
-            }
-        } else { // TextLayoutPart
-            TextLayout textLayout = (TextLayout) layout;
-            ret = HighlightsViewUtils.indexToView(textLayout, null, relOffset, bias, 
-                    getLength(), alloc);
-        }
+        Shape ret = HighlightsViewUtils.indexToView(textLayout, null, relOffset, bias, getLength(), alloc);
         return ret;
     }
 
     @Override
-    public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
-        return viewToModelChecked(x, y, alloc, biasReturn, -1);
-    }
-
-    public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn, int index) {
-        int offset;
-        Object layout = layout();
-        if (layout instanceof TextLayoutPart) {
-            TextLayoutPart part = (TextLayoutPart) layout;
-            ParagraphView paragraphView = getParagraphView();
-            if (paragraphView != null) {
-                if (index == -1) {
-                    index = paragraphView.getViewIndex(getStartOffset());
-                }
-                int layoutStartViewIndex = index - part.index();
-                Rectangle2D.Double textLayoutBounds = ViewUtils.shape2Bounds(alloc);
-                double relX = paragraphView.getViewVisualOffset(index) -
-                        paragraphView.getViewVisualOffset(layoutStartViewIndex);
-                textLayoutBounds.x -= relX;
-                textLayoutBounds.width = part.textLayoutWidth();
-                offset = HighlightsViewUtils.viewToIndex(part.textLayout(), x, textLayoutBounds, biasReturn) +
-                        getStartOffset() - part.offsetShift();
-            } else {
-                offset = getStartOffset();
-            }
-        } else { // TextLayoutPart
-            TextLayout textLayout = (TextLayout) layout;
-            offset = HighlightsViewUtils.viewToIndex(textLayout, x, alloc, biasReturn) +
-                    getStartOffset();
-        }
+    public int viewToModelChecked(double x, double y, Shape hViewAlloc, Position.Bias[] biasReturn) {
+        checkTextLayoutValid();
+        int offset = getStartOffset() +
+                HighlightsViewUtils.viewToIndex(textLayout, x, hViewAlloc, biasReturn);
+                
         return offset;
     }
 
     @Override
     public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
-        Object layout = layout();
+        checkTextLayoutValid();
         int startOffset = getStartOffset();
-        TextLayout textLayout;
-        int textLayoutStartOffset;
-        if (layout instanceof TextLayoutPart) {
-            TextLayoutPart part = (TextLayoutPart) layout;
-            textLayout = part.textLayout();
-            textLayoutStartOffset = startOffset - part.offsetShift();
-        } else {
-            textLayout = (TextLayout) layout;
-            textLayoutStartOffset = startOffset;
-        }
         return HighlightsViewUtils.getNextVisualPosition(
                 offset, bias, alloc, direction, biasRet,
-                textLayout, textLayoutStartOffset, startOffset, getLength(), getDocumentView());
+                textLayout, startOffset, startOffset, getLength(), getDocumentView());
     }
 
     @Override
-    public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        TextLayout textLayout;
-        Object layout = layout();
-        if (layout instanceof TextLayoutPart) {
-            throw new IllegalStateException("Invalid rendering of layout part"); // NOI18N
-        } else { // TextLayout
-            textLayout = (TextLayout) layout;
-            HighlightsViewUtils.paint(g, alloc, clipBounds, this, textLayout, 0, getLength());
-        }
-    }
-    
-    /**
-     * Paint extra foreground things such as text in different color
-     * (different from the rendered text layout) or strike through.
-     * @param g
-     * @param alloc precise real allocation of this view.
-     * @param clipBounds
-     */
-    void partPaintForeground(Graphics2D g, Shape alloc, Shape textLayoutAlloc, Rectangle clipBounds) {
-        HighlightsViewUtils.partPaintForeground(g, alloc, (TextLayoutPart) layout(),
-                textLayoutAlloc, getAttributes(), getDocumentView());
-    }
-    
-    /**
-     * Paint extra background things such as background in different color
-     * (different from the rendered text layout) or strike through.
-     * @param g
-     * @param alloc precise real allocation of this view.
-     * @param clipBounds
-     */
-    void partPaintBackground(Graphics2D g, Shape alloc, Shape textLayoutAlloc, Rectangle clipBounds) {
-        HighlightsViewUtils.partPaintBackground(g, alloc, (TextLayoutPart) layout(),
-                textLayoutAlloc, getAttributes(), getDocumentView());
+    public void paint(Graphics2D g, Shape hViewAlloc, Rectangle clipBounds) {
+        checkTextLayoutValid();
+        int viewStartOffset = getStartOffset();
+        DocumentView docView = getDocumentView();
+        // TODO render only necessary parts
+        HighlightsViewUtils.paintHiglighted(g, hViewAlloc, clipBounds,
+                docView, this, viewStartOffset,
+                false, textLayout, viewStartOffset, 0, getLength());
     }
     
     @Override
     public View breakView(int axis, int offset, float x, float len) {
-        TextLayout textLayout;
-        int textLayoutIndex;
-        Object layout = layout();
-        if (layout instanceof TextLayoutPart) {
-            TextLayoutPart part = (TextLayoutPart) layout;
-            textLayout = part.textLayout();
-            textLayoutIndex = part.offsetShift();
-        } else { // TextLayout
-            textLayout = (TextLayout) layout;
-            textLayoutIndex = 0;
-        }
-        View part = HighlightsViewUtils.breakView(axis, offset, x, len, this, 0, getLength(),
-                textLayout, textLayoutIndex);
+        checkTextLayoutValid();
+        View part = HighlightsViewUtils.breakView(axis, offset, x, len, this, 0, getLength(), textLayout);
         return (part != null) ? part : this;
     }
 
     @Override
     public View createFragment(int p0, int p1) {
+        checkTextLayoutValid();
         int startOffset = getStartOffset();
         ViewUtils.checkFragmentBounds(p0, p1, startOffset, getLength());
         if (LOG.isLoggable(Level.FINE)) {
@@ -324,6 +227,12 @@ public class HighlightsView extends EditorView {
                     getEndOffset() + ">\n"); // NOI18N
         }
         return new HighlightsViewPart(this, p0 - startOffset, p1 - p0);
+    }
+
+    private void checkTextLayoutValid() {
+        DocumentView docView;
+        assert (textLayout != null) : "TextLayout is null in " + this + // NOI18N
+                (((docView = getDocumentView()) != null) ? "\nDOC-VIEW:\n" + docView.toStringDetailUnlocked() : ""); // NOI18N
     }
 
     @Override
@@ -334,22 +243,14 @@ public class HighlightsView extends EditorView {
     @Override
     protected StringBuilder appendViewInfo(StringBuilder sb, int indent, int importantChildIndex) {
         super.appendViewInfo(sb, indent, importantChildIndex);
-        sb.append(" L=");
-        if (textLayoutOrPart == null) {
+        sb.append(" TL=");
+        if (textLayout == null) {
             sb.append("<NULL>");
-        } else if (textLayoutOrPart instanceof TextLayoutPart) {
-            TextLayoutPart part = (TextLayoutPart) textLayoutOrPart;
-            sb.append(part.toStringShort());
         } else {
-            sb.append("TL");
-            sb.append(TextLayoutUtils.toStringShort((TextLayout) textLayoutOrPart));
+            sb.append(TextLayoutUtils.toStringShort((TextLayout) textLayout));
         }
         return sb;
     }
     
-    @Override
-    public String toString() {
-        return appendViewInfo(new StringBuilder(200), 0, -1).toString();
-    }
 
 }

@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
-    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_JSFPagesAndClasses" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-    </Property>
+    <Property name="name" type="java.lang.String" value=""/>
   </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -20,7 +18,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -41,21 +39,21 @@
               </Group>
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="classTextField" alignment="1" pref="417" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="1" pref="417" max="32767" attributes="0"/>
+                  <Component id="classTextField" alignment="1" pref="473" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="1" pref="473" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="contentClassTextField" pref="319" max="32767" attributes="0"/>
+                      <Component id="contentClassTextField" pref="394" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="selectClassButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="uriTextField" alignment="1" pref="417" max="32767" attributes="0"/>
-                  <Component id="locationComboBox" alignment="1" pref="417" max="32767" attributes="1"/>
-                  <Component id="packageComboBox" alignment="1" pref="417" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="417" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="1" pref="473" max="32767" attributes="0"/>
+                  <Component id="locationComboBox" alignment="1" pref="473" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="1" pref="473" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="473" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator2" alignment="0" pref="560" max="32767" attributes="0"/>
+          <Component id="jSeparator2" alignment="0" pref="596" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

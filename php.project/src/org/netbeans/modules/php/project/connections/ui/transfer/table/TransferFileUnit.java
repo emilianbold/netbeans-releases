@@ -44,7 +44,7 @@
 package org.netbeans.modules.php.project.connections.ui.transfer.table;
 
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
 /**
  * @author Radek Matous
@@ -60,7 +60,7 @@ public class TransferFileUnit {
     }
 
     static int compare(TransferFileUnit o1, TransferFileUnit o2) {
-        return o1.getTransferFile().getRelativePath().compareTo(o2.getTransferFile().getRelativePath());
+        return o1.getTransferFile().getRemotePath().compareTo(o2.getTransferFile().getRemotePath());
     }
 
     protected TransferFile getTransferFile() {
@@ -89,7 +89,7 @@ public class TransferFileUnit {
     }
 
     String getDisplayName() {
-        return getTransferFile().getRelativePath();
+        return getTransferFile().getRemotePath();
     }
 
     @Override

@@ -15,9 +15,8 @@ import renamedPkg.RenamePkg;
 public class A {
     RenamePkg x;
 }
-==>RenamePkg
 Created directory:
-/space/nb-hg/jet-main/refactoring.java/build/test/qa-functional/data/projects/RefactoringTest/src/renamedPkg
+/renamedPkg
 Created file:
 ==>RenamePkg.java
 /*
@@ -35,4 +34,4 @@ public class RenamePkg {
     renamedPkg.RenamePkg a;
 }
 Deleted file:
-/space/nb-hg/jet-main/refactoring.java/build/test/qa-functional/data/projects/RefactoringTest/src/renamePkg/RenamePkg.java
+/renamePkg/RenamePkg.java

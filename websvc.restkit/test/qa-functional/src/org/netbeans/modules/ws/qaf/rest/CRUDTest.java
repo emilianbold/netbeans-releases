@@ -60,6 +60,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
@@ -81,6 +82,14 @@ public class CRUDTest extends RestTestBase {
      */
     public CRUDTest(String name) {
         super(name);
+    }
+
+    /** Constructor
+     * @param testName name of particular test case
+     * @param server type of server to be used
+     */
+    public CRUDTest(String name, Server server) {
+        super(name, server);
     }
 
     protected String getProjectName() {
@@ -127,25 +136,32 @@ public class CRUDTest extends RestTestBase {
         new JButtonOperator(wo, addAllLabel).pushNoBlock();
         wo.next();
         //Resource Package
-        JComboBoxOperator jcbo = new JComboBoxOperator(wo, 2);
+        JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
-        //Converter Package
-        jcbo = new JComboBoxOperator(wo, 1);
-        jcbo.clearText();
-        jcbo.typeText(getRestPackage() + ".converter"); //NOI18N
+        //Converter Package - needed only with EE5
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            jcbo = new JComboBoxOperator(wo, 2);
+            jcbo.clearText();
+            jcbo.typeText(getRestPackage() + ".controller"); //NOI18N
+        }
         wo.finish();
         waitForGenerationProgress();
+
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
-        files.addAll(getFiles(getRestPackage() + ".converter")); //NOI18N
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            files.addAll(getFiles(getRestPackage() + ".controller")); //NOI18N
+            files.addAll(getFiles(getRestPackage() + ".controller.exceptions"));
+        }
         if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
-            assertEquals("Some files were not generated", 29, files.size()); //NOI18N
+            // there are no converters in JAVAEE6
+            assertEquals("Some files were not generated", 8, files.size()); //NOI18N
         } else {
-            assertEquals("Some files were not generated", 30, files.size()); //NOI18N
+            assertEquals("Some files were not generated", 18, files.size()); //NOI18N
         }
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 14, getRestNode().getChildren().length);
+        assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
     }
 
     /**
@@ -174,26 +190,40 @@ public class CRUDTest extends RestTestBase {
         //XXX - workaround for: http://www.netbeans.org/issues/show_bug.cgi?id=130835
         //Add All >>
         String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
-        new JButtonOperator(wo, addAllLabel).push();
-        //<< Remove All
         String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
-        new JButtonOperator(wo, removeAllLabel).push();
-        //XXX - end
-
+        try {
+            try {
+                Thread.sleep(8000);
+            } catch (InterruptedException ex) {
+            }
+            new JButtonOperator(wo, addAllLabel).push();
+            //<< Remove All
+            new JButtonOperator(wo, removeAllLabel).push();
+            //XXX - end
+        } catch (Exception e) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+            }
+            new JButtonOperator(wo, addAllLabel).push();
+            //<< Remove All
+            new JButtonOperator(wo, removeAllLabel).push();
+        }
         availableEntities.selectItem("Customer"); //NOI18N
         //Add >
         String addLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Add");
         new JButtonOperator(wo, addLabel).push();
-        assertEquals("add failed in selected", 6, selectedEntities.getModel().getSize()); //NOI18N
-        assertEquals("add failed in available", 2, availableEntities.getModel().getSize()); //NOI18N
+        availableEntities.selectItem("Product"); //NOI18N
+        new JButtonOperator(wo, addLabel).push();
+        assertEquals("add failed in selected", 2, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("add failed in available", 6, availableEntities.getModel().getSize()); //NOI18N
         selectedEntities.selectItem("Product"); //NOI18N
         //< Remove
         String removeLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_Remove");
         new JButtonOperator(wo, removeLabel).push();
-        assertEquals("remove failed in selected", 5, selectedEntities.getModel().getSize()); //NOI18N
-        assertEquals("remove failed in available", 3, availableEntities.getModel().getSize()); //NOI18N
+        assertEquals("remove failed in selected", 1, selectedEntities.getModel().getSize()); //NOI18N
+        assertEquals("remove failed in available", 7, availableEntities.getModel().getSize()); //NOI18N
 //        //<< Remove All
-//        String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
         new JButtonOperator(wo, removeAllLabel).push();
         assertEquals("remove all failed in selected", 0, selectedEntities.getModel().getSize()); //NOI18N
         assertEquals("remove all failed in available", 8, availableEntities.getModel().getSize()); //NOI18N
@@ -205,19 +235,21 @@ public class CRUDTest extends RestTestBase {
         wo.finish();
         waitForGenerationProgress();
         try {
-            Thread.sleep(1500);
+            Thread.sleep(3000);
         } catch (InterruptedException ex) {
         }
-        Set<File> files = getFiles("service"); //NOI18N
-        files.addAll(getFiles("converter")); //NOI18N
+        Set<File> files = getFilesFromCustomPkg("service", "entity"); //NOI18N
+        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            files.addAll(getFilesFromCustomPkg("controller","controller.exceptions", "service", "entity")); //NOI18N
+        }
         if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion())) {
-            assertEquals("Some files were not generated", 5, files.size()); //NOI18N
+            assertEquals("Some files were not generated", 3, files.size()); //NOI18N
         } else {
-            assertEquals("Some files were not generated", 6, files.size()); //NOI18N
+            assertEquals("Some files were not generated", 8, files.size()); //NOI18N
         }
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 16, getRestNode().getChildren().length); //NOI18N
+        assertEquals("missing nodes?", 8, getRestNode().getChildren().length); //NOI18N
     }
 
     public void testCreateRestClient() throws IOException {
@@ -239,6 +271,9 @@ public class CRUDTest extends RestTestBase {
         String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
         Node n = getProjectType().isAntBasedProject() ? getProjectRootNode() : getRestNode();
         n.performPopupAction(testRestActionName);
+        String testRestTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.support.Bundle", "TTL_SelectTarget");
+        NbDialogOperator wo = new NbDialogOperator(testRestTitle);      
+        wo.btOK();
     }
 
     protected void createPU() {
@@ -285,30 +320,30 @@ public class CRUDTest extends RestTestBase {
         String lbl = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
         JButtonOperator allLbl = new JButtonOperator(wo, lbl);
         try {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         } catch (InterruptedException ex) {
         }
         allLbl.pushNoBlock();
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException ex) {
         }
         wo.next();
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 0);
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
-        if (createPU) {
-            //Create persistence unit
-            String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.Bundle", "LBL_CreatePersistenceUnit");
-            new JButtonOperator(wo, btnLabel).pushNoBlock();
-            //Create Persistence Unit
-            String puDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "LBL_CreatePersistenceUnit");
-            NbDialogOperator ndo = new NbDialogOperator(puDlgTitle);
-            //Create
-            btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "LBL_Create");
-            new JButtonOperator(ndo, btnLabel).pushNoBlock();
-            //end create pu dialog
-        }
+//        if (createPU) {
+//            //Create persistence unit
+//            String btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.Bundle", "LBL_CreatePersistenceUnit");
+//            new JButtonOperator(wo, btnLabel).pushNoBlock();
+//            //Create Persistence Unit
+//            String puDlgTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "LBL_CreatePersistenceUnit");
+//            NbDialogOperator ndo = new NbDialogOperator(puDlgTitle);
+//            //Create
+//            btnLabel = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.unit.Bundle", "LBL_Create");
+//            new JButtonOperator(ndo, btnLabel).pushNoBlock();
+//            //end create pu dialog
+//        }
         return wo;
     }
 
@@ -316,8 +351,30 @@ public class CRUDTest extends RestTestBase {
         Set<File> files = new HashSet<File>();
         FileObject fo = getProjectSourceRoot().getFileObject(pkg.replace('.', '/') + "/"); //NOI18N
         File pkgRoot = FileUtil.toFile(fo);
-        if (pkgRoot.listFiles() != null) {
-            files.addAll(Arrays.asList(pkgRoot.listFiles()));
+        File[] filesAndFolders = pkgRoot.listFiles();
+        if (filesAndFolders != null) {
+            for (int q = 0; q < filesAndFolders.length; q++) {
+                if (!filesAndFolders[q].isDirectory()) {
+                    files.add(filesAndFolders[q]);
+                }
+            }
+        }
+        return files;
+    }
+
+    protected Set<File> getFilesFromCustomPkg(String... pkg) {
+        Set<File> files = new HashSet<File>();
+        for (int i = 0; i < pkg.length; i++) {
+            FileObject fo = getProjectSourceRoot().getFileObject(pkg[i].replace('.', '/') + "/"); //NOI18N
+            File pkgRoot = FileUtil.toFile(fo);
+            File[] filesAndFolders = pkgRoot.listFiles();
+            if (filesAndFolders != null) {
+                for (int q = 0; q < filesAndFolders.length; q++) {
+                    if (!filesAndFolders[q].isDirectory()) {
+                        files.add(filesAndFolders[q]);
+                    }
+                }
+            }
         }
         return files;
     }

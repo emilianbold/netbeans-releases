@@ -55,7 +55,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.DefaultListModel;
@@ -64,10 +63,10 @@ import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
@@ -100,7 +99,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
     protected static final HgLogMessage NO_REVISION = new HgLogMessage(null, Collections.<String>emptyList(), null, 
             null, null, null, Long.toString(new Date().getTime()), NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Revision_Default"), //NOI18N
             null, null, null, null, null, "", ""); //NOI18N
-    private HgRevision parentRevision;
+    private HgLogMessage parentRevision;
     private boolean validSelection;
     private final Timer filterTimer;
     private HgLogMessage[] messages;
@@ -160,7 +159,7 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
         return NbBundle.getMessage(ChangesetPickerPanel.class, "MSG_Refreshing_Revisions"); //NOI18N
     }
 
-    protected RepositoryRevision getDisplayedRevision() {
+    protected HgLogMessage getDisplayedRevision() {
         return null;
     }
 
@@ -245,24 +244,24 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.options"))); // NOI18N
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createSequentialGroup()
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(changesetPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel3Layout.createSequentialGroup()
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addComponent(changesetPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -319,92 +318,92 @@ public abstract class ChangesetPickerPanel extends javax.swing.JPanel {
 
         txtFilter.setText(org.openide.util.NbBundle.getMessage(ChangesetPickerPanel.class, "ChangesetPickerPanel.txtFilter.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout panelSearchOptionsLayout = new org.jdesktop.layout.GroupLayout(panelSearchOptions);
+        javax.swing.GroupLayout panelSearchOptionsLayout = new javax.swing.GroupLayout(panelSearchOptions);
         panelSearchOptions.setLayout(panelSearchOptionsLayout);
         panelSearchOptionsLayout.setHorizontalGroup(
-            panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelSearchOptionsLayout.createSequentialGroup()
-                .add(jLabel3)
-                .add(5, 5, 5)
-                .add(btnFetch20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(5, 5, 5)
-                .add(jLabel4)
-                .add(5, 5, 5)
-                .add(btnFetch50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(5, 5, 5)
-                .add(jLabel5)
-                .add(5, 5, 5)
-                .add(btnFetchAll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(jLabel6)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(txtFilter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
+            panelSearchOptionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSearchOptionsLayout.createSequentialGroup()
+                .addComponent(jLabel3)
+                .addGap(5, 5, 5)
+                .addComponent(btnFetch20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(jLabel4)
+                .addGap(5, 5, 5)
+                .addComponent(btnFetch50, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(jLabel5)
+                .addGap(5, 5, 5)
+                .addComponent(btnFetchAll, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
         );
         panelSearchOptionsLayout.setVerticalGroup(
-            panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(panelSearchOptionsLayout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(panelSearchOptionsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(btnFetch20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel4)
-                    .add(btnFetch50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5)
-                    .add(btnFetchAll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel6)
-                    .add(txtFilter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(0, 0, 0))
+            panelSearchOptionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSearchOptionsLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(panelSearchOptionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(btnFetch20, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(btnFetch50, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(btnFetchAll, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6)
+                    .addComponent(txtFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, 0))
         );
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
-                        .add(24, 24, 24))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(revisionsLabel)
-                        .addContainerGap(252, Short.MAX_VALUE))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jLabel2)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                        .addGap(24, 24, 24))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(revisionsLabel)
+                        .addContainerGap(249, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
                         .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, panelSearchOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(panelSearchOptions, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
                         .addContainerGap())))
         );
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(revisionsLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                .add(8, 8, 8)
-                .add(panelSearchOptions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(revisionsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                .addGap(8, 8, 8)
+                .addComponent(panelSearchOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
         jSplitPane1.setTopComponent(jPanel2);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSplitPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -445,7 +444,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         }
         messageInfofetcher = defaultMessageInfoFetcher;
         fetchRevisionLimit = limit;
-        if (messages != null) {
+        if (limit > 0 && messages != null) {
             fetchRevisionLimit += messages.length;
         }
         filterTimer.stop();
@@ -465,7 +464,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         public void perform () {
             try {
                 final DefaultListModel targetsModel = new DefaultListModel();
-                final RepositoryRevision displayedRevision = getDisplayedRevision();
+                final HgLogMessage displayedRevision = getDisplayedRevision();
                 if (displayedRevision == null) {
                     if (acceptSelection(NO_REVISION)) {
                         targetsModel.addElement(NO_REVISION);
@@ -474,7 +473,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         targetsModel.addElement(TIP);
                     }
                 } else {
-                    targetsModel.addElement(displayedRevision.getLog());
+                    targetsModel.addElement(displayedRevision);
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -491,7 +490,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
-                            revisionsComboBox.setSelectedValue(displayedRevision.getLog(), true);
+                            revisionsComboBox.setSelectedValue(displayedRevision, true);
                             revisionsComboBox.setEnabled(false);
                             panelSearchOptions.setVisible(false);
                         }
@@ -510,16 +509,30 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
         HgLogMessage[] fetchedMessages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<File>(Arrays.asList(roots)), fetchRevisionLimit, logger);
         if (!supp.isCanceled() && fetchedMessages.length > 0) {
-            try {
-                parentRevision = HgCommand.getParent(repository, null, null);
-            } catch (HgException ex) {
-                Mercurial.LOG.log(Level.FINE, null, ex);
+            WorkingCopyInfo wcInfo = WorkingCopyInfo.getInstance(repository);
+            wcInfo.refresh();
+            HgLogMessage[] parents = wcInfo.getWorkingCopyParents();
+            if (parents.length > 0) {
+                parentRevision = parents[0];
             }
         }
 
         if (!supp.isCanceled()) {
             if( fetchedMessages == null || fetchedMessages.length == 0){
                 fetchedMessages = new HgLogMessage[] { NO_REVISION };
+            } else if (parentRevision != null && acceptSelection(parentRevision)) {
+                // parent revision should always be loaded and displaed
+                boolean containsParent = false;
+                for (HgLogMessage msg : fetchedMessages) {
+                    if (msg.getCSetShortID().equals(parentRevision.getCSetShortID())) {
+                        containsParent = true;
+                        break;
+                    }
+                }
+                if (!containsParent) {
+                    fetchedMessages = Arrays.copyOf(fetchedMessages, fetchedMessages.length + 1);
+                    fetchedMessages[fetchedMessages.length - 1] = parentRevision;
+                }
             }
             synchronized (LOCK) {
                 messages = fetchedMessages;
@@ -552,7 +565,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
     
     protected final HgRevision getParentRevision () {
-        return parentRevision;
+        return parentRevision == null ? null : parentRevision.getHgRevision();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -594,7 +607,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     value = message.getCSetShortID();
                 } else {
                     StringBuilder sb = new StringBuilder().append(message.getRevisionNumber());
-                    HgRevision parent = parentRevision;
+                    HgLogMessage parent = parentRevision;
                     if (parent != null && parent.getRevisionNumber().equals(message.getRevisionNumber())) {
                         sb.append(MARK_ACTIVE_HEAD);
                     }
@@ -625,7 +638,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                 if (applies(filter, message)) {
                     if (selectedRevision != null && message.getCSetShortID().equals(selectedRevision.getCSetShortID())) {
                         toSelectRevision = message;
-                    } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getChangesetId())) {
+                    } else if (parentRevision != null && message.getCSetShortID().equals(parentRevision.getCSetShortID())) {
                         toSelectRevision = message;
                     }
                     targetsModel.addElement(message);

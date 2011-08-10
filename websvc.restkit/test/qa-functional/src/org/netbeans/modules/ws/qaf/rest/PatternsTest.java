@@ -134,6 +134,16 @@ public class PatternsTest extends RestTestBase {
         super(name);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param testName name of particular test case
+     * @param server type of server to be used
+     */
+    public PatternsTest(String name, Server server) {
+        super(name, server);
+    }
+
     @Override
     public String getProjectName() {
         return "FromPatterns"; //NOI18N

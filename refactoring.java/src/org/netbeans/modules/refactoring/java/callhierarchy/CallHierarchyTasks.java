@@ -244,7 +244,7 @@ final class CallHierarchyTasks {
                     Set<FileObject> relevantFiles = null;
                     if (!isCanceled()) {
                         relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                                sourceToQuery, cpInfo, false, false, false, true);
+                                sourceToQuery, cpInfo, false, false, false, true, null);
                     }
                     try {
                         if (!isCanceled()) {

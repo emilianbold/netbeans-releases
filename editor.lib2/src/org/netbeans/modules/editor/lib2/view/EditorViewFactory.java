@@ -48,10 +48,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
 import org.netbeans.lib.editor.util.ListenerList;
 
 /**
@@ -90,17 +89,21 @@ public abstract class EditorViewFactory {
     public static List<Factory> factories() {
         return Collections.unmodifiableList(viewFactoryFactories);
     }
-
-    private final JTextComponent component;
     
-    private final Document doc;
+    private final DocumentView docView;
+    
+    private final JTextComponent component;
 
-    private ListenerList<EditorViewFactoryListener> listenerList = new ListenerList<EditorViewFactoryListener>();
+    private ViewBuilder viewBuilder;
 
-    protected EditorViewFactory(JTextComponent component) {
-        assert (component != null) : "Null component prohibited"; // NOI18N
-        this.component = component;
-        this.doc = component.getDocument();
+    private final ListenerList<EditorViewFactoryListener> listenerList = new ListenerList<EditorViewFactoryListener>();
+
+    protected EditorViewFactory(View documentView) {
+        assert (documentView instanceof DocumentView) : "documentView=" + documentView + // NOI18N
+                " is not instance of " + DocumentView.class.getName(); // NOI18N
+        // Remember component explicitly (it may be null-ed in DocView.setParent(null))
+        this.docView = (DocumentView) documentView;
+        this.component = docView.getTextComponent();
     }
 
     /**
@@ -121,18 +124,7 @@ public abstract class EditorViewFactory {
      * @return non-null document for which the view hierarchy was constructed.
      */
     protected final Document document() {
-        return doc;
-    }
-
-    /**
-     * Init this factory by taking extra properties into account.
-     *
-     * This method gets called when {@link #getComponent()} returns a valid component already.
-     *
-     * @param properties non-null properties.
-     */
-    protected void initProperties(Map<String,Object> properties) {
-
+        return docView.getDocument();
     }
 
     /**
@@ -162,11 +154,11 @@ public abstract class EditorViewFactory {
 
     /**
      * Create a view at the given offset. The view factory must determine
-     * the appropriate end offset of the produced view and create a position for it
-     * and return it from {@link EditorView#getEndOffset()}.
+     * the appropriate end offset of the produced view and set its length
+     * returned by {@link EditorView#getLength()} appropriately.
      * <br/>
-     * This method is only called if offsetSpanMode in {@link #restart(int, int, boolean)}
-     * was set to false.
+     * This method is only called if the factory is in view-producing mode
+     * (its {@link #viewEndOffset(startOffset, limitOffset)} is not called).
      *
      * @param startOffset start offset at which the view must start
      *  (it was previously returned from {@link #nextViewStartOffset(int)} by this factory
@@ -179,6 +171,9 @@ public abstract class EditorViewFactory {
 
     /**
      * Return to-be-created view's end offset.
+     * <br/>
+     * This method is only called in offset-mode when only view boundaries
+     * are being determined.
      *
      * @param startOffset start offset at which the view would start
      *  (it was previously returned from {@link #nextViewStartOffset(int)} by this factory).
@@ -193,7 +188,7 @@ public abstract class EditorViewFactory {
      * {@link #restart(int) } may be called subsequently to init a new round
      * of views creation.
      */
-    public abstract void finish();
+    public abstract void finishCreation();
 
     public void addEditorViewFactoryListener(EditorViewFactoryListener listener) {
         listenerList.add(listener);
@@ -220,6 +215,40 @@ public abstract class EditorViewFactory {
 
     public static List<Change> createSingleChange(int startOffset, int endOffset) {
         return Collections.singletonList(createChange(startOffset, endOffset));
+    }
+
+    /**
+     * Schedule repaint request on the view hierarchy.
+     * <br/>
+     * Document must be read-locked prior calling this method.
+     *
+     * @param startOffset
+     * @param endOffset 
+     */
+    public void offsetRepaint(int startOffset, int endOffset) {
+        docView.offsetRepaint(startOffset, endOffset);
+    }
+
+    /**
+     *  Signal that this view factory is no longer able to produce
+     *  valid views due to some serious changes that it processes
+     *  (for example highlights change for HighlightsViewFactory).
+     *  <br/>
+     *  View creation may be stopped immediately by the caller and restarted to get
+     *  the correct views. However if it would fail periodically the caller may decide
+     *  to continue the creation to have at least some views. In both cases
+     *  the view factory should be able to continue working normally.
+     *  <br/>
+     *  This method can be called from any thread.
+     */
+    protected final void notifyStaleCreation() {
+        if (viewBuilder != null) {
+            viewBuilder.notifyStaleCreation();
+        }
+    }
+    
+    void setViewBuilder(ViewBuilder viewBuilder) {
+        this.viewBuilder = viewBuilder;
     }
 
     /**
@@ -258,7 +287,7 @@ public abstract class EditorViewFactory {
      */
     public static interface Factory {
 
-        EditorViewFactory createEditorViewFactory(JTextComponent component);
+        EditorViewFactory createEditorViewFactory(View documentView);
 
         /**
          * A higher importance factory wins when wishing to create view

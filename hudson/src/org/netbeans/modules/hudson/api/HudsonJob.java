@@ -78,7 +78,7 @@ public interface HudsonJob extends Comparable<HudsonJob> {
         },
         disabled("grey"), // NOI18N
         aborted("grey"), aborted_anime("grey"), // NOI18N
-        grey("grey"), grey_anime("grey"); // NOI18N
+        grey("grey"), grey_anime("grey"), secured("secured"); // NOI18N
         private final String iconBaseName;
         private Color(String iconBaseName) {this.iconBaseName = iconBaseName;}
         /**

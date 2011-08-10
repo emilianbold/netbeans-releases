@@ -288,7 +288,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             case notification :
                 // write catalog notification
                 if (this.provider != null && ! lines.isEmpty ()) {
-                    StringBuffer sb = new StringBuffer (bufferInitSize);
+                    StringBuilder sb = new StringBuilder (bufferInitSize);
                     for (String line : lines) {
                         sb.append (line);
                     }
@@ -310,7 +310,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 if (! lines.isEmpty ()) {
                     ModuleDescriptor md = currentModule.peek ();
                     assert md != null : "ModuleDescriptor found for " + provider;
-                    StringBuffer buf = new StringBuffer (bufferInitSize);
+                    StringBuilder buf = new StringBuilder (bufferInitSize);
                     for (String line : lines) {
                         buf.append (line);
                     }
@@ -332,7 +332,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 } else {
                     if (!lines.isEmpty()) {
                         // find and fill UpdateLicenseImpl
-                        StringBuffer sb = new StringBuffer(bufferInitSize);
+                        StringBuilder sb = new StringBuilder(bufferInitSize);
                         for (String line : lines) {
                             sb.append(line);
                         }

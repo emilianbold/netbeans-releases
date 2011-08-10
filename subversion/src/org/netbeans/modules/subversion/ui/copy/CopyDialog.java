@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.copy;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,8 +57,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -122,6 +125,7 @@ public abstract class CopyDialog {
             comp.setCaretPosition(pos);
             comp.moveCaretPosition(pos + BRANCH_TEMPLATE.length());
         }
+        cbo.setRenderer(new LocationRenderer(recentFolders));
                 
         getUrlComboBoxes().put(key, cbo);
     }    
@@ -184,4 +188,33 @@ public abstract class CopyDialog {
         return templates;
     }
 
+    private static class LocationRenderer extends DefaultListCellRenderer {
+        private final HashMap<String, String> empLocations;
+
+        public LocationRenderer (List<String> recentFolders) {
+            empLocations = new HashMap<String, String>(recentFolders.size());
+            for (String loc : recentFolders) {
+                Matcher m = TEMPLATE_PATTERN.matcher(loc);
+                StringBuffer sb = new StringBuffer();
+                if (m.matches()) {
+                    m.appendReplacement(sb, m.group(1) + "/<strong>" + m.group(2) + "</strong>" + (m.group(3) == null ? "" : m.group(3))); //NOI18N
+                    m.appendTail(sb);
+                } else if (loc.startsWith(TRUNK_FOLDER + "/")) { //NOI18N
+                    sb = new StringBuffer(loc).replace(0, TRUNK_FOLDER.length(), "<strong>" + TRUNK_FOLDER + "</strong>"); //NOI18N
+                }
+                if (sb.length() > 0) {
+                    empLocations.put(loc, "<html>" + sb.toString() + "</html>"); //NOI18N
+                }
+            }
+        }
+        
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String html;
+            if (value instanceof String && (html = empLocations.get(((String) value))) != null) {
+                value = html;
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
 }

@@ -48,20 +48,22 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
+import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Corrective action to run {@code mvn validate}, which can download plugins or parent POMs.
  * At worst it will show the same problem in the Output Window, so the user is more likely
  * to believe that there really is a problem with their project, not NetBeans.
  */
+@Messages("ACT_validate=Revalidate")
 public class RevalidateAction extends AbstractAction {
 
     private final NbMavenProjectImpl nbproject;
 
     public RevalidateAction(NbMavenProjectImpl nbproject) {
-        super(NbBundle.getMessage(RevalidateAction.class, "ACT_validate"));
+        super(ACT_validate());
         this.nbproject = nbproject;
     }
 
@@ -72,7 +74,7 @@ public class RevalidateAction extends AbstractAction {
         config.setRecursive(false);
         config.setProject(nbproject);
         config.setExecutionName("validate"); // NOI18N
-        config.setTaskDisplayName(NbBundle.getMessage(RevalidateAction.class, "ACT_validate"));
+        config.setTaskDisplayName(ACT_validate());
         RunUtils.executeMaven(config);
     }
 

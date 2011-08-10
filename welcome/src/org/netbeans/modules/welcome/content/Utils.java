@@ -64,7 +64,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
 /**
@@ -144,15 +144,7 @@ public class Utils {
     }
     
     public static File getCacheStore() throws IOException {
-        File cacheStore;
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheStore = new File(new File(new File (userDir, "var"), "cache"), "welcome"); // NOI18N
-        } else {
-            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
-            cacheStore = new File(cachedir, "welcome"); // NOI18N
-        }
-        return cacheStore;
+        return Places.getCacheSubdirectory("welcome"); // NOI18N
     }
 
     /**

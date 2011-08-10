@@ -149,14 +149,20 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public short readShort() throws IOException {
-        return file.getBuffer().getShort();
-        //return (short)readNumber(2);
+        if (file.remaining() >= 2) {
+            return file.getBuffer().getShort();
+        } else {
+            return (short)readNumber(2);
+        }
     }
     
     @Override
     public int readInt() throws IOException {
-        return file.getBuffer().getInt();
-        //return (int)readNumber(4);
+        if (file.remaining() >= 4) {
+            return file.getBuffer().getInt();
+        } else {
+            return (int)readNumber(4);
+        }
     }
     
     public long readDWlen() throws IOException {
@@ -169,8 +175,11 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public long readLong() throws IOException {
-        return file.getBuffer().getLong();
-        //return readNumber(8);
+        if (file.remaining() >= 8) {
+            return file.getBuffer().getLong();
+        } else {
+            return readNumber(8);
+        }
     }
     
     public byte[] read(byte b[]) throws IOException {
@@ -180,14 +189,20 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public void readFully(byte[] b) throws IOException {
-        file.getBuffer().get(b);
-        //file.readFully(b);
+        if (file.remaining() >= b.length) {
+            file.getBuffer().get(b);
+        } else {
+            file.readFully(b);
+        }
     }
     
     @Override
     public void readFully(byte[] b, int off, int len) throws IOException {
-        file.getBuffer().get(b, off, len);
-        //file.readFully(b, off, len);
+        if (file.remaining() >= len) {
+            file.getBuffer().get(b, off, len);
+        } else {
+            file.readFully(b, off, len);
+        }
     }
     
     @Override
@@ -202,8 +217,11 @@ public class ByteStreamReader implements DataInput {
     
     @Override
     public byte readByte() throws IOException {
-        return file.getBuffer().get();
-        //return file.readByte();
+        if (file.remaining() >= 1) {
+            return file.getBuffer().get();
+        } else {
+            return file.readByte();
+        }
     }
     
     @Override

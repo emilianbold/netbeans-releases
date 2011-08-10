@@ -131,6 +131,8 @@ public final class DesktopImpl {
         width = (view != null ? width - view.getComponent().getSize().width : width);
         view = findView(Constants.BOTTOM);
         height = (view != null ? height - view.getComponent().getSize().height : height);
+        view = findView(Constants.TOP);
+        height = (view != null ? height - view.getComponent().getSize().height : height);
         return new Dimension(width, height);
     }
     
@@ -167,10 +169,11 @@ public final class DesktopImpl {
         if (viewComponent != null) {
             GridBagConstraints constr = new GridBagConstraints();
             constr.gridx = 1;
-            constr.gridy = 0;
+            constr.gridy = 1;
             constr.fill = GridBagConstraints.BOTH;
             constr.weightx = 1;
             constr.weighty = 1;
+            constr.anchor = GridBagConstraints.CENTER;
             Insets insets = UIManager.getInsets("nb.desktop.view.insets"); //NOI18N
             if( null != insets )
                 constr.insets = insets;
@@ -193,21 +196,26 @@ public final class DesktopImpl {
         GridBagConstraints constraint = new GridBagConstraints();
         constraint.fill = GridBagConstraints.BOTH;
         if (Constants.BOTTOM.equals(view.getSide())) {
-            constraint.gridx = 0;
-            constraint.gridy = 1;
-            constraint.gridwidth = 3;
+            constraint.gridx = 1;
+            constraint.gridy = 2;
+            constraint.gridwidth = 1;
             constraint.anchor = GridBagConstraints.SOUTHWEST;
             
         } else if (Constants.LEFT.equals(view.getSide())) {
             constraint.gridx = 0;
-            constraint.gridy = 0;
-            constraint.gridheight = 1;
+            constraint.gridy = 1;
+            constraint.gridheight = 2;
             constraint.anchor = GridBagConstraints.NORTHWEST;
         } else if (Constants.RIGHT.equals(view.getSide())) {
             constraint.gridx = 2;
+            constraint.gridy = 1;
+            constraint.gridheight = 2;
+            constraint.anchor = GridBagConstraints.NORTHEAST;
+        } else if (Constants.TOP.equals(view.getSide())) {
+            constraint.gridx = 1;
             constraint.gridy = 0;
             constraint.gridheight = 1;
-            constraint.anchor = GridBagConstraints.NORTHEAST;
+            constraint.anchor = GridBagConstraints.NORTHWEST;
         }
         desktop.add(view.getComponent(), constraint);
         // #45033 fix - invalidate isn't enough, revalidate is correct
@@ -351,7 +359,7 @@ public final class DesktopImpl {
         
         if (Constants.LEFT.equals(side)) {
             result.x = viewRect.x + Math.max(viewRect.width, viewPreferred.width);
-            result.y = 0;
+            result.y = viewRect.y;
             result.height = keepPreferredSizeWhenSlidedIn 
                     ? tcPreferred.height
                     : splitRootRect.height;
@@ -376,7 +384,7 @@ public final class DesktopImpl {
                 // make sure we are not bigger than the current window..
                 result.x = 0;
             }
-            result.y = 0;
+            result.y = viewRect.y;
             result.height = keepPreferredSizeWhenSlidedIn
                     ? tcPreferred.height 
                     : splitRootRect.height;
@@ -387,7 +395,7 @@ public final class DesktopImpl {
             int height = keepPreferredSizeWhenSlidedIn 
                     ? tcPreferred.height
                     : slideBounds.height;
-            result.x = splitRootRect.x;
+            result.x = viewRect.x;
             result.y = (height < minThick)
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - height;
             if (result.y < 0) {
@@ -395,6 +403,18 @@ public final class DesktopImpl {
                 result.y = 0;
             }
             result.height = lowerLimit - result.y;
+            result.width = keepPreferredSizeWhenSlidedIn
+                    ? tcPreferred.width 
+                    : splitRootRect.width;
+        } else if (Constants.TOP.equals(side)) {
+            int height = keepPreferredSizeWhenSlidedIn 
+                    ? tcPreferred.height
+                    : slideBounds.height;
+            result.x = viewRect.x;
+            result.y = viewRect.y + Math.max(viewRect.height, viewPreferred.height);
+            result.height = (height < minThick)
+                        ? splitRootRect.height / 3 : height;
+            result.height = Math.min( splitRootRect.height, height );
             result.width = keepPreferredSizeWhenSlidedIn
                     ? tcPreferred.width 
                     : splitRootRect.width;
@@ -420,6 +440,11 @@ public final class DesktopImpl {
             result.x = slideInFinish.x;
             result.y = slideInFinish.y + slideInFinish.height;
             result.height = 0;
+            result.width = slideInFinish.width;
+        } else if (Constants.TOP.equals(side)) {
+            result.x = slideInFinish.x;
+            result.y = slideInFinish.y;
+            result.height = slideInFinish.height;
             result.width = slideInFinish.width;
         }
         
@@ -469,6 +494,7 @@ public final class DesktopImpl {
      */
     private final class LayeredLayout implements LayoutManager {
         private Dimension lastSize;
+        @Override
         public void layoutContainer(Container parent) {
             Dimension size = parent.getSize();
             desktop.setBounds(0, 0, size.width, size.height);
@@ -532,6 +558,18 @@ public final class DesktopImpl {
                                 result.height = hei;
                             }
                         }
+                    } else if (Constants.TOP.equals(side)) {
+                        if( !keepPreferredSizeWhenSlidedIn )
+                            result.width = splitRootRect.width;
+                        if (lastSize != null && !lastSize.equals(size)) {
+                            int hei = curView.getSlideBounds().height;
+                            if (hei > (size.height - viewRect.height)) {
+                                // make sure we are not bigger than the current window..
+                                result.height = size.height - (size.height / 10);
+                            } else {
+                                result.height = hei;
+                            }
+                        }
                     }
                     slidedComp.setBounds(result);
                 }
@@ -539,18 +577,22 @@ public final class DesktopImpl {
             lastSize = size;
         }
         
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
             return desktop.getMinimumSize();
         }
         
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             return desktop.getPreferredSize();
         }
         
+        @Override
         public void addLayoutComponent(String name, Component comp) {
             // no op, slided components are added/removed via SlideOperation.run() calls.
         }
         
+        @Override
         public void removeLayoutComponent(Component comp) {
             // no op, slided components are added/removed via SlideOperation.run() calls.
         }

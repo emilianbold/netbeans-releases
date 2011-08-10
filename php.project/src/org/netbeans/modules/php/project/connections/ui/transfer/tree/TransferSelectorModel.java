@@ -44,7 +44,7 @@ package org.netbeans.modules.php.project.connections.ui.transfer.tree;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChangeSupport;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel.TransferFilesChangeListener;
 import org.openide.nodes.Node;

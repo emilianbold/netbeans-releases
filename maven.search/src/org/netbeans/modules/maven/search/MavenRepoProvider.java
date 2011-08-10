@@ -95,7 +95,7 @@ public class MavenRepoProvider implements SearchProvider {
                 }
             }
         };
-        final QueryRequest queryRequest = new QueryRequest(getQuery(request), loadedRepos.toArray(new RepositoryInfo[]{}), observer);
+        final QueryRequest queryRequest = new QueryRequest(getQuery(request), loadedRepos, observer);
         final RequestProcessor.Task searchTask = RP.post(new Runnable() {
             @Override
             public void run() {

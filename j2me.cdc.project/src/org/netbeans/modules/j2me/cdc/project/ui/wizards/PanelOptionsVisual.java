@@ -44,15 +44,12 @@
 
 package org.netbeans.modules.j2me.cdc.project.ui.wizards;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
-import java.util.Properties;
 import java.util.StringTokenizer;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -61,6 +58,7 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -69,86 +67,84 @@ import org.openide.util.NbBundle;
 public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
+
+    private static final String SET_AS_MAIN = "setAsMain"; //NOI18N
+    private static final String MAIN_CLASS = "mainClass"; //NOI18N
+    
     
     protected PanelConfigureProject panel;
     private boolean valid;
     private int type;
 
-    //private ProjectTypeProvider provider;
-    private PropertyChangeListener pcl;
-    
-    /** Creates new form PanelOptionsVisual */
-    public PanelOptionsVisual( final PanelConfigureProject panel, int type ) {
+    @SuppressWarnings("LeakingThisInConstructor") //NOI18N
+    public PanelOptionsVisual(final PanelConfigureProject panel, int type) {
         initComponents();
         this.type = type;
         this.panel = panel;
-                        
-        pcl = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                panel.fireChangeEvent();
-            }
-        };
 
         switch (type) {
             case NewCDCProjectWizardIterator.TYPE_LIB:
-                setAsMainCheckBox.setVisible( false );
-                createMainCheckBox.setVisible( false );
-                mainClassTextField.setVisible( false );
-                separator.setVisible( false );
+                setAsMainCheckBox.setVisible(false);
+                createMainCheckBox.setVisible(false);
+                mainClassTextField.setVisible(false);
+                separator.setVisible(false);
                 break;
             case NewCDCProjectWizardIterator.TYPE_APP:
-                createMainCheckBox.addActionListener( this );
-                createMainCheckBox.setSelected( lastMainClassCheck );
-                mainClassTextField.setEnabled( lastMainClassCheck );
-                separator.setVisible( true );
+                createMainCheckBox.addActionListener(this);
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                mainClassTextField.setEnabled(lastMainClassCheck);
+                separator.setVisible(true);
                 break;
             case NewCDCProjectWizardIterator.TYPE_EXT:
-                setAsMainCheckBox.setVisible( true );
-                createMainCheckBox.setVisible( false );
-                mainClassTextField.setVisible( false );
+                setAsMainCheckBox.setVisible(true);
+                createMainCheckBox.setVisible(false);
+                mainClassTextField.setVisible(false);
                 break;
             case NewCDCProjectWizardIterator.TYPE_SAMPLE:
-                createMainCheckBox.setVisible( false );
-                mainClassTextField.setVisible( false );
-                separator.setVisible( true );
+                createMainCheckBox.setVisible(false);
+                mainClassTextField.setVisible(false);
+                separator.setVisible(true);
                 break;
         }
         
-        this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
-            
+        this.mainClassTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
             public void insertUpdate(DocumentEvent e) {
-                mainClassChanged ();
+                mainClassChanged();
             }
-            
+
+            @Override
             public void removeUpdate(DocumentEvent e) {
-                mainClassChanged ();
+                mainClassChanged();
             }
-            
+
+            @Override
             public void changedUpdate(DocumentEvent e) {
-                mainClassChanged ();
+                mainClassChanged();
             }
-            
         });
-        
      }
 
-    public void actionPerformed( ActionEvent e ) {        
-        if ( e.getSource() == createMainCheckBox ) {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == createMainCheckBox) {
             lastMainClassCheck = createMainCheckBox.isSelected();
-            mainClassTextField.setEnabled( lastMainClassCheck );        
+            mainClassTextField.setEnabled(lastMainClassCheck);
             this.panel.fireChangeEvent();
-        }                
-    }
-    
-    public void propertyChange (PropertyChangeEvent event) {
-        if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
-            String newProjectName = NewCDCProjectWizardIterator.getPackageName((String) event.getNewValue());
-            this.mainClassTextField.setText (MessageFormat.format(
-                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
-            ));
         }
     }
     
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
+            String newProjectName = NewCDCProjectWizardIterator.getPackageName((String) event.getNewValue());
+            this.mainClassTextField.setText(MessageFormat.format(
+                    NbBundle.getMessage(PanelOptionsVisual.class, "TXT_ClassName"), new Object[]{newProjectName} //NOI18N
+                    ));
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -221,10 +217,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
            
+    @Override
     boolean valid(WizardDescriptor settings) {
         if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
             if (!valid) {
-                settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+                settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
             }
             return this.valid;
@@ -232,23 +229,24 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         return true;
     }
     
+    @Override
     void read (WizardDescriptor d) {
- 
-        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms (null, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
-        if (platforms.length!=0 && platforms[0] instanceof CDCPlatform)
-        {
-            CDCPlatform platform=(CDCPlatform)platforms[0];
+        JavaPlatform platforms[] = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(CDCPlatform.PLATFORM_CDC, null));
+        if (platforms.length != 0 && platforms[0] instanceof CDCPlatform) {
+            CDCPlatform platform = (CDCPlatform) platforms[0];
             assert platform != null;
         }
     }
     
+    @Override
     void validate (WizardDescriptor d) {
         // nothing to validate
     }
 
+    @Override
     void store( WizardDescriptor d ) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
+        d.putProperty(SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE );
+        d.putProperty(MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null );
    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -262,22 +260,15 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     protected void mainClassChanged () {
         String mainClassName = this.mainClassTextField.getText ();
         StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
-        boolean valid = true;
-out:        while (tk.hasMoreTokens()) {
+        boolean _valid = true;
+        while (tk.hasMoreTokens()) {
             String token = tk.nextToken();
-            if (token.length() == 0) {
-                valid = false;
-                break out;
-            }
-            for (int i=0; i< token.length();i++) {
-                if ((i == 0 && !Character.isJavaIdentifierStart(token.charAt(0)))
-                    || (i != 0 && !Character.isJavaIdentifierPart(token.charAt(i)))) {
-                        valid = false;                        
-                        break out;
-                }
-            }
+            if (token.length() == 0 || !Utilities.isJavaIdentifier(token)) {
+                _valid = false;
+                break;
+            }            
         }
-        this.valid = valid;
+        this.valid = _valid;
         this.panel.fireChangeEvent();
     }
 }

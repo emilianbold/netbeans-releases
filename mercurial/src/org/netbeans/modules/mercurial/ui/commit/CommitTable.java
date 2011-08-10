@@ -95,6 +95,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     private String[]            sortByColumns;
     private CommitPanel commitPanel;
     private Set<File> modifiedFiles = Collections.<File>emptySet();
+    private boolean changesEnabled = true;
     
     
     public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
@@ -354,6 +355,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 }
             }
         });
+        item.setEnabled(changesEnabled);
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
             @Override
@@ -404,6 +406,11 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
     void setModifiedFiles(Set<File> modifiedFiles) {
         this.modifiedFiles = modifiedFiles;
+    }
+
+    void setChangesEnabled (boolean flag) {
+        this.changesEnabled = flag;
+        table.setEnabled(flag);
     }
 
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {

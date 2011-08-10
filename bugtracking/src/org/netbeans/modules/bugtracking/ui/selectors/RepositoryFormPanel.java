@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.selectors;
 
+import javax.swing.GroupLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -55,7 +56,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.util.ImageUtilities;
@@ -108,13 +108,13 @@ public class RepositoryFormPanel extends JPanel {
         setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup()
-                        .add(cardsPanel)
-                        .add(errorLabel));
+                        .addComponent(cardsPanel)
+                        .addComponent(errorLabel));
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
-                        .add(cardsPanel)
-                        .add(6, 14, 14)
-                        .add(errorLabel));
+                        .addComponent(cardsPanel)
+                        .addGap(6, 14, 14)
+                        .addComponent(errorLabel));
         layout.setHonorsVisibility(false);  //keep space for errorLabel
     }
 

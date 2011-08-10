@@ -59,12 +59,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.GroupLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -104,25 +105,25 @@ public class AttachmentsPanel extends JPanel {
         removeAll();
 
         GroupLayout layout = new GroupLayout(this);
-        GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
+        GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup();
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         GroupLayout.SequentialGroup newVerticalGroup = layout.createSequentialGroup();
 
         boolean noAttachments = hadNoAttachments;
-        horizontalGroup.add(layout.createSequentialGroup()
-            .add(noneLabel)
-            .addPreferredGap(LayoutStyle.RELATED)
-            .add(noAttachments ? createNewButton : dummyLabel));
-        verticalGroup.add(layout.createParallelGroup(GroupLayout.BASELINE)
-            .add(noneLabel)
-            .add(noAttachments ? createNewButton : dummyLabel));
+        horizontalGroup.addGroup(layout.createSequentialGroup()
+            .addComponent(noneLabel)
+            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(noAttachments ? createNewButton : dummyLabel));
+        verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+            .addComponent(noneLabel)
+            .addComponent(noAttachments ? createNewButton : dummyLabel));
         dummyLabel.setVisible(false);
         noneLabel.setVisible(noAttachments);
         updateCreateNewButton(noAttachments);
         if (noAttachments) {
             // noneLabel + createNewButton
-            verticalGroup.add(newVerticalGroup);
+            verticalGroup.addGroup(newVerticalGroup);
         } else {
             List<JPanel> panels = new ArrayList<JPanel>();
             JLabel descriptionLabel = new JLabel(bundle.getString("AttachmentsPanel.table.description")); // NOI18N
@@ -138,33 +139,35 @@ public class AttachmentsPanel extends JPanel {
             GroupLayout.ParallelGroup dateGroup = layout.createParallelGroup();
             GroupLayout.ParallelGroup authorGroup = layout.createParallelGroup();
             int descriptionWidth = Math.max(descriptionLabel.getPreferredSize().width, 150);
-            descriptionGroup.add(descriptionLabel, descriptionWidth, descriptionWidth, descriptionWidth);
-            filenameGroup.add(filenameLabel);
-            dateGroup.add(dateLabel);
-            authorGroup.add(authorLabel);
+            descriptionGroup.addComponent(descriptionLabel, descriptionWidth, descriptionWidth, descriptionWidth);
+            filenameGroup.addComponent(filenameLabel);
+            dateGroup.addComponent(dateLabel);
+            authorGroup.addComponent(authorLabel);
             JPanel panel = createHighlightPanel();
             panels.add(panel);
-            horizontalGroup.add(layout.createSequentialGroup()
-                    .add(descriptionGroup)
-                    .addPreferredGap(descriptionLabel, filenameLabel, LayoutStyle.UNRELATED)
-                    .add(filenameGroup)
-                    .addPreferredGap(filenameLabel, dateLabel, LayoutStyle.UNRELATED)
-                    .add(dateGroup)
-                    .addPreferredGap(dateLabel, authorLabel, LayoutStyle.UNRELATED)
-                    .add(authorGroup));
-            verticalGroup.add(layout.createParallelGroup(GroupLayout.LEADING, false)
-                .add(panel, 0, 0, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(descriptionLabel)
-                    .add(filenameLabel)
-                    .add(dateLabel)
-                    .add(authorLabel)));
+            horizontalGroup.addGroup(layout.createSequentialGroup()
+                    .addGroup(descriptionGroup)
+                    .addPreferredGap(descriptionLabel, filenameLabel, LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(filenameGroup)
+                    .addPreferredGap(filenameLabel, dateLabel, LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(dateGroup)
+                    .addPreferredGap(dateLabel, authorLabel, LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(authorGroup));
+            verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                .addComponent(panel, 0, 0, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(descriptionLabel)
+                    .addComponent(filenameLabel)
+                    .addComponent(dateLabel)
+                    .addComponent(authorLabel)));
             for (BugzillaIssue.Attachment attachment : attachments) {
                 boolean isPatch = "1".equals(attachment.getIsPatch()); // NOI18N
                 String description = attachment.getDesc();
                 String filename = attachment.getFilename();
                 Date date = attachment.getDate();
                 String author = attachment.getAuthor();
+                String authorName = attachment.getAuthorName();
+                authorName = ((authorName != null) && (authorName.trim().length() > 0)) ? authorName : author;
                 descriptionLabel = new JLabel(description);
                 LinkButton filenameButton = new LinkButton();
                 LinkButton patchButton = null;
@@ -176,72 +179,78 @@ public class AttachmentsPanel extends JPanel {
                     lBrace = new JLabel("("); // NOI18N
                     rBrace = new JLabel(")"); // NOI18N
                     hPatchGroup = layout.createSequentialGroup()
-                            .add(filenameButton)
-                            .addPreferredGap(filenameButton, lBrace, LayoutStyle.RELATED)
-                            .add(lBrace)
-                            .add(patchButton)
-                            .add(rBrace);
+                            .addComponent(filenameButton)
+                            .addPreferredGap(filenameButton, lBrace, LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(lBrace)
+                            .addComponent(patchButton)
+                            .addComponent(rBrace);
                 }
                 JPopupMenu menu = menuFor(attachment, patchButton);
                 filenameButton.setAction(attachment.new DefaultAttachmentAction());
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
-                authorLabel = new JLabel(author);
+                
+                JComponent authorComponent;
+                if(author.indexOf("@") > -1) { // NOI18N
+                    authorComponent = new LinkButton.MailtoButton(authorName, NbBundle.getMessage(IssuePanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), author); // NOI18N
+                } else {
+                    authorComponent = new JLabel(authorName);
+                }
                 descriptionLabel.setComponentPopupMenu(menu);
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
-                authorLabel.setComponentPopupMenu(menu);
-                descriptionGroup.add(descriptionLabel, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+                authorComponent.setComponentPopupMenu(menu);
+                descriptionGroup.addComponent(descriptionLabel, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
                 if (isPatch) {
                     lBrace.setComponentPopupMenu(menu);
                     patchButton.setComponentPopupMenu(menu);
                     rBrace.setComponentPopupMenu(menu);
-                    filenameGroup.add(hPatchGroup);
+                    filenameGroup.addGroup(hPatchGroup);
                 } else {
-                    filenameGroup.add(filenameButton);
+                    filenameGroup.addComponent(filenameButton);
                 }
-                dateGroup.add(dateLabel);
-                authorGroup.add(authorLabel);
+                dateGroup.addComponent(dateLabel);
+                authorGroup.addComponent(authorComponent);
                 panel = createHighlightPanel();
                 panel.addMouseListener(new MouseAdapter() {}); // Workaround for bug 6272233
                 panel.setComponentPopupMenu(menu);
                 panels.add(panel);
-                GroupLayout.ParallelGroup pGroup = layout.createParallelGroup(GroupLayout.BASELINE);
-                pGroup.add(descriptionLabel);
-                pGroup.add(filenameButton);
+                GroupLayout.ParallelGroup pGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+                pGroup.addComponent(descriptionLabel);
+                pGroup.addComponent(filenameButton);
                 if (isPatch) {
-                    pGroup.add(lBrace);
-                    pGroup.add(patchButton);
-                    pGroup.add(rBrace);
+                    pGroup.addComponent(lBrace);
+                    pGroup.addComponent(patchButton);
+                    pGroup.addComponent(rBrace);
                 }
-                pGroup.add(dateLabel);
-                pGroup.add(authorLabel);
+                pGroup.addComponent(dateLabel);
+                pGroup.addComponent(authorComponent);
                 verticalGroup
-                    .addPreferredGap(LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(GroupLayout.LEADING, false)
-                        .add(panel, 0, 0, Short.MAX_VALUE)
-                        .add(pGroup));
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                        .addComponent(panel, 0, 0, Short.MAX_VALUE)
+                        .addGroup(pGroup));
             }
-            verticalGroup.add(newVerticalGroup);
+            verticalGroup.addGroup(newVerticalGroup);
             int groupWidth = 0;
             if (maxMethod != null) {
                 try {
-                    groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 1);
+                    groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 0);
                 } catch (Exception ex) {
                     Bugzilla.LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
             }
             for (JPanel p : panels) {
-                horizontalGroup.add(p, 0, 0, groupWidth);
+                horizontalGroup.addComponent(p, 0, 0, groupWidth);
             }
         }
-        horizontalGroup.add(layout.createSequentialGroup()
-                .add(noAttachments ? dummyLabel : createNewButton)
-                .add(0, 0, Short.MAX_VALUE));
-        verticalGroup.addPreferredGap(LayoutStyle.RELATED);
-        verticalGroup.add(noAttachments ? dummyLabel : createNewButton);
-
+        horizontalGroup.addGroup(layout.createSequentialGroup()
+                .addComponent(noAttachments ? dummyLabel : createNewButton)
+                .addGap(0, 0, Short.MAX_VALUE));
+        verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+        verticalGroup.addComponent(noAttachments ? dummyLabel : createNewButton);
+        
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
@@ -354,9 +363,9 @@ public class AttachmentsPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             AttachmentPanel attachment = new AttachmentPanel();
             attachment.setBackground(BG_COLOR);
-            horizontalGroup.add(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
-            verticalGroup.addPreferredGap(LayoutStyle.RELATED);
-            verticalGroup.add(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            horizontalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+            verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+            verticalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
             if (noneLabel.isVisible()) {
                 noneLabel.setVisible(false);
                 switchHelper();

@@ -316,7 +316,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         }
     }
     static String stringify(String in) {
-        StringBuffer buf = new StringBuffer(in.length() * 2 + 2);
+        StringBuilder buf = new StringBuilder(in.length() * 2 + 2);
         buf.append('"'); // NOI18N
         for (int i = 0; i < in.length(); i++) {
             char c = in.charAt(i);
@@ -354,7 +354,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             // Try making new File(new File("/tmp", x)) for x in {".", ""}
             return ""; // NOI18N
         }
-        StringBuffer buf = new StringBuffer(file.getPath().length());
+        StringBuilder buf = new StringBuilder(file.getPath().length());
         buf.append(file.getName());
         for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
             if (parent.equals(baseDir)) {

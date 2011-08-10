@@ -46,6 +46,8 @@
     categoryLabel="#customizer.Build",
     position=277
 )
+@Messages("customizer.Build=Build")
 package org.netbeans.modules.maven.customizer;
 
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.NbBundle.Messages;

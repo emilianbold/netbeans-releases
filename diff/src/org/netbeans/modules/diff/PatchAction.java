@@ -66,6 +66,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -127,21 +129,21 @@ public class PatchAction extends NodeAction {
         }
     }
 
-    public static void performPatch(File patch, File file) throws MissingResourceException {
+    public static boolean performPatch(File patch, File file) throws MissingResourceException {
         ContextualPatch cp = ContextualPatch.create(patch, file);
         try {
             List<ContextualPatch.PatchReport> report = cp.patch(false);
-            displayPatchReport(report);
+            return displayPatchReport(report, patch);
         } catch (Exception ioex) {
             ErrorManager.getDefault().annotate(ioex, NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage()));
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
             ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
-            return;
+            return false;
         }
     }
 
 
-    private static void displayPatchReport(List<ContextualPatch.PatchReport> report) {
+    private static boolean displayPatchReport(List<ContextualPatch.PatchReport> report, final File patchFile) {
 
         List<ContextualPatch.PatchReport> successful = new ArrayList<ContextualPatch.PatchReport>(); 
         List<ContextualPatch.PatchReport> failed = new ArrayList<ContextualPatch.PatchReport>();
@@ -171,7 +173,25 @@ public class PatchAction extends NodeAction {
         try {
             ow.print(DateFormat.getDateTimeInstance().format(new Date()));
             ow.println("  ===========================================================================");
-         
+            ow.print(NbBundle.getMessage(PatchAction.class, "MSG_PatchAction.output.patchFile")); //NOI18N
+            try {
+                ow.println(patchFile.getAbsolutePath(), new OutputListener() {
+                    @Override
+                    public void outputLineSelected (OutputEvent ev) {
+                    }
+
+                    @Override
+                    public void outputLineAction (OutputEvent ev) {
+                        Utils.openFile(patchFile);
+                    }
+
+                    @Override
+                    public void outputLineCleared (OutputEvent ev) {
+                    }
+                });
+            } catch (IOException ex) {
+                ow.println(patchFile.getAbsolutePath());
+            }
             ow.println("--- Successfully Patched ---");
             if (successful.size() > 0) {
                 for (ContextualPatch.PatchReport patchReport : successful) {
@@ -221,8 +241,10 @@ public class PatchAction extends NodeAction {
             } else {
                 removeBackups(appliedFiles, backups, false);
             }
+            return failed.isEmpty();
         } else {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(PatchAction.class, "MSG_WrongPatch")));
+            return false;
         }
     }
 

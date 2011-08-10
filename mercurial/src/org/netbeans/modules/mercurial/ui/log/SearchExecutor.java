@@ -99,11 +99,13 @@ class SearchExecutor implements Runnable {
 
     }    
         
+    @Override
     public void run() {
 
         final String fromRevision = criteria.getFrom();
         final String toRevision = criteria.getTo();
         final int limitRevisions = criteria.getLimit();
+        final String branchName = criteria.getBranch();
 
         completedSearches = 0;
         for (Map.Entry<File, Set<File>> entry : workFiles.entrySet()) {
@@ -111,9 +113,10 @@ class SearchExecutor implements Runnable {
             final Set<File> files = entry.getValue();
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
             HgProgressSupport support = new HgProgressSupport() {
+                @Override
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    search(root, files, fromRevision, toRevision, limitRevisions, this, logger);
+                    search(root, files, fromRevision, toRevision, limitRevisions, branchName, this, logger);
                 }
             };
             support.start(rp, root, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")); // NOI18N
@@ -121,7 +124,7 @@ class SearchExecutor implements Runnable {
     }
 
     private void search(File root, Set<File> files, String fromRevision,
-            String toRevision, int limitRevisions, HgProgressSupport progressSupport, OutputLogger logger) {
+            String toRevision, int limitRevisions, String branchName, HgProgressSupport progressSupport, OutputLogger logger) {
         if (progressSupport.isCanceled()) {
             searchCanceled = true;
             return;
@@ -133,10 +136,11 @@ class SearchExecutor implements Runnable {
         }else if (master.isOutSearch()) {
             messages = HgCommand.getOutMessages(root, toRevision, master.isShowMerges(), logger);
         } else {
+            List<String> branchNames = branchName.isEmpty() ? Collections.<String>emptyList() : Collections.singletonList(branchName);
             if(!master.isShowInfo()) {
-                messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, master.isShowMerges(), limitRevisions, logger);
+                messages = HgCommand.getLogMessagesNoFileInfo(root, files, fromRevision, toRevision, master.isShowMerges(), limitRevisions, branchNames, logger);
             } else {
-                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, master.isShowMerges(), true, limitRevisions, logger, true);
+                messages = HgCommand.getLogMessages(root, files, fromRevision, toRevision, master.isShowMerges(), true, limitRevisions, branchNames, logger, true);
             }
         }
         appendResults(root, messages);
@@ -191,6 +195,7 @@ class SearchExecutor implements Runnable {
         completedSearches++;
         if (workFiles.size() == completedSearches) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(results.isEmpty()) {
                         master.setResults(null);

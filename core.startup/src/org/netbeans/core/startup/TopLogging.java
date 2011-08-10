@@ -87,6 +87,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -159,9 +160,12 @@ public final class TopLogging {
         }
         ps.close();
         try {
+            StartLog.unregister();
             LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(os.toByteArray()));
         } catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            StartLog.register();
         }
 
 
@@ -176,8 +180,6 @@ public final class TopLogging {
             logger.addHandler (streamHandler ());
         }
         logger.addHandler(new LookupDel());
-
-        StartLog.register();
     }
 
     /**
@@ -186,12 +188,12 @@ public final class TopLogging {
     public static void initializeQuietly() {
         initialize(false);
     }
-    private static String previousUser;
+    private static File previousUser;
     static final void initialize() {
         initialize(true);
     }
     private static void initialize(boolean verbose) {
-        if (previousUser == null || previousUser.equals(System.getProperty("netbeans.user"))) {
+        if (previousUser == null || previousUser.equals(Places.getUserDirectory())) {
             // useful from tests
             streamHandler = null;
             defaultHandler = null;
@@ -307,6 +309,7 @@ public final class TopLogging {
         ps.println("  Current Directory       = " + System.getProperty("user.dir", "unknown"));
         ps.print(  "  User Directory          = "); // NOI18N
         ps.println(CLIOptions.getUserDir()); // NOI18N
+        ps.println("  Cache Directory         = " + Places.getCacheDirectory()); // NOI18N
         ps.print(  "  Installation            = "); // NOI18N
         for (File cluster : clusters) {
             ps.print(cluster + "\n                            "); // NOI18N
@@ -393,10 +396,10 @@ public final class TopLogging {
     private static synchronized NonClose defaultHandler() {
         if (defaultHandler != null) return defaultHandler;
 
-        String home = System.getProperty("netbeans.user");
-        if (home != null && !"memory".equals(home) && !CLIOptions.noLogging) {
+        File home = Places.getUserDirectory();
+        if (home != null && !CLIOptions.noLogging) {
             try {
-                File dir = new File(new File(new File(home), "var"), "log");
+                File dir = new File(new File(home, "var"), "log");
                 dir.mkdirs ();
                 File f = new File(dir, "messages.log");
                 File f1 = new File(dir, "messages.log.1");
@@ -838,12 +841,18 @@ public final class TopLogging {
         
         @Override
         public void flush() {
-            try {
-                flush.schedule(0);
-                flush.waitFinished(500);
-            } catch (InterruptedException ex) {
-                // ok, flush failed, do not even print
-                // as we are inside the System.err code
+            boolean empty;
+            synchronized (sb) {
+                empty = sb.length() == 0;
+            }
+            if (!empty) {
+                try {
+                    flush.schedule(0);
+                    flush.waitFinished(500);
+                } catch (InterruptedException ex) {
+                    // ok, flush failed, do not even print
+                    // as we are inside the System.err code
+                }
             }
             super.flush();
         }

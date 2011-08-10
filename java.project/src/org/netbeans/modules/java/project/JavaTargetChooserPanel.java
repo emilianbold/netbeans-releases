@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -65,7 +66,9 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.java.project.Bundle.*;
 
 /**
  * @author  Petr Hrebejk
@@ -114,6 +117,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         return new HelpCtx(JavaTargetChooserPanel.class);
     }
 
+    @Messages("ERR_JavaTargetChooser_WrongPlatform=Wrong source level of the project. You will NOT be able to compile this file since it contains JDK 1.5 features.")
     public boolean isValid() {              
         if (gui == null) {
            setErrorMessage( null );
@@ -191,10 +195,12 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             //Only warning, display it only if everything else is OK.
             setErrorMessage( "ERR_JavaTargetChooser_DefaultPackage" );            
         }
-        String templateSrcLev = (String) template.getAttribute("javac.source"); // NOI18N
-        //Only warning, display it only if everything else id OK.
-        if (specVersion != null && templateSrcLev != null && specVersion.compareTo(new SpecificationVersion(templateSrcLev)) < 0) {
-            setErrorMessage("ERR_JavaTargetChooser_WrongPlatform"); // NOI18N
+        String categories = (String) template.getAttribute("templateCategory"); // NOI18N
+        if (categories != null && Arrays.asList(categories.split(",")).contains(NewJavaFileWizardIterator.JDK_5)) {
+            //Only warning, display it only if everything else id OK.
+            if (specVersion != null && specVersion.compareTo(JDK_14) <= 0) {
+                wizard.getNotificationLineSupport().setErrorMessage(ERR_JavaTargetChooser_WrongPlatform());
+            }
         }
         
         // this enables to display error messages from the bottom panel

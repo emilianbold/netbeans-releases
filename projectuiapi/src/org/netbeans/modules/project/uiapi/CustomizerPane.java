@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -54,11 +55,14 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,6 +75,8 @@ public class CustomizerPane extends JPanel
     public static final String HELP_CTX_PROPERTY = "helpCtxProperty";
     
     private Component currentCustomizer;
+    private JPanel errorPanel;
+    private JLabel errorIcon;
     private JTextArea errorMessageValue;
     private HelpCtx currentHelpCtx;
     
@@ -97,13 +103,18 @@ public class CustomizerPane extends JPanel
         fillConstraints.weighty = 1.0;
         categoryModel.addPropertyChangeListener( new CategoryChangeListener() );
         categoryPanel.add( categoryView, fillConstraints );
-        
+
+        errorIcon = new JLabel();
+        errorPanel = new JPanel(new BorderLayout(errorIcon.getIconTextGap(), 0)); // cf. BasicLabelUI.layoutCL
+        errorPanel.add(errorIcon, BorderLayout.LINE_START);
+        errorIcon.setVerticalAlignment(SwingConstants.TOP);
         errorMessageValue = new JTextArea();
         errorMessageValue.setLineWrap(true);
         errorMessageValue.setWrapStyleWord(true);
         errorMessageValue.setBorder(BorderFactory.createEmptyBorder());
         errorMessageValue.setBackground(customizerPanel.getBackground());
         errorMessageValue.setEditable(false);
+        errorPanel.add(errorMessageValue, BorderLayout.CENTER);
         
         // put it into under categoryView
         errMessConstraints = new GridBagConstraints();
@@ -113,7 +124,7 @@ public class CustomizerPane extends JPanel
         errMessConstraints.gridheight = 1;
         errMessConstraints.insets = new Insets(12, 0, 0, 0);
         errMessConstraints.fill = GridBagConstraints.HORIZONTAL;
-        customizerPanel.add(errorMessageValue, errMessConstraints);
+        customizerPanel.add(errorPanel, errMessConstraints);
 
         /*Preferences prefs = NbPreferences.forModule(org.netbeans.modules.project.uiapi.CustomizerPane.class);
         int paneWidth = prefs.getInt(CUSTOMIZER_DIALOG_WIDTH, 0);
@@ -309,11 +320,12 @@ public class CustomizerPane extends JPanel
     }
 
     private void setErrorMessage(String errMessage, boolean valid) {
-        customizerPanel.remove(errorMessageValue);
+        customizerPanel.remove(errorPanel);
         if (errMessage != null && !errMessage.trim().isEmpty()) {
+            errorIcon.setIcon(ImageUtilities.loadImageIcon(valid ? "org/netbeans/modules/dialogs/warning.gif" : "org/netbeans/modules/dialogs/error.gif", true));
             errorMessageValue.setText(errMessage);
             errorMessageValue.setForeground(UIManager.getColor(valid ? "nb.warningForeground" : "nb.errorForeground")); // NOI18N
-            customizerPanel.add(errorMessageValue, errMessConstraints);
+            customizerPanel.add(errorPanel, errMessConstraints);
         }
         customizerPanel.revalidate();
         customizerPanel.repaint();

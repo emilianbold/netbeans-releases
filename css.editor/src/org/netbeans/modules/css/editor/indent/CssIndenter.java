@@ -50,12 +50,12 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
-import org.netbeans.modules.css.formatting.api.support.IndentCommand;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.IndenterContextData;
+import org.netbeans.modules.web.indent.api.support.IndentCommand;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 
 /**
@@ -88,7 +88,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     @Override
     protected boolean isWhiteSpaceToken(Token<CssTokenId> token) {
-        return token.id() == CssTokenId.S;
+        return token.id() == CssTokenId.WS;
     }
 
     private boolean isCommentToken(Token<CssTokenId> token) {
@@ -123,17 +123,17 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
             if (id == CssTokenId.IDENT && ts.offset() < startOffset && balance == 0) {
                 int[] index = ts.index();
                 ts.moveNext();
-                Token tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
+                Token tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.WS));
                 ts.moveIndex(index);
                 ts.moveNext();
                 if (tk != null && tk.id() == CssTokenId.LBRACE) {
                     if (ts.movePrevious()) {
-                        tk = LexUtilities.findPrevious(ts, Arrays.asList(CssTokenId.S, 
+                        tk = LexUtilities.findPrevious(ts, Arrays.asList(CssTokenId.WS, 
                                 CssTokenId.IDENT, CssTokenId.MEDIA_SYM, CssTokenId.COMMA,
-                                CssTokenId.GT, CssTokenId.PLUS));
+                                CssTokenId.GREATER, CssTokenId.PLUS));
                         if (tk != null) {
                             ts.moveNext();
-                            tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.S));
+                            tk = LexUtilities.findNext(ts, Arrays.asList(CssTokenId.WS));
                         }
                     }
                     return ts.offset();
@@ -216,7 +216,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                 continue;
             }
 
-            if (lastLBrace != -1 && token.id() != CssTokenId.S) {
+            if (lastLBrace != -1 && token.id() != CssTokenId.WS) {
                 CssStackItem state = blockStack.peek();
                 assert (state.state == StackItemState.IN_RULE || state.state == StackItemState.IN_MEDIA);
                 if (!isCommentToken(token)) {
@@ -240,7 +240,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                 if (!isInState(blockStack, StackItemState.IN_VALUE) && isInState(blockStack, StackItemState.IN_RULE)) {
                     blockStack.push(new CssStackItem(StackItemState.IN_VALUE));
                 }
-            } else if (token.id() == CssTokenId.SEMICOLON) {
+            } else if (token.id() == CssTokenId.SEMI) {
                 if (isInState(blockStack, StackItemState.IN_VALUE)) {
                     CssStackItem item = blockStack.pop();
                     assert item.state == StackItemState.IN_VALUE;
@@ -345,7 +345,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
         if (context.getNextLineStartOffset() != -1) {
             getIndentFromState(preliminaryNextLineIndent, false, context.getNextLineStartOffset());
-            if (preliminaryNextLineIndent.size() == 0) {
+            if (preliminaryNextLineIndent.isEmpty()) {
                 preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
             }
         }

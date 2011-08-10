@@ -45,10 +45,12 @@ package org.netbeans.modules.versioning;
 
 import java.io.IOException;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.security.Permission;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 
@@ -178,7 +180,43 @@ public class GetOwnerTest extends NbTestCase {
         testFileOwnerCache(true /* unversioned */ , true /* folder */);
         testFileOwnerCache(false/* unversioned */ , true /* folder */);
     }
+
+    public void testExcludedFolders () throws Exception {
+        Field f = Utils.class.getDeclaredField("unversionedFolders");
+        f.setAccessible(true);
+        f.set(Utils.class, (File[]) null);
+
+        File a = new File(getWorkDir(), "a");
+        File b = new File(getWorkDir(), "b");
+        System.setProperty("versioning.unversionedFolders", a.getAbsolutePath() + ";" + b.getAbsolutePath() + ";");
+        File c = new File(getWorkDir(), "c");
+        VersioningSupport.getPreferences().put("unversionedFolders", c.getAbsolutePath()); //NOI18N
+        File userdir = new File(getWorkDir(), "userdir");
+        System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        assertTrue(VersioningSupport.isExcluded(a));
+        assertTrue(VersioningSupport.isExcluded(b));
+        assertTrue(VersioningSupport.isExcluded(c));
+        assertTrue(VersioningSupport.isExcluded(userdir));
+        assertTrue(VersioningSupport.isExcluded(new File(userdir, "ffff")));
+        assertFalse(VersioningSupport.isExcluded(userdir.getParentFile()));
+
+        assertEquals(4, ((File[]) f.get(Utils.class)).length);
+
+        // what if someone still wants to have userdir versioned?
+        System.setProperty("versioning.netbeans.user.versioned", "true");
         
+        f.set(Utils.class, (File[]) null);
+        
+        assertTrue(VersioningSupport.isExcluded(a));
+        assertTrue(VersioningSupport.isExcluded(b));
+        assertTrue(VersioningSupport.isExcluded(c));
+        assertFalse(VersioningSupport.isExcluded(userdir));
+        assertFalse(VersioningSupport.isExcluded(new File(userdir, "ffff")));
+        assertFalse(VersioningSupport.isExcluded(userdir.getParentFile()));
+
+        assertEquals(3, ((File[]) f.get(Utils.class)).length);
+    }
+
     private void testFileOwnerCache(boolean isVersioned, boolean isFolder) throws IOException {
         File folder = isVersioned ? getVersionedFolder() : getUnversionedFolder();
         File child = new File(folder, "file");

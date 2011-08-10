@@ -91,10 +91,10 @@ public class FormUtils
     private static final Object CLASS_AND_SUBCLASSES = new Object();
     private static final Object CLASS_AND_SWING_SUBCLASSES = new Object();
 
-    static final Object PROP_PREFERRED = new Object();
-    static final Object PROP_NORMAL = new Object();
-    static final Object PROP_EXPERT = new Object();
-    static final Object PROP_HIDDEN = new Object();
+    public static final Object PROP_PREFERRED = new Object();
+    public static final Object PROP_NORMAL = new Object();
+    public static final Object PROP_EXPERT = new Object();
+    public static final Object PROP_HIDDEN = new Object();
 
     static final String PROP_REQUIRES_PARENT = "thisPropertyRequiresParent"; // NOI18N
     static final String PROP_REQUIRES_CHILDREN = "thisPropertyRequiresChildren"; // NOI18N
@@ -1143,7 +1143,7 @@ public class FormUtils
      * @return Object[] array of property categories for given bean class, or
      *         null if nothing specified for the class
      */
-    static Object[] getPropertiesCategoryClsf(Class beanClass,
+    public static Object[] getPropertiesCategoryClsf(Class beanClass,
                                               BeanDescriptor beanDescriptor)
     {
         List<Object> reClsf = null;
@@ -1171,9 +1171,7 @@ public class FormUtils
      * properties classification for given bean class (returned from
      * getPropertiesCategoryClsf method).
      */
-    static Object getPropertyCategory(FeatureDescriptor pd,
-                                      Object[] propsClsf)
-    {
+    public static Object getPropertyCategory(FeatureDescriptor pd, Object[] propsClsf) {
         Object cat = findPropertyClsf(pd.getName(), propsClsf);
         if (cat != null)
             return cat;
@@ -1692,7 +1690,7 @@ public class FormUtils
         /**
          * Returns (undefined ;-)) normalized form of this type.
          */
-        TypeHelper normalize() {
+        public TypeHelper normalize() {
             TypeHelper t = this;
             if (type instanceof TypeVariable) {
                 if (actualTypeArgs != null) {
@@ -1718,6 +1716,44 @@ public class FormUtils
                 t = new TypeHelper(sub.getType());
             }
             return t;
+        }
+
+        /**
+         * Returns type of element of the given type - expects type that implements
+         * <code>Collection</code> interface.
+         *
+         * @param type type that implements <code>Collection</code> interface.
+         * @return type of element of the given type.
+         */
+        public TypeHelper typeOfElement() {
+            Type t = getType();
+            TypeHelper elemType = new TypeHelper();
+            if (t instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType)t;
+                Type[] args = pt.getActualTypeArguments();
+                // PENDING generalize and improve - track the type variables to the nearest
+                // known collection superclass or check parameter type of add(E o) method
+                if (args.length == 1) { // The only argument should be type of the collection element
+                    Type tt = args[0];
+                    elemType = new TypeHelper(tt, actualTypeArgs);
+                }
+            } else if (t instanceof Class) {
+                Class classa = (Class)t;
+                TypeVariable[] tvar = classa.getTypeParameters();
+                // PENDING dtto
+                if ((actualTypeArgs != null) && (tvar.length == 1)) {
+                    TypeHelper tt = actualTypeArgs.get(tvar[0].getName());
+                    if (tt != null) {
+                        if (tt.getType() == null) {
+                            elemType = tt;
+                        } else {
+                            Type typ = FormUtils.typeToClass(tt);
+                            elemType = new TypeHelper(typ, actualTypeArgs);
+                        }
+                    }
+                }
+            }
+            return elemType;
         }
 
         @Override
@@ -1798,7 +1834,7 @@ public class FormUtils
     }
 
     // helper method for getBeanInfo(Class)
-    static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
+    public static BeanInfo getBeanInfo(Class clazz, int mode) throws IntrospectionException {
         if (mode == Introspector.IGNORE_IMMEDIATE_BEANINFO) {
             try {
                 return Introspector.getBeanInfo(clazz, Introspector.IGNORE_IMMEDIATE_BEANINFO);

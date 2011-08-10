@@ -55,16 +55,14 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.TargetAnalyzer;
 import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -83,19 +81,14 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, WebBeansModel model,
-            List<ErrorDescription> descriptions , 
-            CompilationInfo info , AtomicBoolean cancel )
+            AtomicBoolean cancel , Result result )
     {
         boolean hasInterceptorBindings = hasInterceptorBindings(element, model);
         if (AnnotationUtil.isLifecycleCallback(element, model.getCompilationController() )) {
             if (hasInterceptorBindings) {
-                ErrorDescription description = CdiEditorAnalysisFactory
-                    .createNotification( Severity.WARNING, element, model, info ,  
+                result.addNotification( Severity.WARNING, element, model,  
                         NbBundle.getMessage(InterceptedMethodAnalyzer.class,
                             "WARN_CallbackInterceptorBinding")); // NOI18N
-                if ( description != null ){
-                    descriptions.add(description);
-                }
             }
             if (cancel.get()) {
                 return;
@@ -112,8 +105,8 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
                 Collection<AnnotationMirror> interceptorBindings = model
                     .getInterceptorBindings(interceptor);
                 for (AnnotationMirror annotationMirror : interceptorBindings) {
-                    Element iBinding = info.getTypes().asElement( 
-                            annotationMirror.getAnnotationType() );
+                    Element iBinding = model.getCompilationController().getTypes().
+                        asElement( annotationMirror.getAnnotationType() );
                     if ( !( iBinding instanceof TypeElement )) {
                         continue;
                     }
@@ -122,15 +115,11 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
                     if ( declaredTargetTypes.size() != 1 || 
                             !declaredTargetTypes.contains(ElementType.TYPE))
                     {
-                        ErrorDescription description = CdiEditorAnalysisFactory
-                            .createError(element, model, info ,  
+                        result.addError(element, model,  
                                     NbBundle.getMessage(InterceptedMethodAnalyzer.class,
                                     "ERR_LifecycleInterceptorTarget" ,      // NOI18N
                                     interceptor.getQualifiedName().toString(), 
                                     ((TypeElement)iBinding).getQualifiedName().toString())); 
-                        if ( description != null ){
-                            descriptions.add(description);
-                        }
                     }
                 }
             }
@@ -155,28 +144,35 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
         }
         if ( hasInterceptorBindings){
             if ( finalMethod ){
-                ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+                result.addError(element, model,  
                             NbBundle.getMessage(
                             InterceptedMethodAnalyzer.class,
                         "ERR_FinalInterceptedMethod")); // NOI18N
-                if ( description != null ){
-                    descriptions.add(description);
-                }
             }
             if ( finalClass && !AnnotationUtil.hasAnnotation(parent, 
                     AnnotationUtil.INTERCEPTOR, model.getCompilationController()))
             {
-                ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+                result.addError(element, model,   
                             NbBundle.getMessage(
                             InterceptedMethodAnalyzer.class,
                         "ERR_FinalInterceptedClass")); // NOI18N
-                if ( description != null ){
-                    descriptions.add(description);
-                }
             }
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer#getInterceptorBindings(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel)
+     */
+    @Override
+    protected Set<AnnotationMirror> getInterceptorBindings( Element element,
+            WebBeansModel model )
+    {
+        Set<AnnotationMirror> iBindings = super.getInterceptorBindings(element, model);
+        List<? extends AnnotationMirror> annotations = model
+                .getCompilationController().getElements()
+                .getAllAnnotationMirrors(element);
+        iBindings.retainAll(annotations);
+        return iBindings;
     }
 
 }

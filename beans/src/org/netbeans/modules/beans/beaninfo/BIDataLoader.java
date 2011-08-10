@@ -91,6 +91,9 @@ final class BIDataLoader extends UniFileLoader {
 
     @Override
     protected FileObject findPrimaryFile(FileObject fo) {
+        if (fo.getAttribute("template") != null && fo.getAttribute("javax.script.ScriptEngine") != null) {
+            return null; // as in JavaDataLoader
+        }
         return isBeanInfo(fo)? fo: null;
     }
     

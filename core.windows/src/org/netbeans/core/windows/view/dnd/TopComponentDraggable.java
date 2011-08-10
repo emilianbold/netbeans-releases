@@ -63,14 +63,14 @@ public final class TopComponentDraggable {
     private final TopComponent tc;
     private final ModeImpl mode;
     
-    TopComponentDraggable( TopComponent tc ) {
+    public TopComponentDraggable( TopComponent tc ) {
         assert null != tc;
         this.tc = tc;
         mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
         assert null != mode;
     }
     
-    TopComponentDraggable( ModeImpl mode ) {
+    public TopComponentDraggable( ModeImpl mode ) {
         this.tc = null;
         this.mode = mode;
     }

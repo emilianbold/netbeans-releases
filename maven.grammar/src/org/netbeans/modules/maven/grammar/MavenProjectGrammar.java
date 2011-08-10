@@ -349,7 +349,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         if (path.endsWith("plugins/plugin/groupId")) { //NOI18N
             
-                Set<String> elems = RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix());
+                Set<String> elems = RepositoryQueries.filterPluginGroupIds(virtualTextCtx.getCurrentPrefix(), RepositoryPreferences.getInstance().getRepositoryInfos());
 //                elems.addAll(getRelevant(virtualTextCtx.getCurrentPrefix(), getCachedPluginGroupIds()));
                 ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                 for (String elem : elems) {
@@ -391,7 +391,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findArtifactInfo(previous);
             if (hold.getGroupId() != null) {
-                Set<String> elems = RepositoryQueries.filterPluginArtifactIds(hold.getGroupId(), virtualTextCtx.getCurrentPrefix());
+                Set<String> elems = RepositoryQueries.filterPluginArtifactIds(hold.getGroupId(), virtualTextCtx.getCurrentPrefix(), RepositoryPreferences.getInstance().getRepositoryInfos());
                 ArrayList<GrammarResult> texts = new ArrayList<GrammarResult>();
                 for (String elem : elems) {
                     texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
@@ -679,7 +679,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     private class GroupTask implements Runnable {
 
         public void run() {
-            Set<String> elems = RepositoryQueries.getGroups();
+            Set<String> elems = RepositoryQueries.getGroups(RepositoryPreferences.getInstance().getRepositoryInfos());
             synchronized (GROUP_LOCK) {
                 MavenProjectGrammar.this.groupCache = elems;
             }
@@ -694,7 +694,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         
         public void run() {
-            Set<String> elems = RepositoryQueries.getArtifacts(groupId);
+            Set<String> elems = RepositoryQueries.getArtifacts(groupId, RepositoryPreferences.getInstance().getRepositoryInfos());
             synchronized (ARTIFACT_LOCK) {
                 MavenProjectGrammar.this.artifactCache.put(groupId, elems);
             }
@@ -711,7 +711,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         
         public void run() {
-            List<NBVersionInfo> infos = RepositoryQueries.getVersions(groupId, artifactId);
+            List<NBVersionInfo> infos = RepositoryQueries.getVersions(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
             Set<String> elems = new LinkedHashSet<String>();
             for (NBVersionInfo inf : infos) {
                 elems.add(inf.getVersion());

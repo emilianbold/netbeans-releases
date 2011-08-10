@@ -1014,6 +1014,10 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         Debug.log(DefaultView.class, message);
     }
 
+    @Override
+    public void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        hierarchy.userStartedKeyboardDragAndDrop( draggable );
+    }
     
 }
 

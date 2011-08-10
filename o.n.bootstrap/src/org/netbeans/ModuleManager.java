@@ -106,6 +106,7 @@ public final class ModuleManager extends Modules {
 
     // for any module, set of known failed dependencies or problems,
     // or null if this has not been computed yet
+    private final Object MODULE_PROBLEMS_LOCK = new Object();
     private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblemsWithoutNeeds = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
     private final Map<Module,Set<Union2<Dependency,InvalidException>>> moduleProblemsWithNeeds = new HashMap<Module,Set<Union2<Dependency,InvalidException>>>(100);
     private static final Set<Union2<Dependency,InvalidException>> EMPTY_COLLECTION = Collections.<Union2<Dependency, InvalidException>>emptySet();
@@ -798,8 +799,10 @@ public final class ModuleManager extends Modules {
         // of "soft" problems (interdependencies between modules).
         // Also clear any "hard" problems associated with this module, as they
         // may now have been fixed.
-        moduleProblemsWithoutNeeds.remove(m);
-        moduleProblemsWithNeeds.remove(m);
+        synchronized (MODULE_PROBLEMS_LOCK) {
+            moduleProblemsWithoutNeeds.remove(m);
+            moduleProblemsWithNeeds.remove(m);
+        }
         firer.change(new ChangeFirer.Change(m, Module.PROP_PROBLEMS, null, null));
         clearProblemCache();
         firer.fire();
@@ -1297,7 +1300,7 @@ public final class ModuleManager extends Modules {
                 // Should never happen:
                 if (other == null) throw new IllegalStateException("Should have found module: " + codeNameBase); // NOI18N
                 if (!couldBeEnabledWithEagers(other, willEnable, recursion)) return false;
-            } else if (dep.getType() == Dependency.TYPE_REQUIRES) {
+            } else if (dep.getType() == Dependency.TYPE_REQUIRES || dep.getType() == Dependency.TYPE_NEEDS) {
                 Set<Module> providers = providersOf.get(dep.getName());
                 if (providers == null) throw new IllegalStateException("Should have found a provider of: " + dep.getName()); // NOI18N
                 // Just need *one* to match.
@@ -1502,7 +1505,7 @@ public final class ModuleManager extends Modules {
         // only within a read mutex, it can write to moduleProblems. Other places
         // where moduleProblems are used are write-mutex only and so do not have
         // to worry about contention.
-        synchronized (moduleProblemsWithNeeds) {
+        synchronized (MODULE_PROBLEMS_LOCK) {
             Map<Module,Set<Union2<Dependency,InvalidException>>> mP = (withNeeds ? moduleProblemsWithNeeds : moduleProblemsWithoutNeeds);
             Set<Union2<Dependency,InvalidException>> probs = mP.get(probed);
             if (probs == null) {
@@ -1662,8 +1665,10 @@ public final class ModuleManager extends Modules {
      * return a different result).
      */
     private void clearProblemCache() {
-        clearProblemCache(moduleProblemsWithoutNeeds);
-        clearProblemCache(moduleProblemsWithNeeds);
+        synchronized (MODULE_PROBLEMS_LOCK) {
+            clearProblemCache(moduleProblemsWithoutNeeds);
+            clearProblemCache(moduleProblemsWithNeeds);
+        }
     }
     private void clearProblemCache(Map<Module,Set<Union2<Dependency,InvalidException>>> mP) {
         Iterator<Map.Entry<Module,Set<Union2<Dependency,InvalidException>>>> it = mP.entrySet().iterator();

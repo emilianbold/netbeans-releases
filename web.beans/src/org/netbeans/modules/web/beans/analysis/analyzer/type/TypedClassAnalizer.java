@@ -50,11 +50,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -68,41 +66,36 @@ public class TypedClassAnalizer extends AbstractTypedAnalyzer implements
     
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
-        analyze(element, element.asType() , compInfo, descriptions, cancel );
+        analyze(element, element.asType() , cancel , result );
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
-    protected void addError( Element element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+    protected void addError( Element element, CdiAnalysisResult result  )
     {
-        ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+        result.addError( element, NbBundle.getMessage(
                 TypedClassAnalizer.class, "ERR_BadRestritedType"));         // NOI18N
-        descriptions.add( description );        
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     protected void checkSpecializes( Element element, TypeMirror elementType,
-            List<TypeMirror> restrictedTypes, CompilationInfo compInfo, 
-            List<ErrorDescription> descriptions,AtomicBoolean cancel )
+            List<TypeMirror> restrictedTypes, AtomicBoolean cancel , CdiAnalysisResult result )
     {
         TypeElement typeElement = (TypeElement)element;
         TypeMirror superclass = typeElement.getSuperclass();
-        Element superElement = compInfo.getTypes().asElement(superclass);
+        Element superElement = result.getInfo().getTypes().asElement(superclass);
         if ( !( superElement instanceof TypeElement )){
             return;
         }
         List<TypeMirror> restrictedSuper = getRestrictedTypes(superElement, 
-                    compInfo, cancel);
+                    result.getInfo(), cancel);
         if ( cancel.get()){
             return;
         }
@@ -117,20 +110,18 @@ public class TypedClassAnalizer extends AbstractTypedAnalyzer implements
         Set<TypeElement> specializedBeanTypes;
         if ( restrictedSuper == null ){
             specializedBeanTypes = getUnrestrictedBeanTypes(
-                    (TypeElement)superElement, compInfo);
+                    (TypeElement)superElement, result.getInfo());
         }
         else {
-            specializedBeanTypes = getElements( restrictedSuper, compInfo);
+            specializedBeanTypes = getElements( restrictedSuper, result.getInfo());
         }
         Set<TypeElement> restrictedElements = getElements(restrictedTypes, 
-                compInfo);
-        restrictedElements.add( compInfo.getElements().getTypeElement( 
+                result.getInfo());
+        restrictedElements.add( result.getInfo().getElements().getTypeElement( 
                 Object.class.getCanonicalName()));
         if ( !restrictedElements.containsAll(specializedBeanTypes)){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element,  NbBundle.getMessage(
                         TypedClassAnalizer.class, "ERR_BadSpecializesBeanType"));  // NOI18N 
-            descriptions.add( description ); 
         }
     }
     

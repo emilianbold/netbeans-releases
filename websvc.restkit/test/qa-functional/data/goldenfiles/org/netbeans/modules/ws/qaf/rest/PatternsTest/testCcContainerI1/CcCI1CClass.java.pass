@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
@@ -18,9 +17,9 @@ import org.codehaus.jettison.json.JSONObject;
  *
  * @author lukas
  */
-
 @Path("/CcCI1ContainerURI")
 public class CcCI1CClass {
+
     @Context
     private UriInfo context;
 
@@ -43,8 +42,7 @@ public class CcCI1CClass {
      * Sub-resource locator method for {CcCI1URI}
      */
     @Path("{CcCI1URI}")
-    public CcCI1Cl getCcCI1Cl(@PathParam("CcCI1URI")
-    String CcCI1URI) {
+    public CcCI1Cl getCcCI1Cl(@PathParam("CcCI1URI") String CcCI1URI) {
         return CcCI1Cl.getInstance(CcCI1URI);
     }
 }

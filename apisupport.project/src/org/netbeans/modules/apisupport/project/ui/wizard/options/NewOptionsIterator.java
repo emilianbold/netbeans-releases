@@ -51,12 +51,15 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -70,15 +73,20 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  * @author Max Sauer
  */
-final class NewOptionsIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=400,
+    displayName="#template_options",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newOptions.png",
+    description="../../resources/newOptions.html",
+    category="nbm-specific"
+)
+@Messages("template_options=Options Panel")
+public final class NewOptionsIterator extends BasicWizardIterator {
     
     private NewOptionsIterator.DataModel data;
     
     private NewOptionsIterator() {  /* Use factory method. */ }
-    
-    public static NewOptionsIterator createIterator() {
-        return new NewOptionsIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
@@ -381,9 +389,13 @@ final class NewOptionsIterator extends BasicWizardIterator {
             assert isSuccessCode(checkFirstPanel()) || isWarningCode(checkFirstPanel());
             assert isSuccessCode(checkFinalPanel());
             files = new CreatedModifiedFiles(getProject());
-            boolean useAnnotations = new SpecificationVersion(LayerUtils.getPlatformForProject(getProject()).
-                    getModule("org.netbeans.modules.options.api").getSpecificationVersion()).
-                    compareTo(new SpecificationVersion("1.14")) >= 0;
+            boolean useAnnotations = true;
+            try {
+                SpecificationVersion apiVersion = getModuleInfo().getDependencyVersion("org.netbeans.modules.options.api");
+                useAnnotations = apiVersion == null || apiVersion.compareTo(new SpecificationVersion("1.14")) >= 0;
+            } catch (IOException x) {
+                Logger.getLogger(NewOptionsIterator.class.getName()).log(Level.INFO, null, x);
+            }
             generateDependencies();
             if (useAnnotations && isAdvancedCategory()) {
                 generatePackageInfo();

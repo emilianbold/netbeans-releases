@@ -50,7 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

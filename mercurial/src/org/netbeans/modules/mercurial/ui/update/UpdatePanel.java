@@ -47,6 +47,7 @@ import java.awt.BorderLayout;
 import java.io.File;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.openide.util.NbBundle;
 
@@ -57,16 +58,23 @@ import org.openide.util.NbBundle;
 public class UpdatePanel extends ChangesetPickerPanel {
 
     private JCheckBox forcedUpdateChxBox;
+    private final HgLogMessage fixedRevision;
 
     /** Creates new form ReverModificationsPanel */
-    public UpdatePanel(File repo) {
+    public UpdatePanel(File repo, HgLogMessage fixedRevision) {
         super(repo, null);
+        this.fixedRevision = fixedRevision;
         initComponents();
         loadRevisions();
     }
 
     public boolean isForcedUpdateRequested() {
         return forcedUpdateChxBox.isSelected();
+    }
+
+    @Override
+    protected HgLogMessage getDisplayedRevision () {
+        return fixedRevision;
     }
 
     @Override

@@ -273,7 +273,7 @@ public class BaseTextUI extends BasicTextUI implements
             return;
         }
 
-        if (getComponent() != null) {
+        if ((getComponent() != null) && getComponent().getDocument() != null) {
             super.uninstallUI(c);
         }
 

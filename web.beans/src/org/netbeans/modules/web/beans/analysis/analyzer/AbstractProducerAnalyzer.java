@@ -50,8 +50,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 
 
 /**
@@ -61,19 +60,19 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public abstract class AbstractProducerAnalyzer {
     
     protected abstract void hasTypeVar( Element element, TypeMirror type,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions);
+            CdiAnalysisResult result );
     
     protected abstract void hasWildCard(Element element, TypeMirror type,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions);
+            CdiAnalysisResult result);
     
     protected void checkType( Element element, TypeMirror type,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result )
     {
         if ( type.getKind() == TypeKind.TYPEVAR ){
-            hasTypeVar(element, type, compInfo, descriptions);
+            hasTypeVar(element, type, result );
         }
         else if (hasWildCard(type)) {
-            hasWildCard( element, type, compInfo, descriptions);
+            hasWildCard( element, type, result );
             return;
         }
     }

@@ -50,7 +50,7 @@
 
 package org.netbeans.modules.css.editor.ui;
 
-import org.netbeans.modules.css.editor.model.HtmlTags;
+import org.netbeans.modules.css.editor.HtmlTags;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;

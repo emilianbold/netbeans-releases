@@ -51,6 +51,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.GapList;
@@ -58,6 +59,8 @@ import org.netbeans.lib.editor.util.GapList;
 
 /**
  * Information about line wrapping that may be attached to {@link ParagraphViewChildren}.
+ * <br/>
+ * Wrapping uses constant wrap line height - children height from {@link ParagraphViewChildren}.
  * 
  * @author Miloslav Metelka
  */
@@ -69,41 +72,58 @@ final class WrapInfo extends GapList<WrapLine> {
 
     private static final long serialVersionUID  = 0L;
 
-    double childrenWidth; // 32 bytes = 24-super + 8
+    /**
+     */
+    float width; // 24 + 4 = 28 bytes
+    
+    /**
+     * Updater in case the update was not finished yet due to lazy operation.
+     */
+    WrapInfoUpdater updater; // 28 + 4 = 32 bytes
 
-    float childrenHeight; // 36 bytes = 32 + 4
-
-    WrapInfo(double childrenWidth, float childrenHeight) {
+    WrapInfo() {
         super(2);
-        this.childrenWidth = childrenWidth;
-        this.childrenHeight = childrenHeight;
     }
     
     int wrapLineCount() {
         return size();
     }
 
-    float preferredHeight() {
-        return size() * childrenHeight;
+    float wrapLineHeight(ParagraphViewChildren children) {
+        return children.childrenHeight();
+    }
+    
+    float height(ParagraphViewChildren children) {
+        return size() * wrapLineHeight(children);
+    }
+    
+    float width() {
+        return width;
+    }
+    
+    void setWidth(float width) {
+        this.width = width;
     }
 
-    void paintWrapLines(ParagraphViewChildren children, ParagraphView paragraphView,
+    void paintWrapLines(ParagraphViewChildren children, ParagraphView pView,
             int startIndex, int endIndex,
             Graphics2D g, Shape alloc, Rectangle clipBounds)
     {
-        DocumentView docView = paragraphView.getDocumentView();
+        DocumentView docView = pView.getDocumentView();
         if (docView == null) { // Not paint unless connected to hierarchy
             return;
         }
+        JTextComponent textComponent = docView.getTextComponent();
         TextLayout lineContinuationTextLayout = docView.getLineContinuationCharTextLayout();
         Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
+        float wrapLineHeight = wrapLineHeight(children);
         double allocOrigX = allocBounds.x;
-        allocBounds.y += startIndex * childrenHeight;
-        allocBounds.height = childrenHeight; // Stays for whole rendering
+        allocBounds.y += startIndex * wrapLineHeight;
+        allocBounds.height = wrapLineHeight; // Stays for whole rendering
         int lastWrapLineIndex = size() - 1;
         for (int i = startIndex; i < endIndex; i++) {
             WrapLine wrapLine = get(i);
-            EditorView startViewPart = wrapLine.startViewPart;
+            EditorView startViewPart = wrapLine.startPart;
             if (startViewPart != null) {
                 // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
                 float width = startViewPart.getPreferredSpan(View.X_AXIS);
@@ -112,36 +132,36 @@ final class WrapInfo extends GapList<WrapLine> {
                 allocBounds.x += width;
             }
             if (wrapLine.hasFullViews()) { // Render the views
-                double visualOffset = paragraphView.getViewVisualOffset(wrapLine.startViewIndex);
+                double visualOffset = children.startVisualOffset(wrapLine.firstViewIndex);
                 assert (wrapLine.endViewIndex <= children.size()) : "Invalid for endViewIndex=" + // NOI18N
                         wrapLine.endViewIndex + ", wrapInfo:\n" + // NOI18N
-                        this.toString(paragraphView) + "\nParagraphView:\n" + paragraphView; // NOI18N
+                        this.toString(pView) + "\nParagraphView:\n" + pView; // NOI18N
                 // Simulate start x for children rendering
                 allocBounds.x -= visualOffset;
-                children.paintChildren(paragraphView, g, allocBounds, clipBounds,
-                        wrapLine.startViewIndex, wrapLine.endViewIndex);
-                allocBounds.x += paragraphView.getViewVisualOffset(wrapLine.endViewIndex);
+                children.paintChildren(pView, g, allocBounds, clipBounds,
+                        wrapLine.firstViewIndex, wrapLine.endViewIndex);
+                allocBounds.x += children.startVisualOffset(wrapLine.endViewIndex);
             }
-            EditorView endViewPart = wrapLine.endViewPart;
+            EditorView endViewPart = wrapLine.endPart;
             if (endViewPart != null) {
                 // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-                float width = endViewPart.getPreferredSpan(View.X_AXIS);
-                allocBounds.width = width;
+                float endPartWidth = endViewPart.getPreferredSpan(View.X_AXIS);
+                allocBounds.width = endPartWidth;
                 endViewPart.paint(g, allocBounds, clipBounds);
-                allocBounds.x += width;
+                allocBounds.x += endPartWidth;
             }
             // Paint wrap mark
             if (i != lastWrapLineIndex) { // but not on last wrap line
                 PaintState paintState = PaintState.save(g);
                 try {
-                    HighlightsViewUtils.paintForeground(g, allocBounds, lineContinuationTextLayout,
-                            paragraphView.getAttributes(), docView);
+                    ViewUtils.applyForegroundColor(g, null, textComponent);
+                    HighlightsViewUtils.paintTextLayout(g, allocBounds, lineContinuationTextLayout, docView);
                 } finally {
                     paintState.restore();
                 }
             }
             allocBounds.x = allocOrigX;
-            allocBounds.y += childrenHeight;
+            allocBounds.y += wrapLineHeight;
         }
     }
 
@@ -167,7 +187,7 @@ final class WrapInfo extends GapList<WrapLine> {
         int lastOffset = paragraphView.getStartOffset();
         for (int i = 0; i < size(); i++) {
             WrapLine wrapLine = get(i);
-            EditorView startViewPart = wrapLine.startViewPart;
+            EditorView startViewPart = wrapLine.startPart;
             boolean nonEmptyLine = false;
             if (startViewPart != null) {
                 nonEmptyLine = true;
@@ -177,7 +197,7 @@ final class WrapInfo extends GapList<WrapLine> {
                 }
                 lastOffset = startViewPart.getEndOffset();
             }
-            int startViewIndex = wrapLine.startViewIndex;
+            int startViewIndex = wrapLine.firstViewIndex;
             int endViewIndex = wrapLine.endViewIndex;
             if (startViewIndex != endViewIndex) {
                 nonEmptyLine = true;
@@ -210,7 +230,7 @@ final class WrapInfo extends GapList<WrapLine> {
                     lastOffset = childView.getEndOffset();
                 }
             }
-            EditorView endViewPart = wrapLine.endViewPart;
+            EditorView endViewPart = wrapLine.endPart;
             if (endViewPart != null) {
                 nonEmptyLine = true;
                 if (err == null && lastOffset != endViewPart.getStartOffset()) {
@@ -234,26 +254,15 @@ final class WrapInfo extends GapList<WrapLine> {
         return err;
     }
 
-    String dumpWrapLine(EditorBoxView boxView, int wrapLineIndex) {
-        return "Invalid wrapLine["  + wrapLineIndex + "]:\n" + toString((ParagraphView)boxView); // NOI18N
+    String dumpWrapLine(ParagraphView pView, int wrapLineIndex) {
+        return "Invalid wrapLine["  + wrapLineIndex + "]:\n" + toString((ParagraphView)pView); // NOI18N
     }
 
     public String appendInfo(StringBuilder sb, ParagraphView paragraphView, int indent) { // Expected to append newline at end
         sb.append("\n"); // NOI18N
-        ArrayUtilities.appendSpaces(sb, indent);
-        sb.append("childrenSpan:[").append(childrenWidth); // NOI18N
-        sb.append(",").append(childrenHeight); // NOI18N
-        sb.append("], realSpan:["); // NOI18N
-        if (paragraphView != null) {
-            sb.append(paragraphView.getMajorAxisSpan()).append(","); // NOI18N
-            sb.append(paragraphView.getMinorAxisSpan());
-        } else {
-            sb.append("<NULL>"); // NOI18N
-        }
-        sb.append("]");
         DocumentView docView;
         if (paragraphView != null && ((docView = paragraphView.getDocumentView()) != null)) {
-            float visibleWidth = docView.getVisibleWidth();
+            float visibleWidth = docView.getVisibleRect().width;
             sb.append(" visibleWidth=").append(visibleWidth); // NOI18N
         }
         int wrapLineCount = size();
@@ -264,15 +273,15 @@ final class WrapInfo extends GapList<WrapLine> {
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             WrapLine wrapLine = get(i);
             sb.append("SV:"); // NOI18N
-            EditorView startViewPart = wrapLine.startViewPart;
+            EditorView startViewPart = wrapLine.startPart;
             if (startViewPart != null) {
                 sb.append("<").append(startViewPart.getStartOffset()).append(","); // NOI18N
                 sb.append(startViewPart.getEndOffset()).append(">"); // NOI18N
             } else {
                 sb.append("NULL"); // NOI18N
             }
-            sb.append("; x=").append(wrapLine.startViewX); // NOI18N
-            int startViewIndex = wrapLine.startViewIndex;
+            sb.append("; x=").append(wrapLine.firstViewX); // NOI18N
+            int startViewIndex = wrapLine.firstViewIndex;
             int endViewIndex = wrapLine.endViewIndex;
             sb.append(" [").append(startViewIndex).append(","); // NOI18N
             sb.append(endViewIndex).append("] "); // NOI18N
@@ -293,7 +302,7 @@ final class WrapInfo extends GapList<WrapLine> {
                 }
             }
             sb.append("EV:"); // NOI18N
-            EditorView endViewPart = wrapLine.endViewPart;
+            EditorView endViewPart = wrapLine.endPart;
             if (endViewPart != null) {
                 sb.append("<").append(endViewPart.getStartOffset()).append(","); // NOI18N
                 sb.append(endViewPart.getEndOffset()).append(">"); // NOI18N

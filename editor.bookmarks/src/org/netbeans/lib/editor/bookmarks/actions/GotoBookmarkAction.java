@@ -45,10 +45,12 @@
 package org.netbeans.lib.editor.bookmarks.actions;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
@@ -107,8 +109,22 @@ public final class GotoBookmarkAction extends BaseAction {
                 ? "org/netbeans/modules/editor/bookmarks/resources/next_bookmark.png" // NOI18N
                 : "org/netbeans/modules/editor/bookmarks/resources/previous_bookmark.png" // NOI18N
         );
+        
+        updateEnabled();
+        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateEnabled();
+            }
+        });
     }
 
+    private void updateEnabled() {
+        setEnabled(EditorRegistry.lastFocusedComponent() != null);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             Caret caret = target.getCaret();
@@ -128,6 +144,7 @@ public final class GotoBookmarkAction extends BaseAction {
         }
     }
 
+    @Override
     protected Object getDefaultShortDescription() {
         return NbBundle.getBundle(GotoBookmarkAction.class).getString(
                 (String)getValue(Action.NAME));

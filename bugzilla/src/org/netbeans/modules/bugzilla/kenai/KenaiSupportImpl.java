@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 
 /**
@@ -155,5 +156,10 @@ public class KenaiSupportImpl extends KenaiSupport {
         }
     }
 
+    @Override
+    public Repository findNBRepository() {
+        return NBBugzillaUtils.findNBRepository();
+    }
+    
 }
 

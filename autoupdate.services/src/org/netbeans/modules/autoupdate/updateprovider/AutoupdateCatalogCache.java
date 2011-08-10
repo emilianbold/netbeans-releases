@@ -55,7 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.openide.modules.Places;
 
 /**
  *
@@ -85,15 +85,7 @@ public final class AutoupdateCatalogCache {
     
     private void initCacheDirectory () {
         assert cacheDir == null : "Do initCacheDirectory only once!";
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
-        } else {
-            File dir = FileUtil.toFile (FileUtil.getConfigRoot());
-            assert dir != null : "Provide netbeans.user so we know where to store catalogcache!";
-            cacheDir = new File(dir, "catalogcache"); // NOI18N
-        }
-        cacheDir.mkdirs();
+        cacheDir = Places.getCacheSubdirectory("catalogcache"); // NOI18N
         getLicenseDir().mkdirs();
         err.log (Level.FINE, "getCacheDirectory: {0}", cacheDir.getPath ());
         return;

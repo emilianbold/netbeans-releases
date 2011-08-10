@@ -1,10 +1,10 @@
 Find All SubTypes of <b>class FindSubtype</b> [5 occurrences]
     RefactoringTest
         Subtype1.java
-            <font color=#0000e6>public</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>Subtype1</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font>
+            <font color=#0000e6>public</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>Subtype1</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font><font color=#000000>{</font>
         Subtype2.java
-            <font color=#0000e6>class</font>&nbsp;<b>InnerClass</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font>&nbsp;
-            <font color=#000000>Object</font>&nbsp;<font color=#000000>o</font>&nbsp;<font color=#000000>=</font>&nbsp;<font color=#0000e6>new</font>&nbsp;<font color=#000000>FindSubtype</font><font color=#000000>(</font><font color=#000000>)</font>&nbsp;<b></b>
-            <font color=#0000e6>class</font>&nbsp;<b>TopLevel</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font>&nbsp;
+            <font color=#0000e6>class</font>&nbsp;<b>InnerClass</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font>&nbsp;<font color=#000000>{</font>
+            <font color=#000000>Object</font>&nbsp;<font color=#000000>o</font>&nbsp;<font color=#000000>=</font>&nbsp;<font color=#0000e6>new</font>&nbsp;<b>FindSubtype</b><font color=#000000>(</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+            <font color=#0000e6>class</font>&nbsp;<b>TopLevel</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>FindSubtype</font>&nbsp;<font color=#000000>{</font>
         SubtypeC.java
-            <font color=#0000e6>public</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>SubtypeC</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>Subtype1</font>&nbsp;
+            <font color=#0000e6>public</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>SubtypeC</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#000000>Subtype1</font>&nbsp;<font color=#000000>{</font>

@@ -64,12 +64,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -83,12 +83,17 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Action permitting selection of a configuration for the main project.
  * @author Greg Crawley, Adam Sotona, Jesse Glick
  */
+@ActionID(id="org.netbeans.modules.project.ui.actions.ActiveConfigAction", category="Project")
+@ActionRegistration(displayName="#ActiveConfigAction.label")
+@ActionReferences({
+    @ActionReference(path="Menu/BuildProject", position=300),
+    @ActionReference(path="Toolbars/Build", position=80)
+})
 public class ActiveConfigAction extends CallableSystemAction implements LookupListener, PropertyChangeListener, ContextAwareAction {
 
     private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
@@ -184,8 +189,6 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         Lookup.Result<DataObject> resultDO = lookup.lookupResult(DataObject.class);
         resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
         resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
-
-        DynLayer.INSTANCE.setEnabled(true);
         refreshView(lookup);
     }
 
@@ -279,42 +282,6 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         // XXX top inset of 2 looks better w/ small toolbar, but 1 seems to look better for large toolbar (the default):
         toolbarPanel.add(configListCombo, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(1, 6, 1, 5), 0, 0));
         return toolbarPanel;
-    }
-
-    /**
-     * Dynamically inserts or removes the action from the toolbar.
-     */
-    @ServiceProvider(service=FileSystem.class)
-    public static final class DynLayer extends MultiFileSystem {
-
-        static DynLayer INSTANCE;
-
-        private final FileSystem fragment;
-
-        /**
-         * Default constructor for lookup.
-         */
-        @SuppressWarnings("LeakingThisInConstructor")
-        public DynLayer() {
-            INSTANCE = this;
-            fragment = FileUtil.createMemoryFileSystem();
-            try {
-                FileObject f = FileUtil.createData(fragment.getRoot(), "Toolbars/Build/org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow"); // NOI18N
-                f.setAttribute("originalFile", "Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"); // NOI18N
-                f.setAttribute("position", 80); // NOI18N
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-        }
-
-        void setEnabled(boolean enabled) {
-            if (enabled) {
-                setDelegates(fragment);
-            } else {
-                setDelegates();
-            }
-        }
-
     }
 
     class ConfigMenu extends JMenu implements DynamicMenuContent, ActionListener {

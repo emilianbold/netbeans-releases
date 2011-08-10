@@ -212,7 +212,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     boolean valid( WizardDescriptor wizardDescriptor ) {
         
-        if ( projectNameTextField.getText().length() == 0 ) {
+        if (isIllegalName(projectNameTextField.getText())) {
             wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
@@ -413,6 +413,16 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         } catch (IOException e) {
             return null;
         }
+    }
+
+    static boolean isIllegalName(final String name) {
+        return name.length() == 0      || 
+            name.indexOf('/')  >= 0 ||        //NOI18N
+            name.indexOf('\\') >= 0 ||        //NOI18N
+            name.indexOf(':')  >= 0 ||        //NOI18N
+            name.indexOf("\"") >= 0 ||        //NOI18N
+            name.indexOf('<')  >= 0 ||        //NOI18N
+            name.indexOf('>')  >= 0;          //NOI18N
     }
 
 }

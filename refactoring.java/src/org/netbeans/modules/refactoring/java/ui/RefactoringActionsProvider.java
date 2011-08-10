@@ -698,6 +698,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             }
         }
         
+        public TreePathHandleTask(TreePathHandle tph) {
+            handles.add(tph);
+        }
+        
         @Override
         public void cancel() {
         }

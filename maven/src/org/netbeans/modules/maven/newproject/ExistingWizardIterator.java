@@ -47,18 +47,13 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -113,7 +108,7 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
     }
     
     private void tryOpenProject() {
-        final Action act = findAction("Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"); //NOI18N
+        final Action act = FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance", Action.class); //NOI18N
         if (act != null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -122,30 +117,6 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
             });
         }
     }
-    
-    public static Action findAction( String key ) {
-        FileObject fo = FileUtil.getConfigFile(key);
-        
-        if (fo != null && fo.isValid()) {
-            try {
-                DataObject dob = DataObject.find(fo);
-                InstanceCookie ic = dob.getCookie(InstanceCookie.class);
-                
-                if (ic != null) {
-                    Object instance = ic.instanceCreate();
-                    if (instance instanceof Action) {
-                        Action a = (Action) instance;
-                        return a;
-                    }
-                }
-            } catch (Exception e) {
-                Logger.getLogger(ExistingWizardIterator.class.getName()).log(Level.WARNING, e.getMessage(), e);
-                return null;
-            }
-        }
-        return null;
-    }
-    
     
     public void initialize(WizardDescriptor wiz) {
         index = 0;

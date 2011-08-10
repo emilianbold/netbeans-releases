@@ -56,11 +56,10 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -73,27 +72,23 @@ public class TypedMethodAnalyzer extends AbstractTypedAnalyzer implements
 {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions, AtomicBoolean cancel )
+            TypeElement parent, AtomicBoolean cancel , CdiAnalysisResult result )
     {
-        analyze(element, returnType, compInfo, descriptions, cancel );
+        analyze(element, returnType, cancel , result );
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
-    protected void addError( Element element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+    protected void addError( Element element, CdiAnalysisResult result )
     {
-        ErrorDescription description = CdiEditorAnalysisFactory.
-        createError( element, compInfo, NbBundle.getMessage(
-                TypedMethodAnalyzer.class, "ERR_BadRestritedMethodType"));
-        descriptions.add( description ); 
+        result.addError( element, NbBundle.getMessage(
+                TypedMethodAnalyzer.class, "ERR_BadRestritedMethodType"));  // NOI18N
     }
 
     /* (non-Javadoc)
@@ -107,13 +102,13 @@ public class TypedMethodAnalyzer extends AbstractTypedAnalyzer implements
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     protected void checkSpecializes( Element element, TypeMirror elementType,
-            List<TypeMirror> restrictedTypes, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions, AtomicBoolean cancel )
+            List<TypeMirror> restrictedTypes, AtomicBoolean cancel , CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 compInfo))
         {
@@ -145,20 +140,16 @@ public class TypedMethodAnalyzer extends AbstractTypedAnalyzer implements
             if (!hasUnrestrictedOverridenType(elementType, 
                     restrictedTypes, compInfo,overriddenMethod, superClass) )
             {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, NbBundle.getMessage(
+                result.addError( element, NbBundle.getMessage(
                             TypedMethodAnalyzer.class, "ERR_BadSpecializesMethod"));  // NOI18N 
-                descriptions.add( description ); 
             }
         }
         else { 
             if (!hasRestrictedType(elementType, restrictedTypes, compInfo,
                     restrictedSuper))
             {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, NbBundle.getMessage(
+                result.addError( element,  NbBundle.getMessage(
                             TypedMethodAnalyzer.class, "ERR_BadSpecializesMethod"));  // NOI18N 
-                descriptions.add( description );
             }
         }
     }

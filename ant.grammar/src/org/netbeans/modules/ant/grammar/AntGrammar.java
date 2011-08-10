@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.ant.grammar;
 
+import java.io.IOException;
+import java.net.URL;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,11 +61,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarResult;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.netbeans.modules.xml.spi.dom.AbstractNode;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
+import org.openide.util.Lookup;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -383,9 +389,35 @@ class AntGrammar implements GrammarQuery {
         String prefix = ctx.getCurrentPrefix();
 
         List<GrammarResult> list = new ArrayList<GrammarResult>();
-        for (String element : elements) {
+        for (final String element : elements) {
             if (element.startsWith(prefix)) {
-                list.add (new MyElement(element));
+                switch (type.kind) {
+                case PROJECT:
+                case TARGET:
+                    list.add(new MyElement(element) {
+                        @Override public String getDescription() {
+                            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+                            URL manpage = cl.getResource("org/apache/tools/ant/module/docs/ant-docs/Tasks/" + element + ".html");
+                            if (manpage == null) {
+                                manpage = cl.getResource("org/apache/tools/ant/module/docs/ant-docs/Types/" + element + ".html");
+                            }
+                            if (manpage != null) {
+                                FileObject f = URLMapper.findFileObject(manpage);
+                                if (f != null) {
+                                    try {
+                                        return new String(f.asBytes(), FileEncodingQuery.getEncoding(f));
+                                    } catch (IOException x) {
+                                        LOG.log(Level.INFO, "Could not load " + manpage, x);
+                                    }
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                    break;
+                default:
+                    list.add(new MyElement(element));
+                }
             }
         }
 
@@ -615,11 +647,11 @@ class AntGrammar implements GrammarQuery {
             } else if (p.getNodeType() == Node.ELEMENT_NODE) {
                 parent = (Element)p;
             } else {
-                System.err.println("strange parent of text node: " + p.getNodeType() + " " + p);
+                LOG.log(Level.WARNING, "strange parent of text node: {0} {1}", new Object[] {p.getNodeType(), p});
                 return new String[0];
             }
         } else {
-            System.err.println("strange context type: " + ctx.getNodeType() + " " + ctx);
+            LOG.log(Level.WARNING, "strange context type: {0} {1}", new Object[] {ctx.getNodeType(), ctx});
             return new String[0];
         }
         while (parent.getParentNode() != null && parent.getParentNode().getNodeType() == Node.ELEMENT_NODE) {

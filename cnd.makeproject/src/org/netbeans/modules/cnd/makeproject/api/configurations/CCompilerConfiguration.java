@@ -52,6 +52,9 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
+import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -201,12 +204,13 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     }
 
     // Sheet
-    public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
+    public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder, Item item) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         AbstractCompiler cCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
         
-        sheet.put(getSet());
+        Sheet.Set set0 = getSet();
+        sheet.put(set0);
         if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
             if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
@@ -242,6 +246,20 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
             }
             sheet.put(set2);
         
+        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item != null && cCompiler != null) {
+            AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+            if (options != null) {
+                String compileLine = options.getAllOptions(cCompiler);
+                if (compileLine != null) {
+                    int hasPath = compileLine.indexOf('#');
+                    if (hasPath >= 0) {
+                        set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine.substring(hasPath+1)));
+                        set0.put(new StringRONodeProp(getString("CompileFolderTxt"), getString("CompileFolderHint"), compileLine.substring(0, hasPath)));
+                    } else {
+                        set0.put(new StringRONodeProp(getString("CommandLineTxt"), getString("CommandLineHint"), compileLine.substring(hasPath)));
+                    }
+                }
+            }
         }
         
         return sheet;
@@ -251,4 +269,24 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
     private static String getString(String s) {
         return NbBundle.getMessage(CCompilerConfiguration.class, s);
     }
+
+    private static class StringRONodeProp extends PropertySupport<String> {
+
+        private String value;
+
+        public StringRONodeProp(String name, String description, String value) {
+            super(name, String.class, name, name, true, false);
+            this.value = value;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public void setValue(String v) {
+        }
+    }
+
 }

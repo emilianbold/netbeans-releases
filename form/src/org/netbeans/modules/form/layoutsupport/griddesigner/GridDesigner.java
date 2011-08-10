@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -72,9 +71,13 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.OverlayLayout;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.SpinnerNumberModel;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormLAF;
 import org.netbeans.modules.form.FormLoaderSettings;
@@ -88,6 +91,8 @@ import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AddGapsAction;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.RemoveGapsAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DesignContainerAction;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -101,6 +106,7 @@ import org.openide.util.actions.SystemAction;
  * Grid designer.
  *
  * @author Jan Stola
+ * @author Petr Somol
  */
 public class GridDesigner extends JPanel {
     /** Color of the selection. */
@@ -113,11 +119,30 @@ public class GridDesigner extends JPanel {
     private GlassPane glassPane;
     /** Replicator used to clone components for the designer. */
     private VisualReplicator replicator;
+    /** GridManager. */
+    private GridManager gridManager;
     /** Property sheet. */
     private PropertySheet sheet;
     /** Grid customizer (part of the panel on the left side). */
     private GridCustomizer customizer;
-
+    
+    /** Default gap column width */
+    private static final int DEFAULT_GAP_WIDTH = 5;
+    /** Default gap row height */
+    private static final int DEFAULT_GAP_HEIGHT = 5;
+    /** Spinner allowing to set gap width if gap support is enabled. */
+    private JSpinner gapWidthSpinner;
+    /** Spinner allowing to set gap Height if gap support is enabled. */
+    private JSpinner gapHeightSpinner;
+    /** gapWidthSpinner icon label. */
+    private JLabel gapWidthSpinnerLabel;
+    /** gapHeightSpinner icon label. */
+    private JLabel gapHeightSpinnerLabel;
+    /** gapWidthSpinner rigid area. */
+    private Component gapWidthSpinnerBox;
+    /** gapHeightSpinner rigid area. */
+    private Component gapHeightSpinnerBox;
+    
     /**
      * Sets the designer container.
      * 
@@ -145,8 +170,27 @@ public class GridDesigner extends JPanel {
         support.reset(glassPane);
         toolBar.add(initUndoRedoButton(toolBar.add(support.getRedoAction())));
         toolBar.add(initUndoRedoButton(toolBar.add(support.getUndoAction())));
-        JToggleButton padButton = initPaddingButton();
+        toolBar.add(Box.createRigidArea(new Dimension(15,10)));
+
+        JToggleButton gapButton = initGapButton();
+        toolBar.add(gapButton);
         toolBar.add(Box.createRigidArea(new Dimension(10,10)));
+        gapWidthSpinnerLabel = new JLabel();
+        gapWidthSpinnerLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gap_width.png", false)); // NOI18N
+        toolBar.add(gapWidthSpinnerLabel);
+        gapWidthSpinner = initGapWidthSpinner();
+        toolBar.add(gapWidthSpinner);
+        gapWidthSpinnerBox = Box.createRigidArea(new Dimension(5,10));
+        toolBar.add(gapWidthSpinnerBox);
+        gapHeightSpinnerLabel = new JLabel();
+        gapHeightSpinnerLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gap_height.png", false)); // NOI18N
+        toolBar.add(gapHeightSpinnerLabel);
+        gapHeightSpinner = initGapHeightSpinner();
+        toolBar.add(gapHeightSpinner);
+        gapHeightSpinnerBox = Box.createRigidArea(new Dimension(15,10));
+        toolBar.add(gapHeightSpinnerBox);
+        
+        JToggleButton padButton = initPaddingButton();
         toolBar.add(padButton);
         toolBar.add(Box.createRigidArea(new Dimension(10,10)));
         initPreviewButton(toolBar, metaContainer);
@@ -202,8 +246,23 @@ public class GridDesigner extends JPanel {
         fakePeerContainer.setFont(FakePeerSupport.getDefaultAWTFont());
         fakePeerContainer.add(mainPanel);
         innerPane.add(fakePeerContainer);
-    }
-
+        
+        boolean gapSupport = gridManager.getGridInfo().hasGaps();
+        updateGapProperties(gapSupport);
+        gapButton.setSelected(gapSupport);
+        gapWidthSpinner.setEnabled(gapSupport);
+        gapHeightSpinner.setEnabled(gapSupport);
+        gapWidthSpinnerLabel.setEnabled(gapSupport);
+        gapHeightSpinnerLabel.setEnabled(gapSupport);
+        gapWidthSpinnerBox.setEnabled(gapSupport);
+        gapHeightSpinnerBox.setEnabled(gapSupport);
+        if(gapSupport) {
+            gapButton.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapSupportDisable")); // NOI18N
+        } else {
+            gapButton.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapSupportEnable")); // NOI18N
+        }
+}
+ 
     /**
      * Configures the appropriate {@code GridManager}.
      */
@@ -212,12 +271,46 @@ public class GridDesigner extends JPanel {
         Object bean = replicator.getClonedComponent(metacont);
         Container container = metacont.getContainerDelegate(bean);
         LayoutManager layout = container.getLayout();
-        GridManager gridManager = null;
+        gridManager = null;
         if (layout instanceof GridBagLayout) {
             gridManager = new GridBagManager(replicator);
         }
         glassPane.setGridManager(gridManager);
         customizer = gridManager.getCustomizer(glassPane);
+    }
+
+    /**
+     * Updates or initializes gap related settings.
+     */
+    private void updateGapProperties(boolean gapSupport) {
+        if(gapSupport) {
+            int gapWidth = gridManager.getGridInfo().getGapWidth();
+            int gapHeight = gridManager.getGridInfo().getGapHeight();
+            if(gapWidth < 0) {
+                gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+            }
+            if(gapHeight < 0) {
+                gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+            }
+            if(gapWidth < 0) {
+                gapWidth = (Integer)gapWidthSpinner.getValue();
+            }
+            if(gapHeight < 0) {
+                gapHeight = (Integer)gapHeightSpinner.getValue();
+            }
+            FormLoaderSettings.getInstance().setGapWidth(gapWidth);
+            FormLoaderSettings.getInstance().setGapHeight(gapHeight);
+            gridManager.updateGaps(true);
+            gapWidthSpinner.setValue(gapWidth);
+            gapHeightSpinner.setValue(gapHeight);
+        } else {
+            if(FormLoaderSettings.getInstance().getGapWidth() < 0) {
+                FormLoaderSettings.getInstance().setGapWidth(DEFAULT_GAP_WIDTH);
+            }
+            if(FormLoaderSettings.getInstance().getGapHeight() < 0) {
+                FormLoaderSettings.getInstance().setGapHeight(DEFAULT_GAP_HEIGHT);
+            }
+        }
     }
 
     /**
@@ -241,6 +334,94 @@ public class GridDesigner extends JPanel {
     }
 
     /**
+     * Creates and initializes "enable gap support" button.
+     * 
+     * @return "enable gap support" button.
+     */
+    private JToggleButton initGapButton() {
+        JToggleButton button = new JToggleButton();
+        ImageIcon image = ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/gaps.png", false); // NOI18N
+        button.setIcon(image);
+        button.setFocusPainted(false);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean gapSupport = ((JToggleButton)e.getSource()).isSelected();
+                gapWidthSpinner.setEnabled(gapSupport);
+                gapHeightSpinner.setEnabled(gapSupport);
+                gapWidthSpinnerLabel.setEnabled(gapSupport);
+                gapHeightSpinnerLabel.setEnabled(gapSupport);
+                gapWidthSpinnerBox.setEnabled(gapSupport);
+                gapHeightSpinnerBox.setEnabled(gapSupport);
+                if(gapSupport) {
+                    assert !gridManager.getGridInfo().hasGaps();
+                    ((JToggleButton)e.getSource()).setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapSupportDisable")); // NOI18N
+                    int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+                    int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+                    gapWidthSpinner.setValue(gapWidth);
+                    gapHeightSpinner.setValue(gapHeight);
+                    glassPane.performAction(new AddGapsAction());
+                } else {
+                    assert gridManager.getGridInfo().hasGaps();
+                    ((JToggleButton)e.getSource()).setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapSupportEnable")); // NOI18N
+                    glassPane.performAction(new RemoveGapsAction());
+                }
+            }
+        });
+        return button;
+    }
+    
+    /**
+     * Creates and initializes spinner allowing gap column width modification.
+     * 
+     * @return "gap column width" spinner.
+     */
+    private JSpinner initGapWidthSpinner() {
+        SpinnerNumberModel gapWidthModel = new SpinnerNumberModel(DEFAULT_GAP_WIDTH, 0, 100, 1);
+        JSpinner spinner = new JSpinner(gapWidthModel);
+        spinner.setEditor(new JSpinner.NumberEditor(spinner));
+        spinner.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapColumnSpinner")); // NOI18N
+        Dimension labelPrefSize = new JLabel("999").getPreferredSize();
+        Dimension spinnerMinSize = spinner.getMinimumSize();
+        spinner.setMaximumSize(new Dimension(labelPrefSize.width + spinnerMinSize.width, Short.MAX_VALUE));
+        spinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSpinner spinner = (JSpinner)e.getSource();
+                int gapWidth = (Integer)spinner.getValue();
+                FormLoaderSettings.getInstance().setGapWidth(gapWidth);
+                glassPane.updateLayout();
+            }
+        });
+        return spinner;
+    }
+    
+    /**
+     * Creates and initializes spinner allowing gap row height modification.
+     * 
+     * @return "gap row height" spinner.
+     */
+    private JSpinner initGapHeightSpinner() {
+        SpinnerNumberModel gapHeightModel = new SpinnerNumberModel(DEFAULT_GAP_HEIGHT, 0, 100, 1);
+        JSpinner spinner = new JSpinner(gapHeightModel);
+        spinner.setEditor(new JSpinner.NumberEditor(spinner));
+        spinner.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.gapRowSpinner")); // NOI18N
+        Dimension labelPrefSize = new JLabel("999").getPreferredSize();
+        Dimension spinnerMinSize = spinner.getMinimumSize();
+        spinner.setMaximumSize(new Dimension(labelPrefSize.width + spinnerMinSize.width, Short.MAX_VALUE));
+        spinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSpinner spinner = (JSpinner)e.getSource();
+                int gapHeight = (Integer)spinner.getValue();
+                FormLoaderSettings.getInstance().setGapHeight(gapHeight);
+                glassPane.updateLayout();
+            }
+        });
+        return spinner;
+    }
+    
+    /**
      * Creates and initializes "pad empty rows/columns" button.
      * 
      * @return "pad empty rows/columns" button.
@@ -250,15 +431,23 @@ public class GridDesigner extends JPanel {
         ImageIcon image = ImageUtilities.loadImageIcon("org/netbeans/modules/form/layoutsupport/griddesigner/resources/pad_empty.png", false); // NOI18N
         button.setIcon(image);
         button.setFocusPainted(false);
-        button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCells")); // NOI18N
-        Dimension dim = button.getPreferredSize();
-        button.setMaximumSize(new Dimension(dim.width, Short.MAX_VALUE));
-        button.setSelected(FormLoaderSettings.getInstance().getPadEmptyCells());
+        boolean padEmptyCells = FormLoaderSettings.getInstance().getPadEmptyCells();
+        button.setSelected(padEmptyCells);
+        if(padEmptyCells) {
+            button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCellsHide")); // NOI18N
+        } else {
+            button.setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCellsShow")); // NOI18N
+        }
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 boolean padEmptyCells = ((JToggleButton)e.getSource()).isSelected();
                 FormLoaderSettings.getInstance().setPadEmptyCells(padEmptyCells);
+                if(padEmptyCells) {
+                    ((JToggleButton)e.getSource()).setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCellsHide")); // NOI18N
+                } else {
+                    ((JToggleButton)e.getSource()).setToolTipText(NbBundle.getMessage(GridDesigner.class, "GridDesigner.padEmptyCellsShow")); // NOI18N
+                }
                 glassPane.updateLayout();
             }
         });

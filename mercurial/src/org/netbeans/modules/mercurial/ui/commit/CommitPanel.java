@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.mercurial.ui.commit;
 
+import javax.swing.LayoutStyle;
+import javax.swing.Icon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
@@ -53,7 +55,6 @@ import org.netbeans.modules.versioning.util.TemplateSelector;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.Box;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -84,6 +85,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -103,6 +105,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.ImageUtilities;
 import static java.awt.Component.BOTTOM_ALIGNMENT;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
@@ -111,19 +114,20 @@ import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
  * @author  pk97937
  * @author  Marian Petras
  */
-public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, ActionListener {
 
     private final AutoResizingPanel basePanel = new AutoResizingPanel();
     static final Object EVENT_SETTINGS_CHANGED = new Object();
     private static final boolean DEFAULT_DISPLAY_FILES = true;
     private static final boolean DEFAULT_DISPLAY_HOOKS = false;
+    private static final Icon ICON_INFO = ImageUtilities.loadImageIcon("/org/netbeans/modules/mercurial/resources/icons/info.png", true); //NOI18N
 
     final JLabel filesLabel = new JLabel();
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
@@ -138,6 +142,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JTextArea messageTextArea = new JTextArea();
     private final JLabel recentLink = new JLabel();
     private final JLabel templateLink = new JLabel();
+    final JCheckBox cbAllFiles = new JCheckBox();
     
     private CommitTable commitTable;
     private Collection<HgHook> hooks = Collections.emptyList();
@@ -158,6 +163,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     
     void setErrorLabel(String htmlErrorLabel) {
         jLabel2.setText(htmlErrorLabel);
+        jLabel2.setIcon(htmlErrorLabel == null || htmlErrorLabel.isEmpty() ? null : ICON_INFO);
     }    
 
     @Override
@@ -255,9 +261,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         filesSectionPanel2.add(filesLabel);
         filesSectionPanel2.add(makeVerticalStrut(filesLabel, filesPanel, RELATED));
         filesSectionPanel2.add(filesPanel);
+        filesSectionPanel2.add(makeVerticalStrut(filesPanel, cbAllFiles, RELATED));
+        filesSectionPanel2.add(cbAllFiles);
 
         filesLabel.setAlignmentX(LEFT_ALIGNMENT);
         filesPanel.setAlignmentX(LEFT_ALIGNMENT);
+        cbAllFiles.setAlignmentX(LEFT_ALIGNMENT);
     }
 
     private void initHooksPanel() {
@@ -379,7 +388,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         topPanel.add(jLabel1);
         topPanel.add(Box.createHorizontalGlue());
         topPanel.add(recentLink);
-        topPanel.add(makeHorizontalStrut(recentLink, templateLink, RELATED));
+        topPanel.add(makeHorizontalStrut(recentLink, templateLink, LayoutStyle.ComponentPlacement.RELATED));
         topPanel.add(templateLink);
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
@@ -395,19 +404,19 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
         basePanel.setLayout(new BoxLayout(basePanel, Y_AXIS));
         basePanel.add(topPanel);
-        basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
+        basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(jScrollPane1);
-        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
+        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, LayoutStyle.ComponentPlacement.RELATED));
         filesSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesSectionButton.getMaximumSize().height));
         basePanel.add(filesSectionButton);
-        basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
+        basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(filesSectionPanel2);
-        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, RELATED));
+        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, LayoutStyle.ComponentPlacement.RELATED));
         hooksSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, hooksSectionButton.getMaximumSize().height));
         basePanel.add(hooksSectionButton);
-        basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
+        basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(hookSectionPanel);
-        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, RELATED));
+        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
         add(basePanel);
@@ -444,12 +453,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             }
         });
         Spellchecker.register (messageTextArea);
+        cbAllFiles.addActionListener(this);
     }
 
     private Component makeVerticalStrut(JComponent compA,
                                         JComponent compB,
-                                        int relatedUnrelated) {
-        int height = LayoutStyle.getSharedInstance().getPreferredGap(
+                                        LayoutStyle.ComponentPlacement relatedUnrelated) {
+        int height = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
@@ -460,8 +470,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private Component makeHorizontalStrut(JComponent compA,
                                           JComponent compB,
-                                          int relatedUnrelated) {
-        int width = LayoutStyle.getSharedInstance().getPreferredGap(
+                                          LayoutStyle.ComponentPlacement relatedUnrelated) {
+        int width = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
@@ -479,7 +489,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private int getContainerGap(int direction) {
-        return LayoutStyle.getSharedInstance().getContainerGap(this,
+        return LayoutStyle.getInstance().getContainerGap(this,
                                                                direction,
                                                                null);
     }
@@ -501,6 +511,14 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == tabbedPane && tabbedPane.getSelectedComponent() == basePanel) {
             commitTable.setModifiedFiles(new HashSet<File>(getModifiedFiles().keySet()));
+        }
+    }
+
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (e.getSource() == cbAllFiles) {
+            commitTable.setChangesEnabled(!cbAllFiles.isSelected());
+            listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         }
     }
 

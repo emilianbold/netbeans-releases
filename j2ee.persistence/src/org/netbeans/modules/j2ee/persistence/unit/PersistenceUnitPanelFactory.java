@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.InnerPanelFactory;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
@@ -84,14 +85,18 @@ public class PersistenceUnitPanelFactory implements InnerPanelFactory, PropertyC
      * @param key the persistence unit whose associated panel should be retrieved.
      */ 
     public SectionInnerPanel createInnerPanel(Object key) {
-        if (!(key instanceof PersistenceUnit)) {
-            throw new IllegalArgumentException("The given key must be an instance of PersistenceUnit"); //NOI18N
-        }
-        PersistenceUnit punit = (PersistenceUnit) key;
-        PersistenceUnitPanel panel = cache.get(punit);
-        if (panel == null){
-            panel = new PersistenceUnitPanel((SectionView)editor.getContentView(), dObj, punit);
-            cache.put(punit, panel);
+        SectionInnerPanel panel = null;
+        if (key instanceof PersistenceUnit){
+            PersistenceUnit punit = (PersistenceUnit) key;
+            panel = cache.get(punit);
+            if (panel == null){
+                panel = new PersistenceUnitPanel((SectionView)editor.getContentView(), dObj, punit);
+                cache.put(punit, (PersistenceUnitPanel)panel);
+            }
+        } else if(key instanceof PropertiesPanel.PropertiesParamHolder){
+            panel = new PropertiesPanel((SectionView)editor.getContentView(), dObj, (PropertiesPanel.PropertiesParamHolder)key);
+        } else {
+            throw new IllegalArgumentException("The given key must be an instance of PersistenceUnit or PropertiesParamHolder"); //NOI18N
         }
         return panel;
     }

@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.php.api.phpmodule</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -137,6 +146,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.ext4yii.editor</friend>
                 <friend>cz.swiz.netbeans</friend>
                 <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
@@ -149,6 +159,7 @@
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.smarty</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <friend>org.netbeans.modules.php.yii</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
                 <package>org.netbeans.modules.php.api.doc</package>
                 <package>org.netbeans.modules.php.api.editor</package>

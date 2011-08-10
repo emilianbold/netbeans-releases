@@ -47,18 +47,13 @@ package org.netbeans.modules.apisupport.project.layers;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -67,26 +62,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
-import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -104,7 +89,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Task;
 import org.xml.sax.InputSource;
 
@@ -113,7 +97,6 @@ import org.xml.sax.InputSource;
  * @author Jesse Glick
  */
 public class LayerUtils {
-    private static final Collection<FileSystem> EMPTY_FS_COL = new ArrayList<FileSystem>();
     private static final Logger LOG = Logger.getLogger(LayerUtils.class.getName());
 
     private LayerUtils() {}
@@ -471,196 +454,12 @@ public class LayerUtils {
      * @return the effective system filesystem seen by that project
      * @throws IOException if there were problems loading layers, etc.
      * @see "#62257"
+     * @see NbModuleProvider#getEffectiveSystemFilesystem
      */
     public static @NonNull FileSystem getEffectiveSystemFilesystem(Project p) throws IOException {
-        
-            NbModuleProvider.NbModuleType type = Util.getModuleType(p);
-            FileSystem projectLayer = LayerHandle.forProject(p).layer(false);
-
-            if (type == NbModuleProvider.STANDALONE) {
-                Set<File> jars = 
-                        getPlatformJarsForStandaloneProject(p);
-                NbPlatform plaf = getPlatformForProject(p);
-                Collection<FileSystem> platformLayers = getCachedLayers(plaf != null? plaf.getDestDir() : null, jars);
-                return mergeFilesystems(projectLayer, platformLayers);
-            } else if (type == NbModuleProvider.SUITE_COMPONENT) {
-                SuiteProject suite = SuiteUtils.findSuite(p);
-                if (suite == null) {
-                    throw new IOException("Could not load suite for " + p); // NOI18N
-                }
-                List<FileSystem> readOnlyLayers = new ArrayList<FileSystem>();
-                Set<NbModuleProject> modules = SuiteUtils.getSubProjects(suite);
-                for (NbModuleProject sister : modules) {
-                    if (sister == p) {
-                        continue;
-                    }
-                    LayerHandle handle = LayerHandle.forProject(sister);
-                    FileSystem roLayer = handle.layer(false);
-                    if (roLayer != null) {
-                        readOnlyLayers.add(roLayer);
-                    }
-                }
-                NbPlatform plaf = suite.getPlatform(true);
-                Set<File> jars = getPlatformJarsForSuiteComponentProject(suite);
-                readOnlyLayers.addAll(getCachedLayers(plaf != null ? plaf.getDestDir() : null, jars));
-                return mergeFilesystems(projectLayer, readOnlyLayers);
-            } else if (type == NbModuleProvider.NETBEANS_ORG) {
-                //it's safe to cast to NbModuleProject here.
-                NbModuleProject nbprj = p.getLookup().lookup(NbModuleProject.class);
-                Set<NbModuleProject> projects = getProjectsForNetBeansOrgProject(nbprj);
-                List<URL> otherLayerURLs = new ArrayList<URL>();
-                
-                for (NbModuleProject p2 : projects) {
-                    if (p2.getManifest() == null) {
-                        //profiler for example.
-                        continue;
-                    }
-                    ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false, true);
-                    String layer = mm.getLayer();
-                    if (layer != null) {
-                        FileObject src = p2.getSourceDirectory();
-                        if (src != null) {
-                            FileObject layerXml = src.getFileObject(layer);
-                            if (layerXml != null) {
-                                otherLayerURLs.add(layerXml.getURL());
-                            }
-                        }
-                    }
-                    layer = mm.getGeneratedLayer();
-                    if (layer != null) {
-                        File layerXml = new File(nbprj.getClassesDirectory(), layer);
-                        if (layerXml.isFile()) {
-                            otherLayerURLs.add(layerXml.toURI().toURL());
-                        }
-                    }
-                    // TODO cache
-                }
-                XMLFileSystem xfs = new XMLFileSystem();
-                try {
-                    xfs.setXmlUrls(otherLayerURLs.toArray(new URL[otherLayerURLs.size()]));
-                } catch (PropertyVetoException ex) {
-                    assert false : ex;
-                }
-                return mergeFilesystems(projectLayer, Collections.singletonList((FileSystem) xfs));
-            } else {
-                throw new AssertionError(type);
-            }
-    }
-    
-    /**
-     * Returns platform for project with fallback to default platform.
-     * 
-     * @param Project, must contain {@link NbModuleProvider} in lookup.
-     * @return Platform for project
-     */
-    public static @CheckForNull NbPlatform getPlatformForProject(Project project) {
-        NbModuleProvider mod = project.getLookup().lookup(NbModuleProvider.class);
-        NbPlatform platform = null;
-        File platformDir = mod.getActivePlatformLocation();
-        if (platformDir != null) {
-            platform = NbPlatform.getPlatformByDestDir(platformDir);
-        }
-        if (platform == null || !platform.isValid()) {
-            platform = NbPlatform.getDefaultPlatform();
-        }
-        return platform;
-    }
-    
-    public static Set<File> getPlatformJarsForSuiteComponentProject(SuiteProject suite) {
-        try {
-            Set<File> jars = new HashSet<File>();
-            for (ModuleEntry entry : ModuleList.findOrCreateModuleListFromSuite(suite.getProjectDirectoryFile(), null).getAllEntries()) {
-                jars.add(entry.getJarLocation());
-            }
-            return jars;
-        } catch (IOException x) {
-            LOG.log(Level.INFO, null, x);
-            return Collections.emptySet();
-        }
-    }
-    
-    public static Set<NbModuleProject> getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
-        ModuleList list = project.getModuleList();
-        Set<NbModuleProject> projects = new HashSet<NbModuleProject>();
-        projects.add(project);
-        for (ModuleEntry other : list.getAllEntries()) {
-            if (other.getClusterDirectory().getName().equals("extra")) { // NOI18N
-                continue;
-            }
-            File root = other.getSourceLocation();
-            assert root != null : other;
-            FileObject fo = FileUtil.toFileObject(root);
-            if (fo == null) continue;   // #142696, project deleted during scan
-            NbModuleProject p2;
-            try {
-                p2 = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
-            } catch (IOException x) {
-                LOG.log(Level.INFO, "could not load " + fo, x);
-                continue;
-            }
-            if (p2 == null) continue;
-            projects.add(p2);
-        }
-        return projects;
-    }
-    
-    /**
-     * Get the platform JARs associated with a standalone module project.
-     */
-    public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
-        NbPlatform platform = getPlatformForProject(project);
-        if (platform == null) {
-            return Collections.emptySet();
-        }
-        Set<ModuleEntry> entries = platform.getModules();
-        Set<File> jars = new HashSet<File>(entries.size());
-        for (ModuleEntry entry : entries) {
-            jars.add(entry.getJarLocation());
-        }
-        return jars;
-    }
-
-    /**
-     * Returns possibly cached list of filesystems representing the XML layers of the supplied platform module JARs.
-     * If cache is not ready yet, this call blocks until the cache is created.
-     * Layer filesystems are already ordered to handle masked ("_hidden") files correctly.
-     * @param platformJars
-     * @return List of read-only layer filesystems
-     * @throws java.io.IOException
-     */
-    private static Collection<FileSystem> getCachedLayers(File rootDir, final Set<File> platformJars) throws IOException {
-        if (rootDir == null)
-            return EMPTY_FS_COL;
-
-        File[] clusters = rootDir.listFiles(new FileFilter() {
-            public boolean accept(File pathname) {
-                return ClusterUtils.isValidCluster(pathname);
-            }
-        });
-        Collection<FileSystem> cache = PlatformLayersCacheManager.getCache(clusters,
-                new FileFilter() {
-                    public boolean accept(File jar) {
-                        return platformJars.contains(jar);
-                    }
-                });
-        return cache;
-    }
-    
-    /**
-     * Create a merged filesystem from one writable layer (may be null) and some read-only layers.
-     * You should also pass a classpath that can be used to look up resource bundles and icons.
-     */
-    private static @NonNull FileSystem mergeFilesystems(FileSystem writableLayer, Collection<FileSystem> readOnlyLayers) {
-        if (writableLayer == null) {
-            writableLayer = new XMLFileSystem();
-        }
-        final FileSystem[] layers = new FileSystem[readOnlyLayers.size() + 1];
-        layers[0] = writableLayer;
-        Iterator<FileSystem> it = readOnlyLayers.iterator();
-        for (int i = 1; it.hasNext(); i++) {
-            layers[i] = it.next();
-        }
-        return new LayerFileSystem(layers);
+        NbModuleProvider nbm = p.getLookup().lookup(NbModuleProvider.class);
+        assert nbm != null;
+        return nbm.getEffectiveSystemFilesystem();
     }
     
 }

@@ -334,6 +334,9 @@ public class ForkedJavaOverride extends Java {
         }
 
         private synchronized void maybeFlush() {
+            if (ow == null) { // ?? #200365
+                return;
+            }
             try {
                 if (currentLine.size() > 0) {
                     String str = currentLine.toString(encoding);

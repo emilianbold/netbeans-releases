@@ -64,6 +64,7 @@ import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
 import org.netbeans.modules.php.project.connections.sftp.SftpConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,28 +74,37 @@ public final class RemoteConnections {
 
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
-    private static final RemoteConnections INSTANCE = new RemoteConnections();
     // Do not change arbitrary - consult with layer's folder OptionsExport
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
+    private static final List<RemoteConnectionProvider> CONNECTION_PROVIDERS =
+            Arrays.<RemoteConnectionProvider>asList(FtpConnectionProvider.get(), SftpConnectionProvider.get());
+    private static final RemoteConnections INSTANCE = new RemoteConnections();
+
     private final ConfigManager configManager;
     private final DefaultConfigProvider configProvider = new DefaultConfigProvider();
-    RemoteConnectionsPanel panel = null;
+    private final ChangeSupport changeSupport;
 
+    /**
+     * Get remote connections.
+     * <p>
+     * <b>Always return the same instance of {@link RemoteConnections}.</b>
+     * @return singleton instance of {@link RemoteConnections}
+     */
     public static RemoteConnections get() {
         return INSTANCE;
     }
 
     private RemoteConnections() {
         configManager = new ConfigManager(configProvider);
+        changeSupport = new ChangeSupport(this);
     }
 
-    private void initPanel() {
-        if (panel == null) {
-            panel = new RemoteConnectionsPanel(this, configManager);
-        }
+    private RemoteConnectionsPanel createPanel() {
+        RemoteConnectionsPanel panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
+        return panel;
     }
 
     private static Preferences getPreferences() {
@@ -117,11 +127,11 @@ public final class RemoteConnections {
      * @return <code>true</code> if there are changes in remote configurations.
      */
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
-        initPanel();
+        RemoteConnectionsPanel panel = createPanel();
         // original remote configurations
-        List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
+        final List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations(true);
 
-        boolean changed = panel.open(remoteConfiguration);
+        final boolean changed = panel.open(remoteConfiguration);
         if (changed) {
             saveRemoteConnections(remoteConfigurations);
         }
@@ -129,19 +139,23 @@ public final class RemoteConnections {
         configProvider.resetConfigs();
         configManager.reset();
 
+        if (changed) {
+            changeSupport.fireChange();
+        }
+
         return changed;
     }
 
     public void addChangeListener(ChangeListener listener) {
-        configManager.addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        configManager.removeChangeListener(listener);
+        changeSupport.removeChangeListener(listener);
     }
 
     List<RemoteConnectionProvider> getConnectionProviders() {
-        return Arrays.<RemoteConnectionProvider>asList(FtpConnectionProvider.get(), SftpConnectionProvider.get());
+        return CONNECTION_PROVIDERS;
     }
 
     public List<String> getRemoteConnectionTypes() {
@@ -152,10 +166,24 @@ public final class RemoteConnections {
         return Collections.unmodifiableList(names);
     }
 
-    /** Can be null. */
+    /**
+     * Get remote configuration from the given configuration.
+     * @param cfg {@link Configuration} to read data from
+     * @return remote configuration or {@code null} if the given configuration is not accepted by any {@link RemoteConnectionProvider}
+     */
     public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
+        return getRemoteConfiguration(cfg, false);
+    }
+
+    /**
+     * Get remote configuration from the given configuration.
+     * @param cfg {@link Configuration} to read data from
+     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
+     * @return remote configuration or {@code null} if the given configuration is not accepted by any {@link RemoteConnectionProvider}
+     */
+    private RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg, boolean createWithSecrets) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
-            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg);
+            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg, createWithSecrets);
             if (configuration != null) {
                 return configuration;
             }
@@ -188,19 +216,31 @@ public final class RemoteConnections {
     /**
      * Get the ordered list of existing (already defined) {@link RemoteConfiguration remote configurations}.
      * The list is ordered according to configuration's display name (locale-sensitive string comparison).
+     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
      * @return the ordered list of all the existing remote configurations.
      * @see RemoteConfiguration
      */
     public List<RemoteConfiguration> getRemoteConfigurations() {
+        return getRemoteConfigurations(false);
+    }
+
+    /**
+     * Get the ordered list of existing (already defined) {@link RemoteConfiguration remote configurations}.
+     * The list is ordered according to configuration's display name (locale-sensitive string comparison).
+     * @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
+     * @return the ordered list of all the existing remote configurations.
+     * @see RemoteConfiguration
+     */
+    private List<RemoteConfiguration> getRemoteConfigurations(boolean createWithSecrets) {
         // get all the configs
         List<Configuration> configs = getConfigurations();
 
         // convert them to remote connections
         List<RemoteConfiguration> remoteConfigs = new ArrayList<RemoteConfiguration>(configs.size());
         for (Configuration cfg : configs) {
-            RemoteConfiguration configuration = getRemoteConfiguration(cfg);
+            RemoteConfiguration configuration = getRemoteConfiguration(cfg, createWithSecrets);
             if (configuration == null) {
-                // unknown configuration type => create config of unknown type
+                // unknown configuration type => get config of unknown type
                 configuration = UNKNOWN_REMOTE_CONFIGURATION;
             }
             remoteConfigs.add(configuration);
@@ -215,7 +255,7 @@ public final class RemoteConnections {
      */
     public RemoteConfiguration remoteConfigurationForName(String name) {
         assert name != null;
-        for (RemoteConfiguration remoteConfig : getRemoteConfigurations()) {
+        for (RemoteConfiguration remoteConfig : getRemoteConfigurations(false)) {
             if (remoteConfig.getName().equals(name)) {
                 return remoteConfig;
             }
@@ -256,8 +296,8 @@ public final class RemoteConnections {
         return configs;
     }
 
-    private void saveRemoteConnections(List<RemoteConfiguration> originalRemoteConfigurations) {
-        Preferences remoteConnections = getPreferences();
+    private void saveRemoteConnections(List<RemoteConfiguration> remoteConfigurations) {
+        final Preferences remoteConnectionsPreferences = getPreferences();
         for (String name : configManager.configurationNames()) {
             if (name == null) {
                 // default config
@@ -266,9 +306,9 @@ public final class RemoteConnections {
             if (!configManager.exists(name)) {
                 // deleted
                 try {
-                    remoteConnections.node(name).removeNode();
+                    remoteConnectionsPreferences.node(name).removeNode();
                     // remove password from keyring
-                    for (RemoteConfiguration remoteConfiguration : originalRemoteConfigurations) {
+                    for (RemoteConfiguration remoteConfiguration : remoteConfigurations) {
                         if (remoteConfiguration.getName().equals(name)) {
                             remoteConfiguration.notifyDeleted();
                             break;
@@ -281,9 +321,9 @@ public final class RemoteConnections {
                 // add/update
                 Configuration configuration = configManager.configurationFor(name);
                 RemoteConfiguration remoteConfiguration = getRemoteConfiguration(configuration);
-                assert remoteConfiguration != null : configuration.getName();
+                assert remoteConfiguration != null : "No remote configuration for configuration " + configuration.getName();
 
-                Preferences node = remoteConnections.node(name);
+                Preferences node = remoteConnectionsPreferences.node(name);
                 for (String propertyName : configuration.getPropertyNames()) {
                     String value = configuration.getValue(propertyName);
                     if (value == null) {

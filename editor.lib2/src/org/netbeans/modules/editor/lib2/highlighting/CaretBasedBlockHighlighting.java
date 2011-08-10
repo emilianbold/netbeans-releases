@@ -63,9 +63,13 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.lib.editor.util.swing.BlockCompare;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 
 /**
@@ -77,6 +81,8 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
 
     private static final Logger LOG = Logger.getLogger(CaretBasedBlockHighlighting.class.getName());
     
+    private boolean inited;
+    
     private final MimePath mimePath;
     private final JTextComponent component;
     private Caret caret;
@@ -86,9 +92,13 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     private final boolean extendsEOL;
     private final boolean extendsEmptyLine;
     
-    private Position currentLineStart;
-    private Position currentLineEnd;
+    private Position currentBlockStart;
+    private Position currentBlockEnd;
     
+    private AttributeSet attribs;
+    
+    private LookupListener lookupListener;
+
     /** Creates a new instance of CaretSelectionLayer */
     protected CaretBasedBlockHighlighting(JTextComponent component, String coloringName, boolean extendsEOL, boolean extendsEmptyLine) {
         // Determine the mime type
@@ -101,6 +111,9 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         
         // Hook up the component
         this.component = component;
+    }
+    
+    private void init() {
         this.component.addPropertyChangeListener(WeakListeners.propertyChange(this, this.component));
 
         // Hook up the caret
@@ -119,19 +132,24 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     // ------------------------------------------------
     
     public final HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        if (currentLineStart != null && currentLineEnd != null &&
-            endOffset >= currentLineStart.getOffset() && startOffset <= currentLineEnd.getOffset())
+        if (!inited) {
+            inited = true;
+            init();
+        }
+
+        if (currentBlockStart != null && currentBlockEnd != null &&
+            endOffset >= currentBlockStart.getOffset() && startOffset <= currentBlockEnd.getOffset())
         {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Queried for highlights in [" //NOI18N
                     + startOffset + ", " + endOffset + "], returning [" //NOI18N
-                    + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "]" //NOI18N
+                    + positionToString(currentBlockStart) + ", " + positionToString(currentBlockEnd) + "]" //NOI18N
                     + ", layer=" + s2s(this)); //NOI18N
             }
 
             return new SimpleHighlightsSequence(
-                Math.max(currentLineStart.getOffset(), startOffset), 
-                Math.min(currentLineEnd.getOffset(), endOffset), 
+                Math.max(currentBlockStart.getOffset(), startOffset), 
+                Math.min(currentBlockEnd.getOffset(), endOffset), 
                 getAttribs()
             );
         } else {
@@ -178,29 +196,68 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     private final void updateLineInfo(boolean fire) {
         ((AbstractDocument) component.getDocument()).readLock();
         try {
-            Position [] currentLine = getCurrentBlockPositions(component.getDocument(), caret);
-
-            if (!comparePositions(currentLine[0], currentLineStart) ||
-                !comparePositions(currentLine[1], currentLineEnd))
-            {
-                Position changeStart = getLowerPosition(currentLine[0], currentLineStart);
-                Position changeEnd = getHigherPosition(currentLine[1], currentLineEnd);
-
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Current block changed from [" //NOI18N
-                        + positionToString(currentLineStart) + ", " + positionToString(currentLineEnd) + "] to [" //NOI18N
-                        + positionToString(currentLine[0]) + ", " + positionToString(currentLine[1]) + "]" //NOI18N
-                        + ", layer=" + s2s(this)); //NOI18N
+            Position newStart;
+            Position newEnd;
+            Position changeStart;
+            Position changeEnd;
+            Position[] newBlock = getCurrentBlockPositions(component.getDocument(), caret);
+            if (newBlock != null) {
+                newStart = newBlock[0];
+                newEnd = newBlock[1];
+                if (currentBlockStart == null) { // not valid yet
+                    changeStart = currentBlockStart;
+                    changeEnd = currentBlockEnd;
+                } else { // Valid current start and end blocks
+                    // Compare new block to old one
+                    BlockCompare compare = BlockCompare.get(
+                            newStart.getOffset(), newEnd.getOffset(),
+                            currentBlockStart.getOffset(), currentBlockEnd.getOffset());
+                    if (compare.equal()) { // Same blocks
+                        changeStart = null; // No firing
+                        changeEnd = null;
+                    } else if (compare.equalStart()) {
+                        if (compare.containsStrict()) {
+                            changeStart = currentBlockEnd;
+                            changeEnd = newEnd;
+                        } else {
+                            assert (compare.insideStrict());
+                            changeStart = newEnd;
+                            changeEnd = currentBlockEnd;
+                        }
+                    } else if (compare.equalEnd()) {
+                        if (compare.containsStrict()) {
+                            changeStart = newStart;
+                            changeEnd = currentBlockStart;
+                        } else {
+                            assert (compare.insideStrict());
+                            changeStart = currentBlockStart;
+                            changeEnd = newStart;
+                        }
+                    } else {
+                        changeStart = (compare.lowerStart()) ? newStart : currentBlockStart;
+                        changeEnd = (compare.lowerEnd()) ? currentBlockEnd : newEnd;
+                    }
                 }
 
-                currentLineStart = currentLine[0];
-                currentLineEnd = currentLine[1];
+            } else { // newBlock is null => selection removed
+                newStart = null;
+                newEnd = null;
+                changeStart = currentBlockStart;
+                changeEnd = currentBlockEnd;
+            }
 
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Current block changed from [" //NOI18N
+                        + positionToString(currentBlockStart) + ", " + positionToString(currentBlockEnd) + "] to [" //NOI18N
+                        + positionToString(newStart) + ", " + positionToString(newEnd) + "]" //NOI18N
+                        + ", layer=" + s2s(this)); //NOI18N
+            }
+            currentBlockStart = newStart;
+            currentBlockEnd = newEnd;
+
+            if (changeStart != null) {
                 if (fire) {
-                    fireHighlightsChange(
-                        changeStart == null ? 0 : changeStart.getOffset(),
-                        changeEnd == null ? Integer.MAX_VALUE : changeEnd.getOffset()
-                    );
+                    fireHighlightsChange(changeStart.getOffset(), changeEnd.getOffset());
                 }
             }
         } finally {
@@ -209,51 +266,35 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     }
     
     private AttributeSet getAttribs() {
-        FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
-        AttributeSet attribs = fcs.getFontColors(coloringName);
+        if (lookupListener == null) {
+            lookupListener = new LookupListener() {
+                @Override
+                public void resultChanged(LookupEvent ev) {
+                    @SuppressWarnings("unchecked")
+                    final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
+                    setAttrs(result);
+                }
+            };
+            Lookup lookup = MimeLookup.getLookup(mimePath);
+            Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
+            setAttrs(result);
+            result.addLookupListener(WeakListeners.create(LookupListener.class,
+                    lookupListener, result));
+        }
+        return attribs;
+    }
         
+    /*private*/ void setAttrs(Lookup.Result<FontColorSettings> result) {
+        FontColorSettings fcs = result.allInstances().iterator().next();
+        attribs = fcs.getFontColors(coloringName);
         if (attribs == null) {
             attribs = SimpleAttributeSet.EMPTY;
         } else if (extendsEOL || extendsEmptyLine) {
             attribs = AttributesUtilities.createImmutable(
-                attribs, 
-                AttributesUtilities.createImmutable(
+                    attribs,
+                    AttributesUtilities.createImmutable(
                     ATTR_EXTENDS_EOL, Boolean.valueOf(extendsEOL),
-                    ATTR_EXTENDS_EMPTY_LINE, Boolean.valueOf(extendsEmptyLine))
-            );
-        }
-        
-        return attribs;
-    }
-    
-    private static boolean comparePositions(Position p1, Position p2) {
-        // XXX: zero positions never move and so as a rule of thumb we will consider them different
-        // in order to recalculate highlights (see eg #136215)
-        return (p1 == null && p2 == null) || 
-               (p1 != null && p2 != null && p1.getOffset() == p2.getOffset() && p1.getOffset() != 0);
-    }
-    
-    private static Position getLowerPosition(Position p1, Position p2) {
-        if (p1 != null && p2 != null) {
-            return p1.getOffset() < p2.getOffset() ? p1 : p2;
-        } else if (p1 != null) {
-            return p1;
-        } else if (p2 != null) {
-            return p2;
-        } else {
-            return null;
-        }
-    }
-    
-    private static Position getHigherPosition(Position p1, Position p2) {
-        if (p1 != null && p2 != null) {
-            return p1.getOffset() > p2.getOffset() ? p1 : p2;
-        } else if (p1 != null) {
-            return p1;
-        } else if (p2 != null) {
-            return p2;
-        } else {
-            return null;
+                    ATTR_EXTENDS_EMPTY_LINE, Boolean.valueOf(extendsEmptyLine)));
         }
     }
     
@@ -328,7 +369,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                 }
             }
 
-            return new Position [] { null, null };
+            return null;
         }
     } // End of CaretRowHighlighting class
     
@@ -357,7 +398,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                 }
             }
             
-            return new Position [] { null, null };
+            return null;
         }
     } // End of TextSelectionHighlighting class
 }

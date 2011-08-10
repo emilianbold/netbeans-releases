@@ -168,6 +168,8 @@ public final class SlideBarContainer extends AbstractModeContainer {
     private static Border leftBorder;
     private static Border rightEmptyBorder;
     private static Border rightBorder;
+    private static Border topEmptyBorder;
+    private static Border topBorder;
     
     /** Builds empty border around slide bar. Computes its correct size
      * based on given orientation
@@ -181,6 +183,9 @@ public final class SlideBarContainer extends AbstractModeContainer {
         }
         if (Constants.BOTTOM.equals(orientation)) {
             top = 2; left = 1; bottom = 1; right = 1; 
+        }
+        if (Constants.TOP.equals(orientation)) {
+            top = 1; left = 1; bottom = 2; right = 1; 
         }
         if (Constants.RIGHT.equals(orientation)) {
             top = 1; left = 2; bottom = 1; right = 1; 
@@ -204,6 +209,12 @@ public final class SlideBarContainer extends AbstractModeContainer {
                                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(187,187,187) ) );
 
                 bottomEmptyBorder = BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
+                
+                topBorder = BorderFactory.createCompoundBorder(
+                                BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("NbBrushedMetal.darkShadow")), //NOI18N
+                                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(187,187,187) ) );
+
+                topEmptyBorder = BorderFactory.createMatteBorder(0, 0, 3, 0, UIManager.getColor("NbSplitPane.background")); //NOI18N
 
                 leftEmptyBorder = BorderFactory.createMatteBorder(0, 0, 0, 3, UIManager.getColor("NbSplitPane.background")); //NOI18N
 
@@ -320,6 +331,11 @@ public final class SlideBarContainer extends AbstractModeContainer {
                     result = bottomEmptyBorder;
                 else
                     result = bottomBorder;
+            } else if( Constants.TOP.equals(side) ) {
+                if( modeContainer.getTopComponents().length == 0 )
+                    result = topEmptyBorder;
+                else
+                    result = topBorder;
             } else if( Constants.RIGHT.equals(side) ) {
                 if( modeContainer.getTopComponents().length == 0 )
                     result = rightEmptyBorder;

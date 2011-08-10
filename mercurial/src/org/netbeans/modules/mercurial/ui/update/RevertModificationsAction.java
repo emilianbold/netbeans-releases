@@ -120,8 +120,6 @@ public class RevertModificationsAction extends ContextAction {
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Revert_Progress")); // NOI18N
-
-        return;
     }
 
     public static void performRevert(File repository, String revStr, File file, boolean doBackup, OutputLogger logger) {

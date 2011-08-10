@@ -171,7 +171,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
                     outputDir = "target"; // NOI18N
                 }
                 // XXX why does getPluginProperty(prj, GROUP_APACHE_PLUGINS, PLUGIN_JAR, "finalName", "jar") not work?
-                rc.setProperty("module", FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), outputDir + "/" + prj.getArtifactId() + "-" + prj.getVersion() + ".jar").getAbsolutePath()); // NOI18N
+                rc.setProperty("module", "'" + FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), outputDir + "/" + prj.getArtifactId() + "-" + prj.getVersion() + ".jar") + "'"); // NOI18N
                 return rc;
             }
         }

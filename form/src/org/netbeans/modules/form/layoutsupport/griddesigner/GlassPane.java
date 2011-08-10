@@ -69,6 +69,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
+import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridAction;
@@ -78,7 +79,8 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsCh
 /**
  * Glass pane of the grid designer.
  *
- * @author Jan Stola, Petr Somol
+ * @author Jan Stola
+ * @author Petr Somol
  */
 public class GlassPane extends JPanel implements GridActionPerformer {
     /** Color of the grid. */
@@ -222,6 +224,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 GridUtils.removePaddingComponents(gridManager);
                 gridManager.updateLayout(false);
                 GridUtils.revalidateGrid(gridManager);
+                gridManager.updateGaps(false);
                 int newColumns = info.getColumnCount();
                 int newRows = info.getRowCount();
                 int columns = Math.max(oldColumns, newColumns);
@@ -351,14 +354,14 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         shift = fromComponentPane(shift);
         int x = columnBounds[0]+shift.x;
         int y = rowBounds[0]+shift.y;
-        int width = extendedBound(columnBounds, columns)-columnBounds[0];
-        int height = extendedBound(rowBounds, rows)-rowBounds[0];
+        int width = extendedColumnBound(columnBounds, columns)-columnBounds[0];
+        int height = extendedRowBound(rowBounds, rows)-rowBounds[0];
         for (int i=0; i<=columns; i++) {
-            int bound = extendedBound(columnBounds, i);
+            int bound = extendedColumnBound(columnBounds, i);
             g.drawLine(bound+shift.x, y, bound+shift.x, y+height);
         }
         for (int i=0; i<=rows; i++) {
-            int bound = extendedBound(rowBounds, i);
+            int bound = extendedRowBound(rowBounds, i);
             g.drawLine(x, bound+shift.y, x+width, bound+shift.y);
         }
         g.setColor(oldColor);
@@ -370,30 +373,34 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         header.setBackground(c);
         header.setHorizontalAlignment(SwingConstants.CENTER);
         for (int i=0; i<columns; i++) {
-            header.setText(Integer.toString(i));
-            header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
-            headerHeight = header.getPreferredSize().height;
-            int start = extendedBound(columnBounds, i);
-            int end = extendedBound(columnBounds, i+1);
-            int w = end-start;
-            Graphics gg = g.create(start+shift.x, rowBounds[0]-HEADER_GAP-headerHeight+shift.y, w, headerHeight);
-            header.setSize(w, headerHeight);
-            header.paint(gg);
-            gg.dispose();
+            if (!gridInfo.isGapColumn(i)) {
+                header.setText(Integer.toString(i));
+                header.setBorder(selectedColumns.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder());
+                headerHeight = header.getPreferredSize().height;
+                int start = extendedColumnBound(columnBounds, i);
+                int end = extendedColumnBound(columnBounds, i+1);
+                int w = end-start;
+                Graphics gg = g.create(start+shift.x, rowBounds[0]-HEADER_GAP-headerHeight+shift.y, w, headerHeight);
+                header.setSize(w, headerHeight);
+                header.paint(gg);
+                gg.dispose();
+            }
         }
 
         // Paint the rows
         for (int i=0; i<rows; i++) {
-            header.setText(Integer.toString(i));
-            Border border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
-            header.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0,HEADER_GAP/2,0,HEADER_GAP/2)));
-            int start = extendedBound(rowBounds, i);
-            int end = extendedBound(rowBounds, i+1);
-            int h = end-start;
-            Graphics gg = g.create(columnBounds[0]-HEADER_GAP-headerWidth+shift.x, start+shift.y, headerWidth, h);
-            header.setSize(headerWidth, h);
-            header.paint(gg);
-            gg.dispose();
+            if (!gridInfo.isGapRow(i)) {
+                header.setText(Integer.toString(i));
+                Border border = selectedRows.get(i) ? BorderFactory.createLoweredBevelBorder() : BorderFactory.createRaisedBevelBorder();
+                header.setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(0,HEADER_GAP/2,0,HEADER_GAP/2)));
+                int start = extendedRowBound(rowBounds, i);
+                int end = extendedRowBound(rowBounds, i+1);
+                int h = end-start;
+                Graphics gg = g.create(columnBounds[0]-HEADER_GAP-headerWidth+shift.x, start+shift.y, headerWidth, h);
+                header.setSize(headerWidth, h);
+                header.paint(gg);
+                gg.dispose();
+            }
         }
     }
 
@@ -491,11 +498,17 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             int newCompGridWidth = gridInfo.getGridWidth(selComp)+widthDelta;
             int newCompGridY = gridInfo.getGridY(selComp)+yDelta;
             int newCompGridHeight = gridInfo.getGridHeight(selComp)+heightDelta;
-            int x = extendedBound(columnBounds, newCompGridX);
-            int width = extendedBound(columnBounds, newCompGridX+newCompGridWidth)-x;
-            int y = extendedBound(rowBounds, newCompGridY);
-            int height = extendedBound(rowBounds, newCompGridY+newCompGridHeight)-y;
-            g.fillRect(x+shift.x, y+shift.y, width, height);
+            for(int i = newCompGridX; i < newCompGridX + newCompGridWidth; i++) {
+                for(int j = newCompGridY; j < newCompGridY + newCompGridHeight; j++) {
+                    if(!gridInfo.isGapColumn(i) && !gridInfo.isGapRow(j)) {
+                        int x = extendedColumnBound(columnBounds, i);
+                        int width = extendedColumnBound(columnBounds, i + 1) - x;
+                        int y = extendedRowBound(rowBounds, j);
+                        int height = extendedRowBound(rowBounds, j + 1) - y;
+                        g.fillRect(x + shift.x, y + shift.y, width, height);
+                    }
+                }
+            }
         }
     }
     
@@ -514,7 +527,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     }
 
     /**
-     * Returns the position of the specified grid line (= column/row edge).
+     * Returns the position of the specified grid vertical line (= column edge).
      * It returns either the position of the existing line or the suggested
      * position of a newly created line.
      *
@@ -522,12 +535,55 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param index index of the line we are interested in.
      * @return position of the specified grid line.
      */
-    private int extendedBound(int[] bounds, int index) {
+    private int extendedColumnBound(int[] bounds, int index) {
         int bound;
         if (index<bounds.length) {
             bound = bounds[index];
         } else {
-            bound = bounds[bounds.length-1]+(index-bounds.length+1)*GridUtils.PADDING_SIZE;
+            if(gridInfo.hasGaps()) {
+                int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+                bound = bounds[bounds.length-1];
+                for(int i = bounds.length; i <= index; i++) {
+                    if(gridInfo.isGapColumn(i + 1)) {
+                        bound += gapWidth;
+                    } else {
+                        bound += GridUtils.PADDING_SIZE_STANDARD;
+                    }
+                }
+            } else {
+                bound = bounds[bounds.length-1]+(index-bounds.length+1)*GridUtils.PADDING_SIZE_STANDARD;
+            }
+        }
+        return bound;
+    }
+
+    /**
+     * Returns the position of the specified grid horizontal line (= row edge).
+     * It returns either the position of the existing line or the suggested
+     * position of a newly created line.
+     *
+     * @param bounds positions of the existing lines.
+     * @param index index of the line we are interested in.
+     * @return position of the specified grid line.
+     */
+    private int extendedRowBound(int[] bounds, int index) {
+        int bound;
+        if (index<bounds.length) {
+            bound = bounds[index];
+        } else {
+            if(gridInfo.hasGaps()) {
+                int gapWidth = FormLoaderSettings.getInstance().getGapHeight();
+                bound = bounds[bounds.length-1];
+                for(int i = bounds.length; i <= index; i++) {
+                    if(gridInfo.isGapRow(i + 1)) {
+                        bound += gapWidth;
+                    } else {
+                        bound += GridUtils.PADDING_SIZE_STANDARD;
+                    }
+                }
+            } else {
+                bound = bounds[bounds.length-1]+(index-bounds.length+1)*GridUtils.PADDING_SIZE_STANDARD;
+            }
         }
         return bound;
     }
@@ -635,21 +691,29 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         if (isResizingEastward()) {
             int currentX = gridXLocation(rect.x+rect.width, false);
-            newGridWidth = Math.max(width-selMinWidth+1, currentX-x+1);
+            if( !gridInfo.isGapColumn(currentX) ) {
+                newGridWidth = Math.max(width-selMinWidth+1, currentX-x+1);
+            }
         }
         if (isResizingWestward()) {
             int currentX = gridXLocation(rect.x, false);
-            newGridX = Math.max(x-selMinX, Math.min(x+width-(width-selMinWidth+1), currentX));
-            newGridWidth = x+width-newGridX;
+            if( !gridInfo.isGapColumn(currentX) ) {
+                newGridX = Math.max(x-selMinX, Math.min(x+width-(width-selMinWidth+1), currentX));
+                newGridWidth = x+width-newGridX;
+            }
         }
         if (isResizingSouthward()) {
             int currentY = gridYLocation(rect.y+rect.height, false);
-            newGridHeight = Math.max(height-selMinHeight+1, currentY-y+1);
+            if( !gridInfo.isGapRow(currentY) ) {
+                newGridHeight = Math.max(height-selMinHeight+1, currentY-y+1);
+            }
         }
         if (isResizingNorthward()) {
             int currentY = gridYLocation(rect.y, false);
-            newGridY = Math.max(y-selMinY, Math.min(y+height-(height-selMinHeight+1), currentY));
-            newGridHeight = y+height-newGridY;
+            if( !gridInfo.isGapRow(currentY) ) {
+                newGridY = Math.max(y-selMinY, Math.min(y+height-(height-selMinHeight+1), currentY));
+                newGridHeight = y+height-newGridY;
+            }
         }
     }
 
@@ -683,8 +747,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         int deltaY = endY-startY;
         deltaX = Math.max(deltaX, -selMinX);
         deltaY = Math.max(deltaY, -selMinY);
-        newGridX = gridInfo.getGridX(focusedComponent)+deltaX;
-        newGridY = gridInfo.getGridY(focusedComponent)+deltaY;
+        int tempGridX = gridInfo.getGridX(focusedComponent) + deltaX;
+        int tempGridY = gridInfo.getGridY(focusedComponent) + deltaY;
+        if( !gridInfo.isGapColumn(tempGridX) && !gridInfo.isGapRow(tempGridY) ) {
+            newGridX = tempGridX;
+            newGridY = tempGridY;
+        }
     }
 
     /**
@@ -817,7 +885,20 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         if (mustBeInside) {
             gridX = Math.max(0,Math.min(gridX, bounds.length-2));
         } else if (gridX == bounds.length-1) {
-            gridX = (xComponentPaneCoordinate-bounds[bounds.length-1]+1)/GridUtils.PADDING_SIZE+bounds.length-1;
+            if(gridInfo.hasGaps()) {
+                int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+                int coordinateX = bounds[bounds.length-1]+1;
+                while (coordinateX <= xComponentPaneCoordinate) {
+                    if(gridInfo.isGapColumn(gridX + 1)) {
+                        coordinateX += gapWidth;
+                    } else {
+                        coordinateX += GridUtils.PADDING_SIZE_STANDARD;
+                    }
+                    gridX++;
+                }
+            } else {
+                gridX = (xComponentPaneCoordinate-bounds[bounds.length-1]+1)/GridUtils.PADDING_SIZE_STANDARD+bounds.length-1;
+            }
         }
         return gridX;
     }
@@ -840,7 +921,20 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         if (mustBeInside) {
             gridY = Math.max(0,Math.min(gridY, bounds.length-2));
         } else if (gridY == bounds.length-1) {
-            gridY = (yComponentPaneCoordinate-bounds[bounds.length-1]+1)/GridUtils.PADDING_SIZE+bounds.length-1;
+            if(gridInfo.hasGaps()) {
+                int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+                int coordinateY = bounds[bounds.length-1]+1;
+                while (coordinateY <= yComponentPaneCoordinate) {
+                    if(gridInfo.isGapRow(gridY + 1)) {
+                        coordinateY += gapHeight;
+                    } else {
+                        coordinateY += GridUtils.PADDING_SIZE_STANDARD;
+                    }
+                    gridY++;
+                }
+            } else {
+                gridY = (yComponentPaneCoordinate-bounds[bounds.length-1]+1)/GridUtils.PADDING_SIZE_STANDARD+bounds.length-1;
+            }
         }
         return gridY;
     }
@@ -881,7 +975,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             for (int i=0; i<bounds.length-1; i++) {
                 int x = innerPanePoint.x-shift.x;
                 if (bounds[i]<=x && x<bounds[i+1]) {
-                    return i;
+                    if(gridInfo.isGapColumn(i)) {
+                        return -1;
+                    } else {
+                        return i;
+                    }
                 }
             }
         }
@@ -902,7 +1000,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             for (int i=0; i<bounds.length-1; i++) {
                 int y = innerPanePoint.y-shift.y;
                 if (bounds[i]<=y && y<bounds[i+1]) {
-                    return i;
+                    if(gridInfo.isGapRow(i)) {
+                        return -1;
+                    } else {
+                        return i;
+                    }
                 }
             }
         }
@@ -1179,9 +1281,14 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         if (rect.contains(point)) {
                             focusedCellColumn = gridXLocation(point.x-shift.x, true);
                             focusedCellRow = gridYLocation(point.y-shift.y, true);
-                            context.setFocusedColumn(focusedCellColumn);
-                            context.setFocusedRow(focusedCellRow);
-                            actions = gridManager.designerActions(GridAction.Context.CELL);
+                            if( !gridInfo.isGapColumn(focusedCellColumn) && !gridInfo.isGapRow(focusedCellRow) ) {
+                                context.setFocusedColumn(focusedCellColumn);
+                                context.setFocusedRow(focusedCellRow);
+                                actions = gridManager.designerActions(GridAction.Context.CELL);
+                            } else {
+                                focusedCellColumn = -1;
+                                focusedCellRow = -1;
+                            }
                         }
                     } else {
                         focusedCellColumn = -1;
@@ -1378,6 +1485,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             int[] originalColumnBounds = info.getColumnBounds();
             int[] originalRowBounds = info.getRowBounds();
 
+            GridUtils.revalidateGrid(gridManager);
             int columns = info.getColumnCount();
             int rows = info.getRowCount();
             int xDelta = newGridX - info.getGridX(focusedComponent);
@@ -1400,6 +1508,9 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     rows = Math.max(rows, gridY+yDelta+height+heightDelta);
                 }
             }
+            gridManager.updateLayout(false);
+            GridUtils.revalidateGrid(gridManager);
+            gridManager.updateGaps(false);
             GridUtils.addPaddingComponents(gridManager, columns, rows);
             GridUtils.revalidateGrid(gridManager);
             int[] newColumnBounds = gridInfo.getColumnBounds();
@@ -1408,7 +1519,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 // Moving/resizing outside the original grid
                 int[] oldBounds = new int[newColumnBounds.length];
                 for (int i=0; i<oldBounds.length; i++) {
-                    oldBounds[i] = extendedBound(originalColumnBounds, i);
+                    oldBounds[i] = extendedColumnBound(originalColumnBounds, i);
                 }
                 originalColumnBounds = oldBounds;
             }
@@ -1416,7 +1527,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 // Moving/resizing outside the original grid
                 int[] oldBounds = new int[newRowBounds.length];
                 for (int i=0; i<oldBounds.length; i++) {
-                    oldBounds[i] = extendedBound(originalRowBounds, i);
+                    oldBounds[i] = extendedRowBound(originalRowBounds, i);
                 }
                 originalRowBounds = oldBounds;
             }

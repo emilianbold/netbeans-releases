@@ -43,17 +43,30 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
+import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.explorer.ExplorerManager;
+import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -71,32 +84,97 @@ public class ShowLocalHistoryAction extends NodeAction {
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
         final Set<File> rootSet = ctx.getRootFiles();                    
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
                 File[] files = rootSet.toArray(new File[rootSet.size()]);                
 
+        if(!files[0].isFile()) {
+            return;
+        }
+
+        File file = files[0];
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo != null) {
+            DataObject dataObject = null;
+            try {
+                dataObject = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if(dataObject != null) {
+                if(findInOpenTC(dataObject)) {
+                    return;
+                }
+                if(findInMVDescriptions(dataObject)) {
+                    return;
+                }
+            }
+        }
+
+        // fallback opening a LHTopComponent
+        openTC(files);
+    }
+    
+    private void openTC(final File[] files) throws MissingResourceException {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
                 final LocalHistoryTopComponent tc = new LocalHistoryTopComponent();
                 tc.setName(NbBundle.getMessage(this.getClass(), "CTL_LocalHistoryTopComponent", files[0].getName()));
                 tc.open();
                 tc.requestActive();                                
-                
-                if(files[0].isFile()) {
-                    LocalHistoryFileView fileView = new LocalHistoryFileView();                
-                    LocalHistoryDiffView diffView = new LocalHistoryDiffView(tc); 
-                    fileView.getExplorerManager().addPropertyChangeListener(diffView); 
-                    fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
-                                tc.setActivatedNodes((Node[]) evt.getNewValue());  
-                            }
-                        } 
-                    });
-                    tc.init(diffView.getPanel(), fileView);
-                    fileView.refresh(files);
-                } 
+                tc.init(files);
             }
         });
+    }
+                
+    /**
+     * XXX HACK temporary solution to find out if the given dataobject provides a multiview
+     */
+    private boolean findInMVDescriptions(DataObject dataObject) {
+        String mime = dataObject.getPrimaryFile().getMIMEType();
+        Lookup l = MimeLookup.getLookup(MimePath.get(mime));
+        Collection<? extends MultiViewDescription> descs = l.lookupAll(MultiViewDescription.class);
+        if (descs.size() > 1) {
+            // LH is registred for every mimetype, so we need at least two
+            for (MultiViewDescription desc : descs) {
+                if (desc.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
+                    EditCookie cookie = dataObject.getLookup().lookup(EditCookie.class);
+                    if (cookie != null) {
+                        cookie.edit();
+                        findInOpenTC(dataObject);
+                        return true;
+                            }
+                        } 
+                } 
+            }
+        return false;
+    }
 
+    private boolean findInOpenTC(DataObject dataObject) {
+        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+        for (final TopComponent tc : tcs) {
+            Lookup l = tc.getLookup();
+            DataObject tcDataObject = l.lookup(DataObject.class);
+            if (tcDataObject != null && dataObject.equals(tcDataObject)) {
+                final MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+                if (handler != null) {
+                    MultiViewPerspective[] perspectives = handler.getPerspectives();
+                    for (final MultiViewPerspective p : perspectives) {
+                        if(p.preferredID().equals(LocalHistoryTopComponent.PREFERRED_ID)) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    handler.requestActive(p);
+                                    tc.requestActive();
+    }
+                            });
+                            break;
+                        } 
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     protected boolean enable(Node[] activatedNodes) {     

@@ -53,12 +53,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkMapping;
 import org.netbeans.lib.profiler.results.cpu.marking.MarkingEngine;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.profiler.categories.Categorization;
-import org.netbeans.modules.profiler.categories.Category;
+import org.netbeans.modules.profiler.categorization.api.Categorization;
+import org.netbeans.modules.profiler.categorization.api.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.xml.XMLUtil;
 
 
 /**
@@ -66,6 +65,7 @@ import org.openide.xml.XMLUtil;
  *
  */
 public class TestBase extends NbTestCase {
+    static final String APP_NAME = "WebApp";
     
     private static final Repository REPOSITORY;
 

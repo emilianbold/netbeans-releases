@@ -128,6 +128,24 @@ public class CodeGeneratorTest extends NbTestCase {
                     "}\n");
     }
 
+    public void testDeprecated1() throws Exception {
+        performTest("package test; interface Test {\n" +
+                    "    /**@deprecated*/ public Class test1();\n" +
+                    "}\n",
+                    "package test; interface Test {\n" +
+                    "    /** * @deprecated */ public Class test1();\n" +
+                    "}\n");
+    }
+
+    public void testDeprecated2() throws Exception {
+        performTest("package test; interface Test {\n" +
+                    "    @Deprecated public Class test1();\n" +
+                    "}\n",
+                    "package test; interface Test {\n" +
+                    "    @Deprecated public Class test1();\n" +
+                    "}\n");
+    }
+
     private void performTest(String test, final String golden) throws Exception {
         clearWorkDir();
 

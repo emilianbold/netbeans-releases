@@ -46,7 +46,9 @@ package org.netbeans.modules.project.ui.groups;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -87,19 +89,25 @@ public class AdHocGroup extends Group {
         super(id);
     }
 
-    protected void findProjects(Set<Project> projects, ProgressHandle h, int start, int end) {
-        String paths = prefs().get(KEY_PATH, "");
-        if (paths.length() > 0) { // "".split(...) -> [""]
-            String[] items = paths.split(" ");
-            for (String path : items) {
+    @Override protected void findProjects(Set<Project> projects, ProgressHandle h, int start, int end) {
+        List<String> paths = projectPaths();
+        for (String path : paths) {
                 Project p = projectForPath(path);
                 if (p != null) {
                     if (h != null) {
-                        h.progress(progressMessage(p), start += ((end - start) / items.length));
+                    h.progress(progressMessage(p), start += ((end - start) / paths.size()));
                     }
                     projects.add(p);
                 }
             }
+        }
+
+    @Override protected List<String> projectPaths() {
+        String paths = prefs().get(KEY_PATH, "");
+        if (paths.length() > 0) { // "".split(...) -> [""]
+            return Arrays.asList(paths.split(" "));
+        } else {
+            return Collections.emptyList();
         }
     }
 
@@ -157,13 +165,12 @@ public class AdHocGroup extends Group {
         return new AdHocGroupEditPanel(this);
     }
 
-    @Override
-    protected void closed() {
-        if (isAutoSynch()) {
+    @Override protected void openProjectsEvent(String propertyName) {
+        if (propertyName.equals(OpenProjects.PROPERTY_OPEN_PROJECTS) && isAutoSynch()) {
             setProjects(new HashSet<Project>(Arrays.asList(OpenProjects.getDefault().getOpenProjects())));
         }
         // *After* setting projects - so that main project status correctly updated for new group.
-        super.closed();
+        super.openProjectsEvent(propertyName);
     }
 
     @Override

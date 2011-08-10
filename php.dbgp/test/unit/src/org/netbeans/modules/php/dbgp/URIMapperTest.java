@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.dbgp;
 
+import java.util.LinkedList;
+import org.netbeans.modules.php.api.util.Pair;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -61,6 +63,7 @@ public class URIMapperTest extends NbTestCase {
     private URIMapper[] allMappers;
     private URI webServerURIBase;
     private File sourceFolderBase;
+    private File webServerURIBaseFile;
 
     public URIMapperTest(String testName) {
         super(testName);
@@ -70,7 +73,10 @@ public class URIMapperTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         sourceFolderBase = getWorkDir();
-        webServerURIBase = URI.create("file:///var/www/dbgtest2/");//NOI18N
+        String currentDir = new File(".").getCanonicalPath(); // NOI18N
+        webServerURIBase = URI.create("file://" + currentDir + "/dbgtest2/");//NOI18N
+        webServerURIBaseFile = new File(webServerURIBase);
+        webServerURIBaseFile.mkdir();
 
         basesMapper = URIMapper.createBasedInstance(webServerURIBase, sourceFolderBase);
         allMappers = new URIMapper[]{basesMapper, oneToOneMapper};
@@ -79,6 +85,7 @@ public class URIMapperTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        webServerURIBaseFile.delete();
     }
 
     public void testOneToOneInstance() throws IOException {
@@ -149,6 +156,6 @@ public class URIMapperTest extends NbTestCase {
         File sourceFile = new File(sourceFolderBase, path);
         return URIMapper.createMultiMapper(webServerURI,
                 FileUtil.createData(sourceFile),
-                FileUtil.toFileObject(sourceFolderBase), null);
+                FileUtil.toFileObject(sourceFolderBase), new LinkedList<Pair<String, String>>());
     }
 }

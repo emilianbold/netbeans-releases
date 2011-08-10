@@ -215,7 +215,8 @@ public final class MainWindow {
                         statusLinePanel.getBorder(),
                         BorderFactory.createEmptyBorder (0, 0, 0, magicConstant)));
 
-                if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                if( !"Aqua".equals(UIManager.getLookAndFeel().getID()) 
+                        && !UIManager.getBoolean( "NbMainWindow.StatusBar.HideSeparator" ) ) { //NOI18N
                     statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                 }
                 statusLinePanel.add(status, BorderLayout.CENTER);
@@ -302,6 +303,8 @@ public final class MainWindow {
         if (innerIconsPanel != null) {
             panel.add (innerIconsPanel, BorderLayout.EAST);
         }
+        if( showCustomBackground )
+            panel.setOpaque( false );
     }
     
     private static Lookup.Result<StatusLineElementProvider> result;
@@ -320,6 +323,8 @@ public final class MainWindow {
         }
         Iterator<? extends StatusLineElementProvider> it = c.iterator ();
         JPanel icons = new JPanel (new FlowLayout (FlowLayout.RIGHT, 0, 0));
+        if( showCustomBackground )
+            icons.setOpaque( false );
         icons.setBorder (BorderFactory.createEmptyBorder (1, 0, 0, 2));
         boolean some = false;
         while (it.hasNext ()) {

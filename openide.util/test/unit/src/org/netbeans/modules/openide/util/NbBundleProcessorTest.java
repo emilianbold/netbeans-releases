@@ -221,6 +221,11 @@ public class NbBundleProcessorTest extends NbTestCase {
         l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
         assertEquals("v3", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
+        AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k3=v4\")", "public class C1 {public @Override String toString() {return Bundle.k3();}}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, null));
+        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        assertEquals("v4", l.loadClass("p.C1").newInstance().toString());
+        assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
     }
 
     public void testIncrementalCompilationWithBrokenClassFiles() throws Exception {

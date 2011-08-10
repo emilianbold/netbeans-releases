@@ -54,6 +54,7 @@ import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.TransportProtocol;
 import org.eclipse.jgit.transport.URIish;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -124,6 +125,12 @@ abstract class TransportCommand extends GitCommand {
     
     protected Transport openTransport (boolean openPush) throws URISyntaxException, NotSupportedException, TransportException {
         URIish uri = getUriWithUsername(openPush);
+        // WA for #200693, jgit fails to initialize ftp protocol
+        for (TransportProtocol proto : Transport.getTransportProtocols()) {
+            if (proto.getSchemes().contains("ftp")) { //NOI18N
+                Transport.unregister(proto);
+            }
+        }
         Transport transport = Transport.open(getRepository(), uri);
         RemoteConfig config = getRemoteConfig();
         if (config != null) {

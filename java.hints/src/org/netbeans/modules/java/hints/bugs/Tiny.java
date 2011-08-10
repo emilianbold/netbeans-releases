@@ -65,6 +65,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -91,7 +92,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, constant, displayName, fix);
     }
 
-    @Hint(category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored")
+    @Hint(category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored", options=Options.QUERY)
     //TODO: anonymous innerclasses?
     @TriggerPatterns({
         @TriggerPattern(value="new $type($params$);"),
@@ -103,7 +104,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="bugs", suppressWarnings="SuspiciousSystemArraycopy")
+    @Hint(category="bugs", suppressWarnings="SuspiciousSystemArraycopy", options=Options.QUERY)
     @TriggerPattern(value="java.lang.System.arraycopy($src, $srcPos, $dest, $destPos, $length)")
     public static List<ErrorDescription> systemArrayCopy(HintContext ctx) {
         List<ErrorDescription> result = new LinkedList<ErrorDescription>();
@@ -146,7 +147,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, fix);
     }
 
-    @Hint(category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet")
+    @Hint(category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet", options=Options.QUERY)
     @TriggerPattern(value="$set.$method($columnIndex, $other$)",
                     constraints={
                         @Constraint(variable="$set", type="java.sql.ResultSet"),

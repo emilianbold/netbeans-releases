@@ -60,8 +60,8 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-actions-AboutAction.shadow_hidden"/>
 
             <file name="shortcuts.xml" url="shortcuts_mac.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.url.Bundle#Menu/Help/shortcuts.xml"/>
                 <attr name="weight" intvalue="100"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
@@ -70,16 +70,6 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow_hidden"/>
     </folder>
 
-    <folder name="Actions">
-        <folder name="Window">
-            <file name="org-netbeans-modules-applemenu-MinimizeWindowAction.instance">
-                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
-                <attr name="delegate" newvalue="org.netbeans.modules.applemenu.MinimizeWindowAction"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.applemenu.Bundle#MSG_MinimizeWindowAction"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="Shortcuts">
         <!-- On the mac, alt left-right is select, etc. next/prev word-->
         <file name="C-LEFT.shadow">
@@ -109,9 +99,6 @@ made subject to such option by the copyright holder.
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.instance"/>
         </file>
 
-        <file name="M-M.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-applemenu-MinimizeWindowAction.instance"/>
-        </file>
         <file name="O-G.shadow">
             <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-GotoAction.instance"/>
         </file>
@@ -128,8 +115,8 @@ made subject to such option by the copyright holder.
     <folder name="Toolbars">
     <!-- quick search enabled for ide in toolbar by default -->
         <folder name="QuickSearch">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.applemenu.Bundle#Toolbars/QuickSearch"/>
             <attr name="position" intvalue="700"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.applemenu.Bundle"/>
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
                 <attr name="position" intvalue="250"/>

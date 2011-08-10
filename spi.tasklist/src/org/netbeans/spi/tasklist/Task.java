@@ -82,7 +82,7 @@ public final class Task {
      * Create a new Task
      *
      * @param resource Resource which the Task applies to, cannot be null.
-     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param groupName Name of the group this task belongs to ({@code nb-tasklist-error}, {@code nb-tasklist-warning}, {@code nb-tasklist-todo}, etc).
      * @param description A brief summary of the task (one line if possible), cannot be null.
      *
      * @return New task.
@@ -103,7 +103,7 @@ public final class Task {
      * to be available at all times.</p>
      *
      * @param resource Resource which the Task applies to, cannot be null.
-     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param groupName Name of the group this task belongs to ({@code nb-tasklist-error}, {@code nb-tasklist-warning}, {@code nb-tasklist-todo}, etc).
      * @param description A brief summary of the task (one line if possible), cannot be null.
      * @param defaultAction Task's default action, e.g. double-click or Enter key in the Task List window.
      * @param popupActions Actions to show in task's popup menu.
@@ -119,7 +119,7 @@ public final class Task {
      * Create a new Task
      * 
      * @param resource File or folder which the Task applies to, cannot be null.
-     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param groupName Name of the group this task belongs to ({@code nb-tasklist-error}, {@code nb-tasklist-warning}, {@code nb-tasklist-todo}, etc).
      * @param description A brief summary of the task (one line if possible), cannot be null.
      * @param line Line number in a text file, use negative value if line number is not applicable.
      * 
@@ -140,7 +140,7 @@ public final class Task {
      * if ActionListener is required to be available at all times.</p>
      * 
      * @param resource File or folder which the Task applies to, cannot be null.
-     * @param groupName Name of the group this task belongs to (error, warning, todo, etc).
+     * @param groupName Name of the group this task belongs to ({@code nb-tasklist-error}, {@code nb-tasklist-warning}, {@code nb-tasklist-todo}, etc).
      * @param description A brief summary of the task (one line if possible), cannot be null.
      * @param al Task's default action, e.g. double-click or Enter key in the Task List window.
      * 

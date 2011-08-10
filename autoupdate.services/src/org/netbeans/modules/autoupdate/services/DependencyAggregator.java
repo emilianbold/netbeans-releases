@@ -152,7 +152,7 @@ public class DependencyAggregator extends Object {
 
         @Override
         public String toString () {
-        StringBuffer buf = new StringBuffer(100);
+        StringBuilder buf = new StringBuilder(100);
             buf.append ("Key[");
             
             if (type == Dependency.TYPE_MODULE) {

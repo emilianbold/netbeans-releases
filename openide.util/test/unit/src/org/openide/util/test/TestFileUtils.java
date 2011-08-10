@@ -52,6 +52,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
@@ -98,13 +100,32 @@ public class TestFileUtils {
     }
 
     /**
+     * Read the contents of a file as a byte array.
+     * @param a data file
+     * @return its raw binary contents
+     */
+    public static byte[] readFileBin(File file) throws IOException {
+        InputStream is = new FileInputStream(file);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buf = new byte[4096];
+        int read;
+        while ((read = is.read(buf)) != -1) {
+            baos.write(buf, 0, read);
+        }
+        is.close();
+        return baos.toByteArray();
+    }
+
+    /**
      * Create a new ZIP file.
      * @param jar the ZIP file to create
      * @param entries a list of entries in the form of "filename:UTF8-contents"; parent dirs created automatically
+     * @return the {@code jar} parameter, for convenience
      * @throws IOException for the usual reasons
      */
-    public static void writeZipFile(File jar, String... entries) throws IOException {
+    public static File writeZipFile(File jar, String... entries) throws IOException {
         writeZipFile(new FileOutputStream(jar), entries);
+        return jar;
     }
 
     /**
@@ -114,13 +135,27 @@ public class TestFileUtils {
      * @throws IOException for the usual reasons
      */
     public static void writeZipFile(OutputStream os, String... entries) throws IOException {
-        ZipOutputStream zos = new ZipOutputStream(os);
-        Set<String> parents = new HashSet<String>();
+        Map<String,byte[]> binary = new LinkedHashMap<String,byte[]>();
         for (String entry : entries) {
             int colon = entry.indexOf(':');
             assert colon != -1 : entry;
-            String name = entry.substring(0, colon);
-            assert name.length() > 0 && !name.endsWith("/") && !name.startsWith("/") && name.indexOf("//") == -1: name;
+            binary.put(entry.substring(0, colon), entry.substring(colon + 1).getBytes("UTF-8"));
+        }
+        writeZipFile(os, binary);
+    }
+
+    /**
+     * Create a new ZIP file.
+     * @param os a stream to which the ZIP will be written
+     * @param entries entries as maps from filename to binary contents;; parent dirs created automatically
+     * @throws IOException for the usual reasons
+     */
+    public static void writeZipFile(OutputStream os, Map<String,byte[]> entries) throws IOException {
+        ZipOutputStream zos = new ZipOutputStream(os);
+        Set<String> parents = new HashSet<String>();
+        for (Map.Entry<String,byte[]> entry : entries.entrySet()) {
+            String name = entry.getKey();
+            assert name.length() > 0 && !name.endsWith("/") && !name.startsWith("/") && name.indexOf("//") == -1 : name;
             for (int i = 0; i < name.length(); i++) {
                 if (name.charAt(i) == '/') {
                     String parent = name.substring(0, i + 1);
@@ -135,7 +170,7 @@ public class TestFileUtils {
                     }
                 }
             }
-            byte[] data = entry.substring(colon + 1).getBytes("UTF-8");
+            byte[] data = entry.getValue();
             ZipEntry ze = new ZipEntry(name);
             ze.setMethod(ZipEntry.STORED);
             ze.setSize(data.length);

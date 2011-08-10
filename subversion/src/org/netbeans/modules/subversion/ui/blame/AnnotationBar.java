@@ -619,7 +619,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         SvnProgressSupport support = new SvnProgressSupport() {
             @Override
             public void perform() {
-                RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), ctx, this);
+                RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), !revertModifications.revertRecursively(), ctx, this);
             }
         };
         support.start(rp, url, NbBundle.getMessage(AnnotationBar.class, "MSG_Revert_Progress")); // NOI18N

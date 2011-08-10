@@ -43,97 +43,24 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Listener;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.Listener;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import org.openide.util.NbBundle;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.web.AbstractWebContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ListenersNode extends ContainerNode {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    private static class Children extends GreedySelectorChildren<ListenersNode> {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>();
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public Children() {
-            scope.add(ClassIndex.SearchScope.SOURCE);
-            scope.add(ClassIndex.SearchScope.DEPENDENCIES);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        protected List<SelectorNode> prepareChildren(final ListenersNode parent) {
-            final Set<SelectorNode> listeners = new HashSet<SelectorNode>();
-
-            try {
-                Project project = parent.getLookup().lookup(Project.class);
-                final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
-
-                Collection<FileObject> dds = WebProjectUtils.getDeploymentDescriptorFileObjects(project, true);
-
-                for (FileObject dd : dds) {
-                    enumerateListeners(listeners, parent, cpInfo, dd);
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-
-            return new ArrayList<SelectorNode>(listeners);
-        }
-
-        private void enumerateListeners(final Collection<SelectorNode> listeners, final ListenersNode parent,
-                                        final ClasspathInfo cpInfo, FileObject dd)
-                                 throws IOException, IllegalArgumentException {
-            final WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-
-            JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        for (Listener listener : webApp.getListener()) {
-                            TypeElement type = controller.getElements().getTypeElement(listener.getListenerClass());
-
-                            if (type != null) {
-                                listeners.add(new ListenerNode(cpInfo, type, parent));
-                            }
-                        }
-                    }
-                }, true);
-        }
-    }
-
+public class ListenersNode extends AbstractWebContainerNode {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
@@ -145,12 +72,19 @@ public class ListenersNode extends ContainerNode {
 
     /** Creates a new instance of ServletsNode */
     public ListenersNode(ContainerNode parent) {
-        super(LISTENERS_STRING, Utils.PACKAGE_ICON, parent);
+        super(LISTENERS_STRING, parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    protected SelectorChildren getChildren() {
-        return new Children();
+    @Override
+    protected Collection<SelectorNode> collectChildren(final Project prj, WebAppMetadata md) {
+        Collection<SelectorNode> fNodes = new ArrayList<SelectorNode>();
+        for(Listener li : md.getRoot().getListener()) {
+            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(li.getListenerClass(), prj);
+
+            fNodes.add(new ListenerNode(sType, this));
+        }
+        return fNodes;
     }
 }

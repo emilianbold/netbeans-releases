@@ -249,21 +249,21 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
             root = (String)p.getValue();
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, storage);
         progress = null;
         return res;
 
     }
     
-    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project){
+    /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, CompileLineStorage storage){
         LogReader clrf = new LogReader(objFileName, root, project);
-        List<SourceFileProperties> list = clrf.getResults(progress, isStoped);
+        List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
         return list;
     }
 
@@ -296,7 +296,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                             set = detectMakeLog(project);
                         }
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null);
+                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;

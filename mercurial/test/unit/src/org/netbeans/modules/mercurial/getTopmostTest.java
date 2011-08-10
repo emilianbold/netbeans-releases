@@ -47,8 +47,10 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Lookup;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.Utils;
 
 /**
  *
@@ -64,7 +66,7 @@ public class getTopmostTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         mvcs = new MercurialVCS();
         clearCachedValues();
     }
@@ -228,6 +230,53 @@ public class getTopmostTest extends NbTestCase {
         // test
         File tm1 = mvcs.getTopmostManagedAncestor(getTempDir());
         assertNull(tm1);
+    }
+
+    public void testExcludeUserDir () throws Exception {
+        MockServices.setServices(new Class[] {
+            MercurialVCS.class});
+
+        Field f = Utils.class.getDeclaredField("unversionedFolders");
+        f.setAccessible(true);
+        f.set(Utils.class, null);
+        File userDir = getWorkDir();
+        // completely ignore userdir being a repo root
+        System.setProperty("netbeans.user", userDir.getAbsolutePath());
+        File r1 = createFolder(userDir, "r1");
+        File hgr1 = createFolder(r1, ".hg");
+        File r1f1 = createFile(r1, "f1");
+        
+        // test
+        assertNull(Mercurial.getInstance().getRepositoryRoot(userDir));
+        assertNull(Mercurial.getInstance().getRepositoryRoot(r1));
+        assertNull(Mercurial.getInstance().getRepositoryRoot(r1f1));
+
+        Mercurial.getInstance().versionedFilesChanged();
+        f.set(Utils.class, null);
+        // version also the userdir
+        System.setProperty("versioning.netbeans.user.versioned", "true");
+        assertEquals(r1, Mercurial.getInstance().getRepositoryRoot(r1));
+        assertEquals(r1, Mercurial.getInstance().getRepositoryRoot(r1f1));
+        
+        f.set(Utils.class, null);
+        System.setProperty("versioning.netbeans.user.versioned", "false");
+        // ignore userdir being a subfolder under a repo root
+        File r1fld1 = createFolder(r1, "folder1");
+        File r1fld1f1 = createFile(r1fld1, "f1");
+        System.setProperty("netbeans.user", r1fld1.getAbsolutePath());
+        Mercurial.getInstance().versionedFilesChanged();
+        assertEquals(r1, Mercurial.getInstance().getRepositoryRoot(r1));
+        assertEquals(r1, Mercurial.getInstance().getRepositoryRoot(r1f1));
+        assertNull(Mercurial.getInstance().getRepositoryRoot(r1fld1));
+        assertNull(Mercurial.getInstance().getRepositoryRoot(r1fld1f1));
+        
+        // logic in VersioningManager used to mark all parents of an excluded tree as unversioned too - that's obviously wrong
+        // we want to exclude only userdir, not the whole disk
+        assertNull(VersioningSupport.getOwner(r1fld1f1));
+        assertNull(VersioningSupport.getOwner(r1fld1));
+        // only subtree is unversioned, r1 itself is versioned
+        assertEquals(MercurialVCS.class, VersioningSupport.getOwner(r1).getClass());
+        assertEquals(MercurialVCS.class, VersioningSupport.getOwner(r1f1).getClass());
     }
 
     private void clearCachedValues() throws Exception {

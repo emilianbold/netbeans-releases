@@ -45,17 +45,18 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -169,20 +170,14 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private boolean checkPlatformValidity() {
-        NbModuleProject nbprj = data.getProject().getLookup().lookup(NbModuleProject.class);
-        if (nbprj == null) {
-            //ignore this check for non default netbeans projects.
-            return true;
-        }
-        NbPlatform platform = nbprj.getPlatform(false);
-        if (platform == null) {
-            setError(getMessage("ERR_No_Platform"));
-            return false;
-        }
         for (String module : NewProjectIterator.MODULES) {
-            if (platform.getModule(module) == null) {
-                setError(getMessage("ERR_Missing_Modules"));
-                return false;
+            try {
+                if (data.getModuleInfo().getDependencyVersion(module) == null) {
+                    setError(getMessage("ERR_Missing_Modules"));
+                    return false;
+                }
+            } catch (IOException x) {
+                Logger.getLogger(NameAndLocationPanel.class.getName()).log(Level.INFO, null, x);
             }
         }
         return true;

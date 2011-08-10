@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Observable query request to be passed to
@@ -58,7 +59,7 @@ public final class QueryRequest extends Observable {
     
     private List<QueryField> queryFields;
     private String className;
-    private RepositoryInfo[] repositories;
+    private List<RepositoryInfo> repositories;
     private boolean queryFinished;
     private final List<NBVersionInfo> results = new ArrayList<NBVersionInfo>();
 
@@ -73,7 +74,7 @@ public final class QueryRequest extends Observable {
      * @param repos
      * @param observer
      */
-    public QueryRequest(List<QueryField> fields, RepositoryInfo[] repos, Observer observer) {
+    public QueryRequest(List<QueryField> fields, @NonNull List<RepositoryInfo> repos, Observer observer) {
         queryFields = fields;
         repositories = repos;
         addObserver(observer);
@@ -91,7 +92,7 @@ public final class QueryRequest extends Observable {
      * @param repos
      * @param observer
      */
-    public QueryRequest(String classname, RepositoryInfo[] repos, Observer observer) {
+    public QueryRequest(String classname, @NonNull List<RepositoryInfo> repos, Observer observer) {
         className = classname;
         repositories = repos;
         addObserver(observer);
@@ -163,7 +164,7 @@ public final class QueryRequest extends Observable {
         return className;
     }
     
-    public RepositoryInfo[] getRepositories() {
-        return repositories;
+    public @NonNull List<RepositoryInfo> getRepositories() {
+        return Collections.unmodifiableList(repositories);
     }
 }

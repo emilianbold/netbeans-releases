@@ -45,6 +45,8 @@ package org.netbeans.modules.php.editor;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
@@ -75,15 +77,29 @@ import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Petr Pisl
  */
-@LanguageRegistration(mimeType="text/x-php5") //NOI18N
+@LanguageRegistration(mimeType="text/x-php5", useMultiview=true) //NOI18N
 @PathRecognizerRegistration(mimeTypes="text/x-php5", sourcePathIds=PhpSourcePath.SOURCE_CP, libraryPathIds=PhpSourcePath.BOOT_CP, binaryLibraryPathIds={}) //NOI18N
 public class PHPLanguage extends DefaultLanguageConfig {
 
+    @MultiViewElement.Registration(
+        displayName="#LBL_PHPEditorTab",
+        iconBase="org/netbeans/modules/php/editor/resources/php16.png",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="php.source",
+        mimeType="text/x-php5",
+        position=1
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+    
     @Override
     public String getLineCommentPrefix() {
         return "//";    //NOI18N

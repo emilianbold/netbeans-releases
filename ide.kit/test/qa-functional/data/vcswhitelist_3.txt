@@ -1,3 +1,4 @@
+#serves for VCSClassloadingTest.testTraverseCVSMenu
 #include vcswhitelist_2.txt
 
 # CVS offenders - remove after fix

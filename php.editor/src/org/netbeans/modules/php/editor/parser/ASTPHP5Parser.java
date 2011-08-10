@@ -7686,7 +7686,7 @@ class CUP$ASTPHP5Parser$actions {
 		
 	// Note: we never generate K_HALT_COMPILER
         RESULT = null;
-        System.out.println("Syntax error ??????");
+        //System.out.println("Syntax error ??????");
 
               CUP$ASTPHP5Parser$result = parser.getSymbolFactory().newSymbol("inner_statement",8, ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.elementAt(CUP$ASTPHP5Parser$top-3)), ((java_cup.runtime.Symbol)CUP$ASTPHP5Parser$stack.peek()), RESULT);
             }

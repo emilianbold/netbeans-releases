@@ -107,7 +107,7 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         SlidingButton slide = (SlidingButton)b;
         Graphics2D g2d = (Graphics2D)g;
         int orientation = slide.getOrientation();
-        if (orientation == SlideBarDataModel.SOUTH) {
+        if (orientation == SlideBarDataModel.SOUTH || orientation == SlideBarDataModel.NORTH) {
             rotatedViewRect = new Rectangle(0, 0, viewRect.width, viewRect.height);
         } else {
             rotatedViewRect = new Rectangle(0, 0, viewRect.height, viewRect.width);
@@ -121,7 +121,7 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
             rotatedViewRect, rotatedIconRect, rotatedTextRect,
 	    b.getText() == null ? 0 : b.getIconTextGap());
         
-        if (orientation == SlideBarDataModel.SOUTH) {
+        if (orientation == SlideBarDataModel.SOUTH || orientation == SlideBarDataModel.NORTH) {
             iconRect = new Rectangle(viewRect.x + rotatedIconRect.x, viewRect.y + rotatedIconRect.y,
                                      rotatedIconRect.width, rotatedIconRect.height);
             textRect = new Rectangle(viewRect.x + rotatedTextRect.x, viewRect.y + rotatedTextRect.y,    
@@ -168,16 +168,14 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
             
             
             AffineTransform saveTr = g2d.getTransform();
-            if (orientation != SlideBarDataModel.SOUTH) {
-                if (orientation == SlideBarDataModel.WEST) {
-                    // rotate 90 degrees counterclockwise for WEST orientation
-                    g2d.rotate( -Math.PI / 2 );
-                    g2d.translate(-c.getHeight(), 0 );
-                } else {
-                    // rotate 90 degrees clockwise for EAST orientation
-                    g2d.rotate( Math.PI / 2 );
-                    g2d.translate( 0, - c.getWidth() );
-                }
+            if (orientation == SlideBarDataModel.WEST) {
+                // rotate 90 degrees counterclockwise for WEST orientation
+                g2d.rotate( -Math.PI / 2 );
+                g2d.translate(-c.getHeight(), 0 );
+            } else if( orientation == SlideBarDataModel.EAST ) {
+                // rotate 90 degrees clockwise for EAST orientation
+                g2d.rotate( Math.PI / 2 );
+                g2d.translate( 0, - c.getWidth() );
             }
             
             
@@ -225,7 +223,7 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         Dimension prefSize = super.getPreferredSize(c);
         int orientation = b.getOrientation();
         
-        if (orientation == SlideBarDataModel.SOUTH) {
+        if (orientation == SlideBarDataModel.SOUTH || orientation == SlideBarDataModel.NORTH) {
             return prefSize;
         }
         else {

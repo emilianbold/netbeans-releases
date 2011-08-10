@@ -450,25 +450,6 @@ made subject to such option by the copyright holder.
             </folder>
 
         </folder>
-
-        <!-- XXX these two should be elsewhere, probably (core/favorites?): -->
-
-        <!-- folder for all privileged templates -->
-        <folder name="Privileged">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
-            <attr name="simple" boolvalue="false"/>
-            <attr name="position" intvalue="0"/>
-        </folder>
-
-        <!-- folder for all recent templates -->
-        <folder name="Recent">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
-            <attr name="simple" boolvalue="false"/>
-            <attr name="position" intvalue="0"/>
-        </folder>
-
     </folder>
 
     <folder name="Services">
@@ -521,6 +502,9 @@ made subject to such option by the copyright holder.
 
         <file name="bottomSlidingSide.wsmode" url="windowmanager/bottomside.wsmode"/>
         <folder name="bottomSlidingSide"/>
+
+        <file name="topSlidingSide.wsmode" url="windowmanager/topside.wsmode"/>
+        <folder name="topSlidingSide"/>
 
         </folder>
 

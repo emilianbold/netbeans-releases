@@ -42,7 +42,6 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.ResourceNode.ResourceNodeType;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -60,17 +59,8 @@ class JdbcChildren extends WLNodeChildren {
     private final JdbcChildrenFactory.UnregisterFactory unregisterFactory;
 
     JdbcChildren(Lookup lookup) {
-        WLDeploymentManager manager = lookup.lookup(WLDeploymentManager.class);
-        assert manager != null;
-
-        // TODO should we use proxy ?
-        if (manager.isWebProfile()) {
-            this.retriever = new WebProfileJdbRetriever(lookup);
-            this.unregisterFactory = null;
-        } else {
-            this.retriever = new JdbRetriever(lookup);
-            this.unregisterFactory = new JdbRetriever.JdbcUnregisterFactory();
-        }
+        this.retriever = new JdbRetriever(lookup);
+        this.unregisterFactory = new JdbRetriever.JdbcUnregisterFactory();
 
         setKeys(new Object[]{
                 createJDBCResourcesNode(lookup),

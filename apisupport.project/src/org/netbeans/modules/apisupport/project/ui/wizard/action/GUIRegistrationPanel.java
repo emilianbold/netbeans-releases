@@ -62,12 +62,11 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.api.UIUtil.LayerItemPresenter;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
-import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerComponentFactory;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -134,7 +133,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             // XXX check if there are not multiple (--> redundant) listeners
             txt.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
                 public void insertUpdate(DocumentEvent e) {
-                    if (!CustomizerComponentFactory.isWaitModel(combo.getModel())) {
+                    if (!UIUtil.isWaitModel(combo.getModel())) {
                         checkValidity();
                     }
                 }
@@ -266,7 +265,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
     private boolean isEmptyCombo(JComponent c) {
         return c instanceof JComboBox &&
-                CustomizerComponentFactory.hasOnlyValue(((JComboBox) c).getModel(), CustomizerComponentFactory.EMPTY_VALUE);
+                UIUtil.hasOnlyValue(((JComboBox) c).getModel(), UIUtil.EMPTY_VALUE);
     }
     
     private void readSFS() {
@@ -291,7 +290,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             final JComboBox comboPositions,
             final String subFolderName,
             final boolean editable) {
-        combo.setModel(CustomizerComponentFactory.createComboWaitModel());
+        combo.setModel(UIUtil.createComboWaitModel());
         SFS_RP.post(new Runnable() {
             public void run() {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
@@ -342,7 +341,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         
         assert parent != null;
         assert positionsCombo != null;
-        positionsCombo.setModel(CustomizerComponentFactory.createComboWaitModel());
+        positionsCombo.setModel(UIUtil.createComboWaitModel());
         SFS_RP.post(new Runnable() {
             public void run() {
                 DataObject[] kids = DataFolder.findFolder(parent.getFileObject()).getChildren(); // #71820: sort!
@@ -381,7 +380,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
    
     private static Object getSelectedItem(final JComboBox combo) {
         Object item = combo.getSelectedItem();
-        return (item == CustomizerComponentFactory.WAIT_VALUE || item == CustomizerComponentFactory.EMPTY_VALUE) ? null : item;
+        return (item == UIUtil.WAIT_VALUE || item == UIUtil.EMPTY_VALUE) ? null : item;
     }
     
     private static LayerItemPresenter getSelectedLayerPresenter(final JComboBox combo) {
@@ -398,7 +397,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private void setEmptyModel(JComboBox combo) {
         if (combo != null) {
-            combo.setModel(CustomizerComponentFactory.createComboEmptyModel());
+            combo.setModel(UIUtil.createComboEmptyModel());
             combo.setEnabled(false);
             combo.setEditable(false);
             checkValidity();

@@ -120,7 +120,7 @@ public class testCCConstructorsAndDestructors extends cc
     TypeCode(eoPHP, "\n" );
     Sleep( 1000 );
     sCode = "function __des";
-    sIdeal = "function  __destruct()";
+    sIdeal = "            function __destruct() {";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     WaitCompletionScanning( );

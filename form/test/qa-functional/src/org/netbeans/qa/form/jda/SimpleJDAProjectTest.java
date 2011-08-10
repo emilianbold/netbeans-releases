@@ -52,6 +52,8 @@ import org.netbeans.qa.form.ExtJellyTestCase;
  * 
  * <b>Adam Senk</b>
  * 20 April 2011 WORKS
+ * 
+ * NO JDA PROJECT SINCE 7.1
  */
 public class SimpleJDAProjectTest extends ExtJellyTestCase {
     

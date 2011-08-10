@@ -41,84 +41,80 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     <head>
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
         <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-        <meta content="Helen" name="generator">
-        <title>About PHP Development in the NetBeans IDE</title>
+        <title>About the NetBeans IDE for PHP</title>
     </head>
     <body>
         <h2>
-            About PHP Development in the NetBeans IDE
+            About the NetBeans IDE for PHP
         </h2>
         <p>
-            The NetBeans IDE for PHP provides tools for programming in the PHP language.
+            The NetBeans IDE (Integrated Developer Environment) for PHP provides tools for 
+            PHP programmers. The core of NetBeans PHP support is the PHP Editor, which
+            includes code completion and other programming aids. NetBeans IDE for PHP can also be
+            integrated with the Xdebug debugger, PHPUnit tester, and PHPDocumentor documentation
+            generator. 
         </p>
-        <h3>Project Creation</h3>
-        <p>
-            The Project Creation wizard enables setting up new PHP projects and importing previously
-            developed source files.
-        </p>
-        <h3>Editor Features</h3>
-        <p>
-            The PHP editor provides the following features:
-        </p>
+        <p>Please note that the NetBeans IDE is designed to be as lightweight as possible. It
+        does not contain visual design tools or other heavy-duty features.</p>
+        <h3>Databases</h3>
+        <p>The NetBeans IDE supports work with databases. Open the Services window and register
+            your database by right-clicking the Databases node. You may need to add the path to your
+            database driver as well. NetBeans IDE provides a tree view of database contents and an
+            SQL editor. For more information, see <a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">
+                Connecting to a Database</a>.</p>
+        <h3>Remote Development</h3>
+
+        <p>The NetBeans IDE includes support for Subversion, Mercurial, and Git versioning systems. 
+            You can also add CVS support as a plugin. See 
+            <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/collab/collab_about.html">About
+                Collaborative Development</a>.</p>
+        <p>NetBeans also provides basic support for FTP/SFTP, sufficient for a lone developer to work on
+            a simple project. If you are working on a complicated project or with multiple developers,
+            you should use a version control system. If you must use FTP/SFTP with a complicated project, consider
+            using the IDE in combination with a full-featured FTP client.</p>
+        <h3>Public Releases and Development Builds</h3>
+        <p>To see the latest features and try them out while they are in progress, install a daily development build
+        of the IDE. For a safer alternative, use the public release. Both public release and development builds can
+        be installed from http://netbeans.org/downloads/index.html. Look for the Development link.</p>
+        <h3>Getting Help</h3>
+        <p>In addition to the topics shown here, NetBeans IDE for PHP provides the following sources of information:</p>
         <ul>
-            <li>Syntax Highlighting</li>
-            <li>Go To Declaration</li>
-            <li>Navigator</li>
-            <li>Code Folding</li>
-            <li>Smart Indent</li>
-            <li>Formatting</li>
-            <li>Bracket Completion</li>
-            <li>Rename Refactoring and Instant Rename</li>
-            <li>Code Completion
-                <ul>
-                    <li>Snippets</li>
-                    <li>Context-Sensitive Proposals</li>
-                    <li>Code Templates and Abbreviations</li>
-                    <li>Code Completion in Constructors</li>
-                    <li>SQL Code Completion</li>
-                    <li>PHP 5.3 Namespaces</li>
-                    <li>Overridden and Implemented Methods</li>
-                </ul>
-                
-            </li>
-            <li>PHP Documentor Support</li>    
-            <li>Code Generators
-                <ul>
-                    <li>Constructors</li>
-                    <li>Getters and Setters</li>
-                    <li>Overridden and Implemented Methods</li>
-                </ul>
-            </li>
-            <li>Defining Variable Type in Comments</li>
-            <li>Framework Support</li>
-            <li>Parameter Hints</li>
-            <li>PHPUnit and Selenium Support</li>
-            <li>Error Messages</li>
+            <li><b>Context-sensitive help.</b> Click the Help button in a dialog to see a description of the options
+            in that dialog. Context-sensitive help is also available for the Editor, Projects, Services, 
+            Files, and other windows. Select any item in a window and press F1 to see the help for that
+            window.</li>
+            <li><b>Web-based tutorials.</b> See the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/trails/php.html">
+                            <param name="text" value="<html><u>PHP Learning Trail</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</li>
+                        <li><b>NetBeans PHP Users Forum and Mailing List.</b> A forum for PHP users 
+                            is available at <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://forums.netbeans.org/php-users.html">
+                            <param name="text" value="<html><u>NetBeans Forum for PHP</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.
+                        <p>This forum is mirrored as a mailing list. Subscribe to the mailing list or
+                        the forum at <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://netbeans.org/community/lists/index.html">
+                            <param name="text" value="<html><u>NetBeans Mailing Lists and Forums</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object></p></li>
+                        <li><b>NetBeans PHP Blog.</b> The NetBeans PHP development team keeps a blog where
+                        you can learn about future plans and the latest NetBeans features. Comments welcome!
+                        See the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://blogs.oracle.com/netbeansphp/">
+                            <param name="text" value="<html><u>NetBeans for PHP Blog</u>.</html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object></li>
         </ul>
-        <h3>Run Configurations</h3>
-        <p>
-            You can also run and debug PHP applications in the IDE in three modes:
-        </p>
-        <ul>
-            <li>
-                Local web server
-            </li>
-            <li>
-                Remote web server with FTP or SFTP connection
-            </li>
-            <li>
-                Script
-            </li>
-        </ul>
-        <h3>Debugging</h3>
-        <p>NetBeans IDE for PHP supports the XDebug debugger. You need to install and
-        configure XDebug separately. Setup varies greatly depending on your environment.
-        See the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
-                <param name="text" value="<html><u>How to Configure XDebug NetBeans wiki page</u></html>">
-                <param name="textFontSize" value="medium">
-                <param name="textColor" value="blue">
-            </object> for more information.</p>
+        
+        
+        
         <p>For a more detailed description of NetBeans PHP Editor features, please see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://www.netbeans.org/kb/docs/php/editorguide.html">
                 <param name="text" value="<html><u>NetBeans IDE for PHP Editor: Brief Overview (Web document)</u></html>">

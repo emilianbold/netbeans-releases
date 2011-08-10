@@ -277,7 +277,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             File[] roots = fileChooser.getFileSystemView().getRoots();
             if (roots != null && roots.length == 1) {
                 File[] cbFolders = getShellFolderRoots();
-                if (cbFolders != null && cbFolders.length > 0 && roots[0] == cbFolders[0]) {
+                if (cbFolders != null && cbFolders.length > 0 && Arrays.asList(cbFolders).contains(roots[0])) {
                     useShellFolder = true;
                 }
             }

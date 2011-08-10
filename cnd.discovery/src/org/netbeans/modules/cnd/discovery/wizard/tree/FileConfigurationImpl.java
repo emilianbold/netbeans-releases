@@ -72,6 +72,11 @@ public class FileConfigurationImpl extends NodeConfigurationImpl implements File
     }
 
     @Override
+    public String getCompileLine() {
+        return sourceFile.getCompileLine();
+    }
+
+    @Override
     public String getFileName() {
         return sourceFile.getItemName();
     }
@@ -89,5 +94,5 @@ public class FileConfigurationImpl extends NodeConfigurationImpl implements File
     @Override
     public LanguageStandard getLanguageStandard() {
         return sourceFile.getLanguageStandard();
-    }    
+    }
 }

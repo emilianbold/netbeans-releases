@@ -64,24 +64,27 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
     </head>
 
     <body>
-        <h1>General PHP Options</h1>
+        <h2>General PHP Options</h2>
         <p>In this tab you set the path to the default PHP interpreter, some debugging options, and the global Include path.</p>
-        <h2>PHP Interpreter</h2>
-        <p>This is the path to the default PHP interpreter. The PHP interpreter is used to execute a PHP script from the command line. </p>
+        <h3>Command Line</h3>
         <p>You can set a PHP project to run as a command-line script in the project's Run 
-            Configuration properties. See <a href="../new-project-run-configuration.html">
-                Defining the Default Run Configuration</a> and 
-            <a href="../customize-project-run-configuration.html">Customizing the 
-                Project Settings: Run Configuration</a>. Note that you can override 
+            Configuration properties. Note that you can override 
             the default path to the PHP interpreter and set an interpreter for a project. 
             Note also that a project can have multiple run configurations.</p>
-        <p>Click Search. The IDE searches for all PHP interpreters that you have installed. 
-            A dialog opens in which you select which interpreter to use. Alternatively, 
-            click Browse and manually browse your file system for the interpreter.</p>
-        <p>By default, the results of running a PHP project as a script are displayed 
-            in the IDE's Output window. Tick the appropriate box to display the 
-            results in a browser or the editor's main pane, instead.</p>
-        <h2>Debugging</h2>
+        <ul>
+            <li><b>PHP 5 Interpreter:</b> the path to the default PHP interpreter. 
+                The PHP interpreter is used to execute a PHP script from the command line.
+                <ul>
+                    <li><b>Search.</b> The IDE searches for all PHP interpreters that you have installed. 
+            A dialog opens in which you select which interpreter to use.</li>
+                    <li><b>Browse...</b> Manually browse your file system for the interpreter.</li>
+                </ul>
+            </li>
+            <li><b>Open result in:</b> Select where to display the results of running
+                a PHP application from the command-line. Tick the appropriate box to display the 
+            results in the IDE's Output window, a browser, or the editor's main pane.</li>
+        </ul> 
+        <h3>Debugging</h3>
         <p>In this section, set the following options:</p>
         <ul>
             <li><strong>Debugger port </strong>This is the port that XDebug uses, 
@@ -106,12 +109,12 @@ Portions Copyrighted 2009 Sun Microsystems, Inc.
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue"></object>.</li>
         </ul>
-        <h2>Global Include Path</h2>
+        <h3>Global Include Path</h3>
         <p>The Global Include Path are folders that are included in all PHP projects' include paths. 
             Click Add Folder to browse for a folder to add to the global include path. </p>
         <p>You can move folders up or down in the global include path. Higher folders are given priority.</p>
         <p>If you are using a PHP framework, add that framework's library folder to the global include path.</p>
-        <p>&nbsp;</p>
+        
         <hr>
         <p>
             <small><a href="../credits.html">Legal Notices</a></small>

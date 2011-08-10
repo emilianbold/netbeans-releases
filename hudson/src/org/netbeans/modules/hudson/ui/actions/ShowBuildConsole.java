@@ -147,7 +147,7 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
                         LOG.fine("was running, will resynchronize");
                         HudsonInstance instance = job.getInstance();
                         if (instance instanceof HudsonInstanceImpl) {
-                            ((HudsonInstanceImpl) instance).synchronize();
+                            ((HudsonInstanceImpl) instance).synchronize(false);
                         }
                     }
                     break;

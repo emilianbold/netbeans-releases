@@ -61,8 +61,9 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -71,7 +72,7 @@ import org.openide.filesystems.FileUtil;
  * SourceForBinary and JavadocForBinary query impls.
  * @author  Milos Kleint 
  */
-public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementation,
+public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementation2,
         JavadocForBinaryQueryImplementation {
     
     private final NbMavenProjectImpl project;
@@ -94,17 +95,12 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             }
         });
     }
-    /**
-     * Returns the source root(s) for a given binary root.
-     * <p>
-     * Any absolute URL may be used but typically it will use the <code>file</code>
-     * protocol for directory entries and <code>jar</code> protocol for JAR entries
-     * (e.g. <samp>jar:file:/tmp/foo.jar!/</samp>).
-     * </p>
-     * @param binaryRoot the class path root of Java class files
-     * @return a list of source roots; may be empty but not null
-     */
+
     public @Override SourceForBinaryQuery.Result findSourceRoots(URL url) {
+        return findSourceRoots2(url);
+    }
+
+    public @Override SourceForBinaryQueryImplementation2.Result findSourceRoots2(URL url) {
         synchronized (map) {
             BinResult toReturn = map.get(url.toString());
             if (toReturn != null) {
@@ -168,15 +164,18 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         File file = FileUtil.archiveOrDirForURL(url);
         if (file != null) {
             String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
-            String path = project.getArtifactRelativeRepositoryPath();
+            String path = jarify(project.getArtifactRelativeRepositoryPath());
             int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
             if (ret == -1) {
-                path = project.getTestArtifactRelativeRepositoryPath();
+                path = jarify(project.getTestArtifactRelativeRepositoryPath());
                 ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
             }
             return ret;
         }
         return -1;
+    }
+    static String jarify(String path) { // #200088
+        return path.replaceFirst("[.][^./]+$", ".jar");
     }
     
     private FileObject[] getSrcRoot() {
@@ -276,7 +275,7 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     }
     
     
-    private class BinResult implements SourceForBinaryQuery.Result  {
+    private class BinResult implements SourceForBinaryQueryImplementation2.Result  {
         private URL url;
         private final List<ChangeListener> listeners;
         private FileObject[] results;
@@ -325,6 +324,10 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             for (ChangeListener listen : lists) {
                 listen.stateChanged(new ChangeEvent(this));
             }
+        }
+
+        @Override public boolean preferSources() {
+            return project.getLookup().lookup(ForeignClassBundler.class).preferSources();
         }
         
     }

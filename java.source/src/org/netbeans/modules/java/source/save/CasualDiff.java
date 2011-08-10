@@ -87,7 +87,8 @@ public class CasualDiff {
     private TokenSequence<JavaTokenId> tokenSequence;
     private String origText;
     private VeryPretty printer;
-    private Context context;
+    private final Context context;
+    private final Names names;
     private static final Logger LOG = Logger.getLogger(CasualDiff.class.getName());
 
     private Map<Integer, String> diffInfo = new HashMap<Integer, String>();
@@ -107,6 +108,7 @@ public class CasualDiff {
         this.tokenSequence = diffContext.tokenSequence;
         this.origText = diffContext.origText;
         this.context = context;
+        this.names = Names.instance(context);
         this.tree2Tag = tree2Tag;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
         printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText);
@@ -565,11 +567,11 @@ public class CasualDiff {
         } else {
             posHint = oldT.typarams.iterator().next().getStartPosition();
         }
-        if (!oldT.sym.isConstructor() || origClassName != null) {
+        if (oldT.name != names.init || origClassName != null) {
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
                 // use orig class name in case of constructor
-                if (oldT.sym.isConstructor() && (origClassName != null)) {
+                if (oldT.name == names.init && (origClassName != null)) {
                     printer.print(newT.name);
                     localPointer = oldT.pos + origClassName.length();
                 }
@@ -586,7 +588,7 @@ public class CasualDiff {
             // compute the position. Find the parameters closing ')', its
             // start position is important for us. This is used when 
             // there was not any parameter in original tree.
-            int startOffset = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
+            int startOffset = oldT.pos;
 
             moveFwdToToken(tokenSequence, startOffset, JavaTokenId.RPAREN);
             posHint = tokenSequence.offset();
@@ -1329,7 +1331,14 @@ public class CasualDiff {
         int localPointer = bounds[0];
         if (oldT.encl != null) {
             int[] enclBounds = getBounds(oldT.encl);
-            localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
+
+            if (newT.encl == null) {
+                moveFwdToToken(tokenSequence, enclBounds[1], JavaTokenId.DOT);
+                tokenSequence.moveNext();
+                localPointer = tokenSequence.offset();
+            } else {
+                localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
+            }
         }
         diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
         if (!enumConstantPrint) {

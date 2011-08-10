@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.branding;
 
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -56,8 +57,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.apisupport.project.suite.BrandingSupport.BrandedFile;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.api.UIUtil;
+import org.netbeans.modules.apisupport.project.spi.BrandingSupport.BrandedFile;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -79,7 +80,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
     
     private URL splashSource;
 
-    public SplashBrandingPanel(BasicBrandingModel model) {
+    public SplashBrandingPanel(BrandingModel model) {
         super(NbBundle.getMessage(BasicBrandingPanel.class, "LBL_SplashTab"), model); //NOI18N
         
         splashImage =new SplashComponentPreview();
@@ -193,7 +194,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
     
     @Override
     public void store() {
-        BasicBrandingModel branding = getBranding();
+        BrandingModel branding = getBranding();
         
         SplashUISupport.setValue(branding.getSplashRunningTextFontSize(), SplashUISupport.numberToString((Number) fontSize.getValue()));
         SplashUISupport.setValue(branding.getSplashRunningTextBounds(), SplashUISupport.boundsToString((Rectangle)runningTextBounds.getValue()));
@@ -224,7 +225,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
     
     
     void refresh() {
-        BasicBrandingModel branding = getBranding();
+        BrandingModel branding = getBranding();
         
         fontSize.setValue(SplashUISupport.bundleKeyToInteger(branding.getSplashRunningTextFontSize()));
         runningTextBounds.setValue(SplashUISupport.bundleKeyToBounds(branding.getSplashRunningTextBounds()));
@@ -249,7 +250,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
     }
     
     private void enableDisableComponents() {
-        final BasicBrandingModel branding = getBranding();
+        final BrandingModel branding = getBranding();
         jLabel1.setEnabled(branding.isBrandingEnabled());
         jLabel2.setEnabled(branding.isBrandingEnabled());
         fontSize.setEnabled(branding.isBrandingEnabled());

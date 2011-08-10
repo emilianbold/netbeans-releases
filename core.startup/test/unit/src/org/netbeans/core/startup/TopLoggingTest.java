@@ -254,7 +254,7 @@ public class TopLoggingTest extends NbTestCase {
 
     }
     public void testLogLoggingMessagesEndsUpInMultipleFiles() throws Exception {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while(sb.length() < 1024) {
             sb.append("0123456789");
         }
@@ -422,6 +422,7 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #6843: disk is "" at end
     public void testFlushHappensAfterFewSeconds() throws Exception {
         Logger l = Logger.getLogger(TopLoggingTest.class.getName());
         l.log(Level.INFO, "First visible message");

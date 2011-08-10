@@ -373,6 +373,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     }
     
     protected CloneableTopComponent createCloneableTopComponent() {
+        if (dObj.getEditorMimeType() != null) {
+            CloneableTopComponent mvtc = MultiViews.createCloneableMultiView(dObj.getEditorMimeType(), dObj);
+            this.mvtc = mvtc;
+            return mvtc;
+        }
+
         MultiViewDescription[] descs = getMultiViewDescriptions();
         
         CloneableTopComponent mvtc =
@@ -810,7 +816,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     static final class XmlCloneableEditor extends CloneableEditor {
         public XmlCloneableEditor(XmlMultiViewEditorSupport s) {
             super(s);
-        }
+}
 
         protected void componentActivated() {
             super.componentActivated();

@@ -113,7 +113,7 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
     public void testSelectTemplate() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
         String mainClass = Bundle.getString("org.netbeans.modules.java.project.Bundle",
-                "Templates/Classes/Main.java");
+                "Main.java");
         // "Java Classes|Java Main Class"
         String templatePath = Bundle.getString("org.netbeans.modules.java.project.Bundle",
                 "Templates/Classes")

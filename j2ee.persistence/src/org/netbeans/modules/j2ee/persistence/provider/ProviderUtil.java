@@ -804,7 +804,15 @@ public class ProviderUtil {
         }
         return null;
     }
-
+    
+    
+    public static String getDatasourceName(PersistenceUnit pu) {
+        String datasourceName = pu.getJtaDataSource();
+        if (datasourceName == null) {
+            datasourceName = pu.getNonJtaDataSource();
+        }
+        return datasourceName;
+    }
     /**
      * @return array of providers known to the IDE.
      */

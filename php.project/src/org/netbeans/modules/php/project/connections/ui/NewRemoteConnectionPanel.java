@@ -105,7 +105,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
     public String getConnectionName() {
         return connectionNameTextField.getText().trim();
     }
-    
+
     public String getOldConfigName() {
         // Backwards compatibility with new getConfigName - #190930
         return getConnectionName().replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
@@ -118,13 +118,13 @@ public final class NewRemoteConnectionPanel extends JPanel {
         } catch (NoSuchAlgorithmException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         md.update(getConnectionName().getBytes());
         byte[] digest = md.digest();
         BigInteger hash = new BigInteger(1, digest);
         String hashWord = hash.toString(16);
         String postfix = hashWord.substring(hashWord.length() - 6, hashWord.length());
-        
+
         return getOldConfigName() + "-" + postfix; // NOI18N
     }
 

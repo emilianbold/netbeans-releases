@@ -110,6 +110,20 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Execute the project</summary>
+            <version major="1" minor="49"/>
+            <date day="3" month="8" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                Layout designer seeks for <code>ExecProject</code> interface
+                in project's lookup when it needs to execute the application
+                with additional parameters.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="ExecProject"/>
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Added prepareContext method</summary>
             <version major="1" minor="38"/>
             <date day="23" month="2" year="2010"/>

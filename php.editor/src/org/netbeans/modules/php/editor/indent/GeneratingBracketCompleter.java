@@ -67,9 +67,12 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -78,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -145,20 +149,43 @@ public class GeneratingBracketCompleter {
                     if (n instanceof MethodDeclaration) {
                         generateFunctionDoc(doc, offset, indent, parserResult, ((MethodDeclaration) n).getFunction());
                     }
-
-//TODO: rewrite needed, doesn't work properly now
-//                    if (n instanceof ExpressionStatement && ((ExpressionStatement) n).getExpression() instanceof Assignment) {
-//                        Assignment a = (Assignment) ((ExpressionStatement) n).getExpression();
-//
-//                        if (a.getLeftHandSide() instanceof ArrayAccess) {
-//                            AttributedElement el = SemiAttribute.semiAttribute(parserResult).getElement(
-//                                    a.getLeftHandSide());
-//
-//                            if (el != null && el.getKind() == Kind.VARIABLE) {
-//                                generateVariableDoc(doc, offset, indent, parserResult, el);
-//                            }
-//                        }
-//                    }
+                    
+                    if (n instanceof ExpressionStatement) {
+                        if (((ExpressionStatement)n).getExpression() instanceof Assignment) {
+                            Assignment assignment = (Assignment)((ExpressionStatement) n).getExpression();
+                            if (assignment.getLeftHandSide() instanceof ArrayAccess) {
+                                ArrayAccess arrayAccess = (ArrayAccess)assignment.getLeftHandSide();
+                                if (arrayAccess.getName() instanceof Variable) {
+                                    Variable variable = (Variable)arrayAccess.getName();
+                                    if (variable.isDollared() 
+                                            && variable.getName() instanceof Identifier
+                                            && "GLOBALS".equals(((Identifier)variable.getName()).getName())
+                                            && arrayAccess.getIndex() instanceof Scalar) {
+                                        String index = ((Scalar)arrayAccess.getIndex()).getStringValue().trim();
+                                        if(index.length() > 0 
+                                                && (index.charAt(0) == '\'' || index.charAt(0) == '"')) {
+                                            index = index.substring(1, index.length() - 1);
+                                        }
+                                        String type = null;
+                                        if (assignment.getRightHandSide() instanceof Scalar) {
+                                            switch(((Scalar)assignment.getRightHandSide()).getScalarType()) {
+                                                case INT:
+                                                    type = "integer";   //NOI18N
+                                                    break;
+                                                case REAL:
+                                                    type = "float";     //NOI18N
+                                                    break;
+                                                case STRING:
+                                                    type = "string";    //NOI18N
+                                                    break;
+                                            }
+                                        }
+                                        generateGlobalVariableDoc(doc, offset, indent, index, type);
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     if (n instanceof FieldsDeclaration) {
                         generateFieldDoc(doc, offset, indent, parserResult, (FieldsDeclaration) n);
@@ -217,14 +244,15 @@ public class GeneratingBracketCompleter {
         }
     }
     
-//    private static void generateVariableDoc(BaseDocument doc, int offset, int indent, ParserResult info, AttributedElement el) throws BadLocationException {
-//        StringBuilder toAdd = new StringBuilder();
-//
-//        generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
-//        generateDocEntry(doc, toAdd, "@name", indent, "$" + el.getName(), null);
-//
-//        doc.insertString(offset - 1, toAdd.toString(), null);
-//    }
+    private static void generateGlobalVariableDoc (BaseDocument doc, int offset, int indent, String indexName, String type) throws BadLocationException {
+        StringBuilder toAdd = new StringBuilder();
+
+        generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + indexName + "']", type);
+        toAdd.append("\n").append(IndentUtils.createIndentString(doc, indent));
+        toAdd.append(" * ").append("@name $").append(indexName);
+        
+        doc.insertString(offset - 1, toAdd.toString(), null);
+    }
     
     private static void generateFieldDoc(BaseDocument doc, int offset, int indent, ParserResult info, FieldsDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();

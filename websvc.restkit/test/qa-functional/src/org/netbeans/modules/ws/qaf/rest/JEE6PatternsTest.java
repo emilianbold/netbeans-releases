@@ -52,13 +52,15 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class JEE6PatternsTest extends PatternsTest {
 
+    protected static Server server = Server.GLASSFISH;
+    
     /**
      * Def constructor.
      *
      * @param testName name of particular test case
      */
     public JEE6PatternsTest(String name) {
-        super(name);
+        super(name, server);
     }
 
     @Override
@@ -70,22 +72,22 @@ public class JEE6PatternsTest extends PatternsTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(JEE6PatternsTest.class),
+        return NbModuleSuite.create(addServerTests(server, NbModuleSuite.createConfiguration(JEE6PatternsTest.class),
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
                 "testSingleton1", //NOI18N
                 "testCcContainerI1", //NOI18N
                 "testSingleton2", //NOI18N
-                "testContainerI1", //NOI18N
-                "testContainerI2", //NOI18N
-                "testSingleton3", //NOI18N
-                "testContainerI3", //NOI18N
-                "testCcContainerI2", //NOI18N
-                "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
-                "testDeploy", //NOI18N
-                "testUndeploy" //NOI18N
+                "testContainerI1" //NOI18N
+//                "testContainerI2", //NOI18N
+//                "testSingleton3", //NOI18N
+//                "testContainerI3", //NOI18N
+//                "testCcContainerI2", //NOI18N
+//                "testCcContainerI3", //NOI18N
+//                "testNodes", //NOI18N
+//                "testDeploy", //NOI18N
+//                "testUndeploy" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
     }
 

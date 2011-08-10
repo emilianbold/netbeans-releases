@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
@@ -45,130 +45,52 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EqualsMethodHint extends AbstractHint {
+@Hint(category="general", id="org.netbeans.modules.java.hints.EqualsMethodHint", suppressWarnings="EqualsWhichDoesntCheckParameterClass", options=Options.QUERY)
+public class EqualsMethodHint {
 
-    private static final String SUPPRESS_KEY = "EqualsWhichDoesntCheckParameterClass";
+    @TriggerPattern(value="$mods$ boolean equals(java.lang.Object $param) { $statements$; }")
+    public static ErrorDescription run(HintContext ctx) {
+        TreePath paramPath = ctx.getVariables().get("$param");
 
-    public EqualsMethodHint() {
-        super(true, false, HintSeverity.WARNING, SUPPRESS_KEY);
-    }
+        assert paramPath != null;
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(EqualsMethodHint.class, "DSC_EqualsMethod");
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD);
-    }
-
-    public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
-        if (!getTreeKinds().contains(treePath.getLeaf().getKind())) {
-            return null;
-        }
-        
-        if (info.getTreeUtilities().isSynthetic(treePath)) {
-            return null;
-        }
-        
-        MethodTree mt = (MethodTree) treePath.getLeaf();
-        
-        if (!mt.getName().contentEquals("equals")) { // NOI18N
-            return null;
-        }
-        
-        Element current = info.getTrees().getElement(treePath);
-        
-        if (current == null || current.getKind() != ElementKind.METHOD) {
-            return null;
-        }
-        
-        ExecutableElement currentMethod = (ExecutableElement) current;
-        
-        ExecutableElement equals = null;
-        TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
-        
-        if (jlObject != null) {
-            for (ExecutableElement ee : ElementFilter.methodsIn(jlObject.getEnclosedElements())) {
-                if (ee.getSimpleName().contentEquals("equals")) { // NOI18N
-                    equals = ee;
-                    break;
-                }
-            }
-        }
-        
-        if (equals == null || !info.getElements().overrides(currentMethod, equals, (TypeElement) currentMethod.getEnclosingElement())) {
-            return null;
-        }
-        
-        Element param = info.getTrees().getElement(new TreePath(treePath, mt.getParameters().get(0)));
+        Element param = ctx.getInfo().getTrees().getElement(paramPath);
         
         if (param == null || param.getKind() != ElementKind.PARAMETER) {
             return null;
         }
         
-        if (mt.getBody() == null) {
-            //#134255: body may be null
-            return null;
-        }
-        
-        try {
-            new VisitorImpl(info, param).scan(new TreePath(treePath, mt.getBody()), null);
-        } catch (Found f) {
-            return null;
-        }
-        
-        int[] span = info.getTreeUtilities().findNameSpan(mt);
-        
-        if (span == null) {
-            return null;
+        for (TreePath st : ctx.getMultiVariables().get("$statements$")) {
+            try {
+                new VisitorImpl(ctx.getInfo(), param).scan(st, null);
+            } catch (Found f) {
+                return null;
+            }
         }
 
-        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(EqualsMethodHint.class, "ERR_EQUALS_NOT_CHECKING_TYPE"),
-                FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_KEY),
-                info.getFileObject(),
-                span[0],
-                span[1]);
-
-        return Collections.singletonList(ed);
+        return ErrorDescriptionFactory.forName(ctx,
+                ctx.getPath(),
+                NbBundle.getMessage(EqualsMethodHint.class, "ERR_EQUALS_NOT_CHECKING_TYPE"));
     }
 
-    public String getId() {
-        return EqualsMethodHint.class.getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(EqualsMethodHint.class, "DN_EqualsMethod");
-    }
-
-    public void cancel() {
-    }
-    
     private static final class VisitorImpl extends TreePathScanner<Void, Void> {
         
         private CompilationInfo info;

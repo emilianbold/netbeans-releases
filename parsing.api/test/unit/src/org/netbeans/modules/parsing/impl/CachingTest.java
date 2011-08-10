@@ -60,6 +60,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -94,6 +95,7 @@ public class CachingTest extends NbTestCase {
         super (testName);
     }
 
+    @RandomlyFails // usually fails for jglick
     public void testCaching () throws Exception {
 
         // 1) register tasks and parsers

@@ -97,7 +97,7 @@ public class SlidingView extends ModeView {
             if( wm.isTopComponentMaximizedWhenSlidedIn( tcID ) ) {
                 //force maximum size when the slided-in window is maximized,
                 //the DesktopImpl will adjust the size to fit the main window
-                if( Constants.BOTTOM.equals( side ) ) {
+                if( Constants.BOTTOM.equals( side ) || Constants.TOP.equals( side ) ) {
                     res.height = Integer.MAX_VALUE;
                 } else {
                     res.width = Integer.MAX_VALUE;
@@ -107,7 +107,7 @@ public class SlidingView extends ModeView {
                 if( null != prevSlideSize ) {
                     if( null == res )
                         res = tc.getBounds();
-                    if( Constants.BOTTOM.equals( side ) ) {
+                    if( Constants.BOTTOM.equals( side ) || Constants.TOP.equals( side ) ) {
                         res.height = prevSlideSize.intValue();
                     } else {
                         res.width = prevSlideSize.intValue();

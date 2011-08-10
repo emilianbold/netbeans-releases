@@ -701,20 +701,22 @@ public class JspCompletionItem implements CompletionItem {
                     from = surl.substring(first);
                 }
                 String helpText = constructHelp(getHelpURL());
-                first = helpText.indexOf(from);
-                if (first > 0) {
-                    first = first + from.length() + 2;
-                    if (first < helpText.length()) {
-                        helpText = helpText.substring(first);
+                if (helpText != null) {
+                    first = helpText.indexOf(from);
+                    if (first > 0) {
+                        first = first + from.length() + 2;
+                        if (first < helpText.length()) {
+                            helpText = helpText.substring(first);
+                        }
                     }
-                }
 
-                String to = surl.substring(last);
-                last = helpText.indexOf(to);
-                if (last > 0) {
-                    helpText = helpText.substring(0, last);
+                    String to = surl.substring(last);
+                    last = helpText.indexOf(to);
+                    if (last > 0) {
+                        helpText = helpText.substring(0, last);
+                    }
+                    return helpText;
                 }
-                return helpText;
             }
             if (tagAttributeInfo != null) {
                 StringBuffer helpText = new StringBuffer();

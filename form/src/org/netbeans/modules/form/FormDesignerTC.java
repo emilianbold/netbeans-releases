@@ -59,14 +59,11 @@ import javax.swing.JScrollPane;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.assistant.AssistantView;
 import org.openide.actions.FileSystemAction;
 import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -163,9 +160,7 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
             formDesigner.close();
         }
         removeAll();
-        if (preLoadTask != null) {
-            // designer closed before form loading started
-            preLoadTask = null;
+        if (preLoadTask != null) { // designer closing before form loading started
             StatusDisplayer.getDefault().setStatusText(""); // NOI18N
         }
         if (settingsListener != null) {
@@ -214,24 +209,15 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
 
         if (formEditorSupport.isOpened()) {
             FormEditorSupport.checkFormGroupVisibility();
-        } else { // need to load the form
-            // Let the TC showing finish, just invoke a task out of EDT to find
-            // out form's superclass, then continue form loading in EDT again.
-            if (preLoadTask == null) {
-                preLoadTask = new PreLoadTask(formEditorSupport.getFormDataObject());
+        } else {
+            // Form loading phase 1/3.
+            if (preLoadTask == null && formEditorSupport.startFormLoading()) {
+                preLoadTask = new PreLoadTask(formEditorSupport.getFormEditor());
                 FormUtils.getRequestProcessor().post(preLoadTask);
-
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (formEditorSupport != null) {
-                            StatusDisplayer.getDefault().setStatusText(
-                                FormUtils.getFormattedBundleString(
-                                    "FMT_PreparingForm", // NOI18N
-                                    new Object[] { formEditorSupport.getFormDataObject().getName() }));
-                        }
-                    }
-                });
+                StatusDisplayer.getDefault().setStatusText(
+                    FormUtils.getFormattedBundleString(
+                        "FMT_PreparingForm", // NOI18N
+                        new Object[] { formEditorSupport.getFormDataObject().getName() }));
             }
         }
     }
@@ -254,66 +240,33 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
     }
 
     private class PreLoadTask implements Runnable {
-        private FormDataObject formDataObject;
-
-        PreLoadTask(FormDataObject fdo) {
-            formDataObject = fdo;
+        private FormEditor formEditor;
+        PreLoadTask(FormEditor formEditor) {
+            this.formEditor = formEditor;
         }
-
         @Override
         public void run() {
             long ms = System.currentTimeMillis();
-            final GandalfPersistenceManager persistenceManager = getPersistenceManager();
-            final String superClassName = (persistenceManager != null) ? computeSuperClass() : null;
+            // Form loading phase 2/3.
+            formEditor.loadOnBackground();
             Logger.getLogger(FormEditor.class.getName()).log(Level.FINER, "Opening form time 2: {0}ms", (System.currentTimeMillis()-ms)); // NOI18N
 
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    preLoadTask = null; // set back to null in EDT
                     if (formEditorSupport != null) {
-                        try {
-                            if (persistenceManager != null) {
-                                // Persistence manager will load the form in the same
-                                // EDT round (can't be used for other forms during that time).
-                                persistenceManager.setPrefetchedSuperclassName(superClassName);
-                                formEditorSupport.getFormEditor().setPersistenceManager(persistenceManager);
-                            }
-                            preLoadTask = null; // set back to null in EDT
-                            loadForm();
-                        } finally {
-                            if (persistenceManager != null) { // cleanup just for sure
-                                persistenceManager.setPrefetchedSuperclassName(null);
-                            }
-                        }
+                        loadForm();
                     }
                 }
             });
-        }
-
-        private GandalfPersistenceManager getPersistenceManager() {
-            try {
-                GandalfPersistenceManager gandalf = (GandalfPersistenceManager) PersistenceManager.getManagers().next();
-                if (gandalf.canLoadForm(formDataObject)) {
-                    return gandalf;
-                }
-            } catch (Exception ex) { // failure not interesting here
-            }
-            return null;
-        }
-
-        private String computeSuperClass() {
-            try {
-                return GandalfPersistenceManager.determineSuperClassName(formDataObject.getPrimaryFile());
-            } catch (Exception ex) { // failure not interesting here
-            }
-            return null;
         }
     }
 
     private void loadForm() {
         assert !formEditorSupport.isOpened();
         long ms = System.currentTimeMillis();
-
+        // Form loading phase 3/3.
         if (formEditorSupport.loadOpeningForm()) {
             FormEditorSupport.checkFormGroupVisibility();
             formDesigner.loadingComplete();

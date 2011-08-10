@@ -160,20 +160,20 @@ public class ModuleListParserTest extends TestBase {
         Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform")
                 + File.pathSeparator + filePath(nball, "nbbuild/netbeans/ide"));
-        properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
-        properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
+        properties.put("basedir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1/action-project"));
+        properties.put("suite.dir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1"));
         long start = System.currentTimeMillis();
         ModuleListParser p = new ModuleListParser(properties, ModuleType.SUITE, fakeproj);
         System.err.println("Scanned " + nball + " binaries in " + (System.currentTimeMillis() - start) + "msec");
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.action");
         assertNotNull("found myself", e);
         assertEquals("org.netbeans.examples.modules.action", e.getCnb());
-        assertEquals(file(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"), e.getJar());
+        assertEquals(file(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1/build/cluster/modules/org-netbeans-examples-modules-action.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.examples.modules.lib");
         assertNotNull("found sister project in suite", e);
         assertEquals("org.netbeans.examples.modules.lib", e.getCnb());
-        assertEquals(file(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
+        assertEquals(file(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
         File jar = file(nball, "nbbuild/netbeans/ide/modules/org-netbeans-libs-xerces.jar");
         assertTrue("Build all-libs/xerces first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.libs.xerces");
@@ -253,8 +253,8 @@ public class ModuleListParserTest extends TestBase {
         Hashtable<String,String> properties = new Hashtable<String,String>();
         properties.put("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform")
                 + File.pathSeparator + getWorkDir());
-        properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
-        properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
+        properties.put("basedir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1/action-project"));
+        properties.put("suite.dir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite1"));
         long start = System.currentTimeMillis();
         ModuleListParser p = new ModuleListParser(properties, ModuleType.SUITE, fakeproj);
         System.err.println("Scanned " + nball + " binaries in " + (System.currentTimeMillis() - start) + "msec");
@@ -264,15 +264,15 @@ public class ModuleListParserTest extends TestBase {
     
     public void testScanSourcesAndBinariesForExternalStandaloneModule() throws Exception {
         Hashtable<String,String> properties = new Hashtable<String,String>();
-        properties.put("cluster.path.final", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/nbplatform/platform5") +
-                File.pathSeparator + filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/nbplatform/random"));
-        properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project"));
-        properties.put("project", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project"));
+        properties.put("cluster.path.final", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/nbplatform/platform5") +
+                File.pathSeparator + filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/nbplatform/random"));
+        properties.put("basedir", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/dummy-project"));
+        properties.put("project", filePath(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/dummy-project"));
         ModuleListParser p = new ModuleListParser(properties, ModuleType.STANDALONE, null);
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.dummy");
         assertNotNull("found myself", e);
         assertEquals("org.netbeans.examples.modules.dummy", e.getCnb());
-        assertEquals(file(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"), e.getJar());
+        assertEquals(file(nball, "apisupport.ant/test/unit/data/example-external-projects/suite3/dummy-project/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.modules.classfile");
         assertNotNull("found (fake) netbeans.org module by its binary", e);

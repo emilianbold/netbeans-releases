@@ -293,10 +293,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         if (refreshResults) {
             resultsPanel.removeAll();
             if (results == null) {
+                String branches = criteria.getBranch();
                 if (searchInProgress) {
-                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching"))); // NOI18N
+                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class,
+                            branches.isEmpty() ? "LBL_SearchHistory_Searching" : "LBL_SearchHistory_Searching.branch", branches))); // NOI18N
                 } else {
-                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults"))); // NOI18N
+                    resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class,
+                            branches.isEmpty() ? "LBL_SearchHistory_NoResults" : "LBL_SearchHistory_NoResults.branch", branches))); // NOI18N
                 }
             } else {
                 if (tbSummary.isSelected()) {

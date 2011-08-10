@@ -55,12 +55,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -70,8 +72,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
@@ -215,7 +215,6 @@ final class CoverageReportTopComponent extends TopComponent {
             }
         });
         jScrollPane1.setViewportView(table);
-
         Mnemonics.setLocalizedText(clearResultsButton, NbBundle.getMessage(CoverageReportTopComponent.class, "CoverageReportTopComponent.clearResultsButton.text"));
         clearResultsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -223,15 +222,16 @@ final class CoverageReportTopComponent extends TopComponent {
             }
         });
         Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CoverageReportTopComponent.class, "CoverageReportTopComponent.jLabel1.text"));
-        GroupLayout totalCoverageLayout = new GroupLayout(totalCoverage);
+
+        javax.swing.GroupLayout totalCoverageLayout = new javax.swing.GroupLayout(totalCoverage);
         totalCoverage.setLayout(totalCoverageLayout);
         totalCoverageLayout.setHorizontalGroup(
-            totalCoverageLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 146, Short.MAX_VALUE)
+            totalCoverageLayout.createParallelGroup(Alignment.LEADING)
+            .addGap(0, 146, Short.MAX_VALUE)
         );
         totalCoverageLayout.setVerticalGroup(
-            totalCoverageLayout.createParallelGroup(GroupLayout.LEADING)
-            .add(0, 18, Short.MAX_VALUE)
+            totalCoverageLayout.createParallelGroup(Alignment.LEADING)
+            .addGap(0, 18, Short.MAX_VALUE)
         );
         Mnemonics.setLocalizedText(allTestsButton, NbBundle.getMessage(CoverageReportTopComponent.class, "CoverageReportTopComponent.allTestsButton.text"));
         allTestsButton.addActionListener(new ActionListener() {
@@ -246,40 +246,40 @@ final class CoverageReportTopComponent extends TopComponent {
             }
         });
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(clearResultsButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(allTestsButton)
-                        .addPreferredGap(LayoutStyle.RELATED, 216, Short.MAX_VALUE)
-                        .add(doneButton))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(totalCoverage, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(clearResultsButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(allTestsButton)
+                        .addPreferredGap(ComponentPlacement.RELATED, 216, Short.MAX_VALUE)
+                        .addComponent(doneButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(totalCoverage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(jLabel1)
-                    .add(totalCoverage, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(jScrollPane1, GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(clearResultsButton)
-                    .add(allTestsButton)
-                    .add(doneButton))
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(jLabel1)
+                    .addComponent(totalCoverage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(clearResultsButton)
+                    .addComponent(allTestsButton)
+                    .addComponent(doneButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

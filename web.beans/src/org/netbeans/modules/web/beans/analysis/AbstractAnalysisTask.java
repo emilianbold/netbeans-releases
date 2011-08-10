@@ -42,7 +42,6 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -56,9 +55,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 abstract class AbstractAnalysisTask {
     
-    AbstractAnalysisTask(){
+    AbstractAnalysisTask(  ){
         cancel = new AtomicBoolean( false );
-        myProblems = new LinkedList<ErrorDescription>();
     }
     
     protected boolean isCancelled() {
@@ -71,15 +69,12 @@ abstract class AbstractAnalysisTask {
     
     abstract void run( CompilationInfo compInfo );
     
-    List<ErrorDescription> getProblems(){
-        return myProblems;
-    }
+    abstract List<ErrorDescription> getProblems();
     
     void stop(){
         cancel.set( true );
     }
 
     private AtomicBoolean cancel;
-    private List<ErrorDescription> myProblems;
     
 }

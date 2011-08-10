@@ -53,9 +53,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
 import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
 import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
 import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
 import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
@@ -64,17 +67,16 @@ import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * Searches Maven repositories in various ways.
+ * <p>All methods taking {@code List<RepositoryInfo>} accept null, in which case
+ * all <em>loaded</em> indices are searched. If you really want to search all
+ * indices - triggering indexing of previously unindexed repositories -
+ * then pass {@link RepositoryPreferences#getRepositoryInfos RepositoryPreferences.getInstance().getRepositoryInfos()}.
  * @author mkleint
  */
 public final class RepositoryQueries {
 
-    /**
-     * 
-     * @param repos
-     * @return
-     */
-    public static Set<String> getGroups(RepositoryInfo... repos) {
+    public static Set<String> getGroups(@NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         final Set<String> toRet = new TreeSet<String>();
         for (List<RepositoryInfo> rps : all) {
@@ -88,13 +90,7 @@ public final class RepositoryQueries {
         return toRet;
     }
     
-    /**
-     * 
-     * @param prefix
-     * @param repos
-     * @return
-     */
-    public static Set<String> filterGroupIds(String prefix, RepositoryInfo... repos) {
+    public static Set<String> filterGroupIds(String prefix, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         Set<String> toRet = new TreeSet<String>();
         for (List<RepositoryInfo> rps : all) {
@@ -108,7 +104,7 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    public static List<NBVersionInfo> getRecords(String groupId, String artifactId, String version, RepositoryInfo... repos) {
+    public static List<NBVersionInfo> getRecords(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {
@@ -123,13 +119,7 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param repos
-     * @return
-     */
-    public static Set<String> getArtifacts(String groupId, RepositoryInfo... repos) {
+    public static Set<String> getArtifacts(String groupId, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         Set<String> toRet = new TreeSet<String>();
         for (List<RepositoryInfo> rps : all) {
@@ -143,7 +133,7 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    public static List<NBVersionInfo> getVersions(String groupId, String artifactId, RepositoryInfo... repos) {
+    public static List<NBVersionInfo> getVersions(String groupId, String artifactId, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {
@@ -158,7 +148,7 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    public static List<NBGroupInfo> findDependencyUsage(String groupId, String artifactId, String version, RepositoryInfo... repos) {
+    public static List<NBGroupInfo> findDependencyUsage(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
         //tempmaps
         Map<String, NBGroupInfo> groupMap = new HashMap<String, NBGroupInfo>();
         Map<String, NBArtifactInfo> artifactMap = new HashMap<String, NBArtifactInfo>();
@@ -203,7 +193,7 @@ public final class RepositoryQueries {
         }
     }
     
-    public static List<NBVersionInfo> findBySHA1(File file, RepositoryInfo... repos) {
+    public static List<NBVersionInfo> findBySHA1(File file, @NullAllowed List<RepositoryInfo> repos) {
         try {
             String calculateChecksum = RepositoryUtil.calculateSHA1Checksum(file);
             return findBySHA1(calculateChecksum, repos);
@@ -214,7 +204,7 @@ public final class RepositoryQueries {
         
     }
 
-    private static List<NBVersionInfo> findBySHA1(String sha1, RepositoryInfo... repos) {
+    private static List<NBVersionInfo> findBySHA1(String sha1, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {
@@ -238,7 +228,7 @@ public final class RepositoryQueries {
      * accordingly, for example by telling user that entered text for
      * search is too general.
      */
-    public static List<NBVersionInfo> findVersionsByClass(final String className, RepositoryInfo... repos) {
+    public static List<NBVersionInfo> findVersionsByClass(final String className, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {
@@ -300,7 +290,27 @@ public final class RepositoryQueries {
             query.addResults(null, true);
     }
 
-    public static List<NBVersionInfo> findArchetypes(RepositoryInfo... repos) {
+    /**
+     * Finds all usages of a given class.
+     * The implementation may not provide results within the same artifact, or on classes in the JRE.
+     * @param className the FQN of a class that might be used as an API
+     * @param repos as usual (note that the implementation currently ignores remote repositories)
+     * @return a list of usages
+     * @since 1.17
+     */
+    public static List<ClassUsageQuery.ClassUsageResult> findClassUsages(String className, @NullAllowed List<RepositoryInfo> repos) {
+        final List<ClassUsageQuery.ClassUsageResult> result = new ArrayList<ClassUsageQuery.ClassUsageResult>();
+        for (List<RepositoryInfo> rps : splitReposByType(repos)) {
+            RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
+            ClassUsageQuery q = impl.getCapabilityLookup().lookup(ClassUsageQuery.class);
+            if (q != null) {
+                result.addAll(q.findClassUsages(className, rps));
+            }
+        }
+        return result;
+    }
+
+    public static List<NBVersionInfo> findArchetypes(@NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {
@@ -316,14 +326,7 @@ public final class RepositoryQueries {
         return toRet;
     }
     
-    /**
-     * 
-     * @param groupId
-     * @param prefix
-     * @param repos
-     * @return
-     */
-    public static Set<String> filterPluginArtifactIds(String groupId, String prefix, RepositoryInfo... repos) {
+    public static Set<String> filterPluginArtifactIds(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         Set<String> toRet = new TreeSet<String>();
         for (List<RepositoryInfo> rps : all) {
@@ -337,13 +340,7 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    /**
-     * 
-     * @param prefix
-     * @param repos
-     * @return
-     */
-    public static Set<String> filterPluginGroupIds(String prefix, RepositoryInfo... repos) {
+    public static Set<String> filterPluginGroupIds(String prefix, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         Set<String> toRet = new TreeSet<String>();
         for (List<RepositoryInfo> rps : all) {
@@ -365,7 +362,7 @@ public final class RepositoryQueries {
      * accordingly, for example by telling user that entered text for
      * search is too general.
      */
-    public static List<NBVersionInfo> find(List<QueryField> fields, RepositoryInfo... repos) {
+    public static List<NBVersionInfo> find(List<QueryField> fields, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         List<NBVersionInfo> toRet = new ArrayList<NBVersionInfo>();
         for (List<RepositoryInfo> rps : all) {
@@ -427,8 +424,8 @@ public final class RepositoryQueries {
             query.addResults(null, true);
     }
     
-    public static List<RepositoryInfo> getLoadedContexts() {
-        Collection<List<RepositoryInfo>> all = splitReposByType(null);
+    public static @NonNull List<RepositoryInfo> getLoadedContexts() {
+        Collection<List<RepositoryInfo>> all = splitReposByType(RepositoryPreferences.getInstance().getRepositoryInfos());
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
         for (List<RepositoryInfo> rps : all) {
             RepositoryIndexerImplementation impl = RepositoryIndexer.findImplementation(rps.get(0));
@@ -442,14 +439,7 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    /**
-     * 
-     * @param groupId
-     * @param prefix
-     * @param repos
-     * @return
-     */
-    public static Set<String> filterArtifactIdForGroupId(String groupId, String prefix, RepositoryInfo... repos) {
+    public static Set<String> filterArtifactIdForGroupId(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
         Collection<List<RepositoryInfo>> all = splitReposByType(repos);
         Set<String> toRet = new TreeSet<String>();
         for (List<RepositoryInfo> rps : all) {
@@ -463,9 +453,9 @@ public final class RepositoryQueries {
         return toRet;
     }
 
-    private static Collection<List<RepositoryInfo>> splitReposByType(RepositoryInfo[] repos) {
-        if (repos == null || repos.length == 0) {
-            repos = RepositoryPreferences.getInstance().getRepositoryInfos().toArray(new RepositoryInfo[0]);
+    private static @NonNull Collection<List<RepositoryInfo>> splitReposByType(@NullAllowed List<RepositoryInfo> repos) {
+        if (repos == null) {
+            repos = getLoadedContexts();
         }
         Map<String, List<RepositoryInfo>> toRet = new HashMap<String, List<RepositoryInfo>>();
         for (RepositoryInfo info : repos) {

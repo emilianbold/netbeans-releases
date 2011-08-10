@@ -78,6 +78,7 @@ import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeLi
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.openide.explorer.ExplorerManager;
@@ -211,7 +212,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                 f.setOccur(QueryField.OCCUR_MUST);
                 fields.add(f);
 
-                final List<NBVersionInfo> infos = RepositoryQueries.find(fields);
+                final List<NBVersionInfo> infos = RepositoryQueries.find(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
 
                 Node node = null;
                 final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();

@@ -44,8 +44,11 @@ package org.netbeans.modules.cnd.makeproject;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  * Utility class for misc make project related functions
@@ -67,8 +70,19 @@ public class MakeProjectUtils {
         return env;
     }
     
-    public static boolean isFullRemote(Project project) {
+    public static boolean canChangeHost(Project project, MakeConfiguration mk) {
+        return isFullRemote(project) ? FullRemoteExtension.canChangeHost(mk) : true;
+    }
+
+    private static boolean isFullRemote(Project project) {
         if (project != null) {
+            FileObject dir = project.getProjectDirectory();
+            if (dir != null) { // paranoia
+                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
+                if (env != null && env.isRemote()) {
+                    return true;
+                }
+            }            
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
                 return remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES;

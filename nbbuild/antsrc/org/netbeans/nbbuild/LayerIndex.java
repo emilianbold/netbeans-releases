@@ -220,10 +220,10 @@ public class LayerIndex extends Task {
         f.newSAXParser().parse(is, new DefaultHandler() {
             String prefix = "";
             void register(String path) {
-                if (files.containsKey(path)) {
-                    files.put(path, null); // >1 owner
-                } else {
+                if (!files.containsKey(path)) {
                     files.put(path, cnb);
+                } else if (!cnb.equals(files.get(path))) {
+                    files.put(path, null); // >1 owner
                 }
             }
             @Override

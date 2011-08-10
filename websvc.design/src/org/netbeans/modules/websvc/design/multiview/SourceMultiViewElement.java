@@ -55,6 +55,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
@@ -66,6 +67,8 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataLoader;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataObject;
 import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -73,14 +76,25 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 /**
  * The source editor element for JaxWs node.
  *
  * @author Ajit Bhate
+ * @author changed by ads
  */
+@MultiViewElement.Registration(
+        displayName ="#LBL_sourceView_name",// NOI18N
+    iconBase=JaxWsDataObject.CLASS_GIF,
+    persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+    preferredID=MultiViewSupport.SOURCE_VIEW_ID,
+    mimeType=JaxWsDataLoader.JAXWS_MIME_TYPE,            
+    position=1000
+        )
 public class SourceMultiViewElement extends CloneableEditor
         implements MultiViewElement {
     private static final long serialVersionUID = 4403502726950453345L;
@@ -101,8 +115,8 @@ public class SourceMultiViewElement extends CloneableEditor
      * 
      * @param support 
      */
-    public SourceMultiViewElement(DataEditorSupport support) {
-        super(support);
+    public SourceMultiViewElement(Lookup context) {
+        super( context.lookup(DataEditorSupport.class));
         initialize();
    }
     
@@ -286,9 +300,7 @@ public class SourceMultiViewElement extends CloneableEditor
             return CloseOperationState.STATE_OK;
         }
         // return a state which will save/discard changes and is called by close handler
-        return MultiViewFactory.createUnsafeCloseState(
-                MultiViewSupport.SOURCE_UNSAFE_CLOSE,
-                new AbstractAction() {
+        AbstractAction save = new AbstractAction(){
                     public void actionPerformed(ActionEvent arg0) {
                         //save changes
                         try {
@@ -297,12 +309,15 @@ public class SourceMultiViewElement extends CloneableEditor
                         } catch (IOException ex) {
                         }
                     }
-                },
-                new AbstractAction() {
-                    public void actionPerformed(ActionEvent arg0) {
-                        //discard changes
-                    }
-                });
+
+                };
+        save.putValue(Action.LONG_DESCRIPTION, NbBundle.getMessage(DataObject.class,
+                            "MSG_SaveFile", // NOI18N
+                            getEditorSupport().getDataObject().getPrimaryFile().getNameExt()));     
+        return MultiViewFactory.createUnsafeCloseState(
+                "ID_JAXWS_CLOSING", // NOI18N
+                save,
+                MultiViewFactory.NOOP_CLOSE_ACTION);
     }
     
     private DataEditorSupport getEditorSupport() {

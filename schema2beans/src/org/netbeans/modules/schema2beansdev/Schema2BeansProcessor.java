@@ -189,6 +189,7 @@ public class Schema2BeansProcessor extends AbstractProcessor {
     }
 
     private FileObject findResource(String path, String pkg) throws URISyntaxException, IOException {
+        // XXX LayerBuilder has standard versions of this logic now
         String abspath;
         if (path.startsWith("/")) {
             abspath = path.substring(1);

@@ -49,9 +49,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.loader.AntProjectDataLoader;
 import org.apache.tools.ant.module.loader.AntProjectDataObject;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
@@ -87,12 +85,11 @@ public class AntProjectSupportTest extends NbTestCase {
         File scratchF = getWorkDir();
         scratch = FileUtil.toFileObject(scratchF);
         assertNotNull("FO for " + scratchF, scratch);
-        MockServices.setServices(AntProjectDataLoader.class);
     }
 
     @RandomlyFails // NB-Core-Build #3638
     public void testInitiallyInvalidScript() throws Exception {
-        final FileObject fo = scratch.createData("build.xml");
+        final FileObject fo = scratch.createData("x.ant");
         assertEquals("it is an APDO", AntProjectDataObject.class, DataObject.find(fo).getClass());
         AntProjectCookie apc = new AntProjectSupport(fo);
         assertNull("invalid", apc.getDocument());

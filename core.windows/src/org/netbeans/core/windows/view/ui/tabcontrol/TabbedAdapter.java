@@ -486,26 +486,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 return ActionUtils.createDefaultPopupActions( mode );
             return null;
         }
-        boolean isDocked = WindowManagerImpl.getInstance().isDocked(getTopComponentAt(tabIndex));
-        boolean slidingEnabled = true;
-        TabData td = getModel().getTab(tabIndex);
-        if( td.getComponent() instanceof TopComponent ) {
-            slidingEnabled = Switches.isSlidingEnabled((TopComponent)td.getComponent());
-        }
-        // no auto hide for editors and floating views
-        if (TabbedContainer.TYPE_EDITOR == getType() || !isDocked 
-                || !Switches.isTopComponentSlidingEnabled() || !slidingEnabled) {
-            return defaultActions;
-        }
-        int actionCount = defaultActions.length;
-        Action[] result = new Action[actionCount + 1];
-        System.arraycopy(defaultActions, 0, result, 0, actionCount);
-        // #82052: undock action as last item, auto hide as first before last
-        if (actionCount > 0) {
-            result[actionCount] = result[actionCount - 1];
-            result[actionCount - 1] = new ActionUtils.AutoHideWindowAction(this, tabIndex, false);
-        }
-        return result;
+        return defaultActions;
     }
     
     private ModeImpl getModeImpl() {
@@ -581,6 +562,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
                 result = TabDisplayer.ORIENTATION_EAST;
             } else if (side.equals(Constants.BOTTOM)) {
                 result = TabDisplayer.ORIENTATION_SOUTH;
+            } else if (side.equals(Constants.TOP)) {
+                result = TabDisplayer.ORIENTATION_NORTH;
             } else {
                 result = TabDisplayer.ORIENTATION_CENTER;
             }
@@ -626,6 +609,11 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         public boolean isTopComponentSlidingEnabled(TopComponent tc) {
             return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_SLIDING_DISABLED))
                     && isTopComponentSlidingEnabled();
+        }
+
+        @Override
+        public boolean isModeSlidingEnabled() {
+            return Switches.isModeSlidingEnabled();
         }
     } // end of LocInfo
 

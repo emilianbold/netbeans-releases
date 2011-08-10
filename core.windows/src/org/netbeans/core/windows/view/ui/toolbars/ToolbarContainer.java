@@ -83,6 +83,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.awt.Toolbar;
 import org.openide.awt.ToolbarPool;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  * A wrapper panel for a single Toolbar. Also contains 'dragger' according to
@@ -143,7 +144,9 @@ final class ToolbarContainer extends JPanel {
                     : BorderFactory.createEmptyBorder()); //NOI18N
 
         } else if( !"Aqua".equals(lAndF) && !"GTK".equals(lAndF) ){ //NOI18N
-            Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
+            Border b = UIManager.getBorder ("Nb.ToolBar.border"); //NOI18N
+            if( null == b )
+                b = UIManager.getBorder ("ToolBar.border"); //NOI18N
 
             if( b==null || b instanceof javax.swing.plaf.metal.MetalBorders.ToolBarBorder )
                 b = BorderFactory.createEtchedBorder( EtchedBorder.LOWERED );
@@ -270,6 +273,21 @@ final class ToolbarContainer extends JPanel {
     }
 
     private JComponent createDragger() {
+        String className = UIManager.getString( "Nb.MainWindow.Toolbar.Dragger" ); //NOI18N
+        if( null != className ) {
+            try {
+                Class klzz = Lookup.getDefault().lookup( ClassLoader.class ).loadClass( className );
+                Object inst = klzz.newInstance();
+                if( inst instanceof JComponent ) {
+                    JComponent dragarea = ( JComponent ) inst;
+                    dragarea.setCursor( Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR) );
+                    dragarea.putClientProperty(PROP_DRAGGER, Boolean.TRUE);
+                    return dragarea;
+                }
+            } catch( Exception e ) {
+                Logger.getLogger(ToolbarContainer.class.getName()).log( Level.INFO, null, e );
+            }
+        }
         /** Uses L&F's grip **/
         String lfID = UIManager.getLookAndFeel().getID();
         JPanel dragarea = null;

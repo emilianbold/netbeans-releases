@@ -44,21 +44,12 @@
 
 package org.netbeans.spi.project.support;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.projectapi.MetaLookupMerger;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.ChangeSupport;
@@ -66,9 +57,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Factory for lookup capable of merging content from registered 
@@ -81,8 +70,6 @@ public final class LookupProviderSupport {
     private LookupProviderSupport() {
     }
     
-    private static final Logger LOG = Logger.getLogger(LookupProviderSupport.class.getName());
-
     /**
      * Creates a project lookup instance that combines the content from multiple sources. 
      * A convenience factory method for implementors of Project.
@@ -93,7 +80,7 @@ public final class LookupProviderSupport {
      * @return a lookup to be used in project
      */ 
     public static Lookup createCompositeLookup(Lookup baseLookup, String folderPath) {
-        return new DelegatingLookupImpl(baseLookup, folderPath);
+        return new DelegatingLookupImpl(baseLookup, Lookups.forPath(folderPath), folderPath);
     }
     
     /**
@@ -106,148 +93,6 @@ public final class LookupProviderSupport {
     public static LookupMerger<Sources> createSourcesMerger() {
         return new SourcesMerger();
     }
-    
-    static class DelegatingLookupImpl extends ProxyLookup implements LookupListener, ChangeListener {
-        private final Lookup baseLookup;
-        static class UnmergedLookup extends ProxyLookup {
-            void _setLookups(Lookup... lookups) {
-                setLookups(lookups);
-            }
-        }
-        private final UnmergedLookup unmergedLookup = new UnmergedLookup();
-        private final Map<LookupMerger<?>,Object> mergerResults = new WeakHashMap<LookupMerger<?>,Object>();
-        private final Lookup.Result<LookupProvider> providerResult;
-        private final LookupListener providerListener;
-        private List<LookupProvider> old = Collections.emptyList();
-        private List<Lookup> currentLookups;
-        private final ChangeListener metaMergerListener;
-
-        @SuppressWarnings("rawtypes")
-        private Lookup.Result<LookupMerger> mergers;
-        private final Lookup.Result<MetaLookupMerger> metaMergers;
-        private Reference<LookupListener> listenerRef;
-        //#68623: the proxy lookup fires changes only if someone listens on a particular template:
-        private final List<Lookup.Result<?>> results = new ArrayList<Lookup.Result<?>>();
-        
-        public DelegatingLookupImpl(Lookup base, String path) {
-            this(base, Lookups.forPath(path), path);
-        }
-        
-        @SuppressWarnings("LeakingThisInConstructor")
-        public DelegatingLookupImpl(Lookup base, Lookup providerLookup, String path) {
-            super();
-            assert base != null;
-            baseLookup = base;
-            providerResult = providerLookup.lookup(new Lookup.Template<LookupProvider>(LookupProvider.class));
-            metaMergers = providerLookup.lookupResult(MetaLookupMerger.class);
-            metaMergerListener = WeakListeners.change(this, null);
-            assert isAllJustLookupProviders(providerLookup) : 
-                "Layer content at " + path + " contains other than LookupProvider instances! See messages.log file for more details."; //NOI18N
-            doDelegate();
-            providerListener = new LookupListener() {
-                public @Override void resultChanged(LookupEvent ev) {
-                    // XXX this may need to be run asynchronously; deadlock-prone
-                    doDelegate();
-                }
-            };
-            providerResult.addLookupListener(
-                WeakListeners.create(LookupListener.class, providerListener, providerResult));
-            metaMergers.addLookupListener(
-                WeakListeners.create(LookupListener.class, providerListener, metaMergers));
-        }
-        
-        //just for assertion evaluation.
-        private boolean isAllJustLookupProviders(Lookup lkp) {
-            for (Lookup.Item<?> item : lkp.lookupResult(Object.class).allItems()) {
-                Class<?> clzz = item.getType();
-                if (!LookupProvider.class.isAssignableFrom(clzz) && !MetaLookupMerger.class.isAssignableFrom(clzz)) {
-                    LOG.log(Level.WARNING, "{0} from {1} is not a LookupProvider", new Object[] {clzz.getName(), item.getId()});
-                }
-            }
-            return true; // always just print warnings
-        }
-        
-        
-        public @Override void resultChanged(LookupEvent ev) {
-            doDelegate();
-        }
-
-        protected @Override void beforeLookup(Lookup.Template<?> template) {
-            for (MetaLookupMerger metaMerger : metaMergers.allInstances()) {
-                metaMerger.probing(template.getType()); // might fire ChangeEvent, see below
-            }
-        }
-        
-        public @Override void stateChanged(ChangeEvent e) {
-            // A metamerger loaded its class and is now ready for service.
-            doDelegate();
-        }
-        
-        private void doDelegate() {
-            synchronized (results) {
-            for (Lookup.Result<?> r : results) {
-                r.removeLookupListener(this);
-            }
-            results.clear();
-            Collection<? extends LookupProvider> providers = providerResult.allInstances();
-            List<Lookup> newLookups = new ArrayList<Lookup>();
-            for (LookupProvider elem : providers) {
-                if (old.contains(elem)) {
-                    int index = old.indexOf(elem);
-                    newLookups.add(currentLookups.get(index));
-                } else {
-                    Lookup newone = elem.createAdditionalLookup(baseLookup);
-                    assert newone != null;
-                    newLookups.add(newone);
-                }
-            }
-            old = new ArrayList<LookupProvider>(providers);
-            currentLookups = newLookups;
-            newLookups.add(baseLookup);
-            unmergedLookup._setLookups(newLookups.toArray(new Lookup[newLookups.size()]));
-            List<Class<?>> filteredClasses = new ArrayList<Class<?>>();
-            List<Object> mergedInstances = new ArrayList<Object>();
-            LookupListener l = listenerRef != null ? listenerRef.get() : null;
-            if (l != null) {
-                mergers.removeLookupListener(l);
-            }
-            mergers = unmergedLookup.lookupResult(LookupMerger.class); // XXX maybe do this just in ctor
-            l = WeakListeners.create(LookupListener.class, this, mergers);
-            listenerRef = new WeakReference<LookupListener>(l);
-            mergers.addLookupListener(l);
-            @SuppressWarnings("rawtypes") Collection<LookupMerger> allMergers = new ArrayList<LookupMerger>(mergers.allInstances());
-            for (MetaLookupMerger metaMerger : metaMergers.allInstances()) {
-                LookupMerger<?> merger = metaMerger.merger();
-                if (merger != null) {
-                    allMergers.add(merger);
-                }
-                metaMerger.removeChangeListener(metaMergerListener);
-                metaMerger.addChangeListener(metaMergerListener);
-            }
-            for (LookupMerger<?> lm : allMergers) {
-                Class<?> c = lm.getMergeableClass();
-                if (filteredClasses.contains(c)) {
-                    LOG.log(Level.WARNING, "Two LookupMerger registered for {0}. Only first one will be used", c);
-                    continue;
-                }
-                filteredClasses.add(c);
-                Object merge = mergerResults.get(lm);
-                if (merge == null) {
-                    merge = lm.merge(unmergedLookup);
-                    mergerResults.put(lm, merge);
-                }
-                mergedInstances.add(merge);
-                Lookup.Result<?> result = unmergedLookup.lookupResult(c);
-                result.addLookupListener(this);
-                results.add(result);
-            }
-            Lookup filtered = Lookups.exclude(unmergedLookup, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
-            Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
-            setLookups(fixed, filtered);
-        }
-        }
-    }
-    
     
     private static class SourcesMerger implements LookupMerger<Sources> {
         public @Override Class<Sources> getMergeableClass() {

@@ -49,12 +49,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,6 +72,8 @@ import org.netbeans.modules.bugtracking.BugtrackingConfig;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
 import org.openide.util.RequestProcessor.Task;
+import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks.FileLock;
+import org.netbeans.modules.bugtracking.ui.issue.cache.StorageUtils.FileLocks;
 
 /**
  *
@@ -91,8 +90,6 @@ class IssueStorage {
     private String QUERY_ARCHIVED_SUFIX = ".qa";                        // NOI18N
     private String QUERY_SUFIX = ".q";                                  // NOI18N
     private String ISSUE_SUFIX = ".i";                                  // NOI18N
-
-    private FileLocks fileLocks = new FileLocks();
 
     private IssueStorage() { }
 
@@ -119,17 +116,17 @@ class IssueStorage {
     }
 
     long getReferenceTime(String nameSpace) throws IOException {
-        File folder = getNameSpaceFolder(nameSpace);
+        File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
         File data = new File(folder, "data");
         
-        FileLock lock = fileLocks.getLock(data);
+        FileLock lock = FileLocks.getLock(data);
         try {
             synchronized(lock) {
                 long ret = -1;
                 if(data.exists()) {
                     DataInputStream is = null;
                     try {
-                        is = getDataInputStream(data);
+                        is = StorageUtils.getDataInputStream(data);
                         ret = is.readLong();
                         return ret;
                     } catch (EOFException ex) {
@@ -152,7 +149,7 @@ class IssueStorage {
                     ret = System.currentTimeMillis();
                     DataOutputStream os = null;
                     try {
-                        os = getDataOutputStream(data, false);
+                        os = StorageUtils.getDataOutputStream(data, false);
                         os.writeLong(ret);
                         return ret;
                     } catch (InterruptedException ex) {
@@ -174,15 +171,15 @@ class IssueStorage {
         }
     }
 
-    public void storeIssue(String nameSpace, IssueEntry entry) throws IOException {
+    void storeIssue(String nameSpace, IssueEntry entry) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start storing issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
         InputStream is = null;
         DataOutputStream dos = null;
         FileLock lock = null;
         try {
-            File issueFile = getIssueFile(getNameSpaceFolder(nameSpace), entry.getId());
-            lock = fileLocks.getLock(issueFile);
+            File issueFile = getIssueFile(StorageUtils.getNameSpaceFolder(storage, nameSpace), entry.getId());
+            lock = FileLocks.getLock(issueFile);
             synchronized(lock) {
                 dos = getIssueOutputStream(issueFile);
                 if(dos == null) {
@@ -213,14 +210,14 @@ class IssueStorage {
         }
     }
 
-    public void readIssue(String nameSpace, IssueEntry entry) throws IOException {
+    void readIssue(String nameSpace, IssueEntry entry) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading issue {0} - {1}", new Object[] {nameSpace, entry.getId()}); // NOI18N
         DataInputStream is = null;
         FileLock lock = null;
         try {
-            File issueFile = getIssueFile(getNameSpaceFolder(nameSpace), entry.getId());
-            lock = fileLocks.getLock(issueFile);
+            File issueFile = getIssueFile(StorageUtils.getNameSpaceFolder(storage, nameSpace), entry.getId());
+            lock = FileLocks.getLock(issueFile);
             synchronized(lock) {
                 is = getIssueInputStream(issueFile);
                 if(is == null) {
@@ -262,20 +259,20 @@ class IssueStorage {
         }
     }
 
-    public List<String> readQuery(String nameSpace, String queryName) throws IOException {
+    List<String> readQuery(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
 
         DataInputStream dis = null;
         FileLock lock = null;
         try {
-            File folder = getNameSpaceFolder(nameSpace);
+            File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
             if(!folder.exists()) return Collections.emptyList();
 
             File f = getQueryFile(folder, queryName, false);
-            lock = fileLocks.getLock(f);
+            lock = FileLocks.getLock(f);
             synchronized(lock) {
-                dis = getQueryInputStream(f);
+                dis = StorageUtils.getQueryInputStream(f);
                 return readQuery(dis);
             }
         } catch (InterruptedException ex) {
@@ -308,12 +305,12 @@ class IssueStorage {
     }
 
     long getQueryTimestamp(String nameSpace, String name) {
-        File folder = getNameSpaceFolder(nameSpace);
+        File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
         File file = new File(folder, TextUtils.encodeURL(name) + QUERY_SUFIX);
         return file.lastModified();
     }
 
-    public Map<String, Long> readArchivedQueryIssues(String nameSpace, String queryName) throws IOException {
+    Map<String, Long> readArchivedQueryIssues(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start reading archived query issues {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         long now = System.currentTimeMillis();
@@ -322,13 +319,13 @@ class IssueStorage {
         FileLock lock = null;
         DataInputStream dis = null;
         try {
-            File folder = getNameSpaceFolder(nameSpace);
+            File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
             if(!folder.exists()) return Collections.emptyMap();
 
             File f = getQueryFile(folder, queryName, true);
-            lock = fileLocks.getLock(f);
+            lock = FileLocks.getLock(f);
             synchronized(lock) {
-                dis = getQueryInputStream(f);
+                dis = StorageUtils.getQueryInputStream(f);
                 if(dis == null) return Collections.emptyMap();
                 Map<String, Long> ids = readArchivedQueryIssues(dis);
                 Iterator<String> it = ids.keySet().iterator();
@@ -372,15 +369,15 @@ class IssueStorage {
         return ids;
     }
 
-    public void removeQuery(String nameSpace, String queryName) throws IOException {
+    void removeQuery(String nameSpace, String queryName) throws IOException {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the issue storage in awt"; // NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "start removing query {0} - {1}", new Object[] {nameSpace, queryName}); // NOI18N
         FileLock lock = null;
         try {
-            File folder = getNameSpaceFolder(nameSpace);
+            File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
             File query = getQueryFile(folder, queryName, false);
             if(query.exists()) {
-                lock = fileLocks.getLock(query);
+                lock = FileLocks.getLock(query);
                 try {
                     synchronized(lock) {
                         BugtrackingUtil.deleteRecursively(query);
@@ -392,7 +389,7 @@ class IssueStorage {
             lock = null;
             File queryArchived = getQueryFile(folder, queryName, true);
             if(queryArchived.exists()) {
-                lock = fileLocks.getLock(queryArchived);
+                lock = FileLocks.getLock(queryArchived);
                 try {
                     synchronized(lock) {
                         BugtrackingUtil.deleteRecursively(queryArchived);
@@ -412,11 +409,11 @@ class IssueStorage {
         FileLock lock = null;
         DataOutputStream dos = null;
         try {
-            File folder = getNameSpaceFolder(nameSpace);
+            File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
             File f = getQueryFile(folder, queryName, false);
-            lock = fileLocks.getLock(f);
+            lock = FileLocks.getLock(f);
             synchronized(lock) {
-                dos = getQueryOutputStream(f);
+                dos = StorageUtils.getQueryOutputStream(f);
                 for (String id : ids) {
                     writeString(dos, id);
                 }
@@ -444,11 +441,11 @@ class IssueStorage {
         DataOutputStream dos = null;
         FileLock lock = null;
         try {
-            File folder = getNameSpaceFolder(nameSpace);
+            File folder = StorageUtils.getNameSpaceFolder(storage, nameSpace);
             File f = getQueryFile(folder, queryName, true);
-            lock = fileLocks.getLock(f);
+            lock = FileLocks.getLock(f);
             synchronized(lock) {
-                dos = getQueryOutputStream(f);
+                dos = StorageUtils.getQueryOutputStream(f);
                 for (String id : ids) {
                     writeString(dos, id);
                     Long ts = archived.get(id);
@@ -494,12 +491,11 @@ class IssueStorage {
     void cleanup(String namespace) {
         try {
             BugtrackingManager.LOG.log(Level.FINE, "starting bugtrackig storage cleanup for {0}", new Object[] {namespace}); // NOI18N
-            cleanup(getNameSpaceFolder(namespace));
+            cleanup(StorageUtils.getNameSpaceFolder(storage, namespace));
         } finally {
             BugtrackingManager.LOG.log(Level.FINE, "finnished bugtrackig storage cleanup for {0}", new Object[] {namespace}); // NOI18N
         }
     }
-
 
     private void cleanup(File repo) {
         try {
@@ -512,11 +508,11 @@ class IssueStorage {
             });
             if(queries != null && queries.length > 0) {
                 for (File lq : queries) {
-                    FileLock lock = fileLocks.getLock(lq);
+                    FileLock lock = FileLocks.getLock(lq);
                     List<String> ids;
                     try {
                         synchronized(lock) {
-                            ids = readQuery(getDataInputStream(lq));
+                            ids = readQuery(StorageUtils.getDataInputStream(lq));
                         }
                     } finally {
                         if(lock != null) lock.release();
@@ -535,10 +531,10 @@ class IssueStorage {
             if(queries != null) {
                 for (File lq : queries) {
                     Map<String, Long> ids;
-                    FileLock lock = fileLocks.getLock(lq);
+                    FileLock lock = FileLocks.getLock(lq);
                     try {
                         synchronized(lock) {
-                            ids = readArchivedQueryIssues(getDataInputStream(lq));
+                            ids = readArchivedQueryIssues(StorageUtils.getDataInputStream(lq));
                         }
                     } finally {
                         if(lock != null) lock.release();
@@ -561,7 +557,7 @@ class IssueStorage {
                     id = id.substring(0, id.length() - ISSUE_SUFIX.length());
                     if(!livingIssues.contains(id)) {
                         BugtrackingManager.LOG.log(Level.FINE, "removing issue {0}", new Object[] {id}); // NOI18N
-                        FileLock lock = fileLocks.getLock(issue);
+                        FileLock lock = FileLocks.getLock(issue);
                         try {
                             synchronized(lock) {
                                 issue.delete();
@@ -590,7 +586,7 @@ class IssueStorage {
     private void writeStorage() {
         DataOutputStream dos = null;
         try {
-            dos = getDataOutputStream(new File(storage, STORAGE_FILE), false);
+            dos = StorageUtils.getDataOutputStream(new File(storage, STORAGE_FILE), false);
             writeString(dos, STORAGE_VERSION);
             dos.flush();
         } catch (IOException e) {
@@ -627,7 +623,7 @@ class IssueStorage {
     }
 
     private DataOutputStream getIssueOutputStream(File issueFile) throws IOException, InterruptedException {
-        ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(getFileOutputStream(issueFile, false)));
+        ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(StorageUtils.getFileOutputStream(issueFile, false)));
         ZipEntry entry = new ZipEntry(issueFile.getName());
         zos.putNextEntry(entry);
         return new DataOutputStream(zos);
@@ -635,7 +631,7 @@ class IssueStorage {
 
     private DataInputStream getIssueInputStream(File file) throws IOException, InterruptedException {
         if(!file.exists()) return null;
-        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(getFileInputStream(file)));
+        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(StorageUtils.getFileInputStream(file)));
         zis.getNextEntry();
         return new DataInputStream(zis);
     }
@@ -643,99 +639,9 @@ class IssueStorage {
     private File getIssueFile(File folder, String id) {
         return new File(folder, id + ISSUE_SUFIX);
     }
-
-    private DataOutputStream getDataOutputStream(File file, boolean append) throws IOException, InterruptedException {
-        return new DataOutputStream(getFileOutputStream(file, append));
-    }
-
-    private DataInputStream getDataInputStream(File file) throws IOException, InterruptedException {
-        return new DataInputStream(getFileInputStream(file));
-    }
-
-    private FileOutputStream getFileOutputStream(File file, boolean append) throws IOException, InterruptedException {
-        int retry = 0;
-        while (true) {
-            try {
-                return new FileOutputStream(file, append);
-            } catch (IOException ioex) {
-                retry++;
-                if (retry > 7) {
-                    throw ioex;
-                }
-                Thread.sleep(retry * 30);
-            }
-        }
-    }
-
-    private FileInputStream getFileInputStream(File file) throws IOException, InterruptedException {
-        int retry = 0;
-        while (true) {
-            try {
-                return new FileInputStream(file);
-            } catch (IOException ioex) {
-                retry++;
-                if (retry > 7) {
-                    throw ioex;
-                }
-                Thread.sleep(retry * 30);
-            }
-        }
-    }
-
-    private static void copyStreams(OutputStream out, InputStream in) throws IOException {
-        byte [] buffer = new byte[4096];
-        for (;;) {
-            int n = in.read(buffer);
-            if (n < 0) break;
-            out.write(buffer, 0, n);
-        }
-    }
-
-    private File getNameSpaceFolder(String url) {
-        File folder = new File(storage, TextUtils.encodeURL(url));
-        if(!folder.exists()) {
-            folder.mkdirs();
-        }
-        return folder;
-    }
-
-    private DataOutputStream getQueryOutputStream(File queryFile) throws IOException, InterruptedException {
-        return getDataOutputStream(queryFile, false);
-    }
-
-    private DataInputStream getQueryInputStream(File queryFile) throws IOException, InterruptedException {
-        if(!queryFile.exists()) return null;
-        return getDataInputStream(queryFile);
-    }
-
+    
     private File getQueryFile(File folder, String queryName, boolean archived){
         return new File(folder, TextUtils.encodeURL(queryName) + (archived ? QUERY_ARCHIVED_SUFIX : QUERY_SUFIX));
-    }
-
-    private class FileLocks {
-        private final Map<String, FileLock> locks = new HashMap<String, FileLock>();
-        FileLock getLock(File file) {
-            synchronized(locks) {
-                FileLock fl = locks.get(file.getAbsolutePath());
-                if(fl == null) {
-                    fl = new FileLock(file);
-                }
-                locks.put(file.getAbsolutePath(), fl);
-                return fl;
-            }
-        }
-    }
-
-    class FileLock {
-        private final File file;
-        public FileLock(File file) {
-            this.file = file;
-        }
-        void release() {
-            synchronized(fileLocks.locks) {
-                fileLocks.locks.remove(file.getAbsolutePath());
-            }
-        }
     }
     
 }

@@ -78,7 +78,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         System.out.println("### " + getName() + " ###");
         javaApplicationLabel =
                 Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                "Templates/Project/Standard/emptyJ2SE.xml");
+                "template_app");
     }
 
     /** Constructor required by JUnit.

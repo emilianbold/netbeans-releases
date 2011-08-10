@@ -178,22 +178,21 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         if ("DataEditorSupport.read-only.refresh".equals(fe.getName())) {
-            boolean correctFO;
-            FileObject fo = fe.getFile();
             synchronized (this) {
+                FileObject fo = fe.getFile();
                 assert lastFile != null;
-                correctFO = (lastFile.get() == fo);
-            }
-            if (correctFO) {
-                final boolean readOnly = !fo.canWrite();
-                // Update asynchronously to prevent deadlock of filesystem <-> document
-                // since this fileAttributeChanged() gets invoked under FS lock.
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateFileReadOnly(readOnly);
-                    }
-                });
+                if (lastFile.get() == fo) {
+                    final boolean readOnly = !fo.canWrite();
+                    // Update asynchronously to prevent deadlock of filesystem <-> document
+                    // since this fileAttributeChanged() gets invoked under FS lock.
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateFileReadOnly(readOnly);
+                        }
+                    });
+                            
+                }
             }
         }
     }

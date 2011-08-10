@@ -65,6 +65,7 @@ import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.view.ViewElement;
@@ -155,6 +156,9 @@ public class MultiSplitPane extends JPanel
         }
 
         dirty = true;
+        
+        //active TC has changed or some TC opened/closed - abort keyboard resizing (if any)
+        ModeResizer.abort();
     }
     
     int getCellCount() {
@@ -252,11 +256,13 @@ public class MultiSplitPane extends JPanel
         return d;
     }
 
+    @Override
     public void mouseMoved( MouseEvent e ) {
         switchCursor( e );
         e.consume();
     }
 
+    @Override
     public void mouseDragged( MouseEvent e ) {
         if( null == draggingDivider )
             return;
@@ -265,6 +271,7 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if( null == draggingDivider )
             return;
@@ -276,6 +283,7 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if( !Switches.isTopComponentResizingEnabled() )
             return;
@@ -288,6 +296,7 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         if( null == draggingDivider ) {
             setCursor( Cursor.getDefaultCursor() );
@@ -295,9 +304,11 @@ public class MultiSplitPane extends JPanel
         e.consume();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
     }
     
@@ -556,6 +567,46 @@ public class MultiSplitPane extends JPanel
         return res;
     }
 
+    public void startResizing( Component child ) {
+        MultiSplitDivider divider = findSplitDividerFor( child );
+        if( null == divider )
+            return;
+        MultiSplitCell resizingCell = findSplitCellFor( child );
+        MultiSplitDivider parentDivider = null;
+        MultiSplitPane parentSplit = ( MultiSplitPane ) SwingUtilities.getAncestorOfClass( MultiSplitPane.class, this );
+        if( null != parentSplit ) {
+            parentDivider = parentSplit.findSplitDividerFor( this );
+        }
+        ModeResizer.start( resizingCell.getComponent(), divider, parentDivider );
+    }
+    
+    private MultiSplitDivider findSplitDividerFor( Component c ) {
+        MultiSplitCell cell = findSplitCellFor( c );
+        if( null == cell )
+            return null;
+        int index = cells.indexOf( cell );
+        if( index >= dividers.size() )
+            index--;
+        return dividers.get( index ) ;
+    }
+    
+    private MultiSplitCell findSplitCellFor( Component c ) {
+        Container container = SwingUtilities.getAncestorOfClass( DefaultSplitContainer.ModePanel.class, c);
+        if( null == container ) {
+            if( c instanceof MultiSplitPane )
+                container = ( Container ) c;
+            else
+                return null;
+        }
+        
+        for( MultiSplitCell cell : cells ) {
+            if( cell.getComponent().equals( container ) ) {
+                return cell;
+            }
+        }
+        return null;
+    }
+
     protected class AccessibleMultiSplitPane extends AccessibleJComponent {
         @Override
         public AccessibleStateSet getAccessibleStateSet() {
@@ -608,6 +659,7 @@ public class MultiSplitPane extends JPanel
     
     protected class MultiSplitLayout implements LayoutManager {
         
+        @Override
         public void layoutContainer( Container c ) {
             if( c != MultiSplitPane.this )
                 return;
@@ -671,16 +723,20 @@ public class MultiSplitPane extends JPanel
             }
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container container) {
             return container.getSize();
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container container) {
             return container.getSize();
         }
 
+        @Override
         public void removeLayoutComponent(Component c) {}
 
+        @Override
         public void addLayoutComponent(String string, Component c) {}
     }
 }

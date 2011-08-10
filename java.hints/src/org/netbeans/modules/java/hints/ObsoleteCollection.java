@@ -47,6 +47,7 @@ import com.sun.source.util.TreePath;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -56,7 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
-@Hint(category="code_maturity", suppressWarnings="UseOfObsoleteCollectionType")
+@Hint(category="code_maturity", suppressWarnings="UseOfObsoleteCollectionType", options=Options.QUERY)
 public class ObsoleteCollection {
 
     @TriggerPattern (value="java.util.Vector")

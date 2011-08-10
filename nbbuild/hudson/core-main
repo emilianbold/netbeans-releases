@@ -12,6 +12,7 @@ api.java,\
 api.java.classpath,\
 api.progress,\
 api.visual,\
+apisupport.ant,\
 apisupport.crudsample,\
 apisupport.feedreader,\
 apisupport.harness,\
@@ -33,6 +34,11 @@ editor.mimelookup,\
 editor.mimelookup.impl,\
 extexecution,\
 favorites,\
+hudson,\
+hudson.maven,\
+hudson.mercurial,\
+hudson.subversion,\
+hudson.tasklist,\
 java.api.common,\
 java.freeform,\
 java.j2seplatform,\

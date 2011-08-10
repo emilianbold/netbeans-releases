@@ -51,6 +51,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.input.InputHandler;
@@ -71,6 +72,7 @@ final class NbInputHandler implements InputHandler {
     private JComboBox combo = null;
     private JTextField input = null;
     private final Runnable interestingOutputCallback;
+    boolean secure;
 
     public NbInputHandler(Runnable interestingOutputCallback) {
         this.interestingOutputCallback = interestingOutputCallback;
@@ -133,7 +135,11 @@ final class NbInputHandler implements InputHandler {
             }
             comp = combo;
         } else {
-            input = new JTextField(getDefaultValue(request), 25);
+            if (secure) {
+                input = new JPasswordField(getDefaultValue(request), 25);
+            } else {
+                input = new JTextField(getDefaultValue(request), 25);
+            }
             comp = input;
         }
 

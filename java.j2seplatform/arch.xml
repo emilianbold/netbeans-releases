@@ -742,7 +742,10 @@ made subject to such option by the copyright holder.
 -->
  <answer id="lookup-lookup">
   <p>
-   No.
+   The J2SE platform customizer lookups <code>java.beans.Customizer</code> instances
+   registered in the <code>org-netbeans-api-java/platform/j2seplatform/customizers/</code>
+   folder on the system file system. These instances are added as additional tabs into the
+   J2SE platform customizer.
   </p>
  </answer>
 

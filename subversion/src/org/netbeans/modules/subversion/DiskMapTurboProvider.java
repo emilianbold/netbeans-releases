@@ -48,11 +48,11 @@ import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;
-import org.openide.filesystems.FileUtil;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.openide.modules.Places;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -481,14 +481,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private void initCacheStore() {
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheStore = new File(new File(new File (userDir, "var"), "cache"), CACHE_DIRECTORY); // NOI18N
-        } else {
-            File cachedir = FileUtil.toFile(FileUtil.getConfigRoot());
-            cacheStore = new File(cachedir, CACHE_DIRECTORY); // NOI18N
-        }
-        cacheStore.mkdirs();
+        cacheStore = Places.getCacheSubdirectory(CACHE_DIRECTORY);
     }
 
     private static void copyStreams(OutputStream out, InputStream in, int len) throws IOException {

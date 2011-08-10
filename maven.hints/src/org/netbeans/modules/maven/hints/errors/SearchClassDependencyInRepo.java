@@ -81,6 +81,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
@@ -307,7 +308,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
             //mkleint: this option is has rather serious performance impact.
             // we need to work on performance before we enable it..
             Collection<NBVersionInfo> findVersionsByClass = filter(mavProj,
-                    RepositoryQueries.findVersionsByClass(simpleOrQualifiedName), isTestSource);
+                    RepositoryQueries.findVersionsByClass(simpleOrQualifiedName, RepositoryPreferences.getInstance().getRepositoryInfos()), isTestSource);
 
 
 

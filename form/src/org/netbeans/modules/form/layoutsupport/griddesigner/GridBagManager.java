@@ -50,16 +50,21 @@ import java.awt.Insets;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.form.MetaComponentCreator;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AddAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteColumnAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteColumnContentAction;
@@ -79,7 +84,8 @@ import org.openide.nodes.Node;
 /**
  * {@code GridManager} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola, Petr Somol
+ * @author Jan Stola
+ * @author Petr Somol
  */
 public class GridBagManager implements GridManager {
     private Container container;
@@ -87,6 +93,7 @@ public class GridBagManager implements GridManager {
     private GridCustomizer customizer;
     private VisualReplicator replicator;
     private Map<Component,RADVisualComponent> componentMap = new IdentityHashMap<Component,RADVisualComponent>();
+    private LayoutSupportManager layoutManager;
 
     public GridBagManager(VisualReplicator replicator) {
         this.replicator = replicator;
@@ -96,7 +103,8 @@ public class GridBagManager implements GridManager {
         if (!(container.getLayout() instanceof GridBagLayout)) {
             throw new IllegalArgumentException();
         }
-        info = new GridBagInfoProvider(container);
+        layoutManager =  metacont.getLayoutSupport();
+        info = new GridBagInfoProvider(container, layoutManager);
         updateComponentMap();
     }
 
@@ -135,6 +143,17 @@ public class GridBagManager implements GridManager {
 
     private void setProperty(Component component, String propertyName, Object value) {
         Node.Property property = getProperty(component, propertyName);
+        try {
+            property.setValue(value);
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }
+    }
+    
+    private void setLayoutProperty(String propertyName, Object value) {
+        Node.Property property = layoutManager.getLayoutProperty(propertyName);
         try {
             property.setValue(value);
         } catch (IllegalAccessException iaex) {
@@ -202,17 +221,21 @@ public class GridBagManager implements GridManager {
 
     @Override
     public void setGridPosition(Component component, int gridX, int gridY, int gridWidth, int gridHeight) {
-        boolean widthRemainder = info.getGridWidthRemainder(component);
-        boolean heightRemainder = info.getGridHeightRemainder(component);
-        int oldXEnd = info.getGridX(component)+info.getGridWidth(component);
-        int oldYEnd = info.getGridY(component)+info.getGridHeight(component);
+        boolean widthAbsolute = !info.getGridWidthRemainder(component) && !info.getGridWidthRelative(component);
+        boolean heightAbsolute = !info.getGridHeightRemainder(component) && !info.getGridHeightRelative(component);
+        int oldGridX = info.getGridX(component);
+        int oldGridY = info.getGridY(component);
+        int oldGridWidth = info.getGridWidth(component);
+        int oldGridHeight = info.getGridHeight(component);
+        int oldXEnd = oldGridX + oldGridWidth;
+        int oldYEnd = oldGridY + oldGridHeight;
+        // Keeping REMAINDER/RELATIVE size where it seems to be appropriate
         setGridX(component, gridX);
         setGridY(component, gridY);
-        // Keeping REMAINDER where it seems to be appropriate
-        if (!widthRemainder || (oldXEnd > gridX+gridWidth)) {
+        if ((widthAbsolute && oldGridWidth != gridWidth) || (oldXEnd != gridX + gridWidth)) {
             setGridWidth(component, gridWidth);
         }
-        if (!heightRemainder || (oldYEnd > gridY+gridHeight)) {
+        if ((heightAbsolute && oldGridHeight != gridHeight) || (oldYEnd != gridY + gridHeight)) {
             setGridHeight(component, gridHeight);
         }
     }
@@ -285,26 +308,51 @@ public class GridBagManager implements GridManager {
 
     @Override
     public void insertColumn(int newColumnIndex) {
+        boolean gapSupport = info.hasGaps();
+        if(gapSupport) {
+            int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+            int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+            int gappedColumns = (info.getGapXArrayLength() + 1) / 2;
+            int gappedRows = (info.getGapYArrayLength() + 1) / 2;
+            setGapArrays(gapWidth, gapHeight, gappedColumns+1, gappedRows);
+        }
         for (Component component : getContainer().getComponents()) {
             int x = info.getGridX(component);
             int width = info.getGridWidth(component);
             int newX = x;
             int newWidth = width;
             if (x >= newColumnIndex) {
-                newX++;
+                newX += gapSupport ? 2 : 1;
             } else if (x+width > newColumnIndex) {
-                newWidth++;
+                newWidth += gapSupport ? 2 : 1;
             }
             if ((x != newX) || (width != newWidth)) {
                 int y = info.getGridY(component);
                 int height = info.getGridHeight(component);
+                boolean widthRemainder = info.getGridWidthRemainder(component);
+                boolean widthRelative = info.getGridWidthRelative(component);
                 setGridPosition(component, newX, y, newWidth, height);
+                // Insertion of a column shouldn't override REMAINDER/RELATIVE width
+                if (widthRemainder) {
+                    setGridWidth(component, GridBagConstraints.REMAINDER);
+                }
+                if (widthRelative) {
+                    setGridWidth(component, GridBagConstraints.RELATIVE);
+                }
             }
         }
     }
 
     @Override
     public void deleteColumn(int columnIndex) {
+        boolean gapSupport = info.hasGaps();
+        if(gapSupport) {
+            int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+            int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+            int gappedColumns = (info.getGapXArrayLength() + 1) / 2;
+            int gappedRows = (info.getGapYArrayLength() + 1) / 2;
+            setGapArrays(gapWidth, gapHeight, gappedColumns-1, gappedRows);
+        }
         for (Component component : getContainer().getComponents()) {
             int x = info.getGridX(component);
             int width = info.getGridWidth(component);
@@ -314,18 +362,22 @@ public class GridBagManager implements GridManager {
                 int newX = x;
                 int newWidth = width;
                 if (x > columnIndex) {
-                    newX--;
+                    newX -= gapSupport ? 2 : 1;
                 } else if (x+width > columnIndex) {
-                    newWidth--;
+                    newWidth -= gapSupport ? 2 : 1;
                 }
                 if ((x != newX) || (width != newWidth)) {
                     int y = info.getGridY(component);
                     int height = info.getGridHeight(component);
                     boolean widthRemainder = info.getGridWidthRemainder(component);
+                    boolean widthRelative = info.getGridWidthRelative(component);
                     setGridPosition(component, newX, y, newWidth, height);
+                    // Deletion of a column shouldn't override REMAINDER/RELATIVE width
                     if (widthRemainder) {
-                        // Deletion of a column shouldn't override REMAINDER width
                         setGridWidth(component, GridBagConstraints.REMAINDER);
+                    }
+                    if (widthRelative) {
+                        setGridWidth(component, GridBagConstraints.RELATIVE);
                     }
                 }
             } 
@@ -334,26 +386,51 @@ public class GridBagManager implements GridManager {
 
     @Override
     public void insertRow(int newRowIndex) {
+        boolean gapSupport = info.hasGaps();
+        if(gapSupport) {
+            int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+            int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+            int gappedColumns = (info.getGapXArrayLength() + 1) / 2;
+            int gappedRows = (info.getGapYArrayLength() + 1) / 2;
+            setGapArrays(gapWidth, gapHeight, gappedColumns, gappedRows+1);
+        }
         for (Component component : getContainer().getComponents()) {
             int y = info.getGridY(component);
             int height = info.getGridHeight(component);
             int newY = y;
             int newHeight = height;
             if (y >= newRowIndex) {
-                newY++;
+                newY += gapSupport ? 2 : 1;
             } else if (y+height > newRowIndex) {
-                newHeight++;
+                newHeight += gapSupport ? 2 : 1;
             }
             if ((y != newY) || (height != newHeight)) {
                 int x = info.getGridX(component);
                 int width = info.getGridWidth(component);
+                boolean heightRemainder = info.getGridHeightRemainder(component);
+                boolean heightRelative = info.getGridHeightRelative(component);
                 setGridPosition(component, x, newY, width, newHeight);
+                // Insertion of a row shouldn't override REMAINDER/RELATIVE height
+                if (heightRemainder) {
+                    setGridHeight(component, GridBagConstraints.REMAINDER);
+                }
+                if (heightRelative) {
+                    setGridHeight(component, GridBagConstraints.RELATIVE);
+                }
             }
         }
     }
 
     @Override
     public void deleteRow(int rowIndex) {
+        boolean gapSupport = info.hasGaps();
+        if(gapSupport) {
+            int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+            int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+            int gappedColumns = (info.getGapXArrayLength() + 1) / 2;
+            int gappedRows = (info.getGapYArrayLength() + 1) / 2;
+            setGapArrays(gapWidth, gapHeight, gappedColumns, gappedRows-1);
+        }
         for (Component component : getContainer().getComponents()) {
             int y = info.getGridY(component);
             int height = info.getGridHeight(component);
@@ -363,18 +440,22 @@ public class GridBagManager implements GridManager {
                 int newY = y;
                 int newHeight = height;
                 if (y > rowIndex) {
-                    newY--;
+                    newY -= gapSupport ? 2 : 1;
                 } else if (y+height > rowIndex) {
-                    newHeight--;
+                    newHeight -= gapSupport ? 2 : 1;
                 }
                 if ((y != newY) || (height != newHeight)) {
                     int x = info.getGridX(component);
                     int width = info.getGridWidth(component);
                     boolean heightRemainder = info.getGridHeightRemainder(component);
+                    boolean heightRelative = info.getGridHeightRelative(component);
                     setGridPosition(component, x, newY, width, newHeight);
+                    // Deletion of a row shouldn't override REMAINDER/RELATIVE height
                     if (heightRemainder) {
-                        // Deletion of a row shouldn't override REMAINDER height
                         setGridHeight(component, GridBagConstraints.REMAINDER);
+                    }
+                    if (heightRelative) {
+                        setGridHeight(component, GridBagConstraints.RELATIVE);
                     }
                 }
             }
@@ -505,6 +586,218 @@ public class GridBagManager implements GridManager {
             setProperty(component, "weighty", oldWeight + diff); // NOI18N
         } else {
             setProperty(component, "weighty", 0.0d); // NOI18N
+        }
+    }
+
+    @Override
+    public void addGaps(int gapWidth, int gapHeight) 
+    {
+        if(info.hasGaps()) {
+            return;
+        }
+        FormLoaderSettings.getInstance().setGapWidth(gapWidth);
+        FormLoaderSettings.getInstance().setGapHeight(gapHeight);
+        int columnCount = info.getColumnCount();
+        int rowCount = info.getRowCount();
+        setGapArrays(gapWidth, gapHeight, columnCount, rowCount);
+        
+        for (Component component : getContainer().getComponents()) {
+            int x = info.getGridX(component);
+            int y = info.getGridY(component);
+            int width = info.getGridWidth(component);
+            int height = info.getGridHeight(component);
+            int newX = 2 * x;
+            int newY = 2 * y;
+            int newWidth = width * 2 - 1;
+            int newHeight = height * 2 - 1;
+            boolean widthRemainder = info.getGridWidthRemainder(component);
+            boolean heightRemainder = info.getGridHeightRemainder(component);
+            
+            setGridPosition(component, newX, newY, newWidth, newHeight);
+            // adding gaps shouldn't override REMAINDER/RELATIVE if possible
+            if (widthRemainder) {
+                setGridWidth(component, GridBagConstraints.REMAINDER);
+            }
+            if (heightRemainder) {
+                setGridHeight(component, GridBagConstraints.REMAINDER);
+            }
+        }
+    }
+
+    @Override
+    public void removeGaps() 
+    {
+        if(!info.hasGaps()) {
+            return;
+        }
+        int gapXArrayLength = info.getGapXArrayLength();
+        int gapYArrayLength = info.getGapYArrayLength();
+        setLayoutProperty("columnWidths",null);
+        setLayoutProperty("rowHeights",null);
+        
+        int maxX = -1;
+        int maxY = -1;
+        for (Component component : getContainer().getComponents()) {
+            int x = info.getGridX(component);
+            int y = info.getGridY(component);
+            int width = info.getGridWidth(component);
+            int height = info.getGridHeight(component);
+            int newX = x / 2;
+            int newY = y / 2;
+            int newWidth = (width - 1)/2 + 1;
+            int newHeight = (height - 1)/2 + 1;
+            boolean widthRemainder = info.getGridWidthRemainder(component);
+            boolean heightRemainder = info.getGridHeightRemainder(component);
+            
+            setGridPosition(component, newX, newY, newWidth, newHeight);
+            // adding gaps shouldn't override REMAINDER/RELATIVE if possible
+            if (widthRemainder) {
+                setGridWidth(component, GridBagConstraints.REMAINDER);
+            }
+            if (heightRemainder) {
+                setGridHeight(component, GridBagConstraints.REMAINDER);
+            }
+            if(maxX == -1 || newX + newWidth - 1 > maxX) {
+                maxX = newX + newWidth - 1;
+            }
+            if(maxY == -1 || newY + newHeight - 1 > maxY) {
+                maxY = newY + newHeight - 1;
+            }
+        }
+    }
+
+    void setGapArrays(int gapWidth, int gapHeight, int columnCount, int rowCount) 
+    {
+        int gappedColumnCount = 2 * columnCount - 1;
+        int gappedRowCount = 2 * rowCount - 1;
+        
+        int columnWidths[] = new int[gappedColumnCount];
+        for(int i = 1; i < columnCount; i++) {
+            columnWidths[i * 2 - 1] = gapWidth;
+        }
+        int rowHeights[] = new int[gappedRowCount];
+        for(int j = 1; j < rowCount; j++) {
+            rowHeights[j * 2 - 1] = gapHeight;
+        }        
+        setLayoutProperty("columnWidths",columnWidths);
+        setLayoutProperty("rowHeights",rowHeights);
+    }
+    
+    @Override
+    public void updateGaps(boolean updateComponents) 
+    {
+        if(!info.hasGaps()) {
+            return;
+        }
+        int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+        int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
+        int columnCount = 0;
+        int rowCount = 0;
+        int lastGapColumnIndex = Math.max( info.getLastGapColumn() - 1, -1 );
+        int lastGapRowIndex = Math.max( info.getLastGapRow() - 1, -1 );
+        if(updateComponents) {
+            // this is to compensate possible breaches of GridBagLayout gap support
+            // consistency caused by edits outside the customizer. This may 
+            // hapen if the user closes the customizer with gap support on, then
+            // adds/removes/changes components in free form editor. Components with
+            // RELATIVE position or size may get introduced. Components with positions
+            // exceeding the size gap definition arrays (columnWidths, rowHeights)
+            // may appear. The correction consists in adjusting component positions
+            // so that the new ones are placed correctly, j.e., in non-gap columns/rows.
+            // Note that the correction can not be done perfectly because there
+            // may not be enough information available, e.g., newly added
+            // components with asolute position fitting into gap columns/rows
+            // are left so because they can not be distinguished from components
+            // placed into gap columns/rows manually on purpose.
+            GridUtils.removePaddingComponents(this);
+            
+            // 1. accomodate new positions outside current gap vectors,
+            // absolutize RELATIVE positions that fit into non-gap columns/rows,
+            // and record RELATIVE positions pointing into gaps
+            SortedSet<Integer> wrongPositionX = new TreeSet<Integer>();
+            SortedSet<Integer> wrongPositionY = new TreeSet<Integer>();
+            for (Component component : getContainer().getComponents()) {
+                boolean relativeX = info.getGridXRelative(component);
+                boolean relativeY = info.getGridYRelative(component);
+                int x = info.getGridX(component);
+                int y = info.getGridY(component);
+                if(x <= lastGapColumnIndex && relativeX && info.isGapColumn(x)) {
+                    wrongPositionX.add(x);
+                }
+                if(y <= lastGapRowIndex && relativeY && info.isGapRow(y)) {
+                    wrongPositionY.add(y);
+                }
+                columnCount = Math.max(columnCount, x + 1);
+                rowCount = Math.max(rowCount, y + 1);
+            }
+            // 2. insert new gap columns/rows around the remaining
+            // RELATIVE positioned components
+            if(columnCount > 0 && rowCount > 0) {
+                int moveRightBy[] = new int[columnCount];
+                int moveDownBy[] = new int[rowCount];
+                for(Iterator iterX = wrongPositionX.iterator(); iterX.hasNext();) {
+                    int wrongX = (Integer)iterX.next();
+                    for(int i = wrongX; i < columnCount; i++) {
+                        if(i == wrongX) {
+                            moveRightBy[i]++;
+                        } else {
+                            moveRightBy[i]+=2;
+                        }
+                    }
+                }
+                for(Iterator iterY = wrongPositionY.iterator(); iterY.hasNext();) {
+                    int wrongY = (Integer)iterY.next();
+                    for(int j = wrongY; j < rowCount; j++) {
+                        if(j == wrongY) {
+                            moveDownBy[j]++;
+                        } else {
+                            moveDownBy[j]+=2;
+                        }
+                    }
+                }
+                for (Component component : getContainer().getComponents()) {
+                    boolean remainderWidth = info.getGridWidthRemainder(component);
+                    boolean remainderHeight = info.getGridHeightRemainder(component);
+                    int x = info.getGridX(component);
+                    int y = info.getGridY(component);
+                    int width = info.getGridWidth(component);
+                    int height = info.getGridHeight(component);
+                    int newX = x + moveRightBy[x];
+                    int newY = y + moveDownBy[y];
+                    int newWidth = width;
+                    int newHeight = height;
+                    if(x > lastGapColumnIndex + 1) {
+                        newX += x - (lastGapColumnIndex + 1);
+                        newWidth = width * 2 - 1;
+                    }
+                    if(y > lastGapRowIndex + 1) {
+                        newY += y - (lastGapRowIndex + 1);
+                        newHeight = height * 2 - 1;
+                    }
+                    setGridPosition(component, newX, newY, newWidth, newHeight);
+                    if(remainderWidth) {
+                        setGridWidth(component, GridBagConstraints.REMAINDER);
+                    }
+                    if(remainderHeight) {
+                        setGridHeight(component, GridBagConstraints.REMAINDER);
+                    }
+                    columnCount = Math.max(columnCount, newX + newWidth);
+                    rowCount = Math.max(rowCount, newY + newHeight);
+                }
+                columnCount = Math.max(columnCount, lastGapColumnIndex + 1);
+                rowCount = Math.max(rowCount, lastGapRowIndex + 1);
+                int gapFreeColumnCount = ( columnCount + 1 + (1 - columnCount % 2)) / 2;
+                int gapFreeRowCount = (rowCount + 1 + (1 - rowCount % 2)) / 2;
+                setGapArrays(gapWidth, gapHeight, gapFreeColumnCount, gapFreeRowCount);
+                GridUtils.addPaddingComponents(this, columnCount, rowCount);
+                GridUtils.revalidateGrid(this);
+            }
+        } else { // updateComponents == false
+            columnCount = Math.max(info.getColumnCount(), lastGapColumnIndex + 1);
+            rowCount = Math.max(info.getRowCount(), lastGapRowIndex + 1);
+            int gapFreeColumnCount = ( columnCount + 1 + (1 - columnCount % 2)) / 2;
+            int gapFreeRowCount = (rowCount + 1 + (1 - rowCount % 2)) / 2;
+            setGapArrays(gapWidth, gapHeight, gapFreeColumnCount, gapFreeRowCount);
         }
     }
 

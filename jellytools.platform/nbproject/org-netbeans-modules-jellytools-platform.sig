@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.8.1
+#Version 3.9
 
 CLSS public java.lang.Object
 cons public init()
@@ -155,8 +155,7 @@ meth public void fail(java.lang.Throwable)
 meth public void runBare() throws java.lang.Throwable
 meth public void waitScanFinished()
 supr org.netbeans.junit.NbTestCase
-hfds distributingHierarchyListener,isScreenCaptured,openedProjects,testStatus
-hcls DistributingHierarchyListener
+hfds isScreenCaptured,openedProjects,testStatus
 
 CLSS public org.netbeans.jellytools.JellyVersion
 cons public init()
@@ -2495,6 +2494,7 @@ intf org.netbeans.junit.NbTest
 meth protected boolean runInEQ()
 meth protected final int getTestNumber()
 meth protected int timeOut()
+meth protected java.lang.String logRoot()
 meth protected java.util.logging.Level logLevel()
 meth public boolean canRun()
 meth public java.io.File getDataDir()

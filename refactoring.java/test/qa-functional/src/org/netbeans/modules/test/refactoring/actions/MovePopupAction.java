@@ -52,7 +52,7 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
  */
 public class MovePopupAction implements TestAction {
     
-    public static final String popupPath = "Refactor | Move...";
+    public static final String popupPath = "Refactor|Move...";
 
     public void perform(Object parameter) {
         perform((EditorOperator)parameter);

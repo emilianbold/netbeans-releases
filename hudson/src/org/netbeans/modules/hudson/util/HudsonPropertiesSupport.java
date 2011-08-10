@@ -46,25 +46,28 @@ package org.netbeans.modules.hudson.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Hudson properties support
  *
  * @author Michal Mocnak
  */
-public class HudsonPropertiesSupport {
+public final class HudsonPropertiesSupport {
     
     private Map<String, Object> properties = new HashMap<String, Object>();
     
     public HudsonPropertiesSupport() {}
     
-    public <T> T getProperty(String name, Class<T> clazz) {
+    public @CheckForNull <T> T getProperty(String name, Class<T> clazz) {
         Object o = properties.get(name);
+        return clazz.isInstance(o) ? clazz.cast(o) : null;
+    }
         
-        if (clazz.isInstance(o))
-            return clazz.cast(o);
-        
-        return null;
+    public @NonNull <T> T getProperty(String name, Class<T> clazz, @NonNull T fallback) {
+        T t = getProperty(name, clazz);
+        return t != null ? t : fallback;
     }
     
     public void putProperty(String name, Object o) {

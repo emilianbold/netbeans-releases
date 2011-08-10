@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.Consumes;
@@ -12,18 +11,18 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
 import org.codehaus.jettison.json.JSONString;
 
-
 /**
  * REST Web Service
  *
  * @author lukas
  */
-
 public class CI1Cl {
+
     private String CI1URI;
+
     /** Creates a new instance of CI1Cl */
     private CI1Cl(String CI1URI) {
-        this.CI1URI=CI1URI;
+        this.CI1URI = CI1URI;
     }
 
     /** Get instance of the CI1Cl */

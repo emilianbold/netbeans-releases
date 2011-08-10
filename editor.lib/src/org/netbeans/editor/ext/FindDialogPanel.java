@@ -96,14 +96,15 @@ public class FindDialogPanel extends javax.swing.JPanel {
         findWhat = new javax.swing.JComboBox();
         replaceWithLabel = new javax.swing.JLabel();
         replaceWith = new javax.swing.JComboBox();
-        highlightSearch = createCheckBox( EditorFindSupport.FIND_HIGHLIGHT_SEARCH );
-        incSearch = createCheckBox( EditorFindSupport.FIND_INC_SEARCH );
-        matchCase = createCheckBox( EditorFindSupport.FIND_MATCH_CASE );
-        wholeWords = createCheckBox( EditorFindSupport.FIND_WHOLE_WORDS );
-        bwdSearch = createCheckBox( EditorFindSupport.FIND_BACKWARD_SEARCH );
-        wrapSearch = createCheckBox( EditorFindSupport.FIND_WRAP_SEARCH );
-        regExp = createCheckBox( EditorFindSupport.FIND_REG_EXP );
-        blockSearch = createCheckBox( EditorFindSupport.FIND_BLOCK_SEARCH );
+        highlightSearch = createCheckBox( EditorFindSupport.FIND_HIGHLIGHT_SEARCH, 'H' );
+        incSearch = createCheckBox( EditorFindSupport.FIND_INC_SEARCH, 'I' );
+        matchCase = createCheckBox( EditorFindSupport.FIND_MATCH_CASE, 'C' );
+        wholeWords = createCheckBox( EditorFindSupport.FIND_WHOLE_WORDS, 'W' );
+        bwdSearch = createCheckBox( EditorFindSupport.FIND_BACKWARD_SEARCH, 'B' );
+        wrapSearch = createCheckBox( EditorFindSupport.FIND_WRAP_SEARCH, 'p' );
+        regExp = createCheckBox( EditorFindSupport.FIND_REG_EXP, 'E' );
+        blockSearch = createCheckBox( EditorFindSupport.FIND_BLOCK_SEARCH, 'l' );
+        preserveCase = createCheckBox( EditorFindSupport.FIND_PRESERVE_CASE, 'v' );
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -159,14 +160,14 @@ public class FindDialogPanel extends javax.swing.JPanel {
         add(replaceWith, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(highlightSearch, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 10);
         add(incSearch, gridBagConstraints);
@@ -206,6 +207,13 @@ public class FindDialogPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 10);
         add(blockSearch, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
+        add(preserveCase, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -218,6 +226,7 @@ public class FindDialogPanel extends javax.swing.JPanel {
     protected javax.swing.JCheckBox highlightSearch;
     protected javax.swing.JCheckBox incSearch;
     protected javax.swing.JCheckBox matchCase;
+    protected javax.swing.JCheckBox preserveCase;
     protected javax.swing.JCheckBox regExp;
     protected javax.swing.JComboBox replaceWith;
     protected javax.swing.JLabel replaceWithLabel;
@@ -226,7 +235,7 @@ public class FindDialogPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    private JCheckBox createCheckBox( String key ) {
+    private JCheckBox createCheckBox( String key , char ch) {
         JCheckBox box = new JCheckBox();
         Mnemonics.setLocalizedText(box, bundle.getString(key));
         box.setToolTipText( bundle.getString( key + "-tooltip" ) );

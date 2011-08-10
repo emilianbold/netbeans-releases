@@ -45,13 +45,11 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
@@ -66,7 +64,6 @@ import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
-import org.apache.maven.repository.LocalArtifactRepository;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -76,8 +73,12 @@ import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.spi.connector.RepositoryConnector;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  *
@@ -128,25 +129,6 @@ public final class EmbedderFactory {
         componentDescriptor.setImplementationClass(implementationClass.asSubclass(roleClass));
         componentDescriptor.setRoleHint(roleHint);
         container.addComponentDescriptor(componentDescriptor);
-    }
-
-    public static class NbLocalArtifactRepository extends LocalArtifactRepository {
-        private final Collection<? extends ArtifactFixer> fixers = Lookup.getDefault().lookupAll(ArtifactFixer.class);
-        public @Override Artifact find(Artifact artifact) {
-            for (ArtifactFixer fixer : fixers) {
-                File f = fixer.resolve(artifact);
-                if (f != null) {
-                    artifact.setFile(f);
-                    artifact.setResolved(true);
-                    artifact.setRepository(this);
-                    break;
-                }
-            }
-            return artifact;
-        }
-        public @Override boolean hasLocalMetadata() {
-            return false;
-        }
     }
 
     /**
@@ -210,18 +192,10 @@ public final class EmbedderFactory {
             .setName("maven");
         
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
-        
-        addComponentDescriptor(pc, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
         pc.setLoggerManager(new NbLoggerManager());
-       
-        try {
-            
-            assert pc.lookup(LocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE) instanceof NbLocalArtifactRepository;
-           
-        } catch (ComponentLookupException x) {
-            assert false : x;
-        }
 
+        addComponentDescriptor(pc, RepositoryConnectorFactory.class, OfflineConnector.class, "offline");
+       
         Properties props = new Properties();
         props.putAll(System.getProperties());
         EmbedderConfiguration configuration = new EmbedderConfiguration(pc, localRepoPreference(), fillEnvVars(props), true);
@@ -270,6 +244,18 @@ public final class EmbedderFactory {
         return embedder;
     }
 
+    public static final class OfflineConnector implements RepositoryConnectorFactory {
+        @Override public RepositoryConnector newInstance(RepositorySystemSession session, RemoteRepository repository) throws NoRepositoryConnectorException {
+            // Throwing NoRepositoryConnectorException is ineffective because DefaultRemoteRepositoryManager will just skip to WagonRepositoryConnectorFactory.
+            // (No apparent way to suppress WRCF from the Plexus container; using "wagon" as the role hint does not work.)
+            // Could also return a no-op RepositoryConnector which would perform no downloads.
+            // But we anyway want to ensure that related code is consistently setting the offline flag on all Maven structures that require it.
+            throw new AssertionError();
+        }
+        @Override public int getPriority() {
+            return Integer.MAX_VALUE;
+        }
+    }
 
     public synchronized static MavenEmbedder getProjectEmbedder() /*throws MavenEmbedderException*/ {
         if (project == null) {

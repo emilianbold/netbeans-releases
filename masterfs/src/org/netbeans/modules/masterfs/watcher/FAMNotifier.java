@@ -50,7 +50,12 @@ import com.sun.jna.Structure.ByReference;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 /**
  * Notifier implementation using fam library
@@ -62,47 +67,104 @@ public class FAMNotifier extends Notifier<Integer> {
     private final FAMLibrary lib;
     private final Map<Integer, String> map = Collections.synchronizedMap(new HashMap<Integer, String>());
 
+    private final BlockingQueue<String> events = new LinkedBlockingQueue<String>();
+    private final Thread eventReader;
+    private volatile boolean stopped = false;
+            
+    // limit unanswered requests to avoid FAM hang, see IZ 199497
+    private static int ACTIVE_REQUESTS_LIMIT = 100;
+    private final Set<Integer> activeRequests = Collections.synchronizedSet(new HashSet<Integer>());
+    
+    private static final Logger LOG = Logger.getLogger(FAMNotifier.class.getName());
+
     public FAMNotifier() {
         FAMLibrary library;
         try {
             // first try gamin
-            library = (FAMLibrary) Native.loadLibrary("gamin-1", FAMLibrary.class);
+            library = (FAMLibrary) Native.loadLibrary("gamin-1", FAMLibrary.class); //NOI18N
         } catch (LinkageError x) {
             // then fam
-            library = (FAMLibrary) Native.loadLibrary("fam", FAMLibrary.class);
+            library = (FAMLibrary) Native.loadLibrary("fam", FAMLibrary.class); //NOI18N
         }
         this.lib = library;
         this.conn = new FAMLibrary.FAMConnection();
         if (lib.FAMOpen(conn) != 0) {
             throw new IllegalStateException();
         }
+        eventReader = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!stopped) {
+                    while (lib.FAMPending(conn) > 0) {
+                        FAMLibrary.FAMEvent evt = new FAMLibrary.FAMEvent();
+                        if (lib.FAMNextEvent(conn, evt) != -1) {
+                            if (evt.code == FAMLibrary.FAMEndExist || evt.code == FAMLibrary.FAMAcknowledge) {
+                                synchronized (activeRequests) {
+                                    activeRequests.remove(evt.fr.reqnum);
+                                    activeRequests.notifyAll();
+                                }
+                            }
+                            String path = map.get(evt.fr.reqnum);
+                            if (path != null) {
+                                events.add(path);
+                            }
+                        }
+                    }
+                    // now sleep
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }
+        }, "FAM events reader"); //NOI18N
+        eventReader.start();
     }
 
     @Override
     public Integer addWatch(String path) throws IOException {
+        startRequest();
         FAMLibrary.FAMRequest request = new FAMLibrary.FAMRequest();
         lib.FAMMonitorDirectory(conn, path, request, null);
+        activeRequests.add(request.reqnum);
         map.put(request.reqnum, path);
         return request.reqnum;
     }
-
+    
+    private void startRequest() {
+        synchronized (activeRequests) {
+            while (activeRequests.size() > ACTIVE_REQUESTS_LIMIT) {
+                long start = System.currentTimeMillis();
+                try {
+                    activeRequests.wait();
+                } catch (InterruptedException ex) {
+                }
+                LOG.warning("Blocking FAM requests for " + (System.currentTimeMillis()-start) + "ms, requests queue is full"); //NOI18N
+            }
+        }
+    }
+    
     @Override
     public String nextEvent() throws IOException, InterruptedException {
-        while (lib.FAMPending(conn) <= 0) {
-            Thread.sleep(1000);
-        }
-        FAMLibrary.FAMEvent evt = new FAMLibrary.FAMEvent();
-        if (lib.FAMNextEvent(conn, evt) != -1) {
-            String path = map.get(evt.fr.reqnum);
-            return path;
-        }
-        return null;
+        return events.take();
     }
 
     @Override
     public void removeWatch(Integer key) throws IOException {
+        startRequest();
+        activeRequests.add(key);
         lib.FAMCancelMonitor(conn, new FAMLibrary.FAMRequest(key));
         map.remove(key);
+    }
+
+    @Override
+    protected void stop() throws IOException {
+        stopped = true;
+        try {
+            eventReader.join(2000);
+        } catch (InterruptedException ex) {
+        }
+        lib.FAMClose(conn);
     }
 
     interface FAMLibrary extends Library {

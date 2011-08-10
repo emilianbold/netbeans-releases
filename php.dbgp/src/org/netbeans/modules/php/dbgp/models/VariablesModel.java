@@ -67,6 +67,7 @@ public class VariablesModel extends ViewModelSupport
         myNodes = new LinkedList<ModelNode>();
     }
 
+    @Override
     public void clearModel() {
         myWritelock.lock();
         try {
@@ -81,6 +82,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getRoot()
      */
+    @Override
     public Object getRoot() {
         return ROOT; // ROOT is defined by TreeModel
     }
@@ -88,6 +90,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
+    @Override
     public Object[] getChildren(Object parent, int from, int to) 
         throws UnknownTypeException 
     {
@@ -128,6 +131,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#isLeaf(java.lang.Object)
      */
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == null) {
             return true;
@@ -151,6 +155,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildrenCount(java.lang.Object)
      */
+    @Override
     public int getChildrenCount( Object node ) throws UnknownTypeException {
         myReadlock.lock();
         try {
@@ -172,6 +177,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
+    @Override
     public Object getValueAt(Object node, String columnID) 
         throws UnknownTypeException 
     {
@@ -213,56 +219,51 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
+    @Override
     public boolean isReadOnly(Object node, String string) 
         throws UnknownTypeException 
     {
-        if (node instanceof ModelNode && 
-                Constants.LOCALS_VALUE_COLUMN_ID.equals(string)) 
-        {
-            return ((ModelNode)node).isReadOnly();
-        }
-        
-        return true;
+        return false;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
-    public void setValueAt(Object node, String string, Object value) 
+    @Override
+    public void setValueAt(Object node, String columnID, Object value) 
         throws UnknownTypeException 
     {
         assert value instanceof String;
         
-        if (!Constants.LOCALS_VALUE_COLUMN_ID.equals(string)) {
-            throw new UnknownTypeException(node);
-        }
-        
-        if (!(node instanceof VariableNode)) {
-            throw new UnknownTypeException(node);
-        }
-        
-        ModelNode modelNode = (ModelNode)node;
-        
-        if ( modelNode.isReadOnly()) {
-            throw new UnknownTypeException(node);
-        }
-        
-        DebugSession session = getSession();
-        if ( session == null ){
-            // TODO : need signal to user about inability to set value
-            return;
-        }
-        PropertySetCommand command = new PropertySetCommand( 
-                session.getTransactionId() );
-        command.setData( (String)value );
-        assert node instanceof AbstractVariableNode;
-        ((AbstractVariableNode)node).setupCommand( command );
-        session.sendCommandLater(command);
+        if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+            if (!(node instanceof VariableNode)) {
+                throw new UnknownTypeException(node);
+            }
+
+            ModelNode modelNode = (ModelNode)node;
+
+            if ( modelNode.isReadOnly()) {
+                throw new UnknownTypeException(node);
+            }
+
+            DebugSession session = getSession();
+            if ( session == null ){
+                // TODO : need signal to user about inability to set value
+                return;
+            }
+            PropertySetCommand command = new PropertySetCommand( 
+                    session.getTransactionId() );
+            command.setData( (String)value );
+            assert node instanceof AbstractVariableNode;
+            ((AbstractVariableNode)node).setupCommand( command );
+            session.sendCommandLater(command);
+        } 
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         String retval = null;
         if(node == ROOT) {
@@ -282,6 +283,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
      */
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if(node == null || node == ROOT) {
             return VariableNode.LOCAL_VARIABLE_ICON;
@@ -294,6 +296,7 @@ public class VariablesModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
      */
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if(node == null || node == ROOT) {
             return null;

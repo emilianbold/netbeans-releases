@@ -56,10 +56,8 @@ import javax.swing.Action;
 import javax.swing.JScrollPane;
 
 
-import junit.textui.TestRunner;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 
 import org.openide.explorer.ExplorerPanel;
 import org.openide.nodes.AbstractNode;
@@ -82,25 +80,8 @@ public class DefaultActionTest extends NbTestCase {
         super(name);
     }
    
-    public static void main (String args[]) {
-         TestRunner.run (new NbTestSuite (DefaultActionTest.class));
-    }
-    
-    /** Run all tests in AWT thread */
-    public final void run (final junit.framework.TestResult result) {
-        try {
-            // XXX ExplorerManager when updating selected nodes
-            // replanes all firing into AWT thread, therefore the test
-            // has to run in AWT.
-            javax.swing.SwingUtilities.invokeAndWait (new Runnable () {
-                public void run () {
-                    DefaultActionTest.super.run (result);
-                }
-            });
-        } catch (Exception ex) {
-            ex.printStackTrace ();
-            throw new IllegalStateException ();
-        }
+    @Override protected boolean runInEQ() {
+        return true;
     }
     
     private boolean performed;

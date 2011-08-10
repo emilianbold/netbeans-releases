@@ -114,8 +114,7 @@ public class GuiRunLevel implements RunLevel {
             }
         }
 
-        // install java.net.Authenticator
-        java.net.Authenticator.setDefault (new NbAuthenticator ());
+        NbAuthenticator.install();
         
         StartLog.logProgress ("Security managers installed"); // NOI18N
         Splash.getInstance().increment(1);
@@ -171,7 +170,7 @@ public class GuiRunLevel implements RunLevel {
         Runnable r = new Runnable() {
           public @Override void run() {
               try {
-                  Class<?> clz = Class.forName("org.netbeans.performance.test.guitracker.LoggingRepaintManager"); // NOI18N
+                  Class<?> clz = Class.forName("org.netbeans.modules.performance.guitracker.LoggingRepaintManager"); // NOI18N
                   Method m = clz.getMethod("measureStartup"); // NOI18N
                   Object o = m.invoke(null);
                   endOfStartupMeasuring(o);
@@ -213,7 +212,7 @@ public class GuiRunLevel implements RunLevel {
                 }
             }
             if (o != null) {
-                StartLog.logMeasuredStartupTime((Long) o);
+                StartLog.logMeasuredStartupTime((Long) o);                
             }
             org.openide.LifecycleManager.getDefault().exit();
         }

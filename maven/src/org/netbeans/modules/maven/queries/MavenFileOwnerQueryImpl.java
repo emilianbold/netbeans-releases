@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -93,14 +94,23 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public static MavenFileOwnerQueryImpl getInstance() {
         return Lookup.getDefault().lookup(MavenFileOwnerQueryImpl.class);
     }
+
+    public void registerCoordinates(String groupId, String artifactId, URL owner) {
+        String key = groupId + ':' + artifactId;
+        prefs().put(key, owner.toString());
+        LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
+    }
     
     public void registerProject(NbMavenProjectImpl project) {
         MavenProject model = project.getOriginalMavenProject();
-        String key = model.getGroupId() + ':' + model.getArtifactId();
+        String groupId = model.getGroupId();
+        String artifactId = model.getArtifactId();
+        if (groupId.equals("error") && artifactId.equals("error")) {
+            LOG.log(Level.FINE, "will not register unloadable {0}", project.getPOMFile());
+            return;
+        }
         try {
-            String ownerURI = project.getProjectDirectory().getURL().toString();
-            prefs().put(key, ownerURI);
-            LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {ownerURI, key});
+            registerCoordinates(groupId, artifactId, project.getProjectDirectory().getURL());
         } catch (FileStateInvalidException x) {
             LOG.log(Level.INFO, null, x);
         }

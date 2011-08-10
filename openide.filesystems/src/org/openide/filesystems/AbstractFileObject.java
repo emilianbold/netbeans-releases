@@ -515,7 +515,7 @@ final class AbstractFileObject extends AbstractFolder {
             (name.indexOf('/') != -1) || ((ext != null) && (ext.indexOf('/') != -1)) || (name.indexOf('\\') != -1) ||
                 ((ext != null) && (ext.indexOf('\\') != -1))
         ) {
-            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRename",
+            throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRenameFromTo",
                     getPath(), getAbstractFileSystem().getDisplayName(), name + "." + ext));
         }
 
@@ -539,7 +539,7 @@ final class AbstractFileObject extends AbstractFolder {
                 oldFullName = getPath();
 
                 if (isReadOnly()) {
-                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRename",
+                    throw new FSException(NbBundle.getMessage(AbstractFileObject.class, "EXC_CannotRenameFromTo",
                             getPath(), getAbstractFileSystem().getDisplayName(), newFullName));
                 }
 
@@ -551,6 +551,7 @@ final class AbstractFileObject extends AbstractFolder {
                 String oe = getExt();
 
                 getAbstractFileSystem().change.rename(oldFullName, newFullName);
+                MIMESupport.freeCaches();
 
                 String oldName = this.name;
                 this.name = name;

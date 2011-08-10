@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -53,7 +53,6 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -67,6 +66,7 @@ public class SQLDataObject extends MultiDataObject {
         final SQLEditorSupport sqlEditorSupport = new SQLEditorSupport(this);
         cookies.add(sqlEditorSupport);
         cookies.assign( SaveAsCapable.class, new SaveAsCapable() {
+            @Override
             public void saveAs(FileObject folder, String fileName) throws IOException {
                 sqlEditorSupport.saveAs( folder, fileName );
             }
@@ -75,12 +75,7 @@ public class SQLDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new SQLNode(this);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+        return new SQLNode(this, getLookup());
     }
 
     public boolean isConsole() {
@@ -99,4 +94,10 @@ public class SQLDataObject extends MultiDataObject {
     void removeCookie(Node.Cookie cookie) {
         getCookieSet().remove(cookie);
     }
+    
+    @Override
+    protected int associateLookup() {
+        return 1;
+}
+    
 }

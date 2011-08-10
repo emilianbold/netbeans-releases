@@ -42,17 +42,22 @@
 package org.netbeans.core.multiview;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -65,6 +70,8 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElementTest;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -74,6 +81,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -232,16 +241,58 @@ public class MultiViewProcessorTest extends NbTestCase {
     
     public void testIsSourceView() {
         int cnt = 0;
-        for (MultiViewDescription d : MimeLookup.getLookup("text/plain").lookupAll(MultiViewDescription.class)) {
+        for (MultiViewDescription d : MimeLookup.getLookup("text/plaintest").lookupAll(MultiViewDescription.class)) {
             cnt++;
             assertTrue(
-                "All views in text/plain have source element: " + d,
+                "All views in text/plaintest have source element: " + d,
                 MultiViewCloneableTopComponent.isSourceView(d)
             );
         }
         if (cnt == 0) {
             fail("There shall be at least one description");
         }
+    }
+    
+    public void testIconIsAlwaysTakenFromSourceView() throws Exception {
+        InstanceContent ic = new InstanceContent();
+        Lookup lkp = new AbstractLookup(ic);
+        ic.add(MultiViewEditorElementTest.createSupport(lkp));
+        
+        final CloneableTopComponent tc = MultiViews.createCloneableMultiView("text/plaintest", new LP(lkp));
+        final CloneableEditorSupport.Pane p = (CloneableEditorSupport.Pane) tc;
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                p.updateName();
+            }
+        });
+
+        assertNull("No icon yet", tc.getIcon());
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
+        final MultiViewPerspective[] two = handler.getPerspectives();
+        assertEquals("One element only" + Arrays.asList(two), 1, handler.getPerspectives().length);
+        assertEquals("First one is source", "source", two[0].preferredID());
+        handler.requestVisible(two[0]);
+        
+        
+        class P implements PropertyChangeListener {
+            int cnt;
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                cnt++;
+            }
+        }
+        P listener = new P();
+        tc.addPropertyChangeListener("icon", listener);
+        
+        BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_BYTE_GRAY);
+        ic.add(img);
+        assertEquals("One change in listener", 1, listener.cnt);
+        assertEquals("Image changed", img, tc.getIcon());
+        
+        ic.remove(img);
+        assertEquals("Second change in listener", 2, listener.cnt);
+        assertNull("No icon again", tc.getIcon());
     }
 
     public void testMultiViewsContextCreate() {
@@ -385,33 +436,34 @@ public class MultiViewProcessorTest extends NbTestCase {
     @MultiViewElement.Registration(
         displayName="Source",
         iconBase="none",
-        mimeType="text/plain",
+        mimeType="text/plaintest",
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID="source"
     )
-    public static class SourceMVC extends MVE implements CloneableEditorSupport.Pane {
-        @Override
-        public JEditorPane getEditorPane() {
-            throw new UnsupportedOperationException("Not supported yet.");
+    public static class SourceMVC extends MultiViewEditorElement 
+    implements LookupListener {
+        private final Lookup.Result<Image> res;
+        
+        public SourceMVC(Lookup lookup) {
+            super(lookup);
+            res = lookup.lookupResult(Image.class);
+            res.addLookupListener(this);
+            resultChanged(null);
         }
 
         @Override
-        public CloneableTopComponent getComponent() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public final void resultChanged(LookupEvent ev) {
+            Collection<? extends Image> all = res.allInstances();
+            if (all.isEmpty()) {
+                getComponent().setIcon(null);
+            } else {
+                getComponent().setIcon(all.iterator().next());
+            }
         }
-
-        @Override
-        public void updateName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void ensureVisible() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        
     }
     
-    private static class LP implements Lookup.Provider, Serializable {
+    public static class LP implements Lookup.Provider, Serializable {
         private static final Map<Integer,Lookup> map = new HashMap<Integer, Lookup>();
         
         private final int cnt;

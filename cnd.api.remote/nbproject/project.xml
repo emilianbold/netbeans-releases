@@ -84,26 +84,24 @@
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
                 <friend>com.sun.tools.discovery</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
-                <friend>com.sun.tools.analytics.oss.support</friend>
-                <friend>com.sun.tools.analytics.utils</friend>
-                <friend>com.sun.tools.ide.analysis.common</friend>
-                <friend>com.sun.tools.ide.analysis.analytics</friend>
-                <friend>com.sun.tools.ide.analysis.previse</friend>
-                <friend>com.sun.tools.ide.analysis.discover</friend>
-                <friend>com.sun.tools.ide.analysis.tha</friend>
-                <friend>org.netbeans.modules.dlight.discover</friend>
-                <friend>org.netbeans.modules.dlight.previse</friend>
-                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
@@ -121,6 +119,9 @@
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote</package>
             </friend-packages>

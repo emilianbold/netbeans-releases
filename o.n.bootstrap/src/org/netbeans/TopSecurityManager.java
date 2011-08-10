@@ -65,6 +65,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LoggingPermission;
+import org.openide.modules.Places;
 import org.openide.util.Lookup;
 
 /** NetBeans security manager implementation.
@@ -271,7 +272,7 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
         }
-        if ("netbeans.home".equals(x)) { // NOI18N
+        if ("netbeans.home".equals(x) || Places.USER_DIR_PROP.equals(x)) { // NOI18N
             // Control access to this system property.
             for (Class<?> c : getClassContext()) {
                 if (c != TopSecurityManager.class &&
@@ -299,6 +300,7 @@ public class TopSecurityManager extends SecurityManager {
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
     static {
+        warnedClassesNH.add("org.openide.modules.Places");
         warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.startup.InstalledFileLocatorImpl"); // NOI18N

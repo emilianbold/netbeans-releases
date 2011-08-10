@@ -499,11 +499,6 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
-                <api type="export" group="systemproperty" name="netbeans.user" category="devel">
-                    NetBeans user directory.
-                </api>
-            </li>
-            <li>
                 <api type="export" group="systemproperty" name="netbeans.dirs" category="friend">
                     Additional secondary NetBeans installation directories, if <a
                     href="http://www.netbeans.org/issues/show_bug.cgi?id=27151">applicable</a>.

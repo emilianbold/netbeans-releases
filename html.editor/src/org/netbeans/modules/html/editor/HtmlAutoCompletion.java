@@ -48,7 +48,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;

@@ -365,7 +365,7 @@ public class RetoucheUtils {
     }
     
     public static boolean isRefactorable(FileObject file) {
-        return isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
+        return file!=null && isJavaFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
     
     public static String getPackageName(FileObject folder) {

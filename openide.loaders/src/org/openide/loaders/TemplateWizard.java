@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.*;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.*;
@@ -65,6 +66,7 @@ import org.openide.util.*;
 /** Wizard for creation of new objects from a template.
 *
 * @author Jaroslav Tulach, Jiri Rechtacek
+* @see TemplateRegistration
 */
 public class TemplateWizard extends WizardDescriptor {
     /** EA that defines the wizards description */
@@ -832,6 +834,7 @@ public class TemplateWizard extends WizardDescriptor {
     * use of <CODE>putProperty</CODE> method and read it using <code>getProperty</code>.
     * <P>
     * Implements <code>Node.Cookie</code> since version 2.13
+    * @see TemplateRegistration
     */
     public interface Iterator extends WizardDescriptor.Iterator<WizardDescriptor>,
     java.io.Serializable, org.openide.nodes.Node.Cookie {

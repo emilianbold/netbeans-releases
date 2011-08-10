@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.form;
 
-import org.netbeans.api.java.source.TreeUtilities;
+import javax.swing.text.BadLocationException;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -54,23 +54,11 @@ import org.netbeans.api.editor.fold.*;
 
 import org.netbeans.api.java.classpath.ClassPath;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
 
 import org.netbeans.modules.form.editors.ModifierEditor;
 import org.netbeans.modules.form.editors.CustomCodeEditor;
@@ -84,6 +72,7 @@ import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*; 
 import java.util.*;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -180,7 +169,6 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private Map<String,String> repeatedCodeVariables;
 
-    private static Class bindingGroupClass = org.jdesktop.beansbinding.BindingGroup.class;
     private String bindingGroupVariable;
     private Map<String,String> bindingVariables;
     private static String variablesHeader;
@@ -1078,7 +1066,7 @@ class JavaCodeGenerator extends CodeGenerator {
             addLocalVariables(writer);
 
             if (bindingGroupVariable != null) {
-                initCodeWriter.write(bindingGroupVariable + " = new " + bindingGroupClass.getName() + "();\n\n"); // NOI18N
+                initCodeWriter.write(bindingGroupVariable + " = new " + getBindingGroupClass().getName() + "();\n\n"); // NOI18N
             }
 
             emptyLineRequest++;
@@ -1149,6 +1137,10 @@ class JavaCodeGenerator extends CodeGenerator {
         cleanup();
     }
 
+    private Class getBindingGroupClass() {
+        return formEditor.getBindingSupport().getBindingGroupClass();
+    }
+
     private void cleanup() {
         emptyLineCounter = 0;
         emptyLineRequest = 0;
@@ -1164,7 +1156,7 @@ class JavaCodeGenerator extends CodeGenerator {
         bindingVariables = null;
         if (bindingGroupVariable != null) { // we need to keep this variable registered
             bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                    bindingGroupClass, bindingGroupVariable, true);
+                    getBindingGroupClass(), bindingGroupVariable, true);
         }
     }
 
@@ -1718,11 +1710,11 @@ class JavaCodeGenerator extends CodeGenerator {
                     anyBinding = true;
                     if (bindingGroupVariable == null) { // Should happen only for Code Customizer
                         bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                            bindingGroupClass, "bindingGroup", true); // NOI18N
+                            getBindingGroupClass(), "bindingGroup", true); // NOI18N
                     }
                 }
                 StringBuilder buf = new StringBuilder();
-                String variable = BindingDesignSupport.generateBinding(prop, buf);
+                String variable = formEditor.getBindingSupport().generateBinding(prop, buf, getBindingContext());
                 initCodeWriter.write(buf.toString());
 
                 if (bindingDef.isNullValueSpecified()) {
@@ -1746,6 +1738,24 @@ class JavaCodeGenerator extends CodeGenerator {
         if (anyBinding) {
             initCodeWriter.write("\n"); // NOI18N
         }
+    }
+
+    BindingDesignSupport.CodeGeneratorContext bindingContext;
+    private BindingDesignSupport.CodeGeneratorContext getBindingContext() {
+        if (bindingContext == null) {
+            bindingContext = new BindingDesignSupport.CodeGeneratorContext() {
+                @Override
+                public String getBindingDescriptionVariable(Class descriptionType, StringBuilder buf, boolean create) {
+                    return JavaCodeGenerator.this.getBindingDescriptionVariable(descriptionType, buf, create);
+                }
+
+                @Override
+                public String getExpressionJavaString(CodeExpression exp, String thisStr) {
+                    return JavaCodeGenerator.getExpressionJavaString(exp, thisStr);
+                }
+            };
+        }
+        return bindingContext;
     }
 
     private void generateComponentBinding0(CodeWriter initCodeWriter, FormProperty property, String method) throws IOException {
@@ -2603,9 +2613,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 anyBinding = true;
                 if (bindingGroupVariable == null) {
                     bindingGroupVariable = formModel.getCodeStructure().getExternalVariableName(
-                            bindingGroupClass, "bindingGroup", true); // NOI18N
+                            getBindingGroupClass(), "bindingGroup", true); // NOI18N
                 }
-                variablesWriter.write("private " + bindingGroupClass.getName() + " " + bindingGroupVariable + ";\n"); // NOI18N
+                variablesWriter.write("private " + getBindingGroupClass().getName() + " " + bindingGroupVariable + ";\n"); // NOI18N
                 variableNames.add(bindingGroupVariable);
                 break;
             }
@@ -2965,111 +2975,44 @@ class JavaCodeGenerator extends CodeGenerator {
         if (listenersInMainClass == listenersInMainClass_lastSet)
             return; // no change from last time
 
-        if (listenersInMainClass != null
-            && listenersInMainClass_lastSet != null
-            && listenersInMainClass.length == listenersInMainClass_lastSet.length)
-        {
-            boolean different = false;
-            for (int i=0; i < listenersInMainClass.length; i++)
-                if (listenersInMainClass[i] != listenersInMainClass_lastSet[i]) {
-                    different = true;
-                    break;
-                }
-            if (!different)
-                return; // no change from last time
-        }
-
-        final Set<String> toRemove = new HashSet<String>();
-        if (listenersInMainClass_lastSet != null) {
-            for (int i=0; i < listenersInMainClass_lastSet.length; i++) {
-                Class cls = listenersInMainClass_lastSet[i];
-                boolean remains = false;
-                if (listenersInMainClass != null)
-                    for (int j=0; j < listenersInMainClass.length; j++)
-                        if (cls == listenersInMainClass[j]) {
-                            remains = true;
-                            break;
-                        }
-                if (!remains) {
-                    toRemove.add(cls.getName());
-                }
-            }
-        }
-
-        final FileObject fo = formEditor.getFormDataObject().getPrimaryFile();
-        JavaSource js = JavaSource.forFileObject(fo);
-        try {
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                @Override
-                public void cancel() {
-                }
-                @Override
-                public void run(WorkingCopy wcopy) throws Exception {
-                    wcopy.toPhase(JavaSource.Phase.RESOLVED);
-                    
-                    ClassTree mainClassTree = findMainClass(wcopy, fo.getName());
-                    ClassTree origMainTree = mainClassTree;
-                    
-                    TreePath classTreePath = wcopy.getTrees().getPath(wcopy.getCompilationUnit(), mainClassTree);
-                    Element mainClassElm = wcopy.getTrees().getElement(classTreePath);
-                            
-                    if (mainClassElm != null) {
-                        java.util.List<TypeElement> actualInterfaces = new ArrayList<TypeElement>();
-                        TreeMaker maker = wcopy.getTreeMaker();
-                        // first take the current interfaces and exclude the removed ones
-                        java.util.List<? extends TypeMirror> interfaces = ((TypeElement) mainClassElm).getInterfaces();
-                        for (int infIndex=interfaces.size()-1; infIndex>=0; infIndex--) {
-                            TypeMirror infMirror = interfaces.get(infIndex);
-                            TypeElement infElm = (TypeElement) wcopy.getTypes().asElement(infMirror);
-                            actualInterfaces.add(infElm);
-                            if (toRemove.contains(infElm.getQualifiedName().toString())) {
-                                mainClassTree = maker.removeClassImplementsClause(mainClassTree, infIndex);
-                            }
-                        }
-
-                        // then ensure all required interfaces are present
-                        if (listenersInMainClass != null) {
-                            for (int i=0; i < listenersInMainClass.length; i++) {
-                                String name = listenersInMainClass[i].getName();
-                                boolean alreadyIn = false;
-                                for (TypeElement infElm: actualInterfaces)
-                                    if (name.equals(infElm.getQualifiedName().toString())) {
-                                        alreadyIn = true;
-                                        break;
-                                    }
-                                if (!alreadyIn) {
-                                    TypeElement inf2add = wcopy.getElements().getTypeElement(name);
-                                    ExpressionTree infTree2add = inf2add != null
-                                            ? maker.QualIdent(inf2add)
-                                            : maker.Identifier(name);
-                                    mainClassTree = maker.addClassImplementsClause(mainClassTree, infTree2add);
-                                }
-                            }
-                        }
-
-                        if (origMainTree != mainClassTree) {
-                            wcopy.rewrite(origMainTree, mainClassTree);
-                        }
-
+        Collection<String> toAdd;
+        if (listenersInMainClass != null) {
+            if (listenersInMainClass_lastSet != null
+                    && listenersInMainClass.length == listenersInMainClass_lastSet.length) {
+                boolean different = false;
+                for (int i=0; i < listenersInMainClass.length; i++) {
+                    if (listenersInMainClass[i] != listenersInMainClass_lastSet[i]) {
+                        different = true;
+                        break;
                     }
                 }
-            }).commit();
-            
-            listenersInMainClass_lastSet = listenersInMainClass;
-        } catch (IOException ex) {
-            Logger.getLogger(JavaCodeGenerator.class.getName()).log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-        }
-    }
-
-    private static ClassTree findMainClass(CompilationController controller, String name) {
-        for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) &&
-                    name.equals(((ClassTree) t).getSimpleName().toString())) {
-
-                return (ClassTree) t;
+                if (!different) {
+                    return; // no change from last time
+                }
             }
+            toAdd = new ArrayList(listenersInMainClass.length);
+            for (Class cls : listenersInMainClass) {
+                toAdd.add(cls.getCanonicalName());
+            }
+        } else {
+            toAdd = Collections.emptyList();
         }
-        return null;
+
+        Collection<String> toRemove;
+        if (listenersInMainClass_lastSet != null) {
+            toRemove = new ArrayList(listenersInMainClass_lastSet.length);
+            for (int i=0; i < listenersInMainClass_lastSet.length; i++) {
+                String cls = listenersInMainClass_lastSet[i].getCanonicalName();
+                if (!toAdd.contains(cls)) {
+                    toRemove.add(cls);
+                }
+            }
+        } else {
+            toRemove = Collections.emptyList();
+        }
+        listenersInMainClass_lastSet = listenersInMainClass;
+
+        formEditor.getFormJavaSource().modifyInterfaces(toAdd, toRemove);
     }
 
     // ---------
@@ -3172,10 +3115,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private String getListenerVariableName() {
         if (listenerVariableName == null) {
-            listenerVariableName = "formListener"; // NOI18N
-            CodeStructure codeStructure = formModel.getCodeStructure();
-            for (int i=1; codeStructure.isVariableNameReserved(listenerVariableName); i++)
-                listenerVariableName = "formListener" + i; // NOI18N
+            listenerVariableName = formModel.getCodeStructure().findFreeVariableName("formListener"); // NOI18N
         }
         return listenerVariableName;
     }
@@ -3242,9 +3182,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         if (!formModel.getSettings().getGenerateFQN()) {
-            FQNImporter fqnImporter = new FQNImporter(formEditor.getFormDataObject().getPrimaryFile());
-            fqnImporter.setHandleEventHandlers(Collections.singleton(handlerName));
-            fqnImporter.importFQNs();
+            importFQNs(false, false, handlerName);
         }
 
         clearUndo();
@@ -3253,31 +3191,61 @@ class JavaCodeGenerator extends CodeGenerator {
     /** Removes the specified event handler - removes the whole method together with the user code!
      * @param handlerName The name of the event handler
      */
-    private boolean deleteEventHandler(String handlerName) {
+    private String deleteEventHandler(String handlerName, int startPos) {
         InteriorSection section = getEventHandlerSection(handlerName);
-        if (section == null || !initialized || !canGenerate)
-            return false;
+        if (section == null || !initialized || !canGenerate) {
+            return null;
+        }
+
+        Document doc = formEditor.getSourcesDocument();
+        int sectionStartPos = section.getStartPosition().getOffset();
+        // Fine tune the start position of method code (e.g. annotation or comment
+        // added by the user) incl. spaces at the beginning of the line.
+        int preCodeLength = (startPos >= 0 && startPos < sectionStartPos)
+                            ? sectionStartPos - startPos : -1;
+        if (preCodeLength > 0) {
+            try {
+                String txt = doc.getText(0, startPos);
+                int i = startPos - 1;
+                while (i >= 0 && (txt.charAt(i) == ' ' || txt.charAt(i) == '\t')) {
+                    i--;
+                }
+                startPos = i + 1;
+                preCodeLength = sectionStartPos - startPos;
+            } catch (BadLocationException ex) {
+                preCodeLength = -1; // but no reason this should happen...
+            }
+        }
+        if (preCodeLength < 0) {
+            startPos = sectionStartPos;
+        }
 
         // if there is another guarded section right before or after without
         // a gap, the neighbor sections could merge strangely - prevent this by
         // inserting an empty line (#94165)
-        int startPos = section.getStartPosition().getOffset();
         int endPos = section.getEndPosition().getOffset();
         for (GuardedSection sec : formEditor.getGuardedSectionManager().getGuardedSections()) {
             if (sec.getEndPosition().getOffset()+1 == startPos) { // close section before
                 try {
-                    formEditor.getSourcesDocument().insertString(startPos, "\n", null); // NOI18N
+                    doc.insertString(startPos, "\n", null); // NOI18N
+                    startPos++;
                 } catch (javax.swing.text.BadLocationException ex) {} // should not happen, ignore
             } else if (sec.getStartPosition().getOffset() == endPos+1) { // close section after
                 try {
-                    formEditor.getSourcesDocument().insertString(endPos+1, "\n", null); // NOI18N
+                    doc.insertString(endPos+1, "\n", null); // NOI18N
                 } catch (javax.swing.text.BadLocationException ex) {} // should not happen, ignore
             }
         }
         section.deleteSection();
+        String preCode = null;
+        if (preCodeLength > 0) {
+            try {
+                preCode = doc.getText(startPos, preCodeLength);
+                formEditor.getSourcesDocument().remove(startPos, preCodeLength);
+            } catch (BadLocationException ex) {} // should not happen, ignore
+        }
         clearUndo();
-
-        return true;
+        return preCode;
     }
 
     private String getDefaultEventBody() {
@@ -3330,16 +3298,6 @@ class JavaCodeGenerator extends CodeGenerator {
     String getEventHandlerText(String handlerName) {
         InteriorSection section = getEventHandlerSection(handlerName);
         return (section == null) ? null : section.getBody();
-    }
-
-    private String getEventHandlerAnnotation(String handlerName, boolean removeAnnotations) {
-        String code = null;
-        InteriorSection section = getEventHandlerSection(handlerName);
-        if (section != null) {
-            FormJavaSource fjs = FormEditor.getFormJavaSource(formModel);
-            code = fjs.getAnnotationCode(handlerName, section.getStartPosition(), section.getEndPosition(), removeAnnotations);
-        }
-        return code;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -3497,21 +3455,54 @@ class JavaCodeGenerator extends CodeGenerator {
     void regenerateCode() {
         if (!codeUpToDate) {	    
             codeUpToDate = true;
-            Set<String> variableNames = regenerateVariables();
+            /*Set<String> variableNames = */regenerateVariables();
             regenerateInitComponents();
             if (!formModel.getSettings().getGenerateFQN()) {
-                FQNImporter fqnImporter = new FQNImporter(formEditor.getFormDataObject().getPrimaryFile());
-                fqnImporter.setHandleInitComponents(true);
-                fqnImporter.setHandleVariables(variableNames);
-                if (formModel.getSettings().getListenerGenerationStyle() == CEDL_INNERCLASS && anyEvents()) {
-                    fqnImporter.setHandleFormListener(getListenerClassName());
-                }
-                fqnImporter.importFQNs();
+                importFQNs(true, true);
                 clearUndo();
             }
             ensureMainClassImplementsListeners();            
             FormModel.t("code regenerated"); // NOI18N	    
         }
+    }
+
+    private void importFQNs(boolean handleInitComponents, boolean handleVariables, String... eventHandlers) {
+        java.util.List<int[]> list = new ArrayList();
+        if (handleInitComponents) {
+            SimpleSection initComponentsSection = formEditor.getInitComponentSection();
+            int[] span = formEditor.getFormJavaSource().getMethodSpan("initComponents"); // NOI18N
+            list.add(new int[] { span[0], initComponentsSection.getEndPosition().getOffset() });
+            // also includes the listener class if generated
+        }
+        if (handleVariables) {
+            SimpleSection variablesSection = formEditor.getVariablesSection();
+            list.add(new int[] { variablesSection.getStartPosition().getOffset(),
+                                 variablesSection.getEndPosition().getOffset() });
+        }
+        if (eventHandlers != null) {
+            for (String handlerName : eventHandlers) {
+                int[] range = getEventHandlerFQNImportRange(handlerName);
+                if (range != null) {
+                    list.add(range);
+                }
+            }
+        }
+        int [][] ranges = list.toArray(new int[list.size()][]);
+        formEditor.getFormJavaSource().importFQNs(ranges);
+    }
+
+    private int[] getEventHandlerFQNImportRange(String handlerName) {
+        InteriorSection sec = getEventHandlerSection(handlerName);
+        if (sec != null) {
+            int start = sec.getStartPosition().getOffset();
+            String header = sec.getHeader();
+            int i1 = header.indexOf('(');
+            int i2 = header.lastIndexOf(')');
+            if (i1 >= 0 && i2 > i1+1) {
+                return new int[] { start+i1+1, start+i2 };
+            }
+        }
+        return null;
     }
 
     static CustomCodeData getCodeData(RADComponent metacomp) {
@@ -3960,8 +3951,10 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (ev.getCreatedDeleted()) {
                         String handlerName = ev.getEventHandler();
                         ev.setOldEventHandlerContent(getEventHandlerText(handlerName));
-                        ev.setOldEventHandlerAnnotation(getEventHandlerAnnotation(handlerName, true));
-                        deleteEventHandler(handlerName);
+                        int[] span = formEditor.getFormJavaSource().getEventHandlerMethodSpan(
+                                handlerName, ev.getComponentEvent().getEventParameterType());
+                        String preMethodCode = deleteEventHandler(handlerName, span != null ? span[0] : -1);
+                        ev.setOldEventHandlerAnnotation(preMethodCode);
                     }
                 }
                 else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_RENAMED) {
@@ -4561,10 +4554,7 @@ class JavaCodeGenerator extends CodeGenerator {
             Boolean oldValue = getValue();
             formModel.getSettings().setGenerateFQN(value);
             if (!value) {
-                FQNImporter fqnImporter = new FQNImporter(formEditor.getFormDataObject().getPrimaryFile());
-                String[] handlers = formModel.getFormEvents().getAllEventHandlers();
-                fqnImporter.setHandleEventHandlers(Arrays.asList(handlers));
-                fqnImporter.importFQNs();
+                importFQNs(false, false, formModel.getFormEvents().getAllEventHandlers());
             }
             formModel.fireSyntheticPropertyChanged(null, FormLoaderSettings.PROP_GENERATE_FQN, oldValue, value);
             FormEditor.getFormEditor(formModel).getFormRootNode().firePropertyChangeHelper(

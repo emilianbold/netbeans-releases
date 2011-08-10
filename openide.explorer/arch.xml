@@ -420,6 +420,11 @@ No.
     provide their own confirmation dialog for delete action and explorer will not show
     default one when they are deleted.
     </api>
+    <api name="slowRename" group="property" category="devel" type="export">
+    Nodes returing Boolean.TRUE from getValue(&quot;slowRename&quot;) are expected
+    to have potentially slow implemenation of <code>setName</code>. Explorer views
+    rather process in-place rename in background for such nodes.
+    </api>
 </answer>
 
 

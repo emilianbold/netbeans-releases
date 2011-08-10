@@ -42,11 +42,16 @@
 
 package org.netbeans.modules.apisupport.hints;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -351,10 +356,12 @@ public interface Hinter {
          * @param wc Java source context
          * @param modifiers the element's modifiers to append to
          * @param type canonical name of the annotation type
-         * @param parameters simple parameters of String or primitive type (null values are skipped)
+         * @param pluralType if not null, canonical name of a plural variant of {@code type}
+         * @param parameters simple parameters of String or primitive type or String[] (null values are skipped)
          * @return the expanded modifiers tree
          */
-        public @CheckReturnValue ModifiersTree addAnnotation(WorkingCopy wc, ModifiersTree modifiers, String type, Map<String,Object> parameters) {
+        // XXX ought to also accept CompilationUnitTree
+        public @CheckReturnValue ModifiersTree addAnnotation(WorkingCopy wc, ModifiersTree modifiers, String type, @NullAllowed String pluralType, Map<String,Object> parameters) {
             TreeMaker make = wc.getTreeMaker();
             TypeElement ann = wc.getElements().getTypeElement(type);
             if (ann == null) {
@@ -363,11 +370,64 @@ public interface Hinter {
             }
             List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
             for (Map.Entry<String,Object> entry : parameters.entrySet()) {
-                if (entry.getValue() != null) {
-                    arguments.add(make.Assignment(make.Identifier(entry.getKey()), make.Literal(entry.getValue())));
+                Object value = entry.getValue();
+                ExpressionTree valueTree;
+                if (value instanceof Object[]) {
+                    Object[] array = (Object[]) value;
+                    if (array.length == 1) {
+                        valueTree = make.Literal(array[0]);
+                    } else {
+                        List<ExpressionTree> elements = new ArrayList<ExpressionTree>();
+                        for (Object o : array) {
+                            elements.add(make.Literal(o));
+                        }
+                        valueTree = make.NewArray(null, Collections.<ExpressionTree>emptyList(), elements);
+                    }
+                } else if (value != null) {
+                    valueTree = make.Literal(value);
+                } else {
+                    continue;
+                }
+                arguments.add(make.Assignment(make.Identifier(entry.getKey()), valueTree));
+            }
+            AnnotationTree toAdd = make.Annotation(make.QualIdent(ann), arguments);
+            if (pluralType != null) {
+                List<? extends AnnotationTree> existingAnns = modifiers.getAnnotations();
+                for (int i = 0; i < existingAnns.size(); i++) {
+                    AnnotationTree existingAnn = existingAnns.get(i);
+                    // XXX see UseNbBundleMessages; is there a better way to do this?
+                    String existingType = existingAnn.getAnnotationType().toString();
+                    // XXX this will not work if type is a nested class
+                    if (existingType.equals(type) || existingType.equals(type.replaceFirst(".+[.]", ""))) {
+                        return make.insertModifiersAnnotation(make.removeModifiersAnnotation(modifiers, i), i,
+                                make.Annotation(make.QualIdent(pluralType),
+                                Collections.singletonList(make.Assignment(make.Identifier("value"),
+                                make.NewArray(null, Collections.<ExpressionTree>emptyList(), Arrays.asList(existingAnn, toAdd))))));
+                    } else if (existingType.equals(pluralType) || existingType.equals(pluralType.replaceFirst(".+[.]", ""))) {
+                        List<? extends ExpressionTree> args = existingAnn.getArguments();
+                        if (args.size() != 1) {
+                            throw new IllegalArgumentException("expecting just one arg for @" + pluralType);
+                        }
+                        AssignmentTree assign = (AssignmentTree) args.get(0);
+                        if (!assign.getVariable().toString().equals("value")) {
+                            throw new IllegalArgumentException("expected value=... for @" + pluralType);
+                        }
+                        ExpressionTree arg = assign.getExpression();
+                        NewArrayTree arr;
+                        if (arg.getKind() == Tree.Kind.STRING_LITERAL) {
+                            arr = make.NewArray(null, Collections.<ExpressionTree>emptyList(), Collections.singletonList(arg));
+                        } else if (arg.getKind() == Tree.Kind.NEW_ARRAY) {
+                            arr = (NewArrayTree) arg;
+                        } else {
+                            throw new IllegalArgumentException("unknown arg kind " + arg.getKind() + ": " + arg);
+                        }
+                        return make.insertModifiersAnnotation(make.removeModifiersAnnotation(modifiers, i), i,
+                                make.Annotation(existingAnn.getAnnotationType(),
+                                Collections.singletonList(make.Assignment(assign.getVariable(), make.addNewArrayInitializer(arr, toAdd)))));
+                    }
                 }
             }
-            return make.addModifiersAnnotation(modifiers, make.Annotation(make.QualIdent(ann), arguments));
+            return make.addModifiersAnnotation(modifiers, toAdd);
         }
 
         /**

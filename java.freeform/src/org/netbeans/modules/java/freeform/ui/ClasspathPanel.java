@@ -391,7 +391,6 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         separateClasspath.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(separateClasspath, org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "LBL_ClasspathPanel_sepatateClasspath")); // NOI18N
-        separateClasspath.setMargin(new java.awt.Insets(0, 0, 0, 0));
         separateClasspath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 separateClasspathActionPerformed(evt);

@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.maven.options;
 
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -57,12 +55,14 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequest;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -362,11 +362,11 @@ public class MavenSettings  {
         }
     }
 
-    public static String getCommandLineMavenVersion() {
+    public static @CheckForNull String getCommandLineMavenVersion() {
         return getCommandLineMavenVersion(getDefault().getMavenHome());
     }
     
-    public static String getCommandLineMavenVersion(File mavenHome) {
+    public static @CheckForNull String getCommandLineMavenVersion(File mavenHome) {
         File[] jars = new File(mavenHome, "lib").listFiles(new FilenameFilter() { // NOI18N
             public @Override boolean accept(File dir, String name) {
                 return name.endsWith(".jar"); // NOI18N

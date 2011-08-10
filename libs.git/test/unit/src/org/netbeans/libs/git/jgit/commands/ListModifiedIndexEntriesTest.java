@@ -44,6 +44,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -114,6 +115,6 @@ public class ListModifiedIndexEntriesTest extends AbstractGitTestCase {
 
         modifications = getClient(workDir).listModifiedIndexEntries(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(2, modifications.length);
-        assertTrue(Arrays.equals(new File[] { f1, f2 }, modifications));
+        assertEquals(new HashSet<File>(Arrays.asList(new File[] { f1, f2 })), new HashSet<File>(Arrays.asList(modifications)));
     }
 }
