@@ -42,7 +42,6 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.field;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,11 +52,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -74,9 +72,10 @@ public class ProducerFieldAnalyzer extends AbstractProducerAnalyzer
      */
     @Override
     public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+            TypeElement parent, AtomicBoolean cancel,
+            CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         if  ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 compInfo ))
         {
@@ -85,24 +84,19 @@ public class ProducerFieldAnalyzer extends AbstractProducerAnalyzer
         if ( cancel.get() ){
             return;
         }
-        checkSessionBean( element , parent , compInfo , descriptions );
+        checkSessionBean( element , parent , result );
         if ( cancel.get() ){
             return;
         }
-        checkType( element, elementType, compInfo , descriptions );
+        checkType( element, elementType, result );
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractProducerAnalyzer#hasTypeVar(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, org.netbeans.api.java.source.CompilationInfo, java.util.List)
-     */
     @Override
     protected void hasTypeVar( Element element, TypeMirror type,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result  )
     {
-        ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, NbBundle.getMessage(
+        result.addError( element, NbBundle.getMessage(
                             ProducerFieldAnalyzer.class, "ERR_ProducerHasTypeVar"));    // NOI18N
-        descriptions.add( description );        
     }
     
     /* (non-Javadoc)
@@ -110,27 +104,23 @@ public class ProducerFieldAnalyzer extends AbstractProducerAnalyzer
      */
     @Override
     protected void hasWildCard( Element element, TypeMirror type,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result )
     {
-        ErrorDescription description = CdiEditorAnalysisFactory
-            .createError(element, compInfo, NbBundle.getMessage(
+        result.addError(element,  NbBundle.getMessage(
                     ProducerFieldAnalyzer.class,"ERR_ProducerHasWildcard")); // NOI18N
-        descriptions.add(description);        
     }
 
     private void checkSessionBean( VariableElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result  )
     {
-        if ( !AnnotationUtil.isSessionBean( parent , compInfo)) {
+        if ( !AnnotationUtil.isSessionBean( parent , result.getInfo())) {
             return;
         }
         Set<Modifier> modifiers = element.getModifiers();
         if ( !modifiers.contains(Modifier.STATIC)){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element,  NbBundle.getMessage(
                     ProducerFieldAnalyzer.class, 
                     "ERR_NonStaticProducerSessionBean"));    // NOI18N
-            descriptions.add(description);
         }
     }
 

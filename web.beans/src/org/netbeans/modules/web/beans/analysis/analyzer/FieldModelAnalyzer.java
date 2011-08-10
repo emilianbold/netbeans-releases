@@ -52,11 +52,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -67,8 +66,8 @@ public class FieldModelAnalyzer implements ModelAnalyzer {
 
     @Override
     public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel, 
+            Result result )
     {
         VariableElement var = (VariableElement) element;
         TypeMirror varType = model.getCompilationController().getTypes().asMemberOf( 
@@ -77,16 +76,14 @@ public class FieldModelAnalyzer implements ModelAnalyzer {
             if ( cancel.get()){
                 return;
             }
-            analyzer.analyze(var, varType, parent, model, descriptions, info ,
-                    cancel );
+            analyzer.analyze(var, varType, parent, model, cancel, result );
         }
     }
     
     public interface FieldAnalyzer {
         void analyze( VariableElement element , TypeMirror elementType,
                 TypeElement parent, WebBeansModel model,
-                List<ErrorDescription> descriptions, CompilationInfo info , 
-                AtomicBoolean cancel );
+                AtomicBoolean cancel, Result result );
     }
     
     private static final List<FieldAnalyzer> ANALYZERS= new LinkedList<FieldAnalyzer>(); 

@@ -51,13 +51,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer ;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -74,8 +72,8 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel,
+            Result result )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.INTERCEPTOR, 
                 model.getCompilationController() ))
@@ -112,25 +110,17 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
         }
         boolean hasIBindings = hasInterceptorBindings(element, model);
         if (hasIBindings && isFinal) {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info , 
+            result.addError(element, model, 
                             NbBundle.getMessage(
                             InterceptedBeanAnalyzer.class,
                             "ERR_FinalInterceptedBean")); // NOI18N
-            if ( description != null ){
-                descriptions.add(description);
-            }
         }
         if (hasIBindings && badMethod != null) {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+            result.addError(element, model,   
                             NbBundle.getMessage(
                             InterceptedBeanAnalyzer.class,
                             "ERR_InterceptedBeanHasFinalMethod", badMethod
                                     .getSimpleName().toString())); // NOI18N
-            if ( description != null ){
-                descriptions.add(description);
-            }
         }
     }
 
