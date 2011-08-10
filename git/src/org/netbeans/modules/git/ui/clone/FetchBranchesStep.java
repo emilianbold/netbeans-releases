@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
@@ -104,6 +105,11 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     @Override
     public void stateChanged(ChangeEvent ce) {
         validateBeforeNext();
+    }
+
+    @Override
+    public HelpCtx getHelp () {
+        return new HelpCtx(FetchBranchesStep.class);
     }
     
     private static class Branch extends ItemSelector.Item implements GitBranch {

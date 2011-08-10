@@ -140,6 +140,8 @@ final class ViewBuilder {
     
     private volatile boolean staleCreation;
     
+    private int startCreationOffset;
+    
     private static enum RebuildCause {
         FULL_REBUILD, // Full rebuild of all paragraphs
         CHANGED_REGION, // Rebuild a document region that has changed (e.g. highlights changed or fold collapsed/expanded)
@@ -410,7 +412,7 @@ final class ViewBuilder {
     }
     
     boolean createViews(boolean force) {
-        int startCreationOffset = creationOffset; // Remember for logging
+        startCreationOffset = creationOffset; // Remember for logging and firing
         if (creationOffset > matchOffset) {
             throw new IllegalStateException(
                 "creationOffset=" + creationOffset + " > matchOffset=" + matchOffset); // NOI18N
@@ -746,9 +748,11 @@ final class ViewBuilder {
                 factoryState.finish();
             }
         }
-        docReplace.view.checkIntegrityIfLoggable();
+        DocumentView docView = docReplace.view;
+        docView.checkIntegrityIfLoggable();
         // Fire change of views
-//[TODO]        docReplace.view.fireViewHierarchyEvent();
+        ViewHierarchyEvent evt = new ViewHierarchyEvent(docView.viewHierarchy, startCreationOffset);
+        docView.viewHierarchy.fireViewHierarchyEvent(evt);
 
     }
 
