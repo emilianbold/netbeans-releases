@@ -58,7 +58,10 @@ import com.sun.javadoc.AnnotationDesc.ElementValuePair;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
@@ -192,17 +195,46 @@ public class ElementJavadoc {
         if (link.startsWith(ASSOCIATE_JDOC)) {
             final String root = link.substring(ASSOCIATE_JDOC.length());
             try {
-                SourceJavadocAttacher.attachJavadoc(new URL(root), null);
+                final CountDownLatch latch = new CountDownLatch(1);
+                final AtomicBoolean success = new AtomicBoolean();
+                SourceJavadocAttacher.attachJavadoc(
+                        new URL(root),
+                        new SourceJavadocAttacher.AttachmentListener() {
+                    @Override
+                    public void attachmentSucceeded() {
+                        success.set(true);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void attachmentFailed() {
+                        latch.countDown();
+                    }
+                });
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    latch.await();
+                    return success.get() ?
+                        resolveElement(handle, link):
+                        null;
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ie) {
+                Exceptions.printStackTrace(ie);
             }
             return null;
         }
+        final ElementHandle<? extends Element> linkDoc = links.get(link);
+        return resolveElement(linkDoc, link);
+    }
+
+    private ElementJavadoc resolveElement(
+            final ElementHandle<?> handle,
+            final String link) {
         final ElementJavadoc[] ret = new ElementJavadoc[1];
         try {
-            final ElementHandle<? extends Element> linkDoc = links.get(link);
-            FileObject fo = linkDoc != null ? SourceUtils.getFile(linkDoc, cpInfo) : null;
-            if (fo != null && fo.isFolder() && linkDoc.getKind() == ElementKind.PACKAGE) {
+            FileObject fo = handle != null ? SourceUtils.getFile(handle, cpInfo) : null;
+            if (fo != null && fo.isFolder() && handle.getKind() == ElementKind.PACKAGE) {
                 fo = fo.getFileObject("package-info", "java"); //NOI18N
             }
             if (cpInfo == null && fo == null) {
@@ -220,8 +252,8 @@ public class ElementJavadoc {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                        if (linkDoc != null) {
-                            ret[0] = new ElementJavadoc(controller, linkDoc.resolve(controller), null, null);
+                        if (handle != null) {
+                            ret[0] = new ElementJavadoc(controller, handle.resolve(controller), null, null);
                         } else {
                             int idx = link.indexOf('#'); //NOI18N
                             URI uri = null;
@@ -263,7 +295,7 @@ public class ElementJavadoc {
                                             // ignore
                                         }
                                     }
-                                } 
+                                }
                             }
                         }
                     }
