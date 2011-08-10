@@ -309,7 +309,7 @@ public class SuitePropertiesTest extends TestBase {
         SuiteProperties suiteProps = getSuiteProperties(suite1);
         File destDir = NbPlatform.getPlatformByID("custom").getDestDir();
         NbPlatform.removePlatform(NbPlatform.getPlatformByID("custom"));
-        suiteProps.setActivePlatform(NbPlatform.getPlatformByDestDir(destDir));
+        suiteProps.setActivePlatform(NbPlatform.getPlatformByDestDir(destDir, null));
         saveProperties(suiteProps);
     }
     

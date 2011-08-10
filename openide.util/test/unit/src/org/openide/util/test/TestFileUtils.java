@@ -124,6 +124,7 @@ public class TestFileUtils {
      * @throws IOException for the usual reasons
      */
     public static File writeZipFile(File jar, String... entries) throws IOException {
+        jar.getParentFile().mkdirs();
         writeZipFile(new FileOutputStream(jar), entries);
         return jar;
     }

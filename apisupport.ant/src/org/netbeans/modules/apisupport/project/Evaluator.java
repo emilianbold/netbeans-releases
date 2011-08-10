@@ -386,7 +386,11 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 protected @Override Map<String,String> getProperties(Map<String,String> inputPropertyValues) {
                     String platformS = inputPropertyValues.get("nbplatform.active"); // NOI18N
                     if (platformS != null) {
-                        return Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
+                        Map<String,String> m = new HashMap<String,String>();
+                        // XXX should really be nbplatform.active.dir, but would require changes in a bunch of places
+                        m.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}");
+                        m.put("harness.dir", "${nbplatform." + platformS + ".harness.dir}");
+                        return m;
                     } else {
                         return Collections.emptyMap();
                     }
