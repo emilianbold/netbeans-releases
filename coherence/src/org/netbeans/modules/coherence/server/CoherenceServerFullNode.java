@@ -39,70 +39,52 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
+package org.netbeans.modules.coherence.server;
 
-import java.util.Properties;
-import java.util.ResourceBundle;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import javax.swing.Action;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.coherence.server.actions.CloneAction;
+import org.netbeans.modules.coherence.server.actions.PropertiesAction;
+import org.netbeans.modules.coherence.server.actions.ResetAction;
+import org.netbeans.modules.coherence.server.actions.StartServerAction;
+import org.netbeans.modules.coherence.server.actions.StopServerAction;
+import org.openide.actions.DeleteAction;
+import org.openide.util.actions.SystemAction;
 
 /**
+ * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ServerConfig {
-    private static ResourceBundle bundle = NbBundle.getBundle(ServerConfig.class);
-    private String filename = null;
-    private Properties properties = null;
+public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
 
-    private ServerConfig() {
-    }
-
-    public ServerConfig(String filename, Properties properties) {
-        this.filename = filename;
-        this.properties = properties;
-    }
-
-    public ServerConfig(Properties properties) {
-        this.properties = properties;
-        this.filename = properties.getProperty(ServerPropertyFileManager.FILENAME_KEY);
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    public Properties getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Properties properties) {
-        this.properties = properties;
+    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
+        super(coherenceInstance);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ServerConfig other = (ServerConfig) obj;
-        if ((this.filename == null) ? (other.filename != null) : !this.filename.equals(other.filename)) {
-            return false;
-        }
+    public Action[] getActions(boolean context) {
+        return new Action[]{
+                    SystemAction.get(StartServerAction.class),
+                    SystemAction.get(StopServerAction.class),
+                    null,
+                    SystemAction.get(CloneAction.class),
+                    SystemAction.get(DeleteAction.class),
+                    null,
+                    SystemAction.get(ResetAction.class),
+                    SystemAction.get(PropertiesAction.class)
+                };
+    }
+
+    @Override
+    public boolean canDestroy() {
         return true;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 29 * hash + (this.filename != null ? this.filename.hashCode() : 0);
-        return hash;
+    public void destroy() throws IOException {
+        coherenceInstance.remove();
+        super.destroy();
     }
-    
 }
