@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.DialogDisplayer;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.persistence.dd.common.JPAParseUtils;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
@@ -66,6 +67,7 @@ import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -78,7 +80,10 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 import org.xml.sax.SAXException;
 
 /**
@@ -102,7 +107,10 @@ public class PUDataObject extends XmlMultiViewDataObject {
     private static final String DESIGN_VIEW_ID = "persistence_multiview_design"; // NOI18N
     private static final Logger LOG = Logger.getLogger(PUDataObject.class.getName());
     public static final String NO_UI_PU_CLASSES_CHANGED = "non ui pu classes modified";  //NOI18N
-
+    public static final String ICON = "org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"; //NOI18N
+    public static final String PREFERRED_ID_SOURCE="persistence_multiview_source"; //NOI18N
+    public static final String PREFERRED_ID_DESIGN="persistence_multiview_design"; //NOI18N
+    public static final String MIMETYPE="text/x-persistence1.0"; //NOI18N
     /**
      * The property name for the event fired when a persistence unit was added or removed.
      */ 
@@ -126,6 +134,25 @@ public class PUDataObject extends XmlMultiViewDataObject {
     protected Node createNodeDelegate() {
         return new PUDataNode(this);
     }
+
+    @Override
+    protected String getEditorMimeType() {
+        return "text/x-persistence1.0";//NOI18N
+    }
+    
+    @MultiViewElement.Registration(
+        mimeType=MIMETYPE,
+        iconBase=ICON,
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID=PREFERRED_ID_SOURCE,
+        displayName="#CTL_SourceTabCaption",
+        position=2000
+    )
+    @Messages("CTL_SourceTabCaption=Source")
+    public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
+    }
+        
     
     /**
      * Saves the document.
@@ -328,43 +355,6 @@ public class PUDataObject extends XmlMultiViewDataObject {
         {
             updateUIPanels(persistenceUnit, NO_UI_PU_CLASSES_CHANGED);
         }
-    }
-    
-    
-    
-    
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[]{new DesignView(this,TYPE_TOOLBAR)};
-    }
-    
-    private static class DesignView extends DesignMultiViewDesc {
-        
-        private static final long serialVersionUID = 1L;
-        private int type;
-        
-        DesignView(PUDataObject dObj, int type) {
-            super(dObj, NbBundle.getMessage(PUDataObject.class, "LBL_Design"));
-            this.type=type;
-        }
-        
-        public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
-            PUDataObject dObj = (PUDataObject)getDataObject();
-            return new PersistenceToolBarMVElement(dObj);
-        }
-        
-        public java.awt.Image getIcon() {
-            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
-        }
-        
-        public String preferredID() {
-            return DESIGN_VIEW_ID + String.valueOf(type);
-        }
-        
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(HELP_ID_DESIGN_PERSISTENCE_UNIT); //NOI18N
-        }
-        
     }
     
     @Override

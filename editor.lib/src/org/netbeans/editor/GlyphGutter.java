@@ -54,6 +54,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import javax.swing.text.BadLocationException;
 import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import javax.swing.JPopupMenu;
 import javax.swing.event.PopupMenuListener;
@@ -61,6 +62,8 @@ import javax.swing.event.PopupMenuEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,6 +108,8 @@ import org.openide.util.WeakListeners;
 public class GlyphGutter extends JComponent implements Annotations.AnnotationsListener, Accessible, SideBarFactory {
 
     private static final Logger LOG = Logger.getLogger(GlyphGutter.class.getName());
+    
+    private static final String TEXT_ZOOM_PROPERTY = "text-zoom"; // Maintained by DocumentView
 
     /** EditorUI which part this gutter is */
     private volatile EditorUI editorUI;
@@ -123,6 +128,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     
     /** Font used for drawing line numbers */
     private Font font;
+    
+    private int fontAscent;
     
     /** Flag whether the gutter was initialized or not. The painting is disabled till the
      * gutter is not initialized */
@@ -316,13 +323,22 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             foreColor = lineColoring.getForeColor();
         else
             foreColor = defaultColoring.getForeColor();
-        
+    
         if (lineColoring.getFont() != null) {
             Font lineFont = lineColoring.getFont();
             font = (lineFont != null) ? lineFont.deriveFont((float)lineFont.getSize()-1) : null;
         } else {
             font = defaultColoring.getFont();
             font = new Font("Monospaced", Font.PLAIN, font.getSize()-1); //NOI18N
+        }
+        
+        JTextComponent tc = eui.getComponent();
+        if (tc != null) {
+            Integer textZoom = (Integer) tc.getClientProperty(TEXT_ZOOM_PROPERTY);
+            if (textZoom != null && textZoom != 0) {
+                font = new Font(font.getFamily(), font.getStyle(), Math.max(font.getSize() + textZoom, 2));
+            }
+            fontAscent = tc.getFontMetrics(font).getAscent();
         }
 
         showLineNumbers = eui.lineNumberVisibleSetting;
@@ -395,7 +411,14 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                 newWidth += insets.left + insets.right;
             }
              */
-            newWidth += getDigitCount(highestLineNumber) * eui.getLineNumberDigitWidth();
+            JTextComponent tc = eui.getComponent();
+            Graphics g;
+            FontRenderContext frc;
+            if (font != null && tc != null && (g = tc.getGraphics()) != null && (g instanceof Graphics2D) &&
+                    (frc = ((Graphics2D)g).getFontRenderContext()) != null)
+            {
+                newWidth += new TextLayout(String.valueOf(highestLineNumber), font, frc).getAdvance();
+            }
         }
         
         return newWidth;
@@ -430,7 +453,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         JComponent comp = eui.getComponent();
         if (comp == null)
             return 0;
-        return highestLineNumber * eui.getLineHeight() + (int)comp.getSize().getHeight();
+        return (int)comp.getSize().getHeight(); // + highestLineNumber * eui.getLineHeight()
     }
     
 
@@ -467,7 +490,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             if ((!glyphHasIcon) ||
                     (!drawOverLineNumbers) || 
                     (drawOverLineNumbers && line != lineWithAnno) ) {
-                g.drawString(String.valueOf(line + 1), glyphGutterWidth - lineNumberWidth - rightGap, y + eui.getLineAscent());
+                g.drawString(String.valueOf(line + 1), glyphGutterWidth - lineNumberWidth - rightGap, y + fontAscent);
             }
         }
 
@@ -978,6 +1001,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     }
                     annos.addAnnotationsListener(GlyphGutter.this);
 
+                    update();
+                } else if (TEXT_ZOOM_PROPERTY.equals(evt.getPropertyName())) {
                     update();
                 }
             }
