@@ -70,7 +70,7 @@ public class BrokenLinks {
                 CompilerSet2Configuration csconf = activeConfiguration.getCompilerSet();
                 CompilerSet cs = csconf.getCompilerSet();
                 String csname = csconf.getOption();
-                if (cs == null) {
+                if (cs == null || cs.getDirectory() == null || cs.getDirectory().isEmpty()) {
                     errs.add(new BrokenToolCollection(project, csname));
                 }
             }
