@@ -39,28 +39,68 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
+package org.netbeans.modules.coherence.server.actions;
 
-import java.util.logging.Logger;
+import org.netbeans.api.server.CommonServerUIs;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.coherence.server.CoherenceInstanceProvider;
+import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.netbeans.modules.coherence.server.CoherenceServer;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.NodeAction;
 
 /**
+ * Action for opening Servers window with focus on settings for given {@link ServerInstance}.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class RefreshAllServersAction extends CallableSystemAction {
-    private static Logger logger = Logger.getLogger(RefreshAllServersAction.class.getCanonicalName());
-    
-    public void performAction() {
-        AllServersNotifier.changed();
+public class PropertiesAction extends NodeAction {
+
+    @Override
+    public void performAction(Node[] nodes) {
+        ServerInstance instance = getServerInstance(nodes[0]);
+        if (instance != null) {
+            CommonServerUIs.showCustomizer(instance);
+        }
     }
+
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return nodes != null && nodes.length > 0;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    @Override
     public String getName() {
-        return NbBundle.getBundle(RefreshAllServersAction.class).getString("LBL_RefreshAllServers");
+        return NbBundle.getMessage(PropertiesAction.class, "ACTION_Properties"); // NOI18N
     }
-    
+
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
+    }
+
+    /**
+     * Get {@link ServerInstance} for given {@link Node}.
+     *
+     * @param node node with associated {@link ServerInstance}
+     * @return {@link ServerInstance}
+     */
+    private ServerInstance getServerInstance(Node node) {
+        ServerInstance serverInstance = null;
+        CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+        if (coherenceServer != null) {
+            int serverId = coherenceServer.getInstanceProperties().getInt(CoherenceProperties.PROP_COHERENCE_ID, 0);
+            assert serverId != 0;
+            CoherenceInstanceProvider cip = CoherenceInstanceProvider.getCoherenceProvider();
+            serverInstance = cip.getInstance(serverId);
+        }
+        return serverInstance;
     }
 }
