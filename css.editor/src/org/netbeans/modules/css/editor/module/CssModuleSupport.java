@@ -51,9 +51,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
@@ -242,6 +244,14 @@ public class CssModuleSupport {
             return model;
         }
         
+    }
+    
+    public static List<CompletionProposal> getCompletionProposals(CompletionContext context) {
+        List<CompletionProposal> all = new ArrayList<CompletionProposal>();
+        for(CssModule module : getModules()) {
+            all.addAll(module.getCompletionProposals(context));
+        }
+        return all;
     }
     
 }

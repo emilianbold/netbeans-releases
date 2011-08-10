@@ -39,11 +39,54 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence;
+package org.netbeans.modules.coherence.server.actions;
+
+import org.netbeans.modules.coherence.server.CoherenceServer;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
+ * Performs stop action for Coherence server.
  *
- * @author Andrew Hopkinson (Oracle A-Team)
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class CoherenceServerException extends Exception {
+public class StopServerAction extends NodeAction {
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(StartServerAction.class, "ACTION_ServerStop"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        if(activatedNodes != null && activatedNodes.length > 0) {
+            for(Node node : activatedNodes) {
+                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+                if(coherenceServer != null) {
+                    coherenceServer.stop();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if(activatedNodes != null && activatedNodes.length > 0) {
+            for(Node node : activatedNodes) {
+                CoherenceServer coherenceServer = node.getLookup().lookup(CoherenceServer.class);
+                if(coherenceServer != null) {
+                    return coherenceServer.isRunning();
+                }
+            }
+        }
+        return false;
+    }
+
 }

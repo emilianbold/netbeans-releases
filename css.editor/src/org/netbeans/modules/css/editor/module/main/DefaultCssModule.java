@@ -87,7 +87,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Default implementation covering the basic CSS3 features.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = CssModule.class)
 public class DefaultCssModule extends CssModule {
@@ -100,8 +100,12 @@ public class DefaultCssModule extends CssModule {
     }
 
     @Override
-    public List<CompletionProposal> complete(CompletionContext context) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
+        //the main functionality is implemented by the CssCompletion directly
+        //since there's too many workarounds
+        //
+        //todo: possibly refactor the code and put the functionality here
+        return Collections.emptyList(); 
     }
 
     @Override
