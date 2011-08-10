@@ -85,7 +85,6 @@ public class POHImpl {
     private J2eeLookupProvider.Provider provider;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
-    private String contextPath;
 
     public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.maven"; //NOI18N
     public static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
@@ -104,11 +103,6 @@ public class POHImpl {
             }
         });
     }
-
-    public void setContextPath(String path) {
-        this.contextPath = path;
-    }
-    
     private void projectOpened() {
         refreshAppServerAssignment();
         if (refreshListener == null) {
@@ -175,9 +169,6 @@ public class POHImpl {
             if (impl != null) {
                 impl.setServerInstanceID(instanceFound);
                 impl.getConfigSupport().ensureConfigurationReady();
-                if (contextPath != null) {
-                    impl.getWebModuleImplementation().setContextPath(contextPath);
-                }
             }
             EjbModuleProviderImpl ejb = project.getLookup().lookup(EjbModuleProviderImpl.class);
             if (ejb != null) {
