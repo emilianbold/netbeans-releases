@@ -53,12 +53,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -76,8 +74,8 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel,
+            Result result )
     {
             boolean cdiManaged = model.getQualifiers( element,  true ).size()>0;
             if ( !cdiManaged ){
@@ -86,24 +84,23 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
         if (cancel.get()) {
             return;
         }
-        checkCtor(element, model, descriptions, info );
+        checkCtor(element, model, result );
         if (cancel.get()) {
             return;
         }
-        checkInner(element, parent, model, descriptions, info);
+        checkInner(element, parent, model, result);
         if (cancel.get()) {
             return;
         }
-        checkAbstract(element, model, descriptions, info);
+        checkAbstract(element, model, result);
         if (cancel.get()) {
             return;
         }
-        checkImplementsExtension(element, model, descriptions, info);
+        checkImplementsExtension(element, model, result);
     }
 
     private void checkImplementsExtension( TypeElement element,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info)
+            WebBeansModel model, Result result )
     {
         TypeElement extension = model.getCompilationController().getElements().
             getTypeElement(EXTENSION);
@@ -113,19 +110,14 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
         TypeMirror elementType = element.asType();
         if ( model.getCompilationController().getTypes().isSubtype( 
                 elementType,  extension.asType())){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createNotification( Severity.WARNING, element, 
-                        model, info ,  NbBundle.getMessage( ManagedBeansAnalizer.class, 
+            result.addNotification(Severity.WARNING, element, 
+                        model,  NbBundle.getMessage( ManagedBeansAnalizer.class, 
                                 "WARN_QualifiedElementExtension"));     // NOI18N
-            if ( description != null ){
-                descriptions.add( description );
-            }
         }
     }
 
     private void checkAbstract( TypeElement element,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info )
+            WebBeansModel model, Result result )
     {
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.ABSTRACT )){
@@ -135,35 +127,28 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             }
                 
             // element is abstract and has no Decorator annotation
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createNotification( Severity.WARNING, element, model, info,
+            result.addNotification( Severity.WARNING, element, model,
                         NbBundle.getMessage(ManagedBeansAnalizer.class, 
                                 "WARN_QualifierAbstractClass"));        // NOI18N
-            descriptions.add( description );    
         }        
     }
 
     private void checkInner( TypeElement element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info )
+            WebBeansModel model, Result result  )
     {
         if ( parent == null ){
             return;
         }
         Set<Modifier> modifiers = element.getModifiers();
         if ( !modifiers.contains( Modifier.STATIC )){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, model, info , 
-                        NbBundle.getMessage(ManagedBeansAnalizer.class, 
-                                "ERR_NonStaticInnerType")); // NOI18N
-            if ( description != null ){
-                descriptions.add( description );
-            }
+            result.addError(element, model, 
+                    NbBundle.getMessage(ManagedBeansAnalizer.class, 
+                    "ERR_NonStaticInnerType")); // NOI18N
         }
     }
 
     private void checkCtor( TypeElement element, WebBeansModel model,
-            List<ErrorDescription> descriptions, CompilationInfo info  )
+           Result result )
     {
         List<ExecutableElement> ctors = ElementFilter.constructorsIn( 
                 element.getEnclosedElements());
@@ -183,11 +168,9 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             }
         }
         // there is no non-private ctors without params or annotated with @Inject
-        ErrorDescription description = CdiEditorAnalysisFactory.
-            createNotification( Severity.WARNING, element, model, info , 
-                    NbBundle.getMessage(ManagedBeansAnalizer.class, 
-                            "WARN_QualifierNoCtorClass"));              // NOI18N
-        descriptions.add( description );
+        result.addNotification( Severity.WARNING, element, model, 
+                NbBundle.getMessage(ManagedBeansAnalizer.class, 
+                "WARN_QualifierNoCtorClass")); // NOI18N
     }
 
 }

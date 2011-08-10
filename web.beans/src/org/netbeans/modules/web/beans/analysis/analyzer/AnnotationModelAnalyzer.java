@@ -49,11 +49,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.InterceptorBindingAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.StereotypeAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -64,15 +63,15 @@ public class AnnotationModelAnalyzer implements ModelAnalyzer {
 
     @Override
     public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info, AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel, 
+            Result result )
     {
         TypeElement subject = (TypeElement) element;
         for( AnnotationAnalyzer analyzer : ANALYZERS ){
             if ( cancel.get() ){
                 return;
             }
-            analyzer.analyze( subject, model, descriptions, info , cancel );
+            analyzer.analyze( subject, model, cancel, result );
         }
     }
     
@@ -80,8 +79,8 @@ public class AnnotationModelAnalyzer implements ModelAnalyzer {
         public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
         
         void analyze( TypeElement element , WebBeansModel model,
-                List<ErrorDescription> descriptions, 
-                CompilationInfo info, AtomicBoolean cancel );
+                AtomicBoolean cancel, 
+                Result result );
     }
 
     private static final List<AnnotationAnalyzer> ANALYZERS = 

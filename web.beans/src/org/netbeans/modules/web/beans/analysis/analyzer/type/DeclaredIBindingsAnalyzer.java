@@ -57,12 +57,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractInterceptedElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -79,8 +77,8 @@ public class DeclaredIBindingsAnalyzer extends
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info, AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel,
+            Result result )
     {
         Set<AnnotationMirror> interceptorBindings = getInterceptorBindings(element, 
                 model);
@@ -91,14 +89,10 @@ public class DeclaredIBindingsAnalyzer extends
             if ( found != null && !isSame( found, annotationMirror , 
                     model.getCompilationController()))
             {
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, model, info ,  
+                result.addError( element, model,  
                     NbBundle.getMessage(DeclaredIBindingsAnalyzer.class, 
                             "ERR_InvalidDuplicateIBindings",                // NOI18N
                             ((TypeElement)iBinding).getQualifiedName().toString()));              
-                if ( description != null ){
-                    descriptions.add( description );
-                }
                 break;
             }
             else {

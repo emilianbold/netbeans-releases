@@ -54,12 +54,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -70,12 +68,11 @@ import org.openide.util.NbBundle;
 public class DelegateMethodAnalyzer implements MethodAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel)
+            TypeElement parent, AtomicBoolean cancel, CdiAnalysisResult result )
     {
         List<? extends VariableElement> parameters = element.getParameters();
         int i=0;
@@ -84,22 +81,20 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
                 return;
             }
             if (AnnotationUtil.hasAnnotation(param,
-                    AnnotationUtil.DELEGATE_FQN, compInfo))
+                    AnnotationUtil.DELEGATE_FQN, result.getInfo()))
             {
                 if (cancel.get()) {
                     return;
                 }
-                checkMethodDefinition(element, param, compInfo, descriptions);
+                checkMethodDefinition(element, param, result );
                 if (cancel.get()) {
                     return;
                 }
-                checkClassDefinition(parent, element, param, compInfo,
-                        descriptions);
+                checkClassDefinition(parent, element, param, result );
                 if (cancel.get()) {
                     return;
                 }
-                checkDelegateType(param, i, element, parent, compInfo,
-                        descriptions);
+                checkDelegateType(param, i, element, parent, result );
             }
             i++;
         }
@@ -107,57 +102,50 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
 
     private void checkClassDefinition( TypeElement parent,
             ExecutableElement element, VariableElement param,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result)
     {
         if ( !AnnotationUtil.hasAnnotation(parent, AnnotationUtil.DECORATOR, 
-                compInfo))
+                result.getInfo()))
         {
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( param, compInfo, 
+            result.addError( param, 
                 NbBundle.getMessage(DelegateFieldAnalizer.class, 
                         "ERR_DelegateIsNotInDecorator")); // NOI18N
-            descriptions.add( description );
         }        
     }
 
     private void checkDelegateType( VariableElement element, int i,
             ExecutableElement method, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result  )
     {
-        ExecutableType methodType = (ExecutableType) compInfo.getTypes()
+        ExecutableType methodType = (ExecutableType) result.getInfo().getTypes()
                 .asMemberOf((DeclaredType) parent.asType(), method);
         List<? extends TypeMirror> parameterTypes = methodType
                 .getParameterTypes();
         TypeMirror parameterType = parameterTypes.get(i);
         Collection<TypeMirror> decoratedTypes = DelegateFieldAnalizer
-                .getDecoratedTypes(parent, compInfo);
+                .getDecoratedTypes(parent, result.getInfo());
         for (TypeMirror decoratedType : decoratedTypes) {
-            if (!compInfo.getTypes().isSubtype(parameterType, decoratedType)) {
-                ErrorDescription description = CdiEditorAnalysisFactory
-                        .createError(element, compInfo, NbBundle.getMessage(
+            if (!result.getInfo().getTypes().isSubtype(parameterType, decoratedType)) {
+                result.addError(element,  NbBundle.getMessage(
                                 DelegateMethodAnalyzer.class,
                                 "ERR_DelegateTypeHasNoDecoratedType")); // NOI18N
-                descriptions.add(description);
                 return;
             }
         }
     }
 
     private void checkMethodDefinition( ExecutableElement element, 
-            VariableElement param, CompilationInfo compInfo, 
-            List<ErrorDescription> descriptions )
+            VariableElement param,  CdiAnalysisResult result  )
     {
         if ( element.getKind() == ElementKind.CONSTRUCTOR ){
             return;
         }
         if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN, 
-                compInfo))
+                result.getInfo()))
         {
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( param, compInfo, 
+            result.addError( param, 
                 NbBundle.getMessage(DelegateMethodAnalyzer.class, 
                         "ERR_WrongDelegateMethod"));                        // NOI18N
-            descriptions.add( description );
         }
     }
 

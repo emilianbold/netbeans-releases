@@ -60,6 +60,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.CtorAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -68,25 +69,41 @@ import org.netbeans.modules.web.beans.analysis.analyzer.MethodElementAnalyzer;
  */
 class CdiAnalysisTask extends AbstractAnalysisTask {
     
+    
+    protected CdiAnalysisResult getResult(){
+        return myResult;
+    }
+    
+    protected CdiAnalysisResult createResult( CompilationInfo info ){
+        return new CdiAnalysisResult(info);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#getProblems()
+     */
+    @Override
+    List<ErrorDescription> getProblems() {
+        return getResult().getProblems();
+    }
+    
     @Override
     void run( CompilationInfo compInfo ) {
+        myResult = createResult( compInfo );
         List<? extends TypeElement> types = compInfo.getTopLevelElements();
         for (TypeElement typeElement : types) {
             if ( isCancelled() ){
                 break;
             }
-            analyzeType(typeElement, null,  compInfo);
+            analyzeType(typeElement, null );
         }
     }
     
-    private void analyzeType(TypeElement typeElement , TypeElement parent ,
-            CompilationInfo compInfo)
+    private void analyzeType(TypeElement typeElement , TypeElement parent )
     {
         ElementKind kind = typeElement.getKind();
         ElementAnalyzer analyzer = ANALIZERS.get( kind );
         if ( analyzer != null ){
-            analyzer.analyze(typeElement, parent, compInfo, getProblems(), 
-                    getCancel());
+            analyzer.analyze(typeElement, parent, getCancel(), getResult() );
         }
         if ( isCancelled() ){
             return;
@@ -94,17 +111,16 @@ class CdiAnalysisTask extends AbstractAnalysisTask {
         List<? extends Element> enclosedElements = typeElement.getEnclosedElements();
         List<TypeElement> types = ElementFilter.typesIn(enclosedElements);
         for (TypeElement innerType : types) {
-            analyzeType(innerType, typeElement , compInfo);
+            analyzeType(innerType, typeElement );
         }
         Set<Element> enclosedSet = new HashSet<Element>( enclosedElements );
         enclosedSet.removeAll( types );
         for(Element element : enclosedSet ){
-            analyze(typeElement, compInfo, element);
+            analyze(typeElement, element);
         }
     }
 
-    private void analyze( TypeElement typeElement, CompilationInfo compInfo,
-            Element element )
+    private void analyze( TypeElement typeElement, Element element )
     {
         ElementAnalyzer analyzer;
         if ( isCancelled() ){
@@ -114,9 +130,10 @@ class CdiAnalysisTask extends AbstractAnalysisTask {
         if ( analyzer == null ){
             return;
         }
-        analyzer.analyze(element, typeElement, compInfo, getProblems(),
-                getCancel());
+        analyzer.analyze(element, typeElement, getCancel(), getResult() );
     }
+    
+    private CdiAnalysisResult myResult;
     
     private static final Map<ElementKind,ElementAnalyzer> ANALIZERS = 
         new HashMap<ElementKind, ElementAnalyzer>();
