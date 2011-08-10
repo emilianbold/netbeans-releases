@@ -42,16 +42,14 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.TypeElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.openide.util.NbBundle;
 
 
@@ -62,48 +60,45 @@ import org.openide.util.NbBundle;
 public class ScopeAnalyzer implements AnnotationAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
-    public void analyze( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel)
+    public void analyze( TypeElement element, AtomicBoolean cancel,
+            CdiAnalysisResult result)
     {
+        CompilationInfo compInfo = result.getInfo();
         boolean isScope = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.SCOPE_FQN , compInfo);
         boolean isNormalScope = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
         if ( isScope || isNormalScope ){
             ScopeTargetAnalyzer analyzer = new ScopeTargetAnalyzer(element, 
-                    compInfo, descriptions, isNormalScope);
+                    result, isNormalScope);
             if ( cancel.get() ){
                 return;
             }
             if ( !analyzer.hasRuntimeRetention() ){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
+                result.addError( element, 
                             NbBundle.getMessage(ScopeAnalyzer.class, 
                                     INCORRECT_RUNTIME));
-                descriptions.add( description );
             }
             if ( cancel.get() ){
                 return;
             }
             if ( !analyzer.hasTarget()){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
+                result.addError( element, 
                             NbBundle.getMessage(ScopeAnalyzer.class, 
                                     "ERR_IncorrectScopeTarget"));                // NOI18N
-                descriptions.add( description );
             }
         }
     }
     
     private static class ScopeTargetAnalyzer extends CdiAnnotationAnalyzer {
         
-        ScopeTargetAnalyzer(TypeElement element, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, boolean normalScope )
+        ScopeTargetAnalyzer(TypeElement element, CdiAnalysisResult result, 
+                boolean normalScope )
         {
-            super( element , compInfo, descriptions );
+            super( element , result );
             isNormalScope = normalScope;
         }
 

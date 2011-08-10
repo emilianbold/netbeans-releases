@@ -52,13 +52,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.ProducerFieldAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.TypedFieldAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -68,29 +65,27 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public class FieldElementAnalyzer implements ElementAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
         VariableElement var = (VariableElement) element;
-        TypeMirror varType = compInfo.getTypes().asMemberOf( 
+        TypeMirror varType = result.getInfo().getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  var );
         for (FieldAnalyzer analyzer : ANALYZERS) {
             if ( cancel.get()){
                 return;
             }
-            analyzer.analyze(var, varType, parent, compInfo, descriptions,
-                    cancel );
+            analyzer.analyze(var, varType, parent, cancel, result );
         }
     }
     
     public interface FieldAnalyzer {
         void analyze( VariableElement element , TypeMirror elementType,
-                TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
+                TypeElement parent, AtomicBoolean cancel,
+                CdiAnalysisResult result );
     }
     
     private static final List<FieldAnalyzer> ANALYZERS= new LinkedList<FieldAnalyzer>(); 

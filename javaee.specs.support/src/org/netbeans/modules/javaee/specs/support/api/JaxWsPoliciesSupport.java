@@ -44,6 +44,7 @@ package org.netbeans.modules.javaee.specs.support.api;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -106,6 +107,15 @@ public final class JaxWsPoliciesSupport {
      */
     public List<String> getClientPolicyIds(){
         return impl.getClientPolicyIds();
+    }
+    
+    /**
+     * Getter for pair collection of policy identifier ( as a key )
+     * and full policy description ( as a value ).  
+     * @return map of identifier of policy and associated description 
+     */
+    public Map<String,String> getPolicyDescriptions(){
+        return impl.getPolicyDescriptions();
     }
     
     /**
