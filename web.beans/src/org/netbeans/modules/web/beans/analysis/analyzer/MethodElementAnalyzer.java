@@ -53,14 +53,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.AnnotationsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.DelegateMethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.InterceptedMethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.ProducerMethodAnalyzer;
-import org.netbeans.modules.web.beans.analysis.analyzer.method.ScopedMethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.TypedMethodAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -70,15 +67,14 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public class MethodElementAnalyzer implements ElementAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer#analyze(javax.lang.model.element.Element, javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
         ExecutableElement method = (ExecutableElement) element;
-        TypeMirror methodType = compInfo.getTypes().asMemberOf( 
+        TypeMirror methodType = result.getInfo().getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  method );
         if ( methodType instanceof ExecutableType ){
             if ( cancel.get()){
@@ -89,16 +85,15 @@ public class MethodElementAnalyzer implements ElementAnalyzer {
                 if ( cancel.get() ){
                     return;
                 }
-                analyzer.analyze(method, returnType, parent, compInfo, 
-                        descriptions, cancel );
+                analyzer.analyze(method, returnType, parent, cancel, 
+                        result );
             }
         }
     }
     
     public interface MethodAnalyzer {
         void analyze( ExecutableElement element , TypeMirror returnType,
-                TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
+                TypeElement parent, AtomicBoolean cancel , CdiAnalysisResult result );
     }
     
     private static final List<MethodAnalyzer> ANALYZERS= new LinkedList<MethodAnalyzer>(); 

@@ -101,20 +101,6 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
         return createNotification(Severity.ERROR, subject, info, description);
     }
     
-    public static ErrorDescription createError( Element subject , 
-            WebBeansModel model, CompilationInfo info ,String description)
-    {
-        return createNotification(Severity.ERROR, subject, model, info, description);
-    }
-    
-    public static ErrorDescription createError( VariableElement element, 
-            ExecutableElement method, WebBeansModel model, CompilationInfo info ,
-            String description)
-    {
-        return createNotification(Severity.ERROR, element, method, model, 
-                info, description);
-    }
-    
     public static ErrorDescription createNotification( Severity severity, 
             Element subject , CompilationInfo info ,String description)
     {
@@ -138,6 +124,17 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
     public static ErrorDescription createNotification( Severity severity, 
             VariableElement element, ExecutableElement parent , 
             WebBeansModel model, CompilationInfo info ,String description)
+    {
+        VariableElement var = resolveParameter(element, parent, info);
+        if ( var == null ){
+            return null;
+        }
+        Tree elementTree = info.getTrees().getTree(var);
+        return createNotification(severity, elementTree, info, description);
+    }
+
+    public static VariableElement resolveParameter( VariableElement element, 
+            ExecutableElement parent,CompilationInfo info )
     {
         List<? extends VariableElement> parameters = parent.getParameters();
         int i=0;
@@ -164,11 +161,7 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
             }
             j++;
         }
-        if ( var == null ){
-            return null;
-        }
-        Tree elementTree = info.getTrees().getTree(var);
-        return createNotification(severity, elementTree, info, description);
+        return var;
     }
 
     private static ErrorDescription createNotification( Severity severity,

@@ -50,11 +50,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -64,34 +62,33 @@ import org.openide.util.NbBundle;
  */
 public class TypedFieldAnalyzer extends AbstractTypedAnalyzer implements FieldAnalyzer {
 
-    @Override
-    public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions, AtomicBoolean cancel  )
-    {
-        analyze(element, elementType, compInfo, descriptions, cancel );
-    }
-    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analizer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.api.java.source.CompilationInfo, java.util.List)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer#analyze(javax.lang.model.element.VariableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
-    protected void addError( Element element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions )
+    public void analyze( VariableElement element, TypeMirror elementType,
+            TypeElement parent, AtomicBoolean cancel,
+            CdiAnalysisResult result  )
     {
-        ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
-                TypedFieldAnalyzer.class, "ERR_BadRestritedFieldType"));
-        descriptions.add( description );        
+        analyze(element, elementType, cancel , result );
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#addError(javax.lang.model.element.Element, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
+     */
+    @Override
+    protected void addError( Element element, CdiAnalysisResult result  )
+    {
+        result.addError( element, NbBundle.getMessage(
+                TypedFieldAnalyzer.class, "ERR_BadRestritedFieldType"));        // NOI18N
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractTypedAnalyzer#checkSpecializes(javax.lang.model.element.Element, javax.lang.model.type.TypeMirror, java.util.List, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
     protected void checkSpecializes( Element element, TypeMirror elementType,
-            List<TypeMirror> restrictedTypes, CompilationInfo compInfo, 
-            List<ErrorDescription> descriptions,AtomicBoolean cancel )
+            List<TypeMirror> restrictedTypes, AtomicBoolean cancel , CdiAnalysisResult result)
     {
         // production fields cannot be specialized
     }

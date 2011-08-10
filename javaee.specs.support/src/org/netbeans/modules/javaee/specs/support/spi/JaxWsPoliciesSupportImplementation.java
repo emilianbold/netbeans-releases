@@ -44,6 +44,7 @@ package org.netbeans.modules.javaee.specs.support.spi;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
@@ -99,5 +100,12 @@ public interface JaxWsPoliciesSupportImplementation {
      * @return related lookup
      */
     Lookup getLookup( FileObject wsdl );
+    
+    /**
+     * Getter for pair collection of policy identifier ( as a key )
+     * and full policy description ( as a value ).  
+     * @return map of identifier of policy and associated description 
+     */
+    Map<String, String> getPolicyDescriptions();
 
 }

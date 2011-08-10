@@ -42,14 +42,12 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 
 
 /**
@@ -58,6 +56,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public interface ElementAnalyzer {
 
-    void analyze( Element element , TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions, AtomicBoolean cancel );
+    void analyze( Element element , TypeElement parent, AtomicBoolean cancel,
+            CdiAnalysisResult result );
+    
 }
