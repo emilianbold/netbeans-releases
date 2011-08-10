@@ -72,7 +72,7 @@ import org.openide.windows.WindowManager;
  * @author Jaroslav Bachorik
  */
 @ServiceProvider(service = EditorSupportProvider.class)
-public class ProjectEditorSupportImpl implements EditorSupportProvider {
+public class ProjectEditorSupportImpl extends EditorSupportProvider {
 
     private <T> T performOnAWT(final Callable<T> action) throws Exception {
         if (SwingUtilities.isEventDispatchThread()) {
