@@ -71,7 +71,9 @@ import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -82,12 +84,26 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
     
     private final static Logger LOG = Logger.getLogger( 
             WebBeansAnalysisTask.class.getName());
+    
+    protected Result getResult(){
+        return myResult;
+    }
+    
+    protected Result createResult( CompilationInfo compInfo  ){
+        return new Result( compInfo );
+    }
+    
+    @Override
+    List<ErrorDescription> getProblems(){
+        return getResult().getProblems();
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
      */
     @Override
     void run( final CompilationInfo compInfo ) {
+        myResult = createResult( compInfo );
         List<? extends TypeElement> types = compInfo.getTopLevelElements();
         final List<ElementHandle<TypeElement>> handles = 
             new ArrayList<ElementHandle<TypeElement>>(1);
@@ -135,8 +151,7 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
         ElementKind kind = typeElement.getKind();
         ModelAnalyzer analyzer = ANALIZERS.get( kind );
         if ( analyzer != null ){
-            analyzer.analyze(typeElement, parent, model, getProblems(), info ,
-                    getCancel());
+            analyzer.analyze(typeElement, parent, model, getCancel(), getResult());
         }
         if ( isCancelled() ){
             return;
@@ -170,10 +185,10 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
         if ( analyzer == null ){
             return;
         }
-        analyzer.analyze(element, typeElement, model, getProblems(), info , 
-                getCancel());
+        analyzer.analyze(element, typeElement, model, getCancel(), getResult());
     }
     
+    private Result myResult;
     private static final Map<ElementKind,ModelAnalyzer> ANALIZERS = 
         new HashMap<ElementKind, ModelAnalyzer>();
 

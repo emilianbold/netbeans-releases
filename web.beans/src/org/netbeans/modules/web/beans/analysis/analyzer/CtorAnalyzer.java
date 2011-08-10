@@ -50,9 +50,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.openide.util.NbBundle;
 
 
@@ -67,8 +65,7 @@ public class CtorAnalyzer implements ElementAnalyzer {
      */
     @Override
     public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
         ExecutableElement ctor = (ExecutableElement)element;
         List<? extends VariableElement> parameters = ctor.getParameters();
@@ -77,16 +74,14 @@ public class CtorAnalyzer implements ElementAnalyzer {
                 return;
             }
             boolean isDisposer = AnnotationUtil.hasAnnotation(param, 
-                    AnnotationUtil.DISPOSES_FQN, compInfo);
+                    AnnotationUtil.DISPOSES_FQN, result.getInfo());
             boolean isObserver = AnnotationUtil.hasAnnotation(param, 
-                    AnnotationUtil.OBSERVES_FQN, compInfo);
+                    AnnotationUtil.OBSERVES_FQN, result.getInfo());
             if ( isDisposer || isObserver ){
                 String annotation = isDisposer ? AnnotationUtil.DISPOSES : 
                     AnnotationUtil.OBSERVES;
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+                result.addError( element, NbBundle.getMessage(
                     CtorAnalyzer.class, "ERR_BadAnnotationParamCtor", annotation)); // NOI18N 
-                descriptions.add( description );
                 break;
             }
         }

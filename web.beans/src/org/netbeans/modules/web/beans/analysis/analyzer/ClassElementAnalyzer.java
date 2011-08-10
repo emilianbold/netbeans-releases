@@ -49,11 +49,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.AnnotationsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.CtorsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.TypedClassAnalizer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -68,21 +67,20 @@ public class ClassElementAnalyzer implements ElementAnalyzer {
      */
     @Override
     public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
         TypeElement subject = (TypeElement) element;
         for( ClassAnalyzer analyzer : ANALYZERS ){
             if ( cancel.get() ){
                 return;
             }
-            analyzer.analyze( subject, parent, compInfo, descriptions, cancel);
+            analyzer.analyze( subject, parent,  cancel, result );
         }
     }
 
     public interface ClassAnalyzer {
-        void analyze( TypeElement element , TypeElement parent, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
+        void analyze( TypeElement element , TypeElement parent, AtomicBoolean cancel,
+                CdiAnalysisResult result );
     }
 
     private static final List<ClassAnalyzer> ANALYZERS= new LinkedList<ClassAnalyzer>(); 

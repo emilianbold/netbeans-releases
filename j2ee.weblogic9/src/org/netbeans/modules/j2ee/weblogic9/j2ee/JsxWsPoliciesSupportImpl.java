@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -95,7 +98,7 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
     @Override
     public List<String> getClientPolicyIds() {
         // TODO : filter ids ( keep only client policies )
-        return getAllPolicyIds();
+        return getAllPolicyIds( null );
     }
 
     /* (non-Javadoc)
@@ -104,7 +107,7 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
     @Override
     public List<String> getServicePolicyIds() {
         // TODO : filter ids ( keep only services policies )
-        return getAllPolicyIds();
+        return getAllPolicyIds( null );
     }
 
     @Override
@@ -114,6 +117,16 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
             return ((OraclePolicyHandler) handler).hasOraclePolicy;
         }
         return false;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation#getPolicyDescriptions()
+     */
+    @Override
+    public Map<String, String> getPolicyDescriptions() {
+        Map<String,String> map = new HashMap<String, String>();
+        getAllPolicyIds( map );
+        return map;
     }
 
     /* (non-Javadoc)
@@ -203,7 +216,7 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
         }
     }
 
-    private List<String> getAllPolicyIds() {
+    private List<String> getAllPolicyIds(Map<String,String> descriptions) {
         File home = platformImpl.getMiddlewareHome();
         FileObject middlewareHome = FileUtil.toFileObject(FileUtil.normalizeFile(home));
         FileObject modules = middlewareHome.getFileObject(ORACLE_COMMON_MODULES); //NOI18N
@@ -235,6 +248,9 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
             for (FileObject fileObject : policies.getChildren()) {
                 String name = fileObject.getName();
                 allIds.add(name);
+                if ( descriptions!= null ){ 
+                    descriptions.put( name , readFile(fileObject) );
+                }
             }
         }
         return allIds;
@@ -244,6 +260,37 @@ class JsxWsPoliciesSupportImpl implements JaxWsPoliciesSupportImplementation {
         String fileName = fqn.replace('.', '/');
         return root.getFileObject(fileName + ".class") != null; // NOi18N
     }
+    
+    private String readFile( FileObject fileObject ){
+            StringBuilder builder = new StringBuilder();
+            BufferedReader reader = null;
+            try {
+                InputStream stream = fileObject.getInputStream();
+                reader = new BufferedReader(  
+                        new InputStreamReader(stream) );
+                String line;
+                while( (line = reader.readLine()) != null ){
+                    builder.append( line );
+                    builder.append( System.getProperty("line.separator"));  // NOI18N
+                } 
+            }
+            catch( IOException e ){
+                Logger.getLogger(getClass().getName()).log(Level.INFO, 
+                                    null, e);      
+            }
+            finally {
+                if ( reader != null ){
+                    try {
+                        reader.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, 
+                                    null, ex);   
+                    }
+                }
+            }
+            return builder.toString();
+        }
+    
     private WLJ2eePlatformFactory.J2eePlatformImplImpl platformImpl;
 
     private static final class OraclePolicyHandler extends DefaultHandler {

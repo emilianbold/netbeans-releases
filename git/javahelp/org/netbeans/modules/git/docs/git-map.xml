@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<map version="2.0">
+<!-- CSH -->
+    <mapID target="org.netbeans.modules.git.ui.clone.RepositoryStep" url="csh/git_clone_wizard_p1.html"/>
+	<mapID target="org.netbeans.modules.git.ui.clone.FetchBranchesStep " url="csh/git_clone_wizard_p2.html"/>
+	<mapID target="org.netbeans.modules.git.ui.clone.CloneDestinationStep " url="csh/git_clone_wizard_p3.html"/>
+</map>

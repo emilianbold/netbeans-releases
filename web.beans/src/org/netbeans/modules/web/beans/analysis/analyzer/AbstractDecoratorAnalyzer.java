@@ -55,11 +55,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.DelegateFieldAnalizer;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -68,18 +67,18 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public abstract class AbstractDecoratorAnalyzer<T> {
 
-    protected void analyzeDecoratedBeans( DependencyInjectionResult result,
+    protected void analyzeDecoratedBeans( DependencyInjectionResult res,
             VariableElement element, T t, TypeElement decorator , 
-            WebBeansModel model, CompilationInfo info, List<ErrorDescription> descriptions )
+            WebBeansModel model, Result result )
     {
         Set<TypeElement> decoratedBeans = null;
-        if ( result instanceof DependencyInjectionResult.ApplicableResult ){
+        if ( res instanceof DependencyInjectionResult.ApplicableResult ){
             DependencyInjectionResult.ApplicableResult appResult = 
-                (DependencyInjectionResult.ApplicableResult) result;
+                (DependencyInjectionResult.ApplicableResult) res;
             decoratedBeans = appResult.getTypeElements();
         }
-        else if ( result instanceof DependencyInjectionResult.InjectableResult ){
-            Element decorated = ((DependencyInjectionResult.InjectableResult)result).
+        else if ( res instanceof DependencyInjectionResult.InjectableResult ){
+            Element decorated = ((DependencyInjectionResult.InjectableResult)res).
                 getElement();
             if ( decorated instanceof TypeElement ){
                 decoratedBeans = Collections.singleton( (TypeElement)decorated);
@@ -91,7 +90,7 @@ public abstract class AbstractDecoratorAnalyzer<T> {
         for( TypeElement decorated : decoratedBeans ){
             Set<Modifier> modifiers = decorated.getModifiers();
             if ( modifiers.contains(Modifier.FINAL)){
-                addClassError( element , t , decorated, model , info , descriptions );
+                addClassError( element , t , decorated, model , result );
                 return;
             }
         }
@@ -143,7 +142,7 @@ public abstract class AbstractDecoratorAnalyzer<T> {
                     if (decoratedMethod.getModifiers().contains(Modifier.FINAL))
                     {
                         addMethodError( element , t, decorated, decoratedMethod,
-                                model , info , descriptions );
+                                model , result );
                     }
                 }
             }
@@ -152,11 +151,9 @@ public abstract class AbstractDecoratorAnalyzer<T> {
     
     protected abstract void addMethodError( VariableElement element, T t,
             TypeElement decorated, Element decoratedMethod,
-            WebBeansModel model, CompilationInfo info,
-            List<ErrorDescription> descriptions );
+            WebBeansModel model, Result result );
 
     protected abstract void addClassError( VariableElement element , T t, 
-            TypeElement decoratedBean, WebBeansModel model, CompilationInfo info , 
-            List<ErrorDescription> descriptions);
+            TypeElement decoratedBean, WebBeansModel model, Result result );
     
 }
