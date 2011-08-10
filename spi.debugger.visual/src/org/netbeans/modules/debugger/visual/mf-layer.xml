@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
         <folder name="RunProject">
             <file name="org-netbeans-modules-debugger-visual-actions-TakeScreenshotAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-visual-actions-TakeScreenshotAction.instance"/>
-                <attr intvalue="1850" name="position"/>
+                <attr intvalue="1950" name="position"/>
             </file>
         </folder>
     </folder>
