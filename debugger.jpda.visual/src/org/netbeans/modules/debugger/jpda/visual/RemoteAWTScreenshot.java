@@ -109,21 +109,7 @@ public class RemoteAWTScreenshot {
     
     private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
 
-    private DebuggerEngine engine;
-    private String title;
-    private BufferedImage image;
-    private AWTComponentInfo componentInfo;
-    
-    private RemoteAWTScreenshot(DebuggerEngine engine, String title, int width, int height,
-                             int[] dataArray, AWTComponentInfo componentInfo) {
-        this.engine = engine;
-        this.title = title;
-        final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        WritableRaster raster = bi.getRaster();
-        raster.setDataElements(0, 0, width, height, dataArray);
-        this.image = bi;
-        this.componentInfo = componentInfo;
-    }
+    private RemoteAWTScreenshot() {}
     
     private static RemoteScreenshot createRemoteAWTScreenshot(DebuggerEngine engine, String title, int width, int height, int[] dataArray, AWTComponentInfo componentInfo) {
         final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -132,60 +118,54 @@ public class RemoteAWTScreenshot {
         return new RemoteScreenshot(engine, title, width, height, bi, componentInfo);
     }
     
-    public DebuggerEngine getDebuggerEngine() {
-        return engine;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-    
-    public Image getImage() {
-        return image;
-    }
-    
-    public AWTComponentInfo getComponentInfo() {
-        return componentInfo;
-    }
-    
     public static RemoteScreenshot[] takeCurrent() throws RetrievalException {
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine != null) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             logger.fine("Debugger = "+debugger);
             if (debugger != null) {
-                List<JPDAThread> allThreads = debugger.getThreadsCollector().getAllThreads();
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Threads = "+allThreads);
-                }
-                for (JPDAThread t : allThreads) {
-                    if (t.getName().startsWith(AWTThreadName)) {
-                        //try {
-                            return take(t, engine);
-                            /*
-                        } catch (InvocationException iex) {
-                            //ObjectReference exception = iex.exception();
-                            Exceptions.printStackTrace(iex);
-                            
-                            final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, (JPDADebuggerImpl) debugger);
-                            RequestProcessor.getDefault().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    iextr.getMessage();
-                                    iextr.getLocalizedMessage();
-                                    iextr.getCause();
-                                    iextr.getStackTrace();
-                                    Exceptions.printStackTrace(iextr);
-                                }
-                            }, 100);
-                            
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
+                return takeCurrent(debugger, engine);
+            }
+        }
+        return NO_SCREENSHOTS;
+    }
+
+    public static RemoteScreenshot[] takeCurrent(JPDADebugger debugger) throws RetrievalException {
+        DebuggerEngine engine = ((JPDADebuggerImpl) debugger).getSession().getCurrentEngine();
+        return takeCurrent(debugger, engine);
+    }
+    
+    private static RemoteScreenshot[] takeCurrent(JPDADebugger debugger, DebuggerEngine engine) throws RetrievalException {
+        List<JPDAThread> allThreads = debugger.getThreadsCollector().getAllThreads();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Threads = "+allThreads);
+        }
+        for (JPDAThread t : allThreads) {
+            if (t.getName().startsWith(AWTThreadName)) {
+                //try {
+                    return take(t, engine);
+                    /*
+                } catch (InvocationException iex) {
+                    //ObjectReference exception = iex.exception();
+                    Exceptions.printStackTrace(iex);
+
+                    final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, (JPDADebuggerImpl) debugger);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            iextr.getMessage();
+                            iextr.getLocalizedMessage();
+                            iextr.getCause();
+                            iextr.getStackTrace();
+                            Exceptions.printStackTrace(iextr);
                         }
-                             */
-                        //break;
-                    }
+                    }, 100);
+
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
+                     */
+                //break;
             }
         }
         return NO_SCREENSHOTS;

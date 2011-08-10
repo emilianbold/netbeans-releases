@@ -71,6 +71,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ApisupportAntUtils;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
@@ -326,9 +328,10 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
      * An anonymous platform might have sources associated with it;
      * currently this will be true in case the dest dir is nbbuild/netbeans/ inside a netbeans.org checkout.
      * @param the installation directory (as in {@link #getDestDir})
+     * @param the harness dir if known; if null, will use the harness associated with the platform (if any)
      * @return the platform with that destination directory
      */
-    public static NbPlatform getPlatformByDestDir(File destDir) {
+    public static @NonNull NbPlatform getPlatformByDestDir(@NonNull File destDir, @NullAllowed File harnessDir) {
         Set<NbPlatform> plafs = getPlatformsInternal();
         synchronized (plafs) {
             for (NbPlatform p : plafs) {
@@ -353,7 +356,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         // XXX might also check OpenProjectList for NbModuleProject's and/or SuiteProject's with a matching
         // dest dir and look up property 'sources' to use; TBD whether Javadoc could also be handled in a
         // similar way
-        return new NbPlatform(null, null, destDir, findHarness(destDir), sources, new URL[0]);
+        return new NbPlatform(null, null, destDir, harnessDir != null ? harnessDir : findHarness(destDir), sources, new URL[0]);
     }
     
     /**

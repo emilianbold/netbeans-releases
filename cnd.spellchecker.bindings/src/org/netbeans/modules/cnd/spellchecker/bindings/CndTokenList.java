@@ -64,6 +64,8 @@ public class CndTokenList implements TokenList {
 
     private Document doc;
     private boolean hidden = false;
+    private String category;
+    private Kind aKind = Kind.Comment;
 
     /** Creates a new instance of CndTokenList */
     public CndTokenList(Document doc) {
@@ -115,7 +117,7 @@ public class CndTokenList implements TokenList {
         int diff = ts.move(nextBlockStart);
 
         while (ts.moveNext()) {
-            String category = ts.token().id().primaryCategory();
+            category = ts.token().id().primaryCategory();
             if (category != null) {
                 if (CppTokenId.COMMENT_CATEGORY.equals(category) || 
                     FortranTokenId.COMMENT_CATEGORY.equals(category) || 
@@ -133,7 +135,7 @@ public class CndTokenList implements TokenList {
     private void handleDoxygenTag(CharSequence tag) {
         if ("@see".contentEquals(tag) || "@throws".contentEquals(tag)) {// NOI18N
             //ignore next "word", possibly dotted and hashed
-            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, true);
+            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, true, Kind.Doc);
 
             currentOffsetInComment = data.b + data.a.length();
             return;
@@ -141,7 +143,7 @@ public class CndTokenList implements TokenList {
 
         if ("@param".contentEquals(tag)) {// NOI18N
             //ignore next word
-            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
+            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false, Kind.Doc);
 
             currentOffsetInComment = data.b + data.a.length();
             return;
@@ -149,7 +151,7 @@ public class CndTokenList implements TokenList {
 
         if ("@author".contentEquals(tag)) {// NOI18N
             //ignore everything till the end of the line:
-            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
+            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false, Kind.Doc);
 
             while (data != null) {
                 currentOffsetInComment = data.b + data.a.length();
@@ -159,7 +161,7 @@ public class CndTokenList implements TokenList {
                     return;
                 }
 
-                data = wordBroker(currentBlockText, currentOffsetInComment, false);
+                data = wordBroker(currentBlockText, currentOffsetInComment, false, Kind.Doc);
             }
 
             return;
@@ -175,6 +177,11 @@ public class CndTokenList implements TokenList {
                     if (span[0] == (-1)) {
                         return false;
                     }
+                    if (CppTokenId.STRING_CATEGORY.equals(category)) {
+                        aKind = Kind.String;
+                    } else {
+                        aKind = Kind.Comment;
+                    }
 
                     currentBlockStart = span[0];
                     currentBlockText = doc.getText(span[0], span[1] - span[0]);
@@ -184,7 +191,7 @@ public class CndTokenList implements TokenList {
                 }
 
                 String pairTag = null;
-                Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
+                Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false, aKind);
 
                 while (data != null) {
                     currentOffsetInComment = data.b + data.a.length();
@@ -222,7 +229,7 @@ public class CndTokenList implements TokenList {
                         }
                     }
 
-                    data = wordBroker(currentBlockText, currentOffsetInComment, false);
+                    data = wordBroker(currentBlockText, currentOffsetInComment, false, aKind);
                 }
 
                 currentBlockText = null;
@@ -267,7 +274,7 @@ public class CndTokenList implements TokenList {
         return Character.isLetter(c) || c == '\'';
     }
 
-    private Pair<CharSequence, Integer> wordBroker(CharSequence start, int offset, boolean treatSpecialCharactersAsLetterInsideWords) {
+    private Pair<CharSequence, Integer> wordBroker(CharSequence start, int offset, boolean treatSpecialCharactersAsLetterInsideWords, Kind kind) {
         int state = 0;
         int offsetStart = offset;
 
@@ -277,6 +284,10 @@ public class CndTokenList implements TokenList {
             switch (state) {
                 case 0:
                     if (isLetter(current)) {
+                        if (Kind.String == kind &&
+                            offset > 0 && start.charAt(offset-1) == '\\') {
+                            break;
+                        }
                         state = 1;
                         offsetStart = offset;
                         break;
@@ -360,5 +371,11 @@ public class CndTokenList implements TokenList {
             this.a = a;
             this.b = b;
         }
+    }
+    
+    private static enum Kind {
+        String,
+        Comment,
+        Doc
     }
 }

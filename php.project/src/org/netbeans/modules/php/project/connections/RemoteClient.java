@@ -98,7 +98,6 @@ public final class RemoteClient implements Cancellable {
     private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
     private static final String LOCAL_TMP_NEW_SUFFIX = ".new~"; // NOI18N
-    private static final String LOCAL_TMP_OLD_SUFFIX = ".old~"; // NOI18N
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
@@ -710,8 +709,10 @@ public final class RemoteClient implements Cancellable {
                 }
             } finally {
                 os.close();
-                FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
-                if (FO != null) FO.refresh();
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(tmpLocalFile));
+                if (fo != null) {
+                    fo.refresh();
+                }
                 if (success) {
                     // move the file
                     success = moveLocalFile(tmpLocalFile, localFile);
@@ -824,8 +825,10 @@ public final class RemoteClient implements Cancellable {
     // #169778
     private File getLocalFile(File localFile, TransferFile parent, RemoteFile file) {
         File newFile = new File(getLocalFile(localFile, parent), file.getName());
-        FileObject FO = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
-        if (FO != null) FO.refresh();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(newFile));
+        if (fo != null) {
+            fo.refresh();
+        }
         return newFile;
     }
 
@@ -1160,15 +1163,6 @@ public final class RemoteClient implements Cancellable {
             return fileName;
         }
         return fileName.substring(0, index);
-    }
-
-    private String getRemoteRelativePath(TransferFile file) {
-        StringBuilder relativePath = new StringBuilder(baseRemoteDirectory);
-        if (file.getRemotePath() != TransferFile.REMOTE_PROJECT_ROOT) {
-            relativePath.append(TransferFile.REMOTE_PATH_SEPARATOR);
-            relativePath.append(file.getRemotePath());
-        }
-        return relativePath.toString();
     }
 
     private Set<TransferFile> getFiles(Set<TransferFile> all) {
