@@ -61,11 +61,12 @@ import java.util.logging.Logger;
 import org.netbeans.Stamps;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.StartLog;
+import static org.netbeans.core.startup.layers.Bundle.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /** Interface for a manager which can handle XML layer caching.
  * @see "#20168"
@@ -101,19 +102,23 @@ public abstract class LayerCacheManager {
      * @return the file system read or null, if the cache is out of date
      * @throws IOException if an I/O error occurs
      */
+    @Messages({
+        "MSG_start_load_cache=Loading cached objects...",
+        "MSG_end_load_cache=Loading cached objects...done."
+    })
     public final FileSystem loadCache() throws IOException {
         String location = cacheLocation();
         FileSystem fs = null;
 
         if (location != null) {
-            Main.setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_load_cache"));
+            Main.setStatusText(MSG_start_load_cache());
 
             ByteBuffer bb = Stamps.getModulesJARs().asMappedByteBuffer(location);
             if (bb != null) {
                 try {
                     StartLog.logStart("Loading layers"); // NOI18N
                     fs = load(createEmptyFileSystem(), bb);
-                    Main.setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
+                    Main.setStatusText(MSG_end_load_cache());
                     StartLog.logEnd("Loading layers"); // NOI18N
                 } catch (IOException ex) {
                     err.log(Level.WARNING, "Ignoring cache of layers");
