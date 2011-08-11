@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -96,6 +97,18 @@ public final class Css3Utils {
     
     public static OffsetRange getOffsetRange(Node node) {
         return new OffsetRange(node.from(), node.to());
+    }
+    
+    public static OffsetRange getDocumentOffsetRange(Node node, Snapshot snapshot) {
+        return new OffsetRange(snapshot.getOriginalOffset(node.from()), snapshot.getOriginalOffset(node.to()));
+    }
+    
+    public static OffsetRange getValidOrNONEOffsetRange(OffsetRange range) {
+        if(range.getStart() == -1 || range.getEnd() == -1) {
+            return OffsetRange.NONE;
+        } else {
+            return range;
+        }
     }
 
     public static boolean containsGeneratedCode(CharSequence text) {
