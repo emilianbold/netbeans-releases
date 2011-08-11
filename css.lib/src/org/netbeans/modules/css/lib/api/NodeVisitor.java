@@ -129,7 +129,7 @@ public abstract class NodeVisitor<T> {
                     if(v.isCancelled()) {
                         continue; //skip the cancelled visitors
                     }
-                    v.visit(node);
+                    v.visit(child);
                 }
                 //recursion
                 visitChildren(child, visitors); 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,65 +34,101 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.lib.api.Node;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.css.editor.csl.CssNodeElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class CssNodeElement extends CssElement {
+public class CssRuleStructureItem implements StructureItem {
+    private CharSequence name;
+    private CssNodeElement element;
+    private int from;
+    private int to;
 
-    private int from, to;
-
-    public static CssNodeElement createElement(Node node) {
-        return new CssNodeElement(node);
-    }
-    
-    CssNodeElement(Node node) {
-        super(node.image());
-        this.from = node.from();
-        this.to = node.to();
+    private static String escape(String s) {
+        s = s.replace("<", "&lt;");
+        s = s.replace(">", "&gt;");
+        return s;
     }
 
-    public int from() {
+    CssRuleStructureItem(CharSequence name, CssNodeElement element, Snapshot source) {
+        this.name = name;
+        this.element = element;
+        this.from = source.getOriginalOffset(element.from());
+        this.to = source.getOriginalOffset(element.to());
+    }
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getSortText() {
+        return getName();
+    }
+
+    @Override
+    public String getHtml(HtmlFormatter formatter) {
+        return escape(getName());
+    }
+
+    @Override
+    public ElementHandle getElementHandle() {
+        return element;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.RULE;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public boolean isLeaf() {
+        return true;
+    }
+
+    @Override
+    public List<? extends StructureItem> getNestedItems() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public long getPosition() {
         return from;
     }
 
-    public int to() {
+    @Override
+    public long getEndPosition() {
         return to;
     }
-    
+
     @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        Snapshot s = result.getSnapshot();
-
-        if(s.getText().length() == 0) {
-            return null;
-        }
-
-        //check the boundaries bacause of (I)
-        int origFrom = from > s.getText().length() ? 0 : s.getOriginalOffset(from);
-        int origTo = to > s.getText().length() ? 0 : s.getOriginalOffset(to);
-
-        if(origFrom == origTo || origTo == 0) {
-            return null;
-        }
-        
-        return new OffsetRange(origFrom, origTo);
-                
-                
+    public ImageIcon getCustomIcon() {
+        return null;
     }
-
-
-
+    
 }

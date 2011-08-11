@@ -65,7 +65,7 @@ public class NodeUtilTest extends NbTestCase {
         CssParserResult res = TestUtil.parse(code);
         
 //        TestUtil.dumpResult(res);
-        Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports"); 
+        Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports/resourceIdentifier"); 
         assertNotNull(imports);
         
         Node value = NodeUtil.getChildTokenNode(imports, CssTokenId.STRING);
