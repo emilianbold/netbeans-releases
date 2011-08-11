@@ -210,6 +210,30 @@ public class Css3ParserTest extends CslTestBase {
                 TestUtil.bodysetPath + typeSelectorPath + "elementName/*"));
     }
     
+    public void testNamespacesInAttributes() throws ParseException, BadLocationException {
+        CssParserResult res = assertResultOK(TestUtil.parse("h1[myns|attr=val] { color: red; }"));
+//        NodeUtil.dumpTree(res.getParseTree());
+        
+        String simpleSelectorPath = "ruleSet/selectorsGroup/selector/simpleSelectorSequence/";
+        
+        assertNotNull(NodeUtil.query(res.getParseTree(), 
+                TestUtil.bodysetPath + simpleSelectorPath + "typeSelector/elementName/h1"));
+        
+        Node attribNode = NodeUtil.query(res.getParseTree(), 
+                TestUtil.bodysetPath + simpleSelectorPath + "elementSubsequent/attrib");
+        
+        assertNotNull(attribNode);
+        assertNotNull(NodeUtil.query(attribNode, 
+                "namespace_wqname_prefix/namespace_prefix/myns"));
+        
+        assertNotNull(NodeUtil.query(attribNode, 
+                "attrib_name/attr"));
+        
+        assertNotNull(NodeUtil.query(attribNode, 
+                "attrib_value/val"));
+        
+    }
+    
     public void testNodeImages() throws ParseException, BadLocationException {
         String selectors = "#id .class body ";
         String code = selectors + "{ color: red}";

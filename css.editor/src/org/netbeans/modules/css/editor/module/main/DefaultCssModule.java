@@ -43,13 +43,11 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -57,10 +55,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.Css3Utils;
@@ -106,7 +100,8 @@ public class DefaultCssModule extends CssModule {
             public boolean visit(Node node) {
                 switch (node.type()) {
                     case elementName:
-                    case elementSubsequent:
+                    case cssId:
+                    case cssClass:
                         int dso = snapshot.getOriginalOffset(node.from());
                         if (dso == -1) {
                             //try next offset - for virtually created class and id
@@ -123,10 +118,10 @@ public class DefaultCssModule extends CssModule {
                             getResult().put(range, ColoringAttributes.METHOD_SET);
                         }
                         break;
+
                     case property:
                         dso = snapshot.getOriginalOffset(node.from());
                         deo = snapshot.getOriginalOffset(node.to());
-
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
                             //check vendor speficic property
                             OffsetRange range = new OffsetRange(dso, deo);
@@ -148,6 +143,14 @@ public class DefaultCssModule extends CssModule {
 
                         }
                         break;
+                    case attrib_name: //attribute name in selector
+                    case attrname: //attribute name in css function
+                        OffsetRange range = Css3Utils.getDocumentOffsetRange(node, snapshot);
+                        if (Css3Utils.isValidOffsetRange(range)) {
+                            getResult().put(range, ColoringAttributes.CUSTOM1_SET);
+                        
+                        }
+
                 }
                 return false;
             }
@@ -166,12 +169,12 @@ public class DefaultCssModule extends CssModule {
 
 
         Node current = NodeUtil.findNonTokenNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
-        if(current == null) {
+        if (current == null) {
             //this may happen if the offset falls to the area outside the selectors rule node.
             //(for example when the stylesheet starts or ends with whitespaces or comment and
             //and the offset falls there).
             //In such case root node (with null parent) is returned from NodeUtil.findNodeAtOffset() 
-            return null; 
+            return null;
         }
 
         //process only some interesting nodes
@@ -336,8 +339,8 @@ public class DefaultCssModule extends CssModule {
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
 
         final List<StructureItem> items = new ArrayList<StructureItem>();
-        result.add(new TopLevelStructureItem.Selectors(items));
-        
+        result.add(new TopLevelStructureItem.Rules(items));
+
         final Snapshot snapshot = context.getSnapshot();
 
         return new NodeVisitor<T>() {

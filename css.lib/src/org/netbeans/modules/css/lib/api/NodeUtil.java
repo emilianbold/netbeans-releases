@@ -164,6 +164,23 @@ public final class NodeUtil {
         visitor.visitAncestors(node);
         return found.get();
     }
+    
+    public static List<Node> getChildrenRecursivelyByType(Node root, final NodeType type) {
+        List<Node> found = new ArrayList<Node>();
+        NodeVisitor<List<Node>> visitor = new NodeVisitor<List<Node>>(found) {
+
+            @Override
+            public boolean visit(Node node) {
+                if(node.type() == type) {
+                    getResult().add(node);
+                }
+                return false;
+            }
+        };
+        
+        visitor.visitChildren(root);
+        return visitor.getResult();
+    }
 
     /** @return list of children of the node with the specified kind. */
     public static Node[] getChildrenByType(Node node, NodeType type) {

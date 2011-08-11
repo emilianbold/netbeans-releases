@@ -103,12 +103,12 @@ public final class Css3Utils {
         return new OffsetRange(snapshot.getOriginalOffset(node.from()), snapshot.getOriginalOffset(node.to()));
     }
     
+    public static boolean isValidOffsetRange(OffsetRange range) {
+        return range.getStart() != -1 && range.getEnd() != -1;
+    }
+    
     public static OffsetRange getValidOrNONEOffsetRange(OffsetRange range) {
-        if(range.getStart() == -1 || range.getEnd() == -1) {
-            return OffsetRange.NONE;
-        } else {
-            return range;
-        }
+        return isValidOffsetRange(range) ? range : OffsetRange.NONE;
     }
 
     public static boolean containsGeneratedCode(CharSequence text) {

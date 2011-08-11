@@ -167,8 +167,8 @@ public class CssCompletion implements CodeCompletionHandler {
             ' '; //NOI18N
 
         //if the caret points to a token node then determine its type
-        Node _tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
-        CssTokenId tokenNodeTokenId = _tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(_tokenNode) : null;
+        Node tokenNode = NodeUtil.findNodeAtOffset(root, astCaretOffset);
+        CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
         
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
         NodeType originalNodeKind = node.type();
@@ -188,6 +188,7 @@ public class CssCompletion implements CodeCompletionHandler {
         //css modules
         CompletionContext completionContext = 
                 new CompletionContext(node, 
+                tokenNode,
                 info.getWrappedCssParserResult(), 
                 ts, 
                 context.getQueryType(), 

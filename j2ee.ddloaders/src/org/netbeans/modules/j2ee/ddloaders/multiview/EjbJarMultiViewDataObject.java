@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import java.awt.Image;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,7 +60,6 @@ import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
 import org.netbeans.modules.j2ee.common.DDEditorNavigator;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -75,8 +73,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.InputSource;
 import javax.swing.event.ChangeListener;
@@ -102,6 +98,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.dd.impl.common.ParseUtils;
 import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -113,6 +111,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -121,6 +122,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author pfiala
  */
+@Messages("CTL_SourceTabCaption=Source")
 public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         implements DDChangeListener, DDEditorNavigator, FileChangeListener, ChangeListener {
     private EjbJarProxy ejbJar;
@@ -207,7 +209,7 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     private Project getProject() {
         return FileOwnerQuery.getOwner(getPrimaryFile());
     }
-    
+
     public FileObject getProjectDirectory() {
         Project project = getProject();
         return project == null ? null : project.getProjectDirectory();
@@ -504,21 +506,72 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
     protected String getPrefixMark() {
         return "<ejb-jar";
     }
-    
-    /**
-     * Icon Base for MultiView editor
-     */
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
+
+    @Override
+    protected String getEditorMimeType() {
         if (Util.isJavaEE5orHigher(getProject())){
-            // only default xml view for ejb3 projects
-            return new DesignMultiViewDesc[0];
+            return "text/x-dd-ejbjar-ee5";
         }
-        return new DesignMultiViewDesc[]{
-            new DDView(this, OVERVIEW),
-            new DDView(this, CMP_RELATIONSHIPS),
-        };
+        return "text/x-dd-ejbjar";
     }
-    
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+
+    @MultiViewElement.Registration(
+        mimeType="text/x-dd-ejbjar",
+        iconBase="org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml",
+        displayName="#CTL_SourceTabCaption",
+        position=1
+    )
+    public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
+    }
+
+    @MultiViewElement.Registration(
+        mimeType="text/x-dd-ejbjar-ee5",
+        iconBase="org/netbeans/modules/j2ee/ddloaders/client/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml",
+        displayName="#CTL_SourceTabCaption",
+        position=1
+    )
+    public static XmlMultiViewElement createXmlMultiViewElementEE5(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
+    }
+
+    @MultiViewElement.Registration(
+        displayName="#LBL_" + OVERVIEW,
+        iconBase=Utils.ICON_BASE_DD_VALID + ".gif",
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID="dd_multiview_" + OVERVIEW,
+        mimeType="text/x-dd-ejbjar",
+        position=500
+    )
+    public static MultiViewElement getOverview(Lookup context) {
+        DataObject dObj = context.lookup(DataObject.class);
+        assert dObj != null;
+        return new EjbMultiViewElement((EjbJarMultiViewDataObject) dObj);
+    }
+
+    @MultiViewElement.Registration(
+        displayName="#LBL_" + CMP_RELATIONSHIPS,
+        iconBase=Utils.ICON_BASE_DD_VALID + ".gif",
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID="dd_multiview_" + CMP_RELATIONSHIPS,
+        mimeType="text/x-dd-ejbjar",
+        position=1000
+    )
+    public static MultiViewElement getCmpRelationShips(Lookup context) {
+        DataObject dObj = context.lookup(DataObject.class);
+        assert dObj != null;
+        return new CmpRelationshipsMultiViewElement((EjbJarMultiViewDataObject) dObj);
+    }
+
     /** Used to detect if data model has already been created or not.
      * Method is called before switching to the design view from XML view when the document isn't parseable.
      */
@@ -579,48 +632,6 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
             } catch (FileStateInvalidException e) {
             }
         }
-    }
-    
-    
-    private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {
-        
-        private String name;
-        static final long serialVersionUID = -8759598009819101630L;
-        
-        DDView(EjbJarMultiViewDataObject dataObject, String name) {
-            super(dataObject, name);
-            this.name=name;
-        }
-        
-        public MultiViewElement createElement() {
-            EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getDataObject();
-            if (name.equals(OVERVIEW)) {
-                return new EjbMultiViewElement(dataObject);
-            } else if (name.equals(CMP_RELATIONSHIPS)) {
-                return new CmpRelationshipsMultiViewElement(dataObject);
-            } else {
-                // This case should not arise
-                return null;
-            }
-        }
-        
-        public HelpCtx getHelpCtx() {
-            final EjbJarMultiViewDataObject dataObject = ((EjbJarMultiViewDataObject)getDataObject());
-            return new HelpCtx(dataObject.getActiveMVElement().getSectionView().getClass());
-        }
-        
-        public Image getIcon() {
-            return ImageUtilities.loadImage(Utils.ICON_BASE_DD_VALID + ".gif"); //NOI18N
-        }
-        
-        public String preferredID() {
-            return "dd_multiview_" + name; //NOI18N
-        }
-        
-        public String getDisplayName() {
-            return NbBundle.getMessage(EjbJarMultiViewDataObject.class,"LBL_"+name); //NOI18N
-        }
-        
     }
     
     /** Enable to access Active element

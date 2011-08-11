@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,23 +44,9 @@
 
 package org.netbeans.modules.j2ee.sun.ddloaders;
 
-//import org.netbeans.api.java.project.JavaProjectConstants;
+import java.util.logging.Level;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-//import org.netbeans.modules.j2ee.common.Util;
-//import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
-//import org.netbeans.modules.j2ee.dd.api.ejb.*;
-//import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
-//import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
-//import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
-//import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
-//import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
-//import org.netbeans.modules.j2ee.common.DDEditorNavigator;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -71,7 +57,6 @@ import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.ErrorManager;
-import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -79,38 +64,37 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
-import javax.swing.event.ChangeListener;
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.j2ee.sun.dd.impl.RootInterfaceImpl;
-import org.netbeans.modules.j2ee.sun.dd.impl.ejb.SunEjbJarProxy;
-import org.netbeans.modules.j2ee.sun.ddloaders.editor.ErrorAnnotation;
-import org.netbeans.modules.j2ee.sun.ddloaders.DDMultiViewDataObject;
-//import org.openide.awt.HtmlBrowser;
 import org.netbeans.modules.glassfish.eecommon.api.config.J2EEBaseVersion;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.appclient.SunAppClientOverviewMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EnvironmentMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbOverviewMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebOverviewMultiViewElement;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceMultiViewElement;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
-import org.openide.awt.HtmlBrowser;
-import org.openide.loaders.MultiDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.windows.TopComponent;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -121,11 +105,6 @@ import org.xml.sax.SAXParseException;
  * @author Peter Williams
  */
 public class SunDescriptorDataObject extends DDMultiViewDataObject
-//        implements 
-//        DDChangeListener, 
-//        DDEditorNavigator, 
-//        FileChangeListener, 
-//        ChangeListener
 {
 
     /**
@@ -139,10 +118,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     
     private final Object proxyMonitor = new Object();
     private volatile RootInterfaceImpl ddRootProxy;
-//    private FileObject srcRoots[];
     private PropertyChangeListener ddRootChangeListener;
-//    private Map entityHelperMap = new HashMap();
-//    private Map sessionHelperMap = new HashMap();
     private DDType descriptorType;
     
     public SunDescriptorDataObject(FileObject pf, SunDescriptorDataLoader loader) throws DataObjectExistsException {
@@ -157,56 +133,17 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         CookieSet set = getCookieSet();
         set.add(validateCookie);
-        
-//        Project project = getProject();
-//        if (project != null) {
-//            Sources sources = ProjectUtils.getSources(project);
-//            sources.addChangeListener(this);
-//        }
-//        refreshSourceFolders();
     }
     
     /** Returns what the module type ought to be for this particular descriptor 
      *  file (e.g. if someone puts sun-ejb-jar.xml into a web module folder, this
-     *  api will return ModuleType.EJB for this dataobject even though j2eeserver
-     *  will return ModuleType.WAR for the project's module type.
+     *  api will return J2eeModule.Type.EJB for this dataobject even though j2eeserver
+     *  will return J2eeModule.Type.WAR for the project's module type.
      */
-    public ModuleType getModuleType() {
+    public J2eeModule.Type getModuleType() {
         // FIXME What should this return for a sun-resource.xml file?  Right, it returns null.
         return descriptorType.getEditorModuleType();
-    }
-    
-    
-//    private void refreshSourceFolders() {
-//        ArrayList srcRootList = new ArrayList();
-//        
-//        SourceGroup[] groups;
-//        Project project = getProject();
-//        if (project != null) {
-//            Sources sources = ProjectUtils.getSources(project);
-//            groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-//        } else {
-//            groups = null;
-//        }
-//        if (groups != null) {
-//            for (int i = 0; i < groups.length; i++) {
-//                org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
-//                if ((ejbModule != null) && (ejbModule.getDeploymentDescriptor() != null)) {
-//                    try {
-//                        FileObject fo = groups[i].getRootFolder();
-//                        srcRootList.add(groups[i].getRootFolder());
-//                        FileSystem fs = fo.getFileSystem();
-//                        fs.removeFileChangeListener(this); //avoid being added multiple times
-//                        fs.addFileChangeListener(this);
-//                    } catch (FileStateInvalidException ex) {
-//                        ErrorManager.getDefault().notify(ex);
-//                    }
-//                }
-//            }
-//        }
-//        srcRoots = (FileObject[]) srcRootList.toArray(new FileObject[srcRootList.size()]);
-//    }
-    
+    }    
     
     private Project getProject() {
         return FileOwnerQuery.getOwner(getPrimaryFile());
@@ -217,28 +154,6 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         return project == null ? null : project.getProjectDirectory();
     }
     
-//    public SourceGroup[] getSourceGroups() {
-//        Project project = getProject();
-//        if (project != null) {
-//            return ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-//        } else {
-//            return null;
-//        }
-//    }
-    
-//    private String getPackageName(FileObject clazz) {
-//        for (int i = 0; i < srcRoots.length; i++) {
-//            String rp = FileUtil.getRelativePath(srcRoots[i], clazz);
-//            if (rp != null) {
-//                if (clazz.getExt().length() > 0) {
-//                    rp = rp.substring(0, rp.length() - clazz.getExt().length() - 1);
-//                }
-//                return rp.replace('/', '.');
-//            }
-//        }
-//        return null;
-//    }
-
     public ASDDVersion getASDDVersion() {
         // !PW FIXME default version ought to be current project server version,
         // if any, otherwise, current installed server, if any.
@@ -326,145 +241,12 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         return dataObject;
     }
     
-    /**
-     * This methods gets called when servlet is changed
-     *
-     * @param evt - object that describes the change.
-     */
-//    public void deploymentChange(DDChangeEvent evt) {
-//    }
-    
-    
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
-//    private RequestProcessor.Task elementTask;
-//    private List deletedEjbNames;
-//    private List newFileNames;
-//    
-//    private void elementCreated(final String elementName) {
-//        synchronized (this) {
-//            if (newFileNames == null) {
-//                newFileNames = new ArrayList();
-//            }
-//            newFileNames.add(elementName);
-//        }
-//        
-//        if (elementTask == null) {
-//            elementTask = RequestProcessor.getDefault().post(new Runnable() {
-//                public void run() {
-//                    if (deletedEjbNames != null) {
-//                        for (int i = 0; i < deletedEjbNames.size(); i++) {
-//                            String deletedServletName = (String) deletedEjbNames.get(i);
-//                            String deletedName = deletedServletName;
-//                            int index = deletedServletName.lastIndexOf("."); //NOI18N
-//                            if (index > 0) {
-//                                deletedName = deletedServletName.substring(index + 1);
-//                            }
-//                            boolean found = false;
-//                            for (int j = 0; j < newFileNames.size(); j++) {
-//                                String newFileName = (String) newFileNames.get(j);
-//                                String newName = newFileName;
-//                                int ind = newFileName.lastIndexOf("."); //NOI18N
-//                                if (ind > 0) {
-//                                    newName = newFileName.substring(ind + 1);
-//                                }
-//                                if (deletedName.equals(newName)) { // servlet was removed
-//                                    found = true;
-//                                    DDChangeEvent ddEvent =
-//                                            new DDChangeEvent(SunDescriptorDataObject.this,
-//                                            SunDescriptorDataObject.this, deletedServletName, newFileName,
-//                                            DDChangeEvent.EJB_CHANGED);
-//                                    deploymentChange(ddEvent);
-//                                    synchronized (SunDescriptorDataObject.this) {
-//                                        newFileNames.remove(newFileName);
-//                                    }
-//                                    break;
-//                                }
-//                            }
-//                            if (!found) {
-//                                DDChangeEvent ddEvent =
-//                                        new DDChangeEvent(SunDescriptorDataObject.this,
-//                                        SunDescriptorDataObject.this, null, deletedServletName,
-//                                        DDChangeEvent.EJB_DELETED);
-//                                deploymentChange(ddEvent);
-//                            }
-//                        } //end for
-//                        synchronized (SunDescriptorDataObject.this) {
-//                            deletedEjbNames = null;
-//                        }
-//                    } // servlets
-//                    
-//                    synchronized (SunDescriptorDataObject.this) {
-//                        newFileNames = null;
-//                    }
-//                    
-//                }///end run
-//}, 1500, Thread.MIN_PRIORITY);
-//        } else {
-//            elementTask.schedule(1500);
-//        }
-//    }
-    
-//    public void fileRenamed(FileRenameEvent fileRenameEvent) {
-//        FileObject fo = fileRenameEvent.getFile();
-//        String resourceName = getPackageName(fo);
-//        if (resourceName != null) {
-//            int index = resourceName.lastIndexOf("."); //NOI18N
-//            String oldName = fileRenameEvent.getName();
-//            String oldResourceName = (index >= 0 ? resourceName.substring(0, index + 1) : "") + oldName;
-//            EjbJar ddRoot = getEjbJar();
-//            if (ddRoot.getStatus() == EjbJar.STATE_VALID) {
-//                fireEvent(oldResourceName, resourceName, DDChangeEvent.EJB_CHANGED);
-//            }
-//        }
-//    }
-//    
-//    public void fileFolderCreated(FileEvent fileEvent) {
-//    }
-//    
-//    public void fileDeleted(FileEvent fileEvent) {
-//        FileObject fo = fileEvent.getFile();
-//        String resourceName = getPackageName(fo);
-//        if (resourceName != null) {
-//            if (newFileNames == null) {
-//                fireEvent(null, resourceName, DDChangeEvent.EJB_DELETED);
-//            } else {
-//                Ejb[] ejbs = getEjbJar().getEnterpriseBeans().getEjbs();
-//                for (int i = 0; i < ejbs.length; i++) {
-//                    if (resourceName.equals(ejbs[i].getEjbClass())) {
-//                        synchronized (this) {
-//                            if (deletedEjbNames == null) {
-//                                deletedEjbNames = new ArrayList();
-//                            }
-//                            deletedEjbNames.add(resourceName);
-//                        }
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    
-//    public void fileDataCreated(FileEvent fileEvent) {
-//        FileObject fo = fileEvent.getFile();
-//        String resourceName = getPackageName(fo);
-//        if (resourceName != null) {
-//            elementCreated(resourceName);
-//        }
-//    }
-//    
-//    public void fileChanged(FileEvent fileEvent) {
-//    }
-//    
-//    public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
-//    }
-    
-//    public void stateChanged(javax.swing.event.ChangeEvent e) {
-//        refreshSourceFolders();
-//    }
-    
+        
+    @Override
     protected void parseDocument() throws IOException {
         DDProvider ddProvider = DDProvider.getDefault();
         SAXParseException saxEx = null;
@@ -483,9 +265,6 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
                         ddRootProxy.addPropertyChangeListener(ddRootChangeListener);
                     }
                 } catch(IOException ex) {
-//                    if (ddRootProxy == null) {
-//                        setSunDDRoot(new NullProxy(null, null));
-//                    }
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             } else {
@@ -493,16 +272,11 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
             }
             saxEx = ddRootProxy != null ? ddRootProxy.getError() : new SAXParseException("No proxy object found created by parser.", null);
         }
-        
-//        if(saxEx != null) {
-//            System.out.println(this.getName() + ": Parse error = " + saxEx.getMessage());
-//        } else {
-//            System.out.println(this.getName() + " parsed successfully.");
-//        }
-               
+                       
         setSaxError(saxEx);
     }
     
+    @Override
     protected void validateDocument() throws IOException {
         try {
             RootInterfaceImpl proxyImpl = (RootInterfaceImpl) DDProvider.getDefault().getDDRoot(createReader());
@@ -518,36 +292,28 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         }
     }
     
+    @Override
     protected RootInterface getDDModel() {
         return getDDRootImpl(false);
     }
     
+    @Override
     public boolean isDocumentParseable() {
         RootInterface ddRoot = getDDRoot();
         return ddRoot != null ? (ddRoot.getStatus() != RootInterface.STATE_INVALID_UNPARSABLE) : false;
     }
     
+    @Override
     protected String getPrefixMark() {
         // Not used anywhere at this time (ever?) so no point in writing the code
         // to figure this out (lookup table, etc.)
         return "<notused";
     }
     
-    /** MultiViewDesc for MultiView editor
-     */
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
-        DDViewFactory factory = DDViewFactory.getViewFactory(descriptorType);
-        
-        if(factory != null) {
-            return factory.getMultiViewDesc(this);
-        }
-        
-        return new DDViewFactory.DDView[0];
-    }
-    
     /** Used to detect if data model has already been created or not.
      * Method is called before switching to the design view from XML view when the document isn't parseable.
      */
+    @Override
     protected boolean isModelCreated() {
         boolean result = false;
         synchronized (proxyMonitor) {
@@ -558,12 +324,8 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     
     @Override
     public void showElement(final Object element) {
-//        if (element instanceof Relationships || element instanceof EjbRelation) {
-//            openView(1);
-//        } else {
-//            openView(0);
-//        }
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 final SectionNodeView sectionView =
                         (SectionNodeView) SunDescriptorDataObject.this.getActiveMVElement().getSectionView();
@@ -585,100 +347,7 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
     public ToolBarMultiViewElement getActiveMVElement() {
         return (ToolBarMultiViewElement) super.getActiveMultiViewElement();
     }
-    
-//    private Ejb getEjbFromEjbClass(String ejbClassName) {
-//        EnterpriseBeans enterpriseBeans = getEjbJar().getEnterpriseBeans();
-//        if(enterpriseBeans != null) {
-//            Ejb[] ejbs = enterpriseBeans.getEjbs();
-//            for (int i = 0; i < ejbs.length; i++) {
-//                if (ejbs[i].getEjbClass() != null && ejbs[i].getEjbClass().equals(ejbClassName)) {
-//                    return ejbs[i];
-//                }
-//            }
-//        }
-//        return null;
-//    }
-    
-//    private int getBeanInterfaceType(String interfaceName) {
-//        int interfaceType = -1;
-//        EjbJar ddRoot = getEjbJar();
-//        if (ddRoot == null) {
-//            return interfaceType;
-//        }
-//        EnterpriseBeans eb = ddRoot.getEnterpriseBeans();
-//        if (eb == null) {
-//            return interfaceType;
-//        }
-//        EntityAndSession[] beans = eb.getSession();
-//        for (int i = 0; i < beans.length; i++) {
-//            if (beans[i].getHome() != null &&
-//                    beans[i].getHome().equals(interfaceName)) {
-//                interfaceType = HOME;
-//                break;
-//            }
-//            if (beans[i].getRemote() != null &&
-//                    beans[i].getRemote().equals(interfaceName)) {
-//                interfaceType = REMOTE;
-//                break;
-//            }
-//            if (beans[i].getLocalHome() != null &&
-//                    beans[i].getLocalHome().equals(interfaceName)) {
-//                interfaceType = LOCAL_HOME;
-//                break;
-//            }
-//            if (beans[i].getLocal() != null &&
-//                    beans[i].getLocal().equals(interfaceName)) {
-//                interfaceType = LOCAL;
-//                break;
-//            }
-//        }
-//        return interfaceType;
-//    }
-    
-//    private int getSpecificEvent(int eventType, int interfaceType) {
-//        if (eventType == DDChangeEvent.EJB_CHANGED) {
-//            switch (interfaceType) {
-//                case HOME:
-//                {
-//                    return DDChangeEvent.EJB_HOME_CHANGED;
-//                }
-//                case REMOTE:
-//                {
-//                    return DDChangeEvent.EJB_REMOTE_CHANGED;
-//                }
-//                case LOCAL_HOME:
-//                {
-//                    return DDChangeEvent.EJB_LOCAL_HOME_CHANGED;
-//                }
-//                case LOCAL:
-//                {
-//                    return DDChangeEvent.EJB_LOCAL_CHANGED;
-//                }
-//            }
-//        }
-//        if (eventType == DDChangeEvent.EJB_DELETED) {
-//            switch (interfaceType) {
-//                case HOME:
-//                {
-//                    return DDChangeEvent.EJB_HOME_DELETED;
-//                }
-//                case REMOTE:
-//                {
-//                    return DDChangeEvent.EJB_REMOTE_DELETED;
-//                }
-//                case LOCAL_HOME:
-//                {
-//                    return DDChangeEvent.EJB_LOCAL_HOME_DELETED;
-//                }
-//                case LOCAL:
-//                {
-//                    return DDChangeEvent.EJB_LOCAL_DELETED;
-//                }
-//            }
-//        }
-//        return -1;
-//    }
-    
+        
     private boolean fireEvent(String oldResourceName, String resourceName, int eventType) {
 // TODO what should this do?
 //        boolean elementFound = false;
@@ -720,27 +389,9 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         return false;
     }
     
-// DEAD CODE    
-//    public EntityHelper getEntityHelper(Entity entity) {
-//        EntityHelper entityHelper = (EntityHelper) entityHelperMap.get(entity);
-//        if (entityHelper == null) {
-//            entityHelper = new EntityHelper(this, entity);
-//            entityHelperMap.put(entity, entityHelper);
-//        }
-//        return entityHelper;
-//    }
-//    
-//    public SessionHelper getSessionHelper(Session session) {
-//        SessionHelper sessionHelper = (SessionHelper) sessionHelperMap.get(session);
-//        if (sessionHelper == null) {
-//            sessionHelper = new SessionHelper(this, session);
-//            sessionHelperMap.put(session, sessionHelper);
-//        }
-//        return sessionHelper;
-//    }
-    
     private static class SunDDPropertyChangeListener implements PropertyChangeListener {
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
 // TODO what should this do?
 //            if (EjbJar.PROPERTY_STATUS.equals(evt.getPropertyName())) {
@@ -759,5 +410,190 @@ public class SunDescriptorDataObject extends DDMultiViewDataObject
         }
     }
     
+    @Override
+    protected String getEditorMimeType() {
+        String mimeTypePrefix = DDType.IPLANET_MIME_TYPE_PREFIX;
+        ASDDVersion asDDVersion = getASDDVersion();
+        if (ASDDVersion.SUN_APPSERVER_7_0.compareTo(asDDVersion) < 0) {
+            mimeTypePrefix = DDType.SUN_MIME_TYPE_PREFIX;
+        }
+        if (ASDDVersion.SUN_APPSERVER_9_0.compareTo(asDDVersion) < 0 && 
+                (descriptorType.equals(DDType.DD_SUN_APP_CLIENT) ||
+                descriptorType.equals(DDType.DD_GF_APP_CLIENT))) {
+            mimeTypePrefix = DDType.GLASSFISH_MIME_TYPE_PREFIX;
+        }
+        Logger.getLogger("glassfish-ddui").log(Level.FINE, "{0}{1}", new Object[]{mimeTypePrefix, descriptorType.getDescriptorMimeTypeSuffix()});
+        return mimeTypePrefix+descriptorType.getDescriptorMimeTypeSuffix();
+    }
     
+    // x-web.xml specific MultiViewElement objects
+    
+    @MultiViewElement.Registration(
+        mimeType={ DDType.IPLANET_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_web_over",
+        displayName="#CTL_OverviewTabCaption",
+        position=1
+    )
+    public static MultiViewElement createWebOverviewMultiViewElement(Lookup lookup) {
+        return new SunWebOverviewMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+    @MultiViewElement.Registration(
+        mimeType={ DDType.IPLANET_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_web_servlet",
+        displayName="#CTL_ServletsTabCaption",
+        position=2
+    )
+    public static MultiViewElement createServletsMultiViewElement(Lookup lookup) {
+        return new ServletMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+    // *-ejb-jar.xml MultiViewElement objects
+    
+    @MultiViewElement.Registration(
+        mimeType={ DDType.IPLANET_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_ejb_overview",
+        displayName="#CTL_OverviewTabCaption",
+        position=1
+    )
+    public static MultiViewElement createEjbOveriewMultiViewElement(Lookup lookup) {
+        return new SunEjbOverviewMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+
+    @MultiViewElement.Registration(
+        mimeType={ DDType.IPLANET_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_ejb_ejb",
+        displayName="#CTL_EjbTabCaption",
+        position=2
+    )
+    public static MultiViewElement createEjbMultiViewElement(Lookup lookup) {
+        return new EjbMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+    // *-app-client.xml MultiViewElement objects
+
+    @MultiViewElement.Registration(
+        mimeType=DDType.GLASSFISH_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_app_cli_overview",
+        displayName="#CTL_OverviewTabCaption",
+        position=1
+    )
+    public static MultiViewElement createAppCliOverviewViewElement(Lookup lookup) {
+        return new SunAppClientOverviewMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+    // Shared MultiViewElement objects
+    
+    @MultiViewElement.Registration(
+        mimeType={ DDType.IPLANET_MIME_TYPE_PREFIX + DDType.APP_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.APP_MIME_TYPE_SUFFIX,
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_shared_security",
+        displayName="#CTL_SecurityTabCaption",
+        position=3
+    )
+    public static MultiViewElement createSecurityMultiViewSecurityElement(Lookup lookup) {
+        return new SecurityRoleMappingMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+    @MultiViewElement.Registration(
+        mimeType={ DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+            DDType.GLASSFISH_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_shared_WS",
+        displayName="#CTL_WebServiceTabCaption",
+        position=5
+    )
+    public static MultiViewElement createServicesMultiViewElement(Lookup lookup) {
+        return new WebServiceMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+
+    @MultiViewElement.Registration(
+        mimeType={ DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+            DDType.GLASSFISH_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_shared_jms",
+        displayName="#CTL_JmsTabCaption",
+        position=10
+    )
+    public static MultiViewElement createJmsMultiViewElement(Lookup lookup) {
+        return new JmsMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+    @MultiViewElement.Registration(
+        mimeType={ DDType.IPLANET_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+            DDType.GLASSFISH_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_gf_shared_environment",
+        displayName="#CTL_EnvTabCaption",
+        position=15
+    )
+    public static MultiViewElement createEnvMultiViewEnvironmentElement(Lookup lookup) {
+        return new EnvironmentMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+
+    @MultiViewElement.Registration(
+        mimeType={ DDType.SUN_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX, 
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.WEB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.EJB_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.APP_MIME_TYPE_SUFFIX,
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.APP_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX, 
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+            DDType.GLASSFISH_MIME_TYPE_PREFIX + DDType.APP_CLI_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.CMP_MIME_TYPE_SUFFIX, 
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.CMP_MIME_TYPE_SUFFIX,
+            DDType.SUN_MIME_TYPE_PREFIX + DDType.RSRC_MIME_TYPE_SUFFIX, 
+            DDType.IPLANET_MIME_TYPE_PREFIX + DDType.RSRC_MIME_TYPE_SUFFIX
+        },
+        iconBase="org/netbeans/modules/j2ee/sun/ddloaders/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml_xml",
+        displayName="#CTL_SourceTabCaption",
+        position=20
+    )
+    public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(SunDescriptorDataObject.class));
+    }
+    
+        
+        
 }

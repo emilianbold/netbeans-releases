@@ -115,15 +115,15 @@ public abstract class TopLevelStructureItem implements StructureItem {
     }
     
     //XXX: remove this one I sort out the selectors to the elements, ids and classes categories
-    public static class Selectors extends TopLevelStructureItem {
+    public static class Rules extends TopLevelStructureItem {
 
-        public Selectors(List<StructureItem> children) {
+        public Rules(List<StructureItem> children) {
             super(children);
         }
 
         @Override
         public String getName() {
-            return NbBundle.getMessage(TopLevelStructureItem.class, "Selectors");
+            return NbBundle.getMessage(TopLevelStructureItem.class, "Rules");
         }
         
     }

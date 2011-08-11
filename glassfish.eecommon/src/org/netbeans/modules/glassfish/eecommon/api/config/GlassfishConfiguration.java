@@ -366,14 +366,19 @@ public abstract class GlassfishConfiguration implements
     }
 
     protected ASDDVersion getInstalledAppServerVersion(File asInstallFolder) {
+        return getInstalledAppServerVersionFromDirectory(asInstallFolder);
+    }
+    
+    static ASDDVersion getInstalledAppServerVersionFromDirectory(File asInstallFolder) {
         File dtdFolder = new File(asInstallFolder, "lib/dtds/"); // NOI18N
         if (dtdFolder.exists()) {
+            if (new File(dtdFolder, "glassfish-web-app_3_0-1.dtd").exists()) {
+                return ASDDVersion.SUN_APPSERVER_10_1;
+            }
             if (new File(dtdFolder, "sun-web-app_3_0-0.dtd").exists()) {
-                // !PW FIXME need to add SUN_APPSERVER_9_1 for V3 (& maybe V2.1)
                 return ASDDVersion.SUN_APPSERVER_10_0;
             }
             if (new File(dtdFolder, "sun-domain_1_3.dtd").exists()) {
-                // !PW FIXME need to add SUN_APPSERVER_9_1 for V3 (& maybe V2.1)
                 return ASDDVersion.SUN_APPSERVER_9_0;
             }
             if (new File(dtdFolder, "sun-domain_1_2.dtd").exists()) {

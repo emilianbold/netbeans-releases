@@ -520,6 +520,22 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return tool;
     }
 
+    public boolean canHaveConfiguration() {
+        String mimeType = getMIMEType();
+        if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
+            return true;
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
+            return true;
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
+            return true;
+        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
+            return true;
+        } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
+            return true;
+        }
+        return false;
+    }
+
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
         if (getFolder() == null) {
             return null;
