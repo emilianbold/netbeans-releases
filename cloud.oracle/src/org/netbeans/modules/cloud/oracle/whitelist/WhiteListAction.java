@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
@@ -74,12 +75,14 @@ import org.openide.util.RequestProcessor;
 public class WhiteListAction extends AbstractAction {
 
     private Project project;
+    private J2eePlatform j2eePlatform;
     
-    public WhiteListAction(Project project) {
+    public WhiteListAction(Project project, J2eePlatform j2eePlatform) {
         putValue(Action.NAME, "Whitelist Test");
         setEnabled(true);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         this.project = project;
+        this.j2eePlatform = j2eePlatform;
     }
 
     @Override
@@ -91,7 +94,8 @@ public class WhiteListAction extends AbstractAction {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("[temporary] Could you build your WAR first please?? Thanks."));
             return;
         }
-        final File weblogic = findWeblogicJar();
+        OracleJ2eePlatformImpl2.WeblogicJar wj = j2eePlatform.getLookup().lookup(OracleJ2eePlatformImpl2.WeblogicJar.class);
+        final File weblogic = (wj != null ? wj.getWeglobicJar() : WLPluginProperties.getWeblogicJar(j2eePlatform.getServerHome()));
         if (weblogic == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Whitelist tool cannot be run without Weblogic 10.3.6 registered in the IDE."));
             return;
@@ -137,32 +141,9 @@ public class WhiteListAction extends AbstractAction {
             if (j2eePlatformLocal == null || j2eePlatformLocal.getLookup().lookup(WhiteListQueryImplementation.class) == null) {
                 return this;
             }
-            return new WhiteListAction(project);
+            return new WhiteListAction(project, j2eePlatformLocal);
         }
 
     }
 
-    private static final Version MINIMAL_WL_VERSION =
-            Version.fromJsr277OrDottedNotationWithFallback("10.3.6"); // NOI18N
-    
-    public static File findWeblogicJar() {
-        for (String id : Deployment.getDefault().getServerInstanceIDs()) {
-            File home;
-            try {
-                home = Deployment.getDefault().getServerInstance(id).getJ2eePlatform().getServerHome();
-            } catch (InstanceRemovedException ex) {
-                // ignore
-                continue;
-            }
-            Version version = WLPluginProperties.getServerVersion(home);
-            if (version != null && version.isAboveOrEqual(MINIMAL_WL_VERSION)) {
-                File f = WLPluginProperties.getWeblogicJar(home);
-                if (f != null) {
-                    return f;
-                }
-            }
-        }
-        return null;
-    }
-    
 }

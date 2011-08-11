@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
@@ -106,12 +107,14 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                 // TODO: there must be a better way to check whether server already is registered or not:
                 if (Deployment.getDefault().getJ2eePlatform(inst.getId()) == null) {
                     try {
+                        Map<String, String>props = new HashMap<String, String>();
+                        props.put(OracleDeploymentFactory.IP_TENANT_ID, inst.getTenantId());
+                        props.put(OracleDeploymentFactory.IP_SERVICE_NAME, inst.getServiceName());
+                        props.put(OracleDeploymentFactory.IP_URL_ENDPOINT, ai.getUrlEndpoint());
+                        props.put(InstanceProperties.URL_ATTR, inst.getId());
+                        props.put(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
                         InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
-                                ai.getTenantUserName(), ai.getTenantPassword(), inst.getDisplayName(), new HashMap<String, String>());
-                        ip.setProperty(OracleDeploymentFactory.IP_TENANT_ID, inst.getTenantId());
-                        ip.setProperty(OracleDeploymentFactory.IP_SERVICE_NAME, inst.getServiceName());
-                        ip.setProperty(OracleDeploymentFactory.IP_URL_ENDPOINT, ai.getUrlEndpoint());
-                        ip.setProperty(InstanceProperties.URL_ATTR, inst.getId());
+                                ai.getTenantUserName(), ai.getTenantPassword(), inst.getDisplayName(), props);
                     } catch (InstanceCreationException ex) {
                         Exceptions.printStackTrace(ex);
                     }

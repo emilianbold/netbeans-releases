@@ -73,13 +73,20 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     private String serviceName;
     private String urlEndPoint;
     private String cloudInstanceName;
+    private  String onPremiseServiceInstanceId;
 
-    public OracleDeploymentManager(String urlEndPoint, ApplicationManager pm, String tenantId, String serviceName, String cloudInstanceName) {
+    public OracleDeploymentManager(String urlEndPoint, ApplicationManager pm, String tenantId, 
+          String serviceName, String cloudInstanceName, String onPremiseServiceInstanceId) {
         this.pm = pm;
         this.tenantId = tenantId;
         this.serviceName = serviceName;
         this.urlEndPoint = urlEndPoint;
         this.cloudInstanceName = cloudInstanceName;
+        this.onPremiseServiceInstanceId = onPremiseServiceInstanceId;
+    }
+
+    public String getOnPremiseServiceInstanceId() {
+        return onPremiseServiceInstanceId;
     }
     
     @Override
@@ -91,7 +98,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(new TargetModuleID[0]/* XXXXXXX */, "Distributing...", false);
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(urlEndPoint, pm, f, tenantId, serviceName, po, cloudInstanceName);
+        Future<DeploymentStatus> task = OracleInstance.deployAsync(urlEndPoint, pm, f, tenantId, serviceName, po, cloudInstanceName, onPremiseServiceInstanceId);
         return po;
     }
 

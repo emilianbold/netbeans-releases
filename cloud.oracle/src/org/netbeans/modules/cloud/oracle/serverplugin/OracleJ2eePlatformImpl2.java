@@ -43,16 +43,23 @@ package org.netbeans.modules.cloud.oracle.serverplugin;
 
 import java.awt.Image;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
@@ -91,6 +98,41 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     @Override
     public LibraryImplementation[] getLibraries() {
+        LibraryImplementation libs[] = getOnPremiseServerClasspath();
+        if (libs == null) {
+            libs = getJavaEELibrary();
+        }
+        return libs;
+    }
+        
+    private LibraryImplementation[] getOnPremiseServerClasspath() {
+        if (dm.getOnPremiseServiceInstanceId() == null) {
+            return null;
+        }
+        File files[] = null;
+        try {
+            files = Deployment.getDefault().getServerInstance(dm.getOnPremiseServiceInstanceId()).getJ2eePlatform().getClasspathEntries();
+        } catch (InstanceRemovedException ex) {
+            return null;
+        }
+        List<URL> urls = new ArrayList<URL>();
+        for (File f : files) {
+            try {
+                urls.add(f.toURI().toURL());
+            } catch (MalformedURLException ex) {
+                // ignore
+            }
+        }
+        if (urls.isEmpty()) {
+            return null;
+        }
+        LibraryImplementation library = new J2eeLibraryTypeProvider().createLibrary();
+        library.setName("temporary");
+        library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, urls);
+        return new LibraryImplementation[]{library};
+    }
+    
+    private LibraryImplementation[] getJavaEELibrary() {
         Library l = LibraryManager.getDefault().getLibrary("javaee-api-6.0");
         
         LibraryImplementation library = new J2eeLibraryTypeProvider().createLibrary();
@@ -166,9 +208,23 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
 
     @Override
     public Lookup getLookup() {
+        File f = OracleInstance.findWeblogicJar(dm.getOnPremiseServiceInstanceId());
         return LookupProviderSupport.createCompositeLookup(
-                Lookups.fixed(WhiteListQuerySupport.createCloud9WhiteListQueryImpl()), 
+                Lookups.fixed(WhiteListQuerySupport.createCloud9WhiteListQueryImpl(), new WeblogicJar(f)), 
                 "J2EE/DeploymentPlugins/Oracle Cloud 9/Lookup"); //NOI18N
     }
     
+    public static final class WeblogicJar {
+        private File f;
+
+        private WeblogicJar(File f) {
+            this.f = f;
+        }
+
+        public File getWeglobicJar() {
+            return f;
+        }
+        
+        
+    }
 }

@@ -62,6 +62,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     public static final String IP_TENANT_ID = "tenant-id";  // NOI18N
     public static final String IP_SERVICE_NAME = "service-name";  // NOI18N
     public static final String IP_URL_ENDPOINT = "url-endpoint";  // NOI18N
+    public static final String IP_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
     @Override
     public boolean handlesURI(String string) {
@@ -79,18 +80,19 @@ public class OracleDeploymentFactory implements DeploymentFactory {
                     password),
                 props.getProperty(IP_TENANT_ID),
                 props.getProperty(IP_SERVICE_NAME),
-                props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR));
+                props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
+                props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
     }
 
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-        // XXX
-        return new OracleDeploymentManager(
-                "",
+        InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
+        return new OracleDeploymentManager(props.getProperty(IP_URL_ENDPOINT), 
                 null,
-                "",
-                "",
-                "");
+                props.getProperty(IP_TENANT_ID),
+                props.getProperty(IP_SERVICE_NAME),
+                props.getProperty(InstanceProperties.DISPLAY_NAME_ATTR),
+                props.getProperty(IP_PREMISE_SERVICE_INSTANCE_ID));
     }
 
     @Override

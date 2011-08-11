@@ -51,6 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.common.spi.support.ui.CloudResourcesWizardPanel;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -105,7 +106,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
         assert service != null;
         
         String serverDir = (String)wizard.getProperty(LocalInstancePanel.LOCAL_SERVER);
-
+        String localServerInstanceId = null;
         if (serverDir != null && serverDir.trim().length() > 0) {
             File jarFo = InstalledFileLocator.getDefault().locate(
                     "modules/ext/cloud_10.3.6.0.jar", "org.netbeans.modules.libs.cloud9", false); // NOI18N
@@ -134,7 +135,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
                 File domainFile = FileUtil.toFile(domainDir);
                 DomainGenerator.generateDomain(new File(serverDir),
                         jarFo, domainFile);
-                registerLocalInstance(serverDir, domainFile.getAbsolutePath(), name);
+                localServerInstanceId = registerLocalInstance(serverDir, domainFile.getAbsolutePath(), name);
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
@@ -142,13 +143,14 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
             }
         }
         
-        OracleInstance instance = new OracleInstance(name, username, pwd, url, tenant, service);
+        OracleInstance instance = new OracleInstance(name, username, pwd, url, tenant, service, localServerInstanceId);
         OracleInstanceManager.getDefault().add(instance);
+        
         
         return Collections.singleton(instance.getServerInstance());
     }
 
-    private InstanceProperties registerLocalInstance(String serverPath,
+    private String registerLocalInstance(String serverPath,
             String domainPath, String cloudDisplayName) throws IOException {
 
         Properties properties = WLPluginProperties.getDomainProperties(domainPath);
@@ -174,7 +176,8 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
                     : host;
 
             WLInstantiatingIterator iterator = new WLInstantiatingIterator();
-            iterator.setUrl(getUrl(serverPath, domainPath, host, port));
+            String url = getUrl(serverPath, domainPath, host, port);
+            iterator.setUrl(url);
             iterator.setHost(host);
             iterator.setPort(port);
             iterator.setServerRoot(serverPath);
@@ -183,7 +186,8 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
             iterator.setUsername(LOCAL_DOMAIN_USERNAME);
             iterator.setPassword(LOCAL_DOMAIN_PASSWORD);
 
-            return iterator.instantiateCloud(displayName);
+            iterator.instantiateCloud(displayName);
+            return url;
         }
         return null;
     }
