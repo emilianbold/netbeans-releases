@@ -134,10 +134,23 @@ styleSheet
     :   charSet?
     	WS*
         (imports WS*)*  
+        namespace*
         bodylist
      EOF
     ;
+
+namespace
+  : NAMESPACE_SYM WS* (namespace_prefix WS*)? (resourceIdentifier) WS* ';' WS*
+  ;
+
+namespace_prefix
+  : IDENT
+  ;
     
+resourceIdentifier
+  : STRING|URI
+  ;
+
 // -----------------
 // Character set.   Picks up the user specified character set, should it be present.
 //
@@ -149,7 +162,7 @@ charSet
 // Import.  Location of an external style sheet to include in the ruleset.
 //
 imports
-    :   IMPORT_SYM WS* (STRING|URI) WS* mediaList? SEMI
+    :   IMPORT_SYM WS* (resourceIdentifier) WS* mediaList? SEMI
     ;
 
 // ---------
@@ -264,27 +277,29 @@ simpleSelectorSequence
    
 typeSelector 
 	options { k = 2; }
- 	:  ((nsPred)=>namespacePrefix)? ( elementName WS* )
+ 	:  ((nsPred)=>namespace_wqname_prefix)? ( elementName WS* )
  	;
  	 	 
-/* universal
- 	options { k=2; }
-  :  ((nsPred)=>namespacePrefix)? STAR
-  ;  
-  */
-  
  nsPred
  	:	
- 	(IDENT | STAR) '|'
+ 	(IDENT | STAR) PIPE
  	;
     
- namespacePrefix
-  : ( namespaceName WS*)?  '|'
+ /*
+qname_prefix
+  : ( namespace_prefix WS*)?  PIPE
   ;
-        
- namespaceName
-  : IDENT | STAR 
- ;
+*/
+      
+ namespace_wqname_prefix
+  : ( namespace_prefix WS*)?  PIPE
+   | namespace_wildcard_prefix WS* PIPE
+  ;  
+  
+namespace_wildcard_prefix
+  	:	
+  	STAR
+  	;
         
 esPred
     : HASH | DOT | LBRACKET | COLON
@@ -316,7 +331,7 @@ elementName
     
 attrib
     : LBRACKET
-    	namespacePrefix? WS*
+    	namespace_wqname_prefix? WS*
         IDENT WS*
         
             (
@@ -769,6 +784,7 @@ RPAREN          : ')'       ;
 COMMA           : ','       ;
 DOT             : '.'       ;
 TILDE		: '~'       ;
+PIPE            : '|'       ;
 
 // -----------------
 // Literal strings. Delimited by either ' or "
@@ -801,6 +817,7 @@ IMPORT_SYM      : '@' I M P O R T       ;
 PAGE_SYM        : '@' P A G E           ;
 MEDIA_SYM       : '@' M E D I A         ;
 CHARSET_SYM     : '@charset '           ;
+NAMESPACE_SYM       : '@' N A M E S P A C E ;
 
 IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 

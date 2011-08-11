@@ -56,7 +56,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -66,7 +65,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssNodeElement;
-import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
@@ -97,15 +95,6 @@ public class DefaultCssModule extends CssModule {
     @Override
     public Collection<PropertyDescriptor> getPropertyDescriptors() {
         return DefaultProperties.properties();
-    }
-
-    @Override
-    public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
-        //the main functionality is implemented by the CssCompletion directly
-        //since there's too many workarounds
-        //
-        //todo: possibly refactor the code and put the functionality here
-        return Collections.emptyList(); 
     }
 
     @Override
@@ -159,10 +148,6 @@ public class DefaultCssModule extends CssModule {
 
                         }
                         break;
-                    case namespaceName:
-                        getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CUSTOM3_SET);
-                        break;
-
                 }
                 return false;
             }
@@ -180,16 +165,7 @@ public class DefaultCssModule extends CssModule {
         }
 
 
-        Node current = NodeUtil.findNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
-        if (current == null) {
-            return null;
-        }
-
-        if (current.type() == NodeType.token) {
-            //get the rule node (its parent)
-            current = current.parent();
-        }
-        
+        Node current = NodeUtil.findNonTokenNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
         if(current == null) {
             //this may happen if the offset falls to the area outside the selectors rule node.
             //(for example when the stylesheet starts or ends with whitespaces or comment and
@@ -359,9 +335,12 @@ public class DefaultCssModule extends CssModule {
     @Override
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
 
+        final List<StructureItem> items = new ArrayList<StructureItem>();
+        result.add(new TopLevelStructureItem.Selectors(items));
+        
         final Snapshot snapshot = context.getSnapshot();
 
-        return new NodeVisitor<T>(result) {
+        return new NodeVisitor<T>() {
 
             @Override
             public boolean visit(Node node) {
@@ -375,87 +354,12 @@ public class DefaultCssModule extends CssModule {
                     if (eo > so) {
                         //todo: filter out virtual selectors
                         StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(ruleNode), snapshot);
-                        getResult().add(item);
+                        items.add(item);
                     }
                 }
                 return false;
             }
         };
 
-    }
-
-    private static class CssRuleStructureItem implements StructureItem {
-
-        private CharSequence name;
-        private CssNodeElement element;
-        private int from, to;
-
-        private static String escape(String s) {
-            s = s.replace("<", "&lt;");
-            s = s.replace(">", "&gt;");
-            return s;
-        }
-
-        private CssRuleStructureItem(CharSequence name, CssNodeElement element, Snapshot source) {
-            this.name = name;
-            this.element = element;
-            this.from = source.getOriginalOffset(element.node().from());
-            this.to = source.getOriginalOffset(element.node().to());
-        }
-
-        @Override
-        public String getName() {
-            return name.toString();
-        }
-
-        @Override
-        public String getSortText() {
-            return getName();
-        }
-
-        @Override
-        public String getHtml(HtmlFormatter formatter) {
-            return escape(getName());
-        }
-
-        @Override
-        public ElementHandle getElementHandle() {
-            return element;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.RULE;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public boolean isLeaf() {
-            return true;
-        }
-
-        @Override
-        public List<? extends StructureItem> getNestedItems() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public long getPosition() {
-            return from;
-        }
-
-        @Override
-        public long getEndPosition() {
-            return to;
-        }
-
-        @Override
-        public ImageIcon getCustomIcon() {
-            return null;
-        }
     }
 }

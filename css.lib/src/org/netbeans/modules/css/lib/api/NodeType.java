@@ -46,23 +46,92 @@ package org.netbeans.modules.css.lib.api;
  * 
  * It can be regexped from the generated Css3Parser.ruleNames field
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public enum NodeType {
     
-        invalidRule, styleSheet, declaration, declarations, elementSubsequent, 
-        bodylist, hexColor, charSet, attribute, term, media, 
-        medium, expr, cssId, cssClass, pseudoPage, property, synpred3_Css3, 
-        prio, unaryOperator, namespacePrefix, namespaceName, synpred1_Css3, combinator, 
-        page, selector, attrib, attrvalue, esPred, pseudo, simpleSelectorSequence, 
-        ruleSet, function_name, bodyset, synpred2_Css3, operator, 
-        attrname, selectorsGroup, typeSelector, nsPred, elementName, 
-        function, imports, mediaList,
+        attrib, 
+        attrvalue, 
+        attribute, 
+        attrname, 
+        bodylist, 
+        bodyset, 
+        combinator, 
+        cssId, 
+        cssClass, 
+        declaration, 
+        declarations, 
+        elementSubsequent, 
+        elementName, 
+        esPred, 
+        expr, 
+        function, 
+        function_name, 
+        charSet, 
+        imports, 
+        invalidRule, 
+        hexColor, 
+        media, 
+        mediaList,
+        medium, 
+        
+        /**
+         * Namespace declaration: @namespace prefix "http://myns";
+         */
+        namespace, 
+        
+        /**
+         * Namespace prefix or wildcard prefix of the css qualified name: myns|E {} || *|E {}
+         */
+        namespace_wqname_prefix,
+        
+        /**
+         * The namespace prefix
+         */
+        namespace_prefix,
+        
+        /**
+         * The wildcard namespace prefix
+         */
+        namespace_wildcard_prefix,
+        
+        /**
+         * syntactic predicate
+         */
+        nsPred, 
+        operator, 
+        page, 
+        pseudoPage, 
+        property, 
+        prio, 
+        pseudo, 
+        
+        /**
+         * String or URI, used in namespace and import rules
+         */
+        resourceIdentifier,
+        ruleSet, 
+        selector, 
+        simpleSelectorSequence, 
+        synpred2_Css3, 
+        selectorsGroup, 
+        styleSheet, 
+        /**
+         * syntactic predicate
+         */
+        synpred1_Css3, 
+        /**
+         * syntactic predicate
+         */
+        synpred3_Css3, 
+        term, 
+        typeSelector, 
                 
         //following node types don't correspond to any of the grammar rules (do not remove them!):
         root, //an artificial root node of each parse tree
         error, //an error node
         recovery, //an error node, but for errors recovered - skipped (resynced) content by syncToBitSet(...)
-        token; //a token node
+        token, //a token node
+        unaryOperator;
         
 }

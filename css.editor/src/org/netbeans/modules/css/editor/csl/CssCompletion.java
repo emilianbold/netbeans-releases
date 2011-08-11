@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.Color;
 import java.net.MalformedURLException;
@@ -170,19 +171,6 @@ public class CssCompletion implements CodeCompletionHandler {
         CssTokenId tokenNodeTokenId = _tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(_tokenNode) : null;
         
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
-        if (node == null) {
-            //the parse tree is likely broken by some text typed, 
-            //but we still need to provide the completion in some cases
-
-            if (hasNext && ts.token().text().charAt(0) == '@') { //NOI18N
-                //complete rules
-                completionProposals.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, ts.offset()));
-            }
-
-            return CodeCompletionResult.NONE; //no parse tree, just quit
-        }
-        
-
         NodeType originalNodeKind = node.type();
         if (node.type() == NodeType.error) {
             node = node.parent();
@@ -212,15 +200,6 @@ public class CssCompletion implements CodeCompletionHandler {
         List<CompletionProposal> cssModulesCompletionProposals = CssModuleSupport.getCompletionProposals(completionContext);
         completionProposals.addAll(cssModulesCompletionProposals);
         
-        
-        
-//        System.out.println("------------------");
-//        NodeUtil.dumpTree(root);    
-//        System.out.println("------------------");
-//        System.out.println("ast caret offset=" + astCaretOffset);
-//        System.out.println("current token node: type=" + tokenNode.type() + ", name=" + tokenNode.name() + " (" + tokenNode.from() + "-" + tokenNode.to() + ")");
-//        System.out.println("current node: type=" + node.type() + ", name=" + node.name() + " (" + node.from() + "-" + node.to() + ")");
-//        
 
         //Why we need the (prefix.length() > 0 || astCaretOffset == node.from())???
         //
@@ -321,27 +300,18 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         } else if (
                 node.type() == NodeType.bodylist /* somewhere between rules */
-                || node.type() == NodeType.root /* in an empty file */
+                || node.type() == NodeType.root /* in an empty or very broken file */
                 || node.type() == NodeType.styleSheet) {
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
-            all.addAll(wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, caretOffset));
+            all.addAll(CssCompletionItem.wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, offset));
             //complete html selector names
-            all.addAll(completeHtmlSelectors(prefix, caretOffset));
+            all.addAll(completeHtmlSelectors(prefix, offset));
             completionProposals.addAll(all);
 
         } else if (node.type() == NodeType.media /*|| node.type() == NodeType.JJTMEDIARULELIST*/) {
             completionProposals.addAll(completeHtmlSelectors(prefix, caretOffset));
 
-        } else if (node.type() == NodeType.error /*|| node.type() == NodeType.JJTERROR_SKIP_TO_WHITESPACE*/) {
-            //complete at keywords with prefix - parse tree broken
-            Node parent = node.parent();
-//            if (parent != null && 
-//                    (parent.type() == NodeType.JJTUNKNOWNRULE ||
-//                    parent.type() == NodeType.JJTRULE)) {  //test the parent node
-//                Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-//                return wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(parent.from()));
-//            }
         } else if (node.type() == NodeType.imports || node.type() == NodeType.media || node.type() == NodeType.page || node.type() == NodeType.charSet/* || node.type() == NodeType.JJTFONTFACERULE*/) {
             //complete at keywords with prefix - parse tree OK
             if (hasNext) {
@@ -351,7 +321,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //we are on the right place in the node
 
                     Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-                    completionProposals.addAll(wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(node.from())));
+                    completionProposals.addAll(CssCompletionItem.wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(node.from())));
                 }
             }
 
@@ -608,16 +578,6 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         return proposals;
 
-    }
-
-    private List<CompletionProposal> wrapRAWValues(Collection<String> props, CssCompletionItem.Kind kind, int anchor) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (String value : props) {
-            CssElement handle = new CssElement(value);
-            CompletionProposal proposal = CssCompletionItem.createCompletionItem(handle, value, kind, anchor, false);
-            proposals.add(proposal);
-        }
-        return proposals;
     }
 
     private List<CompletionProposal> wrapPropertyValues(CodeCompletionContext context,

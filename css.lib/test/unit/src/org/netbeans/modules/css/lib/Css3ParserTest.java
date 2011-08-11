@@ -185,28 +185,27 @@ public class Css3ParserTest extends CslTestBase {
    
     public void testNamespacesInSelector() throws ParseException, BadLocationException {
         CssParserResult res = assertResultOK(TestUtil.parse("myns|h1 { color: red; }"));
-        //dumpResult(res);
         
         String typeSelectorPath = "ruleSet/selectorsGroup/selector/simpleSelectorSequence/typeSelector/";
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/myns"));
+                TestUtil.bodysetPath + typeSelectorPath + "namespace_wqname_prefix/namespace_prefix/myns"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + typeSelectorPath + "elementName/h1"));        
         
         res = assertResultOK(TestUtil.parse("*|h1 { color: red; }"));
-        //dumpResult(res);
+
+//        NodeUtil.dumpTree(res.getParseTree());
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
+                TestUtil.bodysetPath + typeSelectorPath + "namespace_wqname_prefix/namespace_wildcard_prefix/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + typeSelectorPath + "elementName/h1"));
         
         res = assertResultOK(TestUtil.parse("*|* { color: red; }"));
-        //dumpResult(res);
         
         assertNotNull(NodeUtil.query(res.getParseTree(), 
-                TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/namespaceName/*"));
+                TestUtil.bodysetPath + typeSelectorPath + "namespace_wqname_prefix/namespace_wildcard_prefix/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(), 
                 TestUtil.bodysetPath + typeSelectorPath + "elementName/*"));
     }
@@ -429,6 +428,26 @@ public class Css3ParserTest extends CslTestBase {
         assertResult(result, 0);
         
         
+    }
+    public void testNamespaceDeclaration() throws ParseException, BadLocationException {
+        String content = "@namespace prefix \"url\";";
+        
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpResult(result);
+
+        Node ns = NodeUtil.query(result.getParseTree(), 
+                "styleSheet/namespace");
+        assertNotNull(ns);
+        
+        Node prefix = NodeUtil.query(ns, "namespace_prefix");
+        assertNotNull(prefix);
+        assertEquals("prefix", prefix.image().toString());
+        
+        Node res = NodeUtil.query(ns, "resourceIdentifier");
+        assertNotNull(res);
+        assertEquals("\"url\"", res.image().toString());
+        
+        assertResult(result, 0);
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
