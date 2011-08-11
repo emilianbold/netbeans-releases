@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -144,10 +143,14 @@ public class ModulesNode extends AbstractNode {
          
         @Override
         protected boolean createKeys(final List<Wrapper> modules) {
+            List<String> all = project.getOriginalMavenProject().getModules();
+            int alreadyAdded = modules.size();
+            if (alreadyAdded >= all.size()) {
+                return true;
+            }
+            String module = all.get(alreadyAdded);
             File base = project.getOriginalMavenProject().getBasedir();
-            for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
-                String elem = (String) it.next();
-                File projDir = FileUtil.normalizeFile(new File(base, elem));
+                File projDir = FileUtil.normalizeFile(new File(base, module));
                 FileObject fo = FileUtil.toFileObject(projDir);
                 if (fo != null) {
                     try {
@@ -168,11 +171,7 @@ public class ModulesNode extends AbstractNode {
                 } else {
                     //TODO broken module reference.. show as such..
                 }
-
-            }
-            
-            return true;
-
+            return false;
         }
 
         @Override
