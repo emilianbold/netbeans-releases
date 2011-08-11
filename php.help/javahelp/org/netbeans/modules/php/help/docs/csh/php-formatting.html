@@ -115,10 +115,13 @@ made subject to such option by the copyright holder.
         <p>Specify which elements should be aligned after a line break.</p>
         <ul>
             <li><b>New lines.</b> The IDE breaks lines before any elements you select here.</li>
-            <li><b>Multiline Alignment.</b> When you place line breaks before any elements you select here,
-                the IDE aligns the selected elements.</li>
+            <li><b>Multiline Alignment.</b> Use if you set lines to wrap automatically at an element and
+                you want that element to be aligned vertically. First turn <a href="#wrapping">wrapping</a> on           
+                for the element and then select the element in this dialog.
+                <ul class="note"><li>Requires <a href="#wrapping">Wrapping</a> to be turned on for the same element.</li></ul></li>
         </ul>
-        <ul class="note"><li>You can experiment with different Alignment settings and see the results in the Preview window.</li></ul>
+        <ul class="note"><li>You can experiment with different Alignment settings and see the results in the Preview window.
+            You can only preview Multiline Alignment for an element if you have turned Wrapping on for the same element.</li></ul>
         <h3><a name="braces"></a>Braces</h3>
         <p>Select where to place the braces for each type of statement listed in this dialog. Use the Format
             function (Alt+Shift+F) to apply the Braces settings to a PHP document.
@@ -153,13 +156,16 @@ made subject to such option by the copyright holder.
         <ul class="note"><li>You can experiment with different Spaces settings and see the results in the Preview window.</li></ul>
         <h3><a name="wrapping"></a>Wrapping</h3>
         <p>In this panel set the rules for the IDE to wrap lines automatically. The panel lists the 
-            possible locations before which the IDE wraps lines. For each location you can have the IDE never
-            wrap lines, always wrap lines, or wrap lines if the statement is long.</p>
+            possible elements before which the IDE wraps lines. For each element you can have the IDE never
+            wrap lines, always wrap lines, or wrap lines if the statement is long (wider than the Editor window).</p>
         <p>You can also have the IDE automatically wrap lines after opening and before closing block
             braces, and between statements that are typed on the same line. Both of these options are enabled
             by default.</p>
         <ul class="note"><li>You can experiment with different Wrapping settings and see the results in the Preview window.</li>
-            <li>See also the Line Wrap option in <a href="#tabs-indents">Tabs and Indents</a>.</li></ul>
+            <li>See also the Line Wrap option in <a href="#tabs-indents">Tabs and Indents</a>.</li>
+            <li>You can set the wrapped lines to align horizontally, by element. See the Multiline Alignment
+                section of <a href="#alignment">Alignment</a>.</li>
+        </ul>
         <hr>
         <p>
             <small><a href="../credits.html">Legal Notices</a></small>
