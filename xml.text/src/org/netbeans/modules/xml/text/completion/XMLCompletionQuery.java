@@ -46,6 +46,8 @@ package org.netbeans.modules.xml.text.completion;
 
 import java.util.*;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -328,8 +330,8 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         try {
             Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
             return translateValues(res);
-        } catch (Exception ex) {            
-            //issue #118136: just catch and return
+        } catch (Exception ex) {
+            Logger.getLogger(XMLCompletionQuery.class.getName()).log(Level.INFO, "cf. #118136", ex);
             return null;
         }
     }
