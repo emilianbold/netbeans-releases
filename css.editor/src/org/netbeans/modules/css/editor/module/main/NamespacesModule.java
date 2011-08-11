@@ -54,7 +54,9 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
+import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
@@ -75,44 +77,61 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssModule.class)
 public class NamespacesModule extends CssModule {
 
+    private static final String NAMESPACE_KEYWORD = "@namespace";//NOI18N
+    
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL
 
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        
         switch (context.getActiveNode().type()) {
             case namespace_prefix:
+            case elementName:
                 //already in the prefix
 
                 //todo: rewrite to use index later
                 Stylesheet model = context.getParserResult().getModel();
-                List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
                 for (Namespace ns : model.getNamespaces()) {
                     if (ns.getPrefix() != null && ns.getPrefix().toString().toLowerCase(Locale.ENGLISH).startsWith(context.getPrefix().toLowerCase(Locale.ENGLISH))) {
                         proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
                     }
                 }
-                return proposals;
+                break;
 
             case root:
             case styleSheet:
             case bodylist:
+                CompletionProposal nsKeywordProposal = 
+                        CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                proposals.add(nsKeywordProposal);
+                
             case bodyset:
             case media:
             case combinator:
             case selector:
-                return getNamespaceCompletionProposals(context);
+                proposals.addAll(getNamespaceCompletionProposals(context));
+                break;
 
             case elementSubsequent: //after element selector
             case typeSelector: //after class or id selector
                 CssTokenId tokenNodeTokenId = context.getActiveTokenNode().type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(context.getActiveTokenNode()) : null;
                 if (tokenNodeTokenId == CssTokenId.WS) {
-                    return getNamespaceCompletionProposals(context);
+                    proposals.addAll(getNamespaceCompletionProposals(context));
                 }
                 break;
 
+            case namespace:
+                CssTokenId tokenId = context.getTokenSequence().token().id();
+                if(tokenId == CssTokenId.NAMESPACE_SYM) {
+                    nsKeywordProposal = 
+                        CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                    proposals.add(nsKeywordProposal);
+                }
+                
         }
 
-        return Collections.emptyList();
+        return proposals;
     }
 
     private static List<CompletionProposal> getNamespaceCompletionProposals(CompletionContext context) {
