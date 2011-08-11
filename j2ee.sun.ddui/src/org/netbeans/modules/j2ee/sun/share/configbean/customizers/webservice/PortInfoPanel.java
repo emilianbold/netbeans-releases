@@ -44,7 +44,7 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice;
 
 import java.util.ResourceBundle;
-import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
@@ -101,8 +101,8 @@ public class PortInfoPanel extends BaseSectionNodeInnerPanel {
     private void initUserComponents(SectionNodeView sectionNodeView) {
         SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         this.synchronizer = dataObject.getModelSynchronizer();
-        this.isWebApp = ModuleType.WAR.equals(dataObject.getModuleType());
-        this.isEjbJar = ModuleType.EJB.equals(dataObject.getModuleType());
+        this.isWebApp = J2eeModule.Type.WAR.equals(dataObject.getModuleType());
+        this.isEjbJar = J2eeModule.Type.EJB.equals(dataObject.getModuleType());
         
         boolean hasMessageSecurityBinding = false;
 
@@ -410,6 +410,7 @@ public class PortInfoPanel extends BaseSectionNodeInnerPanel {
             super(synchronizer, propertyName, attributeName);
         }
 
+        @Override
         protected CommonDDBean getBean() {
             return portInfo;
         }
@@ -426,11 +427,13 @@ public class PortInfoPanel extends BaseSectionNodeInnerPanel {
             this.propertyName = propertyName;
         }
         
+        @Override
         protected String getValue() {
             WsdlPort wp = portInfo.getWsdlPort();
             return (wp != null) ? (String) wp.getValue(propertyName) : null;
         }
         
+        @Override
         protected void setValue(String value) {
             WsdlPort wp = portInfo.getWsdlPort();
             if(wp == null) {

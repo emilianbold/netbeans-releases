@@ -48,6 +48,7 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
@@ -132,7 +133,7 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
     private void initUserComponents(SectionNodeView sectionNodeView) {
         SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         this.synchronizer = dataObject.getModelSynchronizer();
-        this.isWebApp = ModuleType.WAR.equals(dataObject.getModuleType());
+        this.isWebApp = J2eeModule.Type.WAR.equals(dataObject.getModuleType());
 
         // Setup authorization method combobox
         authMethodModel = new DefaultComboBoxModel();
