@@ -53,16 +53,18 @@ import org.netbeans.modules.css.lib.api.Node;
  */
 public class CompletionContext extends EditorFeatureContext {
 
-    private QueryType queryType;
-    private int anchorOffset, embeddedCaretOffset, embeddedAnchorOffset;
-    private String prefix;
-    private Node activeNode;
-    private TokenSequence<CssTokenId> tokenSequence;
+    private final QueryType queryType;
+    private final int anchorOffset, embeddedCaretOffset, embeddedAnchorOffset;
+    private final String prefix;
+    private final Node activeNode;
+    private final TokenSequence<CssTokenId> tokenSequence;
+    private final Node activeTokenNode;
 
-    public CompletionContext(Node activeNode, CssParserResult result, TokenSequence<CssTokenId> tokenSequence, QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, int embeddedAnchorOffset, String prefix) {
+    public CompletionContext(Node activeNode, Node activeTokeNode, CssParserResult result, TokenSequence<CssTokenId> tokenSequence, QueryType queryType, int caretOffset, int anchorOffset, int embeddedCaretOffset, int embeddedAnchorOffset, String prefix) {
         super(result, caretOffset);
         this.tokenSequence = tokenSequence;
         this.activeNode = activeNode;
+        this.activeTokenNode = activeTokeNode;
         this.queryType = queryType;
         this.anchorOffset = anchorOffset;
         this.embeddedCaretOffset = embeddedCaretOffset;
@@ -84,6 +86,10 @@ public class CompletionContext extends EditorFeatureContext {
         return activeNode;
     }
 
+    public Node getActiveTokenNode() {
+        return activeTokenNode;
+    }
+    
     /**
      * anchor offset = caret offset - prefix length.
      * Relative to the edited document.
