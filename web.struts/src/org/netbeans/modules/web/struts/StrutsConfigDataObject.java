@@ -58,11 +58,13 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
 
-import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.api.xml.cookies.CheckXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -74,7 +76,7 @@ import org.xml.sax.SAXParseException;
  */
 public class StrutsConfigDataObject extends MultiDataObject
                                     implements org.openide.nodes.CookieSet.Factory  {
-    
+
     private static StrutsCatalog strutsCatalog = new StrutsCatalog();
     private boolean documentDirty = true;
     private boolean documentValid=true;
@@ -82,33 +84,31 @@ public class StrutsConfigDataObject extends MultiDataObject
     private InputStream inputStream;
     private SAXParseError error;
     private StrutsConfig lastGoodConfig = null;
-    
+
     /** Editor support for text data object. */
     private transient StrutsConfigEditorSupport editorSupport;
-    
+
     /** Property name for property documentValid */
     public static final String PROP_DOC_VALID = "documentValid"; // NOI18N
-    
+
     /** Creates a new instance of StrutsConfigDataObject */
     public StrutsConfigDataObject(FileObject pf, StrutsConfigLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         init();
 
     }
- 
+
     private void init() {
         CookieSet cookies = getCookieSet();
-        
-        getCookieSet().add(StrutsConfigEditorSupport.class, this);
-        getCookieSet().assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
+
+        cookies.add(StrutsConfigEditorSupport.class, this);
+        cookies.assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
         // Creates Check XML and Validate XML context actions
         InputSource in = DataObjectAdapters.inputSource(this);
-        CheckXMLCookie checkCookie = new CheckXMLSupport(in);
-        getCookieSet().add(checkCookie);
-        ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
-        getCookieSet().add(validateCookie);
+        cookies.add(new CheckXMLSupport(in));
+        cookies.add(new ValidateXMLSupport(in));
     }
-    
+
     /**
      * Provides node that should represent this data object. When a node for
      * representation in a parent is requested by a call to getNode (parent)
@@ -122,9 +122,22 @@ public class StrutsConfigDataObject extends MultiDataObject
      * @see DataNode
      */
     protected synchronized Node createNodeDelegate () {
-	return new StrutsConfigNode(this);
+        return new StrutsConfigNode(this);
     }
-    
+
+    @MultiViewElement.Registration(
+            displayName="#CTL_SourceTabCaption",
+            iconBase="org/netbeans/modules/web/struts/resources/StrutsConfigIcon.png",
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID="struts.config",
+            mimeType=StrutsConfigLoader.MIME_TYPE,
+            position=1
+    )
+    @Messages("CTL_SourceTabCaption=&Source")
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
     /** Implements <code>CookieSet.Factory</code> interface. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(StrutsConfigEditorSupport.class))
@@ -134,8 +147,8 @@ public class StrutsConfigDataObject extends MultiDataObject
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
     /** Gets editor support for this data object. */
@@ -146,16 +159,16 @@ public class StrutsConfigDataObject extends MultiDataObject
                     editorSupport = new StrutsConfigEditorSupport(this);
             }
         }
-        
+
         return editorSupport;
     }
-    
+
     public StrutsConfig getStrutsConfig() throws java.io.IOException {
         if (lastGoodConfig == null)
             parsingDocument();
         return lastGoodConfig;
     }
-    
+
     public StrutsConfig getStrutsConfig (boolean parsenow) throws java.io.IOException{
         if (parsenow){
             StrutsConfig previous = lastGoodConfig;
@@ -165,7 +178,7 @@ public class StrutsConfigDataObject extends MultiDataObject
         }
         return getStrutsConfig();
     }
-    
+
     /** This method is used for obtaining the current source of xml document.
     * First try if document is in the memory. If not, provide the input from
     * underlayed file object.
@@ -181,7 +194,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             return getPrimaryFile().getInputStream();
         }
     }
-    
+
     /** This method has to be called everytime after prepareInputSource calling.
      * It is used for closing the stream, because it is not possible to access the
      * underlayed stream hidden in InputSource.
@@ -201,7 +214,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             }
         }
     }
-    
+
     public void write(StrutsConfig config) throws java.io.IOException {
         java.io.File file = org.openide.filesystems.FileUtil.toFile(getPrimaryFile());
         org.openide.filesystems.FileObject configFO = getPrimaryFile();
@@ -214,7 +227,7 @@ public class StrutsConfigDataObject extends MultiDataObject
                 } finally {
                     os.close();
                 }
-            } 
+            }
             finally {
                 lock.releaseLock();
             }
@@ -222,7 +235,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             // PENDING should write a message
         }
     }
-    
+
     /** This method parses XML document and calls updateNode method which
     * updates corresponding Node.
     */
@@ -247,7 +260,7 @@ public class StrutsConfigDataObject extends MultiDataObject
         }
         setNodeDirty(false);
     }
-    
+
     public void setDocumentValid (boolean valid){
         if (documentValid!=valid) {
             if (valid)
@@ -256,7 +269,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             firePropertyChange (PROP_DOC_VALID, !documentValid ? Boolean.TRUE : Boolean.FALSE, documentValid ? Boolean.TRUE : Boolean.FALSE);
         }
     }
-    
+
     /** This method repairs Node Delegate (usually after changing document by property editor)
     */
     protected void repairNode(){
@@ -268,7 +281,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             errorAnnotation.detach();
         }*/
     }
-    
+
     private org.w3c.dom.Document getDomDocument(InputStream inputSource) throws SAXParseException {
         try {
             // creating w3c document
@@ -281,7 +294,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             throw new SAXParseException(e.getMessage(), new org.xml.sax.helpers.LocatorImpl());
         }
     }
-    
+
     /** Update the node from document. This method is called after document is changed.
     * @param is Input source for the document
     * @return number of the line with error (document is invalid), 0 (xml document is valid)
@@ -290,7 +303,7 @@ public class StrutsConfigDataObject extends MultiDataObject
     protected SAXParseError updateNode(InputStream is) throws java.io.IOException{
         try {
             Document doc = getDomDocument(is);
-            lastGoodConfig = StrutsConfig.createGraph(doc);        
+            lastGoodConfig = StrutsConfig.createGraph(doc);
         }
         catch(SAXParseException ex) {
             return new SAXParseError(ex);
@@ -299,7 +312,7 @@ public class StrutsConfigDataObject extends MultiDataObject
         }
         return null;
     }
-   
+
     public boolean isDocumentValid(){
         return documentValid;
     }
@@ -315,7 +328,7 @@ public class StrutsConfigDataObject extends MultiDataObject
     public boolean isDocumentDirty(){
         return documentDirty;
     }
-    
+
     /** Getter for property nodeDirty.
     * @return Value of property nodeDirty.
     */
@@ -332,7 +345,7 @@ public class StrutsConfigDataObject extends MultiDataObject
     org.openide.nodes.CookieSet getCookieSet0() {
         return getCookieSet();
     }
-    
+
     public static class J2eeErrorHandler implements ErrorHandler {
 
         private StrutsConfigDataObject dataObject;
@@ -356,7 +369,7 @@ public class StrutsConfigDataObject extends MultiDataObject
             throw exception;
         }
     }
-    
+
     private void createSAXParseError(SAXParseException error){
         this.error = new SAXParseError(error);
     }
