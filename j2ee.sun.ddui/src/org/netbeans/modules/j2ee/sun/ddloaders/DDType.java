@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -32,8 +32,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.ErrorManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 /**
  *
@@ -55,21 +54,21 @@ public final class DDType {
     private static final String NAME_GFRESOURCE = "glassfish-resources.xml"; // NOI18N
 
     // Type declarations for the different descriptor types.
-    public static DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
-    public static DDType DD_SUN_EJB_JAR = new DDType(NAME_SUNEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
-    public static DDType DD_SUN_APP_CLIENT = new DDType(NAME_SUNAPPCLIENT, ModuleType.CAR, DDViewFactory.SunAppClientDDViewFactory.class);
-    public static DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
-    public static DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, ModuleType.EJB, DDViewFactory.SunCmpMappingsDDViewFactory.class);
-    public static DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
+    public static final DDType DD_SUN_WEB_APP = new DDType(NAME_SUNWEBAPP, J2eeModule.Type.WAR);
+    public static final DDType DD_SUN_EJB_JAR = new DDType(NAME_SUNEJBJAR, J2eeModule.Type.EJB);
+    public static final DDType DD_SUN_APP_CLIENT = new DDType(NAME_SUNAPPCLIENT, J2eeModule.Type.CAR);
+    public static final DDType DD_SUN_APPLICATION = new DDType(NAME_SUNAPPLICATION, J2eeModule.Type.EAR);
+    public static final DDType DD_SUN_CMP_MAPPINGS = new DDType(NAME_SUNCMPMAPPING, J2eeModule.Type.EJB);
+    public static final DDType DD_SUN_RESOURCE = new DDType(NAME_SUNRESOURCE, null);
 
-    public static DDType DD_GF_WEB_APP = new DDType(NAME_GFWEBAPP, ModuleType.WAR, DDViewFactory.SunWebDDViewFactory.class);
-    public static DDType DD_GF_EJB_JAR = new DDType(NAME_GFEJBJAR, ModuleType.EJB, DDViewFactory.SunEjbJarDDViewFactory.class);
-    public static DDType DD_GF_APP_CLIENT = new DDType(NAME_GFAPPCLIENT, ModuleType.CAR, DDViewFactory.SunAppClientDDViewFactory.class);
-    public static DDType DD_GF_APPLICATION = new DDType(NAME_GFAPPLICATION, ModuleType.EAR, DDViewFactory.SunApplicationDDViewFactory.class);
-    public static DDType DD_GF_RESOURCE = new DDType(NAME_GFRESOURCE, null, DDViewFactory.SunResourceDDViewFactory.class);
+    public static final DDType DD_GF_WEB_APP = new DDType(NAME_GFWEBAPP, J2eeModule.Type.WAR);
+    public static final DDType DD_GF_EJB_JAR = new DDType(NAME_GFEJBJAR, J2eeModule.Type.EJB);
+    public static final DDType DD_GF_APP_CLIENT = new DDType(NAME_GFAPPCLIENT, J2eeModule.Type.CAR);
+    public static final DDType DD_GF_APPLICATION = new DDType(NAME_GFAPPLICATION, J2eeModule.Type.EAR);
+    public static final DDType DD_GF_RESOURCE = new DDType(NAME_GFRESOURCE, null);
 
     // Various indexes for finding a DDType object
-    private static Map<String, DDType> fileToTypeMap = new HashMap<String, DDType>(11);
+    private static final Map<String, DDType> fileToTypeMap = new HashMap<String, DDType>(11);
 
     static {
         fileToTypeMap.put(NAME_SUNWEBAPP, DD_SUN_WEB_APP);
@@ -85,41 +84,60 @@ public final class DDType {
         fileToTypeMap.put(NAME_GFRESOURCE, DD_GF_RESOURCE);
     }
     
+    public static final String WEB_MIME_TYPE = "text/x-dd-sun-web+xml"; // NOI18N
+    public static final String EJB_MIME_TYPE = "text/x-dd-sun-ejb-jar+xml"; // NOI18N
+    public static final String APP_MIME_TYPE = "text/x-dd-sun-application+xml"; // NOI18N
+    public static final String APP_CLI_MIME_TYPE = "text/x-dd-sun-app-client+xml"; // NOI18N
+    public static final String RSRC_MIME_TYPE = "text/x-sun-resource+xml"; // NOI18N
+    public static final String CMP_MIME_TYPE = "text/x-sun-cmp-mapping+xml"; // NOI18N
+    
+    static final String WEB_MIME_TYPE_SUFFIX = "-web+xml"; // NOI18N
+    static final String EJB_MIME_TYPE_SUFFIX = "-ejb-jar+xml"; // NOI18N
+    static final String APP_MIME_TYPE_SUFFIX = "-application+xml"; // noi18n
+    static final String APP_CLI_MIME_TYPE_SUFFIX = "-app-client+xml"; // noi18n
+    static final String RSRC_MIME_TYPE_SUFFIX = "-resource+xml"; // noi18n
+    static final String CMP_MIME_TYPE_SUFFIX = "-cmp-mapping+xml"; // noi18n
+    
+    
+    private static final Map<String,String> fileToMimeSuffixMap = new HashMap<String,String>(8);
+    static {
+        fileToMimeSuffixMap.put(NAME_SUNWEBAPP, WEB_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_SUNEJBJAR, EJB_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_SUNAPPLICATION, APP_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_SUNAPPCLIENT, APP_CLI_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_SUNCMPMAPPING, CMP_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_SUNRESOURCE, RSRC_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_GFWEBAPP, WEB_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_GFEJBJAR, EJB_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_GFAPPLICATION, APP_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_GFAPPCLIENT, APP_CLI_MIME_TYPE_SUFFIX);
+        fileToMimeSuffixMap.put(NAME_GFRESOURCE, RSRC_MIME_TYPE_SUFFIX);
+    }
+    static final String IPLANET_MIME_TYPE_PREFIX = "text/x-dd-iplanet"; // noi18n
+    static final String SUN_MIME_TYPE_PREFIX = "text/x-dd-sun"; // noi18n
+    static final String GLASSFISH_MIME_TYPE_PREFIX = "text/x-dd-glassfish"; // noi18n
+    
     public static DDType getDDType(String fileName) {
         return fileToTypeMap.get(fileName);
     }
     
     // Internal data
     private final String descriptorName;
-    private final ModuleType moduleType;
-    private final Class viewFactoryClass;
+    private final J2eeModule.Type moduleType;
     
-    private DDType(final String ddName, final ModuleType type, final Class vfc) {
+    private DDType(final String ddName, final J2eeModule.Type type) {
         descriptorName = ddName;
         moduleType = type;
-        viewFactoryClass = vfc;
     }
     
     public String getDescriptorFileName() {
         return this.descriptorName;
     }
     
-    public ModuleType getEditorModuleType() {
+    public J2eeModule.Type getEditorModuleType() {
         return moduleType;
     }
     
-    public DDViewFactory createViewFactory() {
-        DDViewFactory factory = null;
-        try {
-            factory = (DDViewFactory) viewFactoryClass.newInstance();
-        } catch(InstantiationException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch(IllegalAccessException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        return factory;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if(obj == null) {
@@ -133,9 +151,6 @@ public final class DDType {
         }
 
         final DDType other = (DDType) obj;
-        if(!viewFactoryClass.equals(other.viewFactoryClass)) {
-            return false;
-        }
         if(!moduleType.equals(other.moduleType)) {
             return false;
         }
@@ -150,8 +165,10 @@ public final class DDType {
     public int hashCode() {
         int hash = 7;
         hash = 37 * hash + (descriptorName != null ? descriptorName.hashCode() : 0);
-        hash = 37 * hash + (viewFactoryClass != null ? viewFactoryClass.hashCode() : 0);
         return hash;
     }
 
+    String getDescriptorMimeTypeSuffix() {
+        return fileToMimeSuffixMap.get(descriptorName);
+    }
 }
