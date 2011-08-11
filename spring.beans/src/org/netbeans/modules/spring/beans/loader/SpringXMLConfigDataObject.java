@@ -41,9 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.spring.beans.loader;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.spring.api.beans.SpringConstants;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
@@ -55,7 +57,8 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 
 /**
@@ -67,11 +70,12 @@ public class SpringXMLConfigDataObject extends MultiDataObject {
     public SpringXMLConfigDataObject(FileObject pf, SpringXMLConfigDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         InputSource in = DataObjectAdapters.inputSource(this);
         cookies.add(new CheckXMLSupport(in));
         cookies.add(new ValidateXMLSupport(in));
         cookies.assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
+
+        registerEditor(SpringConstants.CONFIG_MIME_TYPE, true);
     }
 
     @Override
@@ -80,7 +84,18 @@ public class SpringXMLConfigDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
+    }
+
+    @Messages("Source=&Source")
+    @MultiViewElement.Registration(displayName = "#Source",
+            iconBase = "org/netbeans/modules/spring/beans/resources/spring.png",
+            persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+            mimeType = SpringConstants.CONFIG_MIME_TYPE,
+            preferredID = "spring.xml.config",
+            position = 1)
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 }

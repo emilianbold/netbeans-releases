@@ -168,7 +168,7 @@ public final class Stylesheet {
                     if (node.type() == NodeType.ruleSet) {
                         rules.add(new Rule(snapshot, node));
                     } else if (node.type() == NodeType.imports) {
-                        Node importedFile = NodeUtil.getChildTokenNode(node, CssTokenId.STRING);
+                        Node importedFile = NodeUtil.query(node, "resourceIdentifier"); //NOI18N
                         if (importedFile != null) {
                             imported_files.add(WebUtils.unquotedValue(importedFile.image()));
                         }
