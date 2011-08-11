@@ -239,7 +239,7 @@ public class ActionProviderImpl implements ActionProvider {
 
         } else {
             setupTaskName(action, rc, lookup);
-            runGoal(rc, true);
+            runGoal(rc);
         }
     }
 
@@ -251,8 +251,7 @@ public class ActionProviderImpl implements ActionProvider {
         return replacements;
     }
 
-    @Messages("TIT_Run_Maven=Run Maven")
-    private void runGoal(RunConfig config, boolean checkShowDialog) {
+    private void runGoal(RunConfig config) {
         // check the prerequisites
         for (PrerequisitesChecker elem : config.getProject().getLookup().lookupAll(PrerequisitesChecker.class)) {
             if (!elem.checkRunConfig(config)) {
@@ -265,25 +264,6 @@ public class ActionProviderImpl implements ActionProvider {
             }
         }
 
-
-
-        if (checkShowDialog && MavenSettings.getDefault().isShowRunDialog()) {
-            RunGoalsPanel pnl = new RunGoalsPanel();
-            DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Run_Maven());
-            pnl.readConfig(config);
-            Object retValue = DialogDisplayer.getDefault().notify(dd);
-            if (retValue == DialogDescriptor.OK_OPTION) {
-                BeanRunConfig newConfig = new BeanRunConfig();
-                newConfig.setExecutionDirectory(config.getExecutionDirectory());
-                newConfig.setExecutionName(config.getExecutionName());
-                newConfig.setTaskDisplayName(config.getTaskDisplayName());
-                newConfig.setProject(config.getProject());
-                pnl.applyValues(newConfig);
-                config = newConfig;
-            } else {
-                return;
-            }
-        }
         // setup executor now..   
         ExecutorTask task = RunUtils.executeMaven(config);
 
@@ -384,6 +364,7 @@ public class ActionProviderImpl implements ActionProvider {
             this.showUI = showUI;
         }
 
+        @Messages("TIT_Run_Maven=Run Maven")
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             Map<String,String> replacements = replacements((String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
@@ -398,7 +379,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(rc, true); //NOI18N
+                runGoal(rc); //NOI18N
 
                 return;
             }
@@ -451,7 +432,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(rc, false); //NOI18N
+                runGoal(rc); //NOI18N
 
             }
         }
