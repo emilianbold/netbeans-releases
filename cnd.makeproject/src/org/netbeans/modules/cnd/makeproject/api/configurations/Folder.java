@@ -592,19 +592,21 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (deletedItems != null) {
                 map = deletedItems.get(item.getPath());
             }
-            Configuration[] configurations = configurationDescriptor.getConfs().toArray();
-            for (int i = 0; i < configurations.length; i++) {
-                FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
-                DeletedConfiguration old = null;
-                if (map != null) {
-                    old = map.get(configurations[i]);
+            if (item.canHaveConfiguration()) {
+                Configuration[] configurations = configurationDescriptor.getConfs().toArray();
+                for (int i = 0; i < configurations.length; i++) {
+                    FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
+                    DeletedConfiguration old = null;
+                    if (map != null) {
+                        old = map.get(configurations[i]);
+                    }
+                    ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
+                    if (old != null && old.ic != null && old.aux != null) {
+                        ic.setTool(old.ic.getTool());
+                        ic.assignValues(old.aux);
+                    }
+                    configurations[i].addAuxObject(ic);
                 }
-                ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
-                if (old != null && old.ic != null && old.aux != null) {
-                    ic.setTool(old.ic.getTool());
-                    ic.assignValues(old.aux);
-                }
-                configurations[i].addAuxObject(ic);
             }
             if (map != null && deletedItems != null) {
                 deletedItems.remove(item.getPath());
