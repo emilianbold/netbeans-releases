@@ -169,7 +169,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public void validate() throws WizardValidationException {
         try {
             servers = new ArrayList<ServerResourceDescriptor>();
-            OracleInstance ai = new OracleInstance("Oracle Cloud 9", component.getUserName(), component.getPassword(), component.getUrl(), component.getTenantId(), component.getServiceName());
+            OracleInstance ai = new OracleInstance("Oracle Cloud 9", component.getUserName(), component.getPassword(), component.getUrl(), component.getTenantId(), component.getServiceName(), null);
             try {
                 ai.testConnection();
             } catch (ManagerException ex) {

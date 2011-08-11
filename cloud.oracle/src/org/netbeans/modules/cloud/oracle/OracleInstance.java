@@ -71,6 +71,9 @@ import org.netbeans.modules.cloud.common.spi.support.serverplugin.DeploymentStat
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.ProgressObjectImpl;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -95,18 +98,21 @@ public class OracleInstance {
     private String urlEndpoint;
     private String tenantId;
     private String serviceName;
+    private String onPremiseServerInstanceId;
     
     private ServerInstance serverInstance;
     
     private ApplicationManager platform;
     
-    public OracleInstance(String name, String tenantUserName, String tenantPassword, String urlEndpoint, String tenantId, String serviceName) {
+    public OracleInstance(String name, String tenantUserName, String tenantPassword, 
+          String urlEndpoint, String tenantId, String serviceName, String onPremiseServerInstanceId) {
         this.name = name;
         this.tenantUserName = tenantUserName;
         this.tenantPassword = tenantPassword;
         this.urlEndpoint = urlEndpoint;
         this.tenantId = tenantId;
         this.serviceName = serviceName;
+        this.onPremiseServerInstanceId = onPremiseServerInstanceId;
     }
     
 
@@ -171,6 +177,10 @@ public class OracleInstance {
         resetCache();
     }
 
+    public String getOnPremiseServerInstanceId() {
+        return onPremiseServerInstanceId;
+    }
+
     private synchronized void resetCache() {
         platform = null;
     }
@@ -215,12 +225,13 @@ public class OracleInstance {
                          final String tenantId, 
                          final String serviceName, 
                          final ProgressObjectImpl po,
-                         final String cloudInstanceName) {
+                         final String cloudInstanceName,
+                         final String onPremiseServiceInstanceId) {
         return runAsynchronously(new Callable<DeploymentStatus>() {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(urlEndpoint, pm, f, tenantId, serviceName, po, url, cloudInstanceName);
+                DeploymentStatus ds = deploy(urlEndpoint, pm, f, tenantId, serviceName, po, url, cloudInstanceName, onPremiseServiceInstanceId);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -229,7 +240,7 @@ public class OracleInstance {
     }
     
     public static DeploymentStatus deploy(String urlEndpoint, ApplicationManager am, File f, String tenantId, String serviceName, 
-                          ProgressObjectImpl po, String[] url, String cloudInstanceName) {
+                          ProgressObjectImpl po, String[] url, String cloudInstanceName, String onPremiseServiceInstanceId) {
         assert !SwingUtilities.isEventDispatchThread();
         OutputWriter ow = null;
         OutputWriter owe = null;
@@ -244,7 +255,7 @@ public class OracleInstance {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
             String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName, name);
-            File weblogic = WhiteListAction.findWeblogicJar();
+            File weblogic = findWeblogicJar(onPremiseServiceInstanceId);
             if (weblogic != null) {
                 if (!WhiteListTool.execute(f, tabName, weblogic)) {
     //                return DeploymentStatus.FAILED;
@@ -264,16 +275,7 @@ public class OracleInstance {
             String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
             ApplicationDeployment adt =new ApplicationDeployment();
-            
-            // XXXX: nuviaq API problem:
-            adt.setInstanceId(tenantId + "." + serviceName);
-            
-            // XXX: what should this be???
-            //adt.setApplicationId("id"+System.currentTimeMillis());
             adt.setApplicationId(appContext);
-            
-            adt.setArchiveUrl(f.getName());
-            
             boolean redeploy = false;
             List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeployment app : apps) {
@@ -405,6 +407,19 @@ public class OracleInstance {
     public void undeploy(ApplicationDeployment app) {
         assert !SwingUtilities.isEventDispatchThread();
         getApplicationManager().undeployApplication(getTenantId(), getServiceName(), app.getApplicationId());
+    }
+    
+    public static File findWeblogicJar(String onPremiseServerInstanceId) {
+        if (onPremiseServerInstanceId == null) {
+            return null;
+        }
+        try {
+            File home = Deployment.getDefault().getServerInstance(onPremiseServerInstanceId).getJ2eePlatform().getServerHome();
+            return WLPluginProperties.getWeblogicJar(home);
+        } catch (InstanceRemovedException ex) {
+            // ignore
+        }
+        return null;
     }
     
 }

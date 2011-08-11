@@ -65,6 +65,7 @@ public class OracleInstanceManager {
     private static final String URL_ENDPOINT = "url-endpoint"; // NOI18N
     private static final String TENANT_ID = "tenant-id"; // NOI18N
     private static final String SERVICE_NAME = "service-name"; // NOI18N
+    private static final String ON_PREMISE_SERVICE_INSTANCE_ID = "on-premise"; // NOI18N
     
     private static OracleInstanceManager instance;
     private List<OracleInstance> instances = new ArrayList<OracleInstance>();
@@ -115,6 +116,9 @@ public class OracleInstanceManager {
         props.putString(TENANT_ID, ai.getTenantId());
         props.putString(SERVICE_NAME, ai.getServiceName());
         props.putString(NAME, ai.getName());
+        if (ai.getOnPremiseServerInstanceId() != null) {
+            props.putString(ON_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
+        }
     }
         
     public void update(OracleInstance ai) {
@@ -156,7 +160,8 @@ public class OracleInstanceManager {
             assert tenant != null : "Instance without tenant ID";
             String service = props.getString(SERVICE_NAME, null); // NOI18N
             assert service != null : "Instance without service name";
-            result.add(new OracleInstance(name, userName, password, url, tenant, service));
+            String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
+            result.add(new OracleInstance(name, userName, password, url, tenant, service, onPremise));
         }
         return result;
     }
