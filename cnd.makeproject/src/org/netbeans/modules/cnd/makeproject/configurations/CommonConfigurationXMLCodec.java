@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -677,7 +678,9 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
         }
         if (cCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
-            writeList(xes, PREPROCESSOR_LIST_ELEMENT, cCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            List<String> sortedList = new ArrayList<String>(cCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            Collections.sort(sortedList);
+            writeList(xes, PREPROCESSOR_LIST_ELEMENT, sortedList);
         }
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
@@ -730,7 +733,9 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
-            writeList(xes, PREPROCESSOR_LIST_ELEMENT, ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            List<String> sortedList = new ArrayList<String>(ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            Collections.sort(sortedList);
+            writeList(xes, PREPROCESSOR_LIST_ELEMENT, sortedList);
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
