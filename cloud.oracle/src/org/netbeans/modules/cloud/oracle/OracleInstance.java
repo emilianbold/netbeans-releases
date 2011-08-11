@@ -275,16 +275,7 @@ public class OracleInstance {
             String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
             ApplicationDeployment adt =new ApplicationDeployment();
-            
-            // XXXX: nuviaq API problem:
-            adt.setInstanceId(tenantId + "." + serviceName);
-            
-            // XXX: what should this be???
-            //adt.setApplicationId("id"+System.currentTimeMillis());
             adt.setApplicationId(appContext);
-            
-            adt.setArchiveUrl(f.getName());
-            
             boolean redeploy = false;
             List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeployment app : apps) {
