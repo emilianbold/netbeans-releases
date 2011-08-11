@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form;
+package org.netbeans.modules.nbform;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -59,6 +59,10 @@ import javax.swing.JScrollPane;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.form.FormDesigner;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormLoaderSettings;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.assistant.AssistantView;
 import org.openide.actions.FileSystemAction;

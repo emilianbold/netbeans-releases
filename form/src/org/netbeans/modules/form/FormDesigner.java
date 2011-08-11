@@ -102,7 +102,7 @@ import org.openide.util.actions.SystemAction;
 
 public class FormDesigner {
     static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
-    static final String PROP_TOP_DESIGN_COMPONENT = "topDesignComponent"; // NOI18N
+    public static final String PROP_TOP_DESIGN_COMPONENT = "topDesignComponent"; // NOI18N
 
     // UI components composition
     private JComponent canvasRoot;
@@ -517,7 +517,7 @@ public class FormDesigner {
         return topDesignComponent;
     }
 
-    boolean isTopRADComponent() {
+    public boolean isTopRADComponent() {
         RADComponent topMetaComp = formModel.getTopRADComponent();
         return topMetaComp != null && topMetaComp == topDesignComponent;
     }
@@ -1754,7 +1754,7 @@ public class FormDesigner {
     
     // --------
 
-    static void setSelectedDesigner(FormDesigner designer, boolean select) {
+    public static void setSelectedDesigner(FormDesigner designer, boolean select) {
         if (select) {
             selectedDesigner = designer;
             FormEditor formEditor = designer.getFormEditor();

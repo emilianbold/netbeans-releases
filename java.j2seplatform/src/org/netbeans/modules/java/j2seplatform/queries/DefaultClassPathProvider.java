@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seplatform.platformdefinition;
+package org.netbeans.modules.java.j2seplatform.queries;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

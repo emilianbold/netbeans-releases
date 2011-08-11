@@ -56,7 +56,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
 
@@ -179,7 +178,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private static FormLoaderSettings formSettings = FormLoaderSettings.getInstance();
 
     private FormModel formModel;
-    private FormEditorSupport formEditorSupport;
+    private EditorSupport formEditorSupport;
     private FormEditor formEditor;
 
     private boolean initialized = false;
@@ -3451,8 +3450,9 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(");\n"); // NOI18N
         }
     }
-    
-    void regenerateCode() {
+
+    @Override
+    public void regenerateCode() {
         if (!codeUpToDate) {	    
             codeUpToDate = true;
             /*Set<String> variableNames = */regenerateVariables();
@@ -3970,7 +3970,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (modifying)
                 codeUpToDate = false;
 
-            if ((!codeUpToDate && toBeSaved) || (isJavaEditorDisplayed())) {
+            if ((!codeUpToDate && toBeSaved) || (formEditorSupport.isJavaEditorDisplayed())) {
 		regenerateCode();
             }
 
@@ -3980,24 +3980,6 @@ class JavaCodeGenerator extends CodeGenerator {
                 for (int i=0; i < components.length; i++)
                     serializeComponentsRecursively(components[i]);
             }
-        }
-        
-        private boolean isJavaEditorDisplayed() {
-            boolean showing = false;
-            if (EventQueue.isDispatchThread()) { // issue 91715
-                FormDataObject dobj = FormEditor.getFormDataObject(formModel);
-                if (dobj != null) { // #89793, #70439
-                    JEditorPane[] jeditPane = dobj.getFormEditorSupport().getOpenedPanes();
-                    if (jeditPane != null) {
-                        for (int i=0; i<jeditPane.length; i++) {
-                            if (showing = jeditPane[i].isShowing()) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return showing;
         }
         
         private void serializeComponentsRecursively(RADComponent comp) {

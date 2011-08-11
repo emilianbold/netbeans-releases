@@ -41,16 +41,37 @@
  */
 package org.netbeans.modules.form;
 
+import java.io.IOException;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Tomas Pavek
  */
-public interface EditorSupport {
+public interface EditorSupport extends Node.Cookie {
+    static String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
+    static String SECTION_VARIABLES = "variables"; // NOI18N
+    
     Document getDocument();
     GuardedSectionManager getGuardedSectionManager();
     void markModified();
     Object getJavaContext();
+    boolean close();
+    JEditorPane getEditorPane();
+    void openAt(Position pos);
+    void discardEditorUndoableEdits();
+    void saveAs(FileObject folder, String fileName) throws IOException;
+    void openFormEditor(boolean forceFormElement);
+    void open();
+    void reloadForm();
+    boolean isJavaEditorDisplayed();
+
+    interface Provider {
+        EditorSupport create(FormDataObject formDataObject);
+    }
 }

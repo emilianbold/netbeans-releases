@@ -59,6 +59,7 @@ import org.netbeans.modules.java.source.queries.api.Updates;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 
@@ -197,7 +198,11 @@ public abstract class QueryOperationsTestBase extends TestCase {
     @Override
     protected void setUp() throws Exception {
         this.clearWorkDir();
-        srcRoot = FileUtil.createFolder(new File (getWorkDir(),"src"));
+        File f = new File(getWorkDir(), "src");
+        f.mkdirs();
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(f);
+        srcRoot = lfs.getRoot();
     }
 
     public void testGetTopLevelClasses() throws Exception {

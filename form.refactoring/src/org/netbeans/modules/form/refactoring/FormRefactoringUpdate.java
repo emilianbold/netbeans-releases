@@ -53,10 +53,10 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RenameSupport;
 import org.netbeans.modules.form.ResourceSupport;
+import org.netbeans.modules.nbform.FormEditorSupport;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -336,8 +336,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         componentChange(oldClassName, newClassName);
     }
 
+    private FormEditorSupport getFormEditorSupport() {
+        return (FormEditorSupport)formDataObject.getFormEditorSupport();
+    }
+
     private void formMove(/*final boolean saveAll*/) {
-        final FormEditorSupport fes = formDataObject.getFormEditorSupport();
+        final FormEditorSupport fes = getFormEditorSupport();
         if (fes.isOpened()) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -404,7 +408,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             return; // for unknown reason 'newClassName' is sometimes null during move refactoring, issue 174136
         }
 
-        FormEditorSupport fes = formDataObject.getFormEditorSupport();
+        FormEditorSupport fes = getFormEditorSupport();
         if (fes.isOpened()) {
             fes.closeFormEditor();
         }
@@ -437,7 +441,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     private void packageRename(FileObject originalPkgFile) {
-        FormEditorSupport fes = formDataObject.getFormEditorSupport();
+        FormEditorSupport fes = getFormEditorSupport();
         if (fes.isOpened()) {
             fes.closeFormEditor();
         }
@@ -488,7 +492,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             }
             if (replaced) { // regenerate the code
                 // need to reload the form from file
-                final FormEditorSupport fes = formDataObject.getFormEditorSupport();
+                final FormEditorSupport fes = getFormEditorSupport();
                 if (fes.isOpened()) {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -521,7 +525,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         }
         // hack: regenerate code immediately
         formEditor.getFormModel().fireFormChanged(true);
-        FormEditorSupport fes = getFormDataObject().getFormEditorSupport();
+        FormEditorSupport fes = getFormEditorSupport();
         try {
             if (!fes.isOpened()) {
                 // the form is not opened, just loaded aside to do this refactoring
@@ -542,7 +546,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     boolean prepareForm(boolean load) {
         if (formDataObject != null) {
-            FormEditor fe = formDataObject.getFormEditorSupport().getFormEditor();
+            FormEditor fe = getFormEditorSupport().getFormEditor();
             if (fe != null) { // use the current FormEditor (might change due to reload after undo)
                 formEditor = fe;
             } else if (formEditor == null) { // create a disconnected form editor

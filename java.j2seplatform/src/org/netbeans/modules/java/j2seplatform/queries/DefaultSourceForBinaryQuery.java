@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.j2seplatform.queries;
 
-package org.netbeans.modules.java.j2seplatform.platformdefinition;
-
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
-import org.openide.filesystems.FileObject;
+import java.net.URL;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Returns the source level for the non projectized java/class files (those
- * file for which the classpath is provided by the {@link DefaultClassPathProvider}
+ *
  * @author Tomas Zezula
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=10000)
-public class DefaultSourceLevelQueryImpl implements SourceLevelQueryImplementation {
+@ServiceProvider(service=SourceForBinaryQueryImplementation2.class) //position = last
+public class DefaultSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
 
-    private static final String JAVA_EXT = "java";  //NOI18N
+    @Override
+    public Result findSourceRoots2(@NonNull final URL binaryRoot) {
+        final Map<URL,? extends Result> mapping = QueriesCache.getSources().getRoots();
+        return mapping.get(binaryRoot);
+    }
 
-    public DefaultSourceLevelQueryImpl() {}
-
-    public String getSourceLevel(final FileObject javaFile) {
-        assert javaFile != null : "javaFile has to be non null";   //NOI18N
-        String ext = javaFile.getExt();
-        if (JAVA_EXT.equalsIgnoreCase (ext)) {
-            JavaPlatform jp = JavaPlatformManager.getDefault().getDefaultPlatform();
-            assert jp != null : "JavaPlatformManager.getDefaultPlatform returned null";     //NOI18N
-            String s = jp.getSpecification().getVersion().toString();
-            if (s.equals("1.6") || s.equals("1.7")) {
-                // #89131: these levels are not actually distinct from 1.5.
-                return "1.5";
-            } else {
-                return s;
-            }
-        }
-        return null;
+    @Override
+    public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
+        return findSourceRoots2(binaryRoot);
     }
 
 }

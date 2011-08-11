@@ -64,7 +64,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormEditor;
-import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.nbform.FormEditorSupport;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.RenameSupport;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -101,7 +101,7 @@ public class RADComponentRenameRefactoringSupport implements RenameSupport.Refac
             //selected some how...
             return;
         }
-        FormEditorSupport fes = dao.getFormEditorSupport();
+        FormEditorSupport fes = (FormEditorSupport)dao.getFormEditorSupport();
         if (fes.isModified()) {
             fes.saveDocument();
         }

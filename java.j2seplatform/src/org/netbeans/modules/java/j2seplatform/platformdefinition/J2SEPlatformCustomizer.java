@@ -94,9 +94,9 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     private static final String CUSTOMIZERS_PATH =
         "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
 
-    private static final int CLASSPATH = 0;
-    private static final int SOURCES = 1;
-    private static final int JAVADOC = 2;
+    static final int CLASSPATH = 0;
+    static final int SOURCES = 1;
+    static final int JAVADOC = 2;
 
     private J2SEPlatformImpl platform;    
 
@@ -104,7 +104,6 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         this.platform = platform;
         this.initComponents ();
     }
-
 
     private void initComponents () {
         this.getAccessibleContext().setAccessibleName (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AN_J2SEPlatformCustomizer"));
@@ -369,20 +368,37 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         private void addPathElement () {
-            JFileChooser chooser = new JFileChooser ();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            final int firstIndex = this.resources.getModel().getSize();
+            final File[] cwd = new File[]{currentDir};
+            if (select((PathModel)this.resources.getModel(),cwd, this)) {
+                final int lastIndex = this.resources.getModel().getSize()-1;
+                if (firstIndex<=lastIndex) {
+                    int[] toSelect = new int[lastIndex-firstIndex+1];
+                    for (int i = 0; i < toSelect.length; i++) {
+                        toSelect[i] = firstIndex+i;
+                    }
+                    this.resources.setSelectedIndices(toSelect);
+                }
+                this.currentDir = cwd[0];
+            }
+        }
+
+        private static boolean select(
+            final PathModel model,
+            final File[] currentDir,
+            final Component parentComponent) {
+            final JFileChooser chooser = new JFileChooser ();
             chooser.setMultiSelectionEnabled (true);
             String title = null;
             String message = null;
             String approveButtonName = null;
             String approveButtonNameMne = null;
-            if (this.type == SOURCES) {
+            if (model.type == SOURCES) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
                 approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
                 approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenSources");
-            }
-            else if (this.type == JAVADOC) {
+            } else if (model.type == JAVADOC) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
                 approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
@@ -399,14 +415,12 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
             chooser.setFileFilter (new ArchiveFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
-            if (this.currentDir != null) {
-                chooser.setCurrentDirectory(this.currentDir);
+            if (currentDir[0] != null) {
+                chooser.setCurrentDirectory(currentDir[0]);
             }
-            if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
+            if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
                 File[] fs = chooser.getSelectedFiles();
-                PathModel model = (PathModel) this.resources.getModel();
                 boolean addingFailed = false;
-                int firstIndex = this.resources.getModel().getSize();
                 for (File f : fs) {
                     //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
                     // E.g. for /foo/src it returns /foo/src/src
@@ -425,16 +439,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
                             NotifyDescriptor.ERROR_MESSAGE);
                 }
-                int lastIndex = this.resources.getModel().getSize()-1;
-                if (firstIndex<=lastIndex) {
-                    int[] toSelect = new int[lastIndex-firstIndex+1];
-                    for (int i = 0; i < toSelect.length; i++) {
-                        toSelect[i] = firstIndex+i;
-                    }
-                    this.resources.setSelectedIndices(toSelect);
-                }
-                this.currentDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+                currentDir[0] = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+                return true;
             }
+            return false;
         }
 
         private void removePathElement () {
@@ -491,7 +499,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     }
 
 
-    private static class PathModel extends AbstractListModel/*<String>*/ {
+    static class PathModel extends AbstractListModel/*<String>*/ {
 
         private J2SEPlatformImpl platform;
         private int type;
@@ -567,7 +575,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }       
 
-        private boolean addPath (URL url) {
+        boolean addPath (URL url) {
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
             }

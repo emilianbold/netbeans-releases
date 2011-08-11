@@ -53,7 +53,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.nbform.FormEditorSupport;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
@@ -158,8 +159,9 @@ public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactor
                         gbUpdate = guardedUpdates.get(changedFile);
                     }
                     if (gbUpdate == null) {
-                        gbUpdate = new GuardedBlockUpdate(
-                                update.getFormDataObject().getFormEditorSupport());
+                        FormDataObject formDataObject = update.getFormDataObject();
+                        FormEditorSupport fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
+                        gbUpdate = new GuardedBlockUpdate(fes);
                         guardedUpdates.put(changedFile, gbUpdate);
                     }
                     gbUpdate.addChange(diff);
