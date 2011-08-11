@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,9 @@ public abstract class CssModule {
         return null;
     }
     
-    public abstract Collection<PropertyDescriptor> getPropertyDescriptors();
+    public Collection<PropertyDescriptor> getPropertyDescriptors() {
+        return Collections.emptyList();
+    }
     
     /**
      * If one wants to customize the css completion beyond the level which the PropertyDescriptor-s
@@ -73,7 +76,9 @@ public abstract class CssModule {
      * @param context the code completion context
      * @return a list of completion proposals
      */
-    public abstract List<CompletionProposal> getCompletionProposals(CompletionContext context);    
+    public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
+        return Collections.emptyList();
+    }
   
     /**
      * May return null if there are no semantic highlights to show.
@@ -82,7 +87,9 @@ public abstract class CssModule {
      * @param result
      * @return 
      */
-    public abstract <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result);
+    public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
+        return null;
+    }
     
     /**
      * May return null if there are no mark occurrences areas
@@ -92,7 +99,9 @@ public abstract class CssModule {
      * @param result
      * @return 
      */
-    public abstract <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result);
+    public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
+        return null;
+    }
     
      /**
      * May return null if there are no folds
@@ -102,7 +111,9 @@ public abstract class CssModule {
      * @param result
      * @return 
      */
-    public abstract <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result);
+    public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
+        return null;
+    }
     
      /**
      * May return null if there is no declaration at the caret position
@@ -112,7 +123,9 @@ public abstract class CssModule {
      * @param result
      * @return 
      */
-    public abstract Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset);
+    public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
+        return null;
+    }
     
     
      /**
@@ -123,6 +136,8 @@ public abstract class CssModule {
      * @param result
      * @return 
      */
-    public abstract <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result);
+    public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
+        return null;
+    }
     
 }
