@@ -479,6 +479,9 @@ public final class ServerRegistry implements java.io.Serializable {
                         // whether the instance is not corrupted - see #46929
                         if (!nonPersistent) {
                             writeInstanceToFile(url, username, password, server.getDisplayName());
+                        } else {
+                            properties.put(InstanceProperties.USERNAME_ATTR, username);
+                            properties.put(InstanceProperties.PASSWORD_ATTR, password);
                         }
                         tmp.getInstanceProperties().setProperty(
                                 InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));

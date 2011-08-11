@@ -273,7 +273,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 throw new IllegalStateException(msg);
             }
             String username = instanceProperties.getProperty(InstanceProperties.USERNAME_ATTR);
-            String password = ServerRegistry.readPassword(url);
+            String password;
+            if (instanceProperties instanceof MemoryInstancePropertiesImpl) {
+                password = instanceProperties.getProperty(InstanceProperties.PASSWORD_ATTR);
+            } else {
+                password = ServerRegistry.readPassword(url);
+            }
             managerTmp = server.getDeploymentManager(url, username, password);
             boolean fire = false;
             synchronized (this) {
