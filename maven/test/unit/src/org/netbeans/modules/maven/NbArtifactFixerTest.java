@@ -62,6 +62,7 @@ public class NbArtifactFixerTest extends NbTestCase {
         assertEquals(pom, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:0")));
         assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:jar:0")));
         assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:1")));
+        assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:stuff:0")));
     }
 
 }
