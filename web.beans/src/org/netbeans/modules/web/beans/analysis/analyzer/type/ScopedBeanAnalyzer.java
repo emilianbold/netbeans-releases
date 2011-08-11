@@ -113,6 +113,7 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
         {
             return;
         }  
+        result.requireCdiEnabled(element, model);
         TypeMirror type = element.asType();
         if ( type instanceof DeclaredType ){
             List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
@@ -132,6 +133,7 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
         {
             return;
         }
+        result.requireCdiEnabled(element, model);
         List<VariableElement> fields = ElementFilter.fieldsIn( 
                 element.getEnclosedElements());
         for (VariableElement field : fields) {
@@ -152,6 +154,7 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
         boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
                 AnnotationUtil.NORMAL_SCOPE_FQN, model.getCompilationController());
         if ( isNormal ){
+            result.requireCdiEnabled(element, model);
             checkFinal( element , model, result );
         }
     }

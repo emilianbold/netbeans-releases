@@ -85,6 +85,7 @@ public class StereotypeAnalyzer extends AbstractScopedAnalyzer implements Annota
         if ( !isStereotype ){
             return;
         }
+        result.requireCdiEnabled(element, model);
         if ( cancel.get() ){
             return;
         }

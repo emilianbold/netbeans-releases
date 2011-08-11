@@ -74,6 +74,7 @@ public class NamedModelAnalyzer implements ClassAnalyzer {
         {
             return;
         }
+        result.requireCdiEnabled(element, model);
         if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.NAMED, 
                 model.getCompilationController()))
         {

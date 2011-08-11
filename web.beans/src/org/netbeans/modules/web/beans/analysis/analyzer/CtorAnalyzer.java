@@ -78,6 +78,7 @@ public class CtorAnalyzer implements ElementAnalyzer {
             boolean isObserver = AnnotationUtil.hasAnnotation(param, 
                     AnnotationUtil.OBSERVES_FQN, result.getInfo());
             if ( isDisposer || isObserver ){
+                result.requireCdiEnabled(element);
                 String annotation = isDisposer ? AnnotationUtil.DISPOSES : 
                     AnnotationUtil.OBSERVES;
                 result.addError( element, NbBundle.getMessage(

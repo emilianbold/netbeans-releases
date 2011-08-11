@@ -83,6 +83,7 @@ public class DelegateMethodAnalyzer implements MethodAnalyzer {
             if (AnnotationUtil.hasAnnotation(param,
                     AnnotationUtil.DELEGATE_FQN, result.getInfo()))
             {
+                result.requireCdiEnabled(element);
                 if (cancel.get()) {
                     return;
                 }

@@ -52,7 +52,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.InjectionPointAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.field.ScopedFieldAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;

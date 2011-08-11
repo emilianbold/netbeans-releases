@@ -79,6 +79,7 @@ public class ProducerMethodAnalyzer extends AbstractProducerAnalyzer
         {
             return;
         }
+        result.requireCdiEnabled(element);
         if ( cancel.get() ){
             return;
         }
