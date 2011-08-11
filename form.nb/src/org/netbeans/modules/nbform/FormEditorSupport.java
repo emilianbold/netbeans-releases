@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form;
+package org.netbeans.modules.nbform;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -104,6 +104,14 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.form.CodeGenerator;
+import org.netbeans.modules.form.EditorSupport;
+import org.netbeans.modules.form.FormDataObject;
+import org.netbeans.modules.form.FormDesigner;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.PersistenceException;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
@@ -141,6 +149,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserQuestionException;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
@@ -165,9 +174,6 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     private static final int JAVA_ELEMENT_INDEX = 0;
     private static final int FORM_ELEMENT_INDEX = 1;
     private int elementToOpen; // default element index when multiview TC is created
-    
-    private static final String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
-    private static final String SECTION_VARIABLES = "variables"; // NOI18N
     
     /** Icon for the form editor multiview window */
     static final String iconURL =
@@ -394,6 +400,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         openAt(pos, -1).getComponent().requestActive();
     }
     
+    @Override
     public void openAt(Position pos) {
         openAt(createPositionRef(pos.getOffset(), Position.Bias.Forward));
     }
@@ -546,15 +553,10 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         return formDataObject;
     }
     
-    // PENDING remove when form_new_layout is merged to trunk
-    public static FormDataObject getFormDataObject(FormModel formModel) {
-        return FormEditor.getFormDataObject(formModel);
-    }
     public FormModel getFormModel() {
         FormEditor fe = getFormEditor();
         return (fe == null) ? null : fe.getFormModel();
     }
-    // END of PENDING
     
     public FormEditor getFormEditor() {
         return getFormEditor(false);
@@ -588,16 +590,15 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         editorUndoManager = super.createUndoRedoManager();
         return editorUndoManager;
     }
-    
-    void discardEditorUndoableEdits() {
+
+    @Override
+    public void discardEditorUndoableEdits() {
         if (editorUndoManager != null)
             editorUndoManager.discardAllEdits();
     }
     
-    // ------------
-    // static getters
-    
-    JEditorPane getEditorPane() {
+    @Override
+    public JEditorPane getEditorPane() {
         return multiviewTC != null ?
             ((CloneableEditorSupport.Pane)multiviewTC).getEditorPane() : null;
     }
@@ -973,7 +974,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
         TopComponent active = TopComponent.getRegistry().getActivated();
         if (active != null && getSelectedElementType(active) == FORM_ELEMENT_INDEX) {
-            FormEditorSupport fes = formDataObject.getFormEditor();
+            FormEditorSupport fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
             if (fes != null) {
                 FormModel fm = fes.getFormModel();
                 if (fm != null) {
@@ -1007,13 +1008,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                 htmlTitle = "???";
             }
         }
-        FormEditorSupport fes = formDataObject.getFormEditor();
+        FormEditorSupport fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
         if (fes != null) {
             FormDesignerTC designerTC = fes.getFormDesignerTC();
             if (designerTC != null && designerTC.isShowing()) {
                 FormModel fm = fes.getFormModel();
                 if (fm != null) {
-                    FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
+                    FormDesigner fd = FormEditor.getFormDesigner(fes.getFormModel());
                     if (fd != null && fd.getFormModel() != null
                             && !fd.isTopRADComponent() && fd.getTopDesignComponent() != null) {
                         title = FormUtils.getFormattedBundleString(
@@ -1166,8 +1167,28 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     
     public static FormEditorSupport getFormEditor(TopComponent tc) {
         Object dobj = tc.getLookup().lookup(DataObject.class);
-        return dobj instanceof FormDataObject ?
-            ((FormDataObject)dobj).getFormEditorSupport() : null;
+        FormEditorSupport fes = null;
+        if (dobj instanceof FormDataObject) {
+            FormDataObject formDataObject = (FormDataObject)dobj;
+            fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
+        }
+        return fes;
+    }
+
+    @Override
+    public boolean isJavaEditorDisplayed() {
+        boolean showing = false;
+        if (EventQueue.isDispatchThread()) { // issue 91715
+            JEditorPane[] jeditPane = getOpenedPanes();
+            if (jeditPane != null) {
+                for (int i=0; i<jeditPane.length; i++) {
+                    if (showing = jeditPane[i].isShowing()) {
+                        break;
+                    }
+                }
+            }
+        }
+        return showing;
     }
     
     private static Boolean groupVisible = null;
@@ -1397,8 +1418,10 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             if (((DataEditorSupport) cloneableEditorSupport ()).getDataObject() instanceof FormDataObject) { // [obj is from EditorSupport.Editor]
                 // this is used (or misused?) to obtain the deserialized
                 // multiview topcomponent and set it to FormEditorSupport
-                ((FormDataObject)((DataEditorSupport) cloneableEditorSupport ()).getDataObject()).getFormEditorSupport().setTopComponent(
-                        callback.getTopComponent());
+                DataEditorSupport des = (DataEditorSupport)cloneableEditorSupport();
+                FormDataObject formDataObject = (FormDataObject)des.getDataObject();
+                FormEditorSupport fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
+                fes.setTopComponent(callback.getTopComponent());
             }
         }
         
@@ -1432,11 +1455,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             FormDataObject formDO = (FormDataObject)dob;
             FormModel model = null;
             if (formDO != null) {
-                FormEditorSupport fe = formDO.getFormEditor();
+                FormEditorSupport fe = (FormEditorSupport)formDO.getFormEditorSupport();
                 if (fe != null) {
                     model = fe.getFormModel();
                     if (model != null) {
-                        JavaCodeGenerator codeGen = (JavaCodeGenerator)FormEditor.getCodeGenerator(model);
+                        CodeGenerator codeGen = FormEditor.getCodeGenerator(model);
                         if (codeGen != null) {
                             codeGen.regenerateCode();
                         }
@@ -1581,5 +1604,14 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
             cookies.remove(saveCookie);
             javaData.setModified(false);
         }
+    }
+
+    @ServiceProvider(service=EditorSupport.Provider.class)
+    public static class FESProvider implements EditorSupport.Provider {
+        @Override
+        public EditorSupport create(FormDataObject formDataObject) {
+            return new FormEditorSupport(formDataObject.getPrimaryEntry(), formDataObject, formDataObject.getCookies());
+        }
+        
     }
 }

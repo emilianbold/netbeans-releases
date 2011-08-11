@@ -59,7 +59,6 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.NamedPropertyEditor;
-import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.i18n.I18nPanel;
 import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -72,6 +71,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -282,7 +282,7 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * @param model the <code>FormModel</code> representing meta-data of current form */
     public void setContext(FormModel model, FormProperty property) {
         if (model != null) {
-            sourceDataObject = FormEditorSupport.getFormDataObject(model);
+            sourceDataObject = FormEditor.getFormEditor(model).getFormDataObject();
         }
     }
 

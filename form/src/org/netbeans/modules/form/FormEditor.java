@@ -590,7 +590,7 @@ public class FormEditor {
     /**
      * Destroys all components from {@link #formModel} taged as invalid
      */
-    void destroyInvalidComponents() {
+    public void destroyInvalidComponents() {
         Collection<RADComponent> allComps = formModel.getAllComponents();
         List<RADComponent> invalidComponents = new ArrayList<RADComponent>(allComps.size());
         // collect all invalid components
@@ -616,7 +616,7 @@ public class FormEditor {
     /**
      * Sets the FormEditor in Read-Only mode
      */
-    void setFormReadOnly() {
+    public void setFormReadOnly() {
         formModel.setReadOnly(true);
         getFormDesigner().getHandleLayer().setViewOnly(true);                                                
         detachFormListener();

@@ -61,7 +61,6 @@ import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormAwareEditor;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.NamedPropertyEditor;
-import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.i18n.I18nPanel;
 import org.netbeans.modules.i18n.I18nString;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -82,6 +81,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormProperty;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -249,7 +249,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
      * instance is created or the custom editor is obtained from getCustomEditor().
      * @param model the <code>FormModel</code> representing meta-data of current form */
     public void setContext(FormModel model, FormProperty property) {
-        sourceDataObject = FormEditorSupport.getFormDataObject(model);
+        sourceDataObject = FormEditor.getFormEditor(model).getFormDataObject();
     }
 
     // FormAwareEditor impl

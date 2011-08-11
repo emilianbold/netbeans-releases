@@ -72,6 +72,8 @@ public abstract class CodeGenerator {
         return new Node.Property[0];
     }
 
+    public abstract void regenerateCode();
+
     /**
      * Generates the specified event handler, if it does not exist yet.
      * @param handlerName The name of the event handler
