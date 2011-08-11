@@ -55,9 +55,11 @@ import java.util.StringTokenizer;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -329,6 +331,22 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
                 return icon;
             }
         }
+
+        @Override public String getShortDescription() {
+            DataObject doj = getLookup().lookup(DataObject.class);
+            if (doj != null) {
+                FileObject f = doj.getPrimaryFile();
+                ClassPath src = ClassPath.getClassPath(f, ClassPath.SOURCE);
+                if (src != null) {
+                    String pkg = src.getResourceName(f, '.', false);
+                    if (pkg != null) {
+                        return PackageDisplayUtils.getToolTip(f, pkg);
+                    }
+                }
+            }
+            return super.getShortDescription();
+        }
+
     }
     
 }

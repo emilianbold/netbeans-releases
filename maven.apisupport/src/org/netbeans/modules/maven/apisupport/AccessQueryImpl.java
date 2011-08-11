@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.project.Project;
@@ -83,8 +84,8 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
      * @param pkg
      * @return
      */
-    @Override
-    public Boolean isPubliclyAccessible(FileObject pkg) {
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @Override public Boolean isPubliclyAccessible(FileObject pkg) {
         FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(mavenProject.getMavenProject().getBuild().getSourceDirectory());
         if (srcdir != null) {
             String path = FileUtil.getRelativePath(srcdir, pkg);
@@ -92,12 +93,9 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
                 String name = path.replace('/', '.');
                 //TODO cache somehow..
                 List<Pattern> pp = getPublicPackagesPatterns();
-                if (pp.size() > 0) {
-                    return check(pp, name);
-                }
+                return check(pp, name);
             }
         }
-        
         return null;
     }
     

@@ -81,6 +81,7 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
         {
             return;
         }
+        result.requireCdiEnabled(element);
         if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN,
                 compInfo))
         {

@@ -43,6 +43,8 @@
  */
 package org.netbeans.spi.java.queries;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,6 +75,6 @@ public interface AccessibilityQueryImplementation {
      * @return true if it is definitely intended for public access, false if it
      *         is definitely not, or null if nothing is known about it
      */
-    public Boolean isPubliclyAccessible(FileObject pkg);
+    public @CheckForNull Boolean isPubliclyAccessible(@NonNull FileObject pkg);
 
 }

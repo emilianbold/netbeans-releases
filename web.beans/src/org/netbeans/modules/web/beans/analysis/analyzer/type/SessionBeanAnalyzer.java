@@ -84,6 +84,7 @@ public class SessionBeanAnalyzer implements ClassAnalyzer {
                 {
                     return;
                 }
+                result.requireCdiEnabled(element, model);
                 result.addError( element, model,  
                     NbBundle.getMessage(SessionBeanAnalyzer.class, 
                             "ERR_InvalidSingletonBeanScope"));              // NOI18N
@@ -98,6 +99,7 @@ public class SessionBeanAnalyzer implements ClassAnalyzer {
             }
         }
         catch (CdiException e) {
+            result.requireCdiEnabled(element, model);
             informCdiException(e, element, model, result );
         }
     }
