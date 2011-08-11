@@ -116,7 +116,9 @@ public class OracleInstanceManager {
         props.putString(TENANT_ID, ai.getTenantId());
         props.putString(SERVICE_NAME, ai.getServiceName());
         props.putString(NAME, ai.getName());
-        props.putString(ON_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
+        if (ai.getOnPremiseServerInstanceId() != null) {
+            props.putString(ON_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
+        }
     }
         
     public void update(OracleInstance ai) {
