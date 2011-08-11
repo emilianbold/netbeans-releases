@@ -90,6 +90,7 @@ public class InjectionPointParameterAnalyzer
             }
             try {
                 if (model.isInjectionPoint(var)) {
+                    result.requireCdiEnabled(element, model);
                     if (!model.isDynamicInjectionPoint(var)) {
                         DependencyInjectionResult res = model.lookupInjectables(
                             var, (DeclaredType) parent.asType());
@@ -111,6 +112,7 @@ public class InjectionPointParameterAnalyzer
             }
             }
             catch( InjectionPointDefinitionError e ){
+                result.requireCdiEnabled(element, model);
                 informInjectionPointDefError(e, element, model, result );
             }
         }

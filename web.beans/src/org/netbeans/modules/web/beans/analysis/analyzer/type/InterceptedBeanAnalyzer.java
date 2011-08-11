@@ -78,6 +78,7 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.INTERCEPTOR, 
                 model.getCompilationController() ))
         {
+            result.requireCdiEnabled(element, model);
             // rule should not be applied to interceptor 
             return ;
         }
@@ -109,6 +110,9 @@ public class InterceptedBeanAnalyzer extends AbstractInterceptedElementAnalyzer
             return;
         }
         boolean hasIBindings = hasInterceptorBindings(element, model);
+        if ( hasIBindings ){
+            result.requireCdiEnabled(element, model);
+        }
         if (hasIBindings && isFinal) {
             result.addError(element, model, 
                             NbBundle.getMessage(

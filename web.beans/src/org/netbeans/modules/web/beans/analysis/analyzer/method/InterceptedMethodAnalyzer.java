@@ -84,6 +84,9 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
             AtomicBoolean cancel , Result result )
     {
         boolean hasInterceptorBindings = hasInterceptorBindings(element, model);
+        if ( hasInterceptorBindings ){
+            result.requireCdiEnabled(element, model);
+        }
         if (AnnotationUtil.isLifecycleCallback(element, model.getCompilationController() )) {
             if (hasInterceptorBindings) {
                 result.addNotification( Severity.WARNING, element, model,  
