@@ -409,6 +409,16 @@ public class OracleInstance {
         getApplicationManager().undeployApplication(getTenantId(), getServiceName(), app.getApplicationId());
     }
     
+    public void start(ApplicationDeployment app) {
+        assert !SwingUtilities.isEventDispatchThread();
+        getApplicationManager().startApplication(getTenantId(), getServiceName(), app.getApplicationId());
+    }
+    
+    public void stop(ApplicationDeployment app) {
+        assert !SwingUtilities.isEventDispatchThread();
+        getApplicationManager().stopApplication(getTenantId(), getServiceName(), app.getApplicationId());
+    }
+    
     public static File findWeblogicJar(String onPremiseServerInstanceId) {
         if (onPremiseServerInstanceId == null) {
             return null;

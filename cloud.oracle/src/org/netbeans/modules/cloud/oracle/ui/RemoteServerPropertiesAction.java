@@ -42,7 +42,10 @@
 package org.netbeans.modules.cloud.oracle.ui;
 
 import org.netbeans.api.server.CommonServerUIs;
-import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEServerInstanceImplementation;
+import org.netbeans.spi.server.ServerInstanceFactory;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -51,12 +54,12 @@ import org.openide.util.actions.NodeAction;
 /**
  *
  */
-public class PropertiesAction extends NodeAction {
+public class RemoteServerPropertiesAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        OracleInstance ai = activatedNodes[0].getLookup().lookup(OracleInstance.class);
-        CommonServerUIs.showCloudCustomizer(ai.getServerInstance());
+        OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
+        CommonServerUIs.showCustomizer(inst.getInstance());
     }
 
     @Override
@@ -64,7 +67,7 @@ public class PropertiesAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleInstance.class) != null;
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null;
     }
 
     @Override

@@ -64,17 +64,17 @@ public class OracleJ2EEServerInstanceImplementation implements ServerInstanceImp
 
     @Override
     public String getServerDisplayName() {
-        return "Weblogic";
+        return "Oracle Weblogic Java Service"; // NOI18N
     }
 
     @Override
     public Node getFullNode() {
-        return getBasicNode();
+        return new OracleJ2EEInstanceNode(aij, false);
     }
 
     @Override
     public Node getBasicNode() {
-        return new OracleJ2EEInstanceNode(aij);
+        return new OracleJ2EEInstanceNode(aij, true);
     }
 
     @Override
@@ -84,7 +84,6 @@ public class OracleJ2EEServerInstanceImplementation implements ServerInstanceImp
 
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

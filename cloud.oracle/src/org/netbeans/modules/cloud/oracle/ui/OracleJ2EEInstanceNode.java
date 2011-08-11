@@ -65,12 +65,13 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     
     public static final String WEBLOGIC_ICON = "org/netbeans/modules/cloud/oracle/ui/resources/weblogic.png"; // NOI18N
     
-    // TODO: impl this properly
-    
     private OracleJ2EEInstance aij;
     
-    public OracleJ2EEInstanceNode(OracleJ2EEInstance aij) {
-        super(new OracleJ2EEInstanceChildren(aij));
+    private boolean basicNode;
+    
+    public OracleJ2EEInstanceNode(OracleJ2EEInstance aij, boolean basicNode) {
+        super(new OracleJ2EEInstanceChildren(aij, basicNode), Lookups.fixed(aij));
+        this.basicNode = basicNode;
         this.aij = aij;
         setName(""); // NOI18N
         setDisplayName(aij.getDisplayName());
@@ -96,6 +97,9 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
             = "org/netbeans/modules/cloud/oracle/ui/resources/terminated.png"; // NOI18N
     
     private Image badgeIcon(Image origImg) {
+        if (basicNode) {
+            return origImg;
+        }
         Image badge = null;        
         switch (aij.getState()) {
             case UPDATING:
@@ -113,18 +117,29 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(RemoteServerPropertiesAction.class)
+        };
+    }
+    
     private static class OracleJ2EEInstanceChildren extends Children.Keys<ApplicationDeployment> {
 
         private OracleJ2EEInstance aij;
+        private boolean basicNode;
 
-        public OracleJ2EEInstanceChildren(OracleJ2EEInstance aij) {
+        public OracleJ2EEInstanceChildren(OracleJ2EEInstance aij, boolean basicNode) {
             this.aij = aij;
+            this.basicNode = basicNode;
             setKeys(Collections.<ApplicationDeployment>emptySet());
         }
         
         @Override
         protected void addNotify() {
-            readKeys();
+            if (!basicNode) {
+                readKeys();
+            }
         }
 
         @Override
@@ -135,10 +150,6 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         @Override
         protected Node[] createNodes(ApplicationDeployment key) {
             return new Node[]{new ApplicationNode(aij, key)};
-        }
-        
-        private List<ApplicationDeployment> getKeys () {
-            return null;
         }
         
         private void readKeys() {
@@ -154,8 +165,6 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
     }
 
     public static class ApplicationNode extends AbstractNode {
-
-        // TODO: impl this properly
 
         public ApplicationNode(OracleJ2EEInstance aij, ApplicationDeployment app) {
             super(Children.LEAF, Lookups.fixed(aij, app));
@@ -182,6 +191,8 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         public Action[] getActions(boolean context) {
             return new Action[] {
                 SystemAction.get(ViewApplicationAction.class),
+                SystemAction.get(StartApplicationAction.class),
+                SystemAction.get(StopApplicationAction.class),
                 SystemAction.get(UndeployApplicationAction.class),
             };
         }
