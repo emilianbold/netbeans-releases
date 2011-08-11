@@ -96,11 +96,11 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     
-<!--
-    <fontcolor name="mod-constructor" >
+    <!-- namespace prefix -->
+    <fontcolor name="mod-constructor">
         <font style="bold" />
     </fontcolor>
-    
+<!--    
     <fontcolor name="mod-class" />
     <fontcolor name="mod-interface" />
     <fontcolor name="mod-annotation-type" />

@@ -39,14 +39,17 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.csl;
+package org.netbeans.modules.css.editor.module.spi;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
@@ -58,7 +61,10 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
-import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.csl.CssColor;
+import org.netbeans.modules.css.editor.csl.CssCompletion;
+import org.netbeans.modules.css.editor.csl.CssElement;
+import org.netbeans.modules.css.editor.csl.CssValueElement;
 import org.netbeans.modules.css.editor.properties.parser.GrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
@@ -153,6 +159,17 @@ public class CssCompletionItem implements CompletionProposal {
 
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
+    
+    public static  List<CompletionProposal> wrapRAWValues(Collection<String> props, CssCompletionItem.Kind kind, int anchor) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        for (String value : props) {
+            CssElement handle = new CssElement(value);
+            CompletionProposal proposal = CssCompletionItem.createCompletionItem(handle, value, kind, anchor, false);
+            proposals.add(proposal);
+        }
+        return proposals;
+    }
+    
 
     protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
     protected static final int SORT_PRIORITY = 300;

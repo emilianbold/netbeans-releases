@@ -159,13 +159,13 @@ public enum CssTokenId implements TokenId {
     CDO(Css3Lexer.CDO, "others"), //<!--
     CDC(Css3Lexer.CDC, "others"), // -->
     
-    
     INVALID(Css3Lexer.INVALID, "others"),
     DIMENSION(Css3Lexer.DIMENSION, "number"),
     NL(Css3Lexer.NL, "others"), //newline
-    T__82(Css3Lexer.T__82, "others"),  //NOI18N
+    PIPE(Css3Lexer.PIPE, "operator"),  //NOI18N
     
-    GEN(Css3Lexer.GEN, "others");
+    GEN(Css3Lexer.GEN, "others"),
+    NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, "keyword");
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
     static {

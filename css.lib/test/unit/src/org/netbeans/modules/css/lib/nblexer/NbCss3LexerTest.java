@@ -207,6 +207,11 @@ public class NbCss3LexerTest extends NbTestCase {
                 CssTokenId.language());
     };
     
+    public void testNamespaces() throws Exception {
+      LexerTestUtilities.checkTokenDump(this, "testfiles/namespaces.css",
+                CssTokenId.language());
+    };
+    
     public void testInput() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInputGeneratedCode.css.txt",
                 CssTokenId.language());
