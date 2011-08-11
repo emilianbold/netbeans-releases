@@ -476,6 +476,19 @@ public class J2SEPlatformImpl extends JavaPlatform {
         }
         return Collections.emptyList();
     }
+
+    boolean isBroken () {
+        if (getInstallFolders().isEmpty()) {
+            return true;
+        }
+        for (String tool : PlatformConvertor.IMPORTANT_TOOLS) {
+            if (findTool(tool) == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static final Map<String,String> OFFICIAL_JAVADOC = new HashMap<String,String>();
     static {
         OFFICIAL_JAVADOC.put("1.0", null); // NOI18N

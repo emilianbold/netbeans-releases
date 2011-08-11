@@ -50,25 +50,24 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.maven.artifact.UnknownRepositoryLayoutException;
+import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.codehaus.plexus.PlexusContainerException;
-import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import java.util.prefs.Preferences;
+import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
-
+import org.codehaus.plexus.PlexusContainerException;
+import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
@@ -332,16 +331,11 @@ public final class EmbedderFactory {
     }
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
-        try {
-            ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);
-            assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
-            ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-            ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
-            return fact.createArtifactRepository(id, url, ArtifactRepositoryFactory.DEFAULT_LAYOUT_ID, snapshotsPolicy, releasesPolicy);
-        } catch (UnknownRepositoryLayoutException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        ArtifactRepositoryFactory fact = embedder.lookupComponent(ArtifactRepositoryFactory.class);
+        assert fact!=null : "ArtifactRepositoryFactory component not found in maven";
+        ArtifactRepositoryPolicy snapshotsPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
+        ArtifactRepositoryPolicy releasesPolicy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_WARN);
+        return fact.createArtifactRepository(id, url, new DefaultRepositoryLayout(), snapshotsPolicy, releasesPolicy);
     }
 
     /**
