@@ -46,7 +46,6 @@ package org.netbeans.modules.web.struts;
 
 import java.io.IOException;
 
-import org.openide.actions.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
@@ -56,29 +55,31 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class StrutsConfigLoader extends UniFileLoader {
-    private static final String REQUIRED_MIME = "text/x-struts+xml"; // NOI18N
+
+    public static final String MIME_TYPE = "text/x-struts+xml"; // NOI18N
+
     public StrutsConfigLoader() {
         this("org.netbeans.modules.web.struts.StrutsConfigDataObject");
     }
-    
+
     // Can be useful for subclasses:
     protected StrutsConfigLoader(String recognizedObjectClass) {
         super(recognizedObjectClass);
     }
-    
+
     protected String defaultDisplayName() {
         return NbBundle.getMessage(StrutsConfigLoader.class, "LBL_loaderName");
     }
-    
+
     protected void initialize() {
         super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
+        getExtensions().addMimeType(MIME_TYPE);
     }
-    
+
     protected String actionsContext() {
         return "Loaders/text/x-struts+xml/Actions/"; // NOI18N
     }
-    
+
     protected MultiDataObject createMultiObject(FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new StrutsConfigDataObject(primaryFile, this);
