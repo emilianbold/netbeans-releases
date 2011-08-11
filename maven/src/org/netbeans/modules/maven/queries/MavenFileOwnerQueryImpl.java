@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -148,9 +149,13 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         }
         return null;
     }
-    
-    private Project getOwner(File file) {
-        LOG.log(Level.FINER, "Looking for owner of {0}", file);
+
+    /**
+     * Utility method to identify a file which might be an artifact in the local repository.
+     * @param file a putative artifact
+     * @return its coordinates (groupId/artifactId/version), or null if it cannot be identified
+     */
+    static @CheckForNull String[] findCoordinates(File file) {
         String nm = file.getName(); // commons-math-2.1.jar
         File parentVer = file.getParentFile(); // ~/.m2/repository/org/apache/commons/commons-math/2.1
         if (parentVer != null) {
@@ -162,16 +167,14 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                     File parentGroup = parentArt.getParentFile(); // ~/.m2/repository/org/apache/commons
                     if (parentGroup != null) {
                         // Split rest into separate method, to avoid linking EmbedderFactory unless and until needed.
-                        return getArtifactOwner(parentGroup, artifactID, version);
+                        return findCoordinates(parentGroup, artifactID, version);
                     }
                 }
             }
         }
         return null;
     }
-
-    private Project getArtifactOwner(File parentGroup, String artifactID, String version) {
-        LOG.log(Level.FINER, "Checking {0} / {1} / {2}", new Object[] {parentGroup, artifactID, version});
+    private static @CheckForNull String[] findCoordinates(File parentGroup, String artifactID, String version) {
         File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()); // ~/.m2/repository
         String repoS = repo.getAbsolutePath();
         if (!repoS.endsWith(File.separator)) {
@@ -183,51 +186,62 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         }
         if (parentGroupS.startsWith(repoS)) {
             String groupID = parentGroupS.substring(repoS.length()).replace(File.separatorChar, '.'); // org.apache.commons
-            String key = groupID + ':' + artifactID; // org.apache.commons:commons-math
-            String ownerURI = prefs().get(key, null);
-            if (ownerURI != null) {
-                boolean stale = true;
-                try {
-                    FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
-                    if (projectDir != null && projectDir.isFolder()) {
-                        Project p = ProjectManager.getDefault().findProject(projectDir);
-                        if (p != null) {
-                            NbMavenProjectImpl mp = p.getLookup().lookup(NbMavenProjectImpl.class);
-                            if (mp != null) {
-                                MavenProject model = mp.getOriginalMavenProject();
-                                if (model.getGroupId().equals(groupID) && model.getArtifactId().equals(artifactID)) {
-                                    if (model.getVersion().equals(version)) {
-                                        LOG.log(Level.FINE, "Found match {0}", p);
-                                        return p;
-                                    } else {
-                                        LOG.log(Level.FINE, "Mismatch on version {0} in {1}", new Object[] {model.getVersion(), ownerURI});
-                                        stale = false; // we merely remembered another version
-                                    }
+            return new String[] {groupID, artifactID, version};
+        } else {
+            return null;
+        }
+    }
+    
+    private Project getOwner(File file) {
+        LOG.log(Level.FINER, "Looking for owner of {0}", file);
+        String[] coordinates = findCoordinates(file);
+        if (coordinates == null) {
+            LOG.log(Level.FINE, "{0} not an artifact in local repo", file);
+            return null;
+        }
+        LOG.log(Level.FINER, "Checking {0} / {1} / {2}", coordinates);
+        String key = coordinates[0] + ':' + coordinates[1]; // org.apache.commons:commons-math
+        String ownerURI = prefs().get(key, null);
+        if (ownerURI != null) {
+            boolean stale = true;
+            try {
+                FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
+                if (projectDir != null && projectDir.isFolder()) {
+                    Project p = ProjectManager.getDefault().findProject(projectDir);
+                    if (p != null) {
+                        NbMavenProjectImpl mp = p.getLookup().lookup(NbMavenProjectImpl.class);
+                        if (mp != null) {
+                            MavenProject model = mp.getOriginalMavenProject();
+                            if (model.getGroupId().equals(coordinates[0]) && model.getArtifactId().equals(coordinates[1])) {
+                                if (model.getVersion().equals(coordinates[2])) {
+                                    LOG.log(Level.FINE, "Found match {0}", p);
+                                    return p;
                                 } else {
-                                    LOG.log(Level.FINE, "Mismatch on group and/or artifact ID in {0}", ownerURI);
+                                    LOG.log(Level.FINE, "Mismatch on version {0} in {1}", new Object[] {model.getVersion(), ownerURI});
+                                    stale = false; // we merely remembered another version
                                 }
                             } else {
-                                LOG.log(Level.FINE, "Not a Maven project {0} in {1}", new Object[] {p, ownerURI});
+                                LOG.log(Level.FINE, "Mismatch on group and/or artifact ID in {0}", ownerURI);
                             }
                         } else {
-                            LOG.log(Level.FINE, "No such project in {0}", ownerURI);
+                            LOG.log(Level.FINE, "Not a Maven project {0} in {1}", new Object[] {p, ownerURI});
                         }
                     } else {
-                        LOG.log(Level.FINE, "No such folder {0}", ownerURI);
+                        LOG.log(Level.FINE, "No such project in {0}", ownerURI);
                     }
-                } catch (IOException x) {
-                    LOG.log(Level.FINE, "Could not load project in " + ownerURI, x);
-                } catch (URISyntaxException x) {
-                    LOG.log(Level.INFO, null, x);
+                } else {
+                    LOG.log(Level.FINE, "No such folder {0}", ownerURI);
                 }
-                if (stale) {
-                    prefs().remove(key); // stale
-                }
-            } else {
-                LOG.log(Level.FINE, "No known owner for {0}", key);
+            } catch (IOException x) {
+                LOG.log(Level.FINE, "Could not load project in " + ownerURI, x);
+            } catch (URISyntaxException x) {
+                LOG.log(Level.INFO, null, x);
+            }
+            if (stale) {
+                prefs().remove(key); // stale
             }
         } else {
-            LOG.log(Level.FINE, "Not in local repo {0}", repoS);
+            LOG.log(Level.FINE, "No known owner for {0}", key);
         }
         return null;
     }

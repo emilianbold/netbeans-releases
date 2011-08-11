@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,8 +97,11 @@ public class CodeGenerator {
 
     private static final Logger LOG = Logger.getLogger(CodeGenerator.class.getName());
     private static final Set<ElementKind> UNUSABLE_KINDS = EnumSet.of(ElementKind.PACKAGE);
-    private static final String HASH_ATTRIBUTE_NAME = "origin-hash";
-    private static final String DISABLE_ERRORS = "disable-java-errors";
+    private static final byte VERSION = 2;
+    private static final String HASH_ATTRIBUTE_NAME = "origin-hash";    //NOI18N
+    private static final String DISABLE_ERRORS = "disable-java-errors"; //NOI18N
+    static final String CLASSFILE_ROOT = "classfile-root";              //NOI18N
+    static final String CLASSFILE_BINNAME = "classfile-binaryName";     //NOI18N
 
     public static FileObject generateCode(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpenHandle) {
 	if (UNUSABLE_KINDS.contains(toOpenHandle.getKind())) {
@@ -117,6 +121,8 @@ public class CodeGenerator {
             JavaSource js = JavaSource.create(cpInfo, file);
             final FileObject[] result = new FileObject[1];
             final boolean[] sourceGenerated = new boolean[1];
+            final URL[] classfileRoot = new URL[1];
+            final String[] binaryName = new String[1];
 
             ModificationResult r = js.runModificationTask(new Task<WorkingCopy>() {
                 @Override
@@ -135,7 +141,8 @@ public class CodeGenerator {
                         return;
                     }
 
-                    final String resourceName = te.getQualifiedName().toString().replace('.', '/') + ".class";  //NOI18N
+                    final String binName = te.getQualifiedName().toString().replace('.', '/');  //NOI18N
+                    final String resourceName = binName + ".class";  //NOI18N
                     final FileObject resource = cp.findResource(resourceName);
                     if (resource == null) {
                         LOG.info("Cannot find resource: " + resourceName +" on classpath: " + cp.toString()); //NOI18N
@@ -148,6 +155,8 @@ public class CodeGenerator {
                         return ;
                     }
 
+                    classfileRoot[0] = root.getURL();
+                    binaryName[0] = binName;
                     final File  sourceRoot = new File (JavaIndex.getIndex(root.getURL()),"gensrc");     //NOI18N
                     final FileObject sourceRootFO = FileUtil.createFolder(sourceRoot);
                     if (sourceRootFO == null) {
@@ -155,10 +164,11 @@ public class CodeGenerator {
                         return ;
                     }
 
-                    final String path = te.getQualifiedName().toString().replace('.', '/') + ".java";   //NOI18N
+                    final String path = binName + ".java";   //NOI18N
                     final FileObject source = sourceRootFO.getFileObject(path);
 
                     MessageDigest md = MessageDigest.getInstance("MD5");
+                    md.update(VERSION);
                     byte[] hashBytes = md.digest(resource.asBytes());
                     StringBuilder hashBuilder = new StringBuilder();
 
@@ -207,6 +217,8 @@ public class CodeGenerator {
                 if (resultFile != null) {
                     resultFile.setReadOnly();
                     result[0].setAttribute(DISABLE_ERRORS, true);
+                    result[0].setAttribute(CLASSFILE_ROOT, classfileRoot[0]);
+                    result[0].setAttribute(CLASSFILE_BINNAME, binaryName[0]);
                 }
             }
 
