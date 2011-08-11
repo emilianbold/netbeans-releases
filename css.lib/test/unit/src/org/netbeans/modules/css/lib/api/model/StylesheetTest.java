@@ -204,5 +204,23 @@ public class StylesheetTest extends NbTestCase {
         assertEquals("", val.image().toString());
         
     }
+    
+    public void testNamespaces() throws org.netbeans.modules.parsing.spi.ParseException, BadLocationException {
+        String content = " @namespace prefix \"uri\";";
+        //                0123456789012345678
+        //                0         1
+        Stylesheet model = TestUtil.parse(content).getModel();        
+        assertNotNull(model);
+
+        Collection<Namespace> names = model.getNamespaces();
+        assertNotNull(names);
+
+        assertEquals(1, names.size());
+        Namespace ns = names.iterator().next();
+        
+        assertEquals("prefix", ns.getPrefix());
+        assertEquals("\"uri\"", ns.getResourceIdentifier());
+
+    }
 
 }

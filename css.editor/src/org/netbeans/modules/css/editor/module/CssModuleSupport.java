@@ -238,7 +238,8 @@ public class CssModuleSupport {
         synchronized (PROPERTY_MODELS) {
             PropertyModel model = PROPERTY_MODELS.get(name);
             if(model == null) {
-                model = new PropertyModel(getPropertyDescriptors().get(name));
+                PropertyDescriptor pd = getPropertyDescriptors().get(name);
+                model = pd != null ? new PropertyModel(pd) : null;
                 PROPERTY_MODELS.put(name, model);
             }
             return model;

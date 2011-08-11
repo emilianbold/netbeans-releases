@@ -42,18 +42,41 @@
 package org.netbeans.modules.css.lib.api;
 
 /**
- * This enum should be updated once the ANTLR grammar has changed the set of rules.
+ * This enum must keep in sync with the ANTLR grammar set of rules.
  * 
- * It can be regexped from the generated Css3Parser.ruleNames field
- *
  * @author mfukala@netbeans.org
  */
 public enum NodeType {
     
+        /**
+         * Attribute name - value pair in selectors h1[attr=value] {}
+         */
         attrib, 
-        attrvalue, 
+    
+        /**
+         * Attribute name in selectors h1[attr=value] {}
+         */
+        attrib_name,
+        
+        /**
+         * Attribute value in selectors h1[attr=value] {}
+         */
+        attrib_value,
+        
+        /**
+         * Attribute name - value pair in a css function: h1 { -moz-xxx: draw(shape="rect") }
+         */
         attribute, 
+        
+        /**
+         * Attribute name in a css function: h1 { -moz-xxx: draw(shape="rect") }
+         */
         attrname, 
+        /**
+         * Attribute value in a css function: h1 { -moz-xxx: draw(shape="rect") }
+         */
+        attrvalue, 
+        
         bodylist, 
         bodyset, 
         combinator, 
@@ -128,10 +151,27 @@ public enum NodeType {
         typeSelector, 
                 
         //following node types don't correspond to any of the grammar rules (do not remove them!):
-        root, //an artificial root node of each parse tree
-        error, //an error node
-        recovery, //an error node, but for errors recovered - skipped (resynced) content by syncToBitSet(...)
-        token, //a token node
+        
+        /**
+         * an artificial root node of each parse tree
+         */
+        root,
+        
+        /**
+         * an error node
+         */
+        error, 
+        
+        /** 
+         * an error node, but for errors recovered - skipped (resynced) content by syncToBitSet(...)
+         */
+        recovery, 
+        
+        /**
+         * a token node (each lexer token has its node in the parse tree)
+         */
+        token,
+        
         unaryOperator;
         
 }

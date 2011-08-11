@@ -177,7 +177,7 @@ public class CssCompletionItem implements CompletionProposal {
     private CssCompletionItem() {
     }
 
-    private CssCompletionItem(CssElement element, String value, Kind kind, int anchorOffset, boolean addSemicolon) {
+    protected CssCompletionItem(CssElement element, String value, Kind kind, int anchorOffset, boolean addSemicolon) {
         this.anchorOffset = anchorOffset;
         this.value = value;
         this.kind = kind;

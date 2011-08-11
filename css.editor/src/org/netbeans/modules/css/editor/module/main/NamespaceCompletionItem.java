@@ -42,66 +42,78 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.css.editor.csl.CssNodeElement;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class NamespaceStructureItem implements StructureItem {
+public class NamespaceCompletionItem implements CompletionProposal {
 
-    private CssNodeElement handle;
-    private CharSequence prefix, resource;
-    
-    public NamespaceStructureItem(Node namespaceNode) {
-        this.handle = CssNodeElement.createElement(namespaceNode);
-        
-        Node prefixNode = NodeUtil.query(namespaceNode, "namespace_prefix"); //NOI18N
-        this.prefix = prefixNode != null ? prefixNode.image() : NbBundle.getMessage(NamespaceStructureItem.class, "default_namespace");
-        
-        Node resourceNode = NodeUtil.query(namespaceNode, "resourceIdentifier"); //NOI18N
-        this.resource = resourceNode != null ? resourceNode.image() : "";
-    }
+    private String namespacePrefix, resource;
+    private int anchor;
 
-    @Override
-    public String getName() {
-        return new StringBuilder().append(prefix).append(':').append(resource).toString();
-    }
-
-    @Override
-    public String getSortText() {
-        return getName();
-    }
-
-    @Override
-    public String getHtml(HtmlFormatter formatter) {
-        return new StringBuilder()
-                .append("<b>")
-                .append(prefix)
-                .append("</b>")
-                .append(' ')
-                .append(resource).toString();
-    }
-
-    @Override
-    public ElementHandle getElementHandle() {
-        return handle;
+    public NamespaceCompletionItem(String namespacePrefix, String resourceIdentifier, int anchorOffset) {
+        this.anchor = anchorOffset;
+        this.namespacePrefix = namespacePrefix;
+        this.resource = resourceIdentifier;
     }
 
     @Override
     public ElementKind getKind() {
-        return NamespacesModule.NAMESPACE_ELEMENT_KIND; 
+        return NamespacesModule.NAMESPACE_ELEMENT_KIND;
+    }
+
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        formatter.appendHtml("<font color=999999>");
+        formatter.appendText(resource);
+        formatter.appendHtml("</font>");
+        return formatter.getText();
+    }
+
+    @Override
+    public String getLhsHtml(HtmlFormatter formatter) {
+        formatter.appendHtml("<b>");
+        formatter.appendText(namespacePrefix);
+        formatter.appendHtml("</b>");
+        return formatter.getText();
+    }
+
+    @Override
+    public int getAnchorOffset() {
+        return anchor;
+    }
+
+    @Override
+    public ElementHandle getElement() {
+        return null;
+    }
+
+    @Override
+    public String getName() {
+        return namespacePrefix;
+    }
+
+    @Override
+    public String getInsertPrefix() {
+        return namespacePrefix;
+    }
+
+    @Override
+    public String getSortText() {
+        return namespacePrefix;
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return null;
     }
 
     @Override
@@ -110,28 +122,17 @@ public class NamespaceStructureItem implements StructureItem {
     }
 
     @Override
-    public boolean isLeaf() {
-        return true;
+    public boolean isSmart() {
+        return false;
     }
 
     @Override
-    public List<? extends StructureItem> getNestedItems() {
-        return Collections.emptyList();
+    public int getSortPrioOverride() {
+        return 0;
     }
 
     @Override
-    public long getPosition() {
-        return handle.from();
-    }
-
-    @Override
-    public long getEndPosition() {
-        return handle.to();
-    }
-
-    @Override
-    public ImageIcon getCustomIcon() {
+    public String getCustomInsertTemplate() {
         return null;
     }
-
 }
