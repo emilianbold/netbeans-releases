@@ -43,12 +43,10 @@ package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -68,7 +66,6 @@ import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -81,9 +78,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
@@ -103,14 +97,11 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -239,7 +230,7 @@ public class ActionProviderImpl implements ActionProvider {
 
         } else {
             setupTaskName(action, rc, lookup);
-            runGoal(rc);
+            RunUtils.executeMaven(rc);
         }
     }
 
@@ -249,48 +240,6 @@ public class ActionProviderImpl implements ActionProvider {
             replacements.putAll(prov.createReplacements(action, lookup));
         }
         return replacements;
-    }
-
-    private void runGoal(RunConfig config) {
-        // check the prerequisites
-        for (PrerequisitesChecker elem : config.getProject().getLookup().lookupAll(PrerequisitesChecker.class)) {
-            if (!elem.checkRunConfig(config)) {
-                return;
-            }
-            if (config.getPreExecution() != null) {
-                if (!elem.checkRunConfig(config.getPreExecution())) {
-                    return;
-                }
-            }
-        }
-
-        // setup executor now..   
-        ExecutorTask task = RunUtils.executeMaven(config);
-
-        // fire project change on when finishing maven execution, to update the classpath etc. -MEVENIDE-83
-        task.addTaskListener(new TaskListener() {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public void taskFinished(Task task2) {
-//reload is done in executors
-//                NbMavenProject.fireMavenProjectReload(project);
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-                if (info != null) {
-                    List<Artifact> arts = new ArrayList<Artifact>();
-                    Artifact prjArt = project.getOriginalMavenProject().getArtifact();
-                    if (prjArt != null) {
-                        arts.add(prjArt);
-                    }
-                    //#157572
-                    Set depArts = project.getOriginalMavenProject().getDependencyArtifacts();
-                    if (depArts != null) {
-                        arts.addAll(depArts);
-                    }
-                    RepositoryIndexer.updateIndexWithArtifacts(info, arts);
-                }
-            }
-        });
     }
 
     @Messages({
@@ -379,7 +328,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(rc); //NOI18N
+                RunUtils.executeMaven(rc);
 
                 return;
             }
@@ -432,7 +381,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(rc); //NOI18N
+                RunUtils.executeMaven(rc);
 
             }
         }
