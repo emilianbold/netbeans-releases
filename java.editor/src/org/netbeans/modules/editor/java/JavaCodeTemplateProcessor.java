@@ -617,7 +617,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         StatementTree var = stmts.get(0);
                         if (var.getKind() == Tree.Kind.VARIABLE) {
                             tu.attributeTree(stmt, scope);
-                            return cInfo.getTrees().getTypeMirror(new TreePath(treePath, ((VariableTree)var).getType()));
+                            TypeMirror ret = cInfo.getTrees().getTypeMirror(new TreePath(treePath, ((VariableTree)var).getType()));
+                            if (ret != null)
+                                return ret;
                         }
                     }
                 }
