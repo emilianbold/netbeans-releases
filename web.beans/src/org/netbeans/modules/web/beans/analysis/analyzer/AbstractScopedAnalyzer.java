@@ -79,6 +79,7 @@ public abstract class AbstractScopedAnalyzer  {
             checkScope( scopeElement , element , model, cancel, result );
         }
         catch (CdiException e) {
+            result.requireCdiEnabled(element, model);
             informCdiException(e, element, model, result  );
         }
     }

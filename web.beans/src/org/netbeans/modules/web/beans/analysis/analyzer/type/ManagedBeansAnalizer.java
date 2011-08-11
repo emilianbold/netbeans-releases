@@ -77,10 +77,11 @@ public class ManagedBeansAnalizer implements ClassAnalyzer {
             WebBeansModel model, AtomicBoolean cancel,
             Result result )
     {
-            boolean cdiManaged = model.getQualifiers( element,  true ).size()>0;
-            if ( !cdiManaged ){
+        boolean cdiManaged = model.getQualifiers( element,  true ).size()>0;
+        if ( !cdiManaged ){
                 return;
-            }
+        }
+        result.requireCdiEnabled(element, model);
         if (cancel.get()) {
             return;
         }

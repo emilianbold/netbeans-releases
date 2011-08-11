@@ -88,6 +88,7 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                         AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));// NOI18N
         }
         if ( isDecorator || isInterceptor ){
+            result.requireCdiEnabled(element);
             if ( cancel.get() ){
                 return;
             }

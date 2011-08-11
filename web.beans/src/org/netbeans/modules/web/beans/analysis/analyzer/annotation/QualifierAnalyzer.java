@@ -68,6 +68,7 @@ public class QualifierAnalyzer implements AnnotationAnalyzer {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.QUALIFIER_FQN, 
                 result.getInfo()))
         {
+            result.requireCdiEnabled(element);
             QualifierTargetAnalyzer analyzer = new QualifierTargetAnalyzer(element, 
                     result );
             if ( !analyzer.hasRuntimeRetention() ){
