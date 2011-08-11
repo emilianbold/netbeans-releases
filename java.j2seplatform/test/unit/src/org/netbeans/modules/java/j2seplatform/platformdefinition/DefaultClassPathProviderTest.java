@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import org.netbeans.modules.java.j2seplatform.queries.DefaultClassPathProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
