@@ -332,7 +332,7 @@ elementName
 attrib
     : LBRACKET
     	namespace_wqname_prefix? WS*
-        IDENT WS*
+        attrib_name WS*
         
             (
                 (
@@ -341,15 +341,25 @@ attrib
                     | DASHMATCH
                 )
                 WS*
-                (
-                      IDENT
-                    | STRING
-                )
+                attrib_value
                 WS*
             )?
     
       RBRACKET
 ;
+
+//bit similar naming to attrvalue, attrname - but these are different - for functions
+attrib_name
+	: IDENT
+	;
+	
+attrib_value
+	: 
+	(
+  	      IDENT
+              | STRING
+        )
+        ;
 
 pseudo
     : COLON 

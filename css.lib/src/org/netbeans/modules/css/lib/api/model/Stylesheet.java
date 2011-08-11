@@ -51,9 +51,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.nbparser.CssParser;
@@ -61,7 +59,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * A domain object model representing CSS file backed up by 
@@ -74,7 +71,8 @@ public final class Stylesheet {
     private static final Logger LOGGER = Logger.getLogger(Stylesheet.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
     private final List<Rule> rules = new ArrayList<Rule>(10);
-    /* package private for unit tests only */ final Collection<String> imported_files = new ArrayList<String>(); 
+    /* package private for unit tests only */ final Collection<String> imported_files = new ArrayList<String>();
+    private final List<Namespace> namespaces = new ArrayList<Namespace>();
     private Snapshot snapshot;
     private FileObject fileObject;
 
@@ -97,15 +95,22 @@ public final class Stylesheet {
         return rules;
     }
 
+    /**
+     * @return a list of declared namespaces
+     */
+    public List<Namespace> getNamespaces() {
+        return namespaces;
+    }
+
     private Collection<FileObject> getImportedFiles() {
         FileObject sourceFile = snapshot.getSource().getFileObject();
-        if(sourceFile == null) {
+        if (sourceFile == null) {
             //this quite unlikely situation but possible. 
             //in such case we cannot properly resolve the links so 
             //just return empty list
             return Collections.emptyList();
         }
-        
+
         FileObject baseFolder = sourceFile.getParent();
         Collection<FileObject> files = new ArrayList<FileObject>();
         for (String fileNamePath : imported_files) {
@@ -128,8 +133,8 @@ public final class Stylesheet {
             if (importedFile.isValid() && importedFile.getMIMEType().equals("text/x-css")) {
                 try {
                     Stylesheet created = CssParser.parse(snapshot).getModel();
-                    if(created != null) {
-                        if(models.add(created)) {
+                    if (created != null) {
+                        if (models.add(created)) {
                             processModels(models, created);
                         }
                     }
@@ -165,13 +170,20 @@ public final class Stylesheet {
 
                 @Override
                 public boolean visit(Node node) {
-                    if (node.type() == NodeType.ruleSet) {
-                        rules.add(new Rule(snapshot, node));
-                    } else if (node.type() == NodeType.imports) {
-                        Node importedFile = NodeUtil.query(node, "resourceIdentifier"); //NOI18N
-                        if (importedFile != null) {
-                            imported_files.add(WebUtils.unquotedValue(importedFile.image()));
-                        }
+                    switch (node.type()) {
+                        case ruleSet:
+                            rules.add(new Rule(snapshot, node));
+                            break;
+                        case imports:
+                            Node importedFile = NodeUtil.query(node, "resourceIdentifier"); //NOI18N
+                            if (importedFile != null) {
+                                imported_files.add(WebUtils.unquotedValue(importedFile.image()));
+                            }
+                            break;
+                        case namespace:
+                            namespaces.add(new Namespace(snapshot, node));
+                            break;
+
                     }
                     return false;
                 }
@@ -201,5 +213,4 @@ public final class Stylesheet {
         hash = 61 * hash + (this.fileObject != null ? this.fileObject.hashCode() : 0);
         return hash;
     }
-
 }
