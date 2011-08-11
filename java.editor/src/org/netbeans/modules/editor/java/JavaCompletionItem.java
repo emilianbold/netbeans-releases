@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.java;
 
+import org.netbeans.api.whitelist.WhiteListQuery;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -111,22 +112,22 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new PackageItem(pkgFQN, substitutionOffset, inPackageStatement);
     }
 
-    public static final JavaCompletionItem createTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport) {
+    public static final JavaCompletionItem createTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case CLASS:
-                return new ClassItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport);
+                return new ClassItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport, whiteList);
             case INTERFACE:
-                return new InterfaceItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport);
+                return new InterfaceItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport, whiteList);
             case ENUM:
-                return new EnumItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addSimpleName, smartType, autoImport);
+                return new EnumItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addSimpleName, smartType, autoImport, whiteList);
             case ANNOTATION_TYPE:
-                return new AnnotationTypeItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addSimpleName, smartType, autoImport);
+                return new AnnotationTypeItem(info, elem, type, 0, substitutionOffset, displayPkgName, isDeprecated, insideNew, addSimpleName, smartType, autoImport, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
     
-    public static final JavaCompletionItem createArrayItem(CompilationInfo info, ArrayType type, int substitutionOffset, Elements elements) {
+    public static final JavaCompletionItem createArrayItem(CompilationInfo info, ArrayType type, int substitutionOffset, Elements elements, WhiteListQuery.WhiteList whiteList) {
         int dim = 0;
         TypeMirror tm = type;
         while(tm.getKind() == TypeKind.ARRAY) {
@@ -140,13 +141,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
             TypeElement elem = (TypeElement)dt.asElement();
             switch (elem.getKind()) {
                 case CLASS:
-                    return new ClassItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, true, false);
+                    return new ClassItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, true, false, whiteList);
                 case INTERFACE:
-                    return new InterfaceItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, true, false);
+                    return new InterfaceItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, false, true, false, whiteList);
                 case ENUM:
-                    return new EnumItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true, false);
+                    return new EnumItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true, false, whiteList);
                 case ANNOTATION_TYPE:
-                    return new AnnotationTypeItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true, false);
+                    return new AnnotationTypeItem(info, elem, dt, dim, substitutionOffset, true, elements.isDeprecated(elem), false, false, true, false, whiteList);
             }
         }
         throw new IllegalArgumentException("array element kind=" + tm.getKind());
@@ -156,7 +157,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new TypeParameterItem(elem, substitutionOffset);
     }
 
-    public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport) {
+    public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
@@ -165,7 +166,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
             case ENUM_CONSTANT:
             case FIELD:
-                return new FieldItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, smartType, autoImport);
+                return new FieldItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, smartType, autoImport, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -175,27 +176,27 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType);
     }
 
-    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport) {
+    public static final JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType, autoImport);
+                return new MethodItem(info, elem, type, substitutionOffset, isInherited, isDeprecated, inImport, addSemicolon, smartType, autoImport, whiteList);
             case CONSTRUCTOR:
-                return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null);
+                return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
     }
     
-    public static final JavaCompletionItem createThisOrSuperConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, String name) {
+    public static final JavaCompletionItem createThisOrSuperConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, String name, WhiteListQuery.WhiteList whiteList) {
         if (elem.getKind() == ElementKind.CONSTRUCTOR)
-            return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, false, name);
+            return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, false, name, whiteList);
         throw new IllegalArgumentException("kind=" + elem.getKind());
     }
 
-    public static final JavaCompletionItem createOverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
+    public static final JavaCompletionItem createOverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case METHOD:
-                return new OverrideMethodItem(info, elem, type, substitutionOffset, implement);
+                return new OverrideMethodItem(info, elem, type, substitutionOffset, implement, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -219,24 +220,24 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new ParametersItem(info, elem, type, substitutionOffset, isDeprecated, activeParamIndex, name);
     }
 
-    public static final JavaCompletionItem createAnnotationItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated) {
-        return new AnnotationItem(info, elem, type, substitutionOffset, isDeprecated, true);
+    public static final JavaCompletionItem createAnnotationItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
+        return new AnnotationItem(info, elem, type, substitutionOffset, isDeprecated, true, whiteList);
     }
     
     public static final JavaCompletionItem createAttributeItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated) {
         return new AttributeItem(info, elem, type, substitutionOffset, isDeprecated);
     }
     
-    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset) {
-        return new AttributeValueItem(info, value, documentation, element, substitutionOffset);
+    public static final JavaCompletionItem createAttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset, WhiteListQuery.WhiteList whiteList) {
+        return new AttributeValueItem(info, value, documentation, element, substitutionOffset, whiteList);
     }
 
-    public static final JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
+    public static final JavaCompletionItem createStaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
         switch (memberElem.getKind()) {
             case METHOD:
             case ENUM_CONSTANT:
             case FIELD:
-                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated);
+                return new StaticMemberItem(info, type, memberElem, memberType, substitutionOffset, isDeprecated, whiteList);
             default:
                 throw new IllegalArgumentException("kind=" + memberElem.getKind());
         }
@@ -253,11 +254,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD_END = "</b>"; //NOI18N
 
     protected int substitutionOffset;
-    
+
     protected JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
-    
+
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
@@ -426,7 +427,28 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         });
     }
-            
+    static abstract class WhiteListJavaCompletionItem extends JavaCompletionItem {
+
+        private final WhiteListQuery.WhiteList whiteList;
+        private Boolean isBlackListed;
+
+        protected WhiteListJavaCompletionItem(final int substitutionOffset, final WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset);
+            this.whiteList = whiteList;
+        }
+
+        protected final WhiteListQuery.WhiteList getWhiteList() {
+            return this.whiteList;
+        }
+
+        protected final boolean isBlackListed(
+                final ElementHandle<?> handle) {
+            if (isBlackListed == null) {
+                isBlackListed = whiteList == null ? false : !whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed();
+            }
+            return isBlackListed;
+        }
+    }
     static class KeywordItem extends JavaCompletionItem {
         
         private static final String JAVA_KEYWORD = "org/netbeans/modules/java/editor/resources/javakw_16.png"; //NOI18N
@@ -619,7 +641,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
     }
 
-    static class ClassItem extends JavaCompletionItem {
+    static class ClassItem extends WhiteListJavaCompletionItem {
         
         private static final String CLASS = "org/netbeans/modules/editor/resources/completion/class_16.png"; //NOI18N
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
@@ -640,8 +662,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private boolean autoImport;
         
-        private ClassItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport) {
-            super(substitutionOffset);
+        private ClassItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, whiteList);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.dim = dim;
             this.isDeprecated = isDeprecated;
@@ -691,12 +713,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(getColor());
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle)))
                     sb.append(STRIKE);
                 sb.append(escape(typeName));
                 for(int i = 0; i < dim; i++)
                     sb.append("[]"); //NOI18N
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(ElementHandle.from(typeHandle)))
                     sb.append(STRIKE_END);
                 if (enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
@@ -909,7 +931,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (val != 1 || ctor != null) {
                                     final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
                                             val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
-                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true, false);
+                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, false, false, false, false, true, false,getWhiteList());
                                     try {
                                         final Position offPosition = doc.createPosition(offset);
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -939,7 +961,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         public String toString() {
             return simpleName;
-        }        
+        }
     }
     
     static class InterfaceItem extends ClassItem {
@@ -948,8 +970,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
         private static ImageIcon icon;
         
-        private InterfaceItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport) {
-            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport);
+        private InterfaceItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, addTypeVars, addSimpleName, smartType, autoImport, whiteList);
         }
 
         protected ImageIcon getIcon(){
@@ -967,8 +989,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ENUM = "org/netbeans/modules/editor/resources/completion/enum.png"; // NOI18N
         private static ImageIcon icon;
         
-        private EnumItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addSimpleName, boolean smartType, boolean autoImport) {
-            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport);
+        private EnumItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport, whiteList);
         }
 
         protected ImageIcon getIcon(){
@@ -982,8 +1004,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String ANNOTATION = "org/netbeans/modules/editor/resources/completion/annotation_type.png"; // NOI18N
         private static ImageIcon icon;
         
-        private AnnotationTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addSimpleName, boolean smartType, boolean autoImport) {
-            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport);
+        private AnnotationTypeItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+            super(info, elem, type, dim, substitutionOffset, displayPkgName, isDeprecated, insideNew, false, addSimpleName, smartType, autoImport, whiteList);
         }
 
         protected ImageIcon getIcon(){
@@ -1082,7 +1104,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
    }
 
-    static class FieldItem extends JavaCompletionItem {
+    static class FieldItem extends WhiteListJavaCompletionItem {
         
         private static final String FIELD_PUBLIC = "org/netbeans/modules/editor/resources/completion/field_16.png"; //NOI18N
         private static final String FIELD_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_protected_16.png"; //NOI18N
@@ -1106,8 +1128,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String rightText;
         private boolean autoImport;
         
-        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport) {
-            super(substitutionOffset);
+        private FieldItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, whiteList);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
@@ -1140,10 +1162,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(FIELD_COLOR);
                 if (!isInherited)
                     sb.append(BOLD);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(elementHandle))
                     sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(elementHandle))
                     sb.append(STRIKE_END);
                 if (!isInherited)
                     sb.append(BOLD_END);
@@ -1152,7 +1174,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             return leftText;
         }
-        
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
+        }
+
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(typeName);
@@ -1244,7 +1271,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
-    static class MethodItem extends JavaCompletionItem {
+    static class MethodItem extends WhiteListJavaCompletionItem {
         
         private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
         private static final String METHOD_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_protected_16.png"; //NOI18N
@@ -1273,8 +1300,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String rightText;
         private boolean autoImport;
         
-        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport) {
-            super(substitutionOffset);
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, whiteList);
             this.elementHandle = ElementHandle.create(elem);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
@@ -1330,10 +1357,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 lText.append(METHOD_COLOR);
                 if (!isInherited)
                     lText.append(BOLD);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE);
                 lText.append(simpleName);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE_END);
                 if (!isInherited)
                     lText.append(BOLD_END);
@@ -1355,7 +1382,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             return leftText;
         }
-        
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
+        }
+
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(typeName);
@@ -1587,8 +1619,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean implement;
         private String leftText;
         
-        private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement) {
-            super(info, elem, type, substitutionOffset, false, false, false, false, false, false);
+        private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
+            super(info, elem, type, substitutionOffset, false, false, false, false, false, false, whiteList);
             this.implement = implement;
         }
         
@@ -1867,7 +1899,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    static class ConstructorItem extends JavaCompletionItem {
+    static class ConstructorItem extends WhiteListJavaCompletionItem {
         
         private static final String CONSTRUCTOR_PUBLIC = "org/netbeans/modules/editor/resources/completion/constructor_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PROTECTED = "org/netbeans/modules/editor/resources/completion/constructor_protected_16.png"; //NOI18N
@@ -1888,8 +1920,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String sortText;
         private String leftText;
         
-        private ConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name) {
-            super(substitutionOffset);
+        private ConstructorItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean isDeprecated, boolean smartType, String name, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, whiteList);
             this.elementHandle = ElementHandle.create(elem);
             this.isDeprecated = isDeprecated;
             this.smartType = smartType;
@@ -1940,10 +1972,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 StringBuilder lText = new StringBuilder();
                 lText.append(CONSTRUCTOR_COLOR);
                 lText.append(BOLD);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE);
                 lText.append(simpleName);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(elementHandle))
                     lText.append(STRIKE_END);
                 lText.append(BOLD_END);
                 lText.append(COLOR_END);
@@ -1964,7 +1996,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             return leftText;
         }
-        
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return isBlackListed(elementHandle) ? false : super.instantSubstitution(component);
+        }
+
         public CompletionTask createDocumentationTask() {
             return JavaCompletionProvider.createDocTask(elementHandle);
         }
@@ -2516,8 +2553,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     static class AnnotationItem extends AnnotationTypeItem {
         
-        private AnnotationItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated, boolean smartType) {
-            super(info, elem, type, 0, substitutionOffset, true, isDeprecated, false, false, smartType, false);
+        private AnnotationItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean isDeprecated, boolean smartType, WhiteListQuery.WhiteList whiteList) {
+            super(info, elem, type, 0, substitutionOffset, true, isDeprecated, false, false, smartType, false, whiteList);
         }
 
         public CharSequence getInsertPrefix() {
@@ -2680,7 +2717,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }        
     }
 
-    static class AttributeValueItem extends JavaCompletionItem {
+    static class AttributeValueItem extends WhiteListJavaCompletionItem {
 
         private static final String ATTRIBUTE_VALUE = "org/netbeans/modules/java/editor/resources/attribute_value_16.png"; // NOI18N
         private static final String ATTRIBUTE_VALUE_COLOR = "<font color=#404040>"; //NOI18N
@@ -2692,8 +2729,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String documentation;
         private String leftText;
 
-        private AttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset) {
-            super(substitutionOffset);
+        private AttributeValueItem(CompilationInfo info, String value, String documentation, TypeElement element, int substitutionOffset, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, whiteList);
             if (value.charAt(0) == '\"' && value.charAt(value.length() - 1) != '\"') { //NOI18N
                 value = value + '\"'; //NOI18N
                 quoteAdded = true;
@@ -2703,7 +2740,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.value = value;
             this.documentation = documentation;
             if (element != null)
-                delegate = createTypeItem(info, element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false, false, false);
+                delegate = createTypeItem(info, element, (DeclaredType)element.asType(), substitutionOffset, true, false, false, false, false, false, false, getWhiteList());
         }
 
         public int getSortPriority() {
@@ -2812,7 +2849,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    static class StaticMemberItem extends JavaCompletionItem {
+    static class StaticMemberItem extends WhiteListJavaCompletionItem {
         
         private static final String FIELD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/field_static_16.png"; //NOI18N
         private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
@@ -2837,8 +2874,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
         private String rightText;
         
-        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated) {
-            super(substitutionOffset);
+        private StaticMemberItem(CompilationInfo info, DeclaredType type, Element memberElem, TypeMirror memberType, int substitutionOffset, boolean isDeprecated, WhiteListQuery.WhiteList whiteList) {
+            super(substitutionOffset, whiteList);
             type = (DeclaredType) info.getTypes().erasure(type);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.memberElementHandle = ElementHandle.create(memberElem);
@@ -2899,10 +2936,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 lText.append(memberElementHandle.getKind().isField() ? FIELD_COLOR : METHOD_COLOR);
                 lText.append(escape(typeName));
                 lText.append('.');
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(memberElementHandle))
                     lText.append(STRIKE);
                 lText.append(memberName);
-                if (isDeprecated)
+                if (isDeprecated || isBlackListed(memberElementHandle))
                     lText.append(STRIKE_END);
                 lText.append(COLOR_END);
                 if (params != null) {
@@ -2924,7 +2961,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             return leftText;
         }
-        
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return isBlackListed(memberElementHandle) ? false : super.instantSubstitution(component);
+        }
+
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(memberTypeName);

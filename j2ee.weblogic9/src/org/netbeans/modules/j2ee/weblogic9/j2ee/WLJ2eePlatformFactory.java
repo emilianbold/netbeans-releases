@@ -105,6 +105,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.cloud.CloudDomainDetector;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
@@ -113,6 +114,7 @@ import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementa
 import org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
+import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -728,9 +730,13 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), 
-                    new JpaSupportImpl(this), new JsxWsPoliciesSupportImpl(this),
-                    new JaxRsStackSupportImpl(this));
+            List content = new ArrayList();
+            Collections.addAll(content, new File(getPlatformRoot()), new JpaSupportImpl(this),
+                new JsxWsPoliciesSupportImpl(this), new JaxRsStackSupportImpl(this));
+            if (CloudDomainDetector.isCloudDomain(dm.getInstanceProperties())) {
+                content.add(WhiteListQuerySupport.createCloud9WhiteListQueryImpl());
+            }
+            Lookup baseLookup = Lookups.fixed(content.toArray());
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }

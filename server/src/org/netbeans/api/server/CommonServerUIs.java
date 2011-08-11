@@ -50,6 +50,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.modules.server.ui.manager.ServerManagerPanel;
 
 /**
@@ -72,9 +73,17 @@ public final class CommonServerUIs {
      *             if <code>null</code> the first server instance will be preselected
      */
     public static void showCustomizer(ServerInstance instance) {
+        showCustomizer(instance, ServerRegistry.getInstance());
+    }
+
+    public static void showCloudCustomizer(ServerInstance instance) {
+        showCustomizer(instance, ServerRegistry.getCloudInstance());
+    }
+    
+    private static void showCustomizer(ServerInstance instance, ServerRegistry registry) {
         assert SwingUtilities.isEventDispatchThread() : "Invocation of the UI dialog outside of the EDT"; // NOI18N
 
-        ServerManagerPanel customizer = new ServerManagerPanel(instance);
+        ServerManagerPanel customizer = new ServerManagerPanel(instance, registry);
 
         JButton close = new JButton(NbBundle.getMessage(CommonServerUIs.class, "CTL_Close"));
         close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommonServerUIs.class, "AD_Close"));
