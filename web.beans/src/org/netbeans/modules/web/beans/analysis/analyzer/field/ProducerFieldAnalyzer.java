@@ -81,6 +81,7 @@ public class ProducerFieldAnalyzer extends AbstractProducerAnalyzer
         {
             return;
         }
+        result.requireCdiEnabled(element);
         if ( cancel.get() ){
             return;
         }

@@ -79,6 +79,7 @@ public abstract class AbstractTypedAnalyzer {
         if ( list == null ){
             return;
         }
+        result.requireCdiEnabled(element);
         for (TypeMirror type : list) {
             if ( cancel.get()){
                 return;
@@ -95,6 +96,7 @@ public abstract class AbstractTypedAnalyzer {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
                 compInfo))
         {
+            result.requireCdiEnabled(element);
             checkSpecializes( element , elementType , list,  cancel , result );
         }
     }

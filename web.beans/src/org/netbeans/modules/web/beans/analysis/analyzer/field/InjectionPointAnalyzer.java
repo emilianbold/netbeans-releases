@@ -83,6 +83,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
     {
         try {
             if (model.isInjectionPoint(element) ){
+                result.requireCdiEnabled(element, model);
                 checkInjectionPointMetadata( element, elementType , parent, model , 
                         cancel , result );
                 if ( cancel.get() ){
@@ -101,6 +102,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
             }
         }
         catch (InjectionPointDefinitionError e) {
+            result.requireCdiEnabled(element, model);
             informInjectionPointDefError(e, element, model, result );
         }
     }

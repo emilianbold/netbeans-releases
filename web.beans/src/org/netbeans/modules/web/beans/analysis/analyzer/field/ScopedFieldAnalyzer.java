@@ -73,6 +73,7 @@ public class ScopedFieldAnalyzer extends AbstractScopedAnalyzer implements
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 model.getCompilationController()))
         {
+            result.requireCdiEnabled(element, model);
             analyzeScope(element, model, cancel , result );
         }
     }

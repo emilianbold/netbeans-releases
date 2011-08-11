@@ -83,6 +83,9 @@ public class DeclaredIBindingsAnalyzer extends
         Set<AnnotationMirror> interceptorBindings = getInterceptorBindings(element, 
                 model);
         Map<Element, AnnotationMirror> iBindings = new HashMap<Element, AnnotationMirror>();
+        if ( !interceptorBindings.isEmpty() ){
+            result.requireCdiEnabled(element, model);
+        }
         for (AnnotationMirror annotationMirror : interceptorBindings) {
             Element iBinding = annotationMirror.getAnnotationType().asElement();
             AnnotationMirror found = iBindings.get( iBinding );

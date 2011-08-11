@@ -78,6 +78,7 @@ public class InterceptorBindingAnalyzer implements AnnotationAnalyzer {
         {
             return;
         }
+        result.requireCdiEnabled(element, model);
         InterceptorTargetAnalyzer analyzer = new InterceptorTargetAnalyzer(
                 element, model, result );
         if ( cancel.get() ){
