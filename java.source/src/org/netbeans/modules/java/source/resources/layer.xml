@@ -289,7 +289,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-classfile-SideBarFactoryImpl.instance">
                         <attr name="location" stringvalue="North" />
                         <attr name="scrollable" boolvalue="false" />
-                        <attr name="position" intvalue="7000"/>
+                        <attr name="position" intvalue="7001"/>
                     </file>
                 </folder>
             </folder>
