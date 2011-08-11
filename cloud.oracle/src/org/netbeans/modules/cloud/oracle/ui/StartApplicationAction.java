@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.cloud.oracle.ui;
 
-import org.netbeans.api.server.CommonServerUIs;
-import org.netbeans.modules.cloud.oracle.OracleInstance;
+import oracle.nuviaq.model.xml.ApplicationDeployment;
+import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -51,12 +51,13 @@ import org.openide.util.actions.NodeAction;
 /**
  *
  */
-public class PropertiesAction extends NodeAction {
+public class StartApplicationAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        OracleInstance ai = activatedNodes[0].getLookup().lookup(OracleInstance.class);
-        CommonServerUIs.showCloudCustomizer(ai.getServerInstance());
+        OracleJ2EEInstance inst = activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class);
+        ApplicationDeployment app = activatedNodes[0].getLookup().lookup(ApplicationDeployment.class);
+        inst.getOracleInstance().start(app);
     }
 
     @Override
@@ -64,18 +65,14 @@ public class PropertiesAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleInstance.class) != null;
+        // TODO: enabled only when app in right state
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(OracleJ2EEInstance.class) != null &&
+                activatedNodes[0].getLookup().lookup(ApplicationDeployment.class) != null;
     }
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(UndeployApplicationAction.class, "PropertiesAction.name");
-    }
-
-    
-    @Override
-    protected boolean asynchronous() {
-        return false;
+        return NbBundle.getMessage(UndeployApplicationAction.class, "StartApplicationAction.name");
     }
 
     @Override

@@ -46,6 +46,7 @@ import org.netbeans.modules.cloud.oracle.OracleInstance;
 import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -71,7 +72,7 @@ public class UndeployApplicationAction extends NodeAction {
 
     @Override
     public String getName() {
-        return "Undeploy";
+        return NbBundle.getMessage(UndeployApplicationAction.class, "UndeployApplicationAction.name");
     }
 
     @Override

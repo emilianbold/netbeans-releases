@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.cloud.oracle.serverplugin;
 
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.InstanceState;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,6 +55,7 @@ public class OracleJ2EEInstance {
     private InstanceState state;
     private String tenantId;
     private String serviceName;
+    private ServerInstance instance;
 
     public OracleJ2EEInstance(OracleInstance oracleInstance, String tenantId, String serviceName) {
         this.oracleInstance = oracleInstance;
@@ -93,6 +96,14 @@ public class OracleJ2EEInstance {
         
         
     }
+
+    public ServerInstance getInstance() {
+        return instance;
+    }
+
+    void setInstance(ServerInstance instance) {
+        this.instance = instance;
+    }
     
     public InstanceState getState() {
         return state;
@@ -103,7 +114,7 @@ public class OracleJ2EEInstance {
     }
 
     public String getDisplayName() {
-        return "Weblogic Java Service on "+getOracleInstance().getName();
+        return NbBundle.getMessage(OracleJ2EEInstance.class, "MSG_REMOTE_SERVER_NAME", getOracleInstance().getName());
     }
     
     public String getId() {

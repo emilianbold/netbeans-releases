@@ -183,7 +183,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             }
             List<OracleJ2EEInstance> instances = ai.readJ2EEServerInstances();
             for (OracleJ2EEInstance inst : instances) {
-                OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(inst);
+                OracleJ2EEInstanceNode n = new OracleJ2EEInstanceNode(inst, true);
                 servers.add(new ServerResourceDescriptor("Server", n.getDisplayName(), "", ImageUtilities.image2Icon(n.getIcon(BeanInfo.ICON_COLOR_16x16))));
             }
         } finally {

@@ -121,6 +121,7 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                inst.setInstance(si);
                 servers.add(si);
             }
         }
