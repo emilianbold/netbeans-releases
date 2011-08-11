@@ -112,9 +112,12 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     private Map<String, Set<String>> artifactCache = new HashMap<String, Set<String>>();
     private Map<String, RequestProcessor.Task> versionTasks = new HashMap<String, RequestProcessor.Task>();
     private Map<String, Set<String>> versionCache = new HashMap<String, Set<String>>();
+    private final Map<String,RequestProcessor.Task> classifierTasks = new HashMap<String,RequestProcessor.Task>();
+    private final Map<String,Set<String>> classifierCache = new HashMap<String,Set<String>>();
     private final Object GROUP_LOCK = new Object();
     private final Object ARTIFACT_LOCK = new Object();
     private final Object VERSION_LOCK = new Object();
+    private final Object CLASSIFIER_LOCK = new Object();
 
 
     public MavenProjectGrammar(GrammarEnvironment env) {
@@ -380,6 +383,26 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                
             }
         }
+        if (path.endsWith("dependencies/dependency/classifier")) { // #200852
+            Node previous;
+            if (virtualTextCtx.getCurrentPrefix().length() == 0) {
+                previous = virtualTextCtx.getPreviousSibling();
+            } else {
+                previous = virtualTextCtx.getParentNode().getPreviousSibling();
+            }
+            ArtifactInfoHolder hold = findArtifactInfo(previous);
+            if (hold.getGroupId() != null && hold.getArtifactId() != null && hold.getVersion() != null) {
+                Set<String> elems = getClassifiers(hold.getGroupId(), hold.getArtifactId(), hold.getVersion());
+                List<GrammarResult> texts = new ArrayList<GrammarResult>();
+                String currprefix = virtualTextCtx.getCurrentPrefix();
+                for (String elem : elems) {
+                    if (elem.startsWith(currprefix)) {
+                        texts.add(new MyTextElement(elem, currprefix));
+                    }
+                }
+                return Collections.enumeration(texts);
+            }
+        }
         if (path.endsWith("plugins/plugin/artifactId")) { //NOI18N
             //poor mans solution, just check local repository for possible versions..
             // in future would be nice to include remote repositories somehow..
@@ -550,7 +573,35 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         return elems;
     }
-    
+
+    private Set<String> getClassifiers(String groupId, String artifactId, String version) {
+        Set<String> elems = null;
+        RequestProcessor.Task tsk = null;
+        String id = groupId + ':' + artifactId + ':' + version;
+        synchronized (CLASSIFIER_LOCK) {
+            tsk = classifierTasks.get(id);
+            if (tsk == null) {
+                tsk = RequestProcessor.getDefault().create(new ClassifierTask(groupId, artifactId, version));
+                classifierTasks.put(id, tsk);
+            }
+            Set<String> c = classifierCache.get(id);
+            if (c != null) {
+                elems = c;
+            } else {
+                if (!tsk.isFinished()) {
+                    tsk.run();
+                }
+            }
+        }
+        if (elems == null) {
+            tsk.waitFinished();
+        }
+        synchronized (CLASSIFIER_LOCK) {
+            Set<String> c = classifierCache.get(id);
+            elems = c != null ? c : Collections.<String>emptySet();
+        }
+        return elems;
+    }
     
   /*Return repo url's*/
     private List<String> getRepoUrls() {
@@ -723,4 +774,27 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         
     }
     
+    private class ClassifierTask implements Runnable {
+        private final String groupId;
+        private final String artifactId;
+        private final String version;
+        ClassifierTask(String groupId, String artifactId, String version) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.version = version;
+        }
+        @Override public void run() {
+            List<NBVersionInfo> infos = RepositoryQueries.getRecords(groupId, artifactId, version, RepositoryPreferences.getInstance().getRepositoryInfos());
+            Set<String> elems = new LinkedHashSet<String>();
+            for (NBVersionInfo inf : infos) {
+                if (inf.getClassifier() != null) {
+                    elems.add(inf.getClassifier());
+                }
+            }
+            synchronized (CLASSIFIER_LOCK) {
+                classifierCache.put(groupId + ':' + artifactId + ':' + version, elems);
+            }
+        }
+    }
+
 }
