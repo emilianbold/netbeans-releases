@@ -494,12 +494,32 @@ final class ResultView extends TopComponent {
             addSearchPair(panel, task);
             // #176312 tab name needs to be set so scrolling is performed correctly
             // after setSelectedComponent() in addTabPanel()
-            panel.setName(task.getSearchCriteria().getTextPatternExpr()); //NOI18N
+            panel.setName(getPanelName(task));
             addTabPanel(panel);
         } else {
-            panel.setName(task.getSearchCriteria().getTextPatternExpr()); //NOI18N
+            panel.setName(getPanelName(task));
         }
         return panel;
+    }
+    
+    /** Get string that will be used as name of the panel.
+     * 
+     * @param task
+     * @return 
+     */
+    private String getPanelName(SearchTask task) {
+                
+        BasicSearchCriteria criteria = task.getSearchCriteria();
+        if (criteria.getTextPattern() == null) {
+           if (criteria.getFileNamePattern() == null) {
+               return NbBundle.getMessage(ResultView.class, 
+                       "TEXT_MSG_RESULTS_FOR_FILE_PATTERN"); //NOI18N
+           } else {
+               return criteria.getFileNamePatternExpr();
+           }
+        } else {
+            return criteria.getTextPatternExpr();
+         }
     }
     
     /**
