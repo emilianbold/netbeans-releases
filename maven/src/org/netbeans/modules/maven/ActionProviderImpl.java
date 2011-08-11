@@ -230,7 +230,7 @@ public class ActionProviderImpl implements ActionProvider {
 
         } else {
             setupTaskName(action, rc, lookup);
-            RunUtils.executeMaven(rc);
+            RunUtils.run(rc);
         }
     }
 
@@ -328,7 +328,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                RunUtils.executeMaven(rc);
+                RunUtils.run(rc);
 
                 return;
             }
@@ -381,7 +381,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                RunUtils.executeMaven(rc);
+                RunUtils.run(rc);
 
             }
         }
