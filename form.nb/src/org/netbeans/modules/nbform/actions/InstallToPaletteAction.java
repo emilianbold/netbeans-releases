@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.actions;
+package org.netbeans.modules.nbform.actions;
 
 import java.util.Arrays;
 import org.netbeans.api.java.source.JavaSource;
