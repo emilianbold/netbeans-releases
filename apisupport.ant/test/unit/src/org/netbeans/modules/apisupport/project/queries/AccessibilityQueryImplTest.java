@@ -70,12 +70,12 @@ public class AccessibilityQueryImplTest extends TestBase {
     // XXX testSubpackages - would need to generate a new module to test
 
     public void testTestRoots() throws Exception {
-        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbRoot().getFileObject("project.ant/test/unit/src/org/netbeans/api/project/ant")));
-        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbRoot().getFileObject("j2ee.kit/test/qa-functional/src/org/netbeans/test/j2ee")));
+        assertEquals(null, AccessibilityQuery.isPubliclyAccessible(nbRoot().getFileObject("project.ant/test/unit/src/org/netbeans/api/project/ant")));
+        assertEquals(null, AccessibilityQuery.isPubliclyAccessible(nbRoot().getFileObject("j2ee.kit/test/qa-functional/src/org/netbeans/test/j2ee")));
     }
     
     public void testOtherSourceRoots() throws Exception {
-        assertEquals(Boolean.FALSE, AccessibilityQuery.isPubliclyAccessible(nbRoot().getFileObject("o.apache.tools.ant.module/src-bridge/org/apache/tools/ant/module/bridge/impl")));
+        assertEquals(null, AccessibilityQuery.isPubliclyAccessible(nbRoot().getFileObject("o.apache.tools.ant.module/src-bridge/org/apache/tools/ant/module/bridge/impl")));
     }
     
 }

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
@@ -80,6 +81,10 @@ public class ProjectFactorySupportTest extends NbTestCase {
         clearWorkDir();
         System.setProperty("netbeans.user", new File(getWorkDir(), "ud").getPath());
         MockLookup.setLayersAndInstances();
+    }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
     }
 
     private static EclipseProject getTestableProject(int version, File proj) throws IOException {

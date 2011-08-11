@@ -61,7 +61,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -179,7 +178,7 @@ public class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Prov
         };
         final List<NBGroupInfo> list = RepositoryQueries.findDependencyUsage(
                 artifact.getGroupId(),
-                    artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                    artifact.getArtifactId(), artifact.getVersion(), null);
         Children repoChildren = new Children.Keys<NBGroupInfo>() {
 
             @Override
