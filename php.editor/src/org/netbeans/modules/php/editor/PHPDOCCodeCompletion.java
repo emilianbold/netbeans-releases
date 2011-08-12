@@ -95,7 +95,10 @@ public class PHPDOCCodeCompletion {
             PHPDocCommentTokenId.PHPDOC_GLOBAL,
             PHPDocCommentTokenId.PHPDOC_PROPERTY,
             PHPDocCommentTokenId.PHPDOC_PROPERTY_READ,
-            PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE);
+            PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE,
+            PHPDocCommentTokenId.PHPDOC_LINK,
+            PHPDocCommentTokenId.PHPDOC_USES,
+            PHPDocCommentTokenId.PHPDOC_SEE);
 
     static {
         File file = InstalledFileLocator.getDefault().locate("docs/phpdocdesc.zip", null, true); //NoI18N
