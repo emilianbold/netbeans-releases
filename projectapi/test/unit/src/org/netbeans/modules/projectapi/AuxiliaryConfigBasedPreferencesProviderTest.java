@@ -367,6 +367,10 @@ public class AuxiliaryConfigBasedPreferencesProviderTest extends NbTestCase {
         
         assertEquals(0, putCount.get());
     }
+
+    public void testFindCNBForClass() throws Exception {
+        assertEquals("org-w3c-dom", AuxiliaryConfigBasedPreferencesProvider.findCNBForClass(Document.class));
+    }
     
     private static final class TestAuxiliaryConfigurationImpl implements AuxiliaryConfiguration {
 
