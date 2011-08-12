@@ -129,6 +129,7 @@ public class OracleInstanceManager {
                 props.putString(TENANT_ID, ai.getTenantId());
                 props.putString(SERVICE_NAME, ai.getServiceName());
                 props.putString(NAME, ai.getName());
+                notifyChange();
                 break;
             }
         }
