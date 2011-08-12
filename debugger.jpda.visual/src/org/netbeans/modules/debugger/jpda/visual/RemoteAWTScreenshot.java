@@ -52,6 +52,8 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
@@ -88,12 +90,15 @@ import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
 import org.netbeans.spi.debugger.visual.ComponentInfo;
 import org.netbeans.spi.debugger.visual.RemoteScreenshot;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -396,6 +401,7 @@ public class RemoteAWTScreenshot {
         AWTComponentInfo ci = new AWTComponentInfo(t);
         retrieveComponents(ci, t, vm, componentClass, containerClass, window, getComponents, getBounds,
                            Integer.MIN_VALUE, Integer.MIN_VALUE, ((JPDAThreadImpl) t).getDebugger());
+        findComponentFields(ci);
         ci.bounds.x = 0; // Move to the origin, we do not care where it's on the screen.
         ci.bounds.y = 0;
         return ci;
@@ -465,7 +471,7 @@ public class RemoteAWTScreenshot {
                 };
             }
         });
-        addProperties(ci, t, vm, componentClass, component, debugger);
+        addProperties(ci, t, vm, component, debugger);
         
         if (isInstanceOfClass((ClassType) component.referenceType(), containerClass)) {
             ArrayReference componentsArray = (ArrayReference) component.invokeMethod(tawt, getComponents, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -487,10 +493,9 @@ public class RemoteAWTScreenshot {
     }
     
     private static void addProperties(AWTComponentInfo ci, JPDAThreadImpl t, VirtualMachine vm,
-                                      ClassType componentClass, ObjectReference component,
-                                      JPDADebuggerImpl debugger) {
+                                      ObjectReference component, JPDADebuggerImpl debugger) {
         // TODO: Try to find out the BeanInfo of the class
-        List<Method> allMethods = componentClass.allMethods();
+       List<Method> allMethods = component.referenceType().allMethods();
         //System.err.println("Have "+allMethods.size()+" methods.");
         Map<String, Method> methodsByName = new HashMap<String, Method>(allMethods.size());
         for (Method m : allMethods) {
@@ -512,12 +517,15 @@ public class RemoteAWTScreenshot {
                 continue;
             }
             String property;
+            String setName;
             if (name.startsWith("is")) {
                 property = Character.toLowerCase(name.charAt(2)) + name.substring(3);
+                setName = "set" + name.substring(2);
             } else { // startsWith("get"):
                 property = Character.toLowerCase(name.charAt(3)) + name.substring(4);
+                setName = "set" + name.substring(3);
             }
-            Property p = new ComponentProperty(property, methodsByName.get(name), methodsByName.get("set" + name.substring(3)),
+            Property p = new ComponentProperty(property, methodsByName.get(name), methodsByName.get(setName),
                                                ci, component, t, debugger);
             sortedProperties.put(property, p);
             //System.err.println("    => property '"+property+"', p = "+p);
@@ -531,6 +539,50 @@ public class RemoteAWTScreenshot {
                     return properties;//.toArray(new Property[] {});
                 }
             });
+        Method getTextMethod = methodsByName.get("getText");    // NOI18N
+        if (getTextMethod != null) {
+            try {
+                Value theText = component.invokeMethod(t.getThreadReference(), getTextMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                if (theText instanceof StringReference) {
+                    ci.setComponentText(((StringReference) theText).value());
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    private static void findComponentFields(AWTComponentInfo ci) {
+        List<AWTComponentInfo> customParents = new ArrayList<AWTComponentInfo>();
+        fillCusomParents(customParents, ci);
+        findFieldsInParents(customParents, ci);
+    }
+    
+    private static void fillCusomParents(List<AWTComponentInfo> customParents, AWTComponentInfo ci) {
+        AWTComponentInfo[] subComponents = ci.getSubComponents();
+        if (subComponents.length > 0 && ci.isCustomType()) {
+            customParents.add(ci);
+        }
+        for (AWTComponentInfo sci : subComponents) {
+            fillCusomParents(customParents, sci);
+        }
+    }
+
+    private static void findFieldsInParents(List<AWTComponentInfo> customParents, AWTComponentInfo ci) {
+        AWTComponentInfo[] subComponents = ci.getSubComponents();
+        ObjectReference component = ci.getComponent();
+        for (AWTComponentInfo cp : customParents) {
+            ObjectReference c = cp.getComponent();
+            Map<Field, Value> fieldValues = c.getValues(((ClassType) c.referenceType()).fields());
+            for (Map.Entry<Field, Value> e : fieldValues.entrySet()) {
+                if (component.equals(e.getValue())) {
+                    ci.fieldInfo = new AWTComponentInfo.FieldInfo(e.getKey(), cp);
+                }
+            }
+        }
+        for (AWTComponentInfo sci : subComponents) {
+            findFieldsInParents(customParents, sci);
+        }
     }
     
     private static class ComponentProperty extends Node.Property {
@@ -546,6 +598,8 @@ public class RemoteAWTScreenshot {
         private String value;
         private final Object valueLock = new Object();
         private final String valueCalculating = new String("calculating");
+        private boolean valueIsEditable = false;
+        private Type valueType;
         
         ComponentProperty(String propertyName, Method getter, Method setter,
                           AWTComponentInfo ci, ObjectReference component,
@@ -588,9 +642,13 @@ public class RemoteAWTScreenshot {
                                 RemoteServices.runOnStoppedThread(t, new Runnable() {
                                     @Override
                                     public void run() {
-                                        String v = getValueLazy();
+                                        boolean[] isEditablePtr = new boolean[] { false };
+                                        Type[] typePtr = new Type[] { null };
+                                        String v = getValueLazy(isEditablePtr, typePtr);
                                         synchronized (valueLock) {
                                             value = v;
+                                            valueIsEditable = isEditablePtr[0];
+                                            valueType = typePtr[0];
                                         }
                                         ci.firePropertyChange(propertyName, null, v);
                                     }
@@ -605,12 +663,16 @@ public class RemoteAWTScreenshot {
             }
         }
         
-        private String getValueLazy() {
+        private String getValueLazy(boolean[] isEditablePtr, Type[] typePtr) {
             Lock l = t.accessLock.writeLock();
             l.lock();
             try {
                 Value v = component.invokeMethod(tawt, getter, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                if (v != null) {
+                    typePtr[0] = v.type();
+                }
                 if (v instanceof StringReference) {
+                    isEditablePtr[0] = true;
                     return ((StringReference) v).value();
                 }
                 if (v instanceof ObjectReference) {
@@ -622,6 +684,8 @@ public class RemoteAWTScreenshot {
                             return ((StringReference) v).value();
                         }
                     }
+                } else if (v instanceof PrimitiveValue) {
+                    isEditablePtr[0] = true;
                 }
                 return String.valueOf(v);
             } catch (InvalidTypeException ex) {
@@ -657,14 +721,138 @@ public class RemoteAWTScreenshot {
             }
         }
 
-        @Override
-        public boolean canWrite() {
-            return setter != null;
+        private String setValueLazy(String val, String oldValue, Type type) {
+            Value v;
+            VirtualMachine vm = type.virtualMachine();
+            if (type instanceof PrimitiveType) {
+                String ts = type.name();
+                try {
+                    if (Boolean.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Boolean.parseBoolean(val));
+                    } else if (Byte.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Byte.parseByte(val));
+                    } else if (Character.TYPE.getName().equals(ts)) {
+                        if (val.length() == 0) {
+                            throw new NumberFormatException("Zero length input.");
+                        }
+                        v = vm.mirrorOf(val.charAt(0));
+                    } else if (Short.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Short.parseShort(val));
+                    } else if (Integer.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Integer.parseInt(val));
+                    } else if (Long.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Long.parseLong(val));
+                    } else if (Float.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Float.parseFloat(val));
+                    } else if (Double.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Double.parseDouble(val));
+                    } else {
+                        throw new IllegalArgumentException("Unknown type '"+ts+"'");
+                    }
+                    val = v.toString();
+                } catch (NumberFormatException nfex) {
+                    NotifyDescriptor msg = new NotifyDescriptor.Message(nfex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                    return oldValue;
+                }
+            } else {
+                if ("java.lang.String".equals(type.name())) {
+                    v = vm.mirrorOf(val);
+                } else {
+                    throw new IllegalArgumentException("Unknown type '"+type.name()+"'");
+                }
+            }
+            Lock l = t.accessLock.writeLock();
+            l.lock();
+            try {
+                component.invokeMethod(tawt, setter, Collections.singletonList(v), ObjectReference.INVOKE_SINGLE_THREADED);
+                return val;
+            } catch (InvalidTypeException ex) {
+                Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (ClassNotLoadedException ex) {
+                Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (IncompatibleThreadStateException ex) {
+                Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (final InvocationException ex) {
+                final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, debugger);
+                iextr.setPreferredThread(t);
+                
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        iextr.getMessage();
+                        iextr.getLocalizedMessage();
+                        iextr.getCause();
+                        iextr.getStackTrace();
+                        Exceptions.printStackTrace(iextr);
+                        //Exceptions.printStackTrace(ex);
+                    }
+                }, 100);
+                
+                //Exceptions.printStackTrace(iextr);
+                //Exceptions.printStackTrace(ex);
+                return oldValue;
+            } finally {
+                l.unlock();
+            }
         }
 
         @Override
-        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public boolean canWrite() {
+            synchronized (valueLock) {
+                return setter != null && valueIsEditable;
+            }
+        }
+
+        @Override
+        public void setValue(final Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (!(val instanceof String)) {
+                throw new IllegalArgumentException("val = "+val);
+            }
+            final String oldValue;
+            final Type type;
+            synchronized (valueLock) {
+                oldValue = value;
+                type = valueType;
+                value = valueCalculating;
+            }
+            debugger.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        RemoteServices.runOnStoppedThread(t, new Runnable() {
+                            @Override
+                            public void run() {
+                                String v;
+                                Throwable t = null;
+                                try {
+                                    v = setValueLazy((String) val, oldValue, type);
+                                } catch (Throwable th) {
+                                    if (th instanceof ThreadDeath) {
+                                        throw (ThreadDeath) th;
+                                    }
+                                    t = th;
+                                    v = oldValue;
+                                    
+                                }
+                                synchronized (valueLock) {
+                                    value = v;
+                                }
+                                ci.firePropertyChange(propertyName, null, v);
+                                if (t != null) {
+                                    Exceptions.printStackTrace(t);
+                                }
+                            }
+                        });
+                    } catch (PropertyVetoException ex) {
+                        NotifyDescriptor msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
+                }
+            });
         }
     }
     
@@ -729,6 +917,8 @@ public class RemoteAWTScreenshot {
         
         private static final AWTComponentInfo[] NO_SUBCOMPONENTS = new AWTComponentInfo[] {};
         
+        private static final int MAX_TEXT_LENGTH = 80;
+        
         //private AWTComponentInfo parent;
         private Rectangle bounds;
         private Rectangle windowBounds;
@@ -740,6 +930,8 @@ public class RemoteAWTScreenshot {
         
         private JPDAThreadImpl thread;
         private ObjectReference component;
+        private FieldInfo fieldInfo;
+        private String componentText;
         
         public AWTComponentInfo(JPDAThreadImpl t) {
             this.thread = t;
@@ -757,7 +949,7 @@ public class RemoteAWTScreenshot {
             return name;
         }
         
-        public String getDisplayName() {
+        private String getTypeName() {
             int d = type.lastIndexOf('.');
             String typeName;
             if (d > 0) {
@@ -765,17 +957,92 @@ public class RemoteAWTScreenshot {
             } else {
                 typeName = type;
             }
-            return "["+typeName+"]";
+            return typeName;
         }
+        
+        void setComponentText(String componentText) {
+            if (componentText.length() > MAX_TEXT_LENGTH) {
+                this.componentText = componentText.substring(0, MAX_TEXT_LENGTH) + "...";
+            } else {
+                this.componentText = componentText;
+            }
+        }
+        
+        @Override
+        public String getDisplayName() {
+            String typeName = getTypeName();
+            String fieldName = (fieldInfo != null) ? fieldInfo.getName() + " " : "";
+            String text = (componentText != null) ? " \"" + componentText + "\"" : "";
+            return fieldName + "["+typeName+"]" + text;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (isCustomType() || componentText != null) {
+                String typeName = getTypeName();
+                if (isCustomType()) {
+                    typeName = "<b>"+typeName+"</b>";
+                }
+                String fieldName = (fieldInfo != null) ? fieldInfo.getName() + " " : "";
+                String text;
+                if (componentText != null) {
+                    text = escapeHTML(componentText);
+                    text = " <font color=\"#A0A0A0\">\"" + text + "\"</font>";
+                } else {
+                    text = "";
+                }
+                return fieldName + "["+typeName+"]" + text;
+            } else {
+                return null;
+            }
+        }
+        
+        private static String escapeHTML(String message) {
+            if (message == null) return null;
+            int len = message.length();
+            StringBuilder result = new StringBuilder(len + 20);
+            char aChar;
+
+            for (int i = 0; i < len; i++) {
+                aChar = message.charAt(i);
+                switch (aChar) {
+                case '<':
+                    result.append("&lt;");
+                    break;
+                case '>':
+                    result.append("&gt;");
+                    break;
+                case '&':
+                    result.append("&amp;");
+                    break;
+                case '"':
+                    result.append("&quot;");
+                    break;
+                default:
+                    result.append(aChar);
+                }
+            }
+            return result.toString();
+       }
         
         public String getType() {
             return type;
         }
         
+        public FieldInfo getField() {
+            return fieldInfo;
+        }
+        
+        public boolean isCustomType() {
+            return !(type.startsWith("java.awt.") || type.startsWith("javax.swing."));  // NOI18N
+        }
+        
+        @Override
         public Rectangle getBounds() {
             return bounds;
         }
         
+        @Override
         public Rectangle getWindowBounds() {
             if (windowBounds == null) {
                 return bounds;
@@ -794,6 +1061,7 @@ public class RemoteAWTScreenshot {
             propertySets.add(ps);
         }
         
+        @Override
         public PropertySet[] getPropertySets() {
             return propertySets.toArray(new PropertySet[] {});
         }
@@ -813,6 +1081,7 @@ public class RemoteAWTScreenshot {
              */
         }
         
+        @Override
         public AWTComponentInfo[] getSubComponents() {
             if (subComponents == null) {
                 return NO_SUBCOMPONENTS;
@@ -843,16 +1112,44 @@ public class RemoteAWTScreenshot {
             return ci;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
             pchs.addPropertyChangeListener(propertyChangeListener);
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
             pchs.removePropertyChangeListener(propertyChangeListener);
         }
         
         protected void firePropertyChange(String name, Object o, Object n) {
             pchs.firePropertyChange(name, o, n);
+        }
+        
+        public static class FieldInfo {
+            
+            private String name;
+            private Field f;
+            private AWTComponentInfo parent;
+            
+            FieldInfo(Field f, AWTComponentInfo parent) {
+                this.name = f.name();
+                this.f = f;
+                this.parent = parent;
+            }
+            
+            public String getName() {
+                return name;
+            }
+            
+            public Field getField() {
+                return f;
+            }
+            
+            public AWTComponentInfo getParent() {
+                return parent;
+            }
+            
         }
 
     }

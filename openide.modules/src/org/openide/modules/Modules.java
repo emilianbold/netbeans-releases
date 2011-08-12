@@ -65,13 +65,9 @@ public abstract class Modules {
     }
 
     /**
-     * Restricted constructor for subclasses.
+     * Constructor for subclasses.
      */
-    protected Modules() {
-        if (!(this instanceof Trivial) && !getClass().getName().equals("org.netbeans.ModuleManager")) {
-            throw new IllegalAccessError();
-        }
-    }
+    protected Modules() {}
     
     /**
      * Finds the module which loaded a class.

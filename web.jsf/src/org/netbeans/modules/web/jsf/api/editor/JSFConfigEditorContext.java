@@ -47,31 +47,32 @@ package org.netbeans.modules.web.jsf.api.editor;
 
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JSFConfigEditorContext {
+public interface JSFConfigEditorContext extends Node.Cookie {
 
     /**
      * The method provides the faces configuration file, for which the editor is opened.
      * @return faces configuration file
      */
     public FileObject getFacesConfigFile();
-    
+
     /**
      * Provide UndoRedo manager for the editor.
-     * @return 
+     * @return
      */
     public UndoRedo getUndoRedo();
-    
+
     /**
-     * This method should be called by from the implementation of 
+     * This method should be called by from the implementation of
      * MultiViewElement.setMultiViewCallback. The editor needs to know, which TopComponent
      * is now displayed.
-     * @param topComponent which is displayed 
+     * @param topComponent which is displayed
      */
     public void setMultiViewTopComponent(TopComponent topComponent);
 }
