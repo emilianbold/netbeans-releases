@@ -43,8 +43,6 @@ package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
 import org.openide.util.NbBundle;
@@ -68,6 +66,7 @@ public class PropertiesTablePanel extends DefaultTablePanel {
 
         removeButton.addActionListener(new java.awt.event.ActionListener() {
 
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configDataObject.modelUpdatedFromUI();
                 int row = getTable().getSelectedRow();
@@ -88,11 +87,11 @@ public class PropertiesTablePanel extends DefaultTablePanel {
         // Add button is disabled if all properties in the specified category are defined
         
         // TODO: Waiting for the setAddButton() method from DefaultTalbePanel class
-        /*if (Util.getAvailPropNames(propertyCategory, configDataObject.getHibernateConfiguration().getSessionFactory()).length > 0) {
-            super.setAddButton(true);
-        } else {
-            super.setAddButton(false);
-        }*/
+//        if (Util.getAvailPropNames(propParam.getProvider(), propParam.getPU()).size()>0) {
+//            super.setAddButton(true);
+//        } else {
+//            super.setAddButton(false);
+//        }
     }
 
     /**
@@ -106,6 +105,7 @@ public class PropertiesTablePanel extends DefaultTablePanel {
             this.add = add;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             final int row = (add ? -1 : getTable().getSelectedRow());
 
@@ -121,6 +121,7 @@ public class PropertiesTablePanel extends DefaultTablePanel {
 
             EditDialog dialog = new EditDialog(dialogPanel, NbBundle.getMessage(PropertiesTablePanel.class, "LBL_Property"), add) {
 
+                @Override
                 protected String validate() {
                     String propValue = dialogPanel.getPropertyValue();
 
@@ -172,6 +173,7 @@ public class PropertiesTablePanel extends DefaultTablePanel {
             this.dialog = dialog;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if( ((PropertyPanel)dialog.getDialogPanel()).getPropertyValue().length() == 0 ) {
                 // disable OK button

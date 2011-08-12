@@ -48,26 +48,28 @@ import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
+import org.netbeans.modules.j2ee.persistence.provider.Provider;
 
 /**
- * Panel for adding new Hibernate property
+ * Panel for adding new PU property
  * 
- * @author  Dongmei Cao
+ * @author  psb
  */
 public class PropertyPanel extends javax.swing.JPanel implements ActionListener {
 
     private JTextField valueTextField = null;
     private JComboBox valueComboBox = null;
+    private Provider provider;
     
     /** Creates new form PropertyPanel */
     public PropertyPanel(PropertiesPanel.PropertiesParamHolder propParam, boolean add, String propName, String propValue) {
         initComponents();
-
+        provider = propParam.getProvider();
         // The comb box only contains the property names that are not defined yet when adding
         if (add) {
-            nameComboBox.setModel(new DefaultComboBoxModel(Util.getAvailPropNames(propParam.getProvider(), propParam.getPU()).toArray(new String[]{})));
+            nameComboBox.setModel(new DefaultComboBoxModel(Util.getAvailPropNames(provider, propParam.getPU()).toArray(new String[]{})));
         } else {
-            nameComboBox.setModel(new DefaultComboBoxModel(Util.getPropsNamesExceptGeneral(propParam.getProvider()).toArray(new String[]{})));
+            nameComboBox.setModel(new DefaultComboBoxModel(Util.getPropsNamesExceptGeneral(provider).toArray(new String[]{})));
             nameComboBox.setSelectedItem(propName);
         }
 
@@ -90,7 +92,7 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
 
     public void addValueComponent(String propName, String propValue) {
         valuePanel.removeAll();
-        Object possibleValue = null;//HibernateCfgProperties.getPossiblePropertyValue(propName);
+        Object possibleValue = PersistenceCfgProperties.getPossiblePropertyValue(provider, propName);
         if (possibleValue == null) {
          
             valuePanel.add(valueTextField, java.awt.BorderLayout.CENTER);
@@ -126,7 +128,7 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
     }
 
     public String getPropertyValue() {
-        Object possibleValue = null;//HibernateCfgProperties.getPossiblePropertyValue(getPropertyName());
+        Object possibleValue = PersistenceCfgProperties.getPossiblePropertyValue(provider, getPropertyName());
         if(possibleValue == null) {
             return getValueTextField().getText().trim();
         } else {
@@ -134,6 +136,7 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox) e.getSource();
         String propName = (String) cb.getSelectedItem();
@@ -200,26 +203,32 @@ private class ValueComboBoxEditor implements ComboBoxEditor {
             this.textField = textField;
         }
 
+        @Override
         public Component getEditorComponent() {
             return this.textField;
         }
 
+        @Override
         public void setItem(Object anObject) {
             this.textField.setText( (String)anObject );
         }
 
+        @Override
         public Object getItem() {
             return this.textField.getText().trim();
         }
 
+        @Override
         public void selectAll() {
             this.textField.selectAll();
         }
 
+        @Override
         public void addActionListener(ActionListener l) {
             this.textField.addActionListener(l);
         }
 
+        @Override
         public void removeActionListener(ActionListener l) {
             this.textField.removeActionListener(l);
         }
