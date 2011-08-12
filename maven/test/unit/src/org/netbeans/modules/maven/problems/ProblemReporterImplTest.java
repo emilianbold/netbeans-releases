@@ -65,7 +65,6 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "<artifactId>m</artifactId>" +
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
-        NbMavenProject.fireMavenProjectReload(p); // XXX unnecessary after maven_fix_problems_172502 merged
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom"))), pr.getMissingArtifacts());
@@ -77,7 +76,6 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "<build><plugins><plugin><groupId>g</groupId><artifactId>plug</artifactId><version>0</version><extensions>true</extensions></plugin></plugins></build>" +
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
-        NbMavenProject.fireMavenProjectReload(p); // XXX unnecessary after maven_fix_problems_172502 merged
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());

@@ -71,7 +71,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.nodes.DependenciesNode;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -177,8 +176,13 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     /** @return true if {@link #getReports} is nonempty */
     public boolean isBroken() {
         synchronized (reports) {
-            return !reports.isEmpty();
+            for (ProblemReport report : reports) {
+                if (report.getSeverityLevel() < ProblemReport.SEVERITY_LOW) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
     
     @Override public Collection<ProblemReport> getReports() {
@@ -280,17 +284,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "This means that all NetBeans development related functionality (for example, File templates, running platform application) is missing. "
             + "The most probable cause is that part of the general API support is missing as well. "
             + "Please go to Tools/Plugins and install the plugins related to NetBeans development.",
-        "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
-        "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
-            + "Please check that the path is absolute and points to an existing binary.",
-        "ACT_DownloadDeps=Download Dependencies",
-        "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
-        "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
-            + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
-            + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
-            + "The artifacts are:\n {0}"
     })
-    public void doBaseProblemChecks(MavenProject project) {
+    public void doBaseProblemChecks(@NonNull MavenProject project) {
         String packaging = nbproject.getProjectWatcher().getPackagingType();
         if (NbMavenProject.TYPE_WAR.equals(packaging) ||
             NbMavenProject.TYPE_EAR.equals(packaging) ||
@@ -334,56 +329,69 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 addReport(report);
             }
         }   
-        
-        //TODO.. non existing dependencies, not declared app server/j2se platform etc..
-        if (project != null) {
-            MavenProject parent = project;
-            while (parent != null) {
-                parent = checkParent(parent);
-            }
 
-                List<Artifact> missingJars = new ArrayList<Artifact>();
-                for (Artifact art : project.getArtifacts()) {
-                    File file = art.getFile();
-                    if (file == null || !file.exists()) {
-                        addMissingArtifact(art);
-                        if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
-                            //TODO create a correction action for this.
-                            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                    ERR_SystemScope(),
-                                    MSG_SystemScope(),
-                                    new OpenPomAction(nbproject));
-                            addReport(report);
-                        } else {
-                            boolean reallyMissing = true;
-                            if (file != null) {
-                                SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
-                                if (result.preferSources() && /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length > 0) {
-                                    reallyMissing = false; // #189442: typically a snapshot dep on another project
-                                }
-                            }
-                            if (reallyMissing) {
-                                missingJars.add(art);
-                            }
-                        }
-                    }
-                }
-                if (missingJars.size() > 0) {
-                    StringBuilder mess = new StringBuilder();
-                    for (Artifact art : missingJars) {
-                        mess.append(art.getId()).append('\n');
-                    }
-                    AbstractAction act = new DependenciesNode.ResolveDepsAction(nbproject);
-                    act.putValue(Action.NAME, ACT_DownloadDeps());
+        MavenProject parent = project;
+        while (parent != null) {
+            parent = checkParent(parent);
+        }
+
+        doArtifactChecks(project);
+
+        // XXX undeclared Java platform
+    }
+
+    @Messages({
+        "ERR_SystemScope=A 'system' scope dependency was not found. Code completion is affected.",
+        "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
+            + "Please check that the path is absolute and points to an existing binary.",
+        "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
+        "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
+            + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
+            + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
+            + "The artifacts are:\n {0}"
+    })
+    private void doArtifactChecks(@NonNull MavenProject project) {
+        boolean missingNonSibling = false;
+        List<Artifact> missingJars = new ArrayList<Artifact>();
+        for (Artifact art : project.getArtifacts()) {
+            File file = art.getFile();
+            if (file == null || !file.exists()) {
+                addMissingArtifact(art);
+                if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
+                    //TODO create a correction action for this.
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                            ERR_NonLocal(),
-                            MSG_NonLocal(mess),
-                            act);
+                            ERR_SystemScope(),
+                            MSG_SystemScope(),
+                            new OpenPomAction(nbproject));
                     addReport(report);
+                } else {
+                    if (file == null) {
+                        missingNonSibling = true;
+                    } else {
+                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
+                        if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
+                            missingNonSibling = true;
+                        } // else #189442: typically a snapshot dep on another project
+                    }
+                    missingJars.add(art);
                 }
+            }
+        }
+        if (!missingJars.isEmpty()) {
+            StringBuilder mess = new StringBuilder();
+            for (Artifact art : missingJars) {
+                mess.append(art.getId()).append('\n');
+            }
+            ProblemReport report = new ProblemReport(
+                    missingNonSibling ? ProblemReport.SEVERITY_MEDIUM : ProblemReport.SEVERITY_LOW,
+                    ERR_NonLocal(),
+                    MSG_NonLocal(mess),
+                    new SanityBuildAction(nbproject));
+            addReport(report);
         }
     }
 
+    // XXX does this still do anything? ProblemReporterImplTest.testMissingParent suggests not
     @Messages({
         "ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.",
         "MSG_NoParent=The parent POM with id {0}  was not found in sources or local repository. "
@@ -412,7 +420,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         ERR_NoParent(),
                         MSG_NoParent(art.getId()),
-                        new RevalidateAction(nbproject));
+                        new SanityBuildAction(nbproject));
                 addReport(report);
             }
 

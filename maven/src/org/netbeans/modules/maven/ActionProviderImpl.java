@@ -515,7 +515,7 @@ public class ActionProviderImpl implements ActionProvider {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
-                return reporter != null && reporter.isBroken() ? new ShowProblemsAction(reporter) : null;
+                return reporter != null && !reporter.getReports().isEmpty() ? new ShowProblemsAction(reporter) : null;
             }
         };
     }
@@ -538,7 +538,7 @@ public class ActionProviderImpl implements ActionProvider {
             close.setText(BTN_Close());
             DialogDescriptor dd = new DialogDescriptor(panel, TIT_Show_Problems());
             dd.setOptions(new Object[] { butt,  close});
-            dd.setClosingOptions(new Object[] { close });
+            dd.setClosingOptions(new Object[] { butt, close });
             dd.setModal(false);
             DialogDisplayer.getDefault().notify(dd);
         }
