@@ -52,6 +52,8 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
+import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
@@ -88,12 +90,15 @@ import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
 import org.netbeans.spi.debugger.visual.ComponentInfo;
 import org.netbeans.spi.debugger.visual.RemoteScreenshot;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -593,6 +598,8 @@ public class RemoteAWTScreenshot {
         private String value;
         private final Object valueLock = new Object();
         private final String valueCalculating = new String("calculating");
+        private boolean valueIsEditable = false;
+        private Type valueType;
         
         ComponentProperty(String propertyName, Method getter, Method setter,
                           AWTComponentInfo ci, ObjectReference component,
@@ -635,9 +642,13 @@ public class RemoteAWTScreenshot {
                                 RemoteServices.runOnStoppedThread(t, new Runnable() {
                                     @Override
                                     public void run() {
-                                        String v = getValueLazy();
+                                        boolean[] isEditablePtr = new boolean[] { false };
+                                        Type[] typePtr = new Type[] { null };
+                                        String v = getValueLazy(isEditablePtr, typePtr);
                                         synchronized (valueLock) {
                                             value = v;
+                                            valueIsEditable = isEditablePtr[0];
+                                            valueType = typePtr[0];
                                         }
                                         ci.firePropertyChange(propertyName, null, v);
                                     }
@@ -652,12 +663,16 @@ public class RemoteAWTScreenshot {
             }
         }
         
-        private String getValueLazy() {
+        private String getValueLazy(boolean[] isEditablePtr, Type[] typePtr) {
             Lock l = t.accessLock.writeLock();
             l.lock();
             try {
                 Value v = component.invokeMethod(tawt, getter, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                if (v != null) {
+                    typePtr[0] = v.type();
+                }
                 if (v instanceof StringReference) {
+                    isEditablePtr[0] = true;
                     return ((StringReference) v).value();
                 }
                 if (v instanceof ObjectReference) {
@@ -669,6 +684,8 @@ public class RemoteAWTScreenshot {
                             return ((StringReference) v).value();
                         }
                     }
+                } else if (v instanceof PrimitiveValue) {
+                    isEditablePtr[0] = true;
                 }
                 return String.valueOf(v);
             } catch (InvalidTypeException ex) {
@@ -704,14 +721,138 @@ public class RemoteAWTScreenshot {
             }
         }
 
-        @Override
-        public boolean canWrite() {
-            return setter != null;
+        private String setValueLazy(String val, String oldValue, Type type) {
+            Value v;
+            VirtualMachine vm = type.virtualMachine();
+            if (type instanceof PrimitiveType) {
+                String ts = type.name();
+                try {
+                    if (Boolean.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Boolean.parseBoolean(val));
+                    } else if (Byte.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Byte.parseByte(val));
+                    } else if (Character.TYPE.getName().equals(ts)) {
+                        if (val.length() == 0) {
+                            throw new NumberFormatException("Zero length input.");
+                        }
+                        v = vm.mirrorOf(val.charAt(0));
+                    } else if (Short.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Short.parseShort(val));
+                    } else if (Integer.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Integer.parseInt(val));
+                    } else if (Long.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Long.parseLong(val));
+                    } else if (Float.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Float.parseFloat(val));
+                    } else if (Double.TYPE.getName().equals(ts)) {
+                        v = vm.mirrorOf(Double.parseDouble(val));
+                    } else {
+                        throw new IllegalArgumentException("Unknown type '"+ts+"'");
+                    }
+                    val = v.toString();
+                } catch (NumberFormatException nfex) {
+                    NotifyDescriptor msg = new NotifyDescriptor.Message(nfex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(msg);
+                    return oldValue;
+                }
+            } else {
+                if ("java.lang.String".equals(type.name())) {
+                    v = vm.mirrorOf(val);
+                } else {
+                    throw new IllegalArgumentException("Unknown type '"+type.name()+"'");
+                }
+            }
+            Lock l = t.accessLock.writeLock();
+            l.lock();
+            try {
+                component.invokeMethod(tawt, setter, Collections.singletonList(v), ObjectReference.INVOKE_SINGLE_THREADED);
+                return val;
+            } catch (InvalidTypeException ex) {
+                Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (ClassNotLoadedException ex) {
+                Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (IncompatibleThreadStateException ex) {
+                Exceptions.printStackTrace(ex);
+                return oldValue;
+            } catch (final InvocationException ex) {
+                final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(ex, debugger);
+                iextr.setPreferredThread(t);
+                
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        iextr.getMessage();
+                        iextr.getLocalizedMessage();
+                        iextr.getCause();
+                        iextr.getStackTrace();
+                        Exceptions.printStackTrace(iextr);
+                        //Exceptions.printStackTrace(ex);
+                    }
+                }, 100);
+                
+                //Exceptions.printStackTrace(iextr);
+                //Exceptions.printStackTrace(ex);
+                return oldValue;
+            } finally {
+                l.unlock();
+            }
         }
 
         @Override
-        public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public boolean canWrite() {
+            synchronized (valueLock) {
+                return setter != null && valueIsEditable;
+            }
+        }
+
+        @Override
+        public void setValue(final Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (!(val instanceof String)) {
+                throw new IllegalArgumentException("val = "+val);
+            }
+            final String oldValue;
+            final Type type;
+            synchronized (valueLock) {
+                oldValue = value;
+                type = valueType;
+                value = valueCalculating;
+            }
+            debugger.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        RemoteServices.runOnStoppedThread(t, new Runnable() {
+                            @Override
+                            public void run() {
+                                String v;
+                                Throwable t = null;
+                                try {
+                                    v = setValueLazy((String) val, oldValue, type);
+                                } catch (Throwable th) {
+                                    if (th instanceof ThreadDeath) {
+                                        throw (ThreadDeath) th;
+                                    }
+                                    t = th;
+                                    v = oldValue;
+                                    
+                                }
+                                synchronized (valueLock) {
+                                    value = v;
+                                }
+                                ci.firePropertyChange(propertyName, null, v);
+                                if (t != null) {
+                                    Exceptions.printStackTrace(t);
+                                }
+                            }
+                        });
+                    } catch (PropertyVetoException ex) {
+                        NotifyDescriptor msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
+                }
+            });
         }
     }
     
