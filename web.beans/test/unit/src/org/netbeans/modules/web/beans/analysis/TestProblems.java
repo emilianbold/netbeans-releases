@@ -42,48 +42,18 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import javax.lang.model.element.Element;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractAnalysisTask {
-    
-    AbstractAnalysisTask(  ){
-        cancel = new AtomicBoolean( false );
-    }
-    
-    protected boolean isCancelled() {
-        return cancel.get();
-    }
-    
-    protected AtomicBoolean getCancel(){
-        return cancel;
-    }
-    
-    protected CdiAnalysisResult getResult(){
-        return myResult;
-    }
-    
-    protected void setResult( CdiAnalysisResult result ){
-        myResult = result;
-    }
-    
-    abstract void run( CompilationInfo compInfo );
-    
-    abstract List<ErrorDescription> getProblems();
-    
-    void stop(){
-        cancel.set( true );
-    }
+public interface TestProblems {
 
-    private AtomicBoolean cancel;
-    private CdiAnalysisResult myResult;
-    
+    Map<Element,String> getErrors();
+
+    Map<Element,String> getWarings();
 }

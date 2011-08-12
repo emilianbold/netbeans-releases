@@ -61,6 +61,6 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo/org/eclipse/persistence/org.eclipse.persistence.jpa.modelgen.processor/2.3.0-M7/org.eclipse.persistence.jpa.modelgen.processor-2.3.0-M7.pom</resource>
+        <resource>http://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/rt/eclipselink/maven.repo/org/eclipse/persistence/org.eclipse.persistence.jpa.modelgen.processor/2.3.0/org.eclipse.persistence.jpa.modelgen.processor-2.3.0.pom</resource>
     </volume>
 </library>

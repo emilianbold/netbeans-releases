@@ -42,48 +42,38 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractAnalysisTask {
-    
-    AbstractAnalysisTask(  ){
-        cancel = new AtomicBoolean( false );
-    }
-    
-    protected boolean isCancelled() {
-        return cancel.get();
-    }
-    
-    protected AtomicBoolean getCancel(){
-        return cancel;
-    }
-    
-    protected CdiAnalysisResult getResult(){
-        return myResult;
-    }
-    
-    protected void setResult( CdiAnalysisResult result ){
-        myResult = result;
-    }
-    
-    abstract void run( CompilationInfo compInfo );
-    
-    abstract List<ErrorDescription> getProblems();
-    
-    void stop(){
-        cancel.set( true );
-    }
+public class CdiAnalysisTestTask extends CdiAnalysisTask {
 
-    private AtomicBoolean cancel;
-    private CdiAnalysisResult myResult;
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
+     */
+    @Override
+    protected void run( CompilationInfo compInfo ) {
+        super.run(compInfo);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#getResult()
+     */
+    @Override
+    protected CdiAnalysisTestResult getResult() {
+        return (CdiAnalysisTestResult)super.getResult();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#createResult(org.netbeans.api.java.source.CompilationInfo)
+     */
+    @Override
+    protected CdiAnalysisResult createResult( CompilationInfo info ) {
+        return new CdiAnalysisTestResult(info);
+    }
     
 }
