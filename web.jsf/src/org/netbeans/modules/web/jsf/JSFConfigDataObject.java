@@ -113,7 +113,8 @@ public class JSFConfigDataObject extends MultiDataObject
             iconBase=JSFConfigNode.ICON_BASE,
             persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
             preferredID="faces.config.xml",
-            displayName="#CTL_SourceTabCaption"
+            displayName="#CTL_SourceTabCaption",
+            position=100
     )
     @Messages("CTL_SourceTabCaption=Source")
     public static MultiViewEditorElement createXmlMultiViewElement(Lookup context) {

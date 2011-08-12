@@ -69,12 +69,12 @@ import org.openide.windows.TopComponent;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-@MultiViewElement.Registration(displayName = "#LBL_PageFlow",// NOI18N
-iconBase = "org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png",
-persistenceType = TopComponent.PERSISTENCE_NEVER,
-preferredID = "jsf.page.flow",
-mimeType = "text/x-jsf+xml",
-position = 1300)
+@MultiViewElement.Registration(displayName = "#LBL_PageFlow", //NOI18N
+        iconBase = "org/netbeans/modules/web/jsf/resources/JSFConfigIcon.png",
+        persistenceType = TopComponent.PERSISTENCE_NEVER,
+        preferredID = "jsf.page.flow",
+        mimeType = "text/x-jsf+xml",
+        position = 300)
 public class PageFlowElement extends CloneableEditor implements MultiViewElement, Serializable {
 
     private static final Logger LOG = Logger.getLogger(PageFlowElement.class.getName());
