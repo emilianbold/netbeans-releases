@@ -145,6 +145,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
 
     private final String url;
     private final Server server;
+    private final boolean nonPeristent;
     private DeploymentManager manager;
     private DeploymentManager disconnectedManager;
     private IncrementalDeployment incrementalDeployment;
@@ -188,6 +189,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public ServerInstance(Server server, String url, boolean nonPersistent) {
         this.server = server;
         this.url = url;
+        this.nonPeristent = nonPersistent;
         instanceProperties = nonPersistent ? new MemoryInstancePropertiesImpl(url)
                 : new DefaultInstancePropertiesImpl(url);
         // listen to debugger changes so that we can update server status accordingly
@@ -274,7 +276,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             }
             String username = instanceProperties.getProperty(InstanceProperties.USERNAME_ATTR);
             String password;
-            if (instanceProperties instanceof MemoryInstancePropertiesImpl) {
+            if (nonPeristent) {
                 password = instanceProperties.getProperty(InstanceProperties.PASSWORD_ATTR);
             } else {
                 password = ServerRegistry.readPassword(url);

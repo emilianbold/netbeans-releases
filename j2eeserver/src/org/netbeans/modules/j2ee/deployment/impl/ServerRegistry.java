@@ -475,8 +475,6 @@ public final class ServerRegistry implements java.io.Serializable {
                         ServerInstance tmp = new ServerInstance(server, url, nonPersistent);
                         // PENDING persist url/password in ServerString as well
                         instancesMap().put(url, tmp);
-                        // try to create a disconnected deployment manager to see
-                        // whether the instance is not corrupted - see #46929
                         if (!nonPersistent) {
                             writeInstanceToFile(url, username, password, server.getDisplayName());
                         } else {
@@ -494,6 +492,8 @@ public final class ServerRegistry implements java.io.Serializable {
                             tmp.getInstanceProperties().setProperty(entry.getKey(), entry.getValue());
                         }
 
+                        // try to create a disconnected deployment manager to see
+                        // whether the instance is not corrupted - see #46929
                         DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
                         // FIXME this shouldn't be called in synchronized block
                         if (manager != null) {
