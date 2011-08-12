@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.connections.ui.transfer.tree;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
@@ -50,14 +51,16 @@ import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesCho
 import org.openide.nodes.Node;
 
 final class TransferSelectorModel {
+
     private final Set<TransferFile> transferFiles;
-    private final Set<TransferFile> selected = new HashSet<TransferFile>();
+    private final Set<TransferFile> selected = Collections.synchronizedSet(new HashSet<TransferFile>());
     private final TransferFilesChangeSupport filesChangeSupport = new TransferFilesChangeSupport(this);
+
 
     public TransferSelectorModel(Set<TransferFile> transferFiles, long timestamp) {
         assert transferFiles != null;
 
-        this.transferFiles = copyNoProjectRoot(transferFiles);
+        this.transferFiles = Collections.synchronizedSet(copyNoProjectRoot(transferFiles));
 
         boolean select = timestamp == -1;
         for (TransferFile file : this.transferFiles) {

@@ -62,7 +62,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * @author Tomas Mysik
+ * All the methods must be invoked in AWT thread.
  */
 public final class RemoteConfirmationPanelVisual extends JPanel {
     static enum State { FETCHING, NO_FILES, FILES };
@@ -77,6 +77,7 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
     private State state = null;
 
     public RemoteConfirmationPanelVisual(RemoteConfirmationPanel wizardPanel, WizardDescriptor descriptor) {
+        assert SwingUtilities.isEventDispatchThread() : "Must be run in EDT";
         assert wizardPanel != null;
         assert descriptor != null;
 
@@ -146,6 +147,7 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     public Set<TransferFile> getRemoteFiles() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be run in EDT";
         if (transferPanel == null) {
             return Collections.emptySet();
         }
@@ -153,6 +155,7 @@ public final class RemoteConfirmationPanelVisual extends JPanel {
     }
 
     State getState() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be run in EDT";
         return state;
     }
 

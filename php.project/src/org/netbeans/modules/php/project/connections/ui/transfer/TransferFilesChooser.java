@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.connections.ui.transfer;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JButton;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
@@ -69,7 +70,8 @@ public final class TransferFilesChooser {
         assert transferFiles != null;
         assert transferType != null;
 
-        this.transferFiles = transferFiles;
+        // make a synchronized copy of transfer files
+        this.transferFiles = Collections.synchronizedSet(new HashSet<TransferFile>(transferFiles));
         this.transferType = transferType;
         this.timestamp = timestamp;
     }
