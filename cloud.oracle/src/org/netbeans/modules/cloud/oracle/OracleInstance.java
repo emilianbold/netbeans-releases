@@ -73,6 +73,7 @@ import org.netbeans.modules.cloud.oracle.serverplugin.OracleJ2EEInstance;
 import org.netbeans.modules.cloud.oracle.whitelist.WhiteListAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.cloud.WhiteListTool;
 import org.openide.filesystems.FileUtil;
@@ -103,6 +104,9 @@ public class OracleInstance {
     private ServerInstance serverInstance;
     
     private ApplicationManager platform;
+    
+    /* GuardedBy(this) */
+    private List<OracleJ2EEInstance> j2eeInstances = new ArrayList<OracleJ2EEInstance>();
     
     public OracleInstance(String name, String tenantUserName, String tenantPassword, 
           String urlEndpoint, String tenantId, String serviceName, String onPremiseServerInstanceId) {
@@ -218,9 +222,26 @@ public class OracleInstance {
         // used to be dynamic list; keeping as list for now:
         OracleJ2EEInstance inst = new OracleJ2EEInstance(this, getTenantId(), getServiceName());
         res.add(inst);
-        
-        return res;
+        synchronized (this) {
+            j2eeInstances.addAll(res);
+            return res;
+        }
     }
+
+    public void deregisterJ2EEServerInstances() {
+        List<OracleJ2EEInstance> instances = null;
+        synchronized (this) {
+            instances = new ArrayList<OracleJ2EEInstance>(j2eeInstances);
+        }
+        for (OracleJ2EEInstance inst : instances) {
+            inst.deregister();
+        }
+        String localId = getOnPremiseServerInstanceId();
+        if (localId != null) {
+            InstanceProperties.removeInstance(localId);
+        }
+    }
+
     public static Future<DeploymentStatus> deployAsync(final String urlEndpoint, final ApplicationManager pm, final File f, 
                          final String tenantId, 
                          final String serviceName, 

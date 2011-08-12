@@ -118,6 +118,10 @@ public class OracleJ2EEInstance {
         return tenantId;
     }
 
+    public void deregister() {
+        InstanceProperties.removeInstance(getId());
+    }
+    
     @Override
     public String toString() {
         return "OracleJ2EEInstance{" + "oracleInstance=" + oracleInstance + ", state=" + state + ", tenantId=" + tenantId + ", serviceName=" + serviceName + '}';

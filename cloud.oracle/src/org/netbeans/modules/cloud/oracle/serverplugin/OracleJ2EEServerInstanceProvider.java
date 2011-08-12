@@ -67,6 +67,7 @@ import org.openide.util.Exceptions;
 public final class OracleJ2EEServerInstanceProvider implements ServerInstanceProvider, ChangeListener {
 
     private ChangeSupport listeners;
+    /* GuardedBy(this) */
     private List<ServerInstance> instances;
     private static OracleJ2EEServerInstanceProvider instance;
     
@@ -86,7 +87,9 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
 
     @Override
     public List<ServerInstance> getInstances() {
-        return instances;
+        synchronized (this) {
+            return new ArrayList<ServerInstance>(instances);
+        }
     }
 
     @Override
@@ -126,7 +129,9 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                 servers.add(si);
             }
         }
-        instances = servers;
+        synchronized (this) {
+            instances = servers;
+        }
         listeners.fireChange();
     }
     
