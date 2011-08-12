@@ -81,6 +81,11 @@ public class DiffAction extends ContextAction {
     }
 
     @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/mercurial/resources/icons/diff.png"; // NOI18N
+    }
+
+    @Override
     protected void performContextAction(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         String contextName = Utils.getContextDisplayName(context);

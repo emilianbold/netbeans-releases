@@ -83,7 +83,12 @@ public class UpdateAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         update(HgUtils.getCurrentContext(nodes), null);
     }
-    
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/mercurial/resources/icons/update.png"; // NOI18N
+    }
+
     public static void update(final VCSContext ctx, HgLogMessage rev){
 
         final File roots[] = HgUtils.getActionRoots(ctx);
