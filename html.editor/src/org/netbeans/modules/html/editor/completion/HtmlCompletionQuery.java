@@ -100,11 +100,14 @@ public class HtmlCompletionQuery extends UserTask {
     private FileObject file;
     private int offset;
     private CompletionResult completionResult;
+        
+    private boolean triggeredByAutocompletion; //unused so far
 
-    public HtmlCompletionQuery(Document document, int offset) {
+    public HtmlCompletionQuery(Document document, int offset, boolean triggeredByAutocompletion) {
         this.document = document;
         this.offset = offset;
         this.file = DataLoadersBridge.getDefault().getFileObject(document);
+        this.triggeredByAutocompletion = triggeredByAutocompletion;
     }
 
     public CompletionResult query() throws ParseException {
@@ -456,7 +459,7 @@ public class HtmlCompletionQuery extends UserTask {
 
         } else if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
             anchor = offset;
-            result = getAutocompletedEndTag(node, xmlLeafNode, astOffset, offset);
+            result = getAutocompletedEndTag(node, xmlLeafNode, astOffset, offset, model);
         } else if (id == HTMLTokenId.WS || id == HTMLTokenId.ARGUMENT) {
             /*Argument finder */
             String prefix = (id == HTMLTokenId.ARGUMENT) ? preText : "";
@@ -597,14 +600,14 @@ public class HtmlCompletionQuery extends UserTask {
         return node != null ? Character.isLowerCase(node.name().charAt(0)) : true;
     }
 
-    public List<CompletionItem> getAutocompletedEndTag(AstNode node, AstNode undeclaredTagsLeafNode, int astOffset, int documentOffset) {
-        List<CompletionItem> result = getAutocompletedEndTag(node, astOffset, documentOffset);
+    public List<CompletionItem> getAutocompletedEndTag(AstNode node, AstNode undeclaredTagsLeafNode, int astOffset, int documentOffset, HtmlModel model) {
+        List<CompletionItem> result = getAutocompletedEndTag(node, astOffset, documentOffset, model);
         if(result == null) {
-            result = getAutocompletedEndTag(undeclaredTagsLeafNode, astOffset, documentOffset);
+            result = getAutocompletedEndTag(undeclaredTagsLeafNode, astOffset, documentOffset, model);
         }
         return result == null ? Collections.<CompletionItem>emptyList() : result;
     }
-    public List<CompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset) {
+    public List<CompletionItem> getAutocompletedEndTag(AstNode node, int astOffset, int documentOffset, HtmlModel model) {
         //check for open tags only
         //the test node.endOffset() == astOffset is required since the given node
         //is the most leaf OPEN TAG node for the position. But if there is some
@@ -617,7 +620,9 @@ public class HtmlCompletionQuery extends UserTask {
             //appear to be matched even if the user just typed it
 
             //test if the tag is an empty tag <div/> and whether the open tag has forbidden end tag
-            if (!node.isEmpty() && !AstNodeUtils.hasForbiddenEndTag(node)) {
+            HtmlTag tag = model.getTag(node.name());
+            boolean hasForbiddenEndTag = tag != null && tag.isEmpty();
+            if (!node.isEmpty() && !hasForbiddenEndTag) {
                 return Collections.singletonList((CompletionItem) HtmlCompletionItem.createAutocompleteEndTag(node.name(), documentOffset));
             }
         }
