@@ -42,11 +42,8 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,9 +63,6 @@ import org.openide.filesystems.FileUtil;
  */
 public class Util {
 
-    private static final String[] defaultJPA20Keys = new String[]{PersistenceUnitProperties.PESSIMISTIC_LOCK_TIMEOUT, PersistenceUnitProperties.QUERY_TIMEOUT, PersistenceUnitProperties.VALIDATION_GROUP_PRE_PERSIST, PersistenceUnitProperties.VALIDATION_GROUP_PRE_UPDATE, PersistenceUnitProperties.VALIDATION_GROUP_PRE_REMOVE};
-    private static final String[] eclipselink20Keys = new String[]{PersistenceUnitProperties.TEMPORAL_MUTABLE, PersistenceUnitProperties.CACHE_TYPE_DEFAULT, PersistenceUnitProperties.CACHE_SIZE_DEFAULT, PersistenceUnitProperties.CACHE_SHARED_DEFAULT, PersistenceUnitProperties.FLUSH_CLEAR_CACHE, PersistenceUnitProperties.THROW_EXCEPTIONS, PersistenceUnitProperties.EXCEPTION_HANDLER_CLASS, PersistenceUnitProperties.WEAVING, PersistenceUnitProperties.WEAVING_LAZY, PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, PersistenceUnitProperties.WEAVING_FETCHGROUPS, PersistenceUnitProperties.WEAVING_INTERNAL, PersistenceUnitProperties.WEAVING_EAGER, PersistenceUnitProperties.SESSION_CUSTOMIZER, PersistenceUnitProperties.VALIDATION_ONLY_PROPERTY, PersistenceUnitProperties.CLASSLOADER, PersistenceUnitProperties.PROFILER, "eclipselink.persistence.context.reference-mode", PersistenceUnitProperties.JDBC_BIND_PARAMETERS, PersistenceUnitProperties.NATIVE_SQL, PersistenceUnitProperties.BATCH_WRITING, PersistenceUnitProperties.BATCH_WRITING_SIZE, PersistenceUnitProperties.CACHE_STATEMENTS, PersistenceUnitProperties.CACHE_STATEMENTS_SIZE, PersistenceUnitProperties.EXCLUSIVE_CONNECTION_IS_LAZY, PersistenceUnitProperties.EXCLUSIVE_CONNECTION_MODE, PersistenceUnitProperties.JDBC_READ_CONNECTIONS_MAX, PersistenceUnitProperties.JDBC_READ_CONNECTIONS_MIN, PersistenceUnitProperties.JDBC_READ_CONNECTIONS_SHARED, PersistenceUnitProperties.JDBC_WRITE_CONNECTIONS_MAX, PersistenceUnitProperties.JDBC_WRITE_CONNECTIONS_MIN, PersistenceUnitProperties.LOGGING_LOGGER, PersistenceUnitProperties.LOGGING_LEVEL, PersistenceUnitProperties.LOGGING_TIMESTAMP, PersistenceUnitProperties.LOGGING_THREAD, PersistenceUnitProperties.LOGGING_SESSION, PersistenceUnitProperties.LOGGING_EXCEPTIONS, PersistenceUnitProperties.LOGGING_FILE, PersistenceUnitProperties.SESSION_NAME, PersistenceUnitProperties.SESSIONS_XML, PersistenceUnitProperties.SESSION_EVENT_LISTENER_CLASS, PersistenceUnitProperties.INCLUDE_DESCRIPTOR_QUERIES, PersistenceUnitProperties.TARGET_DATABASE, PersistenceUnitProperties.TARGET_SERVER, PersistenceUnitProperties.APP_LOCATION, PersistenceUnitProperties.CREATE_JDBC_DDL_FILE, PersistenceUnitProperties.DROP_JDBC_DDL_FILE, PersistenceUnitProperties.DDL_GENERATION_MODE, PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, "eclipselink.canonicalmodel.prefix", "eclipselink.canonicalmodel.suffix", "eclipselink.canonicalmodel.subpackage"};//TODO: handle properties {propname.entityname}
-    private static final String[] hibernate20Keys = new String[]{"hibernate.dialect", "hibernate.show_sql", "hibernate.format_sql", "hibernate.transaction.manager_lookup_class", "hibernate.max_fetch_depth", "hibernate.ejb.cfgfile", "hibernate.archive.autodetection", "hibernate.ejb.interceptor", "hibernate.ejb.interceptor.session_scoped", "hibernate.ejb.naming_strategy", "hibernate.ejb.use_class_enhancer", "hibernate.ejb.discard_pc_on_close", "hibernate.ejb.resource_scanner"};//TODO: handle properties {propname.entityname}
 
     /*
      * return all properties for specific provider, except some handled specially
@@ -76,13 +70,13 @@ public class Util {
     public static ArrayList<String> getAllPropNames(Provider propCat) {
         ArrayList<String> results = new ArrayList<String>();
         if (Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(propCat))) {
-            Collections.addAll(results, defaultJPA20Keys);
+            Collections.addAll(results, PersistenceCfgProperties.defaultJPA20Keys);
         }
         results.addAll(propCat.getPropertyNames());
         if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(propCat)) {
-            Collections.addAll(results, eclipselink20Keys);//TODO: should it be moved into a provider
+            Collections.addAll(results, PersistenceCfgProperties.eclipselink20Keys);//TODO: should it be moved into a provider
         } else if(ProviderUtil.HIBERNATE_PROVIDER2_0.equals(propCat)){
-            Collections.addAll(results, hibernate20Keys);//TODO: should it be moved into a provider
+            Collections.addAll(results, PersistenceCfgProperties.hibernate20Keys);//TODO: should it be moved into a provider
         }
         return results;
     }
