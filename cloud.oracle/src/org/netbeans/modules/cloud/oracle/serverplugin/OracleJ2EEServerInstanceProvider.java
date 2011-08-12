@@ -104,8 +104,8 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
         for (OracleInstance ai : OracleInstanceManager.getDefault().getInstances()) {
             for (OracleJ2EEInstance inst : ai.readJ2EEServerInstances()) {
                 ServerInstance si = ServerInstanceFactory.createServerInstance(new OracleJ2EEServerInstanceImplementation(inst));
-                // TODO: there must be a better way to check whether server already is registered or not:
-                if (Deployment.getDefault().getJ2eePlatform(inst.getId()) == null) {
+                InstanceProperties ip = InstanceProperties.getInstanceProperties(inst.getId());
+                if (ip == null) {
                     try {
                         Map<String, String>props = new HashMap<String, String>();
                         props.put(OracleDeploymentFactory.IP_TENANT_ID, inst.getTenantId());
@@ -115,12 +115,13 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                         props.put(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
                         props.put(InstanceProperties.USERNAME_ATTR, ai.getTenantUserName());
                         props.put(InstanceProperties.PASSWORD_ATTR, ai.getTenantPassword());
-                        InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
+                        ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
                                 ai.getTenantUserName(), ai.getTenantPassword(), inst.getDisplayName(), props);
                     } catch (InstanceCreationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+//                inst.setInstanceProperties(ip);
                 inst.setInstance(si);
                 servers.add(si);
             }

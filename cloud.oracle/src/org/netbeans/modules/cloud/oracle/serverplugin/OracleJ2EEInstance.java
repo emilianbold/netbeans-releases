@@ -44,6 +44,7 @@ package org.netbeans.modules.cloud.oracle.serverplugin;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.InstanceState;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,6 +57,7 @@ public class OracleJ2EEInstance {
     private String tenantId;
     private String serviceName;
     private ServerInstance instance;
+//    private InstanceProperties ip;
 
     public OracleJ2EEInstance(OracleInstance oracleInstance, String tenantId, String serviceName) {
         this.oracleInstance = oracleInstance;
@@ -70,31 +72,6 @@ public class OracleJ2EEInstance {
 
     public void updateState(String stateDesc) {
         state = InstanceState.READY;
-//        switch (EnvironmentStatus.valueOf(stateDesc)) {
-//            case Launching:
-//                state = InstanceState.LAUNCHING;
-//                break;
-//            case Ready:
-//                state = InstanceState.READY;
-//                break;
-//            case Terminated:
-//                state = InstanceState.TERMINATED;
-//                break;
-//            case Terminating:
-//                state = InstanceState.TERMINATING;
-//                break;
-//            case Updating:
-//                state = InstanceState.UPDATING;
-//                break;
-//        }
-        
-        
-        
-        
-        // XXXXXX
-        
-        
-        
     }
 
     public ServerInstance getInstance() {
@@ -104,6 +81,14 @@ public class OracleJ2EEInstance {
     void setInstance(ServerInstance instance) {
         this.instance = instance;
     }
+
+//    public InstanceProperties getInstanceProperties() {
+//        return ip;
+//    }
+//
+//    void setInstanceProperties(InstanceProperties ip) {
+//        this.ip = ip;
+//    }
     
     public InstanceState getState() {
         return state;

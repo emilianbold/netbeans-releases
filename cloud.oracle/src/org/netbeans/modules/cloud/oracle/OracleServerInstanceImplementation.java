@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.cloud.oracle;
 
+import java.awt.event.ComponentListener;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.oracle.ui.OracleInstanceNode;
 import org.netbeans.modules.cloud.oracle.ui.OracleWizardComponent;
-import org.netbeans.modules.cloud.oracle.ui.RootNode;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 
