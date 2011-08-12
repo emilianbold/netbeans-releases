@@ -396,6 +396,7 @@ public class RemoteAWTScreenshot {
         AWTComponentInfo ci = new AWTComponentInfo(t);
         retrieveComponents(ci, t, vm, componentClass, containerClass, window, getComponents, getBounds,
                            Integer.MIN_VALUE, Integer.MIN_VALUE, ((JPDAThreadImpl) t).getDebugger());
+        findComponentFields(ci);
         ci.bounds.x = 0; // Move to the origin, we do not care where it's on the screen.
         ci.bounds.y = 0;
         return ci;
@@ -531,6 +532,50 @@ public class RemoteAWTScreenshot {
                     return properties;//.toArray(new Property[] {});
                 }
             });
+        Method getTextMethod = methodsByName.get("getText");    // NOI18N
+        if (getTextMethod != null) {
+            try {
+                Value theText = component.invokeMethod(t.getThreadReference(), getTextMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                if (theText instanceof StringReference) {
+                    ci.setComponentText(((StringReference) theText).value());
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    private static void findComponentFields(AWTComponentInfo ci) {
+        List<AWTComponentInfo> customParents = new ArrayList<AWTComponentInfo>();
+        fillCusomParents(customParents, ci);
+        findFieldsInParents(customParents, ci);
+    }
+    
+    private static void fillCusomParents(List<AWTComponentInfo> customParents, AWTComponentInfo ci) {
+        AWTComponentInfo[] subComponents = ci.getSubComponents();
+        if (subComponents.length > 0 && ci.isCustomType()) {
+            customParents.add(ci);
+        }
+        for (AWTComponentInfo sci : subComponents) {
+            fillCusomParents(customParents, sci);
+        }
+    }
+
+    private static void findFieldsInParents(List<AWTComponentInfo> customParents, AWTComponentInfo ci) {
+        AWTComponentInfo[] subComponents = ci.getSubComponents();
+        ObjectReference component = ci.getComponent();
+        for (AWTComponentInfo cp : customParents) {
+            ObjectReference c = cp.getComponent();
+            Map<Field, Value> fieldValues = c.getValues(((ClassType) c.referenceType()).fields());
+            for (Map.Entry<Field, Value> e : fieldValues.entrySet()) {
+                if (component.equals(e.getValue())) {
+                    ci.fieldInfo = new AWTComponentInfo.FieldInfo(e.getKey(), cp);
+                }
+            }
+        }
+        for (AWTComponentInfo sci : subComponents) {
+            findFieldsInParents(customParents, sci);
+        }
     }
     
     private static class ComponentProperty extends Node.Property {
@@ -729,6 +774,8 @@ public class RemoteAWTScreenshot {
         
         private static final AWTComponentInfo[] NO_SUBCOMPONENTS = new AWTComponentInfo[] {};
         
+        private static final int MAX_TEXT_LENGTH = 80;
+        
         //private AWTComponentInfo parent;
         private Rectangle bounds;
         private Rectangle windowBounds;
@@ -740,6 +787,8 @@ public class RemoteAWTScreenshot {
         
         private JPDAThreadImpl thread;
         private ObjectReference component;
+        private FieldInfo fieldInfo;
+        private String componentText;
         
         public AWTComponentInfo(JPDAThreadImpl t) {
             this.thread = t;
@@ -757,7 +806,7 @@ public class RemoteAWTScreenshot {
             return name;
         }
         
-        public String getDisplayName() {
+        private String getTypeName() {
             int d = type.lastIndexOf('.');
             String typeName;
             if (d > 0) {
@@ -765,17 +814,92 @@ public class RemoteAWTScreenshot {
             } else {
                 typeName = type;
             }
-            return "["+typeName+"]";
+            return typeName;
         }
+        
+        void setComponentText(String componentText) {
+            if (componentText.length() > MAX_TEXT_LENGTH) {
+                this.componentText = componentText.substring(0, MAX_TEXT_LENGTH) + "...";
+            } else {
+                this.componentText = componentText;
+            }
+        }
+        
+        @Override
+        public String getDisplayName() {
+            String typeName = getTypeName();
+            String fieldName = (fieldInfo != null) ? fieldInfo.getName() + " " : "";
+            String text = (componentText != null) ? " \"" + componentText + "\"" : "";
+            return fieldName + "["+typeName+"]" + text;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            if (isCustomType() || componentText != null) {
+                String typeName = getTypeName();
+                if (isCustomType()) {
+                    typeName = "<b>"+typeName+"</b>";
+                }
+                String fieldName = (fieldInfo != null) ? fieldInfo.getName() + " " : "";
+                String text;
+                if (componentText != null) {
+                    text = escapeHTML(componentText);
+                    text = " <font color=\"#A0A0A0\">\"" + text + "\"</font>";
+                } else {
+                    text = "";
+                }
+                return fieldName + "["+typeName+"]" + text;
+            } else {
+                return null;
+            }
+        }
+        
+        private static String escapeHTML(String message) {
+            if (message == null) return null;
+            int len = message.length();
+            StringBuilder result = new StringBuilder(len + 20);
+            char aChar;
+
+            for (int i = 0; i < len; i++) {
+                aChar = message.charAt(i);
+                switch (aChar) {
+                case '<':
+                    result.append("&lt;");
+                    break;
+                case '>':
+                    result.append("&gt;");
+                    break;
+                case '&':
+                    result.append("&amp;");
+                    break;
+                case '"':
+                    result.append("&quot;");
+                    break;
+                default:
+                    result.append(aChar);
+                }
+            }
+            return result.toString();
+       }
         
         public String getType() {
             return type;
         }
         
+        public FieldInfo getField() {
+            return fieldInfo;
+        }
+        
+        public boolean isCustomType() {
+            return !(type.startsWith("java.awt.") || type.startsWith("javax.swing."));  // NOI18N
+        }
+        
+        @Override
         public Rectangle getBounds() {
             return bounds;
         }
         
+        @Override
         public Rectangle getWindowBounds() {
             if (windowBounds == null) {
                 return bounds;
@@ -794,6 +918,7 @@ public class RemoteAWTScreenshot {
             propertySets.add(ps);
         }
         
+        @Override
         public PropertySet[] getPropertySets() {
             return propertySets.toArray(new PropertySet[] {});
         }
@@ -813,6 +938,7 @@ public class RemoteAWTScreenshot {
              */
         }
         
+        @Override
         public AWTComponentInfo[] getSubComponents() {
             if (subComponents == null) {
                 return NO_SUBCOMPONENTS;
@@ -843,16 +969,44 @@ public class RemoteAWTScreenshot {
             return ci;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
             pchs.addPropertyChangeListener(propertyChangeListener);
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
             pchs.removePropertyChangeListener(propertyChangeListener);
         }
         
         protected void firePropertyChange(String name, Object o, Object n) {
             pchs.firePropertyChange(name, o, n);
+        }
+        
+        public static class FieldInfo {
+            
+            private String name;
+            private Field f;
+            private AWTComponentInfo parent;
+            
+            FieldInfo(Field f, AWTComponentInfo parent) {
+                this.name = f.name();
+                this.f = f;
+                this.parent = parent;
+            }
+            
+            public String getName() {
+                return name;
+            }
+            
+            public Field getField() {
+                return f;
+            }
+            
+            public AWTComponentInfo getParent() {
+                return parent;
+            }
+            
         }
 
     }
