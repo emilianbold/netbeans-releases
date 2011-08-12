@@ -109,7 +109,7 @@ public abstract class HtmlCompletionTestBase extends TestBase {
         //remove the pipe
         doc.remove(pipeOffset, 1);
 
-        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset);
+        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset, false);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
 
@@ -177,7 +177,7 @@ public abstract class HtmlCompletionTestBase extends TestBase {
 
         Document doc = getDocument(content.toString());
 
-        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset);
+        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset, false);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
         component.getCaret().setDot(pipeOffset);
@@ -280,7 +280,7 @@ public abstract class HtmlCompletionTestBase extends TestBase {
 
         StringBuffer output = new StringBuffer();
         for (int i = 0; i < doc.getLength(); i++) {
-            HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, i).query();
+            HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, i, false).query();
             if (result != null) {
                 Collection<? extends CompletionItem> items = result.getItems();
                 output.append(i + ":");

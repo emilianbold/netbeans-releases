@@ -46,6 +46,7 @@ package org.netbeans.modules.html.editor.completion;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.modules.html.editor.api.Utils;
@@ -82,8 +83,11 @@ import org.openide.util.NbBundle;
  */
 public class HtmlCompletionProvider implements CompletionProvider {
 
+    private final AtomicBoolean AUTO_QUERY = new AtomicBoolean(); 
+    
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
+        AUTO_QUERY.set(true);
         Document doc = component.getDocument();
         int dotPos = component.getCaret().getDot();
         return HtmlPreferences.autoPopupCompletionWindow() && checkOpenCompletion(doc, dotPos, typedText)
@@ -94,11 +98,15 @@ public class HtmlCompletionProvider implements CompletionProvider {
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         AsyncCompletionTask task = null;
+        
+        boolean triggeredByAutocompletion = AUTO_QUERY.getAndSet(false);
+        
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
-            task = new AsyncCompletionTask(new Query(), component);
+            task = new AsyncCompletionTask(new Query(triggeredByAutocompletion), component);
         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-            task = new AsyncCompletionTask(new DocQuery(null), component);
+            task = new AsyncCompletionTask(new DocQuery(null, triggeredByAutocompletion), component);
         }
+        
         return task;
     }
 
@@ -108,6 +116,10 @@ public class HtmlCompletionProvider implements CompletionProvider {
         private volatile Collection<? extends CompletionItem> items =  Collections.<CompletionItem>emptyList();
         private JTextComponent component;
 
+        public Query(boolean triggeredByAutocompletion) {
+            super(triggeredByAutocompletion);
+        }
+        
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
@@ -116,7 +128,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         @Override
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
+                HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset, triggeredByAutocompletion).query();
                 if(result != null) {
                     items = result.getItems();
                     anchor = result.getAnchor();
@@ -196,7 +208,8 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         private CompletionItem item;
 
-        public DocQuery(HtmlCompletionItem item) {
+        public DocQuery(HtmlCompletionItem item, boolean triggeredByAutocompletion) {
+            super(triggeredByAutocompletion);
             this.item = item;
         }
 
@@ -207,7 +220,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     //item == null means that the DocQuery is invoked
                     //based on the explicit documentation opening request
                     //(not ivoked by selecting a completion item in the list)
-                    HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
+                    HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset, false).query();
                     if (result != null && result.getItems().size() > 0) {
                         item = result.getItems().iterator().next();
                     }
@@ -223,6 +236,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
     }
 
     private static abstract class AbstractQuery extends AsyncCompletionQuery {
+        
+        protected final boolean triggeredByAutocompletion;
+
+        public AbstractQuery(boolean triggeredByAutocompletion) {
+            this.triggeredByAutocompletion = triggeredByAutocompletion;
+        }
 
         @Override
         protected void preQueryUpdate(JTextComponent component) {
