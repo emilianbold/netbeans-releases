@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -52,17 +51,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.modules.maven.api.NbMavenProject;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -113,7 +113,7 @@ public class ModulesNode extends AbstractNode {
     }
 
     static class Wrapper {
-        boolean isPOM;
+        boolean isAggregator;
         LogicalViewProvider provider;
         NbMavenProjectImpl proj;
     }
@@ -143,10 +143,14 @@ public class ModulesNode extends AbstractNode {
          
         @Override
         protected boolean createKeys(final List<Wrapper> modules) {
+            List<String> all = project.getOriginalMavenProject().getModules();
+            int alreadyAdded = modules.size();
+            if (alreadyAdded >= all.size()) {
+                return true;
+            }
+            String module = all.get(alreadyAdded);
             File base = project.getOriginalMavenProject().getBasedir();
-            for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
-                String elem = (String) it.next();
-                File projDir = FileUtil.normalizeFile(new File(base, elem));
+                File projDir = FileUtil.normalizeFile(new File(base, module));
                 FileObject fo = FileUtil.toFileObject(projDir);
                 if (fo != null) {
                     try {
@@ -154,7 +158,8 @@ public class ModulesNode extends AbstractNode {
                         if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
                             Wrapper wr = new Wrapper();
                             wr.proj = (NbMavenProjectImpl) prj;
-                            wr.isPOM = "pom".equals(wr.proj.getOriginalMavenProject().getPackaging()); //NOI18N
+                            MavenProject mp = wr.proj.getOriginalMavenProject();
+                            wr.isAggregator = NbMavenProject.TYPE_POM.equals(mp.getPackaging()) && !mp.getModules().isEmpty();
                             wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
                             modules.add(wr);
                         }
@@ -166,16 +171,12 @@ public class ModulesNode extends AbstractNode {
                 } else {
                     //TODO broken module reference.. show as such..
                 }
-
-            }
-            
-            return true;
-
+            return false;
         }
 
         @Override
         protected Node createNodeForKey(Wrapper wr) {
-             return new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isPOM);
+             return new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isAggregator);
         }
         
         
@@ -186,8 +187,8 @@ public class ModulesNode extends AbstractNode {
         private NbMavenProjectImpl project;
         private NbMavenProjectImpl parent;
 
-        ProjectFilterNode(NbMavenProjectImpl parent, NbMavenProjectImpl proj, Node original, boolean isPom) {
-            super(original, isPom ? Children.create(new ModulesChildFactory(proj), true) : Children.LEAF);
+        ProjectFilterNode(NbMavenProjectImpl parent, NbMavenProjectImpl proj, Node original, boolean isAggregator) {
+            super(original, isAggregator ? Children.create(new ModulesChildFactory(proj), true) : Children.LEAF);
 //            disableDelegation(DELEGATE_GET_ACTIONS);
             project = proj;
             this.parent = parent;

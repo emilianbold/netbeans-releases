@@ -102,7 +102,7 @@ public class DwarfSource implements SourceFileProperties{
     private Map<String,GrepEntry> grepBase;
     private String compilerName;
     private CompileLineStorage storage;
-    private int handler;
+    private int handler = -1;
     
     DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         language = lang;
