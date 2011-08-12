@@ -77,9 +77,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class Merge extends CopyDialog implements ItemListener {
         
-    private String MERGE_START_URL_HISTORY_KEY = Merge.class.getName() + "_merge_from"; // NOI18N
-    private String MERGE_END_URL_HISTORY_KEY = Merge.class.getName() + "_merge_after"; // NOI18N
-
     private String lastSelectedUrl;
     private final RepositoryFile repositoryFile;
 
@@ -184,9 +181,8 @@ public class Merge extends CopyDialog implements ItemListener {
         type.setPreviewLabels();
         panel.repaint();
         
-        resetUrlComboBoxes();
-        setupUrlComboBox(repositoryFile, type.getStartUrlComboBox(), MERGE_START_URL_HISTORY_KEY);
-        setupUrlComboBox(repositoryFile, type.getEndUrlComboBox(), MERGE_END_URL_HISTORY_KEY);
+        setupUrlComboBox(repositoryFile, type.getStartUrlComboBox());
+        setupUrlComboBox(repositoryFile, type.getEndUrlComboBox());
     }    
 
     private abstract class MergeType implements DocumentListener, PropertyChangeListener {
