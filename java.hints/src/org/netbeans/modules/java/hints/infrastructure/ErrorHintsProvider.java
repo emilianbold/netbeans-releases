@@ -91,6 +91,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -154,6 +155,11 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         Map<Class, Data> data = new HashMap<Class, Data>();
 
         for (Diagnostic d : errors) {
+            if (ConvertToDiamondBulkHint.CODES.contains(d.getCode())) {
+                if (isJava) continue; //handled separatelly in the hint
+                if (!ConvertToDiamondBulkHint.isHintEnabled()) continue; //disabled
+            }
+            
             if (isCanceled())
                 return null;
 
