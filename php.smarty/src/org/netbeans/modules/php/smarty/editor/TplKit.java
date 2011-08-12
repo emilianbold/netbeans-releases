@@ -66,13 +66,11 @@ import org.netbeans.spi.lexer.MutableTextInput;
  */
 public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{ // NbEditorKit implements org.openide.util.HelpCtx.Provider{
 
-    public static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
-
     /** serialVersionUID */
     private static final long serialVersionUID = 8922234837050367142L;
 
     public TplKit() {
-        this(TPL_MIME_TYPE);
+        this(TplDataLoader.MIME_TYPE);
     }
 
     public TplKit(String mimeType) {
@@ -82,7 +80,7 @@ public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
     @Override
     public String getContentType() {
-        return TPL_MIME_TYPE;
+        return TplDataLoader.MIME_TYPE;
     }
 
     @Override

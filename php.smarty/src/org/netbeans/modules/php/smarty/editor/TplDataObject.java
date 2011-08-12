@@ -25,6 +25,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -40,29 +42,39 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserCancelException;
+import org.openide.windows.TopComponent;
 
 /**
  * Most code of this class was get from HtmlDataObject - especially encoding support.
- * 
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class TplDataObject extends MultiDataObject implements CookieSet.Factory {
 
     private transient TplEditorSupport tplEditorSupport;
-    
-    public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
-    //constants used when finding tpl (html) document content type
+
+    /**
+     * constants used when finding tpl (html) document content type
+     */
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
-    
+
+    /**
+     * Constant where is placed standard TPL file icon.
+     */
+    private static final String ICON_LOCATION = "org/netbeans/modules/php/smarty/resources/tpl-icon.png"; //NOI18N
+
     private static final Logger LOG = Logger.getLogger(TplDataObject.class.getName());
+
+    public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
 
     public TplDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet set = getCookieSet();
         set.add(TplEditorSupport.class, this);
         set.assign(SaveAsCapable.class, new SaveAsCapable() {
-            
+
             @Override
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 TplEditorSupport es = getCookie( TplEditorSupport.class );
@@ -74,20 +86,33 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 }
             }
         });
-        
+
         set.assign(FileEncodingQueryImplementation.class, new FileEncodingQueryImpl());
+    }
+
+    @MultiViewElement.Registration(
+            displayName="#CTL_SourceTabCaption",
+            iconBase=ICON_LOCATION,
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID="smarty.template",
+            mimeType=TplDataLoader.MIME_TYPE,
+            position=1
+    )
+    @Messages("CTL_SourceTabCaption=&Source")
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
     protected Node createNodeDelegate() {
         DataNode dn = new DataNode(this, Children.LEAF, getLookup());
-        dn.setIconBaseWithExtension("org/netbeans/modules/php/smarty/resources/tpl-icon.png"); // NOI18N
+        dn.setIconBaseWithExtension(ICON_LOCATION); // NOI18N
         return dn;
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
         /** Creates new Cookie */
@@ -105,7 +130,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         }
         return tplEditorSupport;
     }
-    
+
     // Package accessibility for TplEditorSupport:
     CookieSet getCookieSet0() {
         return getCookieSet();
@@ -156,18 +181,18 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             do {
                 encoding = findEncoding(makeString(arr, 0, len, encodings[i++]));
             } while (encoding == null && i < encodings.length);
-            
+
         if (encoding != null) {
             encoding = encoding.trim();
         }
         return encoding;
     }
-    
+
     private String makeString(byte[] arr, int offset, int len, String encoding) throws UnsupportedEncodingException {
         return new String(arr, 0, len, encoding).toUpperCase();
     }
-    
-        
+
+
     /** Tries to guess the mime type from given input stream. Tries to find
      *   <em>&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;</em>
      * @param txt the string to search in (should be in upper case)
@@ -181,7 +206,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         }
         return null;
     }
-    
+
     private static int[] findEncodingOffsets(String txt) {
         int[] rslt = new int[0];
         TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
@@ -193,30 +218,30 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 String tokenImage = token.text().toString();
                 int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
                 charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;
-                
+
                 int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
                 if (charsetOffset != -1){
                     int endOffset = tokenImage.indexOf('"', charsetEndOffset);
-                    
+
                     if (endOffset == -1){
                         endOffset = tokenImage.indexOf('\'', charsetEndOffset);
                     }
-                    
+
                     if (endOffset == -1){
                         endOffset = tokenImage.indexOf(';', charsetEndOffset);
                     }
-                    
+
                     if (endOffset == -1){
                         return rslt;
                     }
-                    
+
                     rslt =  new int[]{token.offset(hi), charsetEndOffset, endOffset};
                 }
             }
         }
         return rslt;
     }
-    
+
     private class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
         private volatile Charset cachedEncoding;
@@ -276,7 +301,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             public ProxyCharset (Charset charset) {
                 super (charset.name(), new String[0]);         //NOI18N
             }
-            
+
             public boolean contains(Charset c) {
                 return false;
             }

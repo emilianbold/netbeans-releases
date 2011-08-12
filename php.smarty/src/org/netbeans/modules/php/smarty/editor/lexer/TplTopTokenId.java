@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -105,7 +106,7 @@ public enum TplTopTokenId implements TokenId {
 
                 @Override
                 protected String mimeType() {
-                    return "text/x-tpl";
+                    return TplDataLoader.MIME_TYPE;
                 }
 
                 @Override

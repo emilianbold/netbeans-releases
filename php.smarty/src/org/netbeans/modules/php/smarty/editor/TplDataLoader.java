@@ -57,29 +57,31 @@ public class TplDataLoader extends UniFileLoader {
 
     private static final long serialVersionUID = -5805535261731217882L;
 
+    public static final String MIME_TYPE = "text/x-tpl";
+
     public TplDataLoader() {
         super("org.netbeans.modules.php.smarty.editor.TplDataObject"); // NOI18N
     }
-    
+
     protected void initialize() {
         super.initialize();
-        getExtensions().addMimeType("text/x-tpl"); // NOI18N
+        getExtensions().addMimeType(MIME_TYPE); // NOI18N
     }
-    
+
     protected MultiDataObject createMultiObject(final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new TplDataObject(primaryFile, this);
     }
-    
+
     /** Get the default display name of this loader.
      * @return default display name
      */
     protected String defaultDisplayName() {
         return NbBundle.getMessage(TplDataLoader.class, "PROP_TplLoader_Name");
     }
-    
+
     protected String actionsContext() {
         return "Loaders/text/x-tpl/Actions/"; // NOI18N
     }
-    
+
 }

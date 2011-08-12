@@ -49,6 +49,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -81,7 +82,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         super("Smarty PHP Web Framework", //NOI18N
                 NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkName"),  //NOI18N
                 NbBundle.getMessage(SmartyPhpFrameworkProvider.class, "LBL_FrameworkDescription")); //NOI18N
-        
+
         badgeIcon = new BadgeIcon(
                 ImageUtilities.loadImage(ICON_PATH),
                 SmartyPhpFrameworkProvider.class.getResource("/" + ICON_PATH)); // NOI18N
@@ -93,7 +94,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     public static boolean isSmartyTemplateExtension(String ext) {
-        for (String mimeExt : FileUtil.getMIMETypeExtensions("text/x-tpl")) { // NOI18N
+        for (String mimeExt : FileUtil.getMIMETypeExtensions(TplDataLoader.MIME_TYPE)) { // NOI18N
             if (ext.equals(mimeExt)) {
                 return true;
             }

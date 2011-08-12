@@ -46,11 +46,12 @@ import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 
-@LanguageRegistration(mimeType="text/x-tpl", useCustomEditorKit=true) //NOI18N
+@LanguageRegistration(mimeType=TplDataLoader.MIME_TYPE, useCustomEditorKit=true) //NOI18N
 public class TplLanguage extends DefaultLanguageConfig {
-    
+
     public TplLanguage() {
     }
 
@@ -73,7 +74,7 @@ public class TplLanguage extends DefaultLanguageConfig {
     public String getDisplayName() {
         return "TPL";
     }
-    
+
     @Override
     public String getPreferredExtension() {
         return "tpl"; // NOI18N

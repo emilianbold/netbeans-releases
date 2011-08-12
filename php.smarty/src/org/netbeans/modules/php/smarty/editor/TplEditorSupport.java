@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
@@ -65,15 +66,16 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.windows.CloneableOpenSupport;
 
 /**
- * Editor support for TPL data objects. Most code of this class was get from 
+ * Editor support for TPL data objects. Most code of this class was get from
  * HtmlEditorSupport - especially encoding support.
- * 
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public final class TplEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
@@ -82,7 +84,7 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
     private static final String UTF_8_ENCODING = "UTF-8";
     // only to be ever user from unit tests:
     public static boolean showConfirmationDialog = true;
-    
+
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
      * It also invokes beforeSave() method on the TplDataObject to give it
@@ -103,8 +105,13 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
 
     /** Constructor. */
     TplEditorSupport(TplDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
         setMIMEType(obj.getPrimaryFile().getMIMEType());
+    }
+
+    @Override
+    protected Pane createPane() {
+        return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(TplDataLoader.MIME_TYPE, getDataObject());
     }
 
     @Override
@@ -118,16 +125,16 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
         super.saveDocument();
         TplEditorSupport.this.getDataObject().setModified(false);
     }
-    
+
     void updateEncoding() throws UserCancelException {
         //try to find encoding specification in the editor content
         String documentContent = getDocumentText();
         String encoding = TplDataObject.findEncoding(documentContent);
 
-        
-        
-        
-        
+
+
+
+
         String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
         String finalEncoding = null;
         if (encoding != null) {
@@ -177,8 +184,8 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
             Logger.getLogger("global").log(Level.WARNING, null, e);
         }
         return text;
-    }    
-    
+    }
+
 
     private boolean canEncode(String docText, String encoding) {
         CharsetEncoder encoder = Charset.forName(encoding).newEncoder();
@@ -194,7 +201,7 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
         }
         return supported;
     }
-    
+
    @Override
     public void open() {
         String encoding = ((TplDataObject) getDataObject()).getFileEncoding();
@@ -225,7 +232,7 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
 
         super.open();
     }
-    
+
    /**
      * @inheritDoc
      */

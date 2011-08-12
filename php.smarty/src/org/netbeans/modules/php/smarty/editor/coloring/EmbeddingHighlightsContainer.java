@@ -62,6 +62,7 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.WeakListeners;
@@ -76,9 +77,8 @@ import org.openide.util.WeakListeners;
 public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer implements TokenHierarchyListener {
 
     private static final Logger LOG = Logger.getLogger(EmbeddingHighlightsContainer.class.getName());
-    
+
     private static final String TPL_BACKGROUND_TOKEN_NAME = "smarty"; //NOI18N
-    private static final String TPL_MIME_TYPE = "text/x-tpl"; //NOI18N
     private static final String TPL_INNER_MIME_TYPE = "text/x-tpl-inner"; //NOI18N
 
     private final AttributeSet tplBackground;
@@ -88,9 +88,9 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
 
     EmbeddingHighlightsContainer(Document document) {
         this.document = document;
-        
+
         //try load the background from tpl settings
-        FontColorSettings fcs = MimeLookup.getLookup(TPL_MIME_TYPE).lookup(FontColorSettings.class);
+        FontColorSettings fcs = MimeLookup.getLookup(TplDataLoader.MIME_TYPE).lookup(FontColorSettings.class);
         Color tplBG = null;
         if (fcs != null) {
             tplBG = getColoring(fcs, TPL_BACKGROUND_TOKEN_NAME);
@@ -128,10 +128,10 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
         synchronized (this) {
             version++;
         }
-        
+
         fireHighlightsChange(evt.affectedStartOffset(), evt.affectedEndOffset());
     }
-    
+
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
@@ -143,14 +143,14 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
         }
         return null;
     }
-    
+
     private class Highlights implements HighlightsSequence {
 
         private final long version;
         private final TokenHierarchy<? extends Document> scanner;
         private final int startOffsetBoundary;
         private final int endOffsetBoundary;
-        
+
         private List<TokenSequence<?>> tokenSequenceList = null;
         private int startOffset;
         private int endOffset;
@@ -185,7 +185,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
 
             if (tokenSequenceList != null) {
                 for (TokenSequence tokenSequence : tokenSequenceList) {
-                    assert tokenSequence.language().mimeType().equals(TPL_MIME_TYPE);
+                    assert tokenSequence.language().mimeType().equals(TplDataLoader.MIME_TYPE);
                     tokenSequence.move(realEndOffset);
                     while (tokenSequence.moveNext() && tokenSequence.offset() < endOffsetBoundary) {
                         TokenSequence eTokenSequence = tokenSequence.embedded();
@@ -227,10 +227,10 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                     }
                 }
             }
-            
+
             return false;
         }
-        
+
         @Override
         public boolean moveNext() {
             synchronized (EmbeddingHighlightsContainer.this) {
@@ -240,7 +240,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                     }
                 }
             }
-            
+
             finished = true;
             return false;
         }
@@ -280,7 +280,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
                 }
             }
         }
-        
+
         private boolean checkVersion() {
             synchronized(EmbeddingHighlightsContainer.this) {
                 return this.version == EmbeddingHighlightsContainer.this.version;

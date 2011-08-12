@@ -49,6 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
 
 /**
@@ -78,13 +79,13 @@ public class TplCompletionQuery extends UserTask {
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
         String resultMimeType = resultIterator.getSnapshot().getMimeType();
-        if (resultMimeType.equals("text/x-tpl")) {
+        if (resultMimeType.equals(TplDataLoader.MIME_TYPE)) {
             this.completionResult = query(resultIterator);
         }
     }
 
     private CompletionResult query(ResultIterator resultIterator) {
-        return new CompletionResult(SmartyCodeCompletionOffer.getFunctions(), 
+        return new CompletionResult(SmartyCodeCompletionOffer.getFunctions(),
                 SmartyCodeCompletionOffer.getVariableModifiers(),
                 SmartyCodeCompletionOffer.getFunctionParameters());
     }
