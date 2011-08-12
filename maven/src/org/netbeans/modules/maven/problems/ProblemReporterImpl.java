@@ -283,7 +283,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         "MSG_MissingApisupportModule=You are missing the Maven APIsupport module in your installation. "
             + "This means that all NetBeans development related functionality (for example, File templates, running platform application) is missing. "
             + "The most probable cause is that part of the general API support is missing as well. "
-            + "Please go to Tools/Plugins and install the plugins related to NetBeans development.",
+            + "Please go to Tools/Plugins and install the plugins related to NetBeans development."
     })
     public void doBaseProblemChecks(@NonNull MavenProject project) {
         String packaging = nbproject.getProjectWatcher().getPackagingType();
