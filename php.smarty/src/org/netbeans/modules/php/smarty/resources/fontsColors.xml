@@ -42,10 +42,10 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    
+
     <!-- colors for TOP-LEVEL lexer -->
     <fontcolor name="smarty" bgColor="FFFEC9" default="default"/>
-    <fontcolor name="smarty_delimiter" foreColor="DAE808" default="smarty">
+    <fontcolor name="smarty_delimiter" foreColor="F8BB00" default="smarty">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="comment"  default="smarty" foreColor="969696"/>
