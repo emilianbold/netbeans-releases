@@ -50,12 +50,6 @@ import org.openide.modules.ModuleInstall;
 public class Installer extends ModuleInstall {
 
     @Override
-    public void restored() {
-        // By default, do nothing.
-        // Put your startup code here.
-    }
-
-    @Override
     public boolean closing() {
         ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
         return true;

@@ -87,9 +87,6 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -115,7 +112,6 @@ import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
@@ -123,7 +119,7 @@ import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.problems.RevalidateAction;
+import org.netbeans.modules.maven.problems.SanityBuildAction;
 import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
@@ -345,24 +341,19 @@ public final class NbMavenProjectImpl implements Project {
     public @NonNull synchronized MavenProject getOriginalMavenProject() {
         MavenProject mp = project == null ? null : project.get();
         if (mp == null) {
-            mp = loadOriginalMavenProject(true);
+            mp = loadOriginalMavenProject();
         }
         project = new SoftReference<MavenProject>(mp);
         return mp;
     }
 
     @Messages({
-        "# {0} - directory of project", "LBL_Incomplete_Loading_Progress_Handle=Reloading online: {0}",
-        "LBL_Incomplete_Problem_Report=Partially loaded Maven project.",
-        "LBL_Incomplete_Problem_Report_Desc=Trying to load project using Maven online mode.",
-        "LBL_Incomplete_Project_Name=<partially loaded Maven project>",
-        "LBL_Incomplete_Project_Desc=Partially loaded Maven project; retrying in online mode.",
         "TXT_RuntimeException=RuntimeException occurred in Apache Maven embedder while loading",
         "TXT_RuntimeExceptionLong=RuntimeException occurred in Apache Maven embedder while loading the project. \n"
             + "This is preventing the project model from loading properly. \n"
             + "Please file a bug report with details about your project and the IDE's log file.\n\n"
     })
-    private @NonNull MavenProject loadOriginalMavenProject(boolean fallbackOnline) {
+    private @NonNull MavenProject loadOriginalMavenProject() {
         long startLoading = System.currentTimeMillis();
         MavenProject newproject = null;
         try {
@@ -387,51 +378,7 @@ public final class NbMavenProjectImpl implements Project {
              MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
              newproject = res.getProject();
             if (res.hasExceptions()) {
-                //#189833 
-                if (fallbackOnline) {
-                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                            LBL_Incomplete_Problem_Report(),
-                            LBL_Incomplete_Problem_Report_Desc(), null);
-                    problemReporter.addReport(report);
-                    req.setTransferListener(ProgressTransferListener.activeListener());
-                    RELOAD_RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            req.setOffline(false);
-                            AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(LBL_Incomplete_Loading_Progress_Handle(projectFile.getParent()),
-                                                new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("fallbackOnline") },  //NOI18N
-                                                    ProgressTransferListener.cancellable(), null);
-                            try {
-                                ProgressTransferListener.setAggregateHandle(hndl);
-                                hndl.start();
-                                MavenExecutionResult res = EmbedderFactory.getOnlineEmbedder().readProjectWithDependencies(req);
-                                MavenProject newOnlinewproject = res.getProject();
-                                problemReporter.clearReports();
-                                if(newOnlinewproject ==null ){
-                                     newOnlinewproject = getFallbackProject();
-                                }
-                                synchronized (NbMavenProjectImpl.this) {
-                                  project = new SoftReference<MavenProject>(newOnlinewproject);
-                                  if (res.hasExceptions()) {
-                                       reportExceptions(res);
-                                  }
-                                  projectInfo.reset();
-                                }
-                                ACCESSOR.doFireReload(watcher);
-                                doBaseProblemChecks();
-                           } catch (ThreadDeath d) { // download interrupted
-                           } finally {
-                               hndl.finish();
-                               ProgressTransferListener.clearAggregateHandle();
-                           }
-        
-                        }
-                    });
-                } else {
-                    reportExceptions(res);
-                }
-
+                reportExceptions(res);
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -450,10 +397,6 @@ public final class NbMavenProjectImpl implements Project {
         } finally {
             if (newproject == null) {
                 newproject = getFallbackProject();
-                if(fallbackOnline){
-                    newproject.setName(LBL_Incomplete_Project_Name());
-                    newproject.setDescription(LBL_Incomplete_Project_Desc());
-                }
             }
             long endLoading = System.currentTimeMillis();
             LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, getProjectDirectory().getPath()});
@@ -465,6 +408,10 @@ public final class NbMavenProjectImpl implements Project {
         return newproject;
     }
 
+    @Messages({
+        "LBL_Incomplete_Project_Name=<partially loaded Maven project>",
+        "LBL_Incomplete_Project_Desc=Partially loaded Maven project; try building it."
+    })
     private MavenProject getFallbackProject() throws AssertionError {
         MavenProject newproject;
         File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N //NOI18N
@@ -477,6 +424,9 @@ public final class NbMavenProjectImpl implements Project {
         } else { // from a unit test
             newproject = new MavenProject();
         }
+        newproject.setName(LBL_Incomplete_Project_Name());
+        newproject.setDescription(LBL_Incomplete_Project_Desc());
+        newproject.setFile(projectFile);
         return newproject;
     }
 
@@ -500,9 +450,8 @@ public final class NbMavenProjectImpl implements Project {
                 problemReporter.addReport(report);
                 problemReporter.addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
             } else if (e instanceof ProjectBuildingException) {
-                //igonre if the problem is in the project validation codebase, we handle that later..
                 problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        TXT_Cannot_Load_Project(), msg, new RevalidateAction(this)));
+                        TXT_Cannot_Load_Project(), msg, new SanityBuildAction(this)));
                 if (e.getCause() instanceof ModelBuildingException) {
                     ModelBuildingException mbe = (ModelBuildingException) e.getCause();
                     for (ModelProblem mp : mbe.getProblems()) {
@@ -540,23 +489,19 @@ public final class NbMavenProjectImpl implements Project {
             return;
         }
         problemReporter.clearReports(); //#167741 -this will trigger node refresh?
-        MavenProject prj = loadOriginalMavenProject(false);
+        MavenProject prj = loadOriginalMavenProject();
         synchronized (this) {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
-        doBaseProblemChecks();
+        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
         String basedir = project.getEmbedder().getLocalRepository().getBasedir();
         File file = FileUtil.normalizeFile(new File(basedir));
         FileUtil.refreshFor(file);
-    }
-
-    void doBaseProblemChecks() {
-        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
     }
 
     @Messages("LBL_NoProjectName=<Maven project with no name>")
