@@ -78,7 +78,7 @@ public class BatchProblemNotifier {
 
     @Messages({
         "# {0} - directory basename", "build_title=Build {0}",
-        "# {0} - full directory path", "build_details=Run sanity build in {0}"
+        "# {0} - full directory path", "build_details=Run priming build in {0}"
     })
     public static void opened(NbMavenProjectImpl p) {
         ProblemReporterImpl pr = p.getProblemReporter();
@@ -117,7 +117,7 @@ public class BatchProblemNotifier {
         }
     }
 
-    @Messages({"dialog_title=Run Sanity Build", "build_label=Sanity Build"})
+    @Messages({"dialog_title=Run Priming Build", "build_label=Priming Build"})
     private static void showUI(File reactor) {
         Set<String> projects;
         synchronized (projectsByReactor) {

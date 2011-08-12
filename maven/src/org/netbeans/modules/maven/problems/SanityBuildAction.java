@@ -58,7 +58,7 @@ import org.openide.util.NbBundle.Messages;
  * At worst it will show the same problem in the Output Window, so the user is more likely
  * to believe that there really is a problem with their project, not NetBeans.
  */
-@Messages("ACT_validate=Sanity Build")
+@Messages("ACT_validate=Priming Build")
 public class SanityBuildAction extends AbstractAction {
 
     private final NbMavenProjectImpl nbproject;
