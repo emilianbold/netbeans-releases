@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.Properties;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.NbBundle;
 
 /**

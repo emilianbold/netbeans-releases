@@ -475,12 +475,18 @@ public final class ServerRegistry implements java.io.Serializable {
                         ServerInstance tmp = new ServerInstance(server, url, nonPersistent);
                         // PENDING persist url/password in ServerString as well
                         instancesMap().put(url, tmp);
+
                         if (!nonPersistent) {
                             writeInstanceToFile(url, username, password, server.getDisplayName());
                         } else {
-                            properties.put(InstanceProperties.USERNAME_ATTR, username);
-                            properties.put(InstanceProperties.PASSWORD_ATTR, password);
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.URL_ATTR, url);
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.USERNAME_ATTR, username);
+                            tmp.getInstanceProperties().setProperty(
+                                    InstanceProperties.PASSWORD_ATTR, password);
                         }
+
                         tmp.getInstanceProperties().setProperty(
                                 InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                         if (displayName != null) {

@@ -114,10 +114,7 @@ public final class OracleJ2EEServerInstanceProvider implements ServerInstancePro
                         props.put(OracleDeploymentFactory.IP_TENANT_ID, inst.getTenantId());
                         props.put(OracleDeploymentFactory.IP_SERVICE_NAME, inst.getServiceName());
                         props.put(OracleDeploymentFactory.IP_URL_ENDPOINT, ai.getUrlEndpoint());
-                        props.put(InstanceProperties.URL_ATTR, inst.getId());
                         props.put(OracleDeploymentFactory.IP_PREMISE_SERVICE_INSTANCE_ID, ai.getOnPremiseServerInstanceId());
-                        props.put(InstanceProperties.USERNAME_ATTR, ai.getTenantUserName());
-                        props.put(InstanceProperties.PASSWORD_ATTR, ai.getTenantPassword());
                         ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
                                 ai.getTenantUserName(), ai.getTenantPassword(), inst.getDisplayName(), props);
                     } catch (InstanceCreationException ex) {
