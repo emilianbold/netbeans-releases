@@ -167,6 +167,17 @@ public class ScreenshotComponent extends TopComponent {
         ComponentHierarchy.getInstance().getExplorerManager().setRootContext(componentNodes);
         ComponentHierarchy.getInstance().getExplorerManager().setExploredContext(componentNodes);
         canvas.activated();
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        //canvas.deactivated();
+    }
+
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
         TopComponent properties = WindowManager.getDefault().findTopComponent("properties");    // NOI18N
         if (properties != null) {
             if (!properties.isOpened()) {
@@ -175,11 +186,10 @@ public class ScreenshotComponent extends TopComponent {
             }
         }
     }
-
+    
     @Override
-    protected void componentDeactivated() {
-        super.componentDeactivated();
-        //canvas.deactivated();
+    protected void componentHidden() {
+        super.componentHidden();
         if (propertiesOpened) {
             propertiesOpened = false;
             TopComponent properties = WindowManager.getDefault().findTopComponent("properties");    // NOI18N
@@ -188,7 +198,7 @@ public class ScreenshotComponent extends TopComponent {
             }
         }
     }
-
+    
     @Override
     protected void componentOpened() {
         synchronized (openedScreenshots) {
