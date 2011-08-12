@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -57,129 +59,137 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public abstract class TopLevelStructureItem implements StructureItem {
-
-    private List<StructureItem> children;
-
-    protected TopLevelStructureItem(List<StructureItem> children) {
-        this.children = children;
-    }
-
+    
     @Override
     public String getSortText() {
         return getName();
     }
-
+    
     @Override
     public String getHtml(HtmlFormatter formatter) {
         return getName();
     }
-
+    
     @Override
     public ElementHandle getElementHandle() {
         return null;
     }
-
+    
     @Override
     public ElementKind getKind() {
         return ElementKind.PACKAGE; //xxx fix - add mode categories to csl
     }
-
+    
     @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
     }
-
+    
     @Override
     public boolean isLeaf() {
         return false;
     }
-
-    @Override
-    public List<? extends StructureItem> getNestedItems() {
-        return children;
-    }
-
+    
     @Override
     public long getPosition() {
         return -1;
     }
-
+    
     @Override
     public long getEndPosition() {
         return -1;
     }
-
+    
     @Override
     public ImageIcon getCustomIcon() {
         return null;
     }
     
-    //XXX: remove this one I sort out the selectors to the elements, ids and classes categories
-    public static class Rules extends TopLevelStructureItem {
-
+    public abstract static class ChildrenSetStructureItem extends TopLevelStructureItem {
+        
+        private Collection<StructureItem> items;
+        
+        public ChildrenSetStructureItem(Collection<StructureItem> items) {
+            this.items = items;
+        }
+        
+        @Override
+        public List<? extends StructureItem> getNestedItems() {
+            return new ArrayList<StructureItem>(items);
+        }
+    }
+    
+    public abstract static class ChildrenListStructureItem extends TopLevelStructureItem {
+        
+        private List<StructureItem> items;
+        
+        public ChildrenListStructureItem(List<StructureItem> items) {
+            this.items = items;
+        }
+        
+        @Override
+        public List<? extends StructureItem> getNestedItems() {
+            return items;
+        }
+    }
+    
+    public static class Rules extends ChildrenListStructureItem {
+        
         public Rules(List<StructureItem> children) {
             super(children);
         }
-
+        
         @Override
         public String getName() {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Rules");
         }
-        
     }
     
-    public static class Elements extends TopLevelStructureItem {
+    public static class Elements extends ChildrenSetStructureItem {
 
-        public Elements(List<StructureItem> children) {
-            super(children);
+        public Elements(Collection<StructureItem> items) {
+            super(items);
         }
-
+        
         @Override
         public String getName() {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Elements");
         }
-        
     }
     
-    public static class Classes extends TopLevelStructureItem {
-
-        public Classes(List<StructureItem> children) {
+    public static class Classes extends ChildrenSetStructureItem {
+        
+        public Classes(Collection<StructureItem> children) {
             super(children);
         }
-
+        
         @Override
         public String getName() {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Classes");
         }
-        
     }
     
-    public static class Ids extends TopLevelStructureItem {
-
-        public Ids(List<StructureItem> children) {
+    public static class Ids extends ChildrenSetStructureItem {
+        
+        public Ids(Collection<StructureItem> children) {
             super(children);
         }
-
+        
         @Override
         public String getName() {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Ids");
         }
-        
     }
     
-    public static class Namespaces extends TopLevelStructureItem {
-
+    public static class Namespaces extends ChildrenListStructureItem {
+        
         public Namespaces(List<StructureItem> children) {
             super(children);
         }
-
+        
         @Override
         public String getName() {
             return NbBundle.getMessage(TopLevelStructureItem.class, "Namespaces");
         }
-        
     }
-
-    
-    
 }
