@@ -80,17 +80,21 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author ads
  *
  */
-class WebBeansAnalysisTask extends AbstractAnalysisTask {
+public class WebBeansAnalysisTask extends AbstractAnalysisTask {
     
     private final static Logger LOG = Logger.getLogger( 
             WebBeansAnalysisTask.class.getName());
     
-    protected Result getResult(){
-        return myResult;
-    }
-    
     protected Result createResult( CompilationInfo compInfo  ){
         return new Result( compInfo );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#getResult()
+     */
+    @Override
+    protected Result getResult() {
+        return (Result)super.getResult();
     }
     
     @Override
@@ -102,8 +106,8 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
      * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
      */
     @Override
-    void run( final CompilationInfo compInfo ) {
-        myResult = createResult( compInfo );
+    protected void run( final CompilationInfo compInfo ) {
+        setResult( createResult( compInfo ) );
         List<? extends TypeElement> types = compInfo.getTopLevelElements();
         final List<ElementHandle<TypeElement>> handles = 
             new ArrayList<ElementHandle<TypeElement>>(1);
@@ -188,7 +192,6 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
         analyzer.analyze(element, typeElement, model, getCancel(), getResult());
     }
     
-    private Result myResult;
     private static final Map<ElementKind,ModelAnalyzer> ANALIZERS = 
         new HashMap<ElementKind, ModelAnalyzer>();
 
