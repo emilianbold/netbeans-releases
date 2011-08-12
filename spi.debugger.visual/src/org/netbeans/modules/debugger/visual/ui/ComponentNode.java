@@ -77,6 +77,11 @@ public class ComponentNode extends AbstractNode {
     public String getDisplayName() {
         return ci.getDisplayName();
     }
+    
+    @Override
+    public String getHtmlDisplayName() {
+        return ci.getHtmlDisplayName();
+    }
 
     @Override
     public Action[] getActions(boolean context) {
