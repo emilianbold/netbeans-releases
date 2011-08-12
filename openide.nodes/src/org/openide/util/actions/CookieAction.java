@@ -208,7 +208,7 @@ public abstract class CookieAction extends NodeAction {
         private org.openide.nodes.NodeListener listener;
 
         /** The nodes we are currently listening */
-        private List<Reference<Node>> nodes;
+        private volatile List<Reference<Node>> nodes;
 
         /** the associated action */
         private Reference<CookieAction> action;
@@ -233,12 +233,13 @@ public abstract class CookieAction extends NodeAction {
 
             // attach to new nodes
             if (newNodes != null) {
-                nodes = new ArrayList<Reference<Node>>(newNodes.length);
+                List<Reference<Node>> tmp = new ArrayList<Reference<Node>>(newNodes.length);
 
                 for (int i = 0; i < newNodes.length; i++)
-                    nodes.add(new WeakReference<Node>(newNodes[i]));
+                    tmp.add(new WeakReference<Node>(newNodes[i]));
 
-                attachListeners(nodes);
+                attachListeners(tmp);
+                this.nodes = tmp;
             }
         }
 
