@@ -275,7 +275,9 @@ public class OracleInstance {
             String appContext = f.getName().substring(0, f.getName().lastIndexOf('.'));
             InputStream is = new FileInputStream(f);
             ApplicationDeployment adt =new ApplicationDeployment();
+            adt.setInstanceId(serviceName);
             adt.setApplicationId(appContext);
+            adt.setArchiveUrl(f.getName());
             boolean redeploy = false;
             List<ApplicationDeployment> apps = am.listApplications(tenantId, serviceName);
             for (ApplicationDeployment app : apps) {
