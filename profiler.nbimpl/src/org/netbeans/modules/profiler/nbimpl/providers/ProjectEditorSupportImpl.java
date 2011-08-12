@@ -72,7 +72,7 @@ import org.openide.windows.WindowManager;
  * @author Jaroslav Bachorik
  */
 @ServiceProvider(service = EditorSupportProvider.class)
-public class ProjectEditorSupportImpl implements EditorSupportProvider {
+public class ProjectEditorSupportImpl extends EditorSupportProvider {
 
     private <T> T performOnAWT(final Callable<T> action) throws Exception {
         if (SwingUtilities.isEventDispatchThread()) {
@@ -218,6 +218,35 @@ public class ProjectEditorSupportImpl implements EditorSupportProvider {
 
                         if (ec != null) {
                             return NbDocument.findLineNumber(ec.getDocument(), offset);
+                        }
+                    }
+
+                    return -1;
+                }
+            });
+        } catch (Exception e) {
+        }
+        return -1;
+    }
+    
+    @Override
+    public int getOffsetForLine(final FileObject file, final int line) {
+        try {
+            return performOnAWT(new Callable<Integer>() {
+
+                @Override
+                public Integer call() throws Exception {
+                    if (line == -1) {
+                        return -1;
+                    }
+
+                    DataObject dobj = DataObject.find(file);
+
+                    if (dobj != null) {
+                        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+
+                        if (ec != null) {
+                            return NbDocument.findLineOffset(ec.getDocument(), line);
                         }
                     }
 
