@@ -57,11 +57,14 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
-import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.api.xml.cookies.CheckXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.loaders.DataNode;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -69,7 +72,7 @@ import org.netbeans.spi.xml.cookies.*;
  */
 public class JSFConfigDataObject extends MultiDataObject
                                     implements org.openide.nodes.CookieSet.Factory  {
-    
+
     private static JSFCatalog jsfCatalog =  new JSFCatalog();
     private boolean documentDirty = true;
     private boolean documentValid=true;
@@ -79,32 +82,45 @@ public class JSFConfigDataObject extends MultiDataObject
     private transient JSFConfigEditorSupport editorSupport;
     private SAXParseError error;
     private FacesConfig lastGoodFacesConfig = null;
-    
+
     /** Property name for property documentValid */
     public static final String PROP_DOC_VALID = "documentValid"; // NOI18N
 
-    
+
     /** Creates a new instance of StrutsConfigDataObject */
     public JSFConfigDataObject(FileObject pf, JSFConfigLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         init();
-        
     }
- 
+
     private void init() {
         CookieSet cookies = getCookieSet();
-        
-        getCookieSet().add(JSFConfigEditorSupport.class, this);
-        
+
+        cookies.add(JSFConfigEditorSupport.class, this);
+
+        //Lookup JSFConfigEditorContext for Page Flow Editor multiview
+        cookies.add(new JSFConfigEditorContextImpl((JSFConfigDataObject)this));
+
         // Creates Check XML and Validate XML context actions
         InputSource in = DataObjectAdapters.inputSource(this);
-        CheckXMLCookie checkCookie = new CheckXMLSupport(in);
-        getCookieSet().add(checkCookie);
-        ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
-        getCookieSet().add(validateCookie);
-        getCookieSet().assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
+        cookies.add(new CheckXMLSupport(in));
+        cookies.add(new ValidateXMLSupport(in));
+        cookies.assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
     }
-    
+
+    @MultiViewElement.Registration(
+            mimeType=JSFConfigLoader.MIME_TYPE,
+            iconBase=JSFConfigNode.ICON_BASE,
+            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID="faces.config.xml",
+            displayName="#CTL_SourceTabCaption",
+            position=100
+    )
+    @Messages("CTL_SourceTabCaption=Source")
+    public static MultiViewEditorElement createXmlMultiViewElement(Lookup context) {
+        return new MultiViewEditorElement(context);
+    }
+
     /**
      * Provides node that should represent this data object. When a node for
      * representation in a parent is requested by a call to getNode (parent)
@@ -120,7 +136,7 @@ public class JSFConfigDataObject extends MultiDataObject
     protected synchronized Node createNodeDelegate () {
 	return new JSFConfigNode(this);
     }
-    
+
     /** Implements <code>CookieSet.Factory</code> interface. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(JSFConfigEditorSupport.class))
@@ -128,7 +144,7 @@ public class JSFConfigDataObject extends MultiDataObject
         else
             return null;
     }
-    
+
     /** Gets editor support for this data object. */
     public JSFConfigEditorSupport getEditorSupport() {
         if(editorSupport == null) {
@@ -137,16 +153,18 @@ public class JSFConfigDataObject extends MultiDataObject
                     editorSupport = new JSFConfigEditorSupport(this);
             }
         }
-        
+
         return editorSupport;
     }
-    
+
+
+
     public FacesConfig getFacesConfig() throws java.io.IOException {
         if (lastGoodFacesConfig == null)
             parsingDocument();
         return lastGoodFacesConfig;
     }
-    
+
     /** This method is used for obtaining the current source of xml document.
     * First try if document is in the memory. If not, provide the input from
     * underlayed file object.
@@ -162,7 +180,7 @@ public class JSFConfigDataObject extends MultiDataObject
             return getPrimaryFile().getInputStream();
         }
     }
-    
+
     /** This method has to be called everytime after prepareInputSource calling.
      * It is used for closing the stream, because it is not possible to access the
      * underlayed stream hidden in InputSource.
@@ -182,7 +200,7 @@ public class JSFConfigDataObject extends MultiDataObject
             }
         }
     }
-    
+
     /** This method parses XML document and calls updateNode method which
     * updates corresponding Node.
     */
@@ -207,7 +225,7 @@ public class JSFConfigDataObject extends MultiDataObject
         }
         setNodeDirty(false);
     }
-    
+
     public void setDocumentValid (boolean valid){
         if (documentValid!=valid) {
             if (valid)
@@ -216,7 +234,7 @@ public class JSFConfigDataObject extends MultiDataObject
             firePropertyChange (PROP_DOC_VALID, !documentValid ? Boolean.TRUE : Boolean.FALSE, documentValid ? Boolean.TRUE : Boolean.FALSE);
         }
     }
-    
+
     /** This method repairs Node Delegate (usually after changing document by property editor)
     */
     protected void repairNode(){
@@ -228,7 +246,7 @@ public class JSFConfigDataObject extends MultiDataObject
             errorAnnotation.detach();
         }*/
     }
-    
+
     private org.w3c.dom.Document getDomDocument(InputStream inputSource) throws SAXParseException {
         try {
             // creating w3c document
@@ -241,7 +259,7 @@ public class JSFConfigDataObject extends MultiDataObject
             throw new SAXParseException(e.getMessage(), new org.xml.sax.helpers.LocatorImpl());
         }
     }
-    
+
 
     /** Update the node from document. This method is called after document is changed.
     * @param is Input source for the document
@@ -251,7 +269,7 @@ public class JSFConfigDataObject extends MultiDataObject
     protected SAXParseError updateNode(InputStream is) throws java.io.IOException{
         try {
             Document doc = getDomDocument(is);
-            
+
             //TODO new api
             //JSF version = JSFCatalog.extractVersion(doc);
             //check version, use impl class to create graph
@@ -273,7 +291,7 @@ public class JSFConfigDataObject extends MultiDataObject
         }
         return null;
     }
-   
+
     public boolean isDocumentValid(){
         return documentValid;
     }
@@ -289,7 +307,7 @@ public class JSFConfigDataObject extends MultiDataObject
     public boolean isDocumentDirty(){
         return documentDirty;
     }
-    
+
     /** Getter for property nodeDirty.
     * @return Value of property nodeDirty.
     */
@@ -308,11 +326,11 @@ public class JSFConfigDataObject extends MultiDataObject
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
 
-    
+
     public static class J2eeErrorHandler implements ErrorHandler {
 
         private JSFConfigDataObject dataObject;
@@ -336,10 +354,10 @@ public class JSFConfigDataObject extends MultiDataObject
             throw exception;
         }
     }
-    
+
     private void createSAXParseError(SAXParseException error){
         this.error = new SAXParseError(error);
     }
-    
-    
+
+
 }

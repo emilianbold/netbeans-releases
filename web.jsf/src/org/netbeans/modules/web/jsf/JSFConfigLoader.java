@@ -56,31 +56,32 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JSFConfigLoader extends UniFileLoader {
-    private static final String REQUIRED_MIME = "text/x-jsf+xml"; // NOI18N
-   
+
+    public static final String MIME_TYPE = "text/x-jsf+xml"; // NOI18N
+
     public JSFConfigLoader() {
         this("org.netbeans.modules.web.jsf.JSFConfigDataObject");
     }
-    
+
     // Can be useful for subclasses:
     protected JSFConfigLoader(String recognizedObjectClass) {
         super(recognizedObjectClass);
     }
-    
+
     protected String defaultDisplayName() {
         return NbBundle.getMessage(JSFConfigLoader.class, "LBL_loaderName");
     }
-    
+
     protected void initialize() {
-        
+
         super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
+        getExtensions().addMimeType(MIME_TYPE);
     }
-    
+
     protected String actionsContext() {
         return "Loaders/text/x-jsf+xml/Actions/"; // NOI18N
     }
-    
+
     protected MultiDataObject createMultiObject(FileObject primaryFile)
     throws DataObjectExistsException, IOException {
         return new JSFConfigDataObject(primaryFile, this);

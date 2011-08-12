@@ -47,6 +47,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -55,6 +56,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -67,6 +69,8 @@ public class MavenProjectPropsImpl {
 
     public static final String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
     static String ROOT = "properties"; //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(MavenProjectPropsImpl.class.getName());
 
     private boolean transaction = false;
     private TreeMap<String, String> transPropsShared;
@@ -154,7 +158,12 @@ public class MavenProjectPropsImpl {
         if (list.getLength() > 0) {
             enEl = (Element)list.item(0);
         } else {
-            enEl = el.getOwnerDocument().createElementNS(NAMESPACE, property);
+            try {
+                enEl = el.getOwnerDocument().createElementNS(NAMESPACE, property);
+            } catch (DOMException x) {
+                LOG.log(Level.WARNING, "#200901: {0} from {1}", new Object[] {x.getMessage(), property});
+                return;
+            }
             el.appendChild(enEl);
         }
         if (value != null) {
@@ -177,7 +186,12 @@ public class MavenProjectPropsImpl {
             if (list.getLength() > 0) {
                 enEl = (Element)list.item(0);
             } else {
-                enEl = el.getOwnerDocument().createElementNS(NAMESPACE, key);
+                try {
+                    enEl = el.getOwnerDocument().createElementNS(NAMESPACE, key);
+                } catch (DOMException x) {
+                    LOG.log(Level.WARNING, "#200901: {0} from {1}", new Object[] {x.getMessage(), key});
+                    continue;
+                }
                 el.appendChild(enEl);
             }
             String value = props.get(key);
@@ -247,7 +261,7 @@ public class MavenProjectPropsImpl {
         synchronized (nbprji) {
             transaction = false;
             if (transPropsShared == null) {
-                Logger.getLogger(MavenProjectPropsImpl.class.getName()).info("Commiting a transaction that was cancelled.");
+                LOG.warning("Committing a transaction that was canceled.");
                 return;
             }
             if (sharedChanged) {
@@ -284,7 +298,7 @@ public class MavenProjectPropsImpl {
 
     }
 
-    static class MergedAuxProperties implements AuxiliaryProperties {
+    private static class MergedAuxProperties implements AuxiliaryProperties {
         Lookup.Result<AuxiliaryProperties> props;
         private MavenProjectPropsImpl primary;
         private MergedAuxProperties(Lookup lookup, MavenProjectPropsImpl primary) {
