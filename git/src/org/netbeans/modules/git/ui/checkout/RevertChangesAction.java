@@ -44,25 +44,19 @@ package org.netbeans.modules.git.ui.checkout;
 
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileListener;
-import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
-import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
@@ -77,6 +71,11 @@ import org.openide.util.NbBundle;
 public class RevertChangesAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(RevertChangesAction.class.getName());
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/git/resources/icons/get_clean.png"; // NOI18N
+    }
 
     @Override
     protected void performAction (final File repository, final File[] roots, VCSContext context) {
