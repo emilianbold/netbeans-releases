@@ -62,7 +62,6 @@ import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
-import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
 import org.netbeans.modules.web.jsf.navigation.graph.layout.LayoutUtility;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneData;
@@ -239,12 +238,12 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         }
     }
 
-    
+
     public int sceneAssgn = 0;
     public PageFlowScene getScene() {
         return scene;
     }
-    
+
 
     public void setScene(PageFlowScene scene) {
         sceneAssgn++;
@@ -330,7 +329,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     }
 
     private static RequestProcessor requestProcessor = new RequestProcessor();
-    
+
     private static void destroyPage(final Page page) {
         requestProcessor.post(new Runnable() {
 
@@ -399,21 +398,21 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
             widget.setMinimized(data.isMinimized());
         }
         getScene().addPin(pageNode, new Pin(pageNode));
-        
+
         /* Now we want to runPinSetup on demand */
         //runPinSetup(pageNode, widget);
         selectPageFlowSceneElement(pageNode);
         return widget;
     }
-    
-    
-    
+
+
+
     public final class VMDNodeWidgetListener implements StateModel.Listener {
 
         public void stateChanged() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
     }
 
     private void selectPageFlowSceneElement(PageFlowSceneElement element) {
@@ -598,7 +597,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     }
 
     /*
-     * Removes a node from a scene with it's edges.  This is useful when a page 
+     * Removes a node from a scene with it's edges.  This is useful when a page
      * is deleted from the faces-config file.
      */
     public void removeNodeWithEdges(Page node) {
@@ -847,7 +846,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         }
     }
 
-    
-    
-    
+
+
+
 }
