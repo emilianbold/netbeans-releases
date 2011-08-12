@@ -48,7 +48,6 @@ import java.awt.Color;
 import java.io.OutputStream;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.*;
 import org.xml.sax.*;
@@ -62,35 +61,30 @@ import java.io.ByteArrayInputStream;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
-import org.openide.LifecycleManager;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
-/**
- * Handles module events distributed by NetBeans module
- * framework.
- *
- * <p>It's registered and instantiated from module manifest.
- *
- * @author Petr Kuzel
- * @author Maros Sandor
- * @author Tomas Stupka
- */
-public final class ModuleLifecycleManager extends ModuleInstall implements ErrorHandler, EntityResolver {
+public final class ModuleLifecycleManager implements ErrorHandler, EntityResolver {
 
-    static final String [] otherGitModules = {
+    private static ModuleLifecycleManager instance;
+    private static final String [] otherGitModules = {
         "org.nbgit" // NOI18N
     };
-    
-    @Override
-    public void restored() {
-        disableOtherModules();
+
+    private ModuleLifecycleManager () {
     }
 
-    private void disableOtherModules() {
+    static ModuleLifecycleManager getInstance () {
+        if (instance == null) {
+            instance = new ModuleLifecycleManager();
+        }
+        return instance;
+    }
+    
+    void disableOtherModules () {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
@@ -170,9 +164,6 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         is.close();
         return document;
     }
-
-    @Override
-    public void uninstalled() { }
 
     @Override
     public InputSource resolveEntity(String publicId, String systemId) {

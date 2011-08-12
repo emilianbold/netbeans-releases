@@ -60,14 +60,20 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -78,6 +84,36 @@ import org.openide.util.Parameters;
 public class PersistenceUtils {
 
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.persistence"); // NOI18N
+
+    public static EntityMappings getEntityMappings(FileObject documentFO) {
+        Project project = FileOwnerQuery.getOwner(documentFO);
+        if (project == null) {
+            return null;
+        }
+        EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+        if(entityClassScope == null){
+            return null;
+        }
+        MetadataModel<EntityMappingsMetadata> model = entityClassScope.getEntityMappingsModel(true);
+        EntityMappings mappings = null;
+        try {
+            mappings = model.runReadAction(
+                    new MetadataModelAction<EntityMappingsMetadata, EntityMappings>(){
+
+                        @Override
+                        public EntityMappings run(EntityMappingsMetadata metadata) throws Exception {
+                            return metadata.getRoot();
+                        }
+            
+                    }
+            );
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return mappings;
+    }
     
     // TODO multiple mapping files
     

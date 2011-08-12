@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.web.jsf.palette.items;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
@@ -119,9 +119,9 @@ public class JsfLibrariesSupport {
         HtmlParsingResult htmlresult = result.get();
 
         map = new EnumMap<DefaultLibraryInfo, LibraryImport>(DefaultLibraryInfo.class);
-        Map<String, List<String>> ns2prefixes = htmlresult != null
+        Map<String, Collection<String>> ns2prefixes = htmlresult != null
                 ? htmlresult.getSyntaxAnalyzerResult().getAllDeclaredNamespaces()
-                : Collections.<String, List<String>>emptyMap();
+                : Collections.<String, Collection<String>>emptyMap();
         
         for (DefaultLibraryInfo libraryInfo : DefaultLibraryInfo.values()) {
             LibraryImport libraryimport = new LibraryImport();
@@ -129,8 +129,8 @@ public class JsfLibrariesSupport {
             Library lib = jsfs.getLibrary(libraryInfo.getNamespace());
             libraryimport.lib = lib;
 
-            List<String> prefixes = ns2prefixes.get(libraryInfo.getNamespace());
-            libraryimport.declaredPrefix = prefixes != null && !prefixes.isEmpty() ? prefixes.get(0) : null;
+            Collection<String> prefixes = ns2prefixes.get(libraryInfo.getNamespace());
+            libraryimport.declaredPrefix = prefixes != null && !prefixes.isEmpty() ? prefixes.iterator().next() : null;
 
             map.put(libraryInfo, libraryimport);
         }

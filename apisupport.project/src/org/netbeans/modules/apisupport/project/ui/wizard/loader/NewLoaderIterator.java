@@ -61,15 +61,17 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle.Messages;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -77,15 +79,18 @@ import org.openide.xml.XMLUtil;
  *
  * @author Milos Kleint
  */
-final class NewLoaderIterator extends BasicWizardIterator {
+@TemplateRegistration(
+    folder="NetBeansModuleDevelopment",
+    position=500,
+    displayName="#template_loader",
+    iconBase="org/netbeans/modules/apisupport/project/ui/resources/newLoader.png",
+    description="../../resources/newLoader.html",
+    category="nbm-specific"
+)
+@Messages("template_loader=File Type")
+public final class NewLoaderIterator extends BasicWizardIterator {
     
     private NewLoaderIterator.DataModel data;
-    
-    private NewLoaderIterator() { /* Use factory method. */ };
-    
-    public static NewLoaderIterator createIterator() {
-        return new NewLoaderIterator();
-    }
     
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
@@ -169,7 +174,12 @@ final class NewLoaderIterator extends BasicWizardIterator {
                 if (v == null) {
                     return false;
                 }
-                return v.compareTo(new SpecificationVersion("1.24")) >= 0; // NOI18N
+                SpecificationVersion l = getModuleInfo().getDependencyVersion("org.openide.loaders"); // NOI18N
+                if (l == null) {
+                    return false;
+                }
+                return v.compareTo(new SpecificationVersion("1.24")) >= 0 // NOI18N
+                  && l.compareTo(new SpecificationVersion("7.26")) >= 0; // NOI18N
             } catch (IOException ex) {
                 return false;
             }

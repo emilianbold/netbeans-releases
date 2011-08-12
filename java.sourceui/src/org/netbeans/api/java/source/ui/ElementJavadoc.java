@@ -58,7 +58,13 @@ import com.sun.javadoc.AnnotationDesc.ElementValuePair;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -73,8 +79,10 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.usages.Pair;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -85,7 +93,8 @@ import org.openide.xml.XMLUtil;
  * @author Dusan Balek, Petr Hrebejk
  */
 public class ElementJavadoc {
-    
+
+    private static final String ASSOCIATE_JDOC = "associate-javadoc:";          //NOI18N
     private static final String API = "/api";                                   //NOI18N
     private static final Set<String> LANGS;
 
@@ -100,10 +109,9 @@ public class ElementJavadoc {
         LANGS = Collections.unmodifiableSet(locNames);
     }
     
-    private ElementJavadoc() {
-    }
 
-    private ClasspathInfo cpInfo;
+    private final ClasspathInfo cpInfo;
+    private final ElementHandle<? extends Element> handle;
     //private Doc doc;
     private volatile Future<String> content;
     private Hashtable<String, ElementHandle<? extends Element>> links = new Hashtable<String, ElementHandle<? extends Element>>();
@@ -184,11 +192,49 @@ public class ElementJavadoc {
      * @return ElementJavadoc describing the javadoc of liked element
      */
     public ElementJavadoc resolveLink(final String link) {
+        if (link.startsWith(ASSOCIATE_JDOC)) {
+            final String root = link.substring(ASSOCIATE_JDOC.length());
+            try {
+                final CountDownLatch latch = new CountDownLatch(1);
+                final AtomicBoolean success = new AtomicBoolean();
+                SourceJavadocAttacher.attachJavadoc(
+                        new URL(root),
+                        new SourceJavadocAttacher.AttachmentListener() {
+                    @Override
+                    public void attachmentSucceeded() {
+                        success.set(true);
+                        latch.countDown();
+                    }
+
+                    @Override
+                    public void attachmentFailed() {
+                        latch.countDown();
+                    }
+                });
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    latch.await();
+                    return success.get() ?
+                        resolveElement(handle, link):
+                        new ElementJavadoc(NbBundle.getMessage(ElementJavadoc.class, "javadoc_attaching_failed"));
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InterruptedException ie) {
+                Exceptions.printStackTrace(ie);
+            }
+            return null;
+        }
+        final ElementHandle<? extends Element> linkDoc = links.get(link);
+        return resolveElement(linkDoc, link);
+    }
+
+    private ElementJavadoc resolveElement(
+            final ElementHandle<?> handle,
+            final String link) {
         final ElementJavadoc[] ret = new ElementJavadoc[1];
         try {
-            final ElementHandle<? extends Element> linkDoc = links.get(link);
-            FileObject fo = linkDoc != null ? SourceUtils.getFile(linkDoc, cpInfo) : null;
-            if (fo != null && fo.isFolder() && linkDoc.getKind() == ElementKind.PACKAGE) {
+            FileObject fo = handle != null ? SourceUtils.getFile(handle, cpInfo) : null;
+            if (fo != null && fo.isFolder() && handle.getKind() == ElementKind.PACKAGE) {
                 fo = fo.getFileObject("package-info", "java"); //NOI18N
             }
             if (cpInfo == null && fo == null) {
@@ -206,8 +252,8 @@ public class ElementJavadoc {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                        if (linkDoc != null) {
-                            ret[0] = new ElementJavadoc(controller, linkDoc.resolve(controller), null, null);
+                        if (handle != null) {
+                            ret[0] = new ElementJavadoc(controller, handle.resolve(controller), null, null);
                         } else {
                             int idx = link.indexOf('#'); //NOI18N
                             URI uri = null;
@@ -249,7 +295,7 @@ public class ElementJavadoc {
                                             // ignore
                                         }
                                     }
-                                } 
+                                }
                             }
                         }
                     }
@@ -273,6 +319,7 @@ public class ElementJavadoc {
     private ElementJavadoc(CompilationInfo compilationInfo, Element element, URL url, final Callable<Boolean> cancel) {
         Pair<Trees,ElementUtilities> context = Pair.of(compilationInfo.getTrees(), compilationInfo.getElementUtilities());
         this.cpInfo = compilationInfo.getClasspathInfo();
+        this.handle = element == null ? null : ElementHandle.create(element);
         Doc doc = context.second.javaDocFor(element);
         boolean localized = false;
         StringBuilder content = new StringBuilder();
@@ -287,7 +334,6 @@ public class ElementJavadoc {
             if (!localized) {
                 final FileObject fo = SourceUtils.getFile(element, compilationInfo.getClasspathInfo());
                 if (fo != null) {
-                    final ElementHandle<? extends Element> handle = ElementHandle.create(element);
                     goToSource = new AbstractAction() {
                         public void actionPerformed(ActionEvent evt) {
                             ElementOpen.open(fo, handle);
@@ -311,7 +357,6 @@ public class ElementJavadoc {
             this.content = prepareContent(content, doc,localized, page, cancel, true, context);
         } catch (RemoteJavadocException re) {
             final FileObject fo = compilationInfo.getFileObject();
-            final ElementHandle<? extends Element> handle = ElementHandle.create(element);
             final StringBuilder contentFin = content;
             final boolean localizedFin = localized;
             this.content = new FutureTask<String>(new Callable<String>(){
@@ -346,6 +391,16 @@ public class ElementJavadoc {
         assert url != null;
         this.content = null;
         this.docURL = url;
+        this.handle = null;
+        this.cpInfo = null;
+    }
+
+    private ElementJavadoc(final String message) {
+        assert message != null;
+        this.content = new Now(message);
+        this.docURL = null;
+        this.handle = null;
+        this.cpInfo = null;
     }
 
     // Private section ---------------------------------------------------------
@@ -635,7 +690,7 @@ public class ElementJavadoc {
                         if (jdText != null)
                             sb.append(jdText);
                         else
-                            sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
+                            sb.append(noJavadocFound()); //NOI18N
                         sb.append("</p>"); //NOI18N
                         return sb.toString();
                     }
@@ -648,14 +703,52 @@ public class ElementJavadoc {
                 }
                 return task;
             }
-            sb.append(NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found")); //NOI18N
+            sb.append(noJavadocFound()); //NOI18N
             return new Now (sb.toString());
         } finally {
             if (page != null)
                 page.close();
         }
     }
-    
+
+    private String noJavadocFound() {
+        final List<ClassPath> cps = new ArrayList<ClassPath>(2);
+        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+        if (cp != null) {
+            cps.add(cp);
+        }
+        cp = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+        if (cp != null) {
+            cps.add(cp);
+        }
+        cp = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[cps.size()]));
+        String toSearch = SourceUtils.getJVMSignature(handle)[0].replace('.', '/');
+        if (handle.getKind() != ElementKind.PACKAGE) {
+            toSearch = toSearch + ".class"; //NOI18N
+        }
+        final FileObject resource = cp.findResource(toSearch);
+        if (resource != null) {
+            final FileObject root = cp.findOwnerRoot(resource);
+            try {
+                final URL rootURL = root.getURL();
+                if (JavadocForBinaryQuery.findJavadoc(rootURL).getRoots().length == 0) {
+                    FileObject userRoot = FileUtil.getArchiveFile(root);
+                    if (userRoot == null) {
+                        userRoot = root;
+                    }
+                    return NbBundle.getMessage(
+                            ElementJavadoc.class,
+                            "javadoc_content_not_found_attach",
+                            rootURL.toExternalForm(),
+                            FileUtil.getFileDisplayName(userRoot));
+                }
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return NbBundle.getMessage(ElementJavadoc.class, "javadoc_content_not_found");
+    }
+
     private CharSequence getContainingClassOrPackageHeader(ProgramElementDoc peDoc, Pair<Trees,ElementUtilities> ctx) {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();

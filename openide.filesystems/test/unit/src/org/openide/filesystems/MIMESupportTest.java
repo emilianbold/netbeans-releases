@@ -396,7 +396,7 @@ public class MIMESupportTest extends NbTestCase {
         assertEquals(3, Lookup.getDefault().lookupAll(MIMEResolver.class).size());
 
         FileObject fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "file.a");
-        String mimeType = FileUtil.getMIMEType(fo, "b/b");
+        String mimeType = fo.getMIMEType("b/b");
         assertEquals("content/unknown", mimeType);
         mimeType = FileUtil.getMIMEType(fo, "a/a");
         assertEquals("a/a", mimeType);
@@ -407,7 +407,7 @@ public class MIMESupportTest extends NbTestCase {
 
         //#161340 - do not cache text/xml if it is falback value
         FileObject fo1 = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "file.xml");
-        mimeType = FileUtil.getMIMEType(fo1, "a/a");
+        mimeType = fo1.getMIMEType("a/a");
         assertEquals("Fallback for xml failed.", "text/xml", mimeType);
         mimeType = FileUtil.getMIMEType(fo1);
         assertEquals("Fallback MIME type for xml should not be cached.", "xml/xml", mimeType);

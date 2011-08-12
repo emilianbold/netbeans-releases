@@ -61,11 +61,14 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.FTPSClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encryption;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -73,7 +76,10 @@ import org.openide.windows.OutputWriter;
  * @author Tomas Mysik
  */
 public class FtpClient implements RemoteClient {
-    private static final Logger LOGGER = Logger.getLogger(FtpClient.class.getName());
+
+    static final Logger LOGGER = Logger.getLogger(FtpClient.class.getName());
+
+    private static final RequestProcessor KEEP_ALIVE_RP = new RequestProcessor("PHP FTP client keep-alive thread", 1);
     // store not provided passwords in memory only
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
     private static final int[] PERMISSIONS_ACCESSES = new int[] {
@@ -81,7 +87,11 @@ public class FtpClient implements RemoteClient {
     };
 
     private final FtpConfiguration configuration;
+    // @GuardedBy(this)
     private final FTPClient ftpClient;
+    private final ProtocolCommandListener protocolCommandListener;
+    private final int keepAliveInterval;
+    private final RequestProcessor.Task keepAliveTask;
 
     // @GuardedBy(this)
     private Long timestampDiff = null;
@@ -92,24 +102,69 @@ public class FtpClient implements RemoteClient {
         this.configuration = configuration;
 
         LOGGER.log(Level.FINE, "FTP client creating");
-        ftpClient = new FTPClient();
+        ftpClient = createFtpClient(configuration);
         if (io != null) {
-            ftpClient.addProtocolCommandListener(new PrintCommandListener(io));
+            protocolCommandListener = new PrintCommandListener(io);
+            addProtocolCommandListener();
             LOGGER.log(Level.FINE, "Protocol command listener added");
+        } else {
+            protocolCommandListener = null;
+        }
+        keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
+        keepAliveTask = KEEP_ALIVE_RP.create(new Runnable() {
+            @Override
+            public void run() {
+                keepAlive();
+            }
+        });
+    }
+
+    private FTPClient createFtpClient(FtpConfiguration configuration) {
+        FtpConfiguration.Security security = configuration.getSecurity();
+        if (!security.isPresent()) {
+            LOGGER.log(Level.FINE, "No encryption used");
+            return new FTPClient();
+        }
+        Encryption encryption = security.getEncryption();
+        LOGGER.log(Level.FINE, "Used encryption {0}", encryption.name());
+        // can be debugged by setting -J-Djavax.net.debug=all
+        return new FTPSClient(encryption.getProtocol(), encryption.isImplicit());
+    }
+
+    private void addProtocolCommandListener() {
+        if (protocolCommandListener == null) {
+            return;
+        }
+        synchronized (this) {
+            ftpClient.addProtocolCommandListener(protocolCommandListener);
+        }
+    }
+
+    private void removeProtocolCommandListener() {
+        if (protocolCommandListener == null) {
+            return;
+        }
+        synchronized (this) {
+            ftpClient.removeProtocolCommandListener(protocolCommandListener);
         }
     }
 
     @Override
-    public void connect() throws RemoteException {
+    public synchronized void connect() throws RemoteException {
         try {
+            // first of all - not to force user to put password faster than timeout
+            String password = getPassword();
+
             // connect
             int timeout = configuration.getTimeout() * 1000;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Connecting to {0} [timeout: {1} ms]", new Object[] {configuration.getHost(), timeout});
             }
-            //before connection - not to force user to put password faster than timeout
-            String password = getPassword();
             ftpClient.setDefaultTimeout(timeout);
+            ftpClient.setControlKeepAliveReplyTimeout(keepAliveInterval);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Keep-alive interval is {0} ms", keepAliveInterval);
+            }
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Reply is {0}", getReplyString());
@@ -131,6 +186,17 @@ public class FtpClient implements RemoteClient {
             }
             LOGGER.fine("Login successful");
 
+            // set ssl commands?
+            if (configuration.getSecurity().isPresent()) {
+                FTPSClient ftpsClient = (FTPSClient) ftpClient;
+                // set protection buffer size
+                ftpsClient.execPBSZ(0);
+                if (!configuration.getSecurity().isOnlyLoginEncrypted()) {
+                    // set data channel protection to private
+                    ftpsClient.execPROT("P"); // NOI18N
+                }
+            }
+
             if (configuration.isPassiveMode()) {
                 LOGGER.fine("Setting passive mode");
                 ftpClient.enterLocalPassiveMode();
@@ -141,11 +207,12 @@ public class FtpClient implements RemoteClient {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Remote system is {0}", ftpClient.getSystemName());
+                LOGGER.log(Level.FINE, "Remote system is {0}", ftpClient.getSystemType());
             }
 
             LOGGER.fine("Setting data timeout");
             ftpClient.setDataTimeout(timeout);
+            scheduleKeepAlive();
         } catch (IOException ex) {
             if (ftpClient.isConnected()) {
                 try {
@@ -165,8 +232,9 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public void disconnect() throws RemoteException {
+    public synchronized void disconnect() throws RemoteException {
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
+        keepAliveTask.cancel();
         if (ftpClient.isConnected()) {
             LOGGER.log(Level.FINE, "Remote client connected -> disconnecting");
             try {
@@ -209,7 +277,7 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public String getReplyString() {
+    public synchronized String getReplyString() {
         String reply = ftpClient.getReplyString();
         if (reply == null) {
             return null;
@@ -218,7 +286,7 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public String getNegativeReplyString() {
+    public synchronized String getNegativeReplyString() {
         int replyCode = ftpClient.getReplyCode();
         if (FTPReply.isNegativePermanent(replyCode)
                 || FTPReply.isNegativeTransient(replyCode)) {
@@ -228,12 +296,12 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         return ftpClient.isConnected();
     }
 
     @Override
-    public String printWorkingDirectory() throws RemoteException {
+    public synchronized String printWorkingDirectory() throws RemoteException {
         try {
             return ftpClient.printWorkingDirectory();
         } catch (IOException ex) {
@@ -243,9 +311,11 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean storeFile(String remote, InputStream local) throws RemoteException {
+    public synchronized boolean storeFile(String remote, InputStream local) throws RemoteException {
         try {
-            return ftpClient.storeFile(remote, local);
+            boolean fileStored = ftpClient.storeFile(remote, local);
+            scheduleKeepAlive();
+            return fileStored;
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while storing file " + remote, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotStoreFile", remote), ex, getReplyString());
@@ -253,9 +323,11 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean deleteFile(String pathname) throws RemoteException {
+    public synchronized boolean deleteFile(String pathname) throws RemoteException {
         try {
-            return ftpClient.deleteFile(pathname);
+            boolean fileDeleted = ftpClient.deleteFile(pathname);
+            scheduleKeepAlive();
+            return fileDeleted;
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while deleting file " + pathname, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotDeleteFile", pathname), ex, getReplyString());
@@ -263,9 +335,11 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean deleteDirectory(String pathname) throws RemoteException {
+    public synchronized boolean deleteDirectory(String pathname) throws RemoteException {
         try {
-            return ftpClient.removeDirectory(pathname);
+            boolean directoryDeleted = ftpClient.removeDirectory(pathname);
+            scheduleKeepAlive();
+            return directoryDeleted;
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while deleting file " + pathname, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotDeleteFile", pathname), ex, getReplyString());
@@ -273,9 +347,11 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean rename(String from, String to) throws RemoteException {
+    public synchronized boolean rename(String from, String to) throws RemoteException {
         try {
-            return ftpClient.rename(from, to);
+            boolean fileRenamed = ftpClient.rename(from, to);
+            scheduleKeepAlive();
+            return fileRenamed;
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, String.format("Error while renaming file %s -> %s", from, to), ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotRenameFile", from, to), ex, getReplyString());
@@ -283,7 +359,7 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public List<RemoteFile> listFiles() throws RemoteException {
+    public synchronized List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
         String pwd = null;
         try {
@@ -297,19 +373,22 @@ public class FtpClient implements RemoteClient {
                     LOGGER.log(Level.FINE, "NULL returned for listing of {0}", pwd);
                     continue;
                 }
-                result.add(new RemoteFileImpl(f));
+                result.add(new RemoteFileImpl(f, pwd));
             }
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while listing files for " + pwd, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotListFiles", pwd), ex, getReplyString());
         }
+        scheduleKeepAlive();
         return result;
     }
 
     @Override
-    public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
+    public synchronized boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
-            return ftpClient.retrieveFile(remote, local);
+            boolean fileRetrieved = ftpClient.retrieveFile(remote, local);
+            scheduleKeepAlive();
+            return fileRetrieved;
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while retrieving file " + remote, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotStoreFile", remote), ex, getReplyString());
@@ -317,7 +396,7 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean changeWorkingDirectory(String pathname) throws RemoteException {
+    public synchronized boolean changeWorkingDirectory(String pathname) throws RemoteException {
         try {
             return ftpClient.changeWorkingDirectory(pathname);
         } catch (IOException ex) {
@@ -327,9 +406,11 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean makeDirectory(String pathname) throws RemoteException {
+    public synchronized boolean makeDirectory(String pathname) throws RemoteException {
         try {
-            return ftpClient.makeDirectory(pathname);
+            boolean directoryMade = ftpClient.makeDirectory(pathname);
+            scheduleKeepAlive();
+            return directoryMade;
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while creating directory " + pathname, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotCreateDirectory", pathname), ex, getReplyString());
@@ -347,7 +428,7 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean setPermissions(int permissions, String path) throws RemoteException {
+    public synchronized boolean setPermissions(int permissions, String path) throws RemoteException {
         try {
             return ftpClient.sendSiteCommand("chmod " + permissions + " " + path); // NOI18N
         } catch (IOException ex) {
@@ -357,15 +438,18 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public boolean exists(String parent, String name) throws RemoteException {
+    public synchronized boolean exists(String parent, String name) throws RemoteException {
         try {
+            boolean found = false;
             ftpClient.changeWorkingDirectory(parent);
             for (RemoteFile file : listFiles()) {
                 if (file.getName().equals(name)) {
-                    return true;
+                    found = true;
+                    break;
                 }
             }
-            return false;
+            scheduleKeepAlive();
+            return found;
         } catch (IOException ex) {
             String fullPath = parent + "/" + name; // NOI18N
             LOGGER.log(Level.FINE, "Error while checking existence of " + fullPath, ex);
@@ -373,7 +457,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
-    private FTPFile getFile(String path) throws IOException {
+    private synchronized FTPFile getFile(String path) throws IOException {
         assert path != null && path.trim().length() > 0;
 
         FTPFile[] files = ftpClient.listFiles(path);
@@ -442,6 +526,28 @@ public class FtpClient implements RemoteClient {
         return timestampDiff;
     }
 
+    synchronized void keepAlive() {
+        if (!ftpClient.isConnected()) {
+            LOGGER.log(Level.FINE, "Ending keep-alive (NOOP) for {0}, not connected", configuration.getHost());
+            keepAliveTask.cancel();
+            return;
+        }
+        try {
+            LOGGER.log(Level.FINE, "Keep-alive (NOOP) for {0}", configuration.getHost());
+            removeProtocolCommandListener();
+            ftpClient.noop();
+            ftpClient.getReplyString();
+            addProtocolCommandListener();
+            scheduleKeepAlive();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Keep-alive (NOOP) error for " + configuration.getHost(), ex);
+        }
+    }
+
+    private void scheduleKeepAlive() {
+        keepAliveTask.schedule(keepAliveInterval);
+    }
+
     private static final class PrintCommandListener implements ProtocolCommandListener {
         private final InputOutput io;
 
@@ -483,15 +589,23 @@ public class FtpClient implements RemoteClient {
 
     private final class RemoteFileImpl implements RemoteFile {
         private final FTPFile ftpFile;
+        private final String parentDirectory;
 
-        public RemoteFileImpl(FTPFile ftpFile) {
+        public RemoteFileImpl(FTPFile ftpFile, String parentDirectory) {
             assert ftpFile != null;
+            assert parentDirectory != null;
             this.ftpFile = ftpFile;
+            this.parentDirectory = parentDirectory;
         }
 
         @Override
         public String getName() {
             return ftpFile.getName();
+        }
+
+        @Override
+        public String getParentDirectory() {
+            return parentDirectory;
         }
 
         @Override

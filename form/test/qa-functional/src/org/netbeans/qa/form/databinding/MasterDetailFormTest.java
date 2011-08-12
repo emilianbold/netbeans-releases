@@ -118,8 +118,13 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
         new Node(prn, "Source Packages|META-INF|persistence.xml"); // NOI18N
         
         // open form file ...
-        openFile(_newFormName);
+        Node n=new Node(prn, "Source Packages|data|"+_newFormName);
+        //openFile(_newFormName);
+        n.select();
+        n.performPopupAction("Open");
         FormDesignerOperator designer = new FormDesignerOperator(_newFormName);
+        designer.source();
+        designer.design();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
 
         // ... and check the components inside Other Components
@@ -130,21 +135,39 @@ public class MasterDetailFormTest extends ExtJellyTestCase {
 
     /** Tests generated code */
     public void testGeneratedCode() {
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(getTestProjectName());
+        prn.select();
+        Node n=new Node(prn, "Source Packages|data|"+_newFormName);
+        n.select();
+        n.performPopupAction("Open");
         FormDesignerOperator designer = new FormDesignerOperator(_newFormName);
 
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("JButton refreshButton;"); // NOI18N
         lines.add("JButton saveButton;"); // NOI18N
-        lines.add("JLabel authorLabel;"); // NOI18N
-        lines.add("JTextField authorField;"); // NOI18N
-        lines.add("JLabel authorLabel;"); // NOI18N
-        lines.add("JTextField authorField;"); // NOI18N
-        lines.add("void deleteButtonActionPerformed(java.awt.event.ActionEvent evt)"); // NOI18N
-        lines.add("bindingContext = new javax.beans.binding.BindingContext();"); // NOI18N
-        lines.add("entityManager = javax.persistence.Persistence.createEntityManagerFactory(\"testdatabasePU\").createEntityManager();"); // NOI18N
-        lines.add("query = entityManager.createQuery(\"SELECT b FROM Book b\");"); // NOI18N
-        lines.add("list = com.sun.java.util.BindingCollections.observableList(query.getResultList());"); // NOI18N
-        lines.add("bindingContext.addBinding(masterTable, \"${selectedElement.author}\", authorField, \"text\");"); // NOI18N        
+        lines.add("JLabel addressline1Label;"); // NOI18N
+        lines.add("JTextField addressline1Field;"); // NOI18N
+        lines.add("JLabel addressline2Label;"); // NOI18N
+        lines.add("JTextField addressline2Field;"); // NOI18N
+        lines.add("JTextField cityField;"); // NOI18N
+        lines.add("JLabel cityLabel;"); // NOI18N
+        lines.add("JTextField creditLimitField;"); // NOI18N
+        lines.add("JLabel creditLimitLabel;"); // NOI18N
+        lines.add("JTextField customerIdField;"); // NOI18N
+        lines.add("JLabel customerIdLabel;"); // NOI18N
+        lines.add("JButton deleteButton;"); // NOI18N
+        lines.add("JTextField discountCodeField;"); // NOI18N
+        lines.add("JLabel discountCodeLabel;"); // NOI18N
+        lines.add(".JTextField emailField;"); // NOI18N
+        lines.add("JLabel emailLabel;"); // NOI18N
+        
+        lines.add("entityManager = java.beans.Beans.isDesignTime() ? null : javax.persistence.Persistence.createEntityManagerFactory(\"samplePU\").createEntityManager();");
+        lines.add("query = java.beans.Beans.isDesignTime() ? null : entityManager.createQuery(\"SELECT c FROM Customer c\");");
+        lines.add("list = java.beans.Beans.isDesignTime() ? java.util.Collections.emptyList() : org.jdesktop.observablecollections.ObservableCollections.observableList(query.getResultList());");
+        
+        lines.add("bindingGroup = new org.jdesktop.beansbinding.BindingGroup();"); // NOI18N
+       
 
         findInCode(lines, designer);
     }

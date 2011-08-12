@@ -252,16 +252,23 @@ public final class ModeImpl implements Mode {
             Debug.dumpStack(ModeImpl.class);
         }
         
+        boolean opened = false;
         // PENDING
         // Preferably all in one step.
         ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode(tc);
         if(mode != null && mode != this) {
             // XXX if only closin (mode.close(tc)) there could happen,
             // there is the same TopComponent as closed in two modes. Revise.
+            opened = tc.isOpened();
             mode.removeTopComponent(tc);
         }
         
-        addClosedTopComponent(tc);
+        if( opened ) {
+            //don't close the TopComponent if it was opened in the previous mode
+            addOpenedTopComponent( tc );
+        } else {
+            addClosedTopComponent(tc);
+        }
         return true;
     }
     
@@ -453,7 +460,7 @@ public final class ModeImpl implements Mode {
      * @return True if this mode is minimized.
      * @since 2.30
      */
-    boolean isMinimized() {
+    public boolean isMinimized() {
         return getCentral().isModeMinimized( this );
     }
     
@@ -557,6 +564,10 @@ public final class ModeImpl implements Mode {
     }
     // Utility methods<<
     ////////////////////
+
+    public void setModeName(String text) {
+        getCentral().setModeName(this, text);
+    }
 
     
 }

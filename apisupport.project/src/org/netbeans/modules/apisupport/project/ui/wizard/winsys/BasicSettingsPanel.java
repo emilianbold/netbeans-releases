@@ -45,18 +45,22 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.AsyncGUIJob;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 
 /**
@@ -93,7 +97,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
             markInvalid();
         }
     }
-    
+
 //    public void addNotify() {
 //        super.addNotify();
 //        attachDocumentListeners();
@@ -130,23 +134,12 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
             @Override
             public void construct() {
                 try {
-                    FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
-                    FileObject foRoot = fs.getRoot().getFileObject("Windows2/Modes"); //NOI18N
-                    if (foRoot != null) {
-                        FileObject[] fos = foRoot.getChildren();
-                        Collection<String> col = new ArrayList<String>();
-                        for (FileObject fo : fos) {
-                            if (fo.isData() && "wsmode".equals(fo.getExt())) { //NOI18N
-                                col.add(fo.getName());
-                            }
-                        }
-                        modes = col.toArray(new String[col.size()]);
-                    } else {
+                    modes = DesignSupport.existingModes(data);
+                    if (modes == null) {
                         modes = DEFAULT_MODES;
                     }
                 } catch (IOException exc) {
                     modes = DEFAULT_MODES;
-
                 }
             }
 
@@ -162,6 +155,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         });
     }
     
+    @Override
     protected void storeToDataModel() {
         data.setOpened(cbOpenedOnStart.isSelected());
         data.setKeepPrefSize(cbKeepPrefSize.isSelected());
@@ -173,6 +167,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         data.setMode((String)comMode.getSelectedItem());
     }
     
+    @Override
     protected void readFromDataModel() {
         cbOpenedOnStart.setSelected(data.isOpened());
         cbKeepPrefSize.setSelected(data.isKeepPrefSize());
@@ -194,10 +189,12 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         }
     }
     
+    @Override
     protected String getPanelName() {
         return getMessage("LBL_BasicSettings_Title");
     }
     
+    @Override
     protected HelpCtx getHelp() {
         return new HelpCtx(BasicSettingsPanel.class);
     }
@@ -224,6 +221,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         cbUndockingNotAllowed = new javax.swing.JCheckBox();
         cbDraggingNotAllowed = new javax.swing.JCheckBox();
         cbMaximizationNotAllowed = new javax.swing.JCheckBox();
+        redefine = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -320,6 +318,17 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.weighty = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(cbMaximizationNotAllowed, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(redefine, "&Redefine...");
+        redefine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redefineActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_END;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(redefine, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void windowPosChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_windowPosChanged
@@ -330,6 +339,62 @@ private void windowPosChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_w
     if( !cbSlidingNotAllowed.isEnabled() )
         cbSlidingNotAllowed.setSelected( false );
 }//GEN-LAST:event_windowPosChanged
+
+private void redefineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redefineActionPerformed
+    try {
+        final AtomicReference<FileObject> userDir = new AtomicReference<FileObject>();
+        Task task = DesignSupport.invokeDesignMode(data.getProject(), userDir);
+        redefine.setEnabled(false);
+        if (task == null) {
+            return;
+        }
+        redefine.setText(org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "MSG_LaunchingLayout", new Object[]{}));
+        
+        class PostProcess implements TaskListener, Runnable {
+            Set<String> modeNames;
+            
+            @Override
+            public void taskFinished(Task task) {
+                FileObject modes = userDir.get().getFileObject("config/Windows2Local/Modes");
+                if (modes != null) {
+                    modeNames = new TreeSet<String>();
+                    for (FileObject m : modes.getChildren()) {
+                        if (m.isData() && "wsmode".equals(m.getExt())) { //NOI18N
+                            modeNames.add(m.getName());
+                            try {
+                                data.defineMode(m.getName(), DesignSupport.readMode(m));
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                    EventQueue.invokeLater(this);
+                }
+            }
+
+            @Override
+            public void run() {
+                redefine.setEnabled(true);
+                redefine.setText(org.openide.util.NbBundle.getMessage(BasicSettingsPanel.class, "MSG_RedefineLayout", new Object[] {}));
+                int s = comMode.getModel().getSize();
+                for (int i = 0; i < s; i++) {
+                    modeNames.remove((String)comMode.getModel().getElementAt(i));
+                }
+                boolean first = true;
+                for (String mn : modeNames) {
+                    ((DefaultComboBoxModel)comMode.getModel()).addElement(mn);
+                    if (first) {
+                        comMode.getModel().setSelectedItem(mn);
+                    }
+                    first = false;
+                }
+            }
+        }
+        task.addTaskListener(new PostProcess());
+    } catch (IOException e) {
+        Util.err.notify(e);
+    }
+}//GEN-LAST:event_redefineActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbClosingNotAllowed;
@@ -341,6 +406,7 @@ private void windowPosChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_w
     private javax.swing.JCheckBox cbUndockingNotAllowed;
     private javax.swing.JComboBox comMode;
     private javax.swing.JLabel lblMode;
+    private javax.swing.JButton redefine;
     // End of variables declaration//GEN-END:variables
     
     private void initAccessibility() {

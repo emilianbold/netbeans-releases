@@ -73,6 +73,7 @@ public class RestrictThreadCreation {
      */
     public static void permitStandard() {
         permit(// Found experimentally:
+                "org.netbeans.junit.NbTestCase.runBare",
                 "sun.java2d.Disposer.<clinit>",
                 "java.awt.Toolkit.getDefaultToolkit",
                 "java.util.logging.LogManager$Cleaner.<init>",
@@ -84,7 +85,7 @@ public class RestrictThreadCreation {
                 "org.netbeans.modules.masterfs.filebasedfs.fileobjects.LockForFile.<clinit>",
                 "org.netbeans.api.java.source.JavaSource.<clinit>",
                 "org.netbeans.api.java.source.JavaSourceTaskFactory.fileObjectsChanged",
-                "org.netbeans.progress.module.Controller.resetTimer",
+                "org.netbeans.modules.progress.spi.Controller.resetTimer",
                 "org.netbeans.modules.timers.InstanceWatcher$FinalizingToken.finalize",
                 "org.openide.util.RequestProcessor$EnqueueTask.run",
                 "org.openide.util.Utilities$ActiveQueue.ping",

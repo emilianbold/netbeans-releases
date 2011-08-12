@@ -91,7 +91,7 @@ import org.openide.util.NbBundle;
  *
 * @author Petr Hrebejk, Jan Stola, Tomas Stupka
  */
-public class StackTraceSupport {
+class StackTraceSupport {
 
     private static final Pattern ST_PATTERN =
            Pattern.compile("([\\p{Alnum}\\.\\$_<>]*?)\\((?:Native Method|Unknown Source|Compiled Code|([\\p{Alnum}\\.\\$_]*?):(\\p{Digit}+?))\\)", Pattern.DOTALL);
@@ -99,7 +99,7 @@ public class StackTraceSupport {
     private StackTraceSupport() { }
 
     @SuppressWarnings("empty-statement")
-    public static void findAndOpen(String text) {
+    private static void findAndOpen(String text) {
         List<StackTracePosition> st = StackTraceSupport.find(text);
         for (StackTracePosition stp : st) {
             StackTraceElement ste = stp.getStackTraceElements()[0];
@@ -109,7 +109,7 @@ public class StackTraceSupport {
         }
     }
 
-    public static void findAndShowHistory(String text) {
+    private static void findAndShowHistory(String text) {
         List<StackTracePosition> st = StackTraceSupport.find(text);
         for (StackTracePosition stp : st) {
             StackTraceElement ste = stp.getStackTraceElements()[0];
@@ -129,7 +129,7 @@ public class StackTraceSupport {
         return path;
     }
 
-    public static List<StackTracePosition> find(String text) {
+    static List<StackTracePosition> find(String text) {
 
        LinkedList<StackTracePosition> result = new LinkedList<StackTracePosition>();
        if ( text == null) {
@@ -283,27 +283,27 @@ public class StackTraceSupport {
        return sb.toString();
    }
 
-    public static class StackTracePosition {
+   static class StackTracePosition {
         private final StackTraceElement[] stackTraceElements;
         private int start;
         private int end;
-        public StackTracePosition(StackTraceElement[] stackTraceElements, int start, int end) {
+        StackTracePosition(StackTraceElement[] stackTraceElements, int start, int end) {
             this.stackTraceElements = stackTraceElements;
             this.start = start;
             this.end = end;
         }
-        public int getStartOffset() {
+        int getStartOffset() {
             return start;
         }
-        public int getEndOffset() {
+        int getEndOffset() {
             return end;
         }
-        public StackTraceElement[] getStackTraceElements() {
+        StackTraceElement[] getStackTraceElements() {
             return stackTraceElements;
         }
     }
 
-    public static void open(String path, final int line) {
+    static void open(String path, final int line) {
         final FileObject fo = search(path);
         if ( fo != null ) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -314,7 +314,7 @@ public class StackTraceSupport {
         }
     }
 
-    public static void openSearchHistory(String path, final int line) {
+    private static void openSearchHistory(String path, final int line) {
         final FileObject fo = search(path);
         if ( fo != null ) {
             final File file = FileUtil.toFile(fo);
@@ -338,42 +338,7 @@ public class StackTraceSupport {
         }
     }
 
-//   public static boolean doOpen(FileObject fo, int offset) {
-//       try {
-//           DataObject od = DataObject.find(fo);
-//           EditorCookie ec = od.getCookie(org.openide.cookies.EditorCookie.class);
-//           LineCookie lc = od.getCookie(org.openide.cookies.LineCookie.class);
-//
-//           if (ec != null && lc != null && offset != -1) {
-//               StyledDocument doc = ec.openDocument();
-//               if (doc != null) {
-//                   int line = NbDocument.findLineNumber(doc, offset);
-//                   int lineOffset = NbDocument.findLineOffset(doc, line);
-//                   int column = offset - lineOffset;
-//
-//                   if (line != -1) {
-//                       Line l = lc.getLineSet().getCurrent(line);
-//
-//                       if (l != null) {
-//                           l.show(Line.SHOW_GOTO, column);
-//                           return true;
-//                       }
-//                   }
-//               }
-//           }
-//
-//           OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
-//           if (oc != null) {
-//               oc.open();
-//               return true;
-//           }
-//       } catch (IOException e) {
-//           Exceptions.printStackTrace(e);
-//       }
-//
-//       return false;
-//   }
-    public static boolean doOpen(FileObject fo, int line) {
+    private static boolean doOpen(FileObject fo, int line) {
         try {
             DataObject od = DataObject.find(fo);
             EditorCookie ec = od.getCookie(org.openide.cookies.EditorCookie.class);
@@ -409,21 +374,20 @@ public class StackTraceSupport {
         }
 
         return false;
-   }
-
-   static private FileObject search(String path) {
-       return GlobalPathRegistry.getDefault().findResource(path);
     }
 
-    private final static String STACKTRACE_ATTRIBUTE = "stacktrace"; // NOI18N
-    public static void addHyperlinks(JTextPane textPane) {
+    static private FileObject search(String path) {
+        return GlobalPathRegistry.getDefault().findResource(path);
+    }
+
+    public static void register(JTextPane textPane) {
         StyledDocument doc = textPane.getStyledDocument();
         String comment = textPane.getText();
         List<StackTracePosition> stacktraces = find(comment);
         if (!stacktraces.isEmpty()) {
             Style defStyle = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
-            Style hlStyle = doc.addStyle("regularBlue", defStyle); // NOI18N
-            hlStyle.addAttribute(STACKTRACE_ATTRIBUTE, new StackTraceAction());
+            Style hlStyle = doc.addStyle("regularBlue-stacktrace", defStyle); // NOI18N
+            hlStyle.addAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE, new StackTraceAction());
             StyleConstants.setForeground(hlStyle, Color.BLUE);
             StyleConstants.setUnderline(hlStyle, true);
 
@@ -486,7 +450,7 @@ public class StackTraceSupport {
                         if (SwingUtilities.isLeftMouseButton(e)) {
                             Element elem = element(e);
                             AttributeSet as = elem.getAttributes();
-                            StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(STACKTRACE_ATTRIBUTE);
+                            StackTraceAction stacktraceAction = (StackTraceAction) as.getAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE);
                             if (stacktraceAction != null) {
                                 try {
                                     StackTraceAction.openStackTrace(elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset()), false);
@@ -507,18 +471,10 @@ public class StackTraceSupport {
                 public void mouseReleased(MouseEvent e) {
                     showMenu(e);
                 }
+                
                 @Override
-                public void mouseMoved(MouseEvent e) {
-                    JTextPane pane = (JTextPane)e.getSource();
-                    StyledDocument doc = pane.getStyledDocument();
-                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                    AttributeSet as = elem.getAttributes();
-                    if (StyleConstants.isUnderline(as)) {
-                        pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    } else {
-                        pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                    }
-                }
+                public void mouseMoved(MouseEvent e) { }
+                
                 private Element element(MouseEvent e) {
                     JTextPane pane = (JTextPane)e.getSource();
                     StyledDocument doc = pane.getStyledDocument();
@@ -528,7 +484,7 @@ public class StackTraceSupport {
                     if (e.isPopupTrigger()) {
                         try {
                             Element elem = element(e);
-                            if (elem.getAttributes().getAttribute(STACKTRACE_ATTRIBUTE) != null) {
+                            if (elem.getAttributes().getAttribute(HyperlinkSupport.STACKTRACE_ATTRIBUTE) != null) {
                                 String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
                                 JPopupMenu menu = new JPopupMenu();
                                 menu.add(new StackTraceAction(stackFrame, false));

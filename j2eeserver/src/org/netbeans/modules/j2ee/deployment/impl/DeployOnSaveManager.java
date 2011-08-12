@@ -532,6 +532,10 @@ public final class DeployOnSaveManager {
         private void runJPDAAppReloaded() {
             // Hack: run nbjpdaappreloaded ANT task after deploy to fix breakpoints.
             String reloadedClassName = org.apache.tools.ant.module.api.IntrospectedInfo.getKnownInfo().getDefs("task").get("nbjpdaappreloaded");    // NOI18N
+            if (reloadedClassName == null) {
+                // seems to be null during some unit tests
+                return;
+            }
             String reloadedPackageName = reloadedClassName.substring(0, reloadedClassName.lastIndexOf('.'));
             try {
                 Map<String, ClassLoader> customDefClassLoaders = (Map<String, ClassLoader>)

@@ -60,13 +60,16 @@ import org.openide.util.ImageUtilities;
 /**
  * Utilities of the grid designer.
  *
- * @author Jan Stola, Petr Somol
+ * @author Jan Stola
+ * @author Petr Somol
  */
 public class GridUtils {
     /** Client property that marks padding component. */
     private static final String PADDING_COMPONENT = "dummyComponent"; // NOI18N
-    /** Size of the empty column/row. */
-    public static final int PADDING_SIZE = 20;
+    /** Standard size of the empty column/row. */
+    public static final int PADDING_SIZE_STANDARD = 20;
+    /** Minimum size of the empty column/row. */
+    public static final int PADDING_SIZE_MINIMAL = 4;
 
     /**
      * Determines whether the specified component is a padding component.
@@ -101,7 +104,7 @@ public class GridUtils {
     /**
      * Adds padding components into the grid managed by the specified manager.
      * It ensures that there are {@code columnNo} columns and {@code rowNo} rows.
-     * It adds a padding into every row/column with height/width at most 1 (i.e. 0 or 1).
+     * It adds a padding into every row/column with height/width at most PADDING_SIZE_MINIMAL.
      *
      * @param manager manager if the grid that we want to update.
      * @param columnNo requested number of columns.
@@ -113,6 +116,7 @@ public class GridUtils {
         if (!shouldPad) {
             return;
         }
+        GridInfoProvider info = manager.getGridInfo();
         Container container = manager.getContainer();
         if (container.getComponentCount() == 0) {
             // Some layout managers (like GridBagLayout) do not layout empty
@@ -121,8 +125,8 @@ public class GridUtils {
             manager.addComponent(padding, 0, 0, 1, 1);
         }
         // Avoid degenerated/empty case
-        columnNo = Math.max(columnNo, 1);
-        rowNo = Math.max(rowNo, 1);
+        columnNo = Math.max( Math.max(columnNo, 1), info.getLastGapColumn()+1 );
+        rowNo = Math.max( Math.max(rowNo, 1), info.getLastGapRow()+1 );
         // The following arrays help to avoid infinite padding in some degenerated cases
         boolean[] paddedColumn = new boolean[columnNo];
         boolean[] paddedRow = new boolean[rowNo];
@@ -132,7 +136,6 @@ public class GridUtils {
         // to avoid this problem.
         if (container.getLayout() instanceof GridBagLayout) {
             revalidateGrid(manager);
-            int pad = 4;
             for (Component comp : container.getComponents()) {
                 if (!GridUtils.isPaddingComponent(comp)) {
                     Dimension dim = comp.getSize();
@@ -140,21 +143,23 @@ public class GridUtils {
                         Dimension minSize = comp.getMinimumSize();
                         Dimension prefSize = comp.getPreferredSize();
                         if (prefSize.width == 0) {
-                            comp.setMinimumSize(new Dimension(pad, minSize.height));
-                            comp.setPreferredSize(new Dimension(pad, prefSize.height));
+                            comp.setMinimumSize(new Dimension(PADDING_SIZE_MINIMAL, minSize.height));
+                            comp.setPreferredSize(new Dimension(PADDING_SIZE_MINIMAL, prefSize.height));
                         }
                     }
                     if (dim.height == 0) {
                         Dimension minSize = comp.getMinimumSize();
                         Dimension prefSize = comp.getPreferredSize();
                         if (prefSize.height == 0) {
-                            comp.setMinimumSize(new Dimension(minSize.width, pad));
-                            comp.setPreferredSize(new Dimension(prefSize.width, pad));
+                            comp.setMinimumSize(new Dimension(minSize.width, PADDING_SIZE_MINIMAL));
+                            comp.setPreferredSize(new Dimension(prefSize.width, PADDING_SIZE_MINIMAL));
                         }
                     }
                 }
             }
         }
+        int gapWidth = FormLoaderSettings.getInstance().getGapWidth();
+        int gapHeight = FormLoaderSettings.getInstance().getGapHeight();
         boolean modified = true;
         while (modified) {
             // Addition of paddings can make other column/rows smaller
@@ -162,26 +167,52 @@ public class GridUtils {
             // => do several iterations of paddings
             modified = false;
             revalidateGrid(manager);
-            GridInfoProvider info = manager.getGridInfo();
             int[] columnBounds = info.getColumnBounds();
             int[] rowBounds = info.getRowBounds();
             for (int i=0; i<columnNo; i++) {
-                if (!paddedColumn[i] && (i>=columnBounds.length-1 || columnBounds[i]+1>=columnBounds[i+1])) {
-                    Component padding = createPaddingComponent(true, false);
-                    manager.addComponent(padding, i, 0, 1, 1);
-                    paddedColumn[i] = true;
-                    modified = true;
+                if(!paddedColumn[i]) {
+                    if (info.isGapColumn(i)) {
+                        Component padding = createPaddingComponent(true, false, gapWidth);
+                        manager.addComponent(padding, i, 0, 1, 1);
+                        paddedColumn[i] = true;
+                        modified = true;
+                    } else
+                    if (i>=columnBounds.length-1 || columnBounds[i]+PADDING_SIZE_MINIMAL>=columnBounds[i+1]) {
+                        Component padding = createPaddingComponent(true, false);
+                        manager.addComponent(padding, i, 0, 1, 1);
+                        paddedColumn[i] = true;
+                        modified = true;
+                    }
                 }
             }
             for (int i=0; i<rowNo; i++) {
-                if (!paddedRow[i] && (i>=rowBounds.length-1 || rowBounds[i]+1>=rowBounds[i+1])) {
-                    Component padding = createPaddingComponent(false, true);
-                    manager.addComponent(padding, 0, i, 1, 1);
-                    paddedRow[i] = true;
-                    modified = true;
+                if(!paddedRow[i]) {
+                    if (info.isGapRow(i)) {
+                        Component padding = createPaddingComponent(false, true, gapHeight);
+                        manager.addComponent(padding, 0, i, 1, 1);
+                        paddedRow[i] = true;
+                        modified = true;
+                    } else
+                    if (i>=rowBounds.length-1 || rowBounds[i]+PADDING_SIZE_MINIMAL>=rowBounds[i+1]) {
+                        Component padding = createPaddingComponent(false, true);
+                        manager.addComponent(padding, 0, i, 1, 1);
+                        paddedRow[i] = true;
+                        modified = true;
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Creates a padding component of standard size.
+     *
+     * @param horizontalPadding determines whether we are interested in horizontal padding.
+     * @param verticalPadding determines whether we are interested in vertical padding.
+     * @return new padding component.
+     */
+    private static Component createPaddingComponent(boolean horizontalPadding, boolean verticalPadding) {
+        return createPaddingComponent(horizontalPadding, verticalPadding, PADDING_SIZE_STANDARD);
     }
 
     /**
@@ -189,10 +220,11 @@ public class GridUtils {
      *
      * @param horizontalPadding determines whether we are interested in horizontal padding.
      * @param verticalPadding determines whether we are interested in vertical padding.
+     * @param paddingSize determines padding component size in pixels.
      * @return new padding component.
      */
-    private static Component createPaddingComponent(boolean horizontalPadding, boolean verticalPadding) {
-        Dimension dim = new Dimension(horizontalPadding ? PADDING_SIZE : 0, verticalPadding ? PADDING_SIZE : 0);
+    private static Component createPaddingComponent(boolean horizontalPadding, boolean verticalPadding, int paddingSize) {
+        Dimension dim = new Dimension(horizontalPadding ? paddingSize : 0, verticalPadding ? paddingSize : 0);
         JComponent padding = (JComponent)Box.createRigidArea(dim);
         padding.putClientProperty(PADDING_COMPONENT, Boolean.TRUE);
         return padding;

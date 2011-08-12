@@ -137,7 +137,7 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
 
 
     /** */
-    private static class ModePanel extends JPanel
+    static class ModePanel extends JPanel
     implements ModeComponent, TopComponentDroppable {
     
         private final AbstractModeContainer abstractModeContainer;

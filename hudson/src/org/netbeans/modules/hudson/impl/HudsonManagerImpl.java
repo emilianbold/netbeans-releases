@@ -144,7 +144,9 @@ public class HudsonManagerImpl {
         fireChangeListeners();
         
         // Remove instance file
-        removeInstanceDefinition(instance);
+        if (instance.isPersisted()) {
+            removeInstanceDefinition(instance);
+        }
         
         return instance;
     }
@@ -240,7 +242,7 @@ public class HudsonManagerImpl {
                             if (!m.containsKey(INSTANCE_NAME) || !m.containsKey(INSTANCE_URL) || !m.containsKey(INSTANCE_SYNC)) {
                                 continue;
                             }
-                            HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(m));
+                            HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(m), false);
                         }
                     } catch (BackingStoreException ex) {
                         Exceptions.printStackTrace(ex);
@@ -276,7 +278,7 @@ public class HudsonManagerImpl {
                     } else if (in == null) {
                         ProjectHIP props = new ProjectHIP();
                         props.addProvider(project);
-                        addInstance(HudsonInstanceImpl.createHudsonInstance(props));
+                        addInstance(HudsonInstanceImpl.createHudsonInstance(props, false));
                         HudsonInstanceImpl impl = getInstance(props.get(INSTANCE_URL));
                         projectInstances.put(project, impl);
                     }

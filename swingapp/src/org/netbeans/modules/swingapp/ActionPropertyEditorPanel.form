@@ -1,12 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -29,11 +30,11 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="actionsCombo" min="-2" pref="200" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                      <Component id="actionsField" pref="149" max="32767" attributes="0"/>
+                      <Component id="actionsField" pref="166" max="32767" attributes="0"/>
                   </Group>
                   <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jTabbedPane1" alignment="0" pref="349" max="32767" attributes="0"/>
-                  <Component id="methodField" alignment="0" pref="349" max="32767" attributes="0"/>
+                  <Component id="jTabbedPane1" alignment="0" pref="366" max="32767" attributes="0"/>
+                  <Component id="methodField" alignment="0" pref="366" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -108,8 +109,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jPanel7" alignment="0" max="32767" attributes="0"/>
-                          <Component id="tooltipField" alignment="0" pref="270" max="32767" attributes="2"/>
-                          <Component id="textField" alignment="0" pref="270" max="32767" attributes="2"/>
+                          <Component id="tooltipField" alignment="0" pref="317" max="32767" attributes="2"/>
+                          <Component id="textField" alignment="0" pref="317" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="2" attributes="0">
                                   <Component id="iconButtonSmall" alignment="2" min="-2" max="-2" attributes="1"/>
@@ -485,11 +486,11 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="blockingDialogTitle" alignment="0" pref="163" max="32767" attributes="1"/>
-                          <Component id="blockingDialogText" alignment="0" pref="163" max="32767" attributes="0"/>
-                          <Component id="enabledCombo" alignment="0" pref="163" max="32767" attributes="0"/>
-                          <Component id="selectedCombo" alignment="0" pref="163" max="32767" attributes="0"/>
-                          <Component id="blockingType" alignment="0" pref="163" max="32767" attributes="0"/>
+                          <Component id="blockingDialogTitle" alignment="0" pref="144" max="32767" attributes="1"/>
+                          <Component id="blockingDialogText" alignment="0" pref="144" max="32767" attributes="0"/>
+                          <Component id="enabledCombo" alignment="0" pref="144" max="32767" attributes="0"/>
+                          <Component id="selectedCombo" alignment="0" pref="144" max="32767" attributes="0"/>
+                          <Component id="blockingType" alignment="0" pref="144" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>

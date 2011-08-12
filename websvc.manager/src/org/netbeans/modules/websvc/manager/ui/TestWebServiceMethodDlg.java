@@ -333,8 +333,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         btnPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.btnPanel.ACC_name")); // NOI18N
 
         jSplitPane1.setLeftComponent(pnlParameter);
-        pnlParameter.getAccessibleContext().setAccessibleName("null");
-        pnlParameter.getAccessibleContext().setAccessibleDescription("null");
+        pnlParameter.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnlParameter.ACC_name")); // NOI18N
+        pnlParameter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.pnlParameter.ACC_desc")); // NOI18N
 
         pnlResults.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 12, 5, 12));
         pnlResults.setToolTipText(org.openide.util.NbBundle.getBundle(TestWebServiceMethodDlg.class).getString("TestWebServiceMethodDlg.pnResults.ACC_desc")); // NOI18N

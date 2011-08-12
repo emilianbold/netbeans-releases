@@ -59,15 +59,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.3.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -248,6 +239,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javaee.specs.support</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -365,6 +365,14 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>0-1</release-version>
                         <specification-version>0.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.saas.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -613,12 +621,13 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.editor.hints</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
-                <friend>org.netbeans.modules.websvc.saas.ui</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
+                <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.websvc.owsm</friend>
                 <package>org.netbeans.modules.websvc.core</package>
-                <package>org.netbeans.modules.websvc.core.jaxws.actions</package>
+                <package>org.netbeans.modules.websvc.core.jaxws.policies</package>
                 <package>org.netbeans.modules.websvc.core.jaxws.nodes</package>
                 <package>org.netbeans.modules.websvc.core.webservices.ui</package>
                 <package>org.netbeans.modules.websvc.core.webservices.ui.panels</package>

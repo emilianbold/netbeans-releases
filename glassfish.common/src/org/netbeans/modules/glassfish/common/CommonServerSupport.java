@@ -44,8 +44,10 @@ package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,6 +84,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -125,6 +128,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         updateString(ip,GlassfishModule.START_DERBY_FLAG, isRemote ? "false" : "true"); // NOI18N
         updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG, "true");  // NOI18N
         updateString(ip,GlassfishModule.DRIVER_DEPLOY_FLAG, "true");  // NOI18N
+        updateString(ip,GlassfishModule.HTTPHOST_ATTR, "localhost"); // NOI18N
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
 
         // Asume a local instance is in NORMAL_MODE
@@ -392,7 +396,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             }
         };
         FutureTask<OperationState> task = null;
-        if (!isRemote()) {
+        if (!isRemote() || null != Util.computeTarget(properties)) {
             task = new FutureTask<OperationState>(
                 new StopTask(this, stopServerListener, stateListener));
         // prevent j2eeserver from stopping a server it did not start.
@@ -747,6 +751,9 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 public void run() {
                     // Can block for up to a few seconds...
                     boolean isRunning = isReallyRunning();
+                    if (isRunning && null != Util.computeTarget(properties)) {
+                        isRunning = pingHttp(1);
+                    }
                     ServerState currentState = getServerState();
 
                     if(currentState == ServerState.STOPPED && isRunning) {
@@ -816,10 +823,22 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         }
     }
 
-    private void updateHttpPort() {
-        GetPropertyCommand gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
+    void updateHttpPort() {
+        String target = Util.computeTarget(properties);
+        GetPropertyCommand gpc = null;
+        if (null == target) {
+            gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
+            setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, "localhost", true); // NOI18N
+        } else {
+            String server = getServerFromTarget(target);
+            String adminHost = properties.get(GlassfishModule.HOSTNAME_ATTR);
+            setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR,
+                    getHttpHostFromServer(server,adminHost), true);
+            gpc = new GetPropertyCommand("servers.server."+server+".system-property.HTTP_LISTENER_PORT.value", true); // NOI18N
+        }
         Future<OperationState> result2 = execute(true, gpc);
         try {
+            boolean didSet = false;
             if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                 Map<String, String> retVal = gpc.getData();
                 for (Entry<String, String> entry : retVal.entrySet()) {
@@ -828,10 +847,39 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                         if (null != val && val.trim().length() > 0) {
                             Integer.parseInt(val);
                             setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, val, true);
+                            didSet = true;
                         }
                     } catch (NumberFormatException nfe) {
                         // skip it quietly..
                     }
+                }
+            }
+            if (!didSet && null != target) {
+                setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, "28080", true); // NOI18N
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (TimeoutException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
+        }
+    }
+
+    private String getServerFromTarget(String target) {
+        String retVal = "server"; // NOI18N
+        GetPropertyCommand  gpc = new GetPropertyCommand("clusters.cluster."+target+".server-ref.*.ref"); // NOI18N
+
+        Future<OperationState> result2 = execute(true, gpc);
+        try {
+            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                Map<String, String> data = gpc.getData();
+                for (Entry<String, String> entry : data.entrySet()) {
+                    String val = entry.getValue();
+                        if (null != val && val.trim().length() > 0) {
+                            retVal = val;
+                            break;
+                        }
                 }
             }
         } catch (InterruptedException ex) {
@@ -842,5 +890,77 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
         }
 
+        return retVal;
+    }
+    private String getHttpHostFromServer(String server, String nameOfLocalhost) {
+        String retVal = "localhostFAIL"; // NOI18N
+        GetPropertyCommand  gpc = new GetPropertyCommand("servers.server."+server+".node-ref"); // NOI18N
+        String refVal = null;
+        Future<OperationState> result2 = execute(true, gpc);
+        try {
+            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                Map<String, String> data = gpc.getData();
+                for (Entry<String, String> entry : data.entrySet()) {
+                    String val = entry.getValue();
+                        if (null != val && val.trim().length() > 0) {
+                            refVal = val;
+                            break;
+                        }
+                }
+            }
+            gpc = new GetPropertyCommand("nodes.node."+refVal+".node-host"); // NOI18N
+            result2 = execute(true,gpc);
+            if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
+                Map<String, String> data = gpc.getData();
+                for (Entry<String, String> entry : data.entrySet()) {
+                    String val = entry.getValue();
+                        if (null != val && val.trim().length() > 0) {
+                            retVal = val;
+                            break;
+                        }
+                }
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+        } catch (TimeoutException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, "could not get http port value in 10 seconds from the server", ex); // NOI18N
+        }
+
+        return "localhost".equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
+    }
+
+    private boolean pingHttp(int maxTries) {
+        boolean retVal = false;
+        URL url = null;
+        int tries = 0;
+        while (false == retVal && tries < maxTries) {
+            tries++;
+            HttpURLConnection httpConn = null;
+            try {
+                url = new URL("http://" + getInstanceProperties().get(GlassfishModule.HTTPHOST_ATTR)
+                        + ":" + getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR) + "/"); // NOI18N
+                httpConn = (HttpURLConnection) url.openConnection();
+                retVal = httpConn.getResponseCode() > 0;
+            } catch (java.net.MalformedURLException mue) {
+                Logger.getLogger("glassfish").log(Level.INFO, null, mue); // NOI18N
+            } catch (java.net.ConnectException ce) {
+                // we expect this...
+                Logger.getLogger("glassfish").log(Level.FINE, url.toString(), ce); // NOI18N
+            } catch (java.io.IOException ioe) {
+                Logger.getLogger("glassfish").log(Level.INFO, url.toString(), ioe); // NOI18N
+            } finally {
+                if (null != httpConn) {
+                    httpConn.disconnect();
+                }
+            }
+            try {
+                if (tries < maxTries) Thread.sleep(300);
+            } catch (InterruptedException ex) {
+            }
+        }
+        Logger.getLogger("glassfish").log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
+        return retVal;
     }
 }

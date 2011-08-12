@@ -112,6 +112,14 @@ public class DataGetModifiedTest extends NbTestCase {
     }
     
     public void testSavableRegistry() throws Exception {
+        doTestSavableRegistry(true);
+    }
+    
+    public void testSetModifiedClearsSavable() throws Exception {
+        doTestSavableRegistry(false);
+    }
+    
+    private void doTestSavableRegistry(boolean save) throws Exception {
         class L implements ChangeListener {
             int cnt;
 
@@ -152,8 +160,13 @@ public class DataGetModifiedTest extends NbTestCase {
         assertTrue("Calling save on old savable has no impact", do1.isModified());
         
         SaveCookie sc = do1.getLookup().lookup(SaveCookie.class);
-        sc.save();
+        if (save) {
+            sc.save();
+        } else {
+            do1.setModified(false);
+        }
         assertFalse("Unmodified", do1.isModified());
+        assertNull("No save cookie", do1.getLookup().lookup(SaveCookie.class));
         
         Savable none = findSavable(name);
         assertNull("No savable for our dataobject found", none);

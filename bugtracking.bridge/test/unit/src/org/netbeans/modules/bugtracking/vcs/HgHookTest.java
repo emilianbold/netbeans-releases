@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.EventQueue;
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -56,18 +55,14 @@ import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -97,6 +92,10 @@ public class HgHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
         VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(true);
 
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
+
         HookPanel panel = getPanel(hook, getContext());
         assertTrue(panel.pushRadioButton.isVisible());
         assertTrue(panel.pushRadioButton.isVisible());
@@ -109,6 +108,10 @@ public class HgHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.HG).setLink(false);
         VCSHooksConfig.getInstance(HookType.HG).setResolve(false);
         VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(false);
+
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
 
         panel = getPanel(hook, getContext());
 
@@ -154,6 +157,10 @@ public class HgHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.HG).setLink(true);
         VCSHooksConfig.getInstance(HookType.HG).setResolve(false);
 
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
+
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
@@ -171,6 +178,10 @@ public class HgHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.HG).setLink(false);
         VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
 
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
+
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
@@ -186,6 +197,10 @@ public class HgHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(true);
         VCSHooksConfig.getInstance(HookType.HG).setLink(true);
         VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
+
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
 
         String msg = "msg";
         HgHookContext ctx = getContext(msg);
@@ -203,6 +218,10 @@ public class HgHookTest extends NbTestCase {
         VCSHooksConfig.getInstance(HookType.HG).setAfterCommit(false); // PUSH!
         VCSHooksConfig.getInstance(HookType.HG).setLink(true);
         VCSHooksConfig.getInstance(HookType.HG).setResolve(true);
+
+        // give some time to NbPreferences to get back from knees
+        // fix for #198665 seems to brought regression and sync issues
+        Thread.sleep(2000);
 
         String changeset = "#" + System.currentTimeMillis();
         String msg = "msg";

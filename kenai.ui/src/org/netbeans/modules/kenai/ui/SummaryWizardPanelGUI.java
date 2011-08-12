@@ -43,11 +43,11 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.util.List;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
 import org.openide.WizardDescriptor;
@@ -82,11 +82,6 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
-
-
-
         jLabel1 = new JLabel();
         projectCreatedLabel = new JLabel();
         commitedLabel = new JLabel();
@@ -101,107 +96,105 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
         tobeSharedLabel = new JLabel();
         projectsMoveLabel = new JLabel();
         localRoot = new JLabel();
+
         Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.jLabel1.text")); // NOI18N
         Mnemonics.setLocalizedText(projectCreatedLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectCreatedLabel.text"));
         Mnemonics.setLocalizedText(commitedLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitedLabel.text"));
         Mnemonics.setLocalizedText(projectURL, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectURL.text"));
         Mnemonics.setLocalizedText(repoURL, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.repoURL.text"));
+
         jScrollPane1.setViewportView(commitedItems);
-
-
-
 
         Mnemonics.setLocalizedText(issueTrackingLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.issueTrackingLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(chatroomLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.chatroomLabel.text"));
         Mnemonics.setLocalizedText(repoLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.repoLabel.text"));
         Mnemonics.setLocalizedText(commitPrepareLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitPrepareLabel.text"));
+
         tobeSharedLabel.setLabelFor(commitedItems);
-
-
-
-        Mnemonics.setLocalizedText(tobeSharedLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.tobeSharedLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(tobeSharedLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.tobeSharedLabel.text"));
         Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.projectsMoveLabel.text"));
         Mnemonics.setLocalizedText(localRoot, NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.localRoot.text"));
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(24, 24, 24)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
-                    .add(localRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
-                    .add(repoURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(projectURL, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .addComponent(localRoot, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    .addComponent(repoURL, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(issueTrackingLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+                .addComponent(issueTrackingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(commitedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addComponent(commitedLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(commitPrepareLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addComponent(commitPrepareLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(projectsMoveLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(24, 24, 24)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
-                .add(12, 12, 12))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addComponent(projectsMoveLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(24, 24, 24)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                .addGap(12, 12, 12))
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(tobeSharedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addComponent(tobeSharedLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectCreatedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(projectCreatedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 484, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(chatroomLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addComponent(chatroomLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(repoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addComponent(repoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .add(18, 18, 18)
-                .add(projectCreatedLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectURL)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(tobeSharedLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 77, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(projectsMoveLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(localRoot)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(repoLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(commitPrepareLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(commitedLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(repoURL)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(issueTrackingLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(chatroomLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jLabel1)
+                .addGap(18, 18, 18)
+                .addComponent(projectCreatedLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(projectURL)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(tobeSharedLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(projectsMoveLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(localRoot)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(repoLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(commitPrepareLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(commitedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(repoURL)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(issueTrackingLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(chatroomLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SourceAndIssuesWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N

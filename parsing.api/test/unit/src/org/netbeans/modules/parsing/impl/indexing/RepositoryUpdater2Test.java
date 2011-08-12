@@ -601,7 +601,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of EmptyParser class
 
-    @RandomlyFails
+    @RandomlyFails // usually fails for jglick
     public void testClasspathDeps1() throws IOException, InterruptedException {
         FileUtil.setMIMEType("txt", "text/plain");
         final FileObject srcRoot1 = workDir.createFolder("src1");

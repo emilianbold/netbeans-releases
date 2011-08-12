@@ -427,7 +427,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                             context.sanitizedSource = source.substring(0, start + currentLeftOffset - 1) 
                                     + sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese) 
                                     + source.substring(start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1);
-                            System.out.println(context.sanitizedSource);
                             return true;
                         } else {
                             break;

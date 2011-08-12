@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.HierarchyEvent;
@@ -603,6 +606,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         long startTimeMillis = System.currentTimeMillis();
 
+        if(refFile != null) {
+            pingNBRepository(refFile);
+        }
         repositories = BugtrackingUtil.getKnownRepositories(true);
 
         long endTimeMillis = System.currentTimeMillis();
@@ -652,6 +658,20 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         updateProgress(Progress.DETERMINED_DEFAULT_REPO);
     }
 
+    private void pingNBRepository(File referenceFile) {
+        FileObject fileObject = FileUtil.toFileObject(referenceFile);
+        if(fileObject == null) {
+            return;
+        }
+        Object attValue = fileObject.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
+        if (attValue instanceof String) {
+            String url = (String) attValue;
+            if(BugtrackingUtil.isNbRepository(url)) {
+                KenaiUtil.findNBRepository(); // ensure repository exists 
+            }
+        }
+    }
+        
     //--------------- infrastructure for unit tests -----------------
 
     enum Progress {

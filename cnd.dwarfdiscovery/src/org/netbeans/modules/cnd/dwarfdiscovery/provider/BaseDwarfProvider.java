@@ -112,13 +112,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped.set(true);
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project, Set<String> dlls){
+    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
         RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
-                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls);
+                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, storage);
                 rp.post(r);
             }
             try {
@@ -147,7 +147,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return CndFileUtils.getLocalFileSystem();
     }
 
-    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls) {
+    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
         if (isStoped.get()) {
             return true;
         }
@@ -168,7 +168,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         FileSystem fileSystem  = getFileSystem(project);
-        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls)) {
+        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, storage)) {
             if (isStoped.get()) {
                 break;
             }
@@ -228,13 +228,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return false;
     }
     
-    protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls){
+    protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls, boolean findMain){
         int res = 0;
         int sunStudio = 0;
         Dwarf dump = null;
         Position position = null;
         List<String> errors = new ArrayList<String>();
         List<String> searchPaths = new ArrayList<String>();
+        TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
         TreeMap<String,AtomicInteger> roots = new TreeMap<String,AtomicInteger>();
         int foundDebug = 0;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
@@ -253,6 +254,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
+                    incrementRoot(path, realRoots);
                     path = DiscoveryUtils.normalizeAbsolutePath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
@@ -284,19 +286,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
-                    path = path.replace('\\', '/');
-                    {
-                        int i = path.lastIndexOf('/');
-                        if (i >= 0) {
-                            String folder = path.substring(0, i);
-                            AtomicInteger val = roots.get(folder);
-                            if (val == null) {
-                                val = new AtomicInteger();
-                                roots.put(folder, val);
-                            }
-                            val.incrementAndGet();
-                        }
-                    }
+                    incrementRoot(path, roots);
                     String compilerName = DwarfSource.extractCompilerName(cu, language);
                     if (compilerName != null) {
                         AtomicInteger count = compilers.get(compilerName);
@@ -309,7 +299,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (DwarfSource.isSunStudioCompiler(cu)) {
                         sunStudio++;
                     }
-                    if (position == null) {
+                    if (findMain && position == null) {
                         List<DwarfEntry> topLevelEntries = cu.getTopLevelEntries();
                         for(DwarfEntry entry : topLevelEntries) {
                             if (entry.getKind() == TAG.DW_TAG_subprogram) {
@@ -384,7 +374,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         } else {
             if (errors.isEmpty()) {
                 if (foundDebug > 0) {
-                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "BadDebugInformation", objFileName));  // NOI18N
+                    String notFoundRoot = getRoot(realRoots);
+                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "BadDebugInformation", notFoundRoot));  // NOI18N
                 } else {
                     errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "NotFoundDebugInformation", objFileName));  // NOI18N
                 }
@@ -393,6 +384,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
+    private void incrementRoot(String path, Map<String,AtomicInteger> roots) {
+        path = path.replace('\\', '/');
+        int i = path.lastIndexOf('/');
+        if (i >= 0) {
+            String folder = path.substring(0, i);
+            AtomicInteger val = roots.get(folder);
+            if (val == null) {
+                val = new AtomicInteger();
+                roots.put(folder, val);
+            }
+            val.incrementAndGet();
+        }
+    }
+    
     private String getCommonPart(String path, String commonRoot) {
         String[] splitPath = path.split("/"); // NOI18N
         ArrayList<String> list1 = new ArrayList<String>();
@@ -484,7 +489,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return bestRoot;
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {
@@ -514,19 +519,19 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     DwarfSource source = null;
                     if (LANG.DW_LANG_C.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, getCommpilerSettings(), grepBase, storage);
                     } else if (LANG.DW_LANG_C89.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C89, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C89, getCommpilerSettings(), grepBase, storage);
                     } else if (LANG.DW_LANG_C99.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C99, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C99, getCommpilerSettings(), grepBase, storage);
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, ItemProperties.LanguageStandard.CPP, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, ItemProperties.LanguageStandard.CPP, getCommpilerSettings(), grepBase, storage);
                     } else if (LANG.DW_LANG_Fortran77.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F77, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F77, getCommpilerSettings(), grepBase, storage);
                     } else if (LANG.DW_LANG_Fortran90.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F90, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F90, getCommpilerSettings(), grepBase, storage);
                     } else if (LANG.DW_LANG_Fortran95.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase, storage);
                     } else {
                         if (FULL_TRACE) {
                             System.out.println("Unknown language: " + lang);  // NOI18N
@@ -689,27 +694,29 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
 
     private class MyRunnable implements Runnable {
-        private String file;
-        private Map<String, SourceFileProperties> map;
-        private Progress progress;
-        private CountDownLatch countDownLatch;
-        private ProjectProxy project;
-        private Set<String> dlls;
+        private final String file;
+        private final Map<String, SourceFileProperties> map;
+        private final Progress progress;
+        private final CountDownLatch countDownLatch;
+        private final ProjectProxy project;
+        private final Set<String> dlls;
+        private final CompileLineStorage storage;
 
-        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls){
+        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage){
             this.file = file;
             this.map = map;
             this.progress = progress;
             this.countDownLatch = countDownLatch;
             this.project = project;
             this.dlls = dlls;
+            this.storage = storage;
         }
         @Override
         public void run() {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processObjectFile(file, map, progress, project, dlls);
+                    processObjectFile(file, map, progress, project, dlls, storage);
                 }
             } finally {
                 countDownLatch.countDown();

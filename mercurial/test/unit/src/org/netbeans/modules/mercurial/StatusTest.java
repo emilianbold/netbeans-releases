@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author tomas
  */
-public class StatusTest extends AbstractHgTest {
+public class StatusTest extends AbstractHgTestCase {
 
     public StatusTest(String arg0) {
         super(arg0);
@@ -62,7 +62,7 @@ public class StatusTest extends AbstractHgTest {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", "/tmp/" + System.currentTimeMillis());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
         super.setUp();
         
         // create

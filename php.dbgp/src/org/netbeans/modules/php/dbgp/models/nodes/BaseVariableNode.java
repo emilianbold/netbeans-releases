@@ -36,6 +36,7 @@ class BaseVariableNode extends
         super(property , parent );
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return true;
     }

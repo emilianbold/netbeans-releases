@@ -1162,6 +1162,7 @@ class ResultViewPanel extends JPanel{
                               searchPanel.getCustomizedSearchTypes());
         ResultView.getInstance().addSearchPair(this, task);
         Manager.getInstance().scheduleSearchTask(task);
+        this.tree.requestFocusInWindow();
     }
 
     /**

@@ -49,7 +49,7 @@ import org.netbeans.modules.openide.filesystems.RecognizeInstanceFilesTest;
 /** Test finding services from manifest and .instance files using FolderLookup.
  * @author Jaroslav Tulach
  */
-public class RecognizeInstanceObjectsTest extends RecognizeInstanceFilesTest{
+public class RecognizeInstanceObjectsTest extends RecognizeInstanceFilesTest {
     public RecognizeInstanceObjectsTest(String name) {
         super(name);
     }

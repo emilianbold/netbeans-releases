@@ -47,14 +47,14 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.css.formatting.api.LexUtilities;
-import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
-import org.netbeans.modules.css.formatting.api.support.AbstractIndenter.OffsetRanges;
-import org.netbeans.modules.css.formatting.api.support.IndentCommand;
-import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.web.indent.api.LexUtilities;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter.OffsetRanges;
+import org.netbeans.modules.web.indent.api.support.IndentCommand;
+import org.netbeans.modules.web.indent.api.support.IndenterContextData;
 
 public class ExpressionLanguageIndenter extends AbstractIndenter<ELTokenId> {
 

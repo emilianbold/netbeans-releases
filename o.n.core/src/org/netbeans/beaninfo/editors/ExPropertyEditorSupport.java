@@ -96,7 +96,7 @@ public abstract class ExPropertyEditorSupport extends PropertyEditorSupport impl
      *  delimited string. */
     protected static final String arrToStr(Object[] s) {
         if (s == null) return "null"; //NOI18N
-        StringBuffer out = new StringBuffer(s.length * 10);
+        StringBuilder out = new StringBuilder(s.length * 10);
         for (int i=0; i < s.length; i++) {
             if (s[i] != null) {
                 out.append(s[i]);

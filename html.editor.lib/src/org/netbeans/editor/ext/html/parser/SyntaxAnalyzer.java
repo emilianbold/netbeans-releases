@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.editor.ext.html.parser.spi.UndeclaredContentResolver;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -96,6 +97,10 @@ public final class SyntaxAnalyzer {
 
     public SyntaxAnalyzerResult analyze() {
         return new SyntaxAnalyzerResult(this);
+    }
+
+    public SyntaxAnalyzerResult analyze(UndeclaredContentResolver resolver) {
+        return new SyntaxAnalyzerResult(this, resolver);
     }
 
     public HtmlSource source() {

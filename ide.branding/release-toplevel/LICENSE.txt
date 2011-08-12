@@ -15,7 +15,7 @@ of the third party technology license agreement specified
 and not under either the CDDL or GPL.
 
 Please review the list of libraries and licenses provided
-for use. This license file contains five distinct licenses.
+for use. This license file contains six distinct licenses.
 
 Unless specified below, the use of NetBeans IDE and
 components from the GlassFish runtime are governed by the

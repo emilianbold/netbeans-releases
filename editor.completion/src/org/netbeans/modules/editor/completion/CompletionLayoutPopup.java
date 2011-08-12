@@ -301,6 +301,9 @@ abstract class CompletionLayoutPopup {
         // so force a heavyweight parent by passing in owner==null. (#96717)
         
         JTextComponent owner = Utilities.isMac() ? null : layout.getEditorComponent();
+        if(owner != null && owner.getClientProperty("ForceHeavyweightCompletionPopup") != null) {
+            owner = null;
+        }
         
         // #76648: Autocomplete box is too close to text
         if(displayAboveCaret && Utilities.isMac()) {

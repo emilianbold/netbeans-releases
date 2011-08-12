@@ -77,7 +77,7 @@ public class IncomingAction extends SearchHistoryAction {
             return;
         }
         outputSearchContextTab(repositoryRoot, "MSG_LogIncoming_Title");
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot});
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(new File[] {repositoryRoot}, ""); //NOI18N
         tc.setDisplayName(NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", repositoryRoot.getName()));
         tc.open();
         tc.requestActive();

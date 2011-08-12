@@ -1477,9 +1477,10 @@ public final class ParseProjectXml extends Task {
                 replaceAll(",", "|").
                 replaceAll("\\*\\*", "(.+/)?").
                 replaceAll("\\*", "");
-        Pattern p = Pattern.compile("(" + corePattern + ")[^/]+\\.class");
+        // include e.g. icons so that annotation processors using validateResource can confirm they exist
+        Pattern p = Pattern.compile("(" + corePattern + ")[^/]+[.].+");
         boolean foundAtLeastOneEntry = false;
-        // E.g.: (org/netbeans/api/foo/|org/netbeans/spi/foo/)[^/]+\.class
+        // E.g.: (org/netbeans/api/foo/|org/netbeans/spi/foo/)[^/]+[.].+
         OutputStream os = new FileOutputStream(ppjar);
         try {
             ZipOutputStream zos = new ZipOutputStream(os);

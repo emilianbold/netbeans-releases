@@ -80,10 +80,6 @@ public class ViewHierarchyRandomTesting {
         return container;
     }
     
-    public static void setDirectViewRebuild(boolean directViewRebuild) {
-        ViewUpdates.setDirectViewRebuild(directViewRebuild);
-    }
-
     public static void disableHighlighting(RandomTestContainer container) throws Exception {
         final JEditorPane pane = EditorPaneTesting.getEditorPane(container);
         SwingUtilities.invokeAndWait(new Runnable() {

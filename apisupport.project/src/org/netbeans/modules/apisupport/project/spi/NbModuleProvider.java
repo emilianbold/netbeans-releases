@@ -47,7 +47,10 @@ package org.netbeans.modules.apisupport.project.spi;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -59,23 +62,6 @@ import org.openide.modules.SpecificationVersion;
  */
 public interface NbModuleProvider {
 
-    // These are just for convenience:
-    NbModuleType STANDALONE = NbModuleType.STANDALONE;
-    NbModuleType SUITE_COMPONENT = NbModuleType.SUITE_COMPONENT;
-    NbModuleType NETBEANS_ORG = NbModuleType.NETBEANS_ORG;
-    
-    /** Used for a type-safe enumeration of NetBeans module types. */
-    enum NbModuleType {
-        STANDALONE,
-        SUITE_COMPONENT,
-        NETBEANS_ORG
-    }
-    
-    /** Returns type of this NetBeans module. 
-     * @return STANDALONE SUITE_COMPONENT or NETBEANS_ORG
-     */
-    NbModuleType getModuleType();
-    
     /**
      * Returns the specification version of the module
      * @return specification version of the module
@@ -102,7 +88,7 @@ public interface NbModuleProvider {
 
     /**
      * Gets a directory where you may place files to be copied unmodified to the cluster/NBM in an analogous tree structure.
-     * You must call {@link #
+     * You must call {@link #getReleaseDirectory} to actually make it.
      * @return relative path from project root to release dir
      */
     String getReleaseDirectoryPath();
@@ -138,7 +124,7 @@ public interface NbModuleProvider {
      * @param releaseVersion 
      * @param version 
      * @param useInCompiler 
-     * @return
+     * @return true if a dependency was really added
      * @throws IOException
      */
     boolean addDependency(
@@ -151,19 +137,13 @@ public interface NbModuleProvider {
      * @return a known version, or null if unknown
      * @throws IOException
      */ 
-    SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
+    @CheckForNull SpecificationVersion getDependencyVersion(String codenamebase) throws IOException;
 
     /**
      * Checks whether the project currently has a (direct) dependency on the given module.
      * @since 1.37
      */
     boolean hasDependency(String codeNameBase) throws IOException;
-    
-    /**
-     * get the NetBeans platform for the module
-     * @return location of the root directory of NetBeans platform installation
-     */ 
-    File getActivePlatformLocation();
 
     /**
      * Returns location of built module JAR (file need not to exist).
@@ -174,16 +154,17 @@ public interface NbModuleProvider {
      */
     @CheckForNull File getModuleJarLocation();
 
+    /** Location of class output directory. */
+    @CheckForNull File getClassesDirectory();
+
     /**
-     * May get invoked before accessing some other methods from this interface to
-     * initialize module's context. The method must be invoked from EDT so it's safe
-     * to e.g. show modal dialogs and ask for user's input.
-     * @param featureDisplayName Display name of the feature that requires platform
-     * application context.
-     * @return True if module's context is ready, false if there was any problem
-     * setting up module's context.
-     * @throws IllegalStateException If not invoked from EDT
-     * @since 1.38
+     * Creates a view of the system file system as it would be seen from this module and perhaps some siblings.
+     * The project's own layer (if any) should be writable if possible, whereas platform layers may be read-only.
+     * @see LayerUtil#mergeFilesystems
+     * @see LayerUtil#layersOf
+     * @see LayerHandle#forProject
+     * @see PlatformJarProvider
      */
-    boolean prepareContext( String featureDisplayName ) throws IllegalStateException;
+    @NonNull FileSystem getEffectiveSystemFilesystem() throws IOException;
+
 }

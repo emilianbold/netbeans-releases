@@ -43,124 +43,25 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.filter;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Filter;
-import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.openide.util.NbBundle;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.web.AbstractWebContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class FiltersNode extends ContainerNode {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    private static class Children extends GreedySelectorChildren<FiltersNode> {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>();
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public Children() {
-            scope.add(ClassIndex.SearchScope.SOURCE);
-            scope.add(ClassIndex.SearchScope.DEPENDENCIES);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        protected List<SelectorNode> prepareChildren(final FiltersNode parent) {
-            final Set<SelectorNode> filters = new HashSet<SelectorNode>();
-
-            try {
-                Project project = parent.getLookup().lookup(Project.class);
-                final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
-
-                Collection<FileObject> dds = WebProjectUtils.getDeploymentDescriptorFileObjects(project, true);
-
-                for (FileObject dd : dds) {
-                    enumerateFilters(parent, cpInfo, filters, dd);
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-
-            return new ArrayList<SelectorNode>(filters);
-        }
-
-        private void enumerateFilters(final FiltersNode parent, final ClasspathInfo cpInfo,
-                                      final Collection<SelectorNode> filters, FileObject dd)
-                               throws IOException, IllegalArgumentException {
-            final WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-
-            final Map<String, String> filter2class = new HashMap<String, String>();
-
-            for (Filter filter : webApp.getFilter()) {
-                filter2class.put(filter.getFilterName(), filter.getFilterClass());
-            }
-
-            JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        for (FilterMapping mapping : webApp.getFilterMapping()) {
-                            String clazz = filter2class.get(mapping.getFilterName());
-                            TypeElement type = clazz != null ? controller.getElements().getTypeElement(clazz) : null;
-
-                            if (type != null) {
-                                String urlMapping = mapping.getUrlPattern();
-
-                                if (urlMapping == null) {
-                                    String servletName = mapping.getServletName();
-
-                                    for (ServletMapping servletMapping : webApp.getServletMapping()) {
-                                        if (servletName.equals(servletMapping.getServletName())) {
-                                            urlMapping = servletMapping.getUrlPattern();
-
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                if (urlMapping != null) {
-                                    filters.add(new FilterNode(cpInfo, type, mapping.getFilterName(), urlMapping, parent));
-                                }
-                            }
-                        }
-                    }
-                }, true);
-        }
-    }
-
+public class FiltersNode extends AbstractWebContainerNode {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
@@ -172,12 +73,22 @@ public class FiltersNode extends ContainerNode {
 
     /** Creates a new instance of ServletsNode */
     public FiltersNode(ContainerNode parent) {
-        super(FILTERS_STRING, Utils.PACKAGE_ICON, parent);
+        super(FILTERS_STRING, parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    protected SelectorChildren getChildren() {
-        return new Children();
+    @Override
+    protected Collection<SelectorNode> collectChildren(Project prj, WebAppMetadata md) {
+        Collection<SelectorNode> fNodes = new ArrayList<SelectorNode>();
+        for(FilterInfo fi : md.getFilters()) {
+            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(fi.getFilterClass(), prj);
+            List<String> patterns = fi.getUrlPatterns();
+            if (patterns != null && !patterns.isEmpty()) {
+                
+                fNodes.add(new FilterNode(sType, fi.getName(), patterns.get(0) , this));
+            }
+        }
+        return fNodes;
     }
 }

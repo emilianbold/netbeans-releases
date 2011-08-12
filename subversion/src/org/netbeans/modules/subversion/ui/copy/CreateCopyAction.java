@@ -46,8 +46,6 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -70,7 +68,6 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class CreateCopyAction extends ContextAction {
-    private static final String MESSAGE_CREATE_FOLDER = "Netbeans SVN client generated message: create a new folder for the copy:\n{0}"; //NOI18N
     
     /** Creates a new instance of CreateCopyAction */
     public CreateCopyAction() {
@@ -222,26 +219,6 @@ public class CreateCopyAction extends ContextAction {
                         throw ex;
                     }
                 }
-
-                /**
-                 * svn client <=1.4
-                 */
-                ISVNInfo info = null;
-                try{
-                    info = client.getInfo(folderToCreate);
-                } catch (SVNClientException ex) {
-                    if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) {
-                        throw ex;
-                    }
-                }
-
-                if(support.isCanceled()) {
-                    return;
-                }
-
-                if(info == null) {
-                    client.mkdir(folderToCreate, true, getCreateFolderMessage(createCopy.getMessage()));
-                }
             }
 
             if(support.isCanceled()) {
@@ -250,12 +227,12 @@ public class CreateCopyAction extends ContextAction {
 
             if(createCopy.isLocal()) {
                 if(roots.length == 1) {
-                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, false);
+                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, true);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
                     for (File root : roots) {
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
-                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, false);
+                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, true);
                     }
                 }
             } else {
@@ -264,13 +241,13 @@ public class CreateCopyAction extends ContextAction {
                     client.copy(fromRepositoryFile.getFileUrl(),
                             toRepositoryFile.getFileUrl(),
                             createCopy.getMessage(),
-                            fromRepositoryFile.getRevision(), false);
+                            fromRepositoryFile.getRevision(), true);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
                     for (File root : roots) {
                         SVNUrl fromUrl = SvnUtils.getRepositoryRootUrl(root).appendPath(SvnUtils.getRepositoryPath(root));
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
-                        client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, false);
+                        client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, true);
                     }
                 }
             }                            
@@ -298,20 +275,4 @@ public class CreateCopyAction extends ContextAction {
     private RepositoryFile getToRepositoryFile(RepositoryFile toRepositoryFile, File file) {
         return toRepositoryFile.replaceLastSegment(file.getName(), 0);
     }
-
-    private String getCreateFolderMessage (String commitMessage) {
-        String message = System.getProperty("subversion.copy.createFolderMessage", MESSAGE_CREATE_FOLDER); //NOI18N
-        if (message == null || message.length() == 0) {
-            message = "{0}";                                //NOI18N
-        }
-        String createMessage;
-        try {
-            createMessage = MessageFormat.format(message, commitMessage);
-        } catch (IllegalArgumentException ex) {
-            Subversion.LOG.log(Level.INFO, message, ex);
-            createMessage = MessageFormat.format(MESSAGE_CREATE_FOLDER, commitMessage); // fallback to default
-        }
-        return createMessage;
-    }
-
 }

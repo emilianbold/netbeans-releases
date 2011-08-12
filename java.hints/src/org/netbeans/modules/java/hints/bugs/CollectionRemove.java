@@ -71,6 +71,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -83,7 +84,8 @@ import org.openide.util.NbBundle;
 @Hint(id="org.netbeans.modules.java.hints.bugs.CollectionRemove",
       category="bugs",
       customizerProvider=CollectionRemoveCustomizerImpl.class,
-      suppressWarnings={CollectionRemove.SUPPRESS_WARNING_KEY, "", "collection-remove"})
+      suppressWarnings={CollectionRemove.SUPPRESS_WARNING_KEY, "", "collection-remove"},
+      options=Options.QUERY)
 public class CollectionRemove {
 
             static final String  SUPPRESS_WARNING_KEY = "element-type-mismatch";

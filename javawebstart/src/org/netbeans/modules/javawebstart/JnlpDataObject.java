@@ -50,22 +50,26 @@ import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
+//import org.openide.text.DataEditorSupport;
 
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 
 public class JnlpDataObject extends MultiDataObject {
     
     public JnlpDataObject(FileObject pf, JnlpDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
+        registerEditor(JnlpDataLoader.REQUIRED_MIME, true);
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLSupport checkCookieImpl = new CheckXMLSupport(in);
         ValidateXMLSupport validateCookieImpl = new ValidateXMLSupport(in);
@@ -73,13 +77,27 @@ public class JnlpDataObject extends MultiDataObject {
         cookies.add(validateCookieImpl);
     }
     
+    @Override
     protected Node createNodeDelegate() {
         return new JnlpDataNode(this);
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
-    
+    protected int associateLookup() {
+        return 1;
+    }    
+
+     @Messages("Source=&Source")
+     @MultiViewElement.Registration(
+             displayName="#Source",
+             iconBase="org/netbeans/modules/javawebstart/resources/jnlp.gif",
+             persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+             mimeType=JnlpDataLoader.REQUIRED_MIME,
+             preferredID="jnlp.source",
+             position=1
+     )
+     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+         return new MultiViewEditorElement(context);
+     }
+
 }

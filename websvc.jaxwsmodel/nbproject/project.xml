@@ -296,6 +296,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.jaxwsapi</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.metro.model</friend>
+                <friend>org.netbeans.modules.websvc.owsm</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>

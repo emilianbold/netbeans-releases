@@ -82,6 +82,7 @@ import org.apache.maven.model.building.ModelProblem;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.netbeans.modules.maven.model.pom.ModelList;
 import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
@@ -296,7 +297,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         DataObject currentFile = current;
         //#164852 somehow a folder dataobject slipped in, test mimetype to avoid that.
         // the root cause of the problem is unknown though
-        if (currentFile != null && "text/x-maven-pom+xml".equals(currentFile.getPrimaryFile().getMIMEType())) { //NOI18N
+        if (currentFile != null && POMDataObject.MIME_TYPE.equals(currentFile.getPrimaryFile().getMIMEType())) { //NOI18N
             File file = FileUtil.toFile(currentFile.getPrimaryFile());
             //now attach the listener to the textcomponent
             final EditorCookie.Observable ec = currentFile.getLookup().lookup(EditorCookie.Observable.class);
@@ -357,7 +358,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                             LOG.log(Level.WARNING, "no fileobject for {0}", pom);
                         }
                     }
-                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration); //NOI18N
+                    if (names == null) { // #199698
+                        return;
+                    }
+                    final POMModelVisitor.POMCutHolder hold = new POMModelVisitor.SingleObjectCH(mdls.toArray(new POMModel[0]), names, names.PROJECT, Project.class,  configuration);
                     for (Project p : prjs) {
                         hold.addCut(p);
                     }

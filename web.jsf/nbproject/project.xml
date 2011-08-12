@@ -50,12 +50,12 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.web.jsf</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -649,12 +649,12 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
+                <friend>org.netbeans.modules.web.adf.complib</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
+                <friend>org.netbeans.modules.web.jsf.richfaces</friend>
                 <friend>org.netbeans.modules.web.primefaces</friend>
-                <friend>org.netbeans.modules.web.adf.complib</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
-                <package>org.netbeans.modules.web.jsf.api.components</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>
                 <package>org.netbeans.modules.web.jsf.api.metamodel</package>

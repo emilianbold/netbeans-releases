@@ -527,7 +527,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.insert(runningViewServlet+"\n", 14, 1);
         editor.insert("<% " + jspCode + " %>\n" , 19, 9);
         sleep(5000);
-        editor.saveDocument();
+        editor.save();
         new Action("Run|Run File",null).perform();
         waitBuildSuccessful();
         assertDisplayerContent("<title>Page 2</title>");
@@ -629,7 +629,7 @@ public class WebProjectValidation extends J2eeTestCase {
         // check class is opened in Editor and then close it
         EditorOperator editor = new EditorOperator("MyTag.java");
         editor.replace("// out.println(\"    </blockquote>\");", getTagHandlerCode());
-        editor.saveDocument();
+        editor.save();
         editor.close();
         ref(Util.dumpProjectView(PROJECT_NAME));
         //compareReferenceFiles();

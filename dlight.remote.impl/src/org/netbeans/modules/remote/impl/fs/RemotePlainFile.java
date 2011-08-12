@@ -64,18 +64,10 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Kvashin
  */
-public final class RemotePlainFile extends RemoteFileObjectBase {
+public final class RemotePlainFile extends RemoteFileObjectFile {
 
     private final char fileTypeChar;
     private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
-    private ThreadLocal<Boolean> magic = new ThreadLocal<Boolean>() {
-
-        @Override
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
-        }
-    };
-
     public static RemotePlainFile createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
         return new RemotePlainFile(fileSystem, execEnv, parent, remotePath, cache, fileType);
@@ -118,41 +110,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public String getMIMEType() {
-        magic.set(Boolean.TRUE);
-        try {
-            return super.getMIMEType();
-        } finally {
-            magic.set(Boolean.FALSE);
-        }
-    }
-
-    private byte[] getMagic() {
-        try {
-            RemoteDirectory parent= RemoteFileSystemUtils.getCanonicalParent(this);
-            if (parent != null) {
-                return parent.getMagic(this);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-    
-    //org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern.match(MIMEResolverImpl.java:801)
-    private boolean isMimeResolving() {
-        for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
-            if ("org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type$FilePattern".equals(element.getClassName())) { //NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    @Override
     public InputStream getInputStream() throws FileNotFoundException {
         if (!getCache().exists()) {
-            if (magic.get() || isMimeResolving()) {
+            if (isMimeResolving()) {
                 byte[] b = getMagic();
                 if (b != null) {
                     return new ByteArrayInputStream(b);

@@ -158,7 +158,7 @@ public class FindSupport {
 
     void findNext() {
         boolean found = false;
-        if (currentComp != null) {
+        if (currentComp != null && currentComp.isVisible()) {
             highlight(tc, true);
             found = findNext(tc);
         }
@@ -166,7 +166,7 @@ public class FindSupport {
             currentComp = null;
             findNext(tc);
         }
-        if (currentComp != null && bar.getHighlightResults()) {
+        if (currentComp != null && currentComp.isVisible() && bar.getHighlightResults()) {
             highlight(tc, false);
         }
     }
@@ -177,6 +177,9 @@ public class FindSupport {
         }
         if (comp instanceof JTextPane) {
             if (currentComp == null || currentComp == comp) {
+                if(!comp.isVisible()) {
+                    return false;
+                }
                 JTextPane tcomp = (JTextPane)comp;
                 String txt = tcomp.getText();
                 Matcher matcher = pattern.matcher(txt);
@@ -319,6 +322,9 @@ public class FindSupport {
         }
         if (comp instanceof JTextPane) {
             JTextPane tcomp = (JTextPane)comp;
+            if(!tcomp.isVisible()) {
+                return;
+            }
             String txt = tcomp.getText();
             Matcher matcher = pattern.matcher(txt);
             Highlighter highlighter = tcomp.getHighlighter();

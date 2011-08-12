@@ -67,6 +67,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -202,7 +203,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
                 if (search[0].length() > 0) {
                     
-                    queryRequest = new QueryRequest(search[0], null, observer);
+                    queryRequest = new QueryRequest(search[0], RepositoryPreferences.getInstance().getRepositoryInfos(), observer);
                 
                     try {
                         RepositoryQueries.findVersionsByClass(queryRequest);

@@ -78,6 +78,7 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
     
     private static final String DEBUG_FILTERS  = "debug.filters";       // NOI18N
 
+    @Override
     public Action[] getActions ( NodeActionsProvider original , Object node )
             throws UnknownTypeException 
     {
@@ -104,6 +105,7 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
         return actions;
     }
 
+    @Override
     public void performDefaultAction( NodeActionsProvider original , Object node) 
         throws UnknownTypeException 
     {
@@ -154,9 +156,11 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
             NbBundle.getBundle(LocalViewActionProvider.class).getString(
                     FIXED_WATCH_LABEL), 
                     new Models.ActionPerformer () {
+                        @Override
                         public boolean isEnabled(Object node) {
                             return true;
                         }
+                        @Override
                         public void perform(Object[] nodes) {
                             createFixedWatch( nodes );
                         }
@@ -168,9 +172,11 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
             NbBundle.getBundle(LocalViewActionProvider.class).getString(
                     FILTERS_LABEL), 
                     new Models.ActionPerformer () {
+                        @Override
                         public boolean isEnabled(Object node) {
                             return true;
                         }
+                        @Override
                         public void perform(Object[] nodes) {
                             editFilters();
                         }
@@ -183,6 +189,7 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
         /* (non-Javadoc)
          * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#isEnabled(java.lang.Object)
          */
+        @Override
         public boolean isEnabled( Object arg ) {
             return true;
         }
@@ -190,6 +197,7 @@ public class LocalViewActionProvider implements NodeActionsProviderFilter {
         /* (non-Javadoc)
          * @see org.netbeans.spi.viewmodel.Models.ActionPerformer#perform(java.lang.Object[])
          */
+        @Override
         public void perform( Object[] nodes ) {
             goToSource((VariableNode) nodes [0]);            
         }

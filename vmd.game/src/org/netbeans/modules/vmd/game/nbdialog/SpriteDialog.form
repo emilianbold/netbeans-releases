@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -8,9 +8,10 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -24,7 +25,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="panelLayerInfo" alignment="0" max="32767" attributes="2"/>
                   <Component id="panelError" alignment="0" max="32767" attributes="0"/>
-                  <Component id="jSeparator1" alignment="0" pref="696" max="32767" attributes="2"/>
+                  <Component id="jSeparator1" alignment="0" pref="787" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="panelCustomizer" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -46,11 +47,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="panelPreview" max="32767" attributes="2"/>
-                  <Component id="jSeparator2" alignment="1" pref="316" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="panelCustomizer" max="32767" attributes="2"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jSeparator2" alignment="1" pref="320" max="32767" attributes="0"/>
+                  <Component id="panelCustomizer" alignment="0" max="32767" attributes="2"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="panelError" min="-2" max="-2" attributes="0"/>
@@ -161,11 +159,11 @@
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="240" max="32767" attributes="0"/>
+                                  <EmptySpace pref="262" max="32767" attributes="0"/>
                                   <Component id="checkBoxZoom" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="panelImage" pref="397" max="32767" attributes="2"/>
-                              <Component id="sliderWidth" alignment="1" pref="397" max="32767" attributes="1"/>
+                              <Component id="panelImage" pref="492" max="32767" attributes="2"/>
+                              <Component id="sliderWidth" alignment="1" pref="492" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="sliderHeight" min="-2" max="-2" attributes="0"/>
@@ -183,8 +181,8 @@
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="sliderHeight" pref="243" max="32767" attributes="1"/>
-                      <Component id="panelImage" pref="243" max="32767" attributes="2"/>
+                      <Component id="sliderHeight" pref="255" max="32767" attributes="1"/>
+                      <Component id="panelImage" pref="255" max="32767" attributes="2"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="sliderWidth" min="-2" max="-2" attributes="0"/>
@@ -303,7 +301,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="labelError" alignment="1" pref="696" max="32767" attributes="0"/>
+              <Component id="labelError" alignment="1" pref="787" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -335,7 +333,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="labelLayerName" min="-2" pref="86" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="fieldLayerName" pref="606" max="32767" attributes="0"/>
+                  <Component id="fieldLayerName" pref="689" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

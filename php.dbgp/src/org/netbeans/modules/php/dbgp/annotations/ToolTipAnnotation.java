@@ -103,6 +103,7 @@ public class ToolTipAnnotation extends Annotation
         if (part != null) {
             Runnable runnable = new Runnable() {
 
+                @Override
                 public void run() {
                     evaluate(part);
                 }
@@ -174,6 +175,7 @@ public class ToolTipAnnotation extends Annotation
             final String identifier = ep != null ? getIdentifier(document, ep, offset) : null;
             if (identifier != null) {
                 Runnable runnable = new Runnable(){
+                    @Override
                     public void run() {
                         sendPropertyGetCommand(identifier);
                     }

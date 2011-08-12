@@ -306,6 +306,9 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 final SourcePositions pos = compilationInfo.getTrees().getSourcePositions();
                 long startPos = pos.getStartPosition(treePath.getCompilationUnit(), treePath.getLeaf());
                 long endPos = pos.getEndPosition(treePath.getCompilationUnit(), treePath.getLeaf());
+                if (startPos < 0 || endPos < 0) {
+                    return;
+                }
                 long shift = cu.getLineMap().getColumnNumber(startPos) - 1;
                 int tabSize = CodeStyle.getDefault(fileObject).getTabSize();
                 final CharSequence declaration = text.subSequence((int)startPos, (int)endPos);

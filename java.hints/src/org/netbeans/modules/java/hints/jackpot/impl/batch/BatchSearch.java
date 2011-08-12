@@ -76,6 +76,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -117,7 +118,7 @@ public class BatchSearch {
         return findOccurrencesLocal(patterns, scope.getIndexMapper(patterns), scope.getTodo(), progress);
     }
 
-    private static BatchResult findOccurrencesLocal(final Iterable<? extends HintDescription> patterns, final MapIndices indexMapper, final Collection<? extends FileObject> todo, final ProgressHandleWrapper progress) {
+    private static BatchResult findOccurrencesLocal(final Iterable<? extends HintDescription> patterns, final MapIndices indexMapper, final Collection<? extends Folder> todo, final ProgressHandleWrapper progress) {
         final BatchResult[] result = new BatchResult[1];
 
         try {
@@ -133,7 +134,7 @@ public class BatchSearch {
         return result[0];
     }
     
-    private static BatchResult findOccurrencesLocalImpl(final CompilationInfo info, final Iterable<? extends HintDescription> patterns, MapIndices indexMapper, Collection<? extends FileObject> todo, ProgressHandleWrapper progress) {
+    private static BatchResult findOccurrencesLocalImpl(final CompilationInfo info, final Iterable<? extends HintDescription> patterns, MapIndices indexMapper, Collection<? extends Folder> todo, ProgressHandleWrapper progress) {
         final Callable<BulkPattern> bulkPattern = new Callable<BulkPattern>() {
             private final AtomicReference<BulkPattern> pattern = new AtomicReference<BulkPattern>();
             public BulkPattern call() {
@@ -148,13 +149,13 @@ public class BatchSearch {
         final Collection<MessageImpl> problems = new LinkedList<MessageImpl>();
         ProgressHandleWrapper innerForAll = progress.startNextPartWithEmbedding(ProgressHandleWrapper.prepareParts(2 * todo.size()));
         
-        for (final FileObject src : todo) {
-            LOG.log(Level.FINE, "Processing: {0}", FileUtil.getFileDisplayName(src));
+        for (final Folder src : todo) {
+            LOG.log(Level.FINE, "Processing: {0}", FileUtil.getFileDisplayName(src.getFileObject()));
             
-            IndexEnquirer indexEnquirer = indexMapper.findIndex(src, innerForAll);
+            IndexEnquirer indexEnquirer = indexMapper.findIndex(src.getFileObject(), innerForAll, src.isRecursive());
 
             if (indexEnquirer == null) {
-                indexEnquirer = new FileSystemBasedIndexEnquirer(src);
+                indexEnquirer = new FileSystemBasedIndexEnquirer(src.getFileObject(), src.isRecursive());
             }
 
             Collection<? extends Resource> occurrences = indexEnquirer.findResources(patterns, innerForAll, bulkPattern, problems);
@@ -322,10 +323,68 @@ public class BatchSearch {
         public void cannotVerifySpan(Resource r);
     }
 
+    
+    public static class Folder {
+
+        private FileObject file;
+        private NonRecursiveFolder folder;
+        
+        public Folder(FileObject file) {
+            this.file = file;
+        }
+        
+        public Folder(NonRecursiveFolder folder) {
+            this.folder = folder;
+        }
+        
+        public FileObject getFileObject() {
+            if (file!=null) {
+                return file;
+            }
+            return folder.getFolder();
+            
+        }
+        
+        private boolean isRecursive() {
+            if (file!=null) {
+                return file.isFolder();
+            }
+            return false;
+        }
+
+        public static Folder[] convert(FileObject... files) {
+            Folder[] result = new Folder[files.length];
+            for (int i=0;i<files.length;i++) {
+                result[i] = new Folder(files[i]);
+            }
+            return result;
+        }
+
+        public static Folder[] convert(Collection list) {
+            Folder[] result = new Folder[list.size()];
+            int i=0;
+            for (Object item:list) {
+                if (item instanceof FileObject)
+                    result[i] = new Folder((FileObject) item);
+                else 
+                    result[i] = new Folder((NonRecursiveFolder) item);
+                i++;
+            }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return !isRecursive()?"Non":"" + "Recursive file " + getFileObject().getPath();
+        }
+        
+        
+    }
+    
     public abstract static class Scope {
 
         public abstract String getDisplayName();
-        public abstract Collection<? extends FileObject> getTodo();
+        public abstract Collection<? extends Folder> getTodo();
         public abstract MapIndices getIndexMapper(Iterable<? extends HintDescription> hints);
         
     }
@@ -482,7 +541,7 @@ public class BatchSearch {
     }
 
     public static interface MapIndices {
-        public IndexEnquirer findIndex(FileObject root, ProgressHandleWrapper progress);
+        public IndexEnquirer findIndex(FileObject root, ProgressHandleWrapper progress, boolean recursive);
     }
 
     public static abstract class IndexEnquirer {
@@ -505,15 +564,17 @@ public class BatchSearch {
     }
 
     public static final class FileSystemBasedIndexEnquirer extends LocalIndexEnquirer {
-        public FileSystemBasedIndexEnquirer(FileObject src) {
+        private boolean recursive;
+        public FileSystemBasedIndexEnquirer(FileObject src, boolean recursive) {
             super(src);
+            this.recursive = recursive;
         }
         public Collection<? extends Resource> findResources(final Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, final Callable<BulkPattern> bulkPattern, final Collection<? super MessageImpl> problems) {
             Collection<FileObject> files = new LinkedList<FileObject>();
 
             final ProgressHandleWrapper innerProgress = progress.startNextPartWithEmbedding(30, 70);
 
-            BatchUtilities.recursive(src, src, files, innerProgress, 0, null, null);
+            BatchUtilities.recursive(src, src, files, innerProgress, 0, null, null, recursive);
 
             LOG.log(Level.FINE, "files: {0}", files);
 

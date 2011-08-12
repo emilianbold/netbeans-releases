@@ -116,7 +116,7 @@ MultiViewElement, CloneableEditorSupport.Pane, Serializable {
 
     @Override
     public Lookup getLookup() {
-        return editor.getLookup();
+        return editor.getLookupSuper();
     }
 
     @Override

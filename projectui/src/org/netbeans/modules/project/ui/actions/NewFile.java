@@ -44,24 +44,30 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.*;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.NoProjectNew;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.modules.project.ui.OpenProjectList.TemplateItem;
 import org.netbeans.modules.project.ui.ProjectUtilities;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.awt.DynamicMenuContent;
@@ -74,20 +80,21 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter.Popup;
 
 /** Action for invoking the project sensitive NewFile Wizard
  */
+@Messages({
+    "LBL_NewFileAction_Name=&New File...",
+    "LBL_NewFileAction_PopupName=New",
+    "#{0} Name of the template", "LBL_NewFileAction_Template_PopupName={0}..."
+})
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
-    private static final Icon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newFile.png", false); //NOI18N
-    private static final String _NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" );
-    private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Tooltip" );
-    private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" );
-    private static final String FILE_POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_File_PopupName" );
-    private static final String TEMPLATE_NAME_FORMAT = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Template_PopupName" );
+    private static final RequestProcessor RP = new RequestProcessor(NewFile.class);
 
     private JMenu subMenu;
 
@@ -95,10 +102,11 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         this( null );
     }
 
+    @Messages("LBL_NewFileAction_Tooltip=New File...")
     public NewFile( Lookup context ) {
-        super( (String)null, _NAME, ICON, context ); //NOI18N
+        super((String) null, LBL_NewFileAction_Name(), ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newFile.png", false), context);
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
-        putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
+        putValue(SHORT_DESCRIPTION, LBL_NewFileAction_Tooltip());
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         refresh(getLookup(), true);
     }
@@ -109,7 +117,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
-                setDisplayName(_NAME);
+                setDisplayName(LBL_NewFileAction_Name());
             }
         });
     }
@@ -205,7 +213,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     public JMenuItem getSubmenuPopupPresenter() {
         if (subMenu == null) {
-            subMenu = new JMenu(POPUP_NAME);
+            subMenu = new JMenu(LBL_NewFileAction_PopupName());
         }
         return subMenu;
     }
@@ -272,23 +280,45 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         refresh(Lookup.EMPTY, false);
     }
 
-    public static String TEMPLATE_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.Template"; // NOI18N
-    public static String IN_PROJECT_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.InProject"; // NOI18N
+    private static final String TEMPLATE_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.Template"; // NOI18N
+    private static final String IN_PROJECT_PROPERTY = "org.netbeans.modules.project.ui.actions.NewFile.InProject"; // NOI18N
 
 
-     private void fillSubMenu(JMenu menuItem, Project project) {
-         menuItem.removeAll();
-
-         ActionListener menuListener = new PopupListener();
-         MessageFormat mf = new MessageFormat(TEMPLATE_NAME_FORMAT);
-         boolean itemAdded = OpenProjectList.prepareTemplates(menuItem, menuListener, mf, TEMPLATE_PROPERTY, project, getLookup());
-         if (itemAdded) {
-             menuItem.add( new Separator() );
-         }
-         JMenuItem fileItem = new JMenuItem( FILE_POPUP_NAME, (Icon)getValue( Action.SMALL_ICON ) );
-         fileItem.addActionListener( menuListener );
-         fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
-         menuItem.add( fileItem );
+    @Messages({
+        "LBL_NewFileAction_File_PopupName=Other...",
+        "NewFile.please_wait=Please wait..."
+    })
+    private void fillSubMenu(final JMenu menuItem, final Project project) {
+        menuItem.removeAll();
+        JMenuItem wait = new JMenuItem(NewFile_please_wait());
+        wait.setEnabled(false);
+        menuItem.add(wait);
+        RP.post(new Runnable() {
+            @Override public void run() {
+                final List<TemplateItem> items = OpenProjectList.prepareTemplates(project, getLookup());
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        menuItem.removeAll();
+                        ActionListener menuListener = new PopupListener();
+                        for (TemplateItem i : items) {
+                            JMenuItem item = new JMenuItem(
+                                    LBL_NewFileAction_Template_PopupName(i.displayName),
+                                    i.icon);
+                            item.addActionListener(menuListener);
+                            item.putClientProperty(TEMPLATE_PROPERTY, i.template);
+                            menuItem.add(item);
+                        }
+                        if (!items.isEmpty()) {
+                            menuItem.add(new Separator());
+                        }
+                        JMenuItem fileItem = new JMenuItem(LBL_NewFileAction_File_PopupName(), (Icon) getValue(Action.SMALL_ICON));
+                        fileItem.addActionListener(menuListener);
+                        fileItem.putClientProperty(TEMPLATE_PROPERTY, null);
+                        menuItem.add(fileItem);
+                    }
+                });
+            }
+        });
     }
 
     private void fillNonProjectSubMenu(JMenu menuItem) {
@@ -311,7 +341,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         for( int i = 0; i < templates.length; i++ ) {
             Node n = templates[i].getNodeDelegate();
             JMenuItem item = new JMenuItem(
-                MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { n.getDisplayName() } ),
+                    LBL_NewFileAction_Template_PopupName(n.getDisplayName()),
                                       new ImageIcon( n.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
             item.addActionListener( menuListener );
             item.putClientProperty( TEMPLATE_PROPERTY, templates[i] );
@@ -352,7 +382,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
         @Override
         public JMenuItem getPopupPresenter() {
-            return new DynaMenu(POPUP_NAME);
+            return new DynaMenu(LBL_NewFileAction_PopupName());
         }
 
         @Override

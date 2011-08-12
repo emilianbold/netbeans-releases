@@ -246,6 +246,10 @@ public class Hk2PluginProperties {
             // TODO: find jar that doesn't include Jersey impl gunk...
             jars.add("jersey-core"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
+            // work around http://java.net/jira/browse/GLASSFISH-16919
+            //  remove this once the javaee.jar manifest is corrected
+            jars.add("javax.mail"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);
                 if ((jar != null) && (jar.exists()))  {

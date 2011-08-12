@@ -67,19 +67,19 @@ import org.openide.util.NbBundle;
 
 class CustomComponentVisualPanel extends JPanel {
 
-    public static final String PROP_PROJECT_NAME = "projectName";
-    public static final String BROWSE = "BROWSE";
-    public static final String LBL_SELECT_LOCATION_DLG = "LBL_SelectProjectLocation";
+    public static final String PROP_PROJECT_NAME = "projectName";    // NOI18N
+    public static final String BROWSE = "BROWSE";    // NOI18N
+    public static final String LBL_SELECT_LOCATION_DLG = "LBL_SelectProjectLocation";    // NOI18N
     //messages
-    public static final String MSG_NAME_CANNOT_BE_EMPTY = "MSG_NameCannotBeEmpty";
-    public static final String MSG_LOCATION_CANNOT_BE_EMPTY = "MSG_LocationCannotBeEmpty";
-    public static final String MSG_LOCATION_MUST_EXIST = "MSG_LocationMustExist";
-    public static final String MSG_IS_NOT_DIRECTORY = "MSG_IsNotAFolder";
-    public static final String MSG_CANT_CREATE_FOLDER = "MSG_CanNotCreateFolder";
-    public static final String MSG_ILLEGAL_FOLDER_PATH = "MSG_IllegalFolderPath";
-    public static final String MSG_FOLDER_EXISTS = "MSG_ProjectFolderExists";
+    public static final String MSG_NAME_CANNOT_BE_EMPTY = "MSG_NameCannotBeEmpty";    // NOI18N
+    public static final String MSG_INVALID_PROJECT_NAME = "MSG_InvalidProjectName";    // NOI18N
+    public static final String MSG_LOCATION_MUST_EXIST = "MSG_LocationMustExist";    // NOI18N
+    public static final String MSG_IS_NOT_DIRECTORY = "MSG_IsNotAFolder";    // NOI18N
+    public static final String MSG_CANT_CREATE_FOLDER = "MSG_CanNotCreateFolder";    // NOI18N
+    public static final String MSG_ILLEGAL_FOLDER_PATH = "MSG_IllegalFolderPath";    // NOI18N
+    public static final String MSG_FOLDER_EXISTS = "MSG_ProjectFolderExists";    // NOI18N
     //default values
-    public static final String TXT_DEFAULT_PROJECT_NAME = "TXT_DefaultProjectName";
+    public static final String TXT_DEFAULT_PROJECT_NAME = "TXT_DefaultProjectName";    // NOI18N
 
     public static final String ACSN_PROJECT_PANEL = "ACSN_ProjectPanel";    // NOI18N
     public static final String ACSD_PROJECT_PANEL = "ACSD_ProjectPanel";    // NOI18N
@@ -88,7 +88,7 @@ class CustomComponentVisualPanel extends JPanel {
         initComponents();
         this.myPanel = panel;
         
-        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(CustomComponentVisualPanel.class, "TXT_MobileDesigner"));
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(CustomComponentVisualPanel.class, "TXT_MobileDesigner"));    // NOI18N
         initDocumentListeners();
         attachDocumentListeners();
 
@@ -240,7 +240,7 @@ class CustomComponentVisualPanel extends JPanel {
     }
 
     private boolean isProjectNameValid(){
-        if (getProjectNameValue().trim().length() == 0) {
+        if (isIllegalName(getProjectNameValue().trim())) {
             setError(getMessage(MSG_NAME_CANNOT_BE_EMPTY));
             return false;
         }
@@ -252,7 +252,7 @@ class CustomComponentVisualPanel extends JPanel {
         File f = FileUtil.normalizeFile(
                 new File(projectLocation).getAbsoluteFile());
         if (projectLocation.length() == 0){
-            setError(getMessage(MSG_LOCATION_CANNOT_BE_EMPTY));
+            setError(getMessage(MSG_INVALID_PROJECT_NAME));
             return false;
         } else if (!f.exists()){
             setError(getMessage(MSG_LOCATION_MUST_EXIST));
@@ -654,4 +654,14 @@ class CustomComponentVisualPanel extends JPanel {
     private DocumentListener nameDL;
     private DocumentListener locationDL;
     private ActionListener isMainAL;
+
+    static boolean isIllegalName(final String name) {
+        return name.length() == 0      || 
+            name.indexOf('/')  >= 0 ||        //NOI18N
+            name.indexOf('\\') >= 0 ||        //NOI18N
+            name.indexOf(':')  >= 0 ||        //NOI18N
+            name.indexOf("\"") >= 0 ||        //NOI18N
+            name.indexOf('<')  >= 0 ||        //NOI18N
+            name.indexOf('>')  >= 0;          //NOI18N
+    }
 }

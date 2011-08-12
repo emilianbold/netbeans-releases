@@ -43,21 +43,21 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.listener;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.j2ee.impl.icons.JavaEEIcons;
+import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ListenerNode extends JavaClassNode {
+public class ListenerNode extends ClassNode {
     /** Creates a new instance of ServletNode */
-    public ListenerNode(ClasspathInfo cpInfo, TypeElement classElement, ContainerNode parent) {
-        super(cpInfo, Utils.LISTENER_ICON, classElement, parent);
+    public ListenerNode(SourceClassInfo clz, ContainerNode parent) {
+        super(clz, clz.getQualifiedName(), Icons.getIcon(JavaEEIcons.LISTENER), parent);
     }
 
     @Override

@@ -42,6 +42,7 @@
 
 package org.netbeans.core.osgi;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -159,7 +160,7 @@ class OSGiRepository extends Repository {
         private final Layers layers;
         private final Lookup.Result<FileSystem> dynamic = Lookup.getDefault().lookupResult(FileSystem.class);
 
-        @SuppressWarnings("LeakingThisInConstructor")
+        @SuppressWarnings({"LeakingThisInConstructor", "deprecation"})
         SFS() {
             dynamic.addLookupListener(this);
             layers = new Layers();
@@ -181,6 +182,11 @@ class OSGiRepository extends Repository {
                 userdir = FileUtil.createMemoryFileSystem();
             }
             resetAll();
+            try {
+                setSystemName("SystemFileSystem");
+            } catch (PropertyVetoException x) {
+                throw new AssertionError(x);
+            }
         }
 
         private synchronized void addLayers(URL... resources) {

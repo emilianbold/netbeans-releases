@@ -235,49 +235,49 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
         tfURL.setEditable(false);
         tfURL.setToolTipText(bundle.getString("TTT_TF_Resolved_URL")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout pSettingsLayout = new org.jdesktop.layout.GroupLayout(pSettings);
+        javax.swing.GroupLayout pSettingsLayout = new javax.swing.GroupLayout(pSettings);
         pSettings.setLayout(pSettingsLayout);
         pSettingsLayout.setHorizontalGroup(
-            pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pSettingsLayout.createSequentialGroup()
-                .add(pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pSettingsLayout.createSequentialGroup()
+            pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pSettingsLayout.createSequentialGroup()
+                .addGroup(pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pSettingsLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(fileLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(tfFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))
-                    .add(pSettingsLayout.createSequentialGroup()
-                        .add(pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(pSettingsLayout.createSequentialGroup()
+                        .addComponent(fileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(tfFileName, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))
+                    .addGroup(pSettingsLayout.createSequentialGroup()
+                        .addGroup(pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pSettingsLayout.createSequentialGroup()
                                 .addContainerGap()
-                                .add(urlLabel))
-                            .add(pSettingsLayout.createSequentialGroup()
-                                .add(9, 9, 9)
-                                .add(lineNumLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(tfLineNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
-                            .add(tfURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))))
+                                .addComponent(urlLabel))
+                            .addGroup(pSettingsLayout.createSequentialGroup()
+                                .addGap(9, 9, 9)
+                                .addComponent(lineNumLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tfLineNumber, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+                            .addComponent(tfURL, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
-        pSettingsLayout.linkSize(new java.awt.Component[] {fileLabel, lineNumLabel, urlLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        pSettingsLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {fileLabel, lineNumLabel, urlLabel});
 
         pSettingsLayout.setVerticalGroup(
-            pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pSettingsLayout.createSequentialGroup()
-                .add(pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(fileLabel)
-                    .add(tfFileName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(8, 8, 8)
-                .add(pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(tfURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(pSettingsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lineNumLabel)
-                    .add(tfLineNumber, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pSettingsLayout.createSequentialGroup()
+                .addGroup(pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fileLabel)
+                    .addComponent(tfFileName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
+                .addGroup(pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(urlLabel)
+                    .addComponent(tfURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(pSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lineNumLabel)
+                    .addComponent(tfLineNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         fileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "L_Line_Breakpoint_File_Name")); // NOI18N
@@ -285,7 +285,8 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
         tfFileName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ File")); // NOI18N
         tfFileName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name_Description")); // NOI18N
         lineNumLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "ACSD_L_Line_Breakpoint_Line_Number")); // NOI18N
-        lineNumLabel.getAccessibleContext().setAccessibleDescription("null");
+        java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle"); // NOI18N
+        lineNumLabel.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_L_Line_Breakpoint_Line_Number")); // NOI18N
         tfLineNumber.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ LineNumber")); // NOI18N
         tfLineNumber.getAccessibleContext().setAccessibleDescription(bundle.getString("A11Y_TF_LineNumber_Desc")); // NOI18N
         tfURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ ResolvedURL")); // NOI18N

@@ -161,10 +161,19 @@ public class CreationFactory {
     {
         CreationDescriptor cd = getDescriptor(cls);
         Object cl = UIManager.get("ClassLoader"); // NOI18N
+        ClassLoader uiCl = (cl instanceof ClassLoader) ? (ClassLoader)cl : null;
         ClassLoader systemCl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
-        if (cl == systemCl) { // System classloader doesn't help to load user classes like JXLoginPanel
-            UIManager.put("ClassLoader", null); // NOI18N
+        ClassLoader beanCl = cls.getClassLoader();
+        java.util.List<ClassLoader> loaders = new ArrayList<ClassLoader>();
+        if (beanCl != null) {
+            loaders.add(beanCl);
         }
+        loaders.add(systemCl);
+        if (uiCl != null) {
+            loaders.add(uiCl);
+        }
+        ClassLoader newCl = new MultiClassLoader(loaders.toArray(new ClassLoader[loaders.size()]));
+        UIManager.put("ClassLoader", newCl); // NOI18N
         Object instance = cd != null ?
                               cd.createDefaultInstance() :
                               cls.newInstance();

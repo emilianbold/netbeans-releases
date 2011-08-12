@@ -119,8 +119,15 @@ class TreeTableModelAdapter extends NodeTableModel {
 
     @Override
     public Object getValueAt(int row, int column) {
-        return (column == 0) ? tree.getPathForRow(row).getLastPathComponent()
-                             : nodeTableModel.getPropertyFor(nodeForRow(row), propertyForColumn(column));
+        if (column == 0) {
+            TreePath path = tree.getPathForRow(row);
+            if (path == null) {
+                throw new IndexOutOfBoundsException("row " + row + " vs. count " + tree.getRowCount() + " with UI " + tree.getUI());
+            }
+            return path.getLastPathComponent();
+        } else {
+            return nodeTableModel.getPropertyFor(nodeForRow(row), propertyForColumn(column));
+        }
     }
 
     @Override

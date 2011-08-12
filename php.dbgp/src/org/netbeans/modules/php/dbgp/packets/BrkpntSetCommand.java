@@ -106,8 +106,6 @@ public class BrkpntSetCommand extends DbgpCommand {
     
     private static final String EXCEPTION_ARG   = "-x";                 // NOI18N
 
-    protected static final String SPACE         = " ";                  // NOI18N
-
     BrkpntSetCommand( String transactionId ) {
         this( BREAKPOINT_SET , transactionId );
     }
@@ -181,10 +179,12 @@ public class BrkpntSetCommand extends DbgpCommand {
         myHitCondition = condition;
     }
     
+    @Override
     protected String getData(){
         return myExpression;
     }
     
+    @Override
     protected String getArguments() {
         assert myType != null;
         StringBuilder builder = new StringBuilder();

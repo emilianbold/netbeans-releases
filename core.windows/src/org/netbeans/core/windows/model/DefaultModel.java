@@ -796,6 +796,12 @@ final class DefaultModel implements Model {
             return null;
         }
     }
+
+    @Override
+    public final void setModeName(ModeImpl mode, String name) {
+        ModeModel modeModel = getModelForMode(mode);
+        modeModel.setName(name);
+    }
     
     /** Gets bounds. */
     @Override

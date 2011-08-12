@@ -10,20 +10,31 @@ package simplej2seapp;
  * @author pflaska
  */
 public class Main extends Object {
+    
+    public static final int a = 4;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        System.out.println(a);
     }
 
     static class A extends Main {
+        public static void main(String[] args) {
+            System.out.println(a);
+        }
     }
 
     static class B extends Main {
+        public static void main(String[] args) {
+            System.out.println(a);
+        }
     }
 
     static class Aa extends A {
+        public static void main(String[] args) {
+            System.out.println(a);
+        }
     }
 }

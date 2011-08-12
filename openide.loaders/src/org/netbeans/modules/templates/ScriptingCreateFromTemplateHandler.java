@@ -64,6 +64,9 @@ import org.openide.util.lookup.ServiceProvider;
 */
 @ServiceProvider(service=CreateFromTemplateHandler.class)
 public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandler {
+
+    public static final String SCRIPT_ENGINE_ATTR = "javax.script.ScriptEngine";
+    
     private static ScriptEngineManager manager;
     
     private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
@@ -121,7 +124,7 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
     }
     
     private static ScriptEngine engine(FileObject fo) {
-        Object obj = fo.getAttribute("javax.script.ScriptEngine"); // NOI18N
+        Object obj = fo.getAttribute(SCRIPT_ENGINE_ATTR); // NOI18N
         if (obj instanceof ScriptEngine) {
             return (ScriptEngine)obj;
         }

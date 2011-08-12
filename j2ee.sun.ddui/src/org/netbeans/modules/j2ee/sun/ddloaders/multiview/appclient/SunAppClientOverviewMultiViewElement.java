@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,6 +54,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
  */
 public class SunAppClientOverviewMultiViewElement extends DDMultiViewElement {
 
+    private static final long serialVersionUID = 20110810L;
+
     /**
      * Creates a new instance of DDMultiViewElement
      */
@@ -61,6 +63,7 @@ public class SunAppClientOverviewMultiViewElement extends DDMultiViewElement {
         super(dataObject);
     }
 
+    @Override
     protected SectionView createView() {
         return new SunAppClientView(dataObject);
     }

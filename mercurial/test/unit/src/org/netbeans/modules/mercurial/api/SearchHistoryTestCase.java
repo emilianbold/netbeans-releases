@@ -48,7 +48,7 @@ import java.io.IOException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-import org.netbeans.modules.mercurial.AbstractHgTest;
+import org.netbeans.modules.mercurial.AbstractHgTestCase;
 import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,7 +59,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author ondra
  */
-public class SearchHistoryTestCase extends AbstractHgTest {
+public class SearchHistoryTestCase extends AbstractHgTestCase {
 
     private File dataRootDir;
     private File wc;

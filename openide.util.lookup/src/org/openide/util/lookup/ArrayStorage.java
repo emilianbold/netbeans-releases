@@ -56,8 +56,6 @@ import org.openide.util.lookup.AbstractLookup.Pair;
  */
 final class ArrayStorage extends Object
 implements AbstractLookup.Storage<ArrayStorage.Transaction> {
-    /** default trashold */
-    static final Integer DEFAULT_TRASH = new Integer(11);
 
     /** list of items */
     private Object content;
@@ -68,7 +66,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
     /** Constructor
      */
     public ArrayStorage() {
-        this(DEFAULT_TRASH);
+        this(/*default threshold*/11);
     }
 
     /** Constructs new ArrayStorage */

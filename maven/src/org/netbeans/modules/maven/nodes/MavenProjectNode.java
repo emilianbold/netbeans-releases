@@ -157,7 +157,7 @@ public class MavenProjectNode extends AbstractNode {
 
     @Override
     public String getShortDescription() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         String desc;
         if (project.isErrorPom(project.getOriginalMavenProject())) {
             desc = NbBundle.getMessage(MavenProjectNode.class, "TXT_FailedProjectLoadingDesc");
@@ -185,7 +185,7 @@ public class MavenProjectNode extends AbstractNode {
     }
 
     private String breakPerLine(String string, int start) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         StringTokenizer tok = new StringTokenizer(string, " ", true);//NOI18N
         int charCount = start;
         while (tok.hasMoreTokens()) {

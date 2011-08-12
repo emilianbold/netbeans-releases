@@ -52,6 +52,7 @@ implements PropertyChangeListener, ContextAwareAction {
     }
 
     final Map map;
+    private final AlwaysEnabledAction parent;
     ActionListener delegate;
     final Lookup context;
     final Object equals;
@@ -61,12 +62,13 @@ implements PropertyChangeListener, ContextAwareAction {
         this.map = m;
         this.context = null;
         this.equals = this;
+        parent = null;
     }
 
-    AlwaysEnabledAction(Map m, ActionListener delegate, Lookup context, Object equals) {
+    AlwaysEnabledAction(Map m, AlwaysEnabledAction parent, Lookup context, Object equals) {
         super();
         this.map = m;
-        this.delegate = bindToContext(delegate, context);
+        this.parent = parent;
         this.context = context;
         this.equals = equals;
     }
@@ -82,11 +84,17 @@ implements PropertyChangeListener, ContextAwareAction {
 
     protected ActionListener getDelegate() {
         if (delegate == null) {
-            Object listener = map.get("delegate"); // NOI18N
-            if (!(listener instanceof ActionListener)) {
-                throw new NullPointerException();
+            ActionListener al;
+            if (parent == null) {
+                Object listener = map.get("delegate"); // NOI18N
+                if (!(listener instanceof ActionListener)) {
+                    throw new NullPointerException();
+                }
+                al = (ActionListener) listener;
+            } else {
+                al = parent.getDelegate();
             }
-            delegate = bindToContext((ActionListener)listener, context);
+            delegate = bindToContext(al, context);
             if (delegate instanceof Action) {
                 Action actionDelegate = (Action) delegate;
                 actionDelegate.addPropertyChangeListener(this);
@@ -255,7 +263,7 @@ implements PropertyChangeListener, ContextAwareAction {
     }
 
     public Action createContextAwareInstance(Lookup actionContext) {
-        return new AlwaysEnabledAction(map, delegate, actionContext, equals);
+        return new AlwaysEnabledAction(map, this, actionContext, equals);
     }
 
     static final class CheckBox extends AlwaysEnabledAction
@@ -286,8 +294,8 @@ implements PropertyChangeListener, ContextAwareAction {
             super(m);
         }
 
-        CheckBox(Map m, ActionListener delegate, Lookup context, Object equals) {
-            super(m, delegate, context, equals);
+        CheckBox(Map m, AlwaysEnabledAction parent, Lookup context, Object equals) {
+            super(m, parent, context, equals);
         }
 
         @Override
@@ -338,7 +346,7 @@ implements PropertyChangeListener, ContextAwareAction {
 
         @Override
         public Action createContextAwareInstance(Lookup actionContext) {
-            return new CheckBox(map, delegate, actionContext, equals);
+            return new CheckBox(map, this, actionContext, equals);
         }
 
         private boolean isPreferencesSelected() {

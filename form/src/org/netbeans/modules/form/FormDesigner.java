@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.jdesktop.layout.Baseline;
 import org.jdesktop.layout.LayoutStyle;
 
+import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.openide.DialogDisplayer;
@@ -81,6 +82,7 @@ import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
 import org.openide.filesystems.FileObject;
+import org.openide.util.actions.SystemAction;
 
 
 /**
@@ -100,7 +102,7 @@ import org.openide.filesystems.FileObject;
 
 public class FormDesigner {
     static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
-    static final String PROP_TOP_DESIGN_COMPONENT = "topDesignComponent"; // NOI18N
+    public static final String PROP_TOP_DESIGN_COMPONENT = "topDesignComponent"; // NOI18N
 
     // UI components composition
     private JComponent canvasRoot;
@@ -515,7 +517,7 @@ public class FormDesigner {
         return topDesignComponent;
     }
 
-    boolean isTopRADComponent() {
+    public boolean isTopRADComponent() {
         RADComponent topMetaComp = formModel.getTopRADComponent();
         return topMetaComp != null && topMetaComp == topDesignComponent;
     }
@@ -533,6 +535,15 @@ public class FormDesigner {
             updateWholeDesigner();
         }
         firePropertyChange(PROP_TOP_DESIGN_COMPONENT, old, component);
+        updateTestAction();
+    }
+
+    // Issue 200631. It would be much better if TestAction was observing
+    // FormDesigner, but there is no way (currently) to observe selectedDesigner
+    // and I not sure it is worth introducing just for this use case.
+    private static void updateTestAction() {
+        TestAction testAction = SystemAction.get(TestAction.class);
+        testAction.updateEnabled();
     }
 
     private void highlightTopDesignComponentName(boolean bl) {
@@ -611,7 +622,8 @@ public class FormDesigner {
             new Mutex.ExceptionAction () {
                 @Override
                 public Object run() throws Exception {
-                    VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), null);
+                    FormModel formModel = metacomp.getFormModel();
+                    VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), FormEditor.getBindingSupport(formModel));
                     r.setTopMetaComponent(metacomp);
                     Object container = r.createClone();
                     if (container instanceof RootPaneContainer) {
@@ -1742,7 +1754,7 @@ public class FormDesigner {
     
     // --------
 
-    static void setSelectedDesigner(FormDesigner designer, boolean select) {
+    public static void setSelectedDesigner(FormDesigner designer, boolean select) {
         if (select) {
             selectedDesigner = designer;
             FormEditor formEditor = designer.getFormEditor();
@@ -1754,6 +1766,7 @@ public class FormDesigner {
             ComponentInspector.getInstance().setFormDesigner(null);
             PaletteUtils.setContext(null);
         }
+        updateTestAction();
     }
 
     public static FormDesigner getSelectedDesigner() {

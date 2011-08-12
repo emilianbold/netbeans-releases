@@ -115,6 +115,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         return new WinClassicViewTabDisplayerUI((TabDisplayer) c);
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -127,6 +128,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
     /**
      * adds painting of overall border
      */
+    @Override
     public void paint(Graphics g, JComponent c) {
 
         ColorUtil.setupAntialiasing(g);
@@ -152,6 +154,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         g.drawLine(0, r.height - 1, r.width - 1, r.height - 1);
     }
     
+    @Override
     protected Font getTxtFont() {
         if (isGenericUI) {
             Font result = UIManager.getFont("controlFont");
@@ -162,6 +165,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         return super.getTxtFont();
     }     
 
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         // substract lower border
@@ -175,14 +179,21 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             Component buttons = getControlButtons();
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
-                txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2+1 );
+                if( width < buttonsSize.width+ICON_X_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    txtWidth = width - (buttonsSize.width + ICON_X_PAD + TXT_X_PAD);
+                    buttons.setLocation( x + txtWidth+TXT_X_PAD, y + (height-buttonsSize.height)/2+1 );
+                }
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
         }
-        // draw bump (dragger)
-        drawBump(g, index, x + 4, y + 6, BUMP_WIDTH, height - 8);
+        if( isUseStretchingTabs() ) {
+            // draw bump (dragger)
+            drawBump(g, index, x + 4, y + 6, BUMP_WIDTH, height - 8);
+        }
         
         // draw text in right color
         Color txtC = UIManager.getColor("TabbedPane.foreground"); //NOI18N
@@ -194,6 +205,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
                                       
@@ -216,6 +228,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         g.translate(-x, -y);
     }
 
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         // substract lower border
@@ -288,7 +301,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         }
     }
 
-    private static final Color getSelGradientColor() {
+    private static Color getSelGradientColor() {
         if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
             return GTK_TABBED_PANE_BACKGROUND_1; // #68200
         } else {
@@ -296,7 +309,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         }
     }
     
-    private static final Color getSelGradientColor2() {
+    private static Color getSelGradientColor2() {
         return UIManager.getColor("TabbedPane.background"); // NOI18N
     }
 
@@ -340,9 +353,24 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();

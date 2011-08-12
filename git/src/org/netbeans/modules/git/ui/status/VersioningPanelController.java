@@ -105,12 +105,13 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private final VCSStatusTable<GitStatusNode> syncTable;
     private Mode mode;
     private GitProgressSupport refreshStatusSupport;
+    private final ModeKeeper modeKeeper;
 
     VersioningPanelController () {
         this.panel = new VersioningPanel();
-
+        modeKeeper = new ModeKeeper();
         initPanelMode();
-        syncTable = new GitStatusTable(new VCSStatusTableModel<GitStatusNode>(new GitStatusNode[0]));
+        syncTable = new GitStatusTable(new VCSStatusTableModel<GitStatusNode>(new GitStatusNode[0]), modeKeeper);
         setVersioningComponent(syncTable.getComponent());
         
         attachListeners();
@@ -193,17 +194,17 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             mode = Mode.HEAD_VS_WORKING_TREE;
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadWorking")); // NOI18N
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
-            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            modeKeeper.setMode(mode);
         } else if (panel.tgbHeadVsIndex.isSelected()) {
             mode = Mode.HEAD_VS_INDEX;
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadIndex")); // NOI18N
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
-            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            modeKeeper.setMode(mode);
         } else {
             mode = Mode.INDEX_VS_WORKING_TREE;
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_IndexWorking")); // NOI18N
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
-            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            modeKeeper.setMode(mode);
         }
     }
 
@@ -420,6 +421,22 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     }
                 }
             });
+        }
+    }
+
+    static class ModeKeeper {
+        private Mode selectedMode;
+
+        private ModeKeeper () {
+        }
+
+        void storeMode () {
+            GitModuleConfig.getDefault().setLastUsedModificationContext(selectedMode);
+        }
+
+        private void setMode (Mode mode) {
+            this.selectedMode = mode;
+            storeMode();
         }
     }
 }

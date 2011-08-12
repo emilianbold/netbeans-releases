@@ -45,6 +45,7 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -52,6 +53,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
+import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -84,6 +86,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
 import org.openide.windows.TopComponent;
@@ -116,6 +119,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     
     private TabControlButton btnClose;
     private TabControlButton btnAutoHidePin;
+    private TabControlButton btnMinimizeMode;
     
     /** Pin action */
     private final Action pinAction = new PinAction();
@@ -134,17 +138,13 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         ToolTipManager.sharedInstance().registerComponent(displayer);
         controller = createController();
         dataModel = displayer.getModel();
-        if (Boolean.getBoolean("winsys.non_stretching_view_tabs")) {
-            ViewTabLayoutModel2.PaddingInfo padding = new ViewTabLayoutModel2.PaddingInfo();
-            padding.iconsXPad = 5;
-            padding.txtIconsXPad = 10;
-            padding.txtPad = new Dimension(5, 2);
-            layoutModel = new ViewTabLayoutModel2(displayer, padding);
-        } else {
-            layoutModel = new ViewTabLayoutModel(dataModel, c);
-        }
         dataModel.addChangeListener (controller);
         dataModel.addComplexListDataListener(controller);
+        layoutModel = createLayoutModel();
+        if( !Boolean.getBoolean("winsys.non_stretching_view_tabs") && !isUseStretchingTabs() ) {
+            btnMinimizeMode = TabControlButtonFactory.createSlideGroupButton( displayer );
+            c.setLayout( new PinButtonLayout() );
+        }
         displayer.addPropertyChangeListener (controller);
         selectionModel.addChangeListener (controller);
         displayer.addMouseListener(controller);
@@ -153,14 +153,36 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         dataModel.addChangeListener( new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                showHidePinButton();
+                showHideControlButtons();
                 if( null != dataModel )
                     dataModel.removeChangeListener( this );
             }
         });
     }
     
-    void showHidePinButton() {
+    /**
+     * Creates model to layout the tabs out within the displayer.
+     * 
+     * @return New instance of a model to calculate tab sizes.
+     * @since 1.27
+     */
+    protected TabLayoutModel createLayoutModel() {
+        if (Boolean.getBoolean("winsys.non_stretching_view_tabs")) {
+            ViewTabLayoutModel2.PaddingInfo padding = new ViewTabLayoutModel2.PaddingInfo();
+            padding.iconsXPad = 5;
+            padding.txtIconsXPad = 10;
+            padding.txtPad = new Dimension(5, 2);
+            return new ViewTabLayoutModel2(displayer, padding);
+        } else if( isUseStretchingTabs() ) {
+            return new ViewTabLayoutModel(dataModel, displayer);
+        } else {
+            btnMinimizeMode = TabControlButtonFactory.createSlideGroupButton( displayer );
+            displayer.setLayout( new PinButtonLayout() );
+            return new NonStretchingViewTabLayoutModel(dataModel, displayer);
+        }
+    }
+    
+    void showHideControlButtons() {
         Component tabComponent = null;
         boolean tcSlidingEnabled = true;
         boolean tcClosingEnabled = true;
@@ -186,9 +208,11 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected void installControlButtons() {
         if( null != getControlButtons() )
             displayer.add( getControlButtons() );
+        if( null != btnMinimizeMode )
+            displayer.add( btnMinimizeMode );
     }
     
-    private static final int ICON_X_PAD = 1;
+    private static final int ICON_X_PAD = 4;
 
     /**
      * @return A component that holds all control buttons (maximize/restor, 
@@ -202,25 +226,15 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
             int width = 0;
             int height = 0;
-            //create maximize/restore button
-//            if( null != displayer.getWinsysInfo() ) {
-//                btnMaximizeRestore = TabControlButtonFactory.createMaximizeRestoreButton( displayer );
-//                buttonsPanel.add( btnMaximizeRestore );
-//                Icon icon = btnMaximizeRestore.getIcon();
-//                btnMaximizeRestore.setBounds( 0, 0, icon.getIconWidth(), icon.getIconHeight() );
-//                width += icon.getIconWidth();
-//            }
 
+            boolean showPin = null != displayer.getContainerWinsysInfo() && isUseStretchingTabs();
             //create autohide/pin button
-            if( null != displayer.getContainerWinsysInfo() ) {
-                btnAutoHidePin = TabControlButtonFactory.createSlidePinButton( displayer );
+            btnAutoHidePin = TabControlButtonFactory.createSlidePinButton( displayer );
+            if( showPin ) {
                 buttonsPanel.add( btnAutoHidePin );
 
                 Icon icon = btnAutoHidePin.getIcon();
-                if( 0 != width )
-                    width += ICON_X_PAD;
-                btnAutoHidePin.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
-                width += icon.getIconWidth();
+                height = icon.getIconHeight();
             }
 
             if( null == displayer.getContainerWinsysInfo() 
@@ -228,15 +242,25 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                 //create close button
                 btnClose = TabControlButtonFactory.createCloseButton( displayer );
                 buttonsPanel.add( btnClose );
-
+                
                 Icon icon = btnClose.getIcon();
-                if( 0 != width )
-                    width += ICON_X_PAD;
-                btnClose.setBounds( width, 0, icon.getIconWidth(), icon.getIconHeight() );
+                height = Math.max( height, icon.getIconHeight() );
+            }
+
+            if( showPin ) {
+                Icon icon = btnAutoHidePin.getIcon();
+                btnAutoHidePin.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
                 width += icon.getIconWidth();
-                height = icon.getIconHeight();
             }
             
+            if( null != btnClose ) {
+                if( 0 != width )
+                    width += ICON_X_PAD;
+                Icon icon = btnClose.getIcon();
+                btnClose.setBounds( width, height/2-icon.getIconHeight()/2, icon.getIconWidth(), icon.getIconHeight() );
+                width += icon.getIconWidth();
+            }
+                
             Dimension size = new Dimension( width, height );
             buttonsPanel.setMinimumSize( size );
             buttonsPanel.setSize( size );
@@ -280,6 +304,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         TabData tabData;
         int x, y, width, height;
         String text;
+        
+        paintDisplayerBackground( g, c );
 
         for (int i = 0; i < dataModel.size(); i++) {
             // gather data
@@ -319,6 +345,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
 
     protected final boolean isSelected(int index) {
+        if( index < 0 )
+            return false;
         return selectionModel.getSelectedIndex() == index;
     }
 
@@ -327,6 +355,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     }
 
     protected final boolean isFocused(int index) {
+        if( index < 0 )
+            return false;
         return isSelected(index) && isActive();
     }
 
@@ -394,6 +424,28 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
 
     protected abstract void paintTabBackground(Graphics g, int index, int x,
                                                int y, int width, int height);
+    
+    /**
+     * Paint the background when using non-stretching tabs.
+     * @param g
+     * @param c 
+     * @since 1.27
+     */
+    protected void paintDisplayerBackground( Graphics g, JComponent c ) {
+        int x;
+        int width;
+        if( !isUseStretchingTabs() ) {
+            x = 0;
+            width = c.getWidth();
+            if( dataModel.size() > 0 ) {
+                x += layoutModel.getX( dataModel.size()-1 );
+                x += layoutModel.getW( dataModel.size()-1 )-1;
+                width -= x;
+            }
+            paintTabBackground( g, -1, x, 0, width, c.getHeight());
+            paintTabBorder( g, -1, x, 0, width, c.getHeight());
+        }
+    }
 
 
 
@@ -604,6 +656,8 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
      * Determine if the tab should be flashing
      */
     protected boolean isAttention (int tab) {
+        if( tab < 0 )
+            return false;
         return (tabState.getState(tab) & TabState.ATTENTION) != 0;
     }
     
@@ -616,6 +670,21 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     @Override
     protected void cancelRequestAttention (int tab) {
         tabState.removeAlarmTab(tab);
+    }
+    
+    final boolean isUseStretchingTabs() {
+        if( Boolean.getBoolean("winsys.stretching_view_tabs") ) //NOI18N
+            return true;
+        if( displayer.getType() != TabDisplayer.TYPE_VIEW )
+            return true;
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo && winsysInfo.isSlidedOutContainer() )
+            return true;
+        return null == winsysInfo || !winsysInfo.isModeSlidingEnabled();
+    }
+    
+    int getModeButtonVerticalOffset() {
+        return 0;
     }
 
     /**
@@ -638,7 +707,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         @Override
         public void stateChanged (ChangeEvent ce) {
             displayer.repaint();
-            showHidePinButton();
+            showHideControlButtons();
         }
 
         @Override
@@ -781,6 +850,33 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             if( null != btnAutoHidePin ) {
                 btnAutoHidePin.performAction( null );
             }
+        }
+    }
+    
+    private final class PinButtonLayout implements LayoutManager {
+
+        @Override
+        public void addLayoutComponent( String name, Component comp ) {
+        }
+
+        @Override
+        public void removeLayoutComponent( Component comp ) {
+        }
+
+        @Override
+        public Dimension preferredLayoutSize( Container parent ) {
+            return parent.getPreferredSize();
+        }
+
+        @Override
+        public Dimension minimumLayoutSize( Container parent ) {
+            return parent.getPreferredSize();
+        }
+
+        @Override
+        public void layoutContainer( Container parent ) {
+            btnMinimizeMode.setBounds( 0, 0, btnMinimizeMode.getIcon().getIconWidth(), btnMinimizeMode.getIcon().getIconHeight());
+            btnMinimizeMode.setLocation( displayer.getWidth()-btnMinimizeMode.getWidth()-5, (displayer.getHeight()-btnMinimizeMode.getHeight())/2 + getModeButtonVerticalOffset());
         }
     }
 }

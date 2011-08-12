@@ -1,0 +1,346 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright (c) 2009 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>PHP Editor Tasks: Quick Reference</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+        <h2>PHP Editor Tasks: Quick Reference</h2>
+        <p>
+            This topic describes common tasks you perform in the NetBeans IDE PHP Editor. For more detailed information, click the links in the right column. </p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+               task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+            </tr>
+            <tr valign="top"> 
+                <td><a name="new-project"></a> Create a new PHP project.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File &gt; New Project (Ctrl-Shift-N). The New Project wizard opens.</li>
+                        <li>Choose PHP Application. You create a new PHP project with an empty index.php file.</li>
+                        <li>In the Name and Location panel, name the project. Set the project's location
+                            in the Sources Folder field. Note that you do not have to place the project in your
+                            web server's public folder. You can also store NetBeans metadata in a separate folder.</li>
+                        <li>In the Run Configuration page, set the default run configuration. Select whether to run 
+                            the application as a local web site, a <a href="#remote-config">remote web site</a>, 
+                            or a <a href="#script">command-line script</a>. If you are running the application 
+                            as a local web site, you can change the URL. If you have the sources in a different
+                            folder than your web server's public folder, copy the sources to your web server's public folder.</li>
+                        <li>In the Frameworks panel, you may select a <a href="#framework">framework</a>.</li>
+                    </ol>
+                    <p>For more information,
+                        see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/docs/php/project-setup.html">
+                            <param name="text" value="<html><u>Setting Up a PHP Project</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Import an existing local PHP application into a new NetBeans IDE PHP project.</td>
+                <td> 
+                    <ol>
+                        <li>Choose File &gt; New Project (Ctrl-Shift-N). The New Project wizard opens.</li>
+                        <li>Choose PHP Application from Existing Sources. </li>
+
+                    </ol>
+                    <p>For more information,
+                        see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/docs/php/project-setup.html">
+                            <param name="text" value="<html><u>Setting Up a PHP Project</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p>
+                </td>
+            </tr>
+
+            <tr valign="top">
+                <td><a name="run_config"></a>Add and set a run configuration.</td>
+                <td>All projects have a default run configuration. You set the default run configuration in the
+                    Run Configuration window of the New PHP Project wizards.<br>
+                    You can add additional run configurations to a PHP project. You can add an unlimited number of run
+                    configurations to a project. To add a run configuration to a project:
+                    <ol>
+                        <li>In the Projects window, right-click the project's node and choose Properties. The 
+                            Project Properties dialog opens. (Note: You can also select the project, go to the
+                        dropdown list of run configurations in the IDE's top toolbar and select Customize.)</li>
+                        <li>In the Categories pane, select Run Configuration. The Run Configuration properties open.<br>
+                            <img src="images/project-props-categories.png" alt="PHP project properties dialog, showing
+                                 Categories pane with Run Configuration chosen"></li>
+                        <li>To define a new run configuration, click New next to the Configuration 
+                            dropdown list.<br>
+                            <img src="images/project-props-runconfig.png" alt="PHP Run Configuration properties,
+                                 showing Configuration dropdown list and New button" ><br>
+                            The Create New Configuration dialog box opens.</li>
+                        <li>Give the configuration a meaningful name.</li>
+                        <li>In the Run As dropdown box, select whether to run the project as a local web site, a remote
+                            web site, or a script.</li>
+                        <li>Complete the Run Configuration dialog depending on the type of run configuration:
+                            <ul>
+                                <li>Local web site</li>
+                                <li><a href="#remote-config">Remote web site</a></li>
+                                <li><a href="#script">Script</a></li>
+                            </ul></li>
+                    </ol>
+                    <p>For more information,
+                        see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/docs/php/project-setup.html#run-configuration-panel">
+                            <param name="text" value="<html><u>Setting Up a PHP Project</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Select a run configuration.</td>
+                <td><ol><li>Select the project in the Projects window, or open any of the 
+                            project's files in the editor. The project's run configuration
+                        appears in the Set Project Configuration field in the top toolbar.</li>
+                        <li>Select another run configuration in the top toolbar. (Note: You can
+                        also select the run configuration in the Project Properties.)</li>
+                    </ol>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td><a name="script"></a>Run a PHP application as a script.</td>
+                <td>You can set the run configuration of a PHP project to run the application as a script.
+                    You can set either the default run configuration or add more run configurations.
+                    <ol>
+                        <li>If the project already exists, <a href="#run_config">add a run configuration</a>
+                            and specify that the run configuration runs as a script.<br>
+                            <img src="images/project-properties-script.png" alt="Project Properties dialog
+                                 showing Run Configuration properties, with Run As...Script selected" ></li>
+                        <li>To specify the location of the PHP engine, click the Configure 
+                            button next to the Use Default PHP Interpreter box. The PHP 
+                            Options dialog opens on the General tab. <br>
+                            <img src="images/php-options-as-script.png" alt="Options window open on PHP options,
+                                 General tab, showing relevant fields for running PHP as script"> </li>  
+                        <li>In the PHP 5 Interpreter field, specify the path to the php.exe file. 
+                        </li>
+                        <li>To specify how the script execution results will be shown, select the relevant checkbox in the Open Result In area. The following options are available:
+                            <ul>
+                                <li>Output Window. The results of executing a script will appear in the output window in the bottom of the NetBeans IDE window.</li>
+                                <li>Web Browser. The default browser window will open with the results of executing a script in the form of an HTML file.</li>
+                                <li>Editor. The results of executing a script will open as an HTML file in the IDE editor window.</li></ul>
+                        </li>
+                        <li>Click OK. The Options dialog box closes and the system returns to the Run Configuration panel. 
+                        </li>
+                    </ol>
+                    <p>For more information,
+                        see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/docs/php/project-setup.html#scriptCommandLine">
+                            <param name="text" value="<html><u>Setting Up a PHP Project</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p></td>
+            </tr>
+            <tr valign="top">
+                <td><a name="remote-config"></a>Import or create a remote PHP application over FTP/SFTP.</td>
+                <td>NetBeans provides basic support for FTP/SFTP, sufficient for a lone developer to work on
+                    a simple project. If you are working on a complicated project or with multiple developers,
+                    you should use a version control system. NetBeans IDE supports a number of version control
+                    systems and other collaborative development tools. See 
+                    <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/collab/collab_about.html">About
+                        Collaborative Development</a>. If you must use FTP/SFTP with a complicated project, consider
+                    using the IDE in combination with a full-featured FTP client, and editing the PHP project 
+                    in the IDE as a local web site.
+                    <p>To set up a remote PHP application over FTP/SFTP:</p>
+                    <ol>
+                        <li><p>If you are creating a NetBeans project for a PHP application on a remote server, 
+                                or a new project that uses a remote run configuration as default, launch New Project &gt;
+                                PHP &gt; PHP Application from Remote Server. The Remote Connection page opens.</p>
+                            <p>If you have an existing project and want to upload it to an FTP server, 
+                                <a href="#run_config">add a run configuration</a>
+                                to the project and specify that the run configuration runs as a remote
+                                web site. The Run Configuration dialog opens with Remote Connection fields.</p>
+                            <img alt="Project Properties for the Run Configuration category with Run As 
+                                 Remote Web Site chosen" src="images/ftp-run-config-blank.png"> </li>
+                        <li>If you do not have a preconfigured remote connection, click Manage next to the Remote
+                            Connections drop down box. The Manage Remote Connections dialog opens. Specify the new connection
+                            in this dialog. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                                <param name="content" value="http://www.netbeans.com/kb/docs/php/remote-hosting-and-ftp-account.html#specifyFTPConnectionSettings">
+                                <param name="text" value="<html><u>Specify FTP Connection Settings in Deploying a PHP Application on a Remote Web Server</u></html>">
+                                <param name="textFontSize" value="medium">
+                                <param name="textColor" value="blue">
+                            </object>.</li>
+                        <li>Select a remote connection from the Remote Connection drop-down list.</li>
+                        <li>In the Upload Directory field, enter the name of the subfolder in the 
+                            initial directory where the source files will be uploaded. The 
+                            prompt below the field shows the FTP host URL. </li>
+                        <li>Select whether to upload files manually, on save, or on run.</li>
+                        <li>Click Finish.</li>
+                    </ol>
+                    <p>For more information, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.com/kb/docs/php/remote-hosting-and-ftp-account.html">
+                            <param name="text" value="<html><u>Deploying a PHP Application on a Remote Web Server</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Debug a project.</td>
+                <td> To debug a project, you must have a debugger configured for your PHP environment. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                        <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
+                        <param name="text" value="<html><u>How to Configure XDebug NetBeans wiki page</u></html>">
+                        <param name="textFontSize" value="medium">
+                        <param name="textColor" value="blue">
+                    </object>.
+                    <ol>
+                        <li>Set breakpoints in the files you want to debug. To set a breakpoint, 
+                            left-click the line number or press Ctrl-F8.</li>
+                        <li>Right-click the project's node and choose Debug.</li>
+                        <li>To execute code line-by-line, press F7 (Step In). To cancel line-by-line execution,
+                            press Ctrl-F7 (Step Out). To skip to the next breakpoint, press F8 (Step Over). You
+                            can use the debugger toolbar instead of function keys.</li>
+                    </ol>
+                    <p>For more information, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/docs/php/debugging.html">
+                            <param name="text" value="<html><u>Debugging PHP Source Code in the NetBeans IDE</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>Use remote debugging or symbolic links.</td>
+                <td>NetBeans IDE for PHP provides Path Mapping to handle remote debugging 
+                    and symbolic links. Path mapping is set for a run configuration. To set up path mapping:
+                    <ol>
+                        <li>Right-click the project's node in the Projects Window and select 
+                            Properties. The Properties dialog opens.</li>
+                        <li>Select the Run Configuration category. The Run Configuration 
+                            options appear.</li>
+                        <li>Click the Advanced button. The Advanced Web Configuration dialog appears.
+                            <p><b>Note: </b>The Advanced button is not available on projects
+                                that run as scripts. Also note that you may need to expand the dialog screen
+                                to see the Advanced button.</p></li>
+                        <li>In the Advanced Web Configuration dialog, click New next to the Path Mapping
+                            table to add a Path Mapping.</li>
+                        <li>Select whether to use the default URL for debugging, to have the IDE ask you for
+                            the URL at the beginning of every debug session, or not to open a web browser automatically
+                            for each debug session.</li>
+                        <li>Set the debugger proxy, if any.</li>
+                    </ol>
+                    <p>For more information, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://blogs.oracle.com/netbeansphp/entry/path_mapping_in_php_debugger">
+                            <param name="text" value="<html><u>Path Mapping in PHP Debugger</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p></td>
+            </tr>
+            <tr valign="top">
+                <td><a name="framework"></a>Add framework support to a project.</td>
+                <td>You have to install the PHP framework separately. NetBeans currently supports Zend, Symfony, and Smarty
+                    frameworks. The Smarty framework support is community-contributed. To use framework support:
+                    <ol>
+                        <li>Go to Tools &gt; Plugins and install the plugin for the framework you want to use.</li>
+                        <li><a href="#new-project">Create a new PHP project</a>. In the last page of the New PHP
+                            Project wizard, select the framework you want to use. The IDE generates the project with the
+                            skeleton for the framework.</li>
+                        <li>To run a command for the framework, right-click the project's node in the Projects window
+                            and select [name of framework] &gt; Run command... You can set a shortcut for this in Tools &gt;
+                            Options &gt; Keymap.</li>
+                    </ol>
+                    <p>For more information, see the relevant screencast in the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/trails/php.html">
+                            <param name="text" value="<html><u>PHP Learning Trail</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object>.</p></td>
+            </tr>
+            <tr valign="top">
+                <td>Test a PHP project.</td>
+                <td>NetBeans Editor for PHP supports PHPUnit and Selenium. To use PHPUnit, you have to install PHPUnit
+                    separately. After you install PHPUnit, go to Tools &gt; Options &gt; PHP &gt; Unit Testing
+                    and put in the path to your PHPUnit executable file.
+                    <p>To use PHPUnit:</p>
+                    <ol>
+                        <li>Add some possible values to test in your code, using the PHPUnit @assert annotation
+                            in comment blocks.</li>
+                        <li>Right-click the file's node, or the parent Source Files node, in the Projects window 
+                            and select Tools &gt; Create PHPUnit Tests.</li>
+                        <li>Either test the entire project, by right-clicking the project's node and selecting
+                            Test (Alt-F6), or test an individual file, by right-clicking the file's node and selecting 
+                            Test (Ctrl-F6). The IDE shows results in the Test Results and Output windows.</li>
+                    </ol>
+                    <p>You can add code coverage to the test by right-clicking the project's node and selecting 
+                        Code Coverage &gt; Collect and Display Code Coverage.</p>
+                    <p>You can use the Selenium framework to test a project. Install the Selenium plugin for the IDE.
+                        To use Selenium, right-click the project's node and select New &gt; Other &gt; Selenium &gt;
+                        Selenium Test Case for PHP. Then right-click the project's node and select Run Selenium Tests.</p>
+                    <p>For more information, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                            <param name="content" value="http://www.netbeans.org/kb/docs/php/phpunit.html">
+                            <param name="text" value="<html><u>Testing with PHPUnit and Selenium</u></html>">
+                            <param name="textFontSize" value="medium">
+                            <param name="textColor" value="blue">
+                        </object></p>
+                </td>
+            </tr>
+            <tr valign="top" >
+                <td>Change tabs, alignments, spacing, color, or other code formatting in a project.</td>
+                <td>
+                    <p>Color and fonts are changed in general IDE options. Tabs, alignments, spacing, etc 
+                        can be changed either in general IDE options or for a specific project. </p>
+                    <p>To change color and fonts, go to Tools &gt; Options. The Options dialog opens. Select Fonts 
+                    and Colors. For help, press Help.</p>
+                    <p>To change tabs, alignments, or spacing:</p>
+                    <ol>
+                        <li>Right-click the project's node in the Projects window and select Properties. The
+                            Properties dialog opens.</li>
+                        <li>Select Formatting. The Formatting options appear.</li>
+                        <li>Select either global formatting options or project-specific formatting options. If you
+                            select project-specific formatting options, you can import these settings from another
+                            project.</li>
+                        <li>To change global formatting options, press Edit global options. This opens the Tools &gt;
+                            Options &gt; Editor dialog on the General tab. Change to the Formatting tab. The UI for
+                            this tab is identical to the UI for project-specific formatting options.</li>
+                        <li>Select whether to change general options for all languages, including HTML and CSS, or
+                            the PHP options.</li>
+                        <li>If you select the PHP language, choose Tabs and Indents, Spaces, Alignment, 
+                            Braces, Blank Lines, or Wrapping. You can change a number of options for each
+                            of these categories.</li>
+                    </ol>
+                    For more information, see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                        <param name="content" value="http://www.netbeans.com/kb/docs/php/project-setup.html#formatting">
+                        <param name="text" value="<html><u>Formatting section in Setting Up a PHP Project</u></html>">
+                        <param name="textFontSize" value="medium">
+                        <param name="textColor" value="blue">
+                    </object>.</td>
+            </tr>
+            <tr valign="top">
+                <td>Work with a file outside a project.</td>
+                <td><ul><li>To open the file, press File &gt; Open File... and browse to the file location.</li>
+                        <li>To run the file, press Shift-F6.</li>
+                        <li>To debug the file, press Ctrl-Shift-F5.</li>
+                    </ul>
+                </td>
+
+            </tr>
+            <tr>
+                <td>Add libraries and other files that are not source files to the PHP Project.</td>
+                <td><ol><li>Right-click the project's node in the Projects window. The 
+                            Project Properties dialog opens.</li>
+                        <li>Under Categories, select Include Path. The Include Path options appear.</li>
+                        <li>Click Add Folder. The Select Folder(s) dialog box opens.</li>
+                        <li>Select the relevant folders and click Open. You return to the PHP Include Path panel. The
+                            new folder is added to the list of included folders.</li>
+
+                    </ol></td>
+            </tr>
+        </table>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+    </body>
+</html>

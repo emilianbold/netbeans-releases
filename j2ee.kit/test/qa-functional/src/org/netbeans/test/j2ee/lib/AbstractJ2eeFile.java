@@ -55,6 +55,8 @@ package org.netbeans.test.j2ee.lib;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -104,9 +106,22 @@ abstract class AbstractJ2eeFile {
         boolean retVal = false;
         File f = new File(FileUtil.toFile(prjRoot), srcRoot);
         try {
-            File ff = new File(f, name);
+            final File ff = new File(f, name);
             //System.err.println(ff.getAbsolutePath());
             //System.err.println("srcEx: " + ff.exists());
+            Waiter waiter = new Waiter(new Waitable() {
+
+                @Override
+                public Object actionProduced(Object anObject) {
+                    return ff.exists() ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "file " + ff + " exists";
+                }
+            });
+            waiter.waitAction(null);
             retVal = ff.exists();
         } catch (Exception e) {
         }

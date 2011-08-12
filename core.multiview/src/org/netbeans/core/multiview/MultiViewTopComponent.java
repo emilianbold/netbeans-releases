@@ -152,7 +152,10 @@ public final class MultiViewTopComponent
         //TEMP don't delegate to element's actions..
         Action[] superActions = superActions4Tests == null ? super.getActions() : superActions4Tests;
         Action[] acts = peer.peerGetActions(superActions);
-        return acts;
+        Action[] myActions = new Action[acts.length + 2];
+        System.arraycopy(acts, 0, myActions, 0, acts.length);
+        myActions[acts.length + 1] = new EditorsAction();
+        return myActions;
     }
     
     /** Just for unit tests, allows to set actions coming from

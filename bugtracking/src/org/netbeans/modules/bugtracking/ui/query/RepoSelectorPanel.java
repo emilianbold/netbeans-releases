@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import java.awt.Dimension;
+import javax.swing.GroupLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.FocusEvent;
@@ -49,14 +51,12 @@ import java.awt.event.FocusListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.jdesktop.layout.Baseline;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  * Part of the {@code RepoPanel}. Contains the combo-box for selection
@@ -96,18 +96,18 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
         setLayout(layout = new GroupLayout(this));
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
-                        .add(repoSelectorLabel)
+                        .addComponent(repoSelectorLabel)
                         .addPreferredGap(RELATED)
-                        .add(repoSelector)
+                        .addComponent(repoSelector)
                         .addPreferredGap(RELATED)
-                        .add(newRepoButton));
+                        .addComponent(newRepoButton));
         layout.setVerticalGroup(
                 layout.createParallelGroup(BASELINE)
-                        .add(repoSelectorLabel)
-                        .add(repoSelector, DEFAULT_SIZE,
+                        .addComponent(repoSelectorLabel)
+                        .addComponent(repoSelector, DEFAULT_SIZE,
                                            DEFAULT_SIZE,
                                            PREFERRED_SIZE)
-                        .add(newRepoButton));
+                        .addComponent(newRepoButton));
     }
 
     /*
@@ -121,14 +121,18 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
     /*
      * To make it work correctly with GroupLayout.
      */
-    public int getBaselineResizeBehaviorInt() {
-        return Baseline.BRB_CONSTANT_ASCENT;
+    @Override
+    public BaselineResizeBehavior getBaselineResizeBehavior() {
+        return BaselineResizeBehavior.CONSTANT_ASCENT;
     }
 
     int getBaseline() {
-        int baseline = max(Baseline.getBaseline(repoSelectorLabel),
-                           Baseline.getBaseline(repoSelector),
-                           Baseline.getBaseline(newRepoButton))
+        Dimension lSize = repoSelectorLabel.getPreferredSize();
+        Dimension sSize = repoSelector.getPreferredSize();
+        Dimension bSize = newRepoButton.getPreferredSize();
+        int baseline = max(repoSelectorLabel.getBaseline(lSize.width, lSize.height),
+                           repoSelector.getBaseline(sSize.width, sSize.height),
+                           newRepoButton.getBaseline(bSize.width, bSize.height))
                        + getInsets().top;
         return baseline;
     }

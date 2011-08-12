@@ -78,7 +78,7 @@ public class PropertySplitter {
         
         
         public String nextPair() {
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             if (location >= line.length()) {
                 return null;
             }

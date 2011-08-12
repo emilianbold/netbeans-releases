@@ -256,6 +256,33 @@ public class AlwaysEnabledActionTest extends NbTestCase implements PropertyChang
 
         assertContextAware(a);
     }
+    public void testContextAwareActionsShareDelegate() throws Exception {
+        myListenerCounter = 0;
+        myIconResourceCounter = 0;
+        Action a = readAction("testDelegate.instance");
+
+        assertContextAware(a);
+        assertNull("No real action created yet", MyAction.last);
+        
+        Action cca1 = ((ContextAwareAction)a).createContextAwareInstance(new AbstractLookup(new InstanceContent()));
+        Action cca2 = ((ContextAwareAction)a).createContextAwareInstance(new AbstractLookup(new InstanceContent()));
+
+        cca1.actionPerformed(new ActionEvent(this, 0, "kuk"));
+        assertEquals("Action not invoked as it is disabled", 0, myListenerCalled);
+        assertNotNull("real action created", MyAction.last);
+        Action lastCca1 = MyAction.last;
+        
+        lastCca1.setEnabled(true);
+        cca1.actionPerformed(new ActionEvent(this, 0, "kuk"));
+        assertEquals("Action invoked as no longer disabled", 1, myListenerCalled);
+
+        cca2.actionPerformed(new ActionEvent(this, 0, "kuk"));
+
+        Action lastCca2 = MyAction.last;
+        assertEquals("MyAction created just once", lastCca1, lastCca2);
+        
+        assertEquals("Action invoked as it remains enabled", 2, myListenerCalled);
+    }
 
     public void testContextAwareDelegate() throws Exception {
         myListenerCounter = 0;

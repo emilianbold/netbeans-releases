@@ -381,7 +381,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             return tpe.getSimpleName().toString();
                     }
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, TYPE);
                         if (containsDeclaredType(tm))
@@ -395,7 +395,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = iterableElementType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, ITERABLE_ELEMENT_TYPE);
                         if (containsDeclaredType(tm))
@@ -407,7 +407,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, true);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, LEFT_SIDE_TYPE);
                         if (containsDeclaredType(tm))
@@ -419,7 +419,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = assignmentSideType(param.getInsertTextOffset() + 1, false);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, RIGHT_SIDE_TYPE);
                         if (containsDeclaredType(tm))
@@ -435,7 +435,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     return ""; //NOI18N
                 } else if (tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, CAST);
                         if (containsDeclaredType(tm))
@@ -455,7 +455,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 TypeMirror tm = uncaughtExceptionType(param.getInsertTextOffset() + 1);
                 if (tm != null && tm.getKind() != TypeKind.ERROR) {
                     tm = resolveCapturedType(tm);
-                    String value = Utilities.getTypeName(cInfo, tm, true).toString();
+                    String value = tm != null ? Utilities.getTypeName(cInfo, tm, true).toString() : null;
                     if (value != null) {
                         param2hints.put(param, UNCAUGHT_EXCEPTION_TYPE);
                         if (containsDeclaredType(tm))
@@ -617,7 +617,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                         StatementTree var = stmts.get(0);
                         if (var.getKind() == Tree.Kind.VARIABLE) {
                             tu.attributeTree(stmt, scope);
-                            return cInfo.getTrees().getTypeMirror(new TreePath(treePath, ((VariableTree)var).getType()));
+                            TypeMirror ret = cInfo.getTrees().getTypeMirror(new TreePath(treePath, ((VariableTree)var).getType()));
+                            if (ret != null)
+                                return ret;
                         }
                     }
                 }
@@ -763,6 +765,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             switch(e.getKind()) {
                                 case EXCEPTION_PARAMETER:
                                 case LOCAL_VARIABLE:
+                                case RESOURCE_VARIABLE:
                                 case PARAMETER:
                                     return element != e;
                                 default:
@@ -896,8 +899,8 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
                             final HashSet<Name> illegalForwardRefNames = new  HashSet<Name>();
                             for (Element element : illegalForwardRefs) {
-                                if (element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.EXCEPTION_PARAMETER ||
-                                        element.getKind() == ElementKind.PARAMETER)
+                                if (element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.RESOURCE_VARIABLE
+                                        || element.getKind() == ElementKind.EXCEPTION_PARAMETER || element.getKind() == ElementKind.PARAMETER)
                                     illegalForwardRefNames.add(element.getSimpleName());
                             }
                             final ExecutableElement method = scope.getEnclosingMethod();
@@ -907,6 +910,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case TYPE_PARAMETER:
                                         return true;
                                     case LOCAL_VARIABLE:
+                                    case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&

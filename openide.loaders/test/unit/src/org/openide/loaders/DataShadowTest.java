@@ -389,6 +389,14 @@ implements java.net.URLStreamHandlerFactory {
         shadow.setAttribute("originalFile", "path to orig");
         assertEquals("found the right original file", DataObject.find(orig), DataShadow.deserialize(shadow));
     }
+    public void testFindOriginalFromAnonymousFilesystemToSFS() throws Exception {
+        // Useful for dynamically injecting action registrations.
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        shadow.setAttribute("originalFile", getName() + "/folder/original.txt");
+        assertEquals("found the right original file", original, DataShadow.deserialize(shadow));
+        assertEquals("found the right original URL", original.getPrimaryFile().getURL(), DataShadow.readURL(shadow));
+    }
     
     private static Node.Property findProperty (Node n, String name) {
         Node.PropertySet[] arr = n.getPropertySets ();

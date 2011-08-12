@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -277,5 +279,26 @@ public class RemoteFileUtil {
             }
         }
         return fileChooser;
+    }
+
+    /**
+     * Returns the folder last used for creating a new project.
+     * @return File the folder, never returns null. In the case
+     * when the projects folder was not set the home folder is returned.
+     */
+    public static String getProjectsFolder (ExecutionEnvironment env) {
+        Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
+        String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+        return pref.get("ProjectPath"+envID, null); // NOI18N
+    }
+    /**
+     * Sets the folder last used for creating a new project.
+     * @param folder The folder to be set as last used. Must not be null
+     * @throws IllegalArgumentException if folder parameter is null or not a directory.
+     */
+    public static void setProjectsFolder (String folder, ExecutionEnvironment env) {
+        Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
+        String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+        pref.put("ProjectPath"+envID, folder); // NOI18N
     }
 }

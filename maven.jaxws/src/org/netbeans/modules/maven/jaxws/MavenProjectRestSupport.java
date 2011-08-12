@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
@@ -81,8 +82,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -212,16 +211,6 @@ public class MavenProjectRestSupport extends WebRestSupport {
         }
     }
 
-    private boolean platformHasRestLib(J2eePlatform j2eePlatform) {
-        if (j2eePlatform != null) {
-            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(j2eePlatform);
-            if (wsStack != null) {
-                return wsStack.isFeatureSupported(JaxRs.Feature.JAXRS);
-            }
-        }
-        return false;
-    }
-
     @Override
     public boolean hasSwdpLibrary() {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
@@ -257,31 +246,32 @@ public class MavenProjectRestSupport extends WebRestSupport {
         boolean addLibrary = false;
         if (!hasSwdpLibrary()) { //platform does not have rest-api library, so add defaults
             addLibrary = true;
-            Library apiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-            if (apiLibrary != null) {
-                addSwdpLibrary(classPathTypes, apiLibrary);
-            }  
+            boolean jsr311Added = false;
+            if (config != null && config.isServerJerseyLibSelected() ) {
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if ( support != null ){
+                    jsr311Added  = support.addJsr311Api(project);
+                }
+            }
+            if ( !jsr311Added ){
+                JaxRsStackSupport.getDefault().addJsr311Api(project);
+            }
         }
         
         if (config != null) {
             boolean added = false;
             if (config.isServerJerseyLibSelected()) {
-                added = addDeployableServerJerseyLibraries();
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if ( support != null ){
+                    added  = support.extendsJerseyProjectClasspath(project);
+                }
             }
             if (!added && config.isJerseyLibSelected()) {
-                Library swdpLibrary = LibraryManager.getDefault().getLibrary(
-                        SWDP_LIBRARY);
-                if (swdpLibrary != null) {
-                    addSwdpLibrary(classPathTypes, swdpLibrary);
-                }
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
             }
         }
         else if (addLibrary ){
-            Library swdpLibrary = LibraryManager.getDefault().getLibrary(
-                    SWDP_LIBRARY);
-            if (swdpLibrary != null) {
-                addSwdpLibrary(classPathTypes, swdpLibrary);
-            }
+            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
         }
     }
 

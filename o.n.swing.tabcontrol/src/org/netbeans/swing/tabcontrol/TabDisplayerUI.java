@@ -190,6 +190,26 @@ public abstract class TabDisplayerUI extends ComponentUI {
         displayer.postActionEvent(evt);
         return !evt.isConsumed();
     }
+    
+    /**
+     * Allows ActionListeners attached to the container to determine if the
+     * event should be acted on. Delegates to <code>displayer.postActionEvent()</code>.
+     * This method will create a TabActionEvent with the passed string as an 
+     * action command, and cause the displayer to fire this event.  It will
+     * return true if no listener on the displayer consumed the TabActionEvent;
+     * consuming the event is the way a listener can veto a change, or provide
+     * special handling for it.
+     *
+     * @param e The original tab action event.
+     * @return true if the event posted was not consumed by any listener
+     * @since 1.27
+     */
+    protected final boolean shouldPerformAction(TabActionEvent e) {
+        TabActionEvent evt = new TabActionEvent(displayer, e.getActionCommand(), e.getTabIndex(), e.getMouseEvent());
+        evt.setGroupName( e.getGroupName() );
+        displayer.postActionEvent(evt);
+        return !evt.isConsumed();
+    }
 
     /**
      * Instruct the UI to ensure that the tab at the given index is visible.
@@ -244,7 +264,7 @@ public abstract class TabDisplayerUI extends ComponentUI {
     }
     
     public void postTabAction( TabActionEvent e ) {
-        if( shouldPerformAction( e.getActionCommand(), e.getTabIndex(), e.getMouseEvent() ) ) {
+        if( shouldPerformAction( e ) ) {
             
             //TODO do something here??
         }

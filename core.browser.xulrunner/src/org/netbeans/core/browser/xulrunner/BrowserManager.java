@@ -53,8 +53,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.mozilla.browser.MozillaConfig;
 import org.netbeans.core.IDESettings;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -157,16 +157,7 @@ public class BrowserManager {
     }
 
     private void initProfileDir() {
-        File profileDir;
-        String userDir = System.getProperty("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            profileDir = new File(new File(new File (userDir, "var"), "cache"), "mozillaprofilev1"); // NOI18N
-        } else {
-            profileDir = FileUtil.toFile(FileUtil.getConfigRoot());
-            profileDir = new File(profileDir, "mozillaprofilev1"); // NOI18N
-        }
-        profileDir.mkdirs();
-        MozillaConfig.setProfileDir(profileDir);
+        MozillaConfig.setProfileDir(Places.getCacheSubdirectory("mozillaprofilev1")); // NOI18N
     }
 
     private static class Holder {

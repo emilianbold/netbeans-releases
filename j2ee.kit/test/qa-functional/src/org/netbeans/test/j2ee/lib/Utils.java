@@ -218,7 +218,7 @@ public class Utils {
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         Node node = pto.getProjectRootNode(projectName);
         node.performPopupAction("Clean and Build");
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
                 new String[]{projectName.replace(' ', '_') + " (clean,dist)"}));
@@ -229,7 +229,7 @@ public class Utils {
         Action cleanAction = new Action(null, Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CleanProjectAction_Name_popup"));
         cleanAction.setComparator(new Operator.DefaultStringComparator(true, true));
         cleanAction.perform(new ProjectsTabOperator().getProjectRootNode(projectName));
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString(
                 "org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status",
                 new String[]{projectName.replace(' ', '_') + " (clean)"}));

@@ -48,6 +48,7 @@ package org.netbeans.modules.refactoring.java.ui;
 public final class JavaRenameProperties {
     
     private boolean isRenameGettersSetters;
+    private boolean isRenameTestClass;
 
     public boolean isIsRenameGettersSetters() {
         return isRenameGettersSetters;
@@ -55,5 +56,13 @@ public final class JavaRenameProperties {
 
     public void setIsRenameGettersSetters(boolean isRenameGettersSetters) {
         this.isRenameGettersSetters = isRenameGettersSetters;
+    }
+
+    public boolean isIsRenameTestClass() {
+        return isRenameTestClass;
+    }
+
+    public void setIsRenameTestClass(boolean isRenameTestClass) {
+        this.isRenameTestClass = isRenameTestClass;
     }
 }

@@ -55,7 +55,6 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -174,23 +173,23 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
 
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
-        layout.setAutocreateGaps(true);
+        layout.setAutoCreateGaps(true);
 
         GroupLayout.SequentialGroup sq = layout.createSequentialGroup()
-                                            .add(label).add(fileNameTextField);
+                                            .addComponent(label).addComponent(fileNameTextField);
         if (!okCancelButtons && newButton != null) // add newButton next to the text field
-            sq.add(newButton);
+            sq.addComponent(newButton);
         layout.setHorizontalGroup(layout.createParallelGroup()
-            .add(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(sq));
+            .addComponent(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(sq));
 
-        GroupLayout.ParallelGroup pq = layout.createParallelGroup(GroupLayout.BASELINE)
-                                        .add(label).add(fileNameTextField);
+        GroupLayout.ParallelGroup pq = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                        .addComponent(label).addComponent(fileNameTextField);
         if (!okCancelButtons && newButton != null) // add newButton next to the text field
-            pq.add(newButton);
+            pq.addComponent(newButton);
         layout.setVerticalGroup(layout.createSequentialGroup()
-            .add(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(pq));
+            .addComponent(treeView, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(pq));
     }
 
     /**
@@ -204,7 +203,7 @@ public class ClassPathFileChooser extends JPanel implements ExplorerManager.Prov
         if (okButton == null)
             throw new IllegalStateException("Can't create dialog for a chooser without OK and Cancel buttons."); // NOI18N
 
-        ((GroupLayout)getLayout()).setAutocreateContainerGaps(true);
+        ((GroupLayout)getLayout()).setAutoCreateContainerGaps(true);
 
         DialogDescriptor dd = new DialogDescriptor(
             this, title,  true,

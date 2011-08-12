@@ -49,7 +49,7 @@ import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import java.io.File;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
 /**
@@ -66,14 +66,14 @@ public abstract class ExportDiff extends ExportDiffSupport {
     
     
     /** Creates a new instance of ExportDiff */
-    public ExportDiff(File repository, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
+    public ExportDiff(File repository, HgLogMessage repoRev, File [] roots, File fileToDiff) {
         super(roots == null ? new File[] {fileToDiff} : roots, HgModuleConfig.getDefault().getPreferences());
         this.fileToDiff = fileToDiff;
 
         panel = new ExportDiffPanel(repository, repoRev, roots, fileToDiff);
     } 
     
-    public ExportDiff(File repository, RepositoryRevision repoRev, File [] roots) {
+    public ExportDiff(File repository, HgLogMessage repoRev, File [] roots) {
         this(repository, repoRev, roots, null);
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,21 +26,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.MainMenuAction;
+import org.netbeans.modules.java.editor.overridden.PopupUtil;
 import org.netbeans.modules.java.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
@@ -92,8 +110,8 @@ public final class IntroduceAction extends HintAction {
         setEnabled(true);
     }
 
-    protected void perform(JavaSource js, int[] selection) {
-        String error = doPerformAction(js, selection);
+    protected void perform(JavaSource js, JTextComponent pane, int[] selection) {
+        String error = doPerformAction(js, pane, selection);
         
         if (error != null) {
             String errorText = NbBundle.getMessage(IntroduceAction.class, error);
@@ -103,11 +121,12 @@ public final class IntroduceAction extends HintAction {
         }
     }
     
-    private String doPerformAction(final JavaSource js,final int[] span) {
-        final Map<IntroduceKind, Fix> fixes = new EnumMap<IntroduceKind, Fix>(IntroduceKind.class);
-        final Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
-
+    private String doPerformAction(final JavaSource js, JTextComponent pane, final int[] span) {
+        final List<Candidate> candidates = new ArrayList<Candidate>();
         final AtomicBoolean cancel = new AtomicBoolean();
+        final String[] errorMessage = new String[1];
+        final boolean proposeCandidates = span[0] == span[1] && type != IntroduceKind.CREATE_METHOD;
+        
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
 
             public void run() {
@@ -119,7 +138,51 @@ public final class IntroduceAction extends HintAction {
                             if (cancel.get()) {
                                 return;
                             }
-                            IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages, cancel);
+                            if (proposeCandidates) {
+                                TreePath tp = pathFor(parameter, span[0]);
+                                Set<Tree> seenTrees = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
+
+                                while (tp != null) {
+                                    TreePath currentPath = tp;
+
+                                    tp = tp.getParentPath();
+
+                                    if (currentPath.getLeaf().getKind() == Kind.PARENTHESIZED) {
+                                        currentPath = new TreePath(currentPath, ((ParenthesizedTree) currentPath.getLeaf()).getExpression());
+                                    }
+
+                                    if (!seenTrees.add(currentPath.getLeaf())) continue;
+                                    
+                                    Map<IntroduceKind, Fix> fixes = new EnumMap<IntroduceKind, Fix>(IntroduceKind.class);
+                                    Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
+                                    int start = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), currentPath.getLeaf());
+                                    int end   = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), currentPath.getLeaf());
+
+                                    if (end > start && start != (-1)) {
+                                        IntroduceHint.computeError(parameter, start, end, fixes, errorMessages, cancel);
+
+                                        Fix f = fixes.get(type);
+
+                                        if (f != null) {
+                                            candidates.add(new Candidate(parameter.getText().substring(start, end), start, end, f));
+                                        }
+                                    }
+
+                                }
+                            } else {
+                                Map<IntroduceKind, Fix> fixes = new EnumMap<IntroduceKind, Fix>(IntroduceKind.class);
+                                Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
+
+                                IntroduceHint.computeError(parameter, span[0], span[1], fixes, errorMessages, cancel);
+
+                                Fix f = fixes.get(type);
+                                
+                                if (f != null) {
+                                    candidates.add(new Candidate(null, -1, -1, f));
+                                } else {
+                                    errorMessage[0] = errorMessages.get(type);
+                                }
+                            }
                         }
                     }, true);
                 } catch (IOException ex) {
@@ -131,9 +194,32 @@ public final class IntroduceAction extends HintAction {
         if (cancel.get()) {
             return null;
         }
-        
-        Fix fix = fixes.get(type);
 
+        Fix fix;
+
+        if (proposeCandidates) {
+            if (!candidates.isEmpty()) {
+                Point l = new Point(-1, -1);
+
+                try {
+                    Rectangle pos = pane.modelToView(pane.getCaretPosition());
+                    l = new Point(pos.x + pos.width, pos.y + pos.height);
+                    SwingUtilities.convertPointToScreen(l, pane);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                String label = NbBundle.getMessage(IntroduceAction.class, "LBL_PickExpression");
+
+                PopupUtil.showPopup(new MethodCandidateChooser(label, candidates, pane.getDocument()), label, l.x, l.y, true, -1);
+                return null;
+            } else {
+                return "ERR_No_Valid_Expressions_Found";
+            }
+        } else {
+            fix = candidates.isEmpty() ? null : candidates.get(0).fix;
+        }
+        
         if (fix != null) {
             try {
                 fix.implement();
@@ -144,13 +230,42 @@ public final class IntroduceAction extends HintAction {
             return null;
         }
 
-        String errorMessage = errorMessages.get(type);
-
-        if (errorMessage != null) {
-            return errorMessage;
+        if (errorMessage[0] != null) {
+            return errorMessage[0];
         }
 
         return "ERR_Invalid_Selection"; //XXX  //NOI18N
+    }
+
+    static final class Candidate {
+        final String displayName;
+        final int start;
+        final int end;
+        final Fix fix;
+
+        Candidate(String displayName, int start, int end, Fix fix) {
+            this.displayName = displayName;
+            this.start = start;
+            this.end = end;
+            this.fix = fix;
+        }
+    }
+
+    @Override
+    protected boolean requiresSelection() {
+        return false;
+    }
+
+    private static TreePath pathFor(CompilationInfo info, int pos) {
+        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+        ts.move(info.getSnapshot().getEmbeddedOffset(pos));
+
+        if (ts.moveNext() && ts.token().id() == JavaTokenId.IDENTIFIER) {
+            pos = ts.offset() + 1;
+        }
+
+        return info.getTreeUtilities().pathFor(pos);
     }
 
     public static IntroduceAction createVariable() {

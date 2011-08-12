@@ -45,9 +45,7 @@ package org.netbeans.modules.hudson.ui.actions;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.text.Collator;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -56,7 +54,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
@@ -64,9 +61,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -191,18 +186,7 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     }
 
     private void updateProjectModel() {
-        SortedSet<Project> projects = new TreeSet<Project>(new Comparator<Project>() {
-            Collator COLL = Collator.getInstance();
-            public int compare(Project o1, Project o2) {
-                int r = COLL.compare(ProjectUtils.getInformation(o1).getDisplayName(),
-                                    ProjectUtils.getInformation(o2).getDisplayName());
-                if (r != 0) {
-                    return r;
-                } else {
-                    return o1 == o2 ? 0 : o1.hashCode() - o2.hashCode();
-                }
-            }
-        });
+        SortedSet<Project> projects = new TreeSet<Project>(ProjectRenderer.comparator());
         projects.addAll(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
         projects.addAll(manuallyAddedProjects);
         project.setModel(new DefaultComboBoxModel(projects.toArray(new Project[projects.size()])));
@@ -406,18 +390,6 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
     private javax.swing.JComboBox server;
     private javax.swing.JLabel serverLabel;
     // End of variables declaration//GEN-END:variables
-
-    private static class ProjectRenderer extends DefaultListCellRenderer {
-        public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value == null || /* #180088 */ value instanceof String) {
-                return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
-            }
-            ProjectInformation info = ProjectUtils.getInformation((Project) value);
-            JLabel label = (JLabel) super.getListCellRendererComponent(list, info.getDisplayName(), index, isSelected, cellHasFocus);
-            label.setIcon(info.getIcon());
-            return label;
-        }
-    }
 
     private static class ServerRenderer extends DefaultListCellRenderer {
         public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {

@@ -104,8 +104,8 @@ class DBProxy {
 
         if (isNewNode != null) {
             isNewNode.set(isnew);
-        }   
-        
+        }
+
         return node;
     }
 
@@ -145,8 +145,6 @@ class DBProxy {
 
         return node;
     }
-    
-    
 
     void addSourceInfo(StackNode node, long contextID, SourceFileInfo sourceFileInfo) {
         if (sourceFileInfo == null) {
@@ -193,67 +191,68 @@ class DBProxy {
         SQLRequest request = requestsProvider.addModuleInfo(node.nodeID, contextID, moduleID, offsetInModule);
         requestsProcessor.queueRequest(request);
     }
-    
-    private String getFunctionNameByFuncID(long funcId){
-        Iterator<CharSequence> it =funcNameToFuncID.keySet().iterator();
-        while (it.hasNext()){
-            String name  = it.next().toString();
-            if (funcNameToFuncID.get(name).longValue() == funcId){
-                return name;
+
+    private String getFunctionNameByFuncID(long funcId) {
+        synchronized (funcNameToFuncID) {
+            Iterator<CharSequence> it = funcNameToFuncID.keySet().iterator();
+            while (it.hasNext()) {
+                String name = it.next().toString();
+                if (funcNameToFuncID.get(name).longValue() == funcId) {
+                    return name;
+                }
             }
         }
         return null;
     }
-       
-    
-    Function getLeafFunction(long stackId){
+
+    Function getLeafFunction(long stackId) {
         //find the StackNode
         StackNode stackNode = stackNodesCache.get(stackId);
-                    long nodeID = stackNode.nodeID;
-                    long funcID = stackNode.funcID;
-                    long offset = stackNode.offset;
-                    String funcName = getFunctionNameByFuncID(funcID);
-                    CallStackEntry entry = callStackEntriesCache.get(stackId);
-                    StringBuilder qname = new StringBuilder();
-                    String module = entry.getModulePath().toString();
-                    long offsetInModule = entry.getOffsetInModule();
-                    SourceFileInfo sourceFileInfo = entry.getSourceFileInfo();
-                    if (sourceFileInfo == null){
-                        sourceFileInfo = new SourceFileInfo(null, -1);//unknown file
-                    }
-                    String srcFile = sourceFileInfo.getFileName();
-                    long srcLine = sourceFileInfo.getLine();
-                    long srcColumn = sourceFileInfo.getColumn();
-                    String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
+        long nodeID = stackNode.nodeID;
+        long funcID = stackNode.funcID;
+        long offset = stackNode.offset;
+        String funcName = getFunctionNameByFuncID(funcID);
+        CallStackEntry entry = callStackEntriesCache.get(stackId);
+        StringBuilder qname = new StringBuilder();
+        String module = entry.getModulePath().toString();
+        long offsetInModule = entry.getOffsetInModule();
+        SourceFileInfo sourceFileInfo = entry.getSourceFileInfo();
+        if (sourceFileInfo == null) {
+            sourceFileInfo = new SourceFileInfo(null, -1);//unknown file
+        }
+        String srcFile = sourceFileInfo.getFileName();
+        long srcLine = sourceFileInfo.getLine();
+        long srcColumn = sourceFileInfo.getColumn();
+        String moduleOffset = offsetInModule < 0 ? null : "0x" + Long.toHexString(offsetInModule); // NOI18N
 
-                    if (module != null) {
-                        qname.append(module);
-                        if (moduleOffset != null) {
-                            qname.append('+').append(moduleOffset);
-                        }
-                        qname.append('`');
-                    }
+        if (module != null) {
+            qname.append(module);
+            if (moduleOffset != null) {
+                qname.append('+').append(moduleOffset);
+            }
+            qname.append('`');
+        }
 
-                    qname.append(funcName);
+        qname.append(funcName);
 
-                    if (offset > 0) {
-                        qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
-                    }
+        if (offset > 0) {
+            qname.append("+0x").append(Long.toHexString(offset)); // NOI18N
+        }
 
-                    if (srcFile != null) {
-                        qname.append(':').append(srcFile);
-                        if (srcLine > 0) {
-                            qname.append(':').append(srcLine);
-                            if (srcColumn > 0) {
-                                qname.append(':').append(srcColumn);
-                            }
-                        }
-                    }
+        if (srcFile != null) {
+            qname.append(':').append(srcFile);
+            if (srcLine > 0) {
+                qname.append(':').append(srcLine);
+                if (srcColumn > 0) {
+                    qname.append(':').append(srcColumn);
+                }
+            }
+        }
 
-                    FunctionImpl func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
+        FunctionImpl func = new FunctionImpl(funcID, -1, funcName, qname.toString(), module, moduleOffset, srcFile);
 
-                    return func;
-        
+        return func;
+
     }
 
     /**

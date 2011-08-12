@@ -227,15 +227,15 @@ public final class ApplicationXmlVisualPanel1 extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(createdFileText, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout fillerPanelLayout = new org.jdesktop.layout.GroupLayout(fillerPanel);
+        javax.swing.GroupLayout fillerPanelLayout = new javax.swing.GroupLayout(fillerPanel);
         fillerPanel.setLayout(fillerPanelLayout);
         fillerPanelLayout.setHorizontalGroup(
-            fillerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
+            fillerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         fillerPanelLayout.setVerticalGroup(
-            fillerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 0, Short.MAX_VALUE)
+            fillerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();

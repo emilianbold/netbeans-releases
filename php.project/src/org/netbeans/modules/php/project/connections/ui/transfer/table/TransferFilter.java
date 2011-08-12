@@ -72,7 +72,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChangeSupport;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser.TransferType;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooserPanel;

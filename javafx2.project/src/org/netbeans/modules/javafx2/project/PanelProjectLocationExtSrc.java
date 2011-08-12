@@ -176,7 +176,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 projectName = MessageFormat.format(formater, new Object[]{new Integer(index)});
                 file = new File(projectLocation, projectName);
             } while (file.exists());
-            settings.putProperty(NewJ2SEProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
+            settings.putProperty(NewJFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
             this.projectLocation.setText(projectLocation.getAbsolutePath());
             this.setCalculateProjectFolder(true);
         } else {

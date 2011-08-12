@@ -41,7 +41,6 @@ Contributor(s):
 Portions Copyrighted 2011 Sun Microsystems, Inc.
 
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <!-- Context Menus -->
@@ -58,6 +57,20 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 </folder>
             </folder>
         </folder>
+    </folder>
+
+    <folder name="Servers">
+        <file name="CoherenceInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.coherence.server.CoherenceInstanceProvider.getCoherenceProvider"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.coherence.server.CoherenceInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+
+        <file name="CoherenceWizardProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.coherence.server.wizard.CoherenceWizardProvider.create"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.coherence.server.wizard.CoherenceWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+        </file>
     </folder>
 
     <folder name="Loaders">
@@ -284,14 +297,6 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
             </file>
         </folder>
     </folder>
-    <folder name="UI">
-        <folder name="Runtime">
-            <file name="org.netbeans.modules.coherence.AllServersNode.instance">
-                <attr name="position" intvalue="444"/>
-            </file>
-            <!--file name="org.netbeans.modules.coherence.properties.AllPropsNode.instance" /-->
-        </folder>
-    </folder>
 
     <!-- Templates -->
     <folder name="Templates">
@@ -328,7 +333,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="30"/>
             </file>
-            
+
             <file name="PortableObject.java" url="templates/PortableObject_java">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
@@ -341,21 +346,27 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
         <!--/folder>
         <folder name="Other"-->
             <file name="CacheConfigTemplate.xml" url="templates/CacheConfigTemplate.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.resources.Bundle#Templates/Coherence/CacheConfigTemplate.xml"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/coherence/resources/icons/cache.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/CacheConfigTemplateDesc.html"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="50"/>
             </file>
             <file name="CoherenceConfigTemplate.xml" url="templates/CoherenceConfigTemplate.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.resources.Bundle#Templates/Coherence/CoherenceConfigTemplate.xml"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/coherence/resources/icons/coherence.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/CoherenceConfigTemplateDesc.html"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="60"/>
             </file>
             <file name="PofConfigTemplate.xml" url="templates/PofConfigTemplate.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.coherence.resources.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.coherence.resources.Bundle#Templates/Coherence/PofConfigTemplate.xml"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/coherence/resources/icons/pof.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/coherence/resources/templates/PofConfigTemplateDesc.html"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="position" intvalue="70"/>
             </file>
         </folder>

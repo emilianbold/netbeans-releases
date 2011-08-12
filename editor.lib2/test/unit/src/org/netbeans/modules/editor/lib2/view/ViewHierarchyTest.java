@@ -121,7 +121,6 @@ public class ViewHierarchyTest extends NbTestCase {
 //        loggingOn();    
         TestRootView rootView = new TestRootView();
         Document doc = rootView.getDocument();
-        ViewUpdates.setDirectViewRebuild(true);
         rootView.modelToView(0);
         doc.insertString(0, "hello", null);
         List<TestHighlight> hlts = rootView.getHighlightsCopy();
@@ -144,7 +143,6 @@ public class ViewHierarchyTest extends NbTestCase {
 //        loggingOn();
         TestRootView rootView = new TestRootView();
         Document doc = rootView.getDocument();
-        ViewUpdates.setDirectViewRebuild(true);
         doc.insertString(0, "abc\ndef\nghi\n", null);
         rootView.setBounds(4, 8);
         rootView.modelToView(0);
@@ -167,7 +165,6 @@ public class ViewHierarchyTest extends NbTestCase {
 //        loggingOn();
         TestRootView rootView = new TestRootView();
         Document doc = rootView.getDocument();
-        ViewUpdates.setDirectViewRebuild(true);
         rootView.modelToView(0);
         doc.insertString(0, "a\nb", null);
         doc.remove(1, 1);
@@ -180,7 +177,6 @@ public class ViewHierarchyTest extends NbTestCase {
         TestRootView rootView = new TestRootView();
         Document doc = rootView.getDocument();
         JEditorPane pane = rootView.pane();
-        ViewUpdates.setDirectViewRebuild(true);
         rootView.modelToView(0);
         doc.insertString(0, "hello\nworld\ngood\nmorning", null);
         Position startPos = doc.createPosition(3);
@@ -216,7 +212,6 @@ public class ViewHierarchyTest extends NbTestCase {
         TestRootView rootView = new TestRootView();
         Document doc = rootView.getDocument();
         JEditorPane pane = rootView.pane();
-        ViewUpdates.setDirectViewRebuild(true);
         rootView.modelToView(0);
         doc.insertString(0, "hello\nworld\ngood\nmorning", null);
         Position startPos = doc.createPosition(3);
@@ -231,7 +226,6 @@ public class ViewHierarchyTest extends NbTestCase {
     
     public void testRandom() throws Exception {
 //        loggingOn();
-        ViewUpdates.setDirectViewRebuild(true);
         RandomTestContainer container = createContainer(true);
         DocumentTesting.setLogDoc(container, false);
         container.setLogOp(false);

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import javax.swing.LayoutStyle;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.util.common.SectionButton;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
@@ -88,7 +89,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.subversion.SvnFileNode;
@@ -110,7 +110,7 @@ import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
@@ -452,8 +452,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private Component makeVerticalStrut(JComponent compA,
                                         JComponent compB,
-                                        int relatedUnrelated) {
-        int height = LayoutStyle.getSharedInstance().getPreferredGap(
+                                        LayoutStyle.ComponentPlacement relatedUnrelated) {
+        int height = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
@@ -464,8 +464,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private Component makeHorizontalStrut(JComponent compA,
                                           JComponent compB,
-                                          int relatedUnrelated) {
-        int width = LayoutStyle.getSharedInstance().getPreferredGap(
+                                          LayoutStyle.ComponentPlacement relatedUnrelated) {
+        int width = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
@@ -475,7 +475,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private int getContainerGap(int direction) {
-        return LayoutStyle.getSharedInstance().getContainerGap(this,
+        return LayoutStyle.getInstance().getContainerGap(this,
                                                                direction,
                                                                null);
     }

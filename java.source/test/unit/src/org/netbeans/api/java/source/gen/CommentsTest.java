@@ -1544,7 +1544,6 @@ public class CommentsTest extends GeneratorTestBase {
                 MethodTree mt = (MethodTree) clazz.getMembers().get(1);
 //                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
                 MethodTree newMethod = make.setLabel(mt, mt.getName());
-                GeneratorUtilities.get(workingCopy).copyComments(mt, newMethod, true);
                 make.removeComment(newMethod, 1, true);
                 workingCopy.rewrite(mt, newMethod);
             }
@@ -1585,7 +1584,6 @@ public class CommentsTest extends GeneratorTestBase {
                 MethodTree mt = (MethodTree) clazz.getMembers().get(1);
 //                GeneratorUtilities.get(workingCopy).importComments(clazz, cut);
                 MethodTree newMethod = make.setLabel(mt, mt.getName());
-                GeneratorUtilities.get(workingCopy).copyComments(mt, newMethod, true);
                 make.removeComment(newMethod, 0, true);
                 make.addComment(newMethod, Comment.create(Style.BLOCK, "/*test2*/"), true);
                 workingCopy.rewrite(mt, newMethod);
@@ -1644,7 +1642,6 @@ public class CommentsTest extends GeneratorTestBase {
                     @Override
                     public Void visitMethod(MethodTree mt, Void p) {
                         Tree nt = tm.setLabel(mt, mt.getName());
-                        GeneratorUtilities.get(wc).copyComments(mt, nt, true);
                         final List<Comment> comments = tu.getComments(nt, true);
                         int size = comments.size();
                         if (size > 0) {
@@ -1760,6 +1757,45 @@ public class CommentsTest extends GeneratorTestBase {
         DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
         EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
         ec.saveDocument();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testConstructorCommentsOnClassRename() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    //comment-pref\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    //comment-suff\n" +
+            "}\n");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Renamed {\n" +
+            "    //comment-pref\n" +
+            "    public Renamed() {\n" +
+            "    }\n" +
+            "    //comment-suff\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker make = wc.getTreeMaker();
+                ClassTree clazz = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                ClassTree renamed = make.setLabel(clazz, "Renamed");
+                assertFalse(wc.getTreeUtilities().getComments(renamed.getMembers().get(0), true).isEmpty());
+                wc.rewrite(clazz, renamed);
+            }
+
+        };
+        src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);

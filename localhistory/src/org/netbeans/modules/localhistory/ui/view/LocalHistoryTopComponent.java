@@ -43,25 +43,66 @@
  */
 package org.netbeans.modules.localhistory.ui.view;
 
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.localhistory.LocalHistory;
+import org.netbeans.modules.versioning.history.LinkButton;
+import org.netbeans.modules.versioning.util.SearchHistorySupport;
+import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Top component which displays something.
  * 
  * @author Tomas Stupka
  */
-final public class LocalHistoryTopComponent extends TopComponent {
+@MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="", // no icon
+        persistenceType=TopComponent.PERSISTENCE_NEVER,
+        preferredID="text.history", 
+        mimeType="",
+        position=1000000 // lets leave some space in case somebody really wants to be the last
+)
+final public class LocalHistoryTopComponent extends TopComponent implements MultiViewElement {
 
     private static LocalHistoryTopComponent instance;
     private LocalHistoryFileView masterView;
-    private static final String PREFERRED_ID = "LocalHistoryTopComponent";
+    static final String PREFERRED_ID = "text.history";
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
+    private JPanel toolBar;
 
     public LocalHistoryTopComponent() {
         initComponents();
@@ -72,15 +113,84 @@ final public class LocalHistoryTopComponent extends TopComponent {
 //        setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
+    public LocalHistoryTopComponent(Lookup context) {
+        this();
+        DataObject dataObject = context.lookup(DataObject.class);
+
+        List<File> files = new LinkedList<File>();
+        if (dataObject instanceof DataShadow) {
+            dataObject = ((DataShadow) dataObject).getOriginal();
+        }
+        if (dataObject != null) {
+            Collection<File> doFiles = toFileCollection(dataObject.files());
+            files.addAll(doFiles);
+        }
+        init(files.toArray(new File[files.size()]));        
+    }
+    
+    private Collection<File> toFileCollection(Collection<? extends FileObject> fileObjects) {
+        Set<File> files = new HashSet<File>(fileObjects.size()*4/3+1);
+        for (FileObject fo : fileObjects) {
+            files.add(FileUtil.toFile(fo));
+        }
+        files.remove(null);
+        return files;
+    }        
+
+    public void init(final File... files) {   
+        final LocalHistoryFileView fileView = new LocalHistoryFileView();                
+        LocalHistoryDiffView diffView = new LocalHistoryDiffView(this); 
+        fileView.getExplorerManager().addPropertyChangeListener(diffView); 
+        fileView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
+                    LocalHistoryTopComponent.this.setActivatedNodes((Node[]) evt.getNewValue());  
+                }
+            } 
+        });
+        
+        // XXX should be solved in a more general way - not ony for LocalHistoryFileView 
+        this.masterView = fileView; 
+        splitPane.setTopComponent(masterView.getPanel());   
+        splitPane.setBottomComponent(diffView.getPanel());                   
+        
+        LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                initToolbar();
+                fileView.refresh(files);
+            }
+
+            private boolean initToolbar() {
+                if (files.length == 0) {
+                    return true;
+                }
+                FileObject fo = FileUtil.toFileObject(files[0]);
+                if (fo == null) {
+                    return true;
+                }
+                final Object attr = fo.getAttribute(SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY);
+                if (attr == null || !(attr instanceof SearchHistorySupport)) {
+                    return true;
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((Toolbar)LocalHistoryTopComponent.this.getToolbarRepresentation()).setSupport((SearchHistorySupport) attr);
+                    }
+                });
+                return false;
+            }
+        });
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
-        splitPane = new javax.swing.JSplitPane();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -92,16 +202,9 @@ final public class LocalHistoryTopComponent extends TopComponent {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSplitPane splitPane;
+    final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     // End of variables declaration//GEN-END:variables
 
-    public void init(JPanel diffPanel, LocalHistoryFileView masterView) {                
-        // XXX should be solved in a more genarel way - not ony for LocalHistoryFileView 
-        this.masterView = masterView; 
-        splitPane.setTopComponent(masterView.getPanel());   
-        splitPane.setBottomComponent(diffPanel);                   
-    }
-    
     public UndoRedo getUndoRedo() {
         return delegatingUndoRedo;
     }
@@ -146,6 +249,31 @@ final public class LocalHistoryTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
+    @Override
+    public JComponent getVisualRepresentation() {
+        return this;
+    }
+
+    @Override
+    public JComponent getToolbarRepresentation() {
+        synchronized(this) {
+            if(toolBar == null) { 
+                toolBar = new Toolbar();
+            }
+        }
+        return toolBar;
+    }
+
+    @Override
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+
+    }
+
+    @Override
+    public CloseOperationState canCloseElement() {
+        return CloseOperationState.STATE_OK;
+    }
+
     final static class ResolvableHelper implements Serializable {
         private static final long serialVersionUID = 1L;
         public Object readResolve() {
@@ -153,4 +281,76 @@ final public class LocalHistoryTopComponent extends TopComponent {
         }
     }
 
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+}
+
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    public void componentShowing() {
+        super.componentShowing();
+    }  
+    
+    private class Toolbar extends JPanel {
+        private LinkButton searchHistoryButton;
+        private SearchHistorySupport support;
+        
+        public Toolbar() {
+            setBorder(new EmptyBorder(0, 0, 0, 0));
+            setOpaque(false);
+            setBackground(Color.white);
+            setLayout(new GridBagLayout());
+            
+            JLabel label = new JLabel(NbBundle.getMessage(this.getClass(), "LBL_LocalHistory")); // NOI18N
+            Font f = label.getFont();
+            label.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
+            
+            GridBagConstraints c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.CENTER;
+            c.weightx = 1;
+            add(label, c); 
+  
+            searchHistoryButton = new LinkButton(NbBundle.getMessage(this.getClass(), "LBL_ShowVersioningHistory")); // NOI18N
+            searchHistoryButton.setVisible(false);
+            searchHistoryButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(support == null) {
+                                return;
+                            }
+                            try {
+                                support.searchHistory(-1);
+                            } catch (IOException ex) {
+                                LocalHistory.LOG.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            c = new GridBagConstraints();
+            c.anchor = GridBagConstraints.EAST;
+            c.weightx = 0;
+            add(searchHistoryButton, c); 
+            
+        }
+
+        public void setSupport(SearchHistorySupport support) {
+            this.support = support;
+            searchHistoryButton.setVisible(true);
+        }
+    }
 }

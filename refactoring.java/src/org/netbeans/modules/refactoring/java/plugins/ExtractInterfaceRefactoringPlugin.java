@@ -538,7 +538,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             for (ModificationResult.Difference diff : diffs) {
                 bag.add(refactoring, DiffElement.create(diff, fo, modification));
             }
-            bag.registerTransaction(new RetoucheCommit(Collections.singletonList(modification)));
+            bag.registerTransaction(createTransaction(Collections.singletonList(modification)));
         }
         
         public void cancel() {

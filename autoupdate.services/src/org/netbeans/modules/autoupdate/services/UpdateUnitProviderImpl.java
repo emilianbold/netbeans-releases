@@ -502,7 +502,7 @@ public final class UpdateUnitProviderImpl {
 
     private static String normalizeCodeName (String codeName) {
         Collection<Character> illegalChars = Arrays.asList (new Character [] {'"', '*', '/', ':', '<', '>', '?', '\\', '|'}); // NOI18N
-        StringBuffer buf = new StringBuffer ();
+        StringBuilder buf = new StringBuilder ();
         for (char ch : codeName.toCharArray ()) {
             if (illegalChars.contains (ch)) {
                 ch = '_'; // NOI18N

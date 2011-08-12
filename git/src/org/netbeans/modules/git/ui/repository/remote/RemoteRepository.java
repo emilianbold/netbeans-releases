@@ -90,11 +90,12 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         FILE("file", "file:///path/to/repo.git/  or  /path/to/repo.git/"),      // NOI18N
         HTTP("http", "http[s]://host.xz[:port]/path/to/repo.git/"),             // NOI18N
         HTTPS("https", "http[s]://host.xz[:port]/path/to/repo.git/"),           // NOI18N
-        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
-        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
+//        FTP("ftp", "ftp[s]://host.xz[:port]/path/to/repo.git/"),                // NOI18N
+//        FTPS("ftps", "ftp[s]://host.xz[:port]/path/to/repo.git/"),              // NOI18N
         SSH("ssh", "ssh://host.xz[:port]/path/to/repo.git/"),                   // NOI18N    
-        GIT("git", "git://host.xz[:port]/path/to/repo.git/"),                   // NOI18N
-        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/");                    // NOI18N
+        SFTP("sftp", "sftp://host.xz[:port]/path/to/repo.git/"),              // NOI18N
+//        RSYNC("rsync", "rsync://host.xz/path/to/repo.git/"),                    // NOI18N
+        GIT("git", "git://host.xz[:port]/path/to/repo.git/");                   // NOI18N
         
         private final String name;
         private final String tip;

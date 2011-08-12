@@ -46,7 +46,7 @@ package org.netbeans.modules.css.editor.test;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 
 /**
  * Common ancestor for all test classes.

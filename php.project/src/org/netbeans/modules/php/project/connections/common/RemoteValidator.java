@@ -83,15 +83,36 @@ public final class RemoteValidator {
     }
 
     public static String validateTimeout(String timeout) {
+        return validatePositiveNumber(timeout, "MSG_TimeoutNotPositive", "MSG_TimeoutNotNumeric"); // NOI18N
+    }
+
+    /**
+     * Validate keep-alive interval.
+     * @param keepAliveInterval value to be validated
+     * @return error message or {@code null} if keep-alive interval is correct
+     */
+    public static String validateKeepAliveInterval(String keepAliveInterval) {
+        return validatePositiveNumber(keepAliveInterval, "MSG_KeepAliveNotPositive", "MSG_KeepAliveNotNumeric"); // NOI18N
+    }
+
+    /**
+     * Validate input as a positive number.
+     * @param number input to be validated
+     * @param errorNotPositiveKey error key used if input is not positive number
+     * @param errorNotNumericKey error key used if input is not number
+     * @return error message or {@code null} if input is positive number
+     */
+    private static String validatePositiveNumber(String number, String errorNotPositiveKey, String errorNotNumericKey) {
         String err = null;
         try {
-            int t = Integer.parseInt(timeout);
+            int t = Integer.parseInt(number);
             if (t < 0) {
-                err = NbBundle.getMessage(RemoteValidator.class, "MSG_TimeoutNotPositive");
+                err = NbBundle.getMessage(RemoteValidator.class, errorNotPositiveKey);
             }
         } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(RemoteValidator.class, "MSG_TimeoutNotNumeric");
+            err = NbBundle.getMessage(RemoteValidator.class, errorNotNumericKey);
         }
         return err;
     }
+
 }

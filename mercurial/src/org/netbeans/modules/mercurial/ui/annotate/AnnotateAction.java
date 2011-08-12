@@ -118,6 +118,11 @@ public class AnnotateAction extends ContextAction {
     }
 
     @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/mercurial/resources/icons/annotate.png"; // NOI18N
+    }
+
+    @Override
     protected void performContextAction(Node[] nodes) {
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);

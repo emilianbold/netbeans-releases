@@ -689,13 +689,13 @@ public class ChatPanel extends javax.swing.JPanel {
         statusLine = new javax.swing.JLabel();
 
         dropDownMenu.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+                dropDownMenuPopupMenuWillBecomeVisible(evt);
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
                 dropDownMenuPopupMenuWillBecomeInvisible(evt);
             }
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
-                dropDownMenuPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         dropDownMenu.add(temp);
@@ -724,19 +724,19 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout buttonsLayout = new org.jdesktop.layout.GroupLayout(buttons);
+        javax.swing.GroupLayout buttonsLayout = new javax.swing.GroupLayout(buttons);
         buttons.setLayout(buttonsLayout);
         buttonsLayout.setHorizontalGroup(
-            buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonsLayout.createSequentialGroup()
-                .add(sendLinkButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 197, Short.MAX_VALUE)
-                .add(sendButton))
+            buttonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, buttonsLayout.createSequentialGroup()
+                .addComponent(sendLinkButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 140, Short.MAX_VALUE)
+                .addComponent(sendButton))
         );
         buttonsLayout.setVerticalGroup(
-            buttonsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(sendButton)
-            .add(sendLinkButton)
+            buttonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(sendButton)
+            .addComponent(sendLinkButton)
         );
 
         outboxPanel.add(buttons, java.awt.BorderLayout.SOUTH);
@@ -760,7 +760,6 @@ public class ChatPanel extends javax.swing.JPanel {
         inboxPanel.setLayout(new java.awt.BorderLayout());
 
         inboxScrollPane.setBorder(null);
-        inboxScrollPane.setViewportBorder(null);
 
         inbox.setBorder(null);
         inbox.setContentType("text/html"); // NOI18N
@@ -790,15 +789,15 @@ public class ChatPanel extends javax.swing.JPanel {
 
         splitter.setTopComponent(inboxPanel);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(splitter, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(splitter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(splitter, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 

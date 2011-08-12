@@ -114,6 +114,22 @@ public abstract class WinsysInfoForTabbedContainer implements WinsysInfoForTabbe
         return true;
     }
 
+    /**
+     * @return True if it is possible to minimize the whole group of TopCOmponents.
+     * @since 1.27
+     */
+    public boolean isModeSlidingEnabled() {
+        return true;
+    }
+    
+    /**
+     * @return True if this container is currently slided out (and contains a single window)
+     * @since 1.27
+     */
+    public boolean isSlidedOutContainer() {
+        return false;
+    }
+
     public static WinsysInfoForTabbedContainer getDefault( WinsysInfoForTabbed winsysInfo ) {
         return new DefaultWinsysInfoForTabbedContainer( winsysInfo );
     }

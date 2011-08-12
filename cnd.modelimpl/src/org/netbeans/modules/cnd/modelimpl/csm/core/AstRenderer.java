@@ -1427,16 +1427,23 @@ public class AstRenderer {
             return false;
         }
         boolean isThisReference = false;
+        CsmClassForwardDeclaration cfdi = null;
         if (tokType != null &&
                 (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
                 tokType.getType() == CPPTokenTypes.LITERAL_union ||
                 tokType.getType() == CPPTokenTypes.LITERAL_enum ||
                 tokType.getType() == CPPTokenTypes.LITERAL_class)) {
             // This is struct/class word for reference on containing struct/class
+            AST keyword = tokType;
             tokType = tokType.getNextSibling();
             typeAST = tokType;
             if (tokType == null) {
                 return false;
+            }
+            if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && !isRenderingLocalContext()) {
+                if(namespaceContainer == null && container2 == null && !functionParameter) {
+//                    cfdi = createForwardClassDeclaration(ast, container2, file, null);
+                }
             }
             isThisReference = true;
         }
@@ -1511,7 +1518,7 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
                             ptrOperator = null;
                             break;
                         case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
@@ -1531,7 +1538,7 @@ public class AstRenderer {
                                     CsmScope scope = (namespaceContainer instanceof CsmNamespace) ? (CsmNamespace) namespaceContainer : null;
                                     processFunction(token, file, type, namespaceContainer, container2, scope);
                                 } else {
-                                    processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false);
+                                    processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
                                     ptrOperator = null;
                                 }
                             }
@@ -1539,18 +1546,18 @@ public class AstRenderer {
                 }
                 if (!hasVariables && functionParameter) {
                     // unnamed parameter
-                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false);
+                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
                 }
                 return true;
             }
 
             if (functionParameter && nextToken != null &&
                     nextToken.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true);
+                processVariable(nextToken, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
             }
             if (functionParameter && nextToken != null &&                    
                     nextToken.getType() == CPPTokenTypes.RPAREN) {
-                processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true);
+                processVariable(ast, null, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, true, cfdi);
             }
 
 
@@ -1561,7 +1568,7 @@ public class AstRenderer {
     @SuppressWarnings("fallthrough")
     protected void processVariable(AST varAst, AST ptrOperator, AST offsetAst, AST classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,
-            FileImpl file, boolean _static, boolean _extern, boolean inFunctionParameters) {
+            FileImpl file, boolean _static, boolean _extern, boolean inFunctionParameters, CsmClassForwardDeclaration cfdi) {
         int arrayDepth = 0;
         NameHolder name = NameHolder.createName(CharSequences.empty());
         AST qn = null;
@@ -1599,7 +1606,12 @@ public class AstRenderer {
                     break;
             }
         }
-        CsmType type = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, null, inFunctionParameters);
+        CsmType type;
+        if (cfdi != null) {
+            type = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, null, inFunctionParameters, false);
+        } else {        
+            type = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, null, inFunctionParameters);
+        }
         if (isScopedId(qn)) {
             if (isRenderingLocalContext()) {
                 System.err.println("error in rendering " + file + " offset:" + offsetAst); // NOI18N

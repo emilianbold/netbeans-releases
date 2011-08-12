@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2009 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>Options Window: Miscellaneous: Maven</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+
+        <h2>Options Window: Miscellaneous: Maven</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You use this panel to configure Maven settings that affect the behavior of Maven in the IDE.</p>
+        <p>You can access this panel by choosing Tools &gt; Options from the main menu, clicking the Miscellaneous category and then clicking the Maven tab.</p>
+
+        <p>You can specify the following Maven settings:</p>
+        <ul>
+            <li><strong>Maven Home.</strong>
+            By default, the IDE uses the version of Maven that is bundled and installed with the IDE.
+            To use a different Maven installation, click Browse and specify the location of the local Maven installation
+            (e.g., <tt>/usr/local/maven/apache-maven-209</tt>).</li>
+            <li><strong>Global Execution Options.</strong> Click Add to select additional Maven execution
+            options to apply to all Maven projects.</li>
+            <li><strong>Local Repository.</strong> Click Browse to specify or modify the location of the
+            local Maven repository if different from the repository specified by the Maven installation.</li>
+            <li><strong>Dependency Download Strategy.</strong>
+                Use the drop-down list to specify how often the IDE performs the listed tasks when a Maven project is opened.
+                The default setting for the tasks is <tt>Never</tt>.
+                Modifying the setting can have a significant impact on performance
+                when opening a Maven project.
+            </li>
+            <li><strong>Edit Global Custom Goal Definitions.</strong>
+            Opens a dialog box where you can configure custom Maven goals
+            that can be invoked from any Maven project.
+            You can invoke custom goals by right-clicking the project in the Projects window
+            and choosing Custom.</li>
+            <li><strong>Index Update Frequency.</strong> Use the drop-down list to specify how often the IDE
+            checks the remote repository for updates.</li>
+            <li><strong>Include Snapshots.</strong> When selected, indexes of the local repository
+                include snapshot versions of artifacts.</li>
+
+        </ul>
+        
+        <p><strong>Note.</strong></p>
+            <ul class="notes">
+                <li>If you are using Maven with a proxy host you might need to specify
+                    the proxy settings explicitly in the Maven <tt>settings.xml</tt> file.
+                    For details about Maven proxy settings, see the following FAQ.
+                    <p>
+                    <object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                        <param name="content" value="http://wiki.netbeans.org/FaqMavenProxySettings">
+                        <param name="text" value="<html><u>How do I specify Maven proxy settings?</u></html>">
+                        <param name="textFontSize" value="medium">
+                        <param name="textColor" value="blue">
+                    </object>
+                    </p>
+                </li>
+            </ul>
+
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../maven_settings.html">Configuring Maven Settings</a></dd>
+    <dd><a href="../maven-repositories.html">Working with Maven Repositories</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/maven/maven-about.html">About Working with Maven</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

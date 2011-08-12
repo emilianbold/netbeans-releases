@@ -51,6 +51,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import java.io.File;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 
 /**
  *
@@ -64,9 +65,9 @@ public class Update implements PropertyChangeListener {
     private File repository;
     
     /** Creates a new instance of Update */
-    public Update(File repository) {
+    public Update(File repository, HgLogMessage selectedRevision) {
         this.repository = repository;
-        panel = new UpdatePanel(repository);
+        panel = new UpdatePanel(repository, selectedRevision);
         okButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(okButton, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_UpdateForm_Action_Update")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RevertModifications.class, "ACSD_UpdateForm_Action_Update")); // NOI18N

@@ -59,13 +59,12 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
-import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -136,16 +135,16 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         if(context instanceof CssElementContext.Editor) {
             CssElementContext.Editor editorContext = (CssElementContext.Editor)context;
             char firstChar = refactoring.getNewName().charAt(0);
-            switch(editorContext.getElement().kind()) {
-                case CssParserTreeConstants.JJTHASH:
-                case CssParserTreeConstants.JJTHEXCOLOR:
+            switch(editorContext.getElement().type()) {
+                case cssId:
+                case hexColor:
                     //hex color code
                     //id
                     if(firstChar != '#') {
                         return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_MissingHash")); //NOI18N
                     }
                     break;
-                case CssParserTreeConstants.JJT_CLASS:
+                case cssClass:
                     //class
                     if(firstChar != '.') {
                         return new Problem(true, NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Error_MissingDot")); //NOI18N
@@ -184,23 +183,23 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             //editor elements refactoring
             CssElementContext.Editor econtext = (CssElementContext.Editor) context;
             //get selected element in the editor
-            int kind = econtext.getElement().kind();
+            NodeType kind = econtext.getElement().type();
             String elementImage = econtext.getElementName();
 
-            if (kind == CssParserTreeConstants.JJT_CLASS) {
+            if (kind == NodeType.cssClass) {
                 int elementPrefixLength = 1;
                 elementImage = elementImage.substring(elementPrefixLength); //cut off the dot
                 Collection<FileObject> files = index.findClasses(elementImage);
                 refactor(lookup, modificationResult, RefactoringElementType.CLASS, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
-            } else if (kind == CssParserTreeConstants.JJTHASH) {
+            } else if (kind == NodeType.cssId) {
                 int elementPrefixLength = 1;
                 elementImage = elementImage.substring(elementPrefixLength); //cut off the dot
                 Collection<FileObject> files = index.findIds(elementImage);
                 refactor(lookup, modificationResult, RefactoringElementType.ID, files, elementPrefixLength, econtext, index, SELECTOR_RENAME_MSG_KEY);
-            } else if (kind == CssParserTreeConstants.JJTHEXCOLOR) {
+            } else if (kind == NodeType.hexColor) {
                 Collection<FileObject> files = index.findColor(elementImage);
                 refactor(lookup, modificationResult, RefactoringElementType.COLOR, files, 0, econtext, index, COLOR_RENAME_MSG_KEY);
-            } else if (kind == CssParserTreeConstants.JJTELEMENTNAME) {
+            } else if (kind == NodeType.elementName) {
                 refactorElement(modificationResult, econtext, index);
             } else {
                 //other nodes which may appear under the simple selector node
@@ -234,15 +233,15 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
     }
 
     private void refactorFile(ModificationResult modificationResult, CssElementContext.File context, CssIndex index) {
-        LOGGER.fine("refactor file " + context.getFileObject().getPath()); //NOI18N
+        LOGGER.log(Level.FINE, "refactor file {0}", context.getFileObject().getPath()); //NOI18N
         String newName = refactoring.getNewName();
 
         //a. get all importing files
         //b. rename the references
         //c. rename the file itself - done via default rename plugin
         DependenciesGraph deps = index.getDependencies(context.getFileObject());
-        Collection<Node> refering = deps.getSourceNode().getReferingNodes();
-        for (Node ref : refering) {
+        Collection<org.netbeans.modules.web.common.api.DependenciesGraph.Node> refering = deps.getSourceNode().getReferingNodes();
+        for (org.netbeans.modules.web.common.api.DependenciesGraph.Node ref : refering) {
             FileObject file = ref.getFile();
             try {
                 Source source;
@@ -297,7 +296,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
     }
 
     private void refactorFolder(ModificationResult modificationResult, CssElementContext.Folder context, CssIndex index) {
-        LOGGER.fine("refactor folder " + context.getFileObject().getPath()); //NOI18N
+        LOGGER.log(Level.FINE, "refactor folder {0}", context.getFileObject().getPath()); //NOI18N
         String newName = refactoring.getNewName();
         try {
             CssIndex.AllDependenciesMaps alldeps = index.getAllDependencies();
@@ -366,8 +365,8 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
     private void refactorElement(ModificationResult modificationResult, CssElementContext.Editor context, CssIndex index) {
         //type selector: div
         //we do refactor only elements in the current css file, and even this is questionable if makes much sense
-        SimpleNode element = context.getElement();
-        String elementImage = element.image();
+        Node element = context.getElement();
+        String elementImage = element.image().toString();
 
         CssFileModel model = CssFileModel.create(context.getParserResult());
         List<Difference> diffs = new ArrayList<Difference>();
@@ -409,10 +408,10 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         }
 
         if (LOG) {
-            LOGGER.fine("Refactoring element " + elementImage + " in file " + context.getFileObject().getPath()); //NOI18N
-            LOGGER.fine("Involved files declaring the element " + elementImage + ":"); //NOI18N
+            LOGGER.log(Level.FINE, "Refactoring element {0} in file {1}", new Object[]{elementImage, context.getFileObject().getPath()}); //NOI18N
+            LOGGER.log(Level.FINE, "Involved files declaring the element {0}:", elementImage); //NOI18N
             for (FileObject fo : involvedFiles) {
-                LOGGER.fine(fo.getPath() + "\n"); //NOI18N
+                LOGGER.log(Level.FINE, "{0}\n", fo.getPath()); //NOI18N
             }
         }
 

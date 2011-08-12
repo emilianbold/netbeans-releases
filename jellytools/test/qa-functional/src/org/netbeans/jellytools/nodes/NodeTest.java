@@ -326,8 +326,7 @@ public class NodeTest extends JellyTestCase {
         performPaste(sample1Node);
         final Node duplNode = new Node(sample1Node, "SampleClass11"); // NOI18N
         TreePath tp1 = duplNode.getTreePath();
-        new DeleteAction().perform(duplNode);
-        new NbDialogOperator(safeDeleteTitle).ok();
+        JavaNodeUtils.performSafeDelete(duplNode);
         new CopyAction().performAPI(sampleClass1Node);
         performPaste(sample1Node);
         try {

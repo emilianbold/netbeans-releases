@@ -71,6 +71,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.test.MockLookup;
 
 /** Test the functions of the module list, i.e. finding modules on
@@ -78,8 +79,6 @@ import org.openide.util.test.MockLookup;
  * @author Jesse Glick
  */
 public class ModuleListTest extends SetupHid {
-    
-    private File ud;
     
     private static final String PREFIX = "wherever/";
     private LocalFileSystem fs;
@@ -110,9 +109,8 @@ public class ModuleListTest extends SetupHid {
 
         MockLookup.setInstances(new IFL());
 
-        ud = new File(getWorkDir(), "ud");
-        ud.mkdirs();
-        System.setProperty("netbeans.user", ud.getPath());
+        File ud = new File(getWorkDir(), "ud");
+        Places.setUserDirectory(ud);
         
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
@@ -204,7 +202,7 @@ public class ModuleListTest extends SetupHid {
         Stamps.getModulesJARs().flush(0);
         Stamps.getModulesJARs().shutdown();
         
-        File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.dat");
+        File f = Places.getCacheSubfile("all-modules.dat");
         assertTrue("Cache exists", f.exists());
 
         FileObject mf = fs.findResource(modulesfolder.getPath());

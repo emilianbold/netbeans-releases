@@ -57,21 +57,21 @@ final class WrapLine {
      * at (viewIndex - 1). It may be null if this line starts at view boundary
      * with a view at viewIndex.
      */
-    EditorView startViewPart;
+    EditorView startPart;
 
     /**
      * Ending view of this line that was obtained by breaking a view
      * at endViewIndex.
      * It may be null if the line ends at view boundary.
      */
-    EditorView endViewPart;
+    EditorView endPart;
 
     /*
      * X corresponding to the start view on the line (right next to startViewPart).
      * If there's an existing startViewPart then the value is its width otherwise
      * it's value is zero.
      */
-    float startViewX;
+    float firstViewX;
 
     /**
      * Index of a first view located at this line.
@@ -79,7 +79,7 @@ final class WrapLine {
      * Logically if there's a non-null startViewPart then it comes from view
      * at (startViewIndex - 1).
      */
-    int startViewIndex;
+    int firstViewIndex;
 
     /**
      * Index that follows last view located at this line.
@@ -93,15 +93,15 @@ final class WrapLine {
     }
 
     boolean hasFullViews() {
-        return startViewIndex != endViewIndex;
+        return firstViewIndex != endViewIndex;
     }
     
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("startPart=").append(startViewPart); // NOI18N
-        sb.append(" [").append(startViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
-        sb.append(" endPart=").append(endViewPart); // NOI18N
+        sb.append("startPart=").append(startPart); // NOI18N
+        sb.append(" [").append(firstViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
+        sb.append(" endPart=").append(endPart); // NOI18N
         return sb.toString();
     }
 

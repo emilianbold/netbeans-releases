@@ -41,16 +41,9 @@
  */
 package org.netbeans.modules.maven;
 
-import org.netbeans.modules.maven.classpath.CPExtenderLookupMerger;
-import org.netbeans.modules.maven.classpath.CPModifierLookupMerger;
-import org.netbeans.modules.maven.classpath.CPExtender;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
-import java.util.MissingResourceException;
-import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.NbMavenProject;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -67,6 +60,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -80,85 +74,91 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.Resource;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelProblem;
+import org.apache.maven.model.resolution.UnresolvableModelException;
+import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
-import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
-import org.netbeans.modules.maven.problems.ProblemReporterImpl;
-import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
-import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
-import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
-import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.openide.ErrorManager;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Template;
-import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.operations.OperationsImpl;
+import static org.netbeans.modules.maven.Bundle.*;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.classpath.CPExtender;
+import org.netbeans.modules.maven.classpath.CPExtenderLookupMerger;
+import org.netbeans.modules.maven.classpath.CPModifierLookupMerger;
+import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.cos.CosChecker;
+import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
-import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
+import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
-import org.netbeans.modules.maven.problems.RevalidateAction;
+import org.netbeans.modules.maven.operations.OperationsImpl;
+import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.problems.SanityBuildAction;
 import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileLocator;
+import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
+import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
+import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
+import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
 import org.netbeans.spi.project.LookupMerger;
+import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Template;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
- * the ultimate source for all maven project like. Most code in mevenide takes this
- * class as parameter, there's always just one instance per projects.
- * @author  Milos Kleint
+ * A Maven-based project.
  */
 public final class NbMavenProjectImpl implements Project {
 
@@ -341,13 +341,19 @@ public final class NbMavenProjectImpl implements Project {
     public @NonNull synchronized MavenProject getOriginalMavenProject() {
         MavenProject mp = project == null ? null : project.get();
         if (mp == null) {
-            mp = loadOriginalMavenProject(true);
+            mp = loadOriginalMavenProject();
         }
         project = new SoftReference<MavenProject>(mp);
         return mp;
     }
 
-    private @NonNull MavenProject loadOriginalMavenProject(boolean fallbackOnline) {
+    @Messages({
+        "TXT_RuntimeException=RuntimeException occurred in Apache Maven embedder while loading",
+        "TXT_RuntimeExceptionLong=RuntimeException occurred in Apache Maven embedder while loading the project. \n"
+            + "This is preventing the project model from loading properly. \n"
+            + "Please file a bug report with details about your project and the IDE's log file.\n\n"
+    })
+    private @NonNull MavenProject loadOriginalMavenProject() {
         long startLoading = System.currentTimeMillis();
         MavenProject newproject = null;
         try {
@@ -372,52 +378,7 @@ public final class NbMavenProjectImpl implements Project {
              MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req);
              newproject = res.getProject();
             if (res.hasExceptions()) {
-                //#189833 
-                if (fallbackOnline) {
-                    ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                            NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report"),
-                            NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report_Desc"), null);
-                    problemReporter.addReport(report);
-                    req.setTransferListener(ProgressTransferListener.activeListener());
-                    RELOAD_RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            req.setOffline(false);
-                            AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(
-                                    NbMavenProjectImpl.class, "LBL_Incomplete_Loading_Progress_Handle", projectFile.getParent()),
-                                                new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("fallbackOnline") },  //NOI18N
-                                                    ProgressTransferListener.cancellable(), null);
-                            try {
-                                ProgressTransferListener.setAggregateHandle(hndl);
-                                hndl.start();
-                                MavenExecutionResult res = EmbedderFactory.getOnlineEmbedder().readProjectWithDependencies(req);
-                                MavenProject newOnlinewproject = res.getProject();
-                                problemReporter.clearReports();
-                                if(newOnlinewproject ==null ){
-                                     newOnlinewproject = getFallbackProject();
-                                }
-                                synchronized (NbMavenProjectImpl.this) {
-                                  project = new SoftReference<MavenProject>(newOnlinewproject);
-                                  if (res.hasExceptions()) {
-                                       reportExceptions(res);
-                                  }
-                                  projectInfo.reset();
-                                }
-                                ACCESSOR.doFireReload(watcher);
-                                doBaseProblemChecks();
-                           } catch (ThreadDeath d) { // download interrupted
-                           } finally {
-                               hndl.finish();
-                               ProgressTransferListener.clearAggregateHandle();
-                           }
-        
-                        }
-                    });
-                } else {
-                    reportExceptions(res);
-                }
-
+                reportExceptions(res);
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -429,17 +390,13 @@ public final class NbMavenProjectImpl implements Project {
             pw.flush();
 
             ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_RuntimeException"),
-                    NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_RuntimeExceptionLong") + wr.toString(), null);
+                    TXT_RuntimeException(),
+                    TXT_RuntimeExceptionLong() + wr.toString(), null);
             problemReporter.addReport(report);
 
         } finally {
             if (newproject == null) {
                 newproject = getFallbackProject();
-                if(fallbackOnline){
-                    newproject.setName(NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Project_Name"));
-                    newproject.setDescription(NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Project_Desc"));
-                }
             }
             long endLoading = System.currentTimeMillis();
             LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, getProjectDirectory().getPath()});
@@ -451,6 +408,10 @@ public final class NbMavenProjectImpl implements Project {
         return newproject;
     }
 
+    @Messages({
+        "LBL_Incomplete_Project_Name=<partially loaded Maven project>",
+        "LBL_Incomplete_Project_Desc=Partially loaded Maven project; try building it."
+    })
     private MavenProject getFallbackProject() throws AssertionError {
         MavenProject newproject;
         File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N //NOI18N
@@ -463,25 +424,47 @@ public final class NbMavenProjectImpl implements Project {
         } else { // from a unit test
             newproject = new MavenProject();
         }
+        newproject.setName(LBL_Incomplete_Project_Name());
+        newproject.setDescription(LBL_Incomplete_Project_Desc());
+        newproject.setFile(projectFile);
         return newproject;
     }
 
+    @Messages({
+        "TXT_Artifact_Resolution_problem=Artifact Resolution problem",
+        "TXT_Artifact_Not_Found=Artifact Not Found",
+        "TXT_Cannot_Load_Project=Unable to properly load project"
+    })
     private void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
         for (Throwable e : res.getExceptions()) {
             LOG.log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
             String msg = e.getMessage();
-            if (e instanceof ArtifactResolutionException) {
+            if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"), msg, null);
+                        TXT_Artifact_Resolution_problem(), msg, null);
                 problemReporter.addReport(report);
-            } else if (e instanceof ArtifactNotFoundException) {
+                problemReporter.addMissingArtifact(((ArtifactResolutionException) e).getArtifact());
+            } else if (e instanceof ArtifactNotFoundException) { // XXX when does this occur?
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"), msg, null);
+                        TXT_Artifact_Not_Found(), msg, null);
                 problemReporter.addReport(report);
+                problemReporter.addMissingArtifact(((ArtifactNotFoundException) e).getArtifact());
             } else if (e instanceof ProjectBuildingException) {
-                //igonre if the problem is in the project validation codebase, we handle that later..
                 problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"), msg, new RevalidateAction(this)));
+                        TXT_Cannot_Load_Project(), msg, new SanityBuildAction(this)));
+                if (e.getCause() instanceof ModelBuildingException) {
+                    ModelBuildingException mbe = (ModelBuildingException) e.getCause();
+                    for (ModelProblem mp : mbe.getProblems()) {
+                        if (mp.getException() instanceof UnresolvableModelException) {
+                            UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
+                            problemReporter.addMissingArtifact(getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
+                        } else if (mp.getException() instanceof PluginResolutionException) {
+                            Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
+                            // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
+                            problemReporter.addMissingArtifact(getEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
+                        }
+                    }
+                }
             } else {
                 LOG.log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
@@ -505,54 +488,39 @@ public final class NbMavenProjectImpl implements Project {
             });
             return;
         }
-//        clearProjectWorkspaceCache();
         problemReporter.clearReports(); //#167741 -this will trigger node refresh?
-        MavenProject prj = loadOriginalMavenProject(false);
+        MavenProject prj = loadOriginalMavenProject();
         synchronized (this) {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
         projectInfo.reset();
-        doBaseProblemChecks();
+        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
     }
 
-//    public void clearProjectWorkspaceCache() {
-//        //when project gets reloaded (pom.xml file changed, build finished)
-//        //we need to dump the weakly referenced caches and start with a clean room
-//        try {
-//            MavenWorkspaceStore store = (MavenWorkspaceStore) getEmbedder().getPlexusContainer().lookup("org.apache.maven.workspace.MavenWorkspaceStore"); //NOI18N
-//            if (store instanceof NbMavenWorkspaceStore) {
-//                ((NbMavenWorkspaceStore)store).doManualClear();
-//            }
-//        } catch (ComponentLookupException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
         String basedir = project.getEmbedder().getLocalRepository().getBasedir();
         File file = FileUtil.normalizeFile(new File(basedir));
         FileUtil.refreshFor(file);
     }
 
-    void doBaseProblemChecks() {
-        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
-    }
-
+    @Messages("LBL_NoProjectName=<Maven project with no name>")
     public String getDisplayName() {
         String displayName = projectInfo.getDisplayName();
         if (displayName == null) {
-            displayName = NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_NoProjectName");
+            displayName = LBL_NoProjectName();
         }
         return displayName;
     }
 
+    @Messages("LBL_DefaultDescription=A Maven-based project")
     public String getShortDescription() {
         String desc = null;
         if (desc == null) {
             desc = getOriginalMavenProject().getDescription();
         }
         if (desc == null) {
-            desc = NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_DefaultDescription");
+            desc = LBL_DefaultDescription();
         }
         return desc;
     }
@@ -573,11 +541,12 @@ public final class NbMavenProjectImpl implements Project {
             put(NbMavenProject.TYPE_JAR, "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
             put(NbMavenProject.TYPE_WAR, "org/netbeans/modules/maven/resources/maven_web_application_16.png"); //NOI18N
             put(NbMavenProject.TYPE_EJB, "org/netbeans/modules/maven/resources/maven_ejb_module_16.png"); //NOI18N
+            put(NbMavenProject.TYPE_APPCLIENT, "org/netbeans/modules/maven/resources/appclient.png"); //NOI18N
             put(NbMavenProject.TYPE_EAR, "org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"); //NOI18N
             put(NbMavenProject.TYPE_POM, "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
-            put(NbMavenProject.TYPE_NBM, "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+            put(NbMavenProject.TYPE_NBM, "org/netbeans/modules/maven/apisupport/nbmicon.png"); //NOI18N
             put(NbMavenProject.TYPE_OSGI, "org/netbeans/modules/maven/resources/maven_osgi_16.png"); //NOI18N
-            put(NbMavenProject.TYPE_NBM_APPLICATION, "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
+            put(NbMavenProject.TYPE_NBM_APPLICATION, "org/netbeans/modules/maven/apisupport/suiteicon.png"); //NOI18N
         }
     });
 
@@ -588,23 +557,9 @@ public final class NbMavenProjectImpl implements Project {
     public String getName() {
         return getOriginalMavenProject().getId().replace(':', '_');
     }
-    /**
-     * TODO move elsewhere?
-     */
-    private static ContextAwareAction refreshAction;
-
-    @ActionID(id = "org.netbeans.modules.maven.refresh", category = "Project")
-    @ActionRegistration(displayName = "#ACT_Reload_Project")
-    @ActionReference(position = 1700, path = "Projects/org-netbeans-modules-maven/Actions")
-    public static ContextAwareAction createRefreshAction() {
-        if (refreshAction == null) {
-            refreshAction = new RefreshAction(Lookup.EMPTY);
-        }
-        return refreshAction;
-    }
 
     /**
-     * the root dirtectory of the project.. that;s where the pom resides.
+     * The root directory of the project where the POM resides.
      */
     @Override
     public FileObject getProjectDirectory() {
@@ -1003,11 +958,15 @@ public final class NbMavenProjectImpl implements Project {
             return toReturn;
         }
 
-        @Override
-        public String getDisplayName() {
+        
+        @Messages({
+            "# {0} - dir basename", "LBL_misconfigured_project=<misconfigured Maven project in {0}>",
+            "TXT_Maven_project_at=Maven project at {0}"
+        })
+        @Override public String getDisplayName() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
             if (isErrorPom(pr)) {
-                return NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_misconfigured_project", getProjectDirectory().getNameExt());
+                return LBL_misconfigured_project(getProjectDirectory().getNameExt());
             }
             String toReturn = pr.getName();
             if (toReturn == null) {
@@ -1017,7 +976,7 @@ public final class NbMavenProjectImpl implements Project {
                     toReturn = grId + ":" + artId; //NOI18N
 
                 } else {
-                    toReturn = NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Maven_project_at", NbMavenProjectImpl.this.getProjectDirectory().getPath());
+                    toReturn = TXT_Maven_project_at(NbMavenProjectImpl.this.getProjectDirectory().getPath());
                 }
             }
             return toReturn;
@@ -1312,17 +1271,26 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     @SuppressWarnings("serial")
-    private static class RefreshAction extends AbstractAction implements ContextAwareAction {
+    @ActionID(id = "org.netbeans.modules.maven.refresh", category = "Project")
+    @ActionRegistration(displayName = "#ACT_Reload_Project")
+    @ActionReference(position = 1700, path = "Projects/org-netbeans-modules-maven/Actions")
+    @Messages("ACT_Reload_Project=Reload POM")
+    public static class RefreshAction extends AbstractAction implements ContextAwareAction {
 
-        private Lookup context;
+        private final Lookup context;
 
-        public RefreshAction(Lookup lkp) {
+        public RefreshAction() {
+            this(Lookup.EMPTY);
+        }
+
+        @Messages("ACT_Reload_Projects=Reload {0} POMs")
+        private RefreshAction(Lookup lkp) {
             context = lkp;
             Collection<? extends NbMavenProjectImpl> col = context.lookupAll(NbMavenProjectImpl.class);
             if (col.size() > 1) {
-                putValue(Action.NAME, NbBundle.getMessage(NbMavenProjectImpl.class, "ACT_Reload_Projects", col.size()));
+                putValue(Action.NAME, ACT_Reload_Projects(col.size()));
             } else {
-                putValue(Action.NAME, NbBundle.getMessage(NbMavenProjectImpl.class, "ACT_Reload_Project"));
+                putValue(Action.NAME, ACT_Reload_Project());
             }
         }
 
@@ -1348,14 +1316,4 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
-    private static Throwable getCause(Exception exc, Class exceptionClazz) {
-        Throwable t = exc;
-        while (t != null) {
-            if (t != null && t.getClass().equals(exceptionClazz)) {
-                return t;
-            }
-            t = t.getCause();
-        }
-        return null;
-    }
 }

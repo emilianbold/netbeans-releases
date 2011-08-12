@@ -51,6 +51,7 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -148,6 +149,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         
         // invoke bind dialog
+        designer.source();
+        designer.design();
         Node actNode = new Node(inspector.treeComponents(), nullLabelPath);
         Action act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
@@ -184,6 +187,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         findInCode("binding.setSourceUnreadableValue(\"" + incompleteMsg + "\");", designer); // NOI18N
        
         // invoke bind dialog again and check values
+        designer.source();
+        designer.design();
         actNode = new Node(inspector.treeComponents(), nullLabelPath);
         act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
@@ -213,31 +218,52 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
     }
     
     /** Tests validation */
-    public void testValidation() {
+    public void testValidation() throws InterruptedException {
 
         // open frame
-        openFile(FILENAME);
+        ProjectRootNode prn;
+        ProjectsTabOperator pto;
+        
+        
+              
+        
+        pto = new ProjectsTabOperator();
+        prn = pto.getProjectRootNode("SampleProject");
+        prn.select();
+        Node formnode = new Node(prn, "Source Packages|" + "data" + "|" + FILENAME);
+        OpenAction openAction = new OpenAction();
+        formnode.select();
+        formnode.performPopupAction("Open");
+        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        formnode.select();
+        formnode.performPopupAction("Open");
+        
+        designer.source();
+        designer.design();
+        
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         Node actNode = new Node(inspector.treeComponents(), "[JFrame]|jLabel12 [JLabel]"); // NOI18N
         
         Action act = new ActionNoBlock(null, ACTION_PATH);
-        act.perform(actNode);
+        act.performPopup(actNode);
         
-        JDialogOperator bindOp = new JDialogOperator("Bind");  // NOI18N
-        JTabbedPaneOperator tabOp = new JTabbedPaneOperator(bindOp);
-        tabOp.selectPage("Advanced");  // NOI18N
-       // bindOp.ok();
+        BindDialogOperator bindOp = new BindDialogOperator();
+        bindOp.selectAdvancedTab();
+        bindOp.selectValidator(VALIDATOR_NAME);
+        bindOp.ok();
         
-        new JButtonOperator(tabOp, 4).pushNoBlock();
-        NbDialogOperator valOp = new NbDialogOperator("Validator");  // NOI18N
-        JComboBoxOperator jcbOp = new JComboBoxOperator(valOp,0);
-        jcbOp.selectItem(2);
-        JTextFieldOperator jtfOp= new JTextFieldOperator(valOp, 0);
-        jtfOp.setText(VALIDATOR_NAME);
-        new JButtonOperator(valOp, "OK").push();  // NOI18N
-        
+        //new JButtonOperator(tabOp, 4).pushNoBlock();
+        //NbDialogOperator valOp = new NbDialogOperator("Validator");  // NOI18N
+        //JComboBoxOperator jcbOp = new JComboBoxOperator(valOp,0);
+        //jcbOp.selectItem(2);
+        //JTextFieldOperator jtfOp= new JTextFieldOperator(valOp, 0);
+        //jtfOp.setText(VALIDATOR_NAME);
+        //new JButtonOperator(valOp, "OK").push();  // NOI18N
+        //new JButtonOperator(bindOp, "OK").push();  // NOI18N
+        openAction = new OpenAction();
+        openAction.perform(formnode);
         // find code in source file
-        FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
+        designer = new FormDesignerOperator(FILENAME);
         findInCode("binding.setValidator(" + VALIDATOR_NAME + ");", designer);  // NOI18N
         
         // open bind dialog again and check selected
@@ -312,6 +338,9 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         findInCode("binding.setConverter(new Bool2FaceConverter());", designer);  // NOI18N
         
         // open bind dialog again and check custom code value
+        designer.source();
+        designer.design();
+        act = new ActionNoBlock(null, ACTION_PATH);
         act.perform(actNode);
         bindOp = new BindDialogOperator();        
         bindOp.selectAdvancedTab();        
@@ -326,6 +355,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         bindOp.ok();
         
         assertEquals("new Bool2FaceConverter()", result);  // NOI18N
+        
+        designer.source();
     }
     
     /** Select update mode for  jlabel */

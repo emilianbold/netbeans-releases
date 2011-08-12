@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import javax.swing.LayoutStyle;
 import java.util.Collection;
 import java.awt.Color;
 import java.awt.Component;
@@ -74,7 +75,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -100,7 +100,7 @@ import org.openide.windows.WindowManager;
 import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  * Top component which displays something.
@@ -209,13 +209,13 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private static int getLeftContainerGap(JComponent comp) {
-        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        LayoutStyle layoutStyle = LayoutStyle.getInstance();
         return layoutStyle.getContainerGap(comp, WEST, null);
     }
 
     private static Component createVerticalStrut(JComponent above,
                                                  JComponent below) {
-        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        LayoutStyle layoutStyle = LayoutStyle.getInstance();
         int height;
         if (above == null) {
             height = layoutStyle.getContainerGap(below, NORTH, null);

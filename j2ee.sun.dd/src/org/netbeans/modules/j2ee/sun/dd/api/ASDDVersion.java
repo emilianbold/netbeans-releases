@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -302,7 +302,8 @@ public final class ASDDVersion {
         SUN_APPSERVER_8_1,
         SUN_APPSERVER_9_0,
         SUN_APPSERVER_9_1_1,
-        SUN_APPSERVER_10_0
+        SUN_APPSERVER_10_0,
+        SUN_APPSERVER_10_1,
     };
     
     /** Ordered list of webserver versions.
@@ -438,6 +439,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.toString().equals(version)) {
             result = SUN_APPSERVER_10_0;
+        } else if(SUN_APPSERVER_10_1.toString().equals(version)) {
+            result = SUN_APPSERVER_10_1;
         }
         
         return result;
@@ -463,6 +466,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.toString().compareTo(version) == 0) {
             result = SUN_APPSERVER_10_0;
+        } else if(SUN_APPSERVER_10_1.toString().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_1;
         }
         
         return result;
@@ -487,6 +492,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.getNumericWebAppVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_10_0;
+        }  else if(SUN_APPSERVER_10_1.getNumericWebAppVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_1;
         }
         
         return result;
@@ -511,6 +518,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.getNumericEjbJarVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_10_0;
+        } else if(SUN_APPSERVER_10_1.getNumericEjbJarVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_1;
         }
         
         return result;
@@ -537,6 +546,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.getNumericApplicationVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_10_0;
+        } else if(SUN_APPSERVER_10_1.getNumericApplicationVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_1;
         }
         
         return result;
@@ -560,6 +571,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.getNumericAppClientVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_10_0;
+        } else if(SUN_APPSERVER_10_1.getNumericAppClientVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_1;
         }
         return result;
     }
@@ -583,6 +596,8 @@ public final class ASDDVersion {
             result = SUN_APPSERVER_9_1_1;
         } else if(SUN_APPSERVER_10_0.getNumericCmpMappingsVersion().compareTo(version) == 0) {
             result = SUN_APPSERVER_10_0;
+        } else if(SUN_APPSERVER_10_1.getNumericCmpMappingsVersion().compareTo(version) == 0) {
+            result = SUN_APPSERVER_10_1;
         }
         
         return result;

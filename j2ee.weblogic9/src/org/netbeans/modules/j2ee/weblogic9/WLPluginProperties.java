@@ -95,20 +95,13 @@ public final class WLPluginProperties {
 
     public static final String WEBLOGIC_JAR = "server/lib/weblogic.jar"; // NOI18N
     
-    public static final String WEBLOGIC_JAR_DWP_ALTERNATIVE = "server/lib/weblogic-webprofile-dev.jar"; // NOI18N
-    
     private static final Collection EXPECTED_FILES = new ArrayList();
-    
-    private static final Collection EXPECTED_FILES_DWP_ALTERNATIVE = new ArrayList();
+
 
     static {
         EXPECTED_FILES.add("common"); // NOI18N
         EXPECTED_FILES.add("server/bin"); // NOI18N
-        EXPECTED_FILES.add(WEBLOGIC_JAR);
-        
-        EXPECTED_FILES_DWP_ALTERNATIVE.add("common"); // NOI18N
-        EXPECTED_FILES_DWP_ALTERNATIVE.add("server/bin"); // NOI18N
-        EXPECTED_FILES_DWP_ALTERNATIVE.add(WEBLOGIC_JAR_DWP_ALTERNATIVE);     
+        EXPECTED_FILES.add(WEBLOGIC_JAR);    
     }
     
     private static final Logger LOGGER = Logger.getLogger(WLPluginProperties.class.getName());
@@ -297,12 +290,6 @@ public final class WLPluginProperties {
     @NonNull
     public static File getWeblogicJar(File serverFile) {
         File weblogicJar = FileUtil.normalizeFile(new File(serverFile, WEBLOGIC_JAR));
-        if (!weblogicJar.exists()) {
-            File weblogicDwpJar = FileUtil.normalizeFile(new File(serverFile, WEBLOGIC_JAR_DWP_ALTERNATIVE));
-            if (weblogicDwpJar.exists()) {
-                return weblogicDwpJar;
-            }
-        }
         return weblogicJar;
     }    
     
@@ -629,7 +616,7 @@ public final class WLPluginProperties {
                 !candidate.exists() ||
                 !candidate.canRead() ||
                 !candidate.isDirectory()  ||
-                (!hasRequiredChildren(candidate, EXPECTED_FILES) && !hasRequiredChildren(candidate, EXPECTED_FILES_DWP_ALTERNATIVE))) {
+                !hasRequiredChildren(candidate, EXPECTED_FILES)) {
             return false;
         }
         return true;
@@ -771,37 +758,6 @@ public final class WLPluginProperties {
         }
 
         return null;
-    }
-
-    public static boolean isWebProfile(File serverRoot) {
-        File weblogicJar = WLPluginProperties.getWeblogicJar(serverRoot);
-        if (!weblogicJar.exists()) {
-            return false;
-        }
-        try {
-            // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3
-            JarFile jar = new JarFile(weblogicJar);
-            try {
-                Manifest manifest = jar.getManifest();
-                String implementationTitle = null;
-                if (manifest != null) {
-                    implementationTitle = manifest.getMainAttributes()
-                            .getValue("Implementation-Title"); // NOI18N
-                }
-                if (implementationTitle != null) { // NOI18N
-                    return implementationTitle.contains("WebProfile"); // NOI18N
-                }
-            } finally {
-                try {
-                    jar.close();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINEST, null, ex);
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.FINE, null, e);
-        }
-        return false;
     }
 
     @CheckForNull

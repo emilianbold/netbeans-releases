@@ -56,6 +56,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -153,24 +155,40 @@ public class StartTask extends BasicTask<OperationState> {
         Logger.getLogger("glassfish").log(Level.FINEST, "StartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
         final long start = System.currentTimeMillis();
 
-        final String host;
-        final int port;
+        final String adminHost;
+        final int adminPort;
 
-        host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        if(host == null || host.length() == 0) {
+        adminHost = ip.get(GlassfishModule.HOSTNAME_ATTR);
+        if(adminHost == null || adminHost.length() == 0) {
             return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_NOHOST", instanceName); //NOI18N
         }
 
-        Process serverProcess;
-        try {
-            port = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
-            if(port < 0 || port > 65535) {
-                return fireOperationStateChanged(OperationState.FAILED,
-                        "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
-            }
+        adminPort = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
+        if(adminPort < 0 || adminPort > 65535) {
+            return fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
+        }
 
-            if (support.isRemote()) {
+        if (support.isRemote()) {
+            if (support.isReallyRunning()) {
+                if (null == Util.computeTarget(ip)) {
+                    return restartDAS(adminHost,adminPort,start);
+                } else {
+                    return startClusterOrInstance(adminHost,adminPort);
+                }
+            } else {
+                return fireOperationStateChanged(OperationState.FAILED,
+                        "MSG_START_SERVER_FAILED_DASDOWN", instanceName); //NOI18N
+            }
+        } else if (!support.isReallyRunning()) {
+            return startDASAndClusterOrInstance(adminHost,adminPort);
+        } else {
+            return startClusterOrInstance(adminHost,adminPort);
+        }
+    }
+
+    private OperationState restartDAS(String adminHost, int adminPort, final long start) {
                 // deal with the remote case here...
                 CommandRunner mgr = new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
                     // if the http command is successful, we are not done yet...
@@ -255,7 +273,13 @@ public class StartTask extends BasicTask<OperationState> {
 
             }
 
-            jdkHome = getJavaPlatformRoot(support);
+    private OperationState startDASAndClusterOrInstance(String adminHost, int adminPort) {
+        long start = System.currentTimeMillis();
+        Process serverProcess;
+        try {
+            if (null == jdkHome) {
+                jdkHome = getJavaPlatformRoot(support);
+            }
             // lookup the javadb start service and use it here.
             RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
             if (null != db && "true".equals(ip.get(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
@@ -302,7 +326,7 @@ public class StartTask extends BasicTask<OperationState> {
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
-            boolean httpLive = Utils.isLocalPortOccupied(port);
+            boolean httpLive = Utils.isLocalPortOccupied(adminPort);
 
             // Sleep for a little so that we do not make our checks too often
             //
@@ -324,8 +348,9 @@ public class StartTask extends BasicTask<OperationState> {
                     messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     serverProcess.destroy();
                     logger.stopReaders();
+                    return fireOperationStateChanged(state, messageKey, instanceName);
                 }
-                return fireOperationStateChanged(state, messageKey, instanceName);
+                return startClusterOrInstance(adminHost,adminPort);
             }
 
             // if we are profiling, we need to lie about the status?
@@ -363,9 +388,67 @@ public class StartTask extends BasicTask<OperationState> {
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(OperationState.FAILED,
-                "MSG_START_SERVER_FAILED2", instanceName,host,port+""); // NOI18N
+                "MSG_START_SERVER_FAILED2", instanceName,adminHost,adminPort+""); // NOI18N
     }
 
+        private OperationState startClusterOrInstance(String adminHost, int adminPort) {
+            String target = Util.computeTarget(ip);
+            if (null == target) {
+                return fireOperationStateChanged(OperationState.COMPLETED,
+                        "MSG_SERVER_STARTED", instanceName); // NOI18N
+            } else {
+                OperationState retVal = null;
+                // try start-cluster
+                CommandRunner inner = new CommandRunner(true, 
+                        support.getCommandFactory(), ip, new OperationStateListener() {
+                    @Override
+                    public void operationStateChanged(OperationState newState, String message) {
+
+                    }
+                }
+                );
+                Future<OperationState> result = inner.execute(new Commands.StartCluster(target));
+                OperationState state = null;
+                try {
+                    state = result.get();
+                } catch (InterruptedException ie) {
+                    Logger.getLogger("glassfish").log(Level.INFO, "start-cluster",ie); // NOI18N
+                } catch (ExecutionException ie) {
+                    Logger.getLogger("glassfish").log(Level.INFO, "start-cluster",ie); // NOI18N
+                }
+                if (state == OperationState.FAILED) {
+                    // if start-cluster not successful, try start-instance
+                    inner =  new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
+                        @Override
+                        public void operationStateChanged(OperationState newState, String message) {
+
+                        }
+                    });
+                    result = inner.execute(new Commands.StartInstance(target));
+                    try {
+                        state = result.get();
+                    } catch (InterruptedException ie) {
+                        Logger.getLogger("glassfish").log(Level.INFO, "start-instance",ie);  // NOI18N
+                    } catch (ExecutionException ie) {
+                        Logger.getLogger("glassfish").log(Level.INFO, "start-instance",ie);  // NOI18N
+                    }
+                    if (state == OperationState.FAILED) {
+                        // if start instance not suscessful fail
+                        return fireOperationStateChanged(OperationState.FAILED,
+                                "MSG_START_TARGET_FAILED", instanceName,target); // NOI18N
+                    }
+                }
+
+                // update http port
+                support.updateHttpPort();
+
+                // ping the http port
+
+                return fireOperationStateChanged(OperationState.COMPLETED,
+                        "MSG_SERVER_STARTED", instanceName); // NOI18N
+            }
+
+        }
     private String[] createEnvironment() {
         List<String> envp = new ArrayList<String>();
         String localJdkHome = getJdkHome();

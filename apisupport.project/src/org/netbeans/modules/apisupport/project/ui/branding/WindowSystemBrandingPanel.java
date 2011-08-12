@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.branding;
 
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import org.openide.util.NbBundle;
@@ -55,7 +56,7 @@ import org.openide.util.NbBundle;
  */
 public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
     
-    public WindowSystemBrandingPanel(BasicBrandingModel model) {
+    public WindowSystemBrandingPanel(BrandingModel model) {
         super(NbBundle.getMessage(BasicBrandingPanel.class, "LBL_WindowSystemTab"), model); //NOI18N
         
         initComponents();
@@ -88,7 +89,7 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
     
     @Override
     public void store() {
-        BasicBrandingModel branding = getBranding();
+        BrandingModel branding = getBranding();
         
         SplashUISupport.setValue(branding.getWsEnableClosingEditors(), Boolean.toString(cbEnableEditorClosing.isSelected()));
         SplashUISupport.setValue(branding.getWsEnableClosingViews(), Boolean.toString(cbEnableViewClosing.isSelected()));
@@ -109,7 +110,7 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
     
     
     void refresh() {
-        BasicBrandingModel branding = getBranding();
+        BrandingModel branding = getBranding();
         
         cbEnableDnd.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableDragAndDrop()));
         cbEnableEditorClosing.setSelected(SplashUISupport.bundleKeyToBoolean(branding.getWsEnableClosingEditors()));
@@ -132,7 +133,7 @@ public class WindowSystemBrandingPanel extends AbstractBrandingPanel {
     }
     
     private void enableDisableComponents() {
-        final BasicBrandingModel branding = getBranding();
+        final BrandingModel branding = getBranding();
         cbEnableDnd.setEnabled(branding.isBrandingEnabled());
         cbEnableEditorClosing.setEnabled(branding.isBrandingEnabled());
         cbEnableFloating.setEnabled(branding.isBrandingEnabled());

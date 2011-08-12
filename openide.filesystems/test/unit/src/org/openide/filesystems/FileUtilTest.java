@@ -83,6 +83,22 @@ public class FileUtilTest extends NbTestCase {
         FileUtil.createFolder(FileUtil.getConfigRoot(), "Services/MIMEResolver");
     }
 
+    public void testLowerAndCapitalNormalization() throws IOException {
+        if (!Utilities.isWindows()) {
+            return;
+        }
+        clearWorkDir();
+        
+        File a = new File(getWorkDir(), "a");
+        assertTrue("Lower case file created", a.createNewFile());
+        File A = new File(getWorkDir(), "A");
+
+        assertEquals("Normalizes to lower case", a.getAbsolutePath(), FileUtil.normalizeFile(A).getAbsolutePath());
+        assertTrue("Can delete the file", a.delete());
+        assertTrue("Can create capital file", A.createNewFile());
+        assertEquals("Normalizes to capital case", A.getAbsolutePath(), FileUtil.normalizeFile(A).getAbsolutePath());
+    }
+
     public void testWrongNormalization() throws Exception {
         CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
         final File file = new File("/../../tmp/");
@@ -365,7 +381,7 @@ public class FileUtilTest extends NbTestCase {
         FileObject fo = FileUtil.createData(testFolder, "fo1.mime1");
         String[] withinMIMETypes = null;
         try {
-            FileUtil.getMIMEType(fo, withinMIMETypes);
+            fo.getMIMEType(withinMIMETypes);
             fail("FileUtil.getMIMEType(fo, null) should throw IllegalArgumentException.");
         } catch (NullPointerException npe) {
             // exception correctly thrown
@@ -373,7 +389,7 @@ public class FileUtilTest extends NbTestCase {
         
         fo = FileUtil.createData(testFolder, "fo2.mime1");
         withinMIMETypes = new String[0];
-        FileUtil.getMIMEType(fo, withinMIMETypes);
+        fo.getMIMEType(withinMIMETypes);
         assertTrue("Resolver should be queried if array of desired MIME types is empty.", MyResolver.wasQueried());
         
         fo = FileUtil.createData(testFolder, "fo3.mime1");
@@ -388,7 +404,7 @@ public class FileUtilTest extends NbTestCase {
 
         fo = FileUtil.createData(testFolder, "fo5.mime1");
         withinMIMETypes = new String[]{"mime1", "mime2"};
-        FileUtil.getMIMEType(fo, withinMIMETypes);
+        fo.getMIMEType(withinMIMETypes);
         assertTrue("Resolver should be queried if both items in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.wasQueried());
     }
 

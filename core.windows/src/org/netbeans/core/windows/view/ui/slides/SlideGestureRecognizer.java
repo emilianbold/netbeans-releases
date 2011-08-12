@@ -105,11 +105,13 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     }
 
     /** Reaction to user press on some of the slide buttons */
+    @Override
     public void actionPerformed(ActionEvent e) {
         slideBar.userClickedSlidingButton((Component)e.getSource());
     }
 
     /** Tracks mouse pointer location */
+    @Override
     public void mouseMoved(MouseEvent e) {
         if (autoSlideTrigger.isEnabled()) {
             curMouseLocX = e.getX();
@@ -124,6 +126,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     }
 
     /** Activates automatic slide in system */
+    @Override
     public void mouseEntered(MouseEvent e) {
         if (!slideBar.isHoveringAllowed()) {
             // don't even try to trigger automatic sliding when focused slide is active
@@ -143,6 +146,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     }
 
     /** Deactivates automatic slide in listening */
+    @Override
     public void mouseExited(MouseEvent e) {
         mouseInButton = null;
         pressingButton = false;
@@ -150,21 +154,25 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
     }
     
     /** Reacts to popup triggers on sliding buttons */
+    @Override
     public void mousePressed(MouseEvent e) {
         autoSlideTrigger.deactivateAutoSlideInGesture(e);
         handlePopupRequests(e);
     }
     
     /** Reacts to popup triggers on sliding buttons */
+    @Override
     public void mouseReleased(MouseEvent e) {
         autoSlideTrigger.deactivateAutoSlideInGesture(e);
         handlePopupRequests(e);
     }
     
+    @Override
     public void mouseDragged(MouseEvent e) {
         // no operation
     }
     
+    @Override
     public void mouseClicked(MouseEvent e) {
         // no operation
     }
@@ -226,6 +234,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
          * means we should check conditions and perform auto slide in or auto
          * slide out if appropriate
          */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             if (slideInTimer.equals(evt.getSource())) {
                 slideInTimerReaction(evt);
@@ -264,6 +273,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         /** AWTEventListener implementation. Analyzes incoming mouse motion
          * and initiates automatic slide out when needed.
          */
+        @Override
         public void eventDispatched(AWTEvent event) {
             notifySlideOutTimer((MouseEvent)event);
         }
@@ -367,6 +377,9 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
             if (orientation == SlideBarDataModel.SOUTH) {
                 slideh = slideh + ResizeGestureRecognizer.RESIZE_BUFFER;
                 slidey = slidey - ResizeGestureRecognizer.RESIZE_BUFFER;
+            }
+            if (orientation == SlideBarDataModel.NORTH) {
+                slideh = slideh + ResizeGestureRecognizer.RESIZE_BUFFER;
             }
             actArea = SwingUtilities.computeUnion(
                 slidex, slidey, slidew,

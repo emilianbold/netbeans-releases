@@ -113,7 +113,7 @@ public class SCFTHandlerTest extends NbTestCase {
         String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         
         DataObject obj = DataObject.find(fo);
@@ -138,7 +138,7 @@ public class SCFTHandlerTest extends NbTestCase {
         String txt = "print('<html><h1>'); print(nameAndExt); print('</h1></html>')";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         
         DataObject obj = DataObject.find(fo);
@@ -165,14 +165,14 @@ public class SCFTHandlerTest extends NbTestCase {
         String txt = "print('<html><h1>'); print(nameAndExt); print('</h1></html>')";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         FileObject fo2 = FileUtil.createData(root, "j.form");
         OutputStream os2 = fo2.getOutputStream();
         String txt2 = "print('<html><h2>'); print(nameAndExt); print('</h2></html>')";
         os2.write(txt2.getBytes());
         os2.close();
-        fo2.setAttribute("javax.script.ScriptEngine", "js");
+        fo2.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         DataObject obj = DataObject.find(fo);
         assertEquals("Both files", 2, obj.files().size());
@@ -215,7 +215,7 @@ public class SCFTHandlerTest extends NbTestCase {
             "print('</html>');";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
         
         
         DataObject obj = DataObject.find(fo);
@@ -262,7 +262,7 @@ public class SCFTHandlerTest extends NbTestCase {
          FileObject xml = FileUtil.createData(xmldir, "class.txt");
          OutputStream os = xml.getOutputStream();
          FileUtil.copy(getClass().getResourceAsStream("utf8.xml"), os);
-         xml.setAttribute("javax.script.ScriptEngine", "js");
+         xml.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
          os.close();
          
          DataObject obj = DataObject.find(xml);
@@ -298,8 +298,8 @@ public class SCFTHandlerTest extends NbTestCase {
         FileObject root = fs.getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.java");
         FileObject fo2 = FileUtil.createData(root, "simpleObject.form");
-        fo.setAttribute("javax.script.ScriptEngine", "js");
-        fo2.setAttribute("javax.script.ScriptEngine", "js");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
+        fo2.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "js");
 
         Charset set = Charset.forName("iso-8859-2");
         OutputStream os = fo2.getOutputStream();

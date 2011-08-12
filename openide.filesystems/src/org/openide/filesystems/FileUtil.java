@@ -91,6 +91,7 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.implspi.NamedServicesProvider;
 
 /** Common utilities for handling files.
  * This is a dummy class; all methods are static.
@@ -1587,7 +1588,7 @@ public final class FileUtil extends Object {
         FileObject parent = fo.getParent();
 
         while (parent != null) {
-            if (parent == folder) {
+            if (parent.equals(folder)) {
                 return true;
             }
 
@@ -1722,6 +1723,13 @@ public final class FileUtil extends Object {
         Map<String, String> normalizedPaths = getNormalizedFilesMap();
         String unnormalized = file.getPath();
         String normalized = normalizedPaths.get(unnormalized);
+        if (
+            normalized != null && 
+                normalized.equalsIgnoreCase(unnormalized) && 
+                !normalized.equals(unnormalized)
+        ) {
+            normalized = null;
+        }
         File ret;
         if (normalized == null) {
             ret = normalizeFileImpl(file);
@@ -2214,6 +2222,25 @@ public final class FileUtil extends Object {
     public static FileObject getConfigFile(String path) {
         Parameters.notNull("path", path);  //NOI18N
         return Repository.getDefault().getDefaultFileSystem().findResource(path);
+    }
+    
+    /** Finds a config object under given path. The path contains the extension
+     * of a file e.g.:
+     * <pre>
+     * Actions/Edit/org-openide-actions-CopyAction.instance
+     * Services/Browsers/swing-browser.settings
+     * </pre>
+     * @param filePath path to .instance or .settings file
+     * @param type the requested type for given object
+     * @return either null or instance of requrested type
+     * @since 7.49 
+     */
+    public static <T> T getConfigObject(String path, Class<T> type) {
+        FileObject fo = getConfigFile(path);
+        if (fo == null || fo.isFolder()) {
+            return null;
+        }
+        return NamedServicesProvider.getConfigObject(path, type);
     }
 
     /**

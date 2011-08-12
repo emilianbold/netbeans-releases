@@ -83,6 +83,11 @@ public class IssueField {
     public static final IssueField REMOVECC = new IssueField(BugzillaAttribute.REMOVECC.getKey(), null);
     public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, false);
     public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, false);
+    public static final IssueField ACTUAL_TIME = new IssueField(BugzillaAttribute.ACTUAL_TIME.getKey(), "LBL_ACTUAL_TIME", true);
+    public static final IssueField WORK_TIME = new IssueField(BugzillaAttribute.WORK_TIME.getKey(), "LBL_WORK_TIME", true);
+    public static final IssueField REMAINING_TIME = new IssueField(BugzillaAttribute.REMAINING_TIME.getKey(), "LBL_REMAINING_TIME", true);
+    public static final IssueField ESTIMATED_TIME = new IssueField(BugzillaAttribute.ESTIMATED_TIME.getKey(), "LBL_DEADLINE", true);
+    public static final IssueField DEADLINE = new IssueField(BugzillaAttribute.DEADLINE.getKey(), null, true);
 
     private final String key;
     private final String displayNameKey;

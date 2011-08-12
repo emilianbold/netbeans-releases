@@ -72,9 +72,9 @@ abstract class ListRemoteObjectsCommand extends TransportCommand {
             conn = t.openFetch();
             refs = conn.getRefs();
         } catch (URISyntaxException ex) {
-            throw new GitException(ex);
+            throw new GitException(ex.getMessage(), ex);
         } catch (NotSupportedException ex) {
-            throw new GitException(ex);
+            throw new GitException(ex.getMessage(), ex);
         } catch (TransportException e) {
             handleException(e);
         } finally {

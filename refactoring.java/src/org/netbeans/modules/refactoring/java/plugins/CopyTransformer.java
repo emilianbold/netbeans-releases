@@ -83,7 +83,7 @@ public class CopyTransformer extends RefactoringVisitor {
     public Tree visitCompilationUnit(CompilationUnitTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             CompilationUnitTree cut = tree;
-            if (cut.getPackageName() != null && !"".equals(newPackage)) { // NOI18N
+            if (cut.getPackageName() != null && !"".equals(newPackage) && !newPackage.equals(cut.getPackageName().toString())) { // NOI18N
                 rewrite(cut.getPackageName(), make.Identifier(newPackage));
             } else {
                 // in order to handle default package, we have to rewrite whole

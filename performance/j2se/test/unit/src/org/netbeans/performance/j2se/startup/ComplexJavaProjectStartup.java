@@ -74,6 +74,9 @@ public class ComplexJavaProjectStartup extends MeasureStartupTimeTestCase {
      */
     public void testStartIDEWithOpenedFiles() throws java.io.IOException {
         measureComplexStartupTime("Startup Time with 10 opened java files");
+        PerformanceData[] pData = this.getPerformanceData();
+        for (int i = 0; i < pData.length; i++) {
+            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), pData[i]);
+        }
     }
-    
 }

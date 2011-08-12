@@ -365,7 +365,7 @@ public final class Utilities {
         return (getOperatingSystem() & OS_WINDOWS_MASK) != 0;
     }
 
-    /** Test whether NetBeans is running on MacOS.
+    /** Test whether NetBeans is running on Mac OS X.
      * @since 7.7
     * @return <code>true</code> if Mac, <code>false</code> if some other manner of operating system
     */
@@ -374,7 +374,7 @@ public final class Utilities {
     }
 
     /** Test whether NetBeans is running on some variant of Unix.
-    * Linux is included as well as the commercial vendors.
+    * Linux is included as well as the commercial vendors and Mac OS X.
     * @return <code>true</code> some sort of Unix, <code>false</code> if some other manner of operating system
     */
     public static final boolean isUnix() {
@@ -1829,10 +1829,14 @@ widthcheck:  {
 
     private static final int getMenuShortcutKeyMask() {
         // #152050 - work in headless environment too
-        if (GraphicsEnvironment.isHeadless()) {
-            return Event.CTRL_MASK;
+        try {
+            if (!GraphicsEnvironment.isHeadless()) {
+                return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+            }
+        } catch (Throwable ex) {
+            // OK, just assume we are headless
         }
-        return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+        return Event.CTRL_MASK;
     }
 
     /** Convert a space-separated list of user-friendly key binding names to a list of Swing key strokes.

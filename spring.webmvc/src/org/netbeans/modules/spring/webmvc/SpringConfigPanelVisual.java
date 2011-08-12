@@ -166,30 +166,30 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout libPanelLayout = new org.jdesktop.layout.GroupLayout(libPanel);
+        javax.swing.GroupLayout libPanelLayout = new javax.swing.GroupLayout(libPanel);
         libPanel.setLayout(libPanelLayout);
         libPanelLayout.setHorizontalGroup(
-            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(libPanelLayout.createSequentialGroup()
+            libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(libPanelLayout.createSequentialGroup()
-                        .add(springVersionLabel)
-                        .add(18, 18, 18)
-                        .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(includeJstlCheckBox))
-                .addContainerGap(330, Short.MAX_VALUE))
+                .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(libPanelLayout.createSequentialGroup()
+                        .addComponent(springVersionLabel)
+                        .addGap(18, 18, 18)
+                        .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(includeJstlCheckBox))
+                .addContainerGap(310, Short.MAX_VALUE))
         );
         libPanelLayout.setVerticalGroup(
-            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(libPanelLayout.createSequentialGroup()
+            libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(springVersionLabel)
-                    .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(includeJstlCheckBox)
-                .addContainerGap(301, Short.MAX_VALUE))
+                .addGroup(libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(springVersionLabel)
+                    .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(includeJstlCheckBox)
+                .addContainerGap(313, Short.MAX_VALUE))
         );
 
         includeJstlCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.includeJstlCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
@@ -200,33 +200,33 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(dispatcherMappingLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
+        javax.swing.GroupLayout standardPanelLayout = new javax.swing.GroupLayout(standardPanel);
         standardPanel.setLayout(standardPanelLayout);
         standardPanelLayout.setHorizontalGroup(
-            standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(standardPanelLayout.createSequentialGroup()
+            standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(standardPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameLabel)
-                    .add(dispatcherMappingLabel))
-                .add(8, 8, 8)
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
+                .addGroup(standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dispatcherNameLabel)
+                    .addComponent(dispatcherMappingLabel))
+                .addGap(8, 8, 8)
+                .addGroup(standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(dispatcherNameText, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                    .addComponent(dispatcherMappingText, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
-            standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(standardPanelLayout.createSequentialGroup()
+            standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(standardPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dispatcherNameLabel)
-                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dispatcherMappingLabel)
-                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(308, Short.MAX_VALUE))
+                .addGroup(standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dispatcherNameLabel)
+                    .addComponent(dispatcherNameText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dispatcherMappingLabel)
+                    .addComponent(dispatcherMappingText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N

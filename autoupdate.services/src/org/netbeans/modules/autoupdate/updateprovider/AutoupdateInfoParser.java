@@ -199,7 +199,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 // write module notification
                 ModuleDescriptor md = currentModule.peek ();
                 assert md != null : "ModuleDescriptor found for " + nbmFile;
-                StringBuffer buf = new StringBuffer ();
+                StringBuilder buf = new StringBuilder ();
                 for (String line : lines) {
                     buf.append (line);
                 }
@@ -212,7 +212,7 @@ public class AutoupdateInfoParser extends DefaultHandler {
                 assert ! currentLicense.empty () : "Premature end of license " + qName;
                 
                 // find and fill UpdateLicenseImpl
-                StringBuffer sb = new StringBuffer ();
+                StringBuilder sb = new StringBuilder ();
                 for (String line : lines) {
                     sb.append (line);
                 }

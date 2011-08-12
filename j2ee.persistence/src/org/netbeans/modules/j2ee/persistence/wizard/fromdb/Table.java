@@ -205,6 +205,24 @@ public abstract class Table implements Comparable<Table> {
             return fqClassName;
         }
     }
+    /**
+     * This implementation of DisabledReason specifies that a table is disabled
+     * because an entity class already exists for it and can't be updated.
+     */
+    public static final class ExistingReadOnlyDisabledReason extends DisabledReason {
+
+        private String fqClassName;
+
+        public ExistingReadOnlyDisabledReason(String fqClassName) {
+            super(NbBundle.getMessage(Table.class, "LBL_AlreadyMapped", JavaIdentifiers.unqualify(fqClassName)),
+                    NbBundle.getMessage(Table.class, "LBL_AlreadyMappedDescription", fqClassName));
+            this.fqClassName = fqClassName;
+        }
+
+        public String getFQClassName() {
+            return fqClassName;
+        }
+    }
 
     /**
      * This implementation of DisabledReason specifies that a table is disabled

@@ -296,6 +296,7 @@ public final class NbMavenProject {
     public static final String TYPE_WAR = "war"; //NOI18N
     public static final String TYPE_EAR = "ear"; //NOI18N
     public static final String TYPE_EJB = "ejb"; //NOI18N
+    public static final String TYPE_APPCLIENT = "app-client"; //NOI18N
     public static final String TYPE_NBM = "nbm"; //NOI18N
     public static final String TYPE_NBM_APPLICATION = "nbm-application"; //NOI18N
     public static final String TYPE_OSGI = "bundle"; //NOI18N
@@ -526,4 +527,9 @@ public final class NbMavenProject {
             assert false : "Attempted to remove PropertyChangeListener from project " + prj; //NOI18N
         }
     }
+
+    @Override public String toString() {
+        return project.toString();
+    }
+    
 }

@@ -1,29 +1,29 @@
 false
-Usages of <b>class FindUsagesClass</b> [7 occurrences]
+Usages of <b>class FUClass</b> [7 occurrences]
     RefactoringTest
         Source Packages
             fu
-                FindUsagesClass.java
-                    class FindUsagesClass
-                        <b>FindUsagesClass</b>&nbsp;<font color=#000000>field</font>
-                        retunType
-                            <font color=#0000e6>public</font>&nbsp;<b>FindUsagesClass</b>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><font color=#000000>FindUsagesClass</font>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;
-                            <font color=#0000e6>public</font>&nbsp;<font color=#000000>FindUsagesClass</font>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><b>FindUsagesClass</b>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;
-                        <font color=#000000>java</font><font color=#000000>.</font><font color=#000000>util</font><font color=#000000>.</font><font color=#000000>List</font><font color=#000000>&lt;</font><b>FindUsagesClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>list</font>
-                        class Inner
-                            <font color=#0000e6>class</font>&nbsp;<font color=#000000>Inner</font><font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FindUsagesClass</b><font color=#000000>&gt;</font>&nbsp;
-                        method
-                            <font color=#0000e6>this</font><font color=#000000>.</font><font color=#000000>&lt;</font><b>FindUsagesClass</b><font color=#000000>&gt;</font><font color=#000000>generics</font><font color=#000000>(</font><font color=#0000e6>this</font><font color=#000000>)</font>
+                FUClass.java
+                    FUClass
+                        Inner
+                            <font color=#0000e6>class</font>&nbsp;<font color=#000000>Inner</font><font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>{</font>
                         generics
-                            <font color=#0000e6>public</font>&nbsp;<font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FindUsagesClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>T</font>&nbsp;<font color=#000000>generics</font><font color=#000000>(</font><font color=#000000>T</font>&nbsp;<font color=#000000>in</font><font color=#000000>)</font>&nbsp;
+                            <font color=#0000e6>public</font>&nbsp;<font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>T</font>&nbsp;<font color=#000000>generics</font><font color=#000000>(</font><font color=#000000>T</font>&nbsp;<font color=#000000>in</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+                        method
+                            <font color=#0000e6>this</font><font color=#000000>.</font><font color=#000000>&lt;</font><b>FUClass</b><font color=#000000>&gt;</font><font color=#000000>generics</font><font color=#000000>(</font><font color=#0000e6>this</font><font color=#000000>)</font><font color=#000000>;</font>
+                        retunType
+                            <font color=#0000e6>public</font>&nbsp;<b>FUClass</b>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><font color=#000000>FUClass</font>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+                            <font color=#0000e6>public</font>&nbsp;<font color=#000000>FUClass</font>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><b>FUClass</b>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+                        <b>FUClass</b>&nbsp;<font color=#000000>field</font><font color=#000000>;</font>
+                        <font color=#000000>java</font><font color=#000000>.</font><font color=#000000>util</font><font color=#000000>.</font><font color=#000000>List</font><font color=#000000>&lt;</font><b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>list</font><font color=#000000>;</font>
 true
-Usages of <b>class FindUsagesClass</b> [7 occurrences]
+Usages of <b>class FUClass</b> [7 occurrences]
     RefactoringTest
-        FindUsagesClass.java
-            <b>FindUsagesClass</b>&nbsp;<font color=#000000>field</font>
-            <font color=#0000e6>public</font>&nbsp;<b>FindUsagesClass</b>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><font color=#000000>FindUsagesClass</font>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;
-            <font color=#0000e6>public</font>&nbsp;<font color=#000000>FindUsagesClass</font>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><b>FindUsagesClass</b>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;
-            <font color=#000000>java</font><font color=#000000>.</font><font color=#000000>util</font><font color=#000000>.</font><font color=#000000>List</font><font color=#000000>&lt;</font><b>FindUsagesClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>list</font>
-            <font color=#0000e6>class</font>&nbsp;<font color=#000000>Inner</font><font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FindUsagesClass</b><font color=#000000>&gt;</font>&nbsp;
-            <font color=#0000e6>this</font><font color=#000000>.</font><font color=#000000>&lt;</font><b>FindUsagesClass</b><font color=#000000>&gt;</font><font color=#000000>generics</font><font color=#000000>(</font><font color=#0000e6>this</font><font color=#000000>)</font>
-            <font color=#0000e6>public</font>&nbsp;<font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FindUsagesClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>T</font>&nbsp;<font color=#000000>generics</font><font color=#000000>(</font><font color=#000000>T</font>&nbsp;<font color=#000000>in</font><font color=#000000>)</font>&nbsp;
+        FUClass.java
+            <b>FUClass</b>&nbsp;<font color=#000000>field</font><font color=#000000>;</font>
+            <font color=#0000e6>public</font>&nbsp;<b>FUClass</b>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><font color=#000000>FUClass</font>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+            <font color=#0000e6>public</font>&nbsp;<font color=#000000>FUClass</font>&nbsp;<font color=#000000>retunType</font><font color=#000000>(</font><b>FUClass</b>&nbsp;<font color=#000000>param</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+            <font color=#000000>java</font><font color=#000000>.</font><font color=#000000>util</font><font color=#000000>.</font><font color=#000000>List</font><font color=#000000>&lt;</font><b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>list</font><font color=#000000>;</font>
+            <font color=#0000e6>class</font>&nbsp;<font color=#000000>Inner</font><font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>{</font>
+            <font color=#0000e6>this</font><font color=#000000>.</font><font color=#000000>&lt;</font><b>FUClass</b><font color=#000000>&gt;</font><font color=#000000>generics</font><font color=#000000>(</font><font color=#0000e6>this</font><font color=#000000>)</font><font color=#000000>;</font>
+            <font color=#0000e6>public</font>&nbsp;<font color=#000000>&lt;</font><font color=#000000>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#000000>&gt;</font>&nbsp;<font color=#000000>T</font>&nbsp;<font color=#000000>generics</font><font color=#000000>(</font><font color=#000000>T</font>&nbsp;<font color=#000000>in</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>

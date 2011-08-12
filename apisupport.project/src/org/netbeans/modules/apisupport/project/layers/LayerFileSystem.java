@@ -6,7 +6,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
 
-class LayerFileSystem extends MultiFileSystem {
+public class LayerFileSystem extends MultiFileSystem {
 
     protected final BadgingSupport status;
 

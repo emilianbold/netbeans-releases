@@ -396,6 +396,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             objToProps.put(highlightSearch, EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
             objToProps.put(incSearch, EditorFindSupport.FIND_INC_SEARCH);
             objToProps.put(matchCase, EditorFindSupport.FIND_MATCH_CASE);
+            objToProps.put(preserveCase, EditorFindSupport.FIND_PRESERVE_CASE);
             //objToProps.put(smartCase, SettingsNames.FIND_SMART_CASE);
             objToProps.put(wholeWords, EditorFindSupport.FIND_WHOLE_WORDS);
             objToProps.put(regExp, EditorFindSupport.FIND_REG_EXP);
@@ -421,6 +422,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             highlightSearch.setSelected(getBooleanProperty(highlightSearch));
             incSearch.setSelected(getBooleanProperty(incSearch));
             matchCase.setSelected(getBooleanProperty(matchCase));
+            preserveCase.setSelected(getBooleanProperty(preserveCase));
             //smartCase.setSelected(getBooleanProperty(smartCase));
             wholeWords.setSelected(getBooleanProperty(wholeWords));
             regExp.setSelected(getBooleanProperty(regExp));
@@ -435,6 +437,7 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             highlightSearch.addItemListener(this);
             incSearch.addItemListener(this);
             matchCase.addItemListener(this);
+            preserveCase.addItemListener(this);
             //smartCase.addItemListener(this);
             wholeWords.addItemListener(this);
             regExp.addItemListener(this);
@@ -611,12 +614,14 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
             highlightSearch.setSelected(getBooleanProperty(highlightSearch));
             incSearch.setSelected(getBooleanProperty(incSearch));
             matchCase.setSelected(getBooleanProperty(matchCase));
+            preserveCase.setSelected(getBooleanProperty(preserveCase));
             //smartCase.setSelected(getBooleanProperty(smartCase));
             wholeWords.setSelected(getBooleanProperty(wholeWords));
             boolean regExpValue = getBooleanProperty(regExp);
             regExp.setSelected(regExpValue);
             wholeWords.setEnabled(!regExpValue);
             incSearch.setEnabled(!regExpValue);
+            preserveCase.setEnabled(!(getBooleanProperty(regExp) || getBooleanProperty(matchCase)));
             bwdSearch.setSelected(getBooleanProperty(bwdSearch));
             wrapSearch.setSelected(getBooleanProperty(wrapSearch));
             findHistory = new DefaultComboBoxModel(getHistoryVector());
@@ -759,9 +764,15 @@ public class FindDialogSupport extends WindowAdapter implements ActionListener {
                 }
             }
             if (evt.getItem() == regExp){
-                boolean value = !val.booleanValue();
-                incSearch.setEnabled(value);
-                wholeWords.setEnabled(value);
+                boolean value = val.booleanValue();
+                incSearch.setEnabled(!value);
+                wholeWords.setEnabled(!value);
+                preserveCase.setEnabled(!(value || getBooleanProperty(matchCase)));
+                updateFindDialogUI();
+            }
+            if (evt.getItem() == matchCase) {
+                boolean value = val.booleanValue();
+                preserveCase.setEnabled(!(getBooleanProperty(regExp) || value));
                 updateFindDialogUI();
             }
             if (evt.getItem() == blockSearch){

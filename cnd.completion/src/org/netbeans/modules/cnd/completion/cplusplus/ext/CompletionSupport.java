@@ -213,7 +213,8 @@ public final class CompletionSupport implements DocumentListener {
         }
         if (!CndTokenUtilities.isInPreprocessorDirective(getDocument(), pos) && 
                 !CndTokenUtilities.isInProCDirective(getDocument(), pos)) {
-            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos) {
+            if (lastSeparatorOffset >= 0 && lastSeparatorOffset < pos && 
+                    !CndTokenUtilities.isInProCDirective(getDocument(), lastSeparatorOffset)) {
                 return lastSeparatorOffset;
             }
             lastSeparatorOffset = CndTokenUtilities.getLastCommandSeparator(getDocument(), pos);
@@ -517,7 +518,8 @@ public final class CompletionSupport implements DocumentListener {
             String expr = varObj.getInitialValue().getText().toString();
             if(findLCurlsNumberBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset()) > 1) {
                 int pos2 = findLastAssignmentBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset());
-                if(pos2 != -1) {
+                int pos3 = findLastTypeCastBeforPosition(expr, pos - varObj.getInitialValue().getStartOffset());
+                if(pos2 != -1 && pos3 < pos2) {
                     CsmType type = findExactVarType(file, var, varObj.getInitialValue().getStartOffset() + pos2, refContext);
                     if(type != null) {
                         String varName = expr.substring(pos2);
@@ -534,8 +536,18 @@ public final class CompletionSupport implements DocumentListener {
                             }
                         }
                     }
-                }
-            }
+                } else if (pos3 != -1) {
+                    String typeName = expr.substring(pos3 + 1);
+                    int indexOfRBracket = typeName.indexOf(")"); // NOI18N
+                    if (indexOfRBracket > 0) {
+                        typeName = typeName.substring(0, indexOfRBracket);
+                        CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
+                        if (cls != null) {
+                            CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                            return type;
+                        }
+                    }
+                }            }
             if (CsmOffsetUtilities.isInObject(varObj.getInitialValue(), pos)) {
                 CsmType type = varObj.getType();
                 if (type.getArrayDepth() > 0) {
@@ -625,6 +637,28 @@ public final class CompletionSupport implements DocumentListener {
         }
     }
 
+    private int findLastTypeCastBeforPosition(String s, int pos) {
+        int cursor = pos;
+        int level = 0;
+        while (true) {
+            if (cursor == -1) {
+                return -1;
+            }
+            if (s.charAt(cursor) == '}') { // NOI18N
+                level++;
+            }
+            if (s.charAt(cursor) == '{') { // NOI18N
+                level--;
+            }
+            if (level == -1) {
+                if (s.charAt(cursor) == '(') { // NOI18N
+                    return cursor;
+                }
+            }
+            cursor--;
+        }
+    }
+    
     public void insertUpdate(DocumentEvent e) {
         this.lastSeparatorOffset = -1;
     }

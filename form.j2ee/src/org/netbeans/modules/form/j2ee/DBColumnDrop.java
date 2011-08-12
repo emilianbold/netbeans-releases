@@ -249,6 +249,7 @@ public class DBColumnDrop extends DBConnectionDrop {
 
             BindingProperty prop;
             MetaBinding binding;
+            BindingDesignSupport bindingSupport = FormEditor.getBindingSupport(model);
             if (metaTable == null) {
                 RADComponent metaEntity = null;
                 Class<?> entityClass = ClassPathUtils.loadClass(entityInfo[1], formFile); // NOI18N
@@ -279,13 +280,13 @@ public class DBColumnDrop extends DBConnectionDrop {
                 }
 
                 prop = control.getBindingProperty(controlProperty); // NOI18N
-                binding = new MetaBinding(metaEntity, BindingDesignSupport.elWrap(sourcePath), control, controlProperty); // NOI18N
+                binding = new MetaBinding(metaEntity, bindingSupport.elWrap(sourcePath), control, controlProperty); // NOI18N
             } else {
                 prop = control.getBindingProperty("enabled"); // NOI18N
-                binding = new MetaBinding(metaTable, BindingDesignSupport.elWrap("selectedElement != null"), control, "enabled"); // NOI18N
+                binding = new MetaBinding(metaTable, bindingSupport.elWrap("selectedElement != null"), control, "enabled"); // NOI18N
                 prop.setValue(binding);
                 prop = control.getBindingProperty(controlProperty);
-                binding = new MetaBinding(metaTable, BindingDesignSupport.elWrap("selectedElement." + sourcePath), control, controlProperty); // NOI18N
+                binding = new MetaBinding(metaTable, bindingSupport.elWrap("selectedElement." + sourcePath), control, controlProperty); // NOI18N
                 if (controlProperty.equals("text") && JTextComponent.class.isAssignableFrom(control.getBeanClass())) { // NOI18N
                     binding.setIncompletePathValueSpecified(true);
                     prop.getSubProperty(BindingProperty.PROP_INCOMPLETE_VALUE).setValue(null);

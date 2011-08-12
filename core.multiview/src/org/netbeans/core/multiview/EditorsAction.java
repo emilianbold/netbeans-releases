@@ -44,10 +44,8 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -58,12 +56,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -72,20 +69,29 @@ import org.openide.windows.WindowManager;
  * @author mkleint
  */
 public class EditorsAction extends AbstractAction 
-                                implements Presenter.Menu {
+implements Presenter.Menu, Presenter.Popup {
                                     
     public EditorsAction() {
         super(NbBundle.getMessage(EditorsAction.class, "CTL_EditorsAction"));
     }
     
+    @Override
     public void actionPerformed(ActionEvent ev) {
         assert false;// no operation
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
         JMenu menu = new UpdatingMenu();
         String label = NbBundle.getMessage(EditorsAction.class, "CTL_EditorsAction");
         Mnemonics.setLocalizedText(menu, label);
+        return menu;
+    }
+    @Override
+    public JMenuItem getPopupPresenter() {
+        JMenu menu = new UpdatingMenu();
+        String label = NbBundle.getMessage(EditorsAction.class, "CTL_EditorsAction");
+        Actions.setMenuText(menu, label, false);
         return menu;
     }
     

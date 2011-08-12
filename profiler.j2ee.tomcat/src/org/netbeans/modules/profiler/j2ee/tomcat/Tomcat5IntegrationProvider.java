@@ -188,7 +188,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
     private StringBuilder getChangedLines(final String targetOS, final AttachSettings attachSettings, final String catalinaBase,
                                          final boolean inHtml) {
         // this path is taken only on windows
-        final String separator = IntegrationUtils.getPathSeparator(targetOS); // NOI18N
+        final String separator = IntegrationUtils.getDirectorySeparator(targetOS); // NOI18N
         String catalinaBaseOption = ""; // NOI18N
 
         StringBuilder catalinaScript = new StringBuilder();

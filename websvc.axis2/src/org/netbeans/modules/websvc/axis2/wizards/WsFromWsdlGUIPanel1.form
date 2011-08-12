@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
@@ -9,9 +9,10 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -23,8 +24,8 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane2" alignment="0" pref="477" max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="0" pref="477" max="32767" attributes="0"/>
+                  <Component id="jScrollPane2" alignment="0" pref="501" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="501" max="32767" attributes="0"/>
                   <Component id="jCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="optionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="moreOptionsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -38,10 +39,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jComboBox3" alignment="0" pref="309" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jComboBox1" pref="309" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="jComboBox1" alignment="1" pref="309" max="32767" attributes="0"/>
                           <Component id="jComboBox2" alignment="1" pref="309" max="32767" attributes="0"/>
                           <Component id="tfPackageName" alignment="0" pref="309" max="32767" attributes="0"/>
                       </Group>

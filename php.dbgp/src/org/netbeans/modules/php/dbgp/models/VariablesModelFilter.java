@@ -94,6 +94,7 @@ public class VariablesModelFilter extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModelFilter#getChildren(org.netbeans.spi.viewmodel.TreeModel, java.lang.Object, int, int)
      */
+    @Override
     public Object[] getChildren( TreeModel original, Object node, int from, 
             int to ) throws UnknownTypeException
     {
@@ -109,6 +110,7 @@ public class VariablesModelFilter extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModelFilter#getChildrenCount(org.netbeans.spi.viewmodel.TreeModel, java.lang.Object)
      */
+    @Override
     public int getChildrenCount( TreeModel original, Object node )
             throws UnknownTypeException
     {
@@ -118,6 +120,7 @@ public class VariablesModelFilter extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModelFilter#getRoot(org.netbeans.spi.viewmodel.TreeModel)
      */
+    @Override
     public Object getRoot( TreeModel original ) {
         return original.getRoot();
     }
@@ -125,6 +128,7 @@ public class VariablesModelFilter extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModelFilter#isLeaf(org.netbeans.spi.viewmodel.TreeModel, java.lang.Object)
      */
+    @Override
     public boolean isLeaf( TreeModel original, Object node )
             throws UnknownTypeException
     {

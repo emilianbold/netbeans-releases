@@ -53,12 +53,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.InjectionPointParameterAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.InterceptedMethodAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.method.ScopedMethodAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -69,8 +67,8 @@ public class MethodModelAnalyzer implements ModelAnalyzer {
 
     @Override
     public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel, 
+            Result result )
     {
         ExecutableElement method = (ExecutableElement) element;
         TypeMirror methodType = model.getCompilationController().getTypes().
@@ -85,16 +83,15 @@ public class MethodModelAnalyzer implements ModelAnalyzer {
                     return;
                 }
                 analyzer.analyze(method, returnType, parent, model, 
-                        descriptions, info , cancel );
+                        cancel, result );
             }
         }
     }
     
     public interface MethodAnalyzer {
         void analyze( ExecutableElement element , TypeMirror returnType,
-                TypeElement parent, WebBeansModel model,
-                List<ErrorDescription> descriptions, CompilationInfo info , 
-                AtomicBoolean cancel );
+                TypeElement parent, WebBeansModel model, 
+                AtomicBoolean cancel , Result result);
     }
     
     private static final List<MethodAnalyzer> ANALYZERS= new LinkedList<MethodAnalyzer>(); 

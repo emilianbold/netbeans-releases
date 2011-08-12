@@ -73,11 +73,11 @@ public interface TestLocator {
 
     /**
      * This method determines whether the file-search mechanism should be synchronous
-     * or asynchronous. If asynchronous, {@link #findOpposite(FileObject)} will be called
-     * to compute the result directly. If it is false, {@link #findOpposite(FileObject,LocationListener)}
+     * or asynchronous. If asynchronous, {@link #findOpposite(FileObject, int)} will be called
+     * to compute the result directly. If it is false, {@link #findOpposite(FileObject, int, LocationListener)}
      * will be called instead.
      * 
-     * @return True iff the search should be asynchronous, where {@link findOpposite(FileObject,LocationListener)}
+     * @return True iff the search should be asynchronous, where {@link findOpposite(FileObject, int, LocationListener)}
      *   is called.
      */
     boolean asynchronous();

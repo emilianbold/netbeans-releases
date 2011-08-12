@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -65,14 +66,15 @@ class CCompilerCustomizerNode extends CustomizerNode {
             case Item:
                 ItemConfiguration itemConfiguration = getContext().getItem().getItemConfiguration(configuration);
                 if (itemConfiguration != null) {
-                    return itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null);
+                    Item item = getContext().getItem().getItem();
+                    return itemConfiguration.getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null, item);
                 }
                 break;
             case Folder:
                 Folder folder = getContext().getFolder();
-                return folder.getFolderConfiguration(configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder);
+                return folder.getFolderConfiguration(configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, folder, null);
             case Project:
-                return ((MakeConfiguration) configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null);
+                return ((MakeConfiguration) configuration).getCCompilerConfiguration().getGeneralSheet((MakeConfiguration) configuration, null, null);
         }
         return null;
     }

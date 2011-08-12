@@ -102,6 +102,7 @@ public class SplitView extends ViewElement {
         return new ArrayList<ViewElement>( children );
     }
     
+    @Override
     public Component getComponent() {
         return getSplitPane();
     }
@@ -131,6 +132,7 @@ public class SplitView extends ViewElement {
         }
     }
     
+    @Override
     public boolean updateAWTHierarchy(Dimension availableSpace) {
         boolean res = false;
         
@@ -182,6 +184,7 @@ public class SplitView extends ViewElement {
             
             splitPane.addPropertyChangeListener("splitPositions", // NOI18N
                 new PropertyChangeListener() {
+                @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         ArrayList<Double> weights = new ArrayList<Double>( children.size() );
                         ArrayList<ViewElement> views = new ArrayList<ViewElement>( children.size() );

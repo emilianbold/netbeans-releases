@@ -171,6 +171,27 @@ public class ConnectTest extends AbstractGitTestCase {
         assertEquals(Arrays.asList(toPrefsString(new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2"), true)), Utils.getStringList(prefs, RECENT_GURI));
         assertEquals("", new String(KeyringSupport.read(GURI_PASSWORD, new GitURI("http://bugtracking-test.cz.oracle.com/git/repo").setUser("user2").toString())));
     }
+    
+    public void testSupportedProtocols () throws Exception {
+        try {
+            client.listRemoteBranches("ftp://host.name/resource", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Protocol is now supported, add to RemoteRepository.Scheme");
+        } catch (GitException ex) {
+            assertEquals("URI not supported: ftp://host.name/resource", ex.getMessage());
+        }
+        try {
+            client.listRemoteBranches("ftps://host.name/resource", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Protocol is now supported, add to RemoteRepository.Scheme");
+        } catch (GitException ex) {
+            assertEquals("URI not supported: ftps://host.name/resource", ex.getMessage());
+        }
+        try {
+            client.listRemoteBranches("rsync://host.name/resource", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Protocol is now supported, add to RemoteRepository.Scheme");
+        } catch (GitException ex) {
+            assertEquals("URI not supported: rsync://host.name/resource", ex.getMessage());
+        }
+    }
 
     private RemoteRepositoryPanel getPanel (RemoteRepository repository) throws Exception {
         Field f = RemoteRepository.class.getDeclaredField("panel");

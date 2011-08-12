@@ -70,6 +70,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
@@ -124,7 +125,7 @@ public class CodeHintProviderImpl implements HintProvider {
             id = clazz.getName();
         }
 
-        HintMetadata hm = HintMetadata.create(id, clazz.getName(), metadata.category(), metadata.enabled(), metadata.severity(), metadata.hintKind(), createCustomizerProvider(metadata), metadata.suppressWarnings());
+        HintMetadata hm = fromAnnotation(id, clazz, metadata);
         
         for (MethodWrapper m : clazz.getMethods()) {
             Hint localMetadataAnnotation = m.getAnnotation(Hint.class);
@@ -137,13 +138,27 @@ public class CodeHintProviderImpl implements HintProvider {
                     localID = clazz.getName() + "." + m.getName();
                 }
 
-                localMetadata = HintMetadata.create(localID, clazz.getName(), localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), localMetadataAnnotation.severity(), localMetadataAnnotation.hintKind(), createCustomizerProvider(localMetadataAnnotation), localMetadataAnnotation.suppressWarnings());
+                localMetadata = fromAnnotation(localID, clazz, localMetadataAnnotation);
             } else {
                 localMetadata = hm;
             }
 
             processMethod(result, m, localMetadata);
         }
+    }
+
+    private static HintMetadata fromAnnotation(String id, ClassWrapper clazz, Hint metadata) {
+        HintMetadata hm = HintMetadata.Builder.create(id)
+                                              .setBundle(clazz.getName())
+                                              .setCategory(metadata.category())
+                                              .setEnabled(metadata.enabled())
+                                              .setSeverity(metadata.severity())
+                                              .setKind(metadata.hintKind())
+                                              .setCustomizerProvider(createCustomizerProvider(metadata))
+                                              .addSuppressWarnings(metadata.suppressWarnings())
+                                              .addOptions(metadata.options())
+                                              .build();
+        return hm;
     }
 
     private static CustomizerProvider createCustomizerProvider(Hint hint) {
@@ -339,6 +354,12 @@ public class CodeHintProviderImpl implements HintProvider {
 
         public HintMetadata.Kind hintKind() {
             return HintMetadata.Kind.HINT;
+        }
+
+        private static final Options[] EMPTY_OPTIONS = new Options[0];
+
+        public Options[] options() {
+            return EMPTY_OPTIONS;
         }
 
     }

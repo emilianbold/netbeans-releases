@@ -829,7 +829,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         }
 
                     };
-                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, settings, grepBase);
+                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, settings, grepBase, null);
                     source.process(cu);
                     return source;
                 }

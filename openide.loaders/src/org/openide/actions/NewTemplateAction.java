@@ -45,6 +45,7 @@
 package org.openide.actions;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.IOException;
@@ -761,6 +762,10 @@ public class NewTemplateAction extends NodeAction {
          */
         @Override
         protected Node[] createNodes(Node n) {
+            if (EventQueue.isDispatchThread()) {
+                return new Node[] { new DataShadowFilterNode(n, LEAF, n.getDisplayName()) };
+            }
+            
             String nodeName = n.getDisplayName();
             
             DataObject obj = null;
@@ -779,7 +784,6 @@ public class NewTemplateAction extends NodeAction {
             if (obj != null) {
                 if (obj.isTemplate ()) {
                     // on normal nodes stop recursion
-                    return new Node[] { new DataShadowFilterNode (n, LEAF, nodeName) };
                 }
             
                 if (acceptObj (obj)) {
@@ -787,12 +791,16 @@ public class NewTemplateAction extends NodeAction {
                     return new Node[] { new DataShadowFilterNode (n, new TemplateChildren (n), nodeName) };
                 }
             }
-            return new Node[] {};
+            return new Node[] { new DataShadowFilterNode(n, LEAF, nodeName) };
+        }
+
+        final void refreshKeyImpl(Node n) {
+            refreshKey(n);
         }
 
     }
 
-    private static class DataShadowFilterNode extends FilterNode {
+    private static class DataShadowFilterNode extends FilterNode implements NodeListener {
         
         private String name;
         
@@ -800,12 +808,79 @@ public class NewTemplateAction extends NodeAction {
             super (or, children);
             this.name = name;
             disableDelegation(FilterNode.DELEGATE_SET_DISPLAY_NAME);
+            or.addNodeListener(NodeOp.weakNodeListener(this, or));
+                    
         }
         
+        @Override
         public String getDisplayName() {
             return name;
         }
-        
+
+        private void refresh() {
+            Node n = getOriginal();
+            String nodeName = n.getDisplayName();
+
+            DataObject obj = null;
+            DataShadow shadow = n.getCookie(DataShadow.class);
+            if (shadow != null) {
+                // I need DataNode here to get localized name of the
+                // shadow, but without the ugly "(->)" at the end
+                DataNode dn = new DataNode(shadow, Children.LEAF);
+                nodeName = dn.getDisplayName();
+                obj = shadow.getOriginal();
+                n = obj.getNodeDelegate();
+            }
+
+            if (obj == null) {
+                obj = n.getCookie(DataObject.class);
+            }
+            if (obj != null) {
+                if (obj.isTemplate()) {
+                    // on normal nodes stop recursion
+                    this.name = nodeName;
+                    this.setChildren(Children.LEAF);
+                    return;
+                }
+
+                if (acceptObj(obj)) {
+                    // on folders use normal filtering
+                    this.name = nodeName;
+                    this.setChildren(new TemplateChildren(n));
+                    return;
+                }
+            }
+            Node p = getParentNode();
+            if (p != null) {
+                TemplateChildren ch = (TemplateChildren)p.getChildren();
+                if (ch != null) {
+                    ch.refreshKeyImpl(n);
+                }
+            }
+        }
+
+        @Override
+        public void childrenAdded(NodeMemberEvent ev) {
+            refresh();
+        }
+
+        @Override
+        public void childrenRemoved(NodeMemberEvent ev) {
+            refresh();
+        }
+
+        @Override
+        public void childrenReordered(NodeReorderEvent ev) {
+        }
+
+        @Override
+        public void nodeDestroyed(NodeEvent ev) {
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            refresh();
+        }
     }
 
     private static class DefaultTemplateWizard extends TemplateWizard {

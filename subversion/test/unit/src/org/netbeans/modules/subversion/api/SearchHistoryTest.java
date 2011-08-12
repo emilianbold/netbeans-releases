@@ -48,8 +48,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
+import org.netbeans.modules.subversion.SubversionVCS;
 import org.netbeans.modules.subversion.TestKit;
 import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.openide.filesystems.FileObject;
@@ -75,8 +77,10 @@ public class SearchHistoryTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        clearWorkDir();
+        MockServices.setServices(new Class[] {
+            SubversionVCS.class});
+        dataRootDir = getWorkDir();
         wc = new File(dataRootDir, getName() + "_wc");
         repoDir = new File(dataRootDir, "repo");
         String repoPath = repoDir.getAbsolutePath();
@@ -87,7 +91,7 @@ public class SearchHistoryTest extends NbTestCase {
         cleanUpWC();
         initRepo();
         wc.mkdirs();
-        FileUtil.createFolder(new File(System.getProperty("data.root.dir") + "/cache/config/svn"));
+        FileUtil.createFolder(new File(getWorkDir(), "cache/config/svn"));
         svnimport();
     }
 
@@ -96,7 +100,7 @@ public class SearchHistoryTest extends NbTestCase {
         File f;
 
         // non-existant file
-        f = new File(System.getProperty("data.root.dir") + "/testShowFileHistory.file");
+        f = new File(wc, "testShowFileHistory.file");
         
         // folder
         showing = SvnSearchHistorySupport.getInstance(f.getParentFile()).searchHistory(1);
@@ -105,7 +109,7 @@ public class SearchHistoryTest extends NbTestCase {
         // unversioned file
         f.createNewFile();
         showing = SvnSearchHistorySupport.getInstance(f).searchHistory(1);
-        assertFalse(showing);
+        assertTrue(showing);
 
         // AWT
         final File file = f;

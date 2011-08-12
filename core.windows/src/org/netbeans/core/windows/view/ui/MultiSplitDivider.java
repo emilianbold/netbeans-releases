@@ -168,6 +168,15 @@ public class MultiSplitDivider implements Accessible {
             splitPane.repaint( rect.x, location.y, rect.width, rect.height );
         }
     }
+    
+    void resize( int delta ) {
+        Point p = rect.getLocation();
+        if( isHorizontal() )
+            p.x += delta;
+        else
+            p.y += delta;
+        resize( p );
+    }
 
     private void resize( Point p ) {
         if( isHorizontal() ) {
@@ -231,8 +240,7 @@ public class MultiSplitDivider implements Accessible {
         currentDragLocation = null;
     }
     
-    private void initDragMinMax() {
-        int dividerSize = getDividerSize();
+    Point initDragMinMax() {
         int firstSize = first.getSize();
         int secondSize = second.getSize();
         int firstMinSize = first.getMinimumSize();
@@ -252,6 +260,7 @@ public class MultiSplitDivider implements Accessible {
         if( secondSize >= secondMinSize ) {
             dragMax += secondSize-secondMinSize;
         }
+        return rect.getLocation();
     }
     
     void reshape() {

@@ -377,6 +377,7 @@
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>

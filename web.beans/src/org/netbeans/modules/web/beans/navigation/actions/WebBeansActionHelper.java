@@ -162,8 +162,8 @@ public class WebBeansActionHelper {
             return false;
         }
         Profile profile = webModule.getJ2eeProfile();
-        return profile.equals(Profile.JAVA_EE_6_FULL) || 
-            profile.equals(Profile.JAVA_EE_6_WEB);
+        return Profile.JAVA_EE_6_WEB.equals( profile) || 
+            Profile.JAVA_EE_6_FULL.equals( profile );
     }
     
     

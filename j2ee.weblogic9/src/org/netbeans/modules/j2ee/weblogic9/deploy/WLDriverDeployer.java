@@ -102,19 +102,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
 
     public WLDriverDeployer(WLDeploymentManager manager) {
         this.manager = manager;
-        if (manager.isWebProfile()) {
-            final File webLogicJar = WLPluginProperties.getWeblogicJar(manager);
-            serverClasspathFilter = new FileFilter() {
-                @Override
-                public boolean accept(File pathname) {
-                    return (webLogicJar != null && webLogicJar.getName().equals(pathname.getName()))
-                            || pathname.getName().equals("derby.jar") // NOI18N
-                            || pathname.getName().equals("pcl2.jar"); // NOI18N
-                }
-            };
-        } else {
-            serverClasspathFilter = DEFAULT_CLASSPATH_FILTER;
-        }
+        serverClasspathFilter = DEFAULT_CLASSPATH_FILTER;
     }
 
     @Override

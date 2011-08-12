@@ -61,9 +61,16 @@ final class NbAuthenticator extends java.net.Authenticator {
     private static final long TIMEOUT = 3000;
     private static long lastTry = 0;
 
-    NbAuthenticator() {
+
+    private NbAuthenticator() {
         Preferences proxySettingsNode = NbPreferences.root().node("/org/netbeans/core"); //NOI18N
         assert proxySettingsNode != null;
+    }
+
+    static void install() {
+        if (Boolean.valueOf(NbBundle.getMessage(GuiRunLevel.class, "USE_Authentication"))) {
+            setDefault(new NbAuthenticator());
+        }
     }
 
     @Override

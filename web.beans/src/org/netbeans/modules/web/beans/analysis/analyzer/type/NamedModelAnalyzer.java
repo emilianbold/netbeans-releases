@@ -42,19 +42,16 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.type;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -69,14 +66,15 @@ public class NamedModelAnalyzer implements ClassAnalyzer {
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info, AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel,
+            Result result )
     {
         if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
                 model.getCompilationController()))
         {
             return;
         }
+        result.requireCdiEnabled(element, model);
         if ( !AnnotationUtil.hasAnnotation(element, AnnotationUtil.NAMED, 
                 model.getCompilationController()))
         {
@@ -92,12 +90,8 @@ public class NamedModelAnalyzer implements ClassAnalyzer {
         if ( name == null ){
             return;
         }
-        ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, model, info , NbBundle.getMessage(
+        result.addError( element, model,  NbBundle.getMessage(
                 NamedModelAnalyzer.class, "ERR_NamedSpecializes"));     // NOI18N
-        if ( description != null ){
-            descriptions.add( description );
-        }
     }
 
 }

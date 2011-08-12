@@ -122,16 +122,18 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     }
 
     public void ref(FileObject fo) {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
-            getRef().println("==>"+fo.getName());
-            String s = br.readLine();
-            while(s!=null) {
-                getRef().println(s);
-                s = br.readLine();
+        if (fo.isValid()) {
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+                getRef().println("==>" + fo.getName());
+                String s = br.readLine();
+                while (s != null) {
+                    getRef().println(s);
+                    s = br.readLine();
+                }
+            } catch (IOException ioe) {
+                fail(ioe);
             }
-        } catch(IOException ioe) {
-            fail(ioe);
         }
     }
 

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
@@ -86,7 +88,8 @@ class FilesystemInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
     private static boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
-    private static final String INDEX_FILE_NAME = "index";
+    private static final String INDEX_FILE_NAME = "index"; //NOI18N
+    private static final String HEAD_FILE_NAME = "HEAD"; //NOI18N
     private static final Logger LOG = Logger.getLogger(FilesystemInterceptor.class.getName());
 
     public FilesystemInterceptor () {
@@ -314,13 +317,21 @@ class FilesystemInterceptor extends VCSInterceptor {
      * Refreshes cached modification timestamp of the metadata for the given repository
      * @param repository
      */
-    void refreshMetadataTimestamp (File repository) {
+    void refreshMetadataTimestamp (final File repository) {
         assert repository != null;
         if (repository == null) {
             return;
         }
-        File indexFile = new File(GitUtils.getGitFolderForRoot(repository), INDEX_FILE_NAME);
-        gitFolderEventsHandler.refreshIndexFileTimestamp(indexFile, indexFile.lastModified());
+        if (EventQueue.isDispatchThread()) {
+            Git.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                }
+            });
+        } else {
+            gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+        }
     }
 
     private class RefreshTask implements Runnable {
@@ -424,10 +435,64 @@ class FilesystemInterceptor extends VCSInterceptor {
             refreshTask.schedule(delayMillis);
         }
     }
+
+    private static class GitFolderTimestamps {
+        private final File indexFile;
+        private final long indexFileTS;
+        private final File headFile;
+        private final long headFileTS;
+        private final File refFile;
+        private final long refFileTS;
+        private final File gitFolder;
+
+        public GitFolderTimestamps (File indexFile, File headFile, File refFile, File gitFolder) {
+            this.indexFile = indexFile;
+            this.indexFileTS = indexFile.lastModified();
+            this.headFile = headFile;
+            this.headFileTS = headFile.lastModified();
+            this.refFile = refFile;
+            this.refFileTS = refFile.lastModified();
+            this.gitFolder = gitFolder;
+        }
+        
+        private File getIndexFile () {
+            return indexFile;
+        }
+
+        private boolean isNewer (GitFolderTimestamps other) {
+            boolean newer = true;
+            if (other != null) {
+                newer = indexFileTS > other.indexFileTS || headFileTS > other.headFileTS;
+            }
+            return newer;
+        }
+
+        private File getGitFolder () {
+            return gitFolder;
+        }
+
+        private boolean repositoryExists () {
+            return indexFileTS > 0 || gitFolder.exists();
+        }
+
+        private boolean isOutdated () {
+            // first check the index
+            boolean upToDate = indexFileTS >= indexFile.lastModified();
+            // then check the current head
+            if (upToDate) {
+                upToDate = headFileTS >= headFile.lastModified();
+            }
+            // if pointer to branch did not change, there could still be a commit to the same branch - in that case refs/heads/... file changed
+            if (upToDate) {
+                upToDate = refFileTS >= refFile.lastModified();
+            }
+            return !upToDate;
+        }
+    }
     
     private class GitFolderEventsHandler {
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>();
-        private final HashMap<File, Long> indexFiles = new HashMap<File, Long>(5);
+        private final HashMap<File, GitFolderTimestamps> timestamps = new HashMap<File, GitFolderTimestamps>(5);
         private final HashMap<File, FileChangeListener> gitFolderRLs = new HashMap<File, FileChangeListener>(5);
 
         private final HashSet<File> filesToInitialize = new HashSet<File>();
@@ -517,32 +582,46 @@ class FilesystemInterceptor extends VCSInterceptor {
             return nextFile;
         }
 
-        /**
-         *
-         * @param indexFile
-         * @param timestamp new timestamp, value 0 and missing indexFile.getParentFile() will remove the item from the cache
-         */
-        private void refreshIndexFileTimestamp (File indexFile, long timestamp) {
-            if (Utils.isAncestorOrEqual(new File(System.getProperty("java.io.tmpdir")), indexFile)) { //NOI18N
+        private GitFolderTimestamps scanGitFolderTimestamps (File gitFolder) {
+            File indexFile = new File(gitFolder, INDEX_FILE_NAME);
+            File headFile = new File(gitFolder, HEAD_FILE_NAME);
+            GitBranch activeBranch = null;
+            RepositoryInfo info = RepositoryInfo.getInstance(gitFolder.getParentFile());
+            if (info != null) {
+                info.refresh();
+                activeBranch = info.getActiveBranch();
+            }
+            File refFile = headFile;
+            if (activeBranch != null && !GitBranch.NO_BRANCH.equals(activeBranch.getName())) {
+                refFile = new File(gitFolder, (GitUtils.PREFIX_R_HEADS + activeBranch.getName()).replace("/", File.separator)); //NOI18N
+            }
+            return new GitFolderTimestamps(indexFile, headFile, refFile, gitFolder);
+        }
+
+        public void refreshIndexFileTimestamp (File repository) {
+            refreshIndexFileTimestamp(scanGitFolderTimestamps(GitUtils.getGitFolderForRoot(repository)));
+        }
+
+        private void refreshIndexFileTimestamp (GitFolderTimestamps newTimestamps) {
+            if (Utils.isAncestorOrEqual(new File(System.getProperty("java.io.tmpdir")), newTimestamps.getIndexFile())) { //NOI18N
                 // skip repositories in temp folder
                 return;
             }
-            final File gitFolder = FileUtil.normalizeFile(indexFile.getParentFile());
-            boolean exists = timestamp > 0 || gitFolder.exists();
-            synchronized (indexFiles) {
-                Long ts;
-                if (exists && (ts = indexFiles.get(indexFile)) != null && ts >= timestamp) {
+            final File gitFolder = newTimestamps.getGitFolder();
+            boolean exists = newTimestamps.repositoryExists();
+            synchronized (timestamps) {
+                if (exists && !newTimestamps.isNewer(timestamps.get(gitFolder))) {
                     // do not enter the filesystem module unless really need to
                     return;
                 }
             }
             boolean add = false;
             boolean remove = false;
-            synchronized (indexFiles) {
-                indexFiles.remove(indexFile);
+            synchronized (timestamps) {
+                timestamps.remove(gitFolder);
                 FileChangeListener list = gitFolderRLs.remove(gitFolder);
                 if (exists) {
-                    indexFiles.put(indexFile, Long.valueOf(timestamp));
+                    timestamps.put(gitFolder, newTimestamps);
                     if (list == null) {
                         final FileChangeListener fList = list = new FileChangeAdapter();
                         // has to run in a different thread, otherwise we may get a deadlock
@@ -568,7 +647,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                             }
                         });
                     }
-                    Git.STATUS_LOG.fine("refreshAdminFolderTimestamp: " + indexFile.getAbsolutePath() + " no longer exists"); //NOI18N
+                    Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolderTimestamp: {0} no longer exists", gitFolder.getAbsolutePath()); //NOI18N
                     remove = true;
                 }
                 if (remove) {
@@ -593,16 +672,20 @@ class FilesystemInterceptor extends VCSInterceptor {
                 if (repositoryRoot != null) {
                     if (addSeenRoot(repositoryRoot, file)) {
                         // this means the repository has not yet been scanned, so scan it
-                        Git.STATUS_LOG.fine("initializeFiles: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
+                        Git.STATUS_LOG.log(Level.FINE, "initializeFiles: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
                         reScheduleRefresh(4000, Collections.singleton(file));
-                        synchronized (indexFiles) {
-                            File indexFile = FileUtil.normalizeFile(new File(GitUtils.getGitFolderForRoot(repositoryRoot), INDEX_FILE_NAME));
-                            if (!indexFiles.containsKey(indexFile)) {
-                                if (indexFile.isFile()) {
-                                    indexFiles.put(indexFile, null);
-                                    refreshIndexFileTimestamp(indexFile, indexFile.lastModified());
+                        File gitFolder = GitUtils.getGitFolderForRoot(repositoryRoot);
+                        boolean refreshNeeded = false;
+                        synchronized (timestamps) {
+                            if (!timestamps.containsKey(gitFolder)) {
+                                if (new File(gitFolder, INDEX_FILE_NAME).canRead()) {
+                                    timestamps.put(gitFolder, null);
+                                    refreshNeeded = true;
                                 }
                             }
+                        }
+                        if (refreshNeeded) {
+                            refreshIndexFileTimestamp(scanGitFolderTimestamps(gitFolder));
                         }
                     }
                 }
@@ -613,21 +696,21 @@ class FilesystemInterceptor extends VCSInterceptor {
         private long refreshAdminFolder (File gitFolder) {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
-                File indexFile = FileUtil.normalizeFile(new File(gitFolder, INDEX_FILE_NAME));
-                Git.STATUS_LOG.finer("refreshAdminFolder: special FS event handling for " + indexFile.getAbsolutePath()); //NOI18N
-                lastModified = indexFile.lastModified();
-                Long lastCachedModified = null;
-                synchronized (indexFiles) {
-                    lastCachedModified = indexFiles.get(indexFile);
-                    if (lastCachedModified == null || lastCachedModified < lastModified || lastModified == 0) {
-                        refreshIndexFileTimestamp(indexFile, lastModified);
-                        lastCachedModified = null;
-                    }
+                gitFolder = FileUtil.normalizeFile(gitFolder);
+                Git.STATUS_LOG.log(Level.FINER, "refreshAdminFolder: special FS event handling for {0}", gitFolder.getAbsolutePath()); //NOI18N
+                boolean refreshNeeded = false;
+                GitFolderTimestamps cached;
+                synchronized (timestamps) {
+                    cached = timestamps.get(gitFolder);
                 }
-                if (lastCachedModified == null) {
+                if (cached == null || !cached.repositoryExists() || cached.isOutdated()) {
+                    refreshIndexFileTimestamp(scanGitFolderTimestamps(gitFolder));
+                    refreshNeeded = true;
+                }
+                if (refreshNeeded) {
                     File repository = gitFolder.getParentFile();
                     RepositoryInfo.refreshAsync(repository);
-                    Git.STATUS_LOG.fine("refreshAdminFolder: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
+                    Git.STATUS_LOG.log(Level.FINE, "refreshAdminFolder: planning repository scan for {0}", repository.getAbsolutePath()); //NOI18N
                     reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                     refreshOpenFiles(repository);
                 }

@@ -51,6 +51,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.core.api.multiview.MultiViews;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -66,6 +67,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.CloneableOpenSupport;
@@ -98,8 +100,14 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
     public CppEditorSupport(SourceDataObject obj) {
-        super(obj, new Environment(obj));
+        super(obj, null, new Environment(obj));
         this.ic = obj.getInstanceContent();
+        this.ic.add(obj.getNodeDelegate());
+    }
+
+    @Override
+    protected Pane createPane() {
+         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
 
     /** 

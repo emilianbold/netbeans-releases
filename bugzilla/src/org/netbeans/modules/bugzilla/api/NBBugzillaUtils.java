@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
@@ -151,6 +152,10 @@ public class NBBugzillaUtils {
             preferences = NbPreferences.forModule(NBBugzillaUtils.class);
         }
         return preferences;
+    }
+    
+    public static Repository findNBRepository() {
+        return NBRepositorySupport.findNbRepository();
     }
     
 }

@@ -92,8 +92,8 @@ public class WadlUIPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 2, 0);
         add(lbServiceUrl, gridBagConstraints);
-        lbServiceUrl.getAccessibleContext().setAccessibleName("null");
-        lbServiceUrl.getAccessibleContext().setAccessibleDescription("null");
+        lbServiceUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "LBL_targetNamespace")); // NOI18N
+        lbServiceUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "HINT_targetNamespace")); // NOI18N
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/rest/wadl/design/wizard/Bundle"); // NOI18N
         tfServiceUrl.setToolTipText(bundle.getString("HINT_serviceUrl")); // NOI18N
@@ -105,8 +105,8 @@ public class WadlUIPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 2, 0);
         add(tfServiceUrl, gridBagConstraints);
-        tfServiceUrl.getAccessibleContext().setAccessibleName("null");
-        tfServiceUrl.getAccessibleContext().setAccessibleDescription("null");
+        tfServiceUrl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "WsdlUIPanel.nsTF.AccessibleContext.accessibleName")); // NOI18N
+        tfServiceUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WadlUIPanel.class, "HINT_targetNamespace")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

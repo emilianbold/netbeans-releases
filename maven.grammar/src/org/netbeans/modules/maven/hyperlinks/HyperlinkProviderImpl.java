@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileObject;
@@ -202,7 +203,7 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
     private boolean isPomFile(Document doc) {
         String type = (String) doc.getProperty("mimeType"); //NOI18N
         if (type != null) {
-            if ("text/x-maven-pom+xml".equals(type)) { //NOI18N
+            if (POMDataObject.MIME_TYPE.equals(type)) { //NOI18N
                 return true;
             }
             if (!"text/xml".equals(type)) { //NOI18N

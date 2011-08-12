@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
@@ -123,4 +124,6 @@ class EclipseLinkProvider extends Provider {
     public Map getDefaultVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
+    
+    private final HashMap<String,String[]> properties = new HashMap<String,String[]>();
 }

@@ -64,4 +64,20 @@ public final class AuthenticationUtils {
         auth.setSSHKeyFile(sshKeyFile);
         auth.apply();
     }
+    
+    /**
+     * Returns ssh key file name for the specified ExecutionEnvironment or null if it is not of SSH_KEY auth type
+     */
+    public static String getSSHKeyFileFor(ExecutionEnvironment env) {
+        Authentication auth = Authentication.getFor(env);
+        if (auth.getType() == Authentication.Type.SSH_KEY) {
+            String file = auth.getSSHKeyFile();
+            if (file == null) {
+                file = "";
+            }
+            return file;
+        } else {
+            return null;
+        }
+    }
 }

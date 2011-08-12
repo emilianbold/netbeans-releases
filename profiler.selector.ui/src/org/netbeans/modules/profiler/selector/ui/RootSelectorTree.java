@@ -64,9 +64,8 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.components.JCheckTree;
 import org.netbeans.lib.profiler.ui.components.tree.CheckTreeNode;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilderFactory;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.netbeans.modules.profiler.utilities.trees.NodeFilter;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -76,13 +75,14 @@ import org.openide.util.NbBundle;
  * @author Jaroslav Bachorik
  */
 public class RootSelectorTree extends JCheckTree {
+    final private static NodeFilter<SelectorNode> DEFAULT_FILTER_INNER = new NodeFilter<SelectorNode>() {
 
-    private static NodeFilter<SelectorNode> DEFAULT_FILTER_INNER = new NodeFilter<SelectorNode>() {
-
+        @Override
         public boolean match(SelectorNode node) {
             return true;
         }
 
+        @Override
         public boolean maymatch(SelectorNode node) {
             return true;
         }
@@ -130,6 +130,7 @@ public class RootSelectorTree extends JCheckTree {
         new SwingWorker(false) {
 
             protected void doInBackground() {
+                removeSelection(getSelection());
                 applySelection(selection);
             }
 
@@ -182,25 +183,22 @@ public class RootSelectorTree extends JCheckTree {
 
         List<TypeEntry> entries = new ArrayList<TypeEntry>();
 
-        for (SelectionTreeBuilderFactory factory : Lookup.getDefault().lookupAll(SelectionTreeBuilderFactory.class)) {
-            Collection<SelectionTreeBuilder> builders = factory.createBuildersFor(context);
-
-            for (SelectionTreeBuilder builder : builders) {
-                if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
-                SelectionTreeBuilder.Type type = builder.getType();
-                TypeEntry te = new TypeEntry(type);
-                if (entries.contains(te)) {
-                    int index = entries.indexOf(te);
-                    te = entries.get(index);
-                    te.frequency += builder.isPreferred() ? 2 : 1;
-                } else {
-                    entries.add(te);
-                }
+        for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {
+            if (builder.estimatedNodeCount() == -1) continue; // builder can't build the tree for some reason
+            SelectionTreeBuilder.Type type = builder.getType();
+            TypeEntry te = new TypeEntry(type);
+            if (entries.contains(te)) {
+                int index = entries.indexOf(te);
+                te = entries.get(index);
+                te.frequency += builder.isPreferred() ? 2 : 1;
+            } else {
+                entries.add(te);
             }
         }
 
         Collections.sort(entries, new Comparator<TypeEntry>() {
 
+            @Override
             public int compare(TypeEntry o1, TypeEntry o2) {
                 if (o1.frequency > o2.frequency) {
                     return 1;
@@ -236,17 +234,19 @@ public class RootSelectorTree extends JCheckTree {
         context = Lookup.EMPTY;
     }
 
-    public static boolean canBeShown() {
-        return Lookup.getDefault().lookup(SelectionTreeBuilderFactory.class) != null;
+    public static boolean canBeShown(Lookup ctx) {
+        return ctx.lookup(SelectionTreeBuilder.class) != null;
     }
 
     private void init() {
         UIUtils.makeTreeAutoExpandable(this, true);
         this.addCheckTreeListener(new CheckTreeListener() {
 
+            @Override
             public void checkTreeChanged(Collection<CheckTreeNode> nodes) {
             }
 
+            @Override
             public void checkNodeToggled(final TreePath treePath, boolean before) {
                 if (!before) { // only after the node check-mark has been changed
 
@@ -322,10 +322,12 @@ public class RootSelectorTree extends JCheckTree {
 
             private volatile boolean openingSubtree = false;
 
+            @Override
             public void treeWillCollapse(TreeExpansionEvent event)
                     throws ExpandVetoException {
             }
 
+            @Override
             public void treeWillExpand(final TreeExpansionEvent event)
                     throws ExpandVetoException {
                 TreeNode node = (TreeNode) event.getPath().getLastPathComponent();
@@ -345,14 +347,17 @@ public class RootSelectorTree extends JCheckTree {
 
                     new SwingWorker() {
 
+                        @Override
                         protected void doInBackground() {
                             checkNodeChildren(myNode, false);
                         }
 
+                        @Override
                         protected void nonResponding() {
                             progress.showProgress(NbBundle.getMessage(this.getClass(), "NodeLoadingMessage")); // NOI18N
                         }
 
+                        @Override
                         protected void done() {
                             progress.close();
 
@@ -541,22 +546,15 @@ public class RootSelectorTree extends JCheckTree {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(ROOT_STRING);
 
         if (builderType != null) {
-            for (SelectionTreeBuilderFactory factory : Lookup.getDefault().lookupAll(SelectionTreeBuilderFactory.class)) {
-                Collection<SelectionTreeBuilder> builders = factory.createBuildersFor(context);
-
-                for (SelectionTreeBuilder builder : builders) {
-                    if (builder.getType().equals(builderType)) {
-                        for (SelectorNode node : builder.buildSelectionTree()) {
-                            rootNode.add(node);
-                        }
+            for (SelectionTreeBuilder builder : context.lookupAll(SelectionTreeBuilder.class)) {
+                if (builder.getType().equals(builderType)) {
+                    for (SelectorNode node : builder.buildSelectionTree()) {
+                        rootNode.add(node);
                     }
                 }
             }
         }
 
-//        for (MutableTreeNode node : currentTreeBuilder.buildSelectionTree()) {
-//            rootNode.add(node);
-//        }
         return rootNode;
     }
 

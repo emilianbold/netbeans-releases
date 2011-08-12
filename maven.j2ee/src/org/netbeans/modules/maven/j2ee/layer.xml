@@ -74,6 +74,14 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
+                <file name="APPCLIENT">
+                    <attr name="position" intvalue="277"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.j2ee.Bundle#template.APPCLIENT"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.BasicEEWizardIterator.createAppClientIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/j2ee/AppClientDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/appclient.png"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
             </folder>
         </folder>
     </folder>

@@ -74,12 +74,14 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
     }
 
+    @Override
     public void doAction(Object action) {
         if (SwingUtilities.isEventDispatchThread()) {
             addBreakpoints();
         }
         else {
             SwingUtilities.invokeLater( new Runnable() {
+                @Override
                 public void run() {
                     addBreakpoints();
                 } 
@@ -87,6 +89,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         }
     }
 
+    @Override
     public Set getActions() {
         return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT );
     }
@@ -118,6 +121,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         // We need to push the state there :-(( instead of wait for someone to be interested in...
         boolean enabled = Utils.getCurrentLine() != null;

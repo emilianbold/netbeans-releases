@@ -74,4 +74,5 @@ public class NbRepositoryTest extends NbTestCase {
         assertTrue("File created", af.exists());
         assertEquals("4 bytes", 4, af.length());
     }
+
 }

@@ -51,13 +51,13 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.DialogDisplayerImpl;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.TestAntLogger;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
-import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -138,7 +138,7 @@ public abstract class BuildSampleApplicationBase extends TestBase {
         }
 
 
-        SuiteProject sampleSuite = (SuiteProject) ProjectManager.getDefault().findProject(fo);
+        Project sampleSuite = ProjectManager.getDefault().findProject(fo);
         assertNotNull(sampleSuite);
         FileObject buildScript = sampleSuite.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         assertNotNull(buildScript);

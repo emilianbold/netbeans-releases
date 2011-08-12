@@ -53,10 +53,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -71,51 +70,50 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions , 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
-        checkDecoratorInterceptor( element , compInfo , descriptions , cancel);
+        checkDecoratorInterceptor( element , cancel, result );
     }
 
-    private void checkDecoratorInterceptor( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
-            AtomicBoolean cancel )
+    private void checkDecoratorInterceptor( TypeElement element, 
+            AtomicBoolean cancel , CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         boolean isDecorator = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.DECORATOR, compInfo);
         boolean isInterceptor = AnnotationUtil.hasAnnotation(element, 
                 AnnotationUtil.INTERCEPTOR, compInfo);
         if ( isDecorator && isInterceptor ){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
-                        AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));
-            descriptions.add( description );
+            result.addError( element, NbBundle.getMessage(
+                        AnnotationsAnalyzer.class, "ERR_DecoratorInterceptor"));// NOI18N
         }
         if ( isDecorator || isInterceptor ){
+            result.requireCdiEnabled(element);
             if ( cancel.get() ){
                 return;
             }
-            checkProducerFields( element , isDecorator , compInfo , descriptions );
+            checkProducerFields( element , isDecorator , result);
             if ( cancel.get() ){
                 return;
             }
-            checkMethods( element , isDecorator , compInfo , descriptions );
+            checkMethods( element , isDecorator , result);
             if ( cancel.get() ){
                 return;
             }
-            checkSession( element , compInfo , descriptions);
+            checkSession( element , result);
         }
         if ( isDecorator ){
             if ( cancel.get() ){
                 return;
             }
-            checkDelegateInjectionPoint(element , compInfo , descriptions);
+            checkDelegateInjectionPoint(element , result);
         }
     }
 
     private void checkDelegateInjectionPoint( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         List<? extends Element> enclosedElements = element.getEnclosedElements();
         int count = 0;
         for (Element child : enclosedElements) {
@@ -139,10 +137,8 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
             }
         }
         if ( count != 1){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element, NbBundle.getMessage(
                 AnnotationsAnalyzer.class,  "ERR_IncorrectDelegateCount")); // NOI18N
-            descriptions.add( description );
         }
     }
     
@@ -163,20 +159,19 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
     }
 
     private void checkSession( TypeElement element,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result )
     {
-        if ( AnnotationUtil.isSessionBean(element, compInfo) )
+        if ( AnnotationUtil.isSessionBean(element, result.getInfo()) )
         {
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element,  NbBundle.getMessage(
                         AnnotationsAnalyzer.class,  "ERR_SesssionBeanID")); // NOI18N
-            descriptions.add( description );
         }
     }
 
     private void checkMethods( TypeElement element, boolean isDecorator,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         List<ExecutableElement> methods = ElementFilter.methodsIn( 
                 element.getEnclosedElements());
         for (ExecutableElement method : methods) {
@@ -200,12 +195,10 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
                 }
             }
             if ( isProducer || isDisposer || isObserver ){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+                result.addError( element, NbBundle.getMessage(
                     AnnotationsAnalyzer.class, getMethodErrorKey(isDecorator, 
                             isProducer, isDisposer) , 
                             method.getSimpleName().toString()));
-                descriptions.add( description );
                 break;
             }
         }
@@ -241,20 +234,18 @@ public class AnnotationsAnalyzer implements ClassAnalyzer {
     }
 
     private void checkProducerFields( TypeElement element, boolean isDecorator,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result )
     {
         List<VariableElement> fields = ElementFilter.fieldsIn( 
                 element.getEnclosedElements() );
         for (VariableElement field : fields) {
             if ( AnnotationUtil.hasAnnotation(field, AnnotationUtil.PRODUCES_FQN, 
-                    compInfo))
+                    result.getInfo()))
             {
                 String key= isDecorator ? "ERR_DecoratorHasProducerField":
                     "ERR_IntrerceptorHasProducerField";                 // NOI18N
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, compInfo, NbBundle.getMessage(
+                result.addError( element, NbBundle.getMessage(
                         AnnotationsAnalyzer.class, key , field.getSimpleName().toString()));
-                descriptions.add( description );
                 break;
             }
         }

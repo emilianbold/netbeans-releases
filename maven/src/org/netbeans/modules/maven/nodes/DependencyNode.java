@@ -246,7 +246,7 @@ public class DependencyNode extends AbstractNode {
 
     @Override
     public String getShortDescription() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("<html><i>").append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep1")).append("</i><b> ").append(art.getGroupId()).append("</b><br><i>"); //NOI18N
         buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep2")).append("</i><b> ").append(art.getArtifactId()).append("</b><br><i>");//NOI18N
         buf.append(NbBundle.getMessage(DependencyNode.class, "DESC_Dep3")).append("</i><b> ").append(art.getVersion()).append("</b><br><i>");//NOI18N

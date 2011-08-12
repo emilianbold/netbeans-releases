@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
@@ -19,9 +18,9 @@ import javax.ws.rs.Produces;
  *
  * @author lukas
  */
-
 @Path("generic")
 public class GenericResource {
+
     @Context
     private UriInfo context;
 

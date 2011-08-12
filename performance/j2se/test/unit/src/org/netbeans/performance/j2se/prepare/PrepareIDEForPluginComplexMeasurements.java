@@ -45,7 +45,9 @@
 package org.netbeans.performance.j2se.prepare;
 
 
+import java.io.File;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.jellytools.actions.OpenAction;
@@ -57,8 +59,8 @@ import org.netbeans.jemmy.operators.Operator;
 
 import org.netbeans.junit.NbTestSuite;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.j2se.Utilities;
 
 
 
@@ -83,22 +85,29 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
     /** Testsuite
      * @return testuite
      */
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
-        suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
-        suite.addTest(new PrepareIDEForPluginComplexMeasurements("openFiles"));
-        suite.addTest(new PrepareIDEForComplexMeasurements("saveStatus"));
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("Prepare IDE for Plugin Complex Measurements Suite");
+        System.setProperty("suitename", PrepareIDEForPluginComplexMeasurements.class.getCanonicalName());
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(PrepareIDEForPluginComplexMeasurements.class)
+                .addTest("testCloseAllDocuments")                
+                .addTest("testCloseMemoryToolbar")
+                .addTest(PrepareIDEForPluginComplexMeasurements.class, "testOpenFiles")
+                .addTest("testSaveStatus").enableModules(".*").clusters(".*")));
         return suite;
     }
-
     
     /**
      * Open 3 selected files from jEdit project.
      */
     @Override
-    public void openFiles(){
-        
+    public void testOpenFiles(){
+        File parentDir = getDataDir().getParentFile().getParentFile();
+        File funcData = new File(parentDir, "qa-functional"+File.separator+"data");
+        try {            
+            Utilities.openProject("SystemProperties", funcData);
+        } catch (Exception e) {
+            System.err.println(e.getLocalizedMessage());
+        }
         try {
             String[][] files_path = {
                 {"org.myorg.systemproperties","AllPropsChildren.java"},

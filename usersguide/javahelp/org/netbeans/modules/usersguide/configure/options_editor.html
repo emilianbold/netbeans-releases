@@ -5,7 +5,7 @@
  * Use is subject to license terms.
 -->
 <html>
-<head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Options Window: Editor</title>
         <link rel="StyleSheet" href="../ide.css" type="text/css">
     </head>
@@ -18,106 +18,128 @@
         <p>You can access this panel by choosing Tools &gt; Options from the main menu, and then clicking the Editor category.</p> 
 
         <p>This panel contains the following tabs where you can set editor options.</p>
-        
+
         <ul>
             <li><b>General.</b> This tab enables you to customize global code folding and camel case settings.</li>
             <li><b>Formatting.</b> This tab enables you to customize global indentation for files in the Source Editor.</li>
             <li><b>Code Completion.</b> This tab enables you to customize code completion for
-             the languages that support this feature.</li>
+                the languages that support this feature.</li>
             <li><b>Code Templates.</b> This tab enables you to customize the abbreviations for terms that you want the editor to expand automatically.</li>
             <li><b>Hints.</b> This tab enables you to customize hints and tips that help you as you type in the Source Editor.</li>
             <li><b>Mark Occurrences.</b> This tab enables you to specify which occurrences of Java keywords will be marked
-             when the cursor is on one of their instances.</li>
+                when the cursor is on one of their instances.</li>
             <li><b>Macros.</b> This tab enables you to customize Source Editor macros and to set shortcuts for macros.</li>
         </ul>
- 
+
         <h3>General tab</h3>
         <h4>Code Folding</h4>
-            <ul>
-                <li><b>Use Code Folding.</b> If selected, you have the option of collapsing the display of code blocks.
-                    You can select which types of code blocks are collapsed by default. 
+        <ul>
+            <li><b>Use Code Folding.</b> If selected, you have the option of collapsing the display of code blocks.
+                You can select which types of code blocks are collapsed by default. 
                 Code folding is applied only to editor types that support code folding, such as the Java editor.</li>
-                <li><b>Collapse by Default.</b> Select the types of code blocks that are are collapsed by default.</li>
-                <li><b>Camel Case Behavior.</b> Enable Camel Case Navigation in Java. For
-                 example, the caret stops at "J", "T", and "N", in "JavaTypeName", when
-                 you use the next/previous word actions.</li>
-            </ul>
+            <li><b>Collapse by Default.</b> Select the types of code blocks that are are collapsed by default.</li>
+            <li><b>Camel Case Behavior.</b> Enable Camel Case Navigation in Java. For
+                example, the caret stops at "J", "T", and "N", in "JavaTypeName", when
+                you use the next/previous word actions.</li>
+        </ul>
 
-            <h3>Formatting tab</h3>
-        <p>This tab enables you to specify the following Java source code formatting settings:</p>
+        <h3>Formatting tab</h3>
+        <p>In this panel, define the formatting style you want to apply to 
+            your source files in the editor. The settings in this panel apply
+            <i>globally</i>. </p>
+        <ul>
+            <li><b>Language.</b> The language whose global formatting options you want to edit.
+                <ul>
+                    <li><b>All Languages</b>--all languages except C++. See <a href="#all-languages">below</a>. </li>
+                    <li><b>Java</b> 
+                        For Java formatting options, see <a  href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/editing/csh/java-formatting.html">
+>Java Formatting</a>
+                    </li>
+                    <li><b>PHP</b> For PHP formatting options, see <a 
+                            href="nbdocs://org.netbeans.modules.php.help/org/netbeans/modules/php/help/docs/csh/php-formatting.html">
+                            PHP Formatting</a>.</li>
+                </ul></li>
+        </ul>
+        <h4><a name="all-languages"></a>All Languages</h4>
+        <p>All Languages refer to all languages except C++. If you select All Languages, the only Category of options is Tabs and Indents.</p>
         <ul>
             <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.
-            <!--The number of spaces inserted is set in the Number of Spaces per Indent property.-->
-           When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
-            possible. It also replaces preceding spaces with the tab character if possible.  
-            The Source Editor calculates where to place tab characters based on the value 
-            of the Tab Size property.
-            <p>If Expand Tabs to Spaces is unselected and the Number of Spaces per Indent is different
-            than the Tab Size property, the indentation created by typing the Tab key is 
-            made up of a combination of spaces and tab characters.  It is easiest to predict 
-            the location of tab characters if you set Number of Spaces per Indent to an even
-            multiple or divisor of Tab Size.
+                <!--The number of spaces inserted is set in the Number of Spaces per Indent property.-->
+                When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
+                possible. It also replaces preceding spaces with the tab character if possible.  
+                The Source Editor calculates where to place tab characters based on the value 
+                of the Tab Size property.
+                <p>If Expand Tabs to Spaces is unselected and the Number of Spaces per Indent is different
+                    than the Tab Size property, the indentation created by typing the Tab key is 
+                    made up of a combination of spaces and tab characters.  It is easiest to predict 
+                    the location of tab characters if you set Number of Spaces per Indent to an even
+                    multiple or divisor of Tab Size.
             </li>
             <li><b>Number of Spaces per Indent.</b> Specifies the number of spaces represented by one indentation level.</li>
             <li><b>Tab Size.</b> See the description of Expand Tabs to Spaces, above. </li>
             <li><b>Right Margin.</b> Specifies the location of the right margin, which is 80 characters by default. </li>
-            <li><b>Line Wrap.</b> Disabled by default. Use the dropdown list to specify where the break for line wrapping in the source code will occur.</li>
+            <li><b>Line wrap:</b> Whether lines are wrapped when they are longer than the width of the Editor window (no relationship to right margin). Options are:
+                <ul>
+                    <li><b>Off.</b> No line wrapping (default).</li>
+                    <li><b>After words.</b> Words are not broken by line wrapping.</li>
+                    <li><b>Anywhere.</b> Lines are broken in the middle of words by line wrapping.</li>
+                </ul></li>        
         </ul>
         <p>The Preview pane displays how the applied changes will appear in the Source Editor.</p>
-    
+
         <h3>Code Completion</h3>
 
         <p>As you are typing in the Source Editor, you can use the IDE's code completion feature to find code snippets and have them filled in for you automatically.
-        You can set the following code completion properties.</p>
+            You can set the following code completion properties.</p>
         <ul>
             <li><b>Auto Popup Completion Window.</b> When selected, enables the editor to display a code completion box with
-            options for how to complete an expression.
-            <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p></li>
+                options for how to complete an expression.
+                <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p></li>
             <li><b>Auto Popup Documentation Window.</b> When selected, the documentation window appears
-             automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</li>
+                automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</li>
             <li><b>Display Documentation Next to Completion.</b> Specifies that the
-            code completion window appears next to, rather than above/below, the related code.</li>
+                code completion window appears next to, rather than above/below, the related code.</li>
             <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of
-            only one possible completion for the expression. The expression is completed automatically, but
-            only if you invoke code completion explicitly, not if you simply type "." behind an identifier. </li>
+                only one possible completion for the expression. The expression is completed automatically, but
+                only if you invoke code completion explicitly, not if you simply type "." behind an identifier. </li>
             <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression
-            that you are typing. </li>
+                that you are typing. </li>
             <li><b>Show Deprecated Members in Code Completion.</b> If selected, any deprecrated class elements that are available are shown
-            in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
+                in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
             <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket,
-            brace, or quotation mark after you type the first one.</li>
+                brace, or quotation mark after you type the first one.</li>
         </ul>
 
         <h3>Code Templates tab</h3>
         <p>Use this tab to modify the abbreviations for terms that you want the editor to expand automatically.
-        Select a language from the drop-down list to see the abbreviations available.
-        For each language you can do the following:
+            Select a language from the drop-down list to see the abbreviations available.
+            For each language you can do the following:
         <ul>
             <li>Select an abbreviation from the list and type in the Abbreviation or Expanded Text field to modify the abbreviation.</li>
             <li>Select an abbreviation from the list and click Remove to remove the abbreviation.</li>
             <li>Click New and type the abbreviation and description in the respective fields.</li>
         </ul>
         <p>You can use the Expand Template On drop-down list to change the
-        key or key combination that is used to expand the abbreviations.
-        By default, abbreviations are expanded when you press Tab.
-        The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
+            key or key combination that is used to expand the abbreviations.
+            By default, abbreviations are expanded when you press Tab.
+            The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
         <p>Using <a href="editor_template_syntax.html">code template syntax</a>,
             you can add further functionality to templates or create new templates.</p>
         <p>For lists of default code template abbreviations included in the IDE, see <a href="../shortcuts/abbreviations-list.html">Code Template Abbreviations: Quick Reference</a></p>
         <p>The web tutorial <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-         <!-- Enter the URL below -->
-          <param name="content" value="http://netbeans.org/kb/docs/php/code-templates.html">
-          <!-- Enter the display text below. The <html> and <u> make the text look like a link. -->
-          <param name="text" value="<html><u>Code Templates in NetBeans IDE for PHP</u></html>">
-          <param name="textFontSize" value="medium">
-          <param name="textColor" value="blue">
-      </object> also describes the code template syntax and includes use cases. It is useful not only for PHP developers!
-</p>
+                <!-- Enter the URL below -->
+                <param name="content" value="http://netbeans.org/kb/docs/php/code-templates.html">
+                <!-- Enter the display text below. The <html> and <u> make the text look like a link. -->
+                <param name="text" value="<html><u>Code Templates in NetBeans IDE for PHP</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object> also describes the code template syntax and includes use cases. It is useful not only for PHP developers!
+        </p>
 
         <h3>Macros tab</h3>
         <p>Use this tab to edit, add, and remove Source Editor macros.
-        The macro names and shortcuts are listed in the upper pane. 
-	The Macro Code editor in the lower pane displays the macro code and enables you to edit the code directly.</p>
+            The macro names and shortcuts are listed in the upper pane. 
+            The Macro Code editor in the lower pane displays the macro code and enables you to edit the code directly.</p>
         <ul>
             <li>To modify the macro code, select a macro from the list and edit the code in the Macro Code editor.</li> 
             <li>To set a keyboard shortcut for a macro, select a macro from the list, click the Set Shortcut button and enter the shortcut in the dialog box.</li>
@@ -127,7 +149,7 @@
         <ul class="note">        
             <li>It is generally easier to add a new macro by recording it than by adding one manually in the Macro Code editor. 
         </ul>
-        
+
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd>      <a href="configure_options.html">Using the Options Window</a></dd>

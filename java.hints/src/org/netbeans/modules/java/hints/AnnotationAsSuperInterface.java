@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,130 +26,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author phrebejk
  */
-public class AnnotationAsSuperInterface extends AbstractHint {
+@Hint(category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface", options=Options.QUERY)
+public class AnnotationAsSuperInterface {
 
-    private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
-    
-    private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.ANNOTATION_TYPE);
-    
-    public AnnotationAsSuperInterface() {
-        super( true, true, HintSeverity.WARNING, "AnnotationAsSuperInterface");
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return KINDS;
-    }
-
-    public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
-        
-        Tree node = treePath.getLeaf();
-
-        if (node.getKind() != Tree.Kind.ANNOTATION_TYPE) {
-            return null;
-        }
-        
-        ClassTree tree = (ClassTree)node;       
-        
-        Element e = info.getTrees().getElement(treePath);
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
+    public static Iterable<ErrorDescription> run(HintContext ctx) {
+        Element e = ctx.getInfo().getTrees().getElement(ctx.getPath());
 
         if ( e == null || !(e instanceof TypeElement) ) {
             return null;
         }
         
-        List<ErrorDescription> eds = new ArrayList<ErrorDescription>(); 
-        TypeElement te = (TypeElement) e;
-        List<? extends TypeMirror> interfaces = te.getInterfaces();
-        Types types = info.getTypes();
+        List<ErrorDescription> eds = new ArrayList<ErrorDescription>();
         
-        for (TypeMirror typeMirror : interfaces) {
-            Element si = types.asElement(typeMirror);
-            if ( si != null && si.getKind() == ElementKind.ANNOTATION_TYPE ) {
-                
-                Tree annoTree = findTreeForAnnotation(tree, si);
-                annoTree = annoTree == null ? tree : annoTree;
-                eds.add( ErrorDescriptionFactory.createErrorDescription(
-                        getSeverity().toEditorSeverity(), 
-                        NbBundle.getMessage(AnnotationAsSuperInterface.class, 
-                                            "HNT_AnnotationAsSuperInterface",  // NOI18N
-                                            si.getSimpleName().toString()), 
-                        NO_FIXES, 
-                        info.getFileObject(),
-                        (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), annoTree ),
-                        (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), annoTree ) ) );
+        for (Tree i : ((ClassTree) ctx.getPath().getLeaf()).getImplementsClause()) {
+            Element ie = ctx.getInfo().getTrees().getElement(new TreePath(ctx.getPath(), i));
+
+            if (ie != null && ie.getKind() == ElementKind.ANNOTATION_TYPE) {
+                eds.add(ErrorDescriptionFactory.forTree(ctx, i, NbBundle.getMessage(AnnotationAsSuperInterface.class,
+                                    "HNT_AnnotationAsSuperInterface",  // NOI18N
+                                    ie.getSimpleName().toString())));
             }
         }
 
         return eds;
-        
-        // todo create hint
-        
-        /* TODO */
-        // string with ==
-        // empty blocks
-        // typos
-        // I18N
-        // want to override/implement
-        // add deprecated annotation
-        // javac warnings                        
-    }
-
-    public void cancel() {
-        // Does nothing
-    }
-
-    public String getId() {
-        return "AnnotationAsSuperInterface"; // NOI18N
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(AssignmentToItself.class, "LBL_AnnotationAsSuperInterface"); // NOI18N
-    }
-    
-    public String getDescription() {
-        return NbBundle.getMessage(AssignmentToItself.class, "DSC_AnnotationAsSuperInterface"); // NOI18N
-    }
-    
-    private Tree findTreeForAnnotation( ClassTree ct, Element annotation ) {
-        
-        String name = annotation.getSimpleName().toString();
-        
-        for (Tree tree : ct.getImplementsClause()) {
-            if ( tree.toString().endsWith(name)) {
-                return tree;
-            }
-        }
-
-        return null;
-        
     }
     
 }
