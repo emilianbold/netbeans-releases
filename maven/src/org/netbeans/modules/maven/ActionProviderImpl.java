@@ -43,12 +43,10 @@ package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -68,7 +66,6 @@ import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -81,9 +78,6 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
@@ -103,14 +97,11 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -239,7 +230,7 @@ public class ActionProviderImpl implements ActionProvider {
 
         } else {
             setupTaskName(action, rc, lookup);
-            runGoal(rc, true);
+            RunUtils.run(rc);
         }
     }
 
@@ -249,68 +240,6 @@ public class ActionProviderImpl implements ActionProvider {
             replacements.putAll(prov.createReplacements(action, lookup));
         }
         return replacements;
-    }
-
-    @Messages("TIT_Run_Maven=Run Maven")
-    private void runGoal(RunConfig config, boolean checkShowDialog) {
-        // check the prerequisites
-        for (PrerequisitesChecker elem : config.getProject().getLookup().lookupAll(PrerequisitesChecker.class)) {
-            if (!elem.checkRunConfig(config)) {
-                return;
-            }
-            if (config.getPreExecution() != null) {
-                if (!elem.checkRunConfig(config.getPreExecution())) {
-                    return;
-                }
-            }
-        }
-
-
-
-        if (checkShowDialog && MavenSettings.getDefault().isShowRunDialog()) {
-            RunGoalsPanel pnl = new RunGoalsPanel();
-            DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Run_Maven());
-            pnl.readConfig(config);
-            Object retValue = DialogDisplayer.getDefault().notify(dd);
-            if (retValue == DialogDescriptor.OK_OPTION) {
-                BeanRunConfig newConfig = new BeanRunConfig();
-                newConfig.setExecutionDirectory(config.getExecutionDirectory());
-                newConfig.setExecutionName(config.getExecutionName());
-                newConfig.setTaskDisplayName(config.getTaskDisplayName());
-                newConfig.setProject(config.getProject());
-                pnl.applyValues(newConfig);
-                config = newConfig;
-            } else {
-                return;
-            }
-        }
-        // setup executor now..   
-        ExecutorTask task = RunUtils.executeMaven(config);
-
-        // fire project change on when finishing maven execution, to update the classpath etc. -MEVENIDE-83
-        task.addTaskListener(new TaskListener() {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public void taskFinished(Task task2) {
-//reload is done in executors
-//                NbMavenProject.fireMavenProjectReload(project);
-                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
-                if (info != null) {
-                    List<Artifact> arts = new ArrayList<Artifact>();
-                    Artifact prjArt = project.getOriginalMavenProject().getArtifact();
-                    if (prjArt != null) {
-                        arts.add(prjArt);
-                    }
-                    //#157572
-                    Set depArts = project.getOriginalMavenProject().getDependencyArtifacts();
-                    if (depArts != null) {
-                        arts.addAll(depArts);
-                    }
-                    RepositoryIndexer.updateIndexWithArtifacts(info, arts);
-                }
-            }
-        });
     }
 
     @Messages({
@@ -384,6 +313,7 @@ public class ActionProviderImpl implements ActionProvider {
             this.showUI = showUI;
         }
 
+        @Messages("TIT_Run_Maven=Run Maven")
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             Map<String,String> replacements = replacements((String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
@@ -398,7 +328,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(rc, true); //NOI18N
+                RunUtils.run(rc);
 
                 return;
             }
@@ -451,7 +381,7 @@ public class ActionProviderImpl implements ActionProvider {
                 rc.setTaskDisplayName(TXT_Build(project.getOriginalMavenProject().getArtifactId()));
 
                 setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                runGoal(rc, false); //NOI18N
+                RunUtils.run(rc);
 
             }
         }
@@ -585,7 +515,7 @@ public class ActionProviderImpl implements ActionProvider {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
-                return reporter != null && reporter.isBroken() ? new ShowProblemsAction(reporter) : null;
+                return reporter != null && !reporter.getReports().isEmpty() ? new ShowProblemsAction(reporter) : null;
             }
         };
     }
@@ -608,7 +538,7 @@ public class ActionProviderImpl implements ActionProvider {
             close.setText(BTN_Close());
             DialogDescriptor dd = new DialogDescriptor(panel, TIT_Show_Problems());
             dd.setOptions(new Object[] { butt,  close});
-            dd.setClosingOptions(new Object[] { close });
+            dd.setClosingOptions(new Object[] { butt, close });
             dd.setModal(false);
             DialogDisplayer.getDefault().notify(dd);
         }

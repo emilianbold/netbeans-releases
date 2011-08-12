@@ -43,16 +43,25 @@
 package org.netbeans.modules.maven.api.execute;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.LifecycleManager;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Utility method for executing a maven build, using the RunConfig.
@@ -63,19 +72,63 @@ public final class RunUtils {
     /** Creates a new instance of RunUtils */
     private RunUtils() {
     }
+
+    /**
+     * Runs Maven after checking prerequisites.
+     * @param config a run configuration (try {@link #createRunConfig})
+     * @return a task to track progress, or null if prerequisites were not satisfied
+     * @see #executeMaven
+     * @see PrerequisitesChecker
+     * @since 2.18
+     */
+    public static @CheckForNull ExecutorTask run(RunConfig config) {
+        for (PrerequisitesChecker elem : config.getProject().getLookup().lookupAll(PrerequisitesChecker.class)) {
+            if (!elem.checkRunConfig(config)) {
+                return null;
+            }
+            if (config.getPreExecution() != null) {
+                if (!elem.checkRunConfig(config.getPreExecution())) {
+                    return null;
+                }
+            }
+        }
+        return executeMaven(config);
+    }
     
     /**
-     *  execute maven build in netbeans execution engine.
+     * Execute maven build in NetBeans execution engine.
+     * Most callers should rather use {@link #run} as this variant does no (non-late-bound) prerequisite checks.
+     * It is mostly suitable for cases where you need full control by the caller over the config, or want to rerun a previous execution.
      */
-    public static ExecutorTask executeMaven(RunConfig config) {
+    public static ExecutorTask executeMaven(final RunConfig config) {
         // save all edited files.. maybe finetune for project's files only, however that would fail for multiprojects..
         LifecycleManager.getDefault().saveAll();
 
         MavenExecutor exec = new MavenCommandLineExecutor(config);
-        return executeMavenImpl(config.getTaskDisplayName(), exec);
+        ExecutorTask task = executeMavenImpl(config.getTaskDisplayName(), exec);
+        // fire project change on when finishing maven execution, to update the classpath etc. -MEVENIDE-83
+        task.addTaskListener(new TaskListener() {
+            @Override public void taskFinished(Task _) {
+                // fireMavenProjectReload is done in executors
+                RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
+                if (info == null) {
+                    return;
+                }
+                MavenProject mp = config.getMavenProject();
+                if (mp == null) {
+                    return;
+                }
+                List<Artifact> arts = new ArrayList<Artifact>();
+                Artifact main = mp.getArtifact();
+                if (main != null) { // #157572?
+                    arts.add(main);
+                }
+                arts.addAll(mp.getArtifacts());
+                RepositoryIndexer.updateIndexWithArtifacts(info, arts);
+            }
+        });
+        return task;
     }
-
-    private static boolean warningShown = false;
 
     public static RunConfig createRunConfig(File execDir, Project prj, String displayName, List<String> goals)
     {

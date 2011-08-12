@@ -46,11 +46,11 @@ import java.io.File;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.ArtifactFixer;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.openide.util.lookup.ServiceProvider;
 import org.sonatype.aether.artifact.Artifact;
 
@@ -64,17 +64,17 @@ public class NbArtifactFixer implements ArtifactFixer {
         if (!artifact.getExtension().equals(NbMavenProject.TYPE_POM)) {
             return null;
         }
+        if (!artifact.getClassifier().isEmpty()) {
+            return null;
+        }
         ArtifactRepository local = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-        if (local.getLayout() == null) {
-            // #189807: for unknown reasons, there is no layout when running inside MavenCommandLineExecutor.run
-            return null;
+        if (local.getLayout() != null) { // #189807: for unknown reasons, there is no layout when running inside MavenCommandLineExecutor.run
+            if (new File(local.getBasedir(), local.pathOf(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), null, artifact.getExtension(), artifact.getClassifier(), new DefaultArtifactHandler(artifact.getExtension())))).exists()) {
+                return null; // for now, we prefer the repository version when available
+            }
         }
-        File nominal = new File(local.getBasedir(), local.pathOf(new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), null, artifact.getExtension(), artifact.getClassifier(), new DefaultArtifactHandler(artifact.getExtension()))));
-        if (nominal.exists()) { // XXX may no longer be necessary?
-            return null;
-        }
-        // XXX better to use MavenFileOwnerQueryImpl directly, once 3893f82a0042 in javadoc_source_attacher merged: factor out getOwner(String,String,String)
-        Project owner = FileOwnerQuery.getOwner(nominal.toURI());
+        // MavenFileOwnerQueryImpl could give us the dir location quickly, but we would still need to verify that the version matches, so loading the project is necessary.
+        Project owner = MavenFileOwnerQueryImpl.getInstance().getOwner(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
         if (owner != null) {
             NbMavenProjectImpl mavenProject = owner.getLookup().lookup(NbMavenProjectImpl.class);
             if (mavenProject != null) {
