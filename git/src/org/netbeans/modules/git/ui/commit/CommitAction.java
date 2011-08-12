@@ -100,6 +100,11 @@ public class CommitAction extends SingleRepositoryAction {
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
 
     @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/git/resources/icons/commit.png"; // NOI18N
+    }
+
+    @Override
     protected void performAction (final File repository, final File[] roots, final VCSContext context) {
         if (!canCommit(repository)) {
             return;

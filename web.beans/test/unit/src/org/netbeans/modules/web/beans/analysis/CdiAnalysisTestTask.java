@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,58 +39,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.beans.analysis;
 
-package org.netbeans.modules.git.ui.diff;
+import org.netbeans.api.java.source.CompilationInfo;
 
-import java.io.File;
-import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
+ * @author ads
  *
- * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.status.DiffAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DiffAction_Name")
-public class DiffAction extends GitAction {
+public class CdiAnalysisTestTask extends CdiAnalysisTask {
 
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
+     */
     @Override
-    protected void performContextAction (Node[] nodes) {
-        VCSContext context = getCurrentContext(nodes);
-        diff(context);
+    protected void run( CompilationInfo compInfo ) {
+        super.run(compInfo);
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#getResult()
+     */
     @Override
-    protected String iconResource () {
-        return "org/netbeans/modules/git/resources/icons/diff.png"; // NOI18N
+    protected CdiAnalysisTestResult getResult() {
+        return (CdiAnalysisTestResult)super.getResult();
     }
-
-    public void diff (VCSContext context) {
-        String contextName = Utils.getContextDisplayName(context);
-        MultiDiffPanelController controller = new MultiDiffPanelController(context);
-        DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setActions(tc);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
-        tc.open();
-        tc.requestActive();
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisTask#createResult(org.netbeans.api.java.source.CompilationInfo)
+     */
+    @Override
+    protected CdiAnalysisResult createResult( CompilationInfo info ) {
+        return new CdiAnalysisTestResult(info);
     }
-
-    public void diff (File file, String rev1, String rev2) {
-        MultiDiffPanelController controller = new MultiDiffPanelController(file, rev1, rev2);
-        DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setActions(tc);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
-        tc.open();
-        tc.requestActive();
-    }
+    
 }

@@ -67,12 +67,8 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author ads
  *
  */
-class CdiAnalysisTask extends AbstractAnalysisTask {
+public class CdiAnalysisTask extends AbstractAnalysisTask {
     
-    
-    protected CdiAnalysisResult getResult(){
-        return myResult;
-    }
     
     protected CdiAnalysisResult createResult( CompilationInfo info ){
         return new CdiAnalysisResult(info);
@@ -87,8 +83,8 @@ class CdiAnalysisTask extends AbstractAnalysisTask {
     }
     
     @Override
-    void run( CompilationInfo compInfo ) {
-        myResult = createResult( compInfo );
+    protected void run( CompilationInfo compInfo ) {
+        setResult( createResult( compInfo ) );
         List<? extends TypeElement> types = compInfo.getTopLevelElements();
         for (TypeElement typeElement : types) {
             if ( isCancelled() ){
@@ -132,8 +128,6 @@ class CdiAnalysisTask extends AbstractAnalysisTask {
         }
         analyzer.analyze(element, typeElement, getCancel(), getResult() );
     }
-    
-    private CdiAnalysisResult myResult;
     
     private static final Map<ElementKind,ElementAnalyzer> ANALIZERS = 
         new HashMap<ElementKind, ElementAnalyzer>();

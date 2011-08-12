@@ -125,6 +125,11 @@ public class CommitAction extends ContextAction {
     }
 
     @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/mercurial/resources/icons/commit.png"; // NOI18N
+    }
+
+    @Override
     protected void performContextAction(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         final File root = HgUtils.getRootFile(context);

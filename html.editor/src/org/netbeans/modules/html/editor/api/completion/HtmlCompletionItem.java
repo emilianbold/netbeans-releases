@@ -336,7 +336,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
     @Override
     public CompletionTask createDocumentationTask() {
-        return new AsyncCompletionTask(new HtmlCompletionProvider.DocQuery(this));
+        return new AsyncCompletionTask(new HtmlCompletionProvider.DocQuery(this, false));
     }
 
     @Override
