@@ -141,8 +141,8 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
                 actions.add(SystemAction.get(DiffAction.class));
-                actions.add(new RevertMenu(ActionDestination.MainMenu, null));
                 actions.add(new ExportMenu(ActionDestination.MainMenu, null));
+                actions.add(new RevertMenu(ActionDestination.MainMenu, null));
                 IgnoreAction ia = SystemAction.get(IgnoreAction.class);
                 UnignoreAction uia = SystemAction.get(UnignoreAction.class);
                 if (ia.isEnabled() || uia.isEnabled()) {
