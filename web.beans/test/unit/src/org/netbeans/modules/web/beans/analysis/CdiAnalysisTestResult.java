@@ -42,48 +42,80 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
+
+import javax.lang.model.element.Element;
 
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractAnalysisTask {
+public class CdiAnalysisTestResult extends CdiAnalysisResult 
+    implements TestProblems
+{
     
-    AbstractAnalysisTask(  ){
-        cancel = new AtomicBoolean( false );
-    }
-    
-    protected boolean isCancelled() {
-        return cancel.get();
-    }
-    
-    protected AtomicBoolean getCancel(){
-        return cancel;
-    }
-    
-    protected CdiAnalysisResult getResult(){
-        return myResult;
-    }
-    
-    protected void setResult( CdiAnalysisResult result ){
-        myResult = result;
-    }
-    
-    abstract void run( CompilationInfo compInfo );
-    
-    abstract List<ErrorDescription> getProblems();
-    
-    void stop(){
-        cancel.set( true );
+    public CdiAnalysisTestResult( CompilationInfo info ) {
+        super(info);
     }
 
-    private AtomicBoolean cancel;
-    private CdiAnalysisResult myResult;
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisResult#addError(javax.lang.model.element.Element, java.lang.String)
+     */
+    @Override
+    public void addError( Element subject, String message ) {
+        /* TODO: method signature needs to be changed to get a key 
+         * (id of message ) of bundle instead of  localized message
+         */ 
+        myErrors.put( subject , message );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisResult#addNotification(org.netbeans.spi.editor.hints.Severity, javax.lang.model.element.Element, java.lang.String)
+     */
+    @Override
+    public void addNotification( Severity severity, Element element,
+            String message )
+    {
+        if ( severity == Severity.WARNING ){
+            myWarnings.put( element , message );
+        }
+        else {
+            assert false;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisResult#getProblems()
+     */
+    @Override
+    public List<ErrorDescription> getProblems() {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisResult#requireCdiEnabled(javax.lang.model.element.Element)
+     */
+    @Override
+    public void requireCdiEnabled( Element element ) {
+    }
     
+    @Override
+    public Map<Element,String> getErrors(){
+        return myErrors;
+    }
+
+    @Override
+    public Map<Element,String> getWarings(){
+        return myWarnings;
+    }
+    
+    private Map<Element,String> myErrors = new HashMap<Element, String>();
+    private Map<Element,String> myWarnings = new HashMap<Element, String>();
 }
