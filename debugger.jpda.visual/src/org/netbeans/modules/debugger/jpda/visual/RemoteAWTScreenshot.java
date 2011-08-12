@@ -466,7 +466,7 @@ public class RemoteAWTScreenshot {
                 };
             }
         });
-        addProperties(ci, t, vm, componentClass, component, debugger);
+        addProperties(ci, t, vm, component, debugger);
         
         if (isInstanceOfClass((ClassType) component.referenceType(), containerClass)) {
             ArrayReference componentsArray = (ArrayReference) component.invokeMethod(tawt, getComponents, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -488,10 +488,9 @@ public class RemoteAWTScreenshot {
     }
     
     private static void addProperties(AWTComponentInfo ci, JPDAThreadImpl t, VirtualMachine vm,
-                                      ClassType componentClass, ObjectReference component,
-                                      JPDADebuggerImpl debugger) {
+                                      ObjectReference component, JPDADebuggerImpl debugger) {
         // TODO: Try to find out the BeanInfo of the class
-        List<Method> allMethods = componentClass.allMethods();
+       List<Method> allMethods = component.referenceType().allMethods();
         //System.err.println("Have "+allMethods.size()+" methods.");
         Map<String, Method> methodsByName = new HashMap<String, Method>(allMethods.size());
         for (Method m : allMethods) {
@@ -513,12 +512,15 @@ public class RemoteAWTScreenshot {
                 continue;
             }
             String property;
+            String setName;
             if (name.startsWith("is")) {
                 property = Character.toLowerCase(name.charAt(2)) + name.substring(3);
+                setName = "set" + name.substring(2);
             } else { // startsWith("get"):
                 property = Character.toLowerCase(name.charAt(3)) + name.substring(4);
+                setName = "set" + name.substring(3);
             }
-            Property p = new ComponentProperty(property, methodsByName.get(name), methodsByName.get("set" + name.substring(3)),
+            Property p = new ComponentProperty(property, methodsByName.get(name), methodsByName.get(setName),
                                                ci, component, t, debugger);
             sortedProperties.put(property, p);
             //System.err.println("    => property '"+property+"', p = "+p);
