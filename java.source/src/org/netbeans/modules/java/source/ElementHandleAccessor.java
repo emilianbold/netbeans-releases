@@ -78,5 +78,4 @@ public abstract class ElementHandleAccessor {
 
     @NonNull
     public abstract String[] getJVMSignature(@NonNull ElementHandle<?> handle);
-
 }

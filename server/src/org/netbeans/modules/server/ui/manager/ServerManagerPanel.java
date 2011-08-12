@@ -67,6 +67,7 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
 import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -96,10 +97,17 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     private ServersChildren children;
     private ExplorerManager manager;
     private ServerInstance initialInstance;
+    private ServerRegistry registry;
 
     /** Creates new form PlatformsCustomizer */
-    public ServerManagerPanel(ServerInstance initialInstance) {
+    public ServerManagerPanel(ServerInstance initialInstance, ServerRegistry registry) {
+        this.registry = registry;
         initComponents();
+        if (registry.isCloud()) {
+            Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "CTL_Cloud")); // NOI18N
+            Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_AddCloudServer")); // NOI18N
+            Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_RemoveCloudServer")); // NOI18N
+        }
         serverName.setColumns(30);
         serverType.setColumns(30);
         // set the preferred width, height is not very important here
@@ -137,7 +145,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     public synchronized ExplorerManager getExplorerManager() {
         if (this.manager == null) {
             this.manager = new ExplorerManager();
-            this.manager.setRootContext(new ServersNode(Children.create(getChildren(), false)));
+            this.manager.setRootContext(new ServersNode(Children.create(getChildren(), false), registry));
             this.manager.addPropertyChangeListener(this);
             this.manager.addVetoableChangeListener(this);
         }
@@ -309,7 +317,12 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     }//GEN-LAST:event_removeServer
 
     private void addServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServer
-        final ServerInstance instance = AddServerInstanceWizard.showAddServerInstanceWizard();
+        final ServerInstance instance;
+        if (registry.isCloud()) {
+            instance = AddServerInstanceWizard.showAddCloudInstanceWizard();
+        } else {
+            instance = AddServerInstanceWizard.showAddServerInstanceWizard();
+        }
         if (instance != null) {
             getChildren().refresh();
             expandServers(instance);
@@ -319,7 +332,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
         private synchronized ServersChildren getChildren() {
             if (this.children == null) {
-                this.children = new ServersChildren();
+                this.children = new ServersChildren(registry);
             }
             return this.children;
         }
@@ -441,13 +454,19 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     private static class ServersNode extends AbstractNode {
 
-        public ServersNode(Children children) {
+        public ServersNode(Children children, ServerRegistry registry) {
             super(children);
 
             setName(""); // NOI18N
-            setDisplayName(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Name"));
-            setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Short_Description"));
-            setIconBaseWithExtension(SERVERS_ICON);
+            if (registry.isCloud()) {
+                setDisplayName(NbBundle.getMessage(ServerManagerPanel.class, "Cloud_Registry_Node_Name"));
+                setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Cloud_Registry_Node_Short_Description"));
+                setIconBaseWithExtension(SERVERS_ICON);
+            } else {
+                setDisplayName(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Name"));
+                setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Short_Description"));
+                setIconBaseWithExtension(SERVERS_ICON);
+            }
         }
 
 
@@ -457,8 +476,11 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
         private static final Comparator<ServerInstance> COMPARATOR = new InstanceComparator();
 
-        public ServersChildren() {
+        private ServerRegistry registry;
+        
+        public ServersChildren(ServerRegistry registry) {
             super();
+            this.registry = registry;
         }
 
         protected final void refresh() {
@@ -484,7 +506,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         @Override
         protected boolean createKeys(List<ServerInstance> toPopulate) {
             List<ServerInstance> fresh = new ArrayList<ServerInstance>();
-            for (ServerInstanceProvider provider : ServerRegistry.getInstance().getProviders()) {
+            for (ServerInstanceProvider provider : registry.getProviders()) {
                 // Need to make sure instances with null display names do not
                 // end up in fresh.  See issue #152834.
                 for (ServerInstance instance : provider.getInstances()) {

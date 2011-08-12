@@ -80,18 +80,23 @@ public final class RootNode extends AbstractNode {
             new RequestProcessor("Server registry update/refresh", 5);
 
     private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
+    private static final String CLOUD_ICON = "org/netbeans/modules/server/ui/resources/cloud.png"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(RootNode.class.getName());
 
     private static RootNode node;
+    private static RootNode cloudNode;
+    
+    private ServerRegistry registry;
 
-    private RootNode(ChildFactory factory) {
+    private RootNode(ChildFactory factory, String displayName, String shortDesc, String iconBase, ServerRegistry registry) {
         super(Children.create(factory, true));
+        this.registry = registry;
 
         setName(""); // NOI18N
-        setDisplayName(NbBundle.getMessage(RootNode.class, "Server_Registry_Node_Name"));
-        setShortDescription(NbBundle.getMessage(RootNode.class, "Server_Registry_Node_Short_Description"));
-        setIconBaseWithExtension(SERVERS_ICON);
+        setDisplayName(displayName);
+        setShortDescription(shortDesc);
+        setIconBaseWithExtension(iconBase);
     }
 
     @ServicesTabNodeRegistration(
@@ -103,17 +108,42 @@ public final class RootNode extends AbstractNode {
     )
     public static synchronized RootNode getInstance() {
         if (node == null) {
-            ChildFactory factory = new ChildFactory();
+            ChildFactory factory = new ChildFactory(ServerRegistry.getInstance());
             factory.init();
 
-            node = new RootNode(factory);
+            node = new RootNode(factory, 
+                    NbBundle.getMessage(RootNode.class, "Server_Registry_Node_Name"),
+                    NbBundle.getMessage(RootNode.class, "Server_Registry_Node_Short_Description"),
+                    SERVERS_ICON,
+                    ServerRegistry.getInstance());
         }
         return node;
     }
 
+    @ServicesTabNodeRegistration(
+        name = "cloud",
+        displayName = "org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Name",
+        shortDescription = "org.netbeans.modules.server.ui.node.Bundle#Cloud_Registry_Node_Short_Description",
+        iconResource = "org/netbeans/modules/server/ui/resources/cloud.png",
+        position = 444
+    )
+    public static synchronized RootNode getCloudInstance() {
+        if (cloudNode == null) {
+            ChildFactory factory = new ChildFactory(ServerRegistry.getCloudInstance());
+            factory.init();
+
+            cloudNode = new RootNode(factory,
+                    NbBundle.getMessage(RootNode.class, "Cloud_Registry_Node_Name"),
+                    NbBundle.getMessage(RootNode.class, "Cloud_Registry_Node_Short_Description"),
+                    CLOUD_ICON,
+                    ServerRegistry.getCloudInstance());
+        }
+        return cloudNode;
+    }
+
     @Override
     public Action[] getActions(boolean context) {
-        Action[] arr = Utilities.actionsForPath("Servers/Actions").toArray(new Action[0]); // NOI18N
+        Action[] arr = Utilities.actionsForPath(registry.getPath()+"/Actions").toArray(new Action[0]); // NOI18N
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == null) {
                 continue;
@@ -126,8 +156,8 @@ public final class RootNode extends AbstractNode {
     }
 
 
-    static void enableActionsOnExpand() {
-        FileObject fo = FileUtil.getConfigFile("Servers/Actions"); // NOI18N
+    static void enableActionsOnExpand(ServerRegistry registry) {
+        FileObject fo = FileUtil.getConfigFile(registry.getPath()+"/Actions"); // NOI18N
         Enumeration<String> en;
         if (fo != null) {
             for (FileObject o : fo.getChildren()) {
@@ -152,7 +182,7 @@ public final class RootNode extends AbstractNode {
                     }
 
                     if (enable) {
-                        Lookup l = Lookups.forPath("Servers/Actions"); // NOI18N
+                        Lookup l = Lookups.forPath(registry.getPath()+"/Actions"); // NOI18N
                         for (Lookup.Item<Action> item : l.lookupResult(Action.class).allItems()) {
                             if (item.getId().contains(o.getName())) {
                                 Action a = item.getInstance();
@@ -173,8 +203,11 @@ public final class RootNode extends AbstractNode {
         /** <i>GuardedBy("this")</i> */
         private final List<ServerInstanceProvider> types = new ArrayList<ServerInstanceProvider>();
 
-        public ChildFactory() {
+        private ServerRegistry registry;
+        
+        public ChildFactory(ServerRegistry registry) {
             super();
+            this.registry = registry;
         }
 
         public void init() {
@@ -182,8 +215,6 @@ public final class RootNode extends AbstractNode {
 
                 public void run() {
                     synchronized (ChildFactory.this) {
-                        final ServerRegistry registry = ServerRegistry.getInstance();
-
                         registry.addChangeListener(
                             WeakListeners.create(ChangeListener.class, ChildFactory.this, registry));
                         updateState(new ChangeEvent(registry));
@@ -231,7 +262,6 @@ public final class RootNode extends AbstractNode {
 
             Mutex.EVENT.readAccess(this);
 
-            ServerRegistry registry = ServerRegistry.getInstance();
             for (ServerInstanceProvider type : registry.getProviders()) {
                 List<ServerInstance> instances = type.getInstances();
                 // #194962
@@ -256,12 +286,12 @@ public final class RootNode extends AbstractNode {
             }
             assert EventQueue.isDispatchThread();
             actionsPropertiesDone = true;
-            enableActionsOnExpand();
+            enableActionsOnExpand(registry);
             REFRESH_PROCESSOR.post(new Runnable() {
 
                 @Override
                 public void run() {
-                    ServerRegistry.getInstance().getProviders();
+                    registry.getProviders();
                 }
             });
         }
