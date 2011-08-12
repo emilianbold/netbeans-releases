@@ -60,6 +60,25 @@ public interface ComponentInfo {
     String getDisplayName();
 
     /**
+     * Return a variant of the component display name containing HTML markup
+     * conforming to the limited subset of font-markup HTML supported by
+     * the lightweight HTML renderer <code>org.openide.awt.HtmlRenderer</code>
+     * (font color, bold, italic and strike-through supported; font
+     * colors can be UIManager color keys if they are prefixed with
+     * a ! character, i.e. <samp>&lt;font color='!controlShadow'&gt;</samp>).
+     * Enclosing <samp>&lt;html&gt;</samp> tags are not needed. If returning non-null, HTML
+     * markup characters that should be literally rendered must be
+     * escaped (<samp>&gt;</samp> becomes <samp>&amp;gt;</samp> and so forth).
+     * <p><strong>This method should return either an HTML display name
+     * or null; it should not return the non-HTML display name.</strong>
+     *
+     * @see org.openide.awt.HtmlRenderer
+     * @return a String containing conformant HTML markup which
+     *  represents the display name, or <code>null</code>.
+     */
+    String getHtmlDisplayName();
+
+    /**
      * Provides the actions that are available on the component.
      * @param context
      * @return 

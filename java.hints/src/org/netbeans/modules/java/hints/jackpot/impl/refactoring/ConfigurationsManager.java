@@ -47,8 +47,10 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -107,8 +109,8 @@ public class ConfigurationsManager {
         }
         if (configs.isEmpty()) {
             create("default", "default");
-            Configuration jdk7 = create("jdk7", "Convert To JDK 7");
-            //jdk7.enable("org.netbeans.modules.jackpot30.hintsimpl.jdk7.ConvertToDiamondBulkHint");
+            Configuration jdk7 = create("jdk7", NbBundle.getMessage(ConfigurationsManager.class, "DN_ConvertToJDK7"));
+            jdk7.enable(ConvertToDiamondBulkHint.ID);
             jdk7.enable("org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch");
             jdk7.enable("org.netbeans.modules.java.hints.jdk.ConvertToARM");
             jdk7.enable("org.netbeans.modules.java.hints.jdk.JoinCatches");

@@ -69,7 +69,6 @@ public class CompilerSettings {
     public static final String ENABLE_LINT_EMPTY = "enable_lint_empty";
     public static final String ENABLE_LINT_OVERRIDES = "enable_lint_overrides";
     public static final String ENABLE_LINT_RAWTYPES = "enable_lint_rawtypes";
-    public static final String ENABLE_LINT_CAN_USE_DIAMOND = "enable_can_use_diamond";
     
     private static final Map<String, Boolean> DEFAULTS;
     
@@ -87,7 +86,6 @@ public class CompilerSettings {
         DEFAULTS.put(ENABLE_LINT_EMPTY, false);
         DEFAULTS.put(ENABLE_LINT_OVERRIDES, false);
         DEFAULTS.put(ENABLE_LINT_RAWTYPES, false);
-        DEFAULTS.put(ENABLE_LINT_CAN_USE_DIAMOND, true);
     }
     
     public static Preferences getNode() {
@@ -119,8 +117,8 @@ public class CompilerSettings {
             sb.append("-Xlint:overrides ");
         if (get(p, ENABLE_LINT_RAWTYPES))
             sb.append("-Xlint:rawtypes ");
-        if (get(p, ENABLE_LINT_CAN_USE_DIAMOND))
-            sb.append("-XDfindDiamond ");
+
+        sb.append("-XDfindDiamond ");
         
         if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.deleteCharAt(sb.length() - 1);

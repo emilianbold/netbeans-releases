@@ -102,6 +102,7 @@ public class ScreenshotComponent extends TopComponent {
     private ComponentNode componentNodes;
     private ScreenshotCanvas canvas;
     private JScrollPane scrollPane;
+    private boolean propertiesOpened;
     
     public ScreenshotComponent(RemoteScreenshot screenshot, ScreenshotUIManager manager) {
         this.screenshot = screenshot;
@@ -174,6 +175,30 @@ public class ScreenshotComponent extends TopComponent {
         //canvas.deactivated();
     }
 
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
+        TopComponent properties = WindowManager.getDefault().findTopComponent("properties");    // NOI18N
+        if (properties != null) {
+            if (!properties.isOpened()) {
+                propertiesOpened = true;
+                properties.open();
+            }
+        }
+    }
+    
+    @Override
+    protected void componentHidden() {
+        super.componentHidden();
+        if (propertiesOpened) {
+            propertiesOpened = false;
+            TopComponent properties = WindowManager.getDefault().findTopComponent("properties");    // NOI18N
+            if (properties != null) {
+                properties.close();
+            }
+        }
+    }
+    
     @Override
     protected void componentOpened() {
         synchronized (openedScreenshots) {
