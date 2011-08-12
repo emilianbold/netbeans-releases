@@ -50,6 +50,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
  */
 final class LocalTransferFile extends TransferFile {
 
+    // considered to be thread-safe, see Javadoc and sources
     private final File file;
     private final boolean forceDirectory;
 

@@ -44,8 +44,9 @@ package org.netbeans.modules.php.project.connections.transfer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
@@ -64,6 +65,8 @@ import org.openide.filesystems.FileUtil;
  * <p>
  * Path separator for local path is OS-dependent, for remote path it is always
  * {@value #REMOTE_PATH_SEPARATOR}, for all platforms.
+ * <p>
+ * This and all subclasses are thread-safe.
  */
 public abstract class TransferFile {
 
@@ -78,9 +81,11 @@ public abstract class TransferFile {
 
     protected final String baseDirectory;
     protected final TransferFile parent;
-    private final List<TransferFile> children = new LinkedList<TransferFile>();
+    private final Queue<TransferFile> children = new ConcurrentLinkedQueue<TransferFile>();
 
-    private Long timestamp = null; // in seconds, default -1
+    // ok, does not matter if it is checked more times
+    private volatile Long timestamp = null; // in seconds, default -1
+    // ok, does not matter if it is checked more times
     private Long size = null; // 0 for directory
 
     TransferFile(TransferFile parent, String baseDirectory) {
