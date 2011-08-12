@@ -45,14 +45,17 @@ package org.netbeans.modules.subversion.ui.copy;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.util.Collection;
-import java.util.Collections;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
@@ -62,6 +65,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -81,11 +86,13 @@ public abstract class CopyDialog {
     private DialogDescriptor dialogDescriptor;
     private JButton okButton, cancelButton;
     private JPanel panel;
-    private static final Pattern TEMPLATE_PATTERN = Pattern.compile("(branches|tags)/(.+?)(/.*)?"); //NOI18N
+    private static final Pattern TEMPLATE_PATTERN = Pattern.compile("^(branches|tags)/(.+?)(/.*)+$"); //NOI18N
     private static final String BRANCHES_FOLDER = "branches"; //NOI18N
     private static final String TRUNK_FOLDER = "trunk"; //NOI18N
     private static final String BRANCH_TEMPLATE = "[BRANCH_NAME]"; //NOI18N
-    private Map<String, JComboBox> urlComboBoxes;
+    private static final String SEP = "----------"; //NOI18N
+    private static final String MORE_BRANCHES = NbBundle.getMessage(CopyDialog.class, "LBL_CopyDialog.moreBranchesAndTags"); //NOI18N
+    private Set<JComboBox> urlComboBoxes;
     
     CopyDialog(JPanel panel, String title, String okLabel) {                
         this.panel = panel;
@@ -103,36 +110,22 @@ public abstract class CopyDialog {
         dialog.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CopyDialog.class, "CTL_Title"));                // NOI18N
     }
 
-    protected void resetUrlComboBoxes() {
-        getUrlComboBoxes().clear();
-    }
-    
-    protected void setupUrlComboBox (RepositoryFile repositoryFile, JComboBox cbo, String key) {
+    protected void setupUrlComboBox (RepositoryFile repositoryFile, JComboBox cbo) {
         if(cbo==null) {
             return;
         }
-        List<String> recentFolders = new LinkedList<String>(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), key));
-        for (String template : getTemplates(repositoryFile)) {
-            recentFolders.remove(template);
-            recentFolders.add(0, template);
-        }
-        ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector<String>(recentFolders));
-        cbo.setModel(rootsModel);        
-        JTextComponent comp = (JTextComponent) cbo.getEditor().getEditorComponent();
-        String txt = comp.getText();
-        int pos = txt.indexOf(BRANCH_TEMPLATE);
-        if (pos > -1) {
-            comp.setCaretPosition(pos);
-            comp.moveCaretPosition(pos + BRANCH_TEMPLATE.length());
-        }
-        cbo.setRenderer(new LocationRenderer(recentFolders));
-                
-        getUrlComboBoxes().put(key, cbo);
+        List<String> recentFolders = new LinkedList<String>(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName()));
+        Map<String, String> comboItems = setupModel(cbo, repositoryFile, recentFolders);
+        SelectionListener list = new SelectionListener(repositoryFile, cbo);
+        cbo.addActionListener(list);
+        cbo.addPopupMenuListener(list);
+        cbo.setRenderer(new LocationRenderer(comboItems));
+        getUrlComboBoxes().add(cbo);
     }    
     
-    private Map<String, JComboBox> getUrlComboBoxes() {
+    private Set<JComboBox> getUrlComboBoxes () {
         if(urlComboBoxes == null) {
-            urlComboBoxes = new HashMap<String, JComboBox>();
+            urlComboBoxes = new HashSet<JComboBox>();
         }
         return urlComboBoxes;
     }
@@ -154,12 +147,10 @@ public abstract class CopyDialog {
     }        
     
     private void storeValidValues() {
-        for (Iterator it = urlComboBoxes.keySet().iterator(); it.hasNext();) {
-            String key = (String)  it.next();
-            JComboBox cbo = (JComboBox) urlComboBoxes.get(key);
+        for (JComboBox cbo : urlComboBoxes) {
             Object item = cbo.getEditor().getItem();
             if(item != null && !item.equals("")) { // NOI18N
-                Utils.insert(SvnModuleConfig.getDefault().getPreferences(), key, (String) item, 8);
+                Utils.insert(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName(), (String) item, -1);
             }            
         }                
     }       
@@ -168,44 +159,138 @@ public abstract class CopyDialog {
         return okButton;
     }
 
-    private Collection<String> getTemplates (RepositoryFile repositoryFile) {
-        List<String> templates = new LinkedList<String>();
+    /**
+     * Model has three categories:
+     *   trunk/path (1)
+     *   -----
+     *   branches and tags (2)
+     *   More Branches and Tags
+     *   -----
+     *   relevant recent urls (3) - those ending with the same file name
+     * @param cbo
+     * @param repositoryFile
+     * @param recentFolders
+     * @return 
+     */
+    static Map<String, String> setupModel (JComboBox cbo, RepositoryFile repositoryFile, List<String> recentFolders) {
+        Map<String, String> locations = new HashMap<String, String>(Math.min(recentFolders.size(), 10));
+        List<String> model = new LinkedList<String>();
+        // all category in the model is sorted by name ignoring case
+        Comparator comparator = new Comparator<String>() {
+            @Override
+            public int compare (String o1, String o2) {
+                return o1.compareToIgnoreCase(o2);
+            }
+        };
+        // category 3
+        TreeMap<String, String> relatedLocations = new TreeMap<String, String>(comparator);
+        // category 2
+        TreeMap<String, String> branchLocations = new TreeMap<String, String>(comparator);
         String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
-        Matcher matcher = TEMPLATE_PATTERN.matcher(relativePath);
-        if (matcher.matches()) {
-            StringBuilder sb = new StringBuilder(relativePath);
-            sb.replace(matcher.start(2), matcher.end(2), BRANCH_TEMPLATE);
-            sb.replace(matcher.start(1), matcher.end(1), BRANCHES_FOLDER);
-            templates.add(sb.toString());
-            sb = new StringBuilder(relativePath);
-            sb.replace(0, matcher.end(2), TRUNK_FOLDER);
-            templates.add(sb.toString());
+        String fileName = repositoryFile.getName();
+        String pathInBranch = getPathInBranch(relativePath);
+        String preselectedPath = null;
+        for (String recentUrl : recentFolders) {
+            if (pathInBranch != null && branchLocations.size() < 10) {
+                // repository seems to have the recommended branch structure
+                String branchPrefix = getBranchOrTagPrefix(recentUrl);
+                if (branchPrefix != null) {
+                    // this is a branch or a tag, so get the branch ot tag name and build the url relevant for the given file
+                    String loc = branchPrefix + "/" + pathInBranch;
+                    // we also emphasize branch/tag name in the renderer, so build the rendered string
+                    branchLocations.put(loc, getHtmlVersion(branchPrefix, pathInBranch));
+                    if (preselectedPath == null) {
+                        preselectedPath = loc;
+                    }
+                }
+            }
+            if (recentUrl.endsWith("/" + fileName) && relatedLocations.size() < 10) {
+                // this is a relevant (3) url, so add it
+                if (pathInBranch == null && preselectedPath == null) {
+                    preselectedPath = recentUrl;
+                }
+                relatedLocations.put(recentUrl, null);
+            }
         }
-        if (relativePath.startsWith(TRUNK_FOLDER + "/")) { //NOI18N
-            templates.add(new StringBuilder(relativePath).replace(0, TRUNK_FOLDER.length(), BRANCHES_FOLDER + "/" + BRANCH_TEMPLATE).toString());
+        if (pathInBranch != null) {
+            // now let's do some corrections
+            // add the single item to cat 1
+            String loc = TRUNK_FOLDER + "/" + pathInBranch;
+            locations.put(loc, getHtmlVersion(TRUNK_FOLDER, pathInBranch));
+            model.add(loc);
+            model.add(SEP);
+            // add cat 2 to the model
+            model.addAll(branchLocations.keySet());
+            locations.putAll(branchLocations);
+            model.add(MORE_BRANCHES);
+            if (preselectedPath == null) {
+                preselectedPath = BRANCHES_FOLDER + "/" + BRANCH_TEMPLATE + "/" + pathInBranch; //NOI18N
+            }
         }
-        Collections.reverse(templates);
-        return templates;
+        if (!model.isEmpty() && !relatedLocations.isEmpty()) {
+            model.add(SEP);
+        }
+        // do not duplicate entries, so remove all items from (3) that are already in (2)
+        relatedLocations.keySet().removeAll(locations.keySet());
+        locations.putAll(relatedLocations);
+        model.addAll(relatedLocations.keySet());
+        
+        ComboBoxModel rootsModel = new DefaultComboBoxModel(model.toArray(new String[model.size()]));
+        cbo.setModel(rootsModel);        
+        JTextComponent comp = (JTextComponent) cbo.getEditor().getEditorComponent();
+        if (preselectedPath != null) {
+            comp.setText(preselectedPath);
+            if (pathInBranch != null) {
+                // select the branch name in the offered text - for easy editing
+                String branchPrefix = getBranchOrTagPrefix(preselectedPath);
+                int pos = branchPrefix.lastIndexOf('/') + 1;
+                if (pos > 0) {
+                    comp.setCaretPosition(pos);
+                    comp.moveCaretPosition(branchPrefix.length());
+                }
+            }
+        }
+        return locations;
+    }
+
+    private static String getPathInBranch (String relativePath) {
+        String path = null;
+        Matcher m = TEMPLATE_PATTERN.matcher(relativePath);
+        if (m.matches()) {
+            path = m.group(3);
+            if (path != null) {
+                path = path.substring(1);
+            }
+        } else if (relativePath.startsWith(TRUNK_FOLDER + "/")) { //NOI18N
+            path = relativePath.substring(TRUNK_FOLDER.length() + 1);
+        }
+        return path;
+    }
+
+    private static String getBranchOrTagPrefix (String relativePath) {
+        String prefix = null;
+        Matcher m = TEMPLATE_PATTERN.matcher(relativePath);
+        if (m.matches()) {
+            prefix = relativePath.substring(0, m.start(3));
+        }
+        return prefix;
+    }
+    
+    private static String getHtmlVersion (String branchPrefix, String relativePathInBranch) {
+        int branchStart = branchPrefix.lastIndexOf('/');
+        if (branchStart > 0) {
+            return new StringBuilder(2 * (branchPrefix.length() + relativePathInBranch.length())).append("<html>") //NOI18N
+                    .append(branchPrefix.substring(0, branchStart + 1)).append("<strong>").append(branchPrefix.substring(branchStart + 1)) //NOI18N
+                    .append("</strong>").append('/').append(relativePathInBranch).append("</html>").toString(); //NOI18N
+        }
+        return null;
     }
 
     private static class LocationRenderer extends DefaultListCellRenderer {
-        private final HashMap<String, String> empLocations;
+        private final Map<String, String> empLocations;
 
-        public LocationRenderer (List<String> recentFolders) {
-            empLocations = new HashMap<String, String>(recentFolders.size());
-            for (String loc : recentFolders) {
-                Matcher m = TEMPLATE_PATTERN.matcher(loc);
-                StringBuffer sb = new StringBuffer();
-                if (m.matches()) {
-                    m.appendReplacement(sb, m.group(1) + "/<strong>" + m.group(2) + "</strong>" + (m.group(3) == null ? "" : m.group(3))); //NOI18N
-                    m.appendTail(sb);
-                } else if (loc.startsWith(TRUNK_FOLDER + "/")) { //NOI18N
-                    sb = new StringBuffer(loc).replace(0, TRUNK_FOLDER.length(), "<strong>" + TRUNK_FOLDER + "</strong>"); //NOI18N
-                }
-                if (sb.length() > 0) {
-                    empLocations.put(loc, "<html>" + sb.toString() + "</html>"); //NOI18N
-                }
-            }
+        public LocationRenderer (Map<String, String> locations) {
+            this.empLocations = locations;
         }
         
         @Override
@@ -215,6 +300,54 @@ public abstract class CopyDialog {
                 value = html;
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    private static class SelectionListener implements ActionListener, PopupMenuListener {
+        private final RepositoryFile repositoryFile;
+        private final JComboBox combo;
+        private boolean popupOn;
+
+        public SelectionListener (RepositoryFile repositoryFile, JComboBox combo) {
+            this.repositoryFile = repositoryFile;
+            this.combo = combo;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            if (e.getSource() == combo) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        if (!popupOn && (combo.getSelectedItem() == SEP || combo.getSelectedItem() == MORE_BRANCHES)) {
+                            String text = ""; //NOI18N
+                            if (combo.getSelectedItem() == MORE_BRANCHES) {
+                                BranchPicker picker = new BranchPicker(repositoryFile);
+                                if (picker.openDialog()) {
+                                    String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
+                                    text = picker.getSelectedPath() + "/" + getPathInBranch(relativePath); //NOI18N
+                                }
+                            }
+                            ((JTextComponent) combo.getEditor().getEditorComponent()).setText(text); //NOI18N
+                        }
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void popupMenuWillBecomeVisible (PopupMenuEvent e) {
+            popupOn = true;
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible (PopupMenuEvent e) {
+            popupOn = false;
+        }
+
+        @Override
+        public void popupMenuCanceled (PopupMenuEvent e) {
+            popupOn = true;
         }
     }
 }

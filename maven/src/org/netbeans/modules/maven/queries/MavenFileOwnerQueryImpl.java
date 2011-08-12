@@ -191,7 +191,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             return null;
         }
     }
-    
+
     private Project getOwner(File file) {
         LOG.log(Level.FINER, "Looking for owner of {0}", file);
         String[] coordinates = findCoordinates(file);
@@ -199,8 +199,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             LOG.log(Level.FINE, "{0} not an artifact in local repo", file);
             return null;
         }
-        LOG.log(Level.FINER, "Checking {0} / {1} / {2}", coordinates);
-        String key = coordinates[0] + ':' + coordinates[1]; // org.apache.commons:commons-math
+        return getOwner(coordinates[0], coordinates[1], coordinates[2]);
+    }
+
+    public Project getOwner(String groupId, String artifactId, String version) {
+        LOG.log(Level.FINER, "Checking {0} / {1} / {2}", new Object[] {groupId, artifactId, version});
+        String key = groupId + ':' + artifactId;
         String ownerURI = prefs().get(key, null);
         if (ownerURI != null) {
             boolean stale = true;
@@ -212,8 +216,8 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                         NbMavenProjectImpl mp = p.getLookup().lookup(NbMavenProjectImpl.class);
                         if (mp != null) {
                             MavenProject model = mp.getOriginalMavenProject();
-                            if (model.getGroupId().equals(coordinates[0]) && model.getArtifactId().equals(coordinates[1])) {
-                                if (model.getVersion().equals(coordinates[2])) {
+                            if (model.getGroupId().equals(groupId) && model.getArtifactId().equals(artifactId)) {
+                                if (model.getVersion().equals(version)) {
                                     LOG.log(Level.FINE, "Found match {0}", p);
                                     return p;
                                 } else {

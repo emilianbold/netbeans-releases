@@ -761,7 +761,7 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
         private CompileLineStorage storage;
-        private int handler;
+        private int handler = -1;
 
         CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros, CompileLineStorage storage) {

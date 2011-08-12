@@ -70,17 +70,15 @@ import org.openide.util.NbPreferences;
  * @author mkleint
  */
 public class MavenSettings  {
-    public static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
-    public static final String PROP_SYNCH_PROXY = "synchronizeProxySettings"; //NOI18N
-    public static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath"; //NOI18N
-    public static final String PROP_SHOW_RUN_DIALOG = "showRunDialog"; //NOI18N
-    public static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
-    public static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
-    public static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
-    public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
-    public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
-    public static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
-    public static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
+    private static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
+    private static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath"; //NOI18N
+    private static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
+    private static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
+    private static final String PROP_BINARY_DOWNLOAD = "binaryDownload"; //NOI18N
+    private static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
+    private static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
+    private static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
+    private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -119,8 +117,7 @@ public class MavenSettings  {
         return hasOption("--update-snapshots", "-U"); //NOI18N
     }
 
-
-    public boolean hasOption(String longName, String shortName) {
+    private boolean hasOption(String longName, String shortName) {
         String defOpts = getDefaultOptions();
         if (defOpts != null) {
             try {
@@ -140,12 +137,11 @@ public class MavenSettings  {
         return false;
     }
 
-    
-    protected final Preferences getPreferences() {
+    private Preferences getPreferences() {
         return NbPreferences.forModule(MavenSettings.class);
     }
     
-    protected final String putProperty(String key, String value) {
+    private String putProperty(String key, String value) {
         String retval = getProperty(key);
         if (value != null) {
             getPreferences().put(key, value);
@@ -155,7 +151,7 @@ public class MavenSettings  {
         return retval;
     }
 
-    protected final String getProperty(String key) {
+    private String getProperty(String key) {
         return getPreferences().get(key, null);
     }    
     
@@ -243,15 +239,6 @@ public class MavenSettings  {
         putProperty(PROP_LAST_ARCHETYPE_GROUPID, groupId);
     }
 
-    
-    public void setSynchronizeProxy(boolean sync) {
-        getPreferences().putBoolean(PROP_SYNCH_PROXY, sync);
-    }
-    
-    public boolean isSynchronizeProxy() {
-        return getPreferences().getBoolean(PROP_SYNCH_PROXY, true);
-    }
-
     public void setCustomLocalRepository(String text) {
         if (text != null && text.trim().length() == 0) {
             text = null;
@@ -287,14 +274,6 @@ public class MavenSettings  {
         } else {
             putProperty(PROP_COMMANDLINE_PATH, FileUtil.normalizeFile(path).getAbsolutePath());
         }
-    }
-    
-    public boolean isShowRunDialog(){
-     return getPreferences().getBoolean(PROP_SHOW_RUN_DIALOG, false);
-    }
-    
-    public void setShowRunDialog(boolean  b){
-      getPreferences().putBoolean(PROP_SHOW_RUN_DIALOG, b);
     }
 
     public boolean isSkipTests() {
