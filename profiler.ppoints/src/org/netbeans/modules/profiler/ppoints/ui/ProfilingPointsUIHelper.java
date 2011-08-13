@@ -39,21 +39,47 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.ppoints;
+package org.netbeans.modules.profiler.ppoints.ui;
 
-import org.openide.modules.ModuleInstall;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Jiri Sedlacek
  */
-public class Installer extends ModuleInstall {
+public abstract class ProfilingPointsUIHelper {
+    
+    private static ProfilingPointsUIHelper INSTANCE;
+    
+    
+    public abstract boolean displaySubprojectsOption();
+    
+    public abstract String getAllProjectsString();
+    
+    
+    public static class Basic extends ProfilingPointsUIHelper {
 
-    @Override
-    public boolean closing() {
-        ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
-        return true;
+        @Override
+        public boolean displaySubprojectsOption() {
+            return false;
+        }
+
+        @Override
+        public String getAllProjectsString() {
+            return NbBundle.getMessage(ProfilingPointsWindowUI.class,
+                    "ProfilingPointsWindowUI_AllProjectsString"); // NOI18N;
+        }
+        
     }
     
+    
+    static synchronized ProfilingPointsUIHelper get() {
+        if (INSTANCE == null) {
+            INSTANCE = Lookup.getDefault().lookup(ProfilingPointsUIHelper.class);
+            if (INSTANCE == null) INSTANCE = new Basic();
+        }
+        return INSTANCE;
+    }
     
 }

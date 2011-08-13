@@ -39,21 +39,21 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.ppoints;
+package org.netbeans.modules.profiler.nbimpl.providers;
 
-import org.openide.modules.ModuleInstall;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsUIHelper;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Jiri Sedlacek
  */
-public class Installer extends ModuleInstall {
-
+@ServiceProvider(service=ProfilingPointsUIHelper.class)
+public final class ProfilingPointsUIHelperImpl extends ProfilingPointsUIHelper.Basic {
+    
     @Override
-    public boolean closing() {
-        ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
+    public boolean displaySubprojectsOption() {
         return true;
     }
-    
     
 }
