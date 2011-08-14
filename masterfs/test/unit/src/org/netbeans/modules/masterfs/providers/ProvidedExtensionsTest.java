@@ -64,7 +64,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.ProvidedExtensionsAccessor;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
-import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileChangeAdapter;
@@ -105,7 +104,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
     
     private ProvidedExtensionsImpl lookupImpl(boolean providesCanWrite) {
-        Lookup.Result result = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader()).
+        Lookup.Result result = Lookup.getDefault().
                 lookup(new Lookup.Template(AnnotationProvider.class));
         Collection all = result.allInstances();
         for (Iterator it = all.iterator(); it.hasNext();) {
@@ -129,9 +128,10 @@ public class ProvidedExtensionsTest extends NbTestCase {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         assertNotNull(fo);
         assertNotNull(iListener);
+        iListener.clear();
         FileObject toLock = fo.createData(getName());
         assertNotNull(toLock);
-        assertEquals(0, iListener.implsFileLockCalls);
+        assertEquals("Check on " + iListener, 0, iListener.implsFileLockCalls);
         FileLock fLock = toLock.lock();
         try {
             assertTrue(fLock.isValid());
@@ -139,7 +139,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             assertEquals(1, iListener.implsFileLockCalls);            
         } finally {
             fLock.releaseLock();
-            assertEquals(1, iListener.implsFileUnlockCalls);                                    
+            assertEquals("Just one unlock " + iListener, 1, iListener.implsFileUnlockCalls);                                    
         }        
     }
     
@@ -512,6 +512,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         assertNotNull(fo);
         final FileObject toRename = fo.createData("aa");
         assertNotNull(toRename);
+        FileChangeListener fcl = null;
         
         iListener.clear();
         FileLock lock = toRename.lock();
@@ -524,7 +525,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
 
             iListener.setImplsRenameRetVal(true);
-            FileChangeListener fcl =  new FileChangeAdapter() {
+            fcl =  new FileChangeAdapter() {
                 @Override
                 public void fileRenamed(FileRenameEvent fe)  {
                     try {                        
@@ -603,6 +604,8 @@ public class ProvidedExtensionsTest extends NbTestCase {
                 iListener.setLock(null);
                 lock.releaseLock();
             }
+            toRename.getParent().removeFileChangeListener(fcl);
+            toRename.getFileSystem().removeFileChangeListener(fcl);
         }
     }
 
@@ -690,6 +693,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             copySuccessCalls = 0;
             copyFailureCalls = 0;
             implsFileLockCalls = 0;
+            implsFileUnlockCalls = 0;
             implsCanWriteCalls = 0;
         }
 
