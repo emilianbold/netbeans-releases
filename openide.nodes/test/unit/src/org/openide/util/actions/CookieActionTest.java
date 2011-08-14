@@ -160,9 +160,9 @@ public class CookieActionTest extends NbTestCase {
     public void testChangeCookiesOnNodes() throws Exception {
         NodeActionsInfraHid.WaitPCL l = new NodeActionsInfraHid.WaitPCL(NodeAction.PROP_ENABLED);
         try {
+            a1.addPropertyChangeListener(l);
             assertFalse(a1.isEnabled());
             assertTrue(n1.getCookie(OpenCookie.class) != null);
-            a1.addPropertyChangeListener(l);
             NodeActionsInfraHid.setCurrentNodes(new Node[] {n1});
             assertTrue("Received PROP_ENABLED on SimpleCookieAction after changing nodes", l.changed());
             l.gotit = 0;
