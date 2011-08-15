@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
@@ -52,6 +53,8 @@ import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /** ResourcesMultiViewElement.java - Multi View Element for Resources :
  * - env-entries
@@ -63,7 +66,18 @@ import org.openide.util.HelpCtx;
  * Created on April 11, 2005
  * @author mkuchtiak
  */
+@MultiViewElement.Registration(
+    displayName="#TTL_" + DDDataObject.MULTIVIEW_REFERENCES,
+    iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=DDDataObject.DD_MULTIVIEW_PREFIX + DDDataObject.MULTIVIEW_REFERENCES,
+    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+    position=900
+)
 public class ReferencesMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
+
+    public static final int REFERENCES_ELEMENT_INDEX = 5;
+
     private SectionView view;
     private ToolBarDesignEditor comp;
     private DDDataObject dObj;
@@ -77,10 +91,10 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
     private static final String HELP_ID_PREFIX=DDDataObject.HELP_ID_PREFIX_REFERENCES;
     
     /** Creates a new instance of DDMultiViewElement */
-    public ReferencesMultiViewElement(final DDDataObject dObj, int index) {
-        super(dObj);
-        this.dObj=dObj;
-        this.index=index;
+    public ReferencesMultiViewElement(Lookup context) {
+        super(context.lookup(DDDataObject.class));
+        this.dObj=context.lookup(DDDataObject.class);
+        this.index=REFERENCES_ELEMENT_INDEX;
         comp = new ToolBarDesignEditor();
         factory = new ReferencesFactory(comp, dObj);
         setVisualEditor(comp);

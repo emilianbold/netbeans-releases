@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.j2ee.ddloaders.web.multiview.DDBeanTableModel;
 
 import javax.swing.*;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
 /**
  *

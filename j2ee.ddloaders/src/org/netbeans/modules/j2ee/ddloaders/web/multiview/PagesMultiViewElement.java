@@ -51,14 +51,28 @@ import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  * @author mkuchtiak
  */
+@MultiViewElement.Registration(
+    displayName="#TTL_" + DDDataObject.MULTIVIEW_PAGES,
+    iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=DDDataObject.DD_MULTIVIEW_PREFIX + DDDataObject.MULTIVIEW_PAGES,
+    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+    position=800
+)
 public class PagesMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
+
+    public static final int PAGES_ELEMENT_INDEX = 4;
+
     private SectionView view;
     private ToolBarDesignEditor comp;
     private DDDataObject dObj;
@@ -72,10 +86,10 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
     private static final String HELP_ID_PREFIX=DDDataObject.HELP_ID_PREFIX_PAGES;
     
     /** Creates a new instance of DDMultiViewElement */
-    public PagesMultiViewElement(final DDDataObject dObj, int index) {
-        super(dObj);
-        this.dObj=dObj;
-        this.index=index;
+    public PagesMultiViewElement(Lookup context) {
+        super(context.lookup(DDDataObject.class));
+        this.dObj=context.lookup(DDDataObject.class);
+        this.index=PAGES_ELEMENT_INDEX;
         comp = new ToolBarDesignEditor();
         factory = new PagesPanelFactory(comp, dObj);
         addAction = new AddAction(dObj, NbBundle.getMessage(PagesMultiViewElement.class,"LBL_addJspPG"));

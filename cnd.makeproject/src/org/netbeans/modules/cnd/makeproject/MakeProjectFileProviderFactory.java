@@ -66,6 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -73,8 +74,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
@@ -596,8 +595,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
         @Override
         public FileObject getFileObject() {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(baseDir, folder.getRootPath());
-            return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
+            FileObject fileObject = RemoteFileUtil.getFileObject(folder.getConfigurationDescriptor().getBaseDirFileObject(), folder.getRootPath()+"/"+name);
+            if (fileObject != null && fileObject.isValid()) {
+                return fileObject;
+            }
+            return null;
         }
     }
 }

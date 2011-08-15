@@ -43,6 +43,7 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -148,7 +149,7 @@ public class DefaultCssModule extends CssModule {
                         OffsetRange range = Css3Utils.getDocumentOffsetRange(node, snapshot);
                         if (Css3Utils.isValidOffsetRange(range)) {
                             getResult().put(range, ColoringAttributes.CUSTOM1_SET);
-                        
+
                         }
 
                 }
@@ -338,8 +339,15 @@ public class DefaultCssModule extends CssModule {
     @Override
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(FeatureContext context, T result) {
 
-        final List<StructureItem> items = new ArrayList<StructureItem>();
-        result.add(new TopLevelStructureItem.Rules(items));
+        final List<StructureItem> rules = new ArrayList<StructureItem>();
+        final Set<StructureItem> classes = new HashSet<StructureItem>();
+        final Set<StructureItem> ids = new HashSet<StructureItem>();
+        final Set<StructureItem> elements = new HashSet<StructureItem>();
+
+        result.add(new TopLevelStructureItem.Rules(rules));
+        result.add(new TopLevelStructureItem.Classes(classes));
+        result.add(new TopLevelStructureItem.Ids(ids));
+        result.add(new TopLevelStructureItem.Elements(elements));
 
         final Snapshot snapshot = context.getSnapshot();
 
@@ -347,22 +355,64 @@ public class DefaultCssModule extends CssModule {
 
             @Override
             public boolean visit(Node node) {
-                if (node.type() == NodeType.selectorsGroup) {
-                    //get parent - ruleSet to obtain the { ... } range 
-                    Node ruleNode = node.parent();
-                    assert ruleNode.type() == NodeType.ruleSet;
+                switch (node.type()) {
+                    case selectorsGroup: //rules
+                        //get parent - ruleSet to obtain the { ... } range 
+                        Node ruleNode = node.parent();
+                        assert ruleNode.type() == NodeType.ruleSet;
 
-                    int so = snapshot.getOriginalOffset(ruleNode.from());
-                    int eo = snapshot.getOriginalOffset(ruleNode.to());
-                    if (eo > so) {
-                        //todo: filter out virtual selectors
-                        StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(ruleNode), snapshot);
-                        items.add(item);
-                    }
+                        int so = snapshot.getOriginalOffset(ruleNode.from());
+                        int eo = snapshot.getOriginalOffset(ruleNode.to());
+                        if (eo > so) {
+                            //todo: filter out virtual selectors
+                            StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(ruleNode), snapshot);
+                            rules.add(item);
+                        }
+                        break;
+                    case elementName: //element
+                        elements.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        break;
+                    case cssClass:
+                        classes.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        break;
+                    case cssId:
+                        ids.add(new CssRuleStructureItemHashableByName(node.image(), CssNodeElement.createElement(node), snapshot));
+                        break;
+
                 }
+
                 return false;
             }
         };
 
+    }
+
+    private static class CssRuleStructureItemHashableByName extends CssRuleStructureItem {
+
+        public CssRuleStructureItemHashableByName(CharSequence name, CssNodeElement element, Snapshot source) {
+            super(name, element, source);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CssRuleStructureItemHashableByName other = (CssRuleStructureItemHashableByName) obj;
+            if (this.getName() != other.getName() && (this.getName() == null || !this.getName().equals(other.getName()))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+            return hash;
+        }
     }
 }

@@ -43,19 +43,18 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -146,17 +145,16 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
         if (getFolder().isDiskFolder()) {
             // Search disk folder for C/C++ files and add them to the view (not the project!).
             ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
-            String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
-            File folderFile = new File(absPath);
-            if (folderFile.isDirectory() && folderFile.exists()) {
-                File[] children = folderFile.listFiles();
+            FileObject fileObject = RemoteFileUtil.getFileObject(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), getFolder().getRootPath());
+            if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
+                FileObject[] children = fileObject.getChildren();
                 if (children != null) {
-                    for (File child : children) {
-                        if (!child.isFile()) {
+                    for (FileObject child : children) {
+                        if (child == null || !child.isValid() || child.isFolder()) {
                             // it's a folder
                             continue;
                         }
-                        if (getFolder().findItemByName(child.getName()) != null) {
+                        if (getFolder().findItemByName(child.getNameExt()) != null) {
                             // Already there
                             continue;
                         }
@@ -166,13 +164,13 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                         }
 
                         if (!getFolder().isTestLogicalFolder()) {
-                            if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
+                            if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
                                 continue;
                             }
                         }
 
                         // Add file to the view
-                        Item item = Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getAbsolutePath());
+                        Item item = Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getPath());
                         Folder.insertItemElementInList(collection2, item);
                     }
                 }

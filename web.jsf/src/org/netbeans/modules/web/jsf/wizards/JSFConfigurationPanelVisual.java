@@ -99,6 +99,7 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -119,7 +120,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private String jsfServletName=null;
     private JSFConfigurationPanel panel;
     private boolean customizer;
-    
+
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
     //    private final List<JsfComponentDescriptor> componentsLibraries = new ArrayList<JsfComponentDescriptor>();
     private final Map<JSFVersion, List<JsfComponentImplementation>> componentsMap = new HashMap<JSFVersion, List<JsfComponentImplementation>>();
@@ -135,14 +136,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private String currentServerInstanceID;
     private final List<String> excludeLibs = Arrays.asList("javaee-web-api-6.0", "javaee-api-6.0", "jsp-compilation"); //NOI18N
     private boolean isWebLogicServer = false;
-    
+
     // Jsf component libraries related
     private JSFComponentsTableModel jsfComponentsTableModel;
     private JsfComponentCustomizer jsfComponentCustomizer;
-    
-    private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders = 
+
+    private static final Lookup.Result<? extends JsfComponentProvider> jsfComponentProviders =
             Lookups.forPath(JsfComponentProvider.COMPONENTS_PATH).lookupResult(JsfComponentProvider.class);
-    
+
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         this.panel = panel;
@@ -150,10 +151,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         this.jsfComponentsTableModel = new JSFComponentsTableModel(customizer);
 
         initComponents();
-        
+
         tURLPattern.getDocument().addDocumentListener(this);
         cbPackageJars.setVisible(false);
-        
+
         // update JSF components list
         jsfComponentsTable.setModel(jsfComponentsTableModel);
         JsfComponentsTableCellRenderer renderer = new JsfComponentsTableCellRenderer();
@@ -171,7 +172,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         super.addNotify();
         initLibraries();
         initJsfComponentsLibraries();
-        
+
         if (customizer) {
             enableComponents(false);
         } else {
@@ -235,7 +236,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     if (isMaven != null && isMaven.booleanValue()) {
                         removeUserDefinedLibraries(registeredItems);
                     }
-                    
+
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -258,12 +259,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private void initJsfComponentsLibraries() {
         if (jsfComponentsInitialized)
             return;
-        
+
         List<JsfComponentImplementation> jsfComponentDescriptors = new ArrayList<JsfComponentImplementation>();
         for (JsfComponentProvider provider: jsfComponentProviders.allInstances()) {
             jsfComponentDescriptors.addAll(provider.getJsfComponents());
         }
-        
+
         for (JsfComponentImplementation jsfDescriptor : jsfComponentDescriptors) {
             List<JsfComponentImplementation> list = componentsMap.get(jsfDescriptor.getJsfVersion());
             if (list == null) {
@@ -285,7 +286,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         }
     }
-    
+
     private void initServerLibraries(boolean updateUI) {
         serverJsfLibraries.clear();
 
@@ -384,7 +385,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
         return false;
     }
-    
+
     private void setRegisteredLibraryModel(Vector<String> items) {
         long time = System.currentTimeMillis();
         cbLibraries.setModel(new DefaultComboBoxModel(items));
@@ -474,14 +475,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
 
         preferredLanguages.clear();
-        preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.JSP.getName()); 
+        preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.JSP.getName());
         if (faceletsPresent) {
             if (!customizer)
                 panel.setEnableFacelets(true);
 
             if (panel.isEnableFacelets())
                 preferredLanguages.add(0,JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
-            else 
+            else
                 preferredLanguages.add(JSFConfigurationPanel.PreferredLanguage.Facelets.getName());
         } else {
             panel.setEnableFacelets(false);
@@ -798,7 +799,7 @@ private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     chooser.setDialogTitle(NbBundle.getMessage(JSFConfigurationPanelVisual.class,"LBL_SelectLibraryLocation")); //NOI18N
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     chooser.setCurrentDirectory(new File(jtFolder.getText().trim()));
-    
+
     if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
         File projectDir = chooser.getSelectedFile();
         jtFolder.setText(projectDir.getAbsolutePath());
@@ -825,8 +826,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
     updatePreferredLanguages();
 }//GEN-LAST:event_serverLibrariesActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox cbLibraries;
@@ -852,25 +853,25 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JComboBox serverLibraries;
     private javax.swing.JTextField tURLPattern;
     // End of variables declaration//GEN-END:variables
- 
+
     void enableComponents(boolean enable) {
         Component[] components;
-        
+
         components = confPanel.getComponents();
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
         }
-        
+
         cbPreferredLang.setEnabled(true);
         jLabel1.setEnabled(true);
-        
+
         components = libPanel.getComponents();
         for (int i = 0; i < components.length; i++) {
             components[i].setEnabled(enable);
         }
 
     }
-    
+
     boolean valid() {
         ExtenderController controller = panel.getController();
         String urlPattern = tURLPattern.getText();
@@ -882,7 +883,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             controller.setErrorMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
             return false;
         }
-        
+
         if (customizer) {
              return true;
         }
@@ -900,12 +901,12 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 return false;
             }
         }
-        
+
         if (rbNewLibrary.isSelected()) {
             // checking, whether the folder is the right one
             String folder = jtFolder.getText().trim();
             String message;
-            
+
             // TODO: perhaps remove the version check at all:
             message = JSFUtils.isJSFInstallFolder(new File(folder), JSFVersion.JSF_2_0);
             if ("".equals(folder)) {
@@ -914,7 +915,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 properties.setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
                 return false;
             }
-            
+
             if (message != null) {
                 controller.setErrorMessage(message);
                 return false;
@@ -926,10 +927,10 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName"));
                 return false;
             }
-            
+
             message = checkLibraryName(newLibraryName);
             if (message != null) {
-                controller.setErrorMessage(message); 
+                controller.setErrorMessage(message);
                 return false;
             }
             Library lib = LibraryManager.getDefault().getLibrary(newLibraryName);
@@ -939,24 +940,24 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             }
         }
         if (!isServerRegistered(serverInstanceID)) {   //NOI18N
-            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, 
+            controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ERR_MissingTargetServer")); //NOI18N
         }
-        
+
         // check all enabled JSF component libraries
         for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
-            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null && 
+            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null &&
                     !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
-                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, 
+                controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                         NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); // NOI18N
                 return false;
             }
         }
-        
+
         controller.setErrorMessage(null);
         return true;
     }
-    
+
     private static final char[] INVALID_PATTERN_CHARS = {'%', '+'}; // NOI18N
 
     private boolean isPatternValid(String pattern) {
@@ -965,7 +966,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 return false;
             }
         }
-        
+
         if (pattern.startsWith("*.")){
             String p = pattern.substring(2);
             if (p.indexOf('.') == -1 && p.indexOf('*') == -1
@@ -993,7 +994,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         return false;
     }
-    
+
     void update() {
         Properties properties = panel.getController().getProperties();
         String j2eeLevel = (String)properties.getProperty("j2eeLevel"); // NOI18N
@@ -1008,7 +1009,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         initLibSettings(prof, serverInstanceID);
     }
-    
+
     /**  Method looks at the project classpath and is looking for javax.faces.FacesException.
      *   If there is not this class on the classpath, then is offered appropriate jsf library
      *   according web module version.
@@ -1074,7 +1075,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         }
     }
-    
+
     void setJsfVersion(JSFVersion version) {
         if (version != currentJSFVersion) {
             currentJSFVersion = version;
@@ -1098,7 +1099,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         jbBrowse.setVisible(visible);
         jtNewLibraryName.setVisible(visible);
     }
-    
+
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
@@ -1106,7 +1107,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JSFConfigurationPanelVisual.class);
     }
-    
+
     @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         panel.fireChangeEvent();
@@ -1125,15 +1126,15 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     public String getServletName(){
         return jsfServletName==null ? JSF_SERVLET_NAME : jsfServletName;
     }
-    
+
     protected void setServletName(String name){
         jsfServletName = name;
     }
-    
+
     public String getURLPattern(){
         return tURLPattern.getText();
     }
-    
+
     protected void setURLPattern(String pattern){
         tURLPattern.setText(pattern);
     }
@@ -1145,7 +1146,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     public void setJsfComponentCustomizer(JsfComponentCustomizer jsfComponentCustomizer) {
         this.jsfComponentCustomizer = jsfComponentCustomizer;
     }
-    
+
     public List<? extends JsfComponentImplementation> getActivedJsfDescriptors() {
         List<JsfComponentImplementation> activatedDescriptors =  new ArrayList<JsfComponentImplementation>();
         for (int i = 0; i < jsfComponentsTableModel.getRowCount(); i++) {
@@ -1154,7 +1155,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         return activatedDescriptors;
     }
-    
+
     public boolean packageJars(){
         return cbPackageJars.isSelected();
     }
@@ -1210,7 +1211,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 addFrameworkToModel(descriptor);
             }
         }
-       
+
         jsfComponentsTable.setModel(jsfComponentsTableModel);
     }
 
@@ -1227,7 +1228,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void enableServerLibraryComponent(boolean enabled){
         serverLibraries.setEnabled(enabled);
     }
-    
+
     private void enableNewLibraryComponent(boolean enabled){
         lDirectory.setEnabled(enabled);
         jtFolder.setEnabled(enabled);
@@ -1238,18 +1239,18 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private void setNewLibraryFolder() {
         String fileName = jtFolder.getText();
-        
+
         if (fileName == null || "".equals(fileName)) {
             panel.setInstallFolder(null);
         } else {
             File folder = new File(fileName);
-            panel.setInstallFolder(folder);            
+            panel.setInstallFolder(folder);
         }
     }
-    
+
     // the name of the library is used as ant property
     private static final Pattern VALID_PROPERTY_NAME = Pattern.compile("[-._a-zA-Z0-9]+"); // NOI18N
-    
+
     private String checkLibraryName(String name) {
         String message = null;
         if (name.length() == 0) {
@@ -1271,15 +1272,15 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private static class LibraryItem {
-        
+
         private Library library;
         private JSFVersion version;
-        
+
         public LibraryItem(Library library, JSFVersion version) {
             this.library = library;
             this.version = version;
         }
-        
+
         public Library getLibrary() {
             return library;
         }
@@ -1287,7 +1288,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         public JSFVersion getVersion() {
             return version;
         }
-        
+
         public String toString() {
             return library.getDisplayName();
         }
@@ -1321,7 +1322,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     return name;
                 }
             }
-            
+
             StringBuilder sb = new StringBuilder();
             switch (version) {
                 case JSF_1_0:
@@ -1386,7 +1387,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
     }
-    
+
     private void initJsfComponentLibraries(JSFVersion version) {
         List<JsfComponentImplementation> descriptors = componentsMap.get(version);
         for (int i = 0; i < descriptors.size(); i++) {
@@ -1400,28 +1401,28 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void initJsfComponentTableVisualProperties(JTable table) {
         table.setRowSelectionAllowed(true);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
+
         table.setTableHeader(null);
-        
-        table.setRowHeight(jsfComponentsTable.getRowHeight() + 4);        
-        table.setIntercellSpacing(new java.awt.Dimension(0, 0));        
+
+        table.setRowHeight(jsfComponentsTable.getRowHeight() + 4);
+        table.setIntercellSpacing(new java.awt.Dimension(0, 0));
         // set the color of the table's JViewport
         table.getParent().setBackground(table.getBackground());
         table.setShowHorizontalLines(false);
         table.setShowVerticalLines(false);
-        
+
         table.getColumnModel().getColumn(0).setMaxWidth(30);
         table.getColumnModel().getColumn(2).setMaxWidth(100);
-        
+
         if (customizer) {
             table.setEnabled(false);
         }
     }
-    
+
     private void addFrameworkToModel(JsfComponentImplementation component) {
         jsfComponentsTableModel.addItem(new JSFComponentModelItem(component));
     }
-    
+
     private static void fireJsfDialogUpdate(JsfComponentCustomizer jsfComponentExtender, DialogDescriptor dialogDescriptor) {
         if (jsfComponentExtender.getErrorMessage() != null) {
             dialogDescriptor.getNotificationLineSupport().setErrorMessage(jsfComponentExtender.getErrorMessage());
@@ -1432,12 +1433,12 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
         dialogDescriptor.setValid(jsfComponentExtender.isValid());
     }
-    
+
     public static class JsfComponentsTableCellRenderer extends DefaultTableCellRenderer {
-        
+
         private TableCellRenderer jbuttonRenderer;
         private TableCellRenderer booleanRenderer;
-        
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (value instanceof JsfComponentImplementation) {
@@ -1449,7 +1450,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 return comp;
             } else if (value instanceof Boolean && booleanRenderer != null) {
                     return booleanRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-                    
+
             } else {
                 if (value instanceof JButton && jbuttonRenderer != null) {
                     return jbuttonRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
@@ -1459,18 +1460,18 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
             }
         }
-        
+
         public void setBooleanRenderer(TableCellRenderer booleanRenderer) {
             this.booleanRenderer = booleanRenderer;
         }
-        
+
         public void setJButtonRenderer(TableCellRenderer jbuttonRenderer) {
             this.jbuttonRenderer = jbuttonRenderer;
         }
     }
-    
-    private static class JTableButtonRenderer implements TableCellRenderer {	
-        
+
+    private static class JTableButtonRenderer implements TableCellRenderer {
+
             @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JButton button = (JButton)value;
                 if (isSelected) {
@@ -1480,12 +1481,12 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     button.setForeground(table.getForeground());
                     button.setBackground(UIManager.getColor("Button.background"));
                 }
-                return button;	
+                return button;
             }
     }
-    
+
     private class JTableButtonMouseListener extends MouseAdapter {
-        
+
         private final JTable table;
 
         public JTableButtonMouseListener(JTable table) {
@@ -1494,7 +1495,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         public void mouseClicked(MouseEvent e) {
             int column = table.getColumnModel().getColumnIndexAtX(e.getX());
-            int row = e.getY()/table.getRowHeight(); 
+            int row = e.getY()/table.getRowHeight();
 
             if (row < table.getRowCount() && row >= 0 && column < table.getColumnCount() && column >= 0) {
                 Object value = table.getValueAt(row, column);
@@ -1506,43 +1507,43 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             }
         }
     }
-    
-    /** 
+
+    /**
      * Implements a TableModel.
      */
     public final class JSFComponentsTableModel extends AbstractTableModel {
-        
+
         private final Class<?>[] COLUMN_TYPES = new Class<?>[] {Boolean.class, JsfComponentImplementation.class, JButton.class};
         private DefaultListModel model;
         private boolean inCustomizer;
-        
+
         public JSFComponentsTableModel(boolean inCustomizer) {
             model = new DefaultListModel();
             this.inCustomizer = inCustomizer;
         }
-        
+
         public int getColumnCount() {
             return COLUMN_TYPES.length;
         }
-        
+
         public int getRowCount() {
             return model.size();
         }
-        
+
         public Class getColumnClass(int columnIndex) {
             return COLUMN_TYPES[columnIndex];
         }
-        
+
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return (columnIndex == 0);
         }
-        
+
         public Object getValueAt(final int row, int column) {
             final JSFComponentModelItem item = getItem(row);
             switch (column) {
                 case 0: return item.isSelected();
                 case 1: return item.getJsfComponent();
-                case 2: 
+                case 2:
                     if (item.isClickable()) {
                         JButton button = new JButton("More...");
                         if (!inCustomizer) {
@@ -1555,7 +1556,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             }
             return "";
         }
-        
+
         public void setValueAt(Object value, int row, int column) {
             JSFComponentModelItem item = getItem(row);
             switch (column) {
@@ -1564,22 +1565,22 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             }
             fireTableCellUpdated(row, column);
         }
-        
+
         private JSFComponentModelItem getItem(int index) {
             return (JSFComponentModelItem) model.get(index);
         }
-        
+
         public void addItem(JSFComponentModelItem item){
             model.addElement(item);
         }
-        
+
         public void removeAllItems() {
             if (!model.isEmpty()) {
                 model.removeAllElements();
             }
         }
     }
-    
+
     private final class JSFComponentModelActionListener implements ActionListener {
 
         private JsfComponentImplementation jsfDescriptor;
@@ -1589,20 +1590,24 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             this.jsfDescriptor = jsfDescriptor;
             listener = new JSFComponentWindowChangeListener();
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             final JsfComponentCustomizer jsfCustomizer = jsfDescriptor.createJsfComponentCustomizer(null);
             jsfCustomizer.addChangeListener(listener);
-            
+
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                    jsfCustomizer.getComponent(), 
-                    jsfDescriptor.getName(), true, null);
+                    jsfCustomizer.getComponent(),
+                    jsfDescriptor.getName(),
+                    true,
+                    null);
             dialogDescriptor.createNotificationLineSupport();
-            
+            // append help
+            dialogDescriptor.setHelpCtx(jsfCustomizer.getHelpCtx());
+
             listener.setDialogDescriptor(dialogDescriptor);
             listener.setJsfComponentExtender(jsfCustomizer);
-            
+
             // OK button will save JSF extender configuration
             ActionListener buttonsListener = new ActionListener() {
 
@@ -1617,9 +1622,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             dialogDescriptor.setButtonListener(buttonsListener);
             DialogDisplayer.getDefault().notify(dialogDescriptor);
         }
-        
+
     }
-    
+
     private static final class JSFComponentWindowChangeListener implements ChangeListener {
 
         private DialogDescriptor dialogDescriptor;
@@ -1638,13 +1643,13 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             assert dialogDescriptor != null && jsfComponentExtender != null;
             fireJsfDialogUpdate(jsfComponentExtender, dialogDescriptor);
         }
-        
+
     }
 
     private final class JSFComponentModelItem {
         private JsfComponentImplementation component;
         private Boolean selected;
-        
+
         /** Creates a new instance of BeanFormProperty */
         public JSFComponentModelItem(JsfComponentImplementation component) {
             this.setJsfComponent(component);

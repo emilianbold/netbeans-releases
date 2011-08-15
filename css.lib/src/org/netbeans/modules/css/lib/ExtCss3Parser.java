@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.lib;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.antlr.runtime.BitSet;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.MismatchedTokenException;
@@ -48,7 +50,6 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenStream;
-import org.antlr.runtime.debug.DebugEventListener;
 
 /**
  *
@@ -56,7 +57,7 @@ import org.antlr.runtime.debug.DebugEventListener;
  */
 public class ExtCss3Parser extends Css3Parser {
 
-    public ExtCss3Parser(TokenStream input, DebugEventListener dbg) {
+    public ExtCss3Parser(TokenStream input, NbParseTreeBuilder dbg) {
         super(input, dbg);
     }
 
@@ -78,5 +79,18 @@ public class ExtCss3Parser extends Css3Parser {
     public void emitErrorMessage(String msg) {
         //no-op since errors are reported via NbParseTreeBuilder (an impl of parser's DebugEventListener)
     }
-    
+
+    /** Consume tokens until one matches the given token set */
+    @Override
+    public void consumeUntil(IntStream i, BitSet set) {
+//        System.out.println("consumeUntil(" + set.toString(getTokenNames()) + ")");
+        Token ttype;
+        List<Token> skipped = new ArrayList<Token>();
+        while ((ttype = input.LT(1)) != null && ttype.getType() != Token.EOF && !set.member(ttype.getType())) {
+//            System.out.println("consume during recover LA(1)=" + getTokenNames()[input.LA(1)]);
+            input.consume();
+            skipped.add(ttype);
+        }
+        ((NbParseTreeBuilder) dbg).consumeSkippedTokens(skipped);
+    }
 }
