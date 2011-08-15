@@ -203,6 +203,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
+<mapID target="org.netbeans.modules.project.ui.ProjectTemplatePanel" url="project/csh/proj_wiz.html" />
 
 
 <!-- The following project properties topic is located in the j2ee module 
