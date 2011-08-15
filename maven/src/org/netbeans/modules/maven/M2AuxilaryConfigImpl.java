@@ -45,7 +45,6 @@ package org.netbeans.modules.maven;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Date;
@@ -93,6 +92,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document scheduledDocument;
     private Date timeStamp = new Date(0);
     private Document cachedDoc;
+    private final Object configIOLock = new Object();
 
     public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
         this.project = proj;
@@ -109,19 +109,18 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 }
                                 scheduledDocument = null;
                             }
-                            FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
-                            if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
-                                if (config == null) {
-                                    config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
+                            synchronized (configIOLock) {
+                                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                                if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
+                                    OutputStream out = config == null ? project.getProjectDirectory().createAndOpen(CONFIG_FILE_NAME) : config.getOutputStream();
+                                    try {
+                                        XMLUtil.write(doc, out, "UTF-8"); //NOI18N
+                                    } finally {
+                                        out.close();
+                                    }
+                                } else if (config != null) {
+                                    config.delete();
                                 }
-                                OutputStream out = config.getOutputStream();
-                                try {
-                                    XMLUtil.write(doc, out, "UTF-8"); //NOI18N
-                                } finally {
-                                    out.close();
-                                }
-                            } else if (config != null) {
-                                config.delete();
                             }
                         }
                     });
@@ -130,6 +129,13 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         });
+    }
+
+    private Document loadConfig(FileObject config) throws IOException, SAXException {
+        synchronized (configIOLock) {
+            //TODO shall be have some kind of caching here to prevent frequent IO?
+            return XMLUtil.parse(new InputSource(config.getURL().toString()), false, true, null, null);
+        }
     }
 
     public @Override Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
@@ -174,12 +180,8 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (config != null) {
                 if (config.lastModified().after(timeStamp)) {
                     // we need to re-read the config file..
-                    Document doc;
-                    InputStream in = null;
                     try {
-                        in = config.getInputStream();
-                        //TODO shall be have some kind of caching here to prevent frequent IO?
-                        doc = XMLUtil.parse(new InputSource(in), false, true, null, null);
+                        Document doc = loadConfig(config);
                         cachedDoc = doc;
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
@@ -199,13 +201,6 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         cachedDoc = null;
                     } finally {
                         timeStamp = config.lastModified();
-                        if (in != null) {
-                            try {
-                                in.close();
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
                     }
                     return null;
                 } else {
@@ -245,7 +240,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
                 if (config != null) {
                     try {
-                        doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                        doc = loadConfig(config);
                     } catch (SAXException ex) {
                         LOG.log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
                         if (config.getSize() == 0) {
@@ -310,7 +305,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (config != null) {
                     try {
                         try {
-                            doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                            doc = loadConfig(config);
                         } catch (SAXException ex) {
                             LOG.log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
                             if (config.getSize() == 0) {
