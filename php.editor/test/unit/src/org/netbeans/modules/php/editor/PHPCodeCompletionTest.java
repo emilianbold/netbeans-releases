@@ -782,6 +782,22 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue153707.php", "class property: $this->^", false);
     }
 
+    public void testIssue153867() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153867.php", "$testCC = ^", false);
+    }
+
+    public void testIssue153867_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153867.php", "?^>", false);
+    }
+
+    public void testIssue153867_02() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153867.php", "?>^", false);
+    }
+
+    public void testIssue153867_03() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue153867.php", "?> ^", false);
+    }
+
     public void testIssue197571() throws Exception {
         checkCompletion("testfiles/completion/lib/issue197571.php", "sfWidgetFormSchema::^", false);
     }
