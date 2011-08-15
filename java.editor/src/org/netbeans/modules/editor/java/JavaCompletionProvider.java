@@ -1307,7 +1307,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void insideParameterizedType(Env env, TreePath ptPath) throws IOException {
             int offset = env.getOffset();
-            String prefix = env.getPrefix();
             ParameterizedTypeTree ta = (ParameterizedTypeTree)ptPath.getLeaf();
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, ta, offset);
             if (ts != null) {
@@ -1316,6 +1315,81 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case SUPER:
                     case LT:
                     case COMMA:
+                        if (queryType == COMPLETION_QUERY_TYPE) {
+                            CompilationController controller = env.getController();
+                            SourcePositions sourcePositions = env.getSourcePositions();
+                            CompilationUnitTree root = env.getRoot();
+                            int index = 0;
+                            for (Tree arg : ta.getTypeArguments()) {
+                                int parPos = (int)sourcePositions.getEndPosition(root, arg);
+                                if (parPos == Diagnostic.NOPOS || offset <= parPos)
+                                    break;
+                                index++;
+                            }
+                            Elements elements = controller.getElements();
+                            Types types = controller.getTypes();
+                            String prefix = env.getPrefix();
+                            TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(ptPath, ta.getType()));
+                            List<? extends TypeMirror> bounds = null;
+                            if (tm.getKind() == TypeKind.DECLARED) {
+                                TypeElement te = (TypeElement)((DeclaredType)tm).asElement();
+                                List<? extends TypeParameterElement> typeParams = te.getTypeParameters();
+                                if (index < typeParams.size()) {
+                                    TypeParameterElement typeParam = typeParams.get(index);
+                                    bounds = typeParam.getBounds();
+                                }
+                            }
+                            Set<? extends TypeMirror> smarts = env.getSmartTypes();
+                            if (smarts != null) {
+                                for (TypeMirror smart : smarts) {
+                                    if (smart != null) {
+                                        if (smart.getKind() == TypeKind.DECLARED && types.isSubtype(tm, types.erasure(smart))) {
+                                            List<? extends TypeMirror> typeArgs = ((DeclaredType)smart).getTypeArguments();
+                                            if (index < typeArgs.size()) {
+                                                TypeMirror lowerBound = typeArgs.get(index);
+                                                TypeMirror upperBound = null;
+                                                if (lowerBound.getKind() == TypeKind.WILDCARD) {
+                                                    upperBound = ((WildcardType)lowerBound).getSuperBound();
+                                                    lowerBound = ((WildcardType)lowerBound).getExtendsBound();
+                                                }
+                                                if (lowerBound != null && lowerBound.getKind() == TypeKind.TYPEVAR) {
+                                                    lowerBound = ((TypeVariable)lowerBound).getUpperBound();
+                                                }
+                                                if (upperBound != null && upperBound.getKind() == TypeKind.TYPEVAR) {
+                                                    upperBound = ((TypeVariable)upperBound).getUpperBound();
+                                                }
+                                                if (upperBound != null && upperBound.getKind() == TypeKind.DECLARED) {
+                                                    while(upperBound.getKind() == TypeKind.DECLARED) {
+                                                        TypeElement elem = (TypeElement)((DeclaredType)upperBound).asElement();
+                                                        if (startsWith(env, elem.getSimpleName().toString(), prefix) && withinBounds(env, upperBound, bounds)
+                                                                && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)upperBound, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                                        env.addToExcludes(elem);
+                                                        upperBound = elem.getSuperclass();
+                                                    }
+                                                } else if (lowerBound != null && lowerBound.getKind() == TypeKind.DECLARED) {
+                                                    for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
+                                                        TypeElement elem = (TypeElement)subtype.asElement();
+                                                        if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                                        env.addToExcludes(elem);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if (bounds != null && !bounds.isEmpty()) {
+                                TypeMirror lowerBound = bounds.get(0);
+                                bounds = bounds.subList(0, bounds.size());
+                                for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
+                                    TypeElement elem = (TypeElement)subtype.asElement();
+                                    if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                    env.addToExcludes(elem);
+                                }
+                            }
+                        }
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
                         break;
                     case QUESTION:
@@ -4908,6 +4982,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Utilities.startsWithCamelCase(theString, prefix) : 
                 Utilities.startsWithCamelCase(theString, prefix) || Utilities.startsWith(theString, prefix) :
                 Utilities.startsWith(theString, prefix);
+        }
+        
+        private boolean withinBounds(Env env, TypeMirror type, List<? extends TypeMirror> bounds) {
+            if (bounds != null) {
+                Types types = env.getController().getTypes();
+                for (TypeMirror bound : bounds) {
+                    if (!types.isSubtype(type, bound))
+                        return false;
+                }
+            }
+            return true;
         }
         
         private class SourcePositionsImpl extends TreeScanner<Void, Tree> implements SourcePositions {
