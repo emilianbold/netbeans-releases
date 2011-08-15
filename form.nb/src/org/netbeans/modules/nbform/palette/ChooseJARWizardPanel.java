@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import java.io.File;
 import javax.swing.JFileChooser;
@@ -52,6 +52,7 @@ import java.awt.event.*;
 import java.beans.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassSource;
 
 import org.openide.WizardDescriptor;

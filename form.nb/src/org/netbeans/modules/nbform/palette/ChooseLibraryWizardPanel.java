@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
@@ -53,6 +53,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;

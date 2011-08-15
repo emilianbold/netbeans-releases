@@ -42,12 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.WizardDescriptor;
 import org.openide.explorer.*;
 import org.openide.util.ChangeSupport;

@@ -44,6 +44,9 @@ import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormServices;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.nbform.palette.BeanInstaller;
+import org.netbeans.modules.nbform.palette.FormPaletteActions;
+import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -80,6 +83,16 @@ public class NbFormServices implements FormServices {
         );
 
         FormUtils.setupTextUndoRedo(editor);
+    }
+
+    @Override
+    public PaletteActions createPaletteActions() {
+        return new FormPaletteActions();
+    }
+
+    @Override
+    public String findJavaBeanName(FileObject fob) {
+        return BeanInstaller.findJavaBeanName(fob);
     }
     
 }
