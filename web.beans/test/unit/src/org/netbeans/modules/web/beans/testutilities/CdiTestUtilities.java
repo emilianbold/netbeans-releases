@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.testutilities;
 import java.io.IOException;
 
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
 
@@ -56,6 +57,13 @@ public class CdiTestUtilities {
     
     public CdiTestUtilities( FileObject fileObject ){
         mySourceRoot = fileObject;
+    }
+    
+    public void clearRoot() throws IOException {
+        FileObject[] children = mySourceRoot.getChildren();
+        for (FileObject fileObject : children) {
+            fileObject.delete();
+        }
     }
     
     public void createQualifier(String name ) throws IOException{

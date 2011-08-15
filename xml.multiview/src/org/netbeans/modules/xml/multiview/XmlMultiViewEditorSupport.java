@@ -113,7 +113,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     
     private XmlMultiViewDataObject dObj;
     private DocumentListener docListener;
-    private int xmlMultiViewIndex;
+    private int xmlMultiViewIndex = 0;
     private TopComponent mvtc;
     private int lastOpenView = 0;
     private TopComponentsListener topComponentsListener;
@@ -372,6 +372,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         return value;
     }
     
+    @Override
     protected CloneableTopComponent createCloneableTopComponent() {
         if (dObj.getEditorMimeType() != null) {
             CloneableTopComponent mvtc = MultiViews.createCloneableMultiView(dObj.getEditorMimeType(), dObj);
@@ -398,7 +399,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         if (multiViewDescriptions == null) {
             if (suppressXmlView) {
                 multiViewDescriptions = dObj.getMultiViewDesc();
-                xmlMultiViewIndex = 0;
+                //xmlMultiViewIndex = 0;
             } else {
                 MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
                 MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
@@ -406,7 +407,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
                 System.arraycopy(customDesc, 0, multiViewDescriptions, 0, customDesc.length);
                 multiViewDescriptions[customDesc.length] = xmlDesc;
-                xmlMultiViewIndex = customDesc.length;
+                //xmlMultiViewIndex = customDesc.length;
             }
         }
         return multiViewDescriptions;

@@ -97,6 +97,15 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
         return (Result)super.getResult();
     }
     
+    protected MetadataModel<WebBeansModel> getModel(CompilationInfo compInfo){
+        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
+        if ( project == null ){
+            return null;
+        }
+        MetaModelSupport support = new MetaModelSupport(project);
+        return support.getMetaModel();
+    }
+    
     @Override
     List<ErrorDescription> getProblems(){
         return getResult().getProblems();
@@ -117,12 +126,10 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
             }
             handles.add(ElementHandle.create(typeElement));
         }
-        Project project = FileOwnerQuery.getOwner( compInfo.getFileObject() );
-        if ( project == null ){
-            return ;
+        MetadataModel<WebBeansModel> metaModel = getModel(compInfo);
+        if ( metaModel == null ){
+            return;
         }
-        MetaModelSupport support = new MetaModelSupport(project);
-        MetadataModel<WebBeansModel> metaModel = support.getMetaModel();
         try {
             metaModel.runReadAction( 
                     new MetadataModelAction<WebBeansModel, Void>() 
