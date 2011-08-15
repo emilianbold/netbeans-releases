@@ -107,6 +107,10 @@ public abstract class BaseAnalisysTestCase extends JavaSourceTestCase {
         }, true);
     }
     
+    protected CdiTestUtilities getUtilities(){
+        return myUtilities;
+    }
+    
     protected abstract AbstractAnalysisTask createTask();
     
     private ClasspathInfo myClassPathInfo;
