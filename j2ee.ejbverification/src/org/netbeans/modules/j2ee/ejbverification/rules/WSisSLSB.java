@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class WSisSLSB extends EJBVerificationRule {
-    
+
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         boolean isEJB = false;
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
@@ -87,7 +87,7 @@ public class WSisSLSB extends EJBVerificationRule {
 
         AnnotationMirror annWebService = JavaUtils.findAnnotation(ctx.getClazz(),
                 EJBAPIAnnotations.WEB_SERVICE);
-        
+
         if (annWebService != null){
             ClassTree classTree = ctx.getComplilationInfo().getTrees().getTree(ctx.getClazz());
             if (ctx.getComplilationInfo().getTreeUtilities().isInterface(classTree)){
@@ -95,20 +95,21 @@ public class WSisSLSB extends EJBVerificationRule {
             }
             if (ctx.getEjb() instanceof Session){
                 Session session = (Session)ctx.getEjb();
-                
-                if (Session.SESSION_TYPE_STATELESS.equals(session.getSessionType())){
+
+                if (Session.SESSION_TYPE_STATELESS.equals(session.getSessionType()) ||
+                        Session.SESSION_TYPE_SINGLETON.equals(session.getSessionType())){
                     return null; // OK
                 }
             }
-            
+
             ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
                     NbBundle.getMessage(WSisSLSB.class, "MSG_WSisSLSB"));
-            
+
             return Collections.singletonList(err);
-            
+
         }
-        
+
         return null;
     }
-    
+
 }

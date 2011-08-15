@@ -67,8 +67,8 @@ public class DDFragmentDataObject extends DDDataObject {
     private static final long serialVersionUID = 8857563089355069363L;
     private static final Logger LOG = Logger.getLogger(DDMultiViewDataObject.class.getName());
 
-    public DDFragmentDataObject (FileObject pf, DDDataLoader loader) throws DataObjectExistsException {
-        super (pf, loader);
+    public DDFragmentDataObject (FileObject pf, DDDataLoader loader, String editorMimeType) throws DataObjectExistsException {
+        super (pf, loader, editorMimeType);
     }
 
     @Override
@@ -129,18 +129,6 @@ public class DDFragmentDataObject extends DDDataObject {
             LOG.log(Level.SEVERE, "Parsing failed!", ex);
             throw new IOException("Parsing failed: "+ex);
         }
-    }
-
-    @Override
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[] {
-            new DDView(this,MULTIVIEW_OVERVIEW),
-            new DDView(this,MULTIVIEW_SERVLETS),
-            new DDView(this,MULTIVIEW_FILTERS),
-            new DDView(this,MULTIVIEW_PAGES),
-            new DDView(this,MULTIVIEW_REFERENCES),
-            new DDView(this, MULTIVIEW_SECURITY)
-        };
     }
 
 }

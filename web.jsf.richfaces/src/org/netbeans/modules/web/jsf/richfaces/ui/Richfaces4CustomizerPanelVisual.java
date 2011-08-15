@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.jsf.richfaces.Richfaces4Implementation;
 import org.netbeans.modules.web.jsf.richfaces.Richfaces4Customizer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -78,22 +79,22 @@ import org.openide.util.RequestProcessor;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
+public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider {
 
     public static final RequestProcessor RP = new RequestProcessor("JSF Component Libraries Updater", 1);
     public static final Logger LOGGER = Logger.getLogger(Richfaces4CustomizerPanelVisual.class.getName());
-    
+
     private volatile Set<Library> richfacesLibraries = new HashSet<Library>();
-    
+
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     /** Creates new form Richfaces4CustomizerPanelVisual */
     public Richfaces4CustomizerPanelVisual(ChangeListener listener) {
         initComponents();
         addChangeListener(listener);
-        
+
         initLibraries(true);
-        
+
         richfacesComboBox.addActionListener(new ActionListener() {
 
             @Override
@@ -109,13 +110,13 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
-    }    
-    
+    }
+
     public void initLibraries(final boolean firstInit) {
         long time = System.currentTimeMillis();
 
         final Vector<String> registeredRichfaces = new Vector<String>();
-        
+
         RequestProcessor.getDefault().post(new Runnable() {
 
             @Override
@@ -124,13 +125,13 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
                     registeredRichfaces.add(library.getDisplayName());
                     richfacesLibraries.add(library);
                 }
-                
+
                 SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
                         setLibrariesComboBox(richfacesComboBox, registeredRichfaces);
-                        
+
                         if (firstInit) {
                             setDefaultComboBoxValues();
                         } else {
@@ -148,26 +149,26 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
         Preferences preferences = NbPreferences.forModule(Richfaces4Customizer.class).node(Richfaces4Implementation.PREF_RICHFACES_NODE);
         richfacesComboBox.setSelectedItem(preferences.get(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, ""));
     }
-    
+
     private void setLibrariesComboBox(JComboBox comboBox, Vector<String> items) {
         comboBox.setModel(new DefaultComboBoxModel(items));
         comboBox.setEnabled(!items.isEmpty());
     }
-    
+
     public String getErrorMessage() {
         if (richfacesLibraries == null || richfacesLibraries.isEmpty()) {
             return NbBundle.getMessage(Richfaces4CustomizerPanelVisual.class, "LBL_MissingRichFaces"); //NOI18N
         }
         return null;
     }
-    
+
     public String getWarningMessage() {
         if (richfacesLibraries == null || !richfacesLibraries.isEmpty()) {
             Library library = LibraryManager.getDefault().getLibrary(getRichFacesLibrary());
             if (library == null) {
                 return null;
             }
-            
+
             List<URL> content = library.getContent("classpath"); //NOI18N
             StringBuilder recommendedJars = new StringBuilder();
             if (library != null) {
@@ -182,19 +183,24 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel {
                     }
                 }
                 if (!"".equals(recommendedJars.toString())) {
-                    return NbBundle.getMessage(Richfaces4CustomizerPanelVisual.class, 
-                            "LBL_MissingDependency", recommendedJars .toString().substring(0, 
+                    return NbBundle.getMessage(Richfaces4CustomizerPanelVisual.class,
+                            "LBL_MissingDependency", recommendedJars .toString().substring(0,
                             recommendedJars .toString().length() - 2)); //NOI18N
                 }
             }
         }
         return null;
     }
-    
+
     public String getRichFacesLibrary() {
         return (String)richfacesComboBox.getSelectedItem();
     }
-    
+
+   @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(Richfaces4CustomizerPanelVisual.class);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

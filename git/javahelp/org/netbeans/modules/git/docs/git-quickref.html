@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Git Tasks: Quick Reference</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+              rel="StyleSheet" type="text/css">
+    </head>
+    <body>
+        
+        <h2>Git Tasks: Quick Reference</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The following table describes common Git tasks.</p>
+        
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>To perform this task:</th>
+                <th>Follow these steps:</th>
+            </tr>
+            <tr>
+                <td><strong>Place a Project under Git Version Control</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the NetBeans project you wish to put under Git version control.</li>
+                        <li>Either choose Team &gt; Git &gt; <a href="git-initialize.html">Initialize</a>
+                            from the main menu, or</li>
+                        <li>Choose Versioning &gt; Initialize Git Repository
+                             from the right-click menu of a node in the Projects, Files or Favorites window.</li>
+                    </ol>
+                    
+                    <p>The project is placed under Git control. You will then need to Commit the Project files.</p>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Clone an External Repository</strong></td>
+                <td>
+                    <ol>
+                        <li>Choose Team &gt; Git &gt; <a href="git-clone.html">Clone</a>
+                            from the main menu.</li>
+                        <li>In the Git Clone Repository wizard, specify the location of the Git repository, 
+                            and click Next.</li>
+                        <li>In the Parent Directory, specify the location on your computer where you want the 
+                            Clone to reside.</li>
+                        <li>In the Clone Name, specify the name of the Clone.</li>
+                        <li>Click Finish to Clone the remote repository.</li>
+                    </ol>
+                </td>
+            </tr>
+           
+            <tr>
+                <td><strong>Commit changes</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the file or directory that you want to commit.</li>
+                        <li>Choose Git &gt; <a href="mercurial-commit.html">Commit</a> from right-click menu.</li>
+                    </ol>
+              </td>
+            </tr>
+            
+           
+            <tr>
+                <td><strong>Push to default</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the Cloned Git Project you want to Push changes to.</li>
+                        <li>Choose Git &gt; Remote &gt; Push  from right-click menu.</li>
+                        <li>This will Push changes to the Clone's parent Repository.</li>
+                    </ol>
+              </td>
+            </tr>
+            <tr>
+                <td><strong>Pull from default</strong></td>
+                <td>
+                    <ol>
+                        <li>Select the Cloned Git Project you want to Pull changes into.</li>
+                        <li>Choose Git &gt; Remote &gt; Pull  from the  right-click menu.
+                            This will Pull changes from the Clone's parent Repository.</li>
+                    </ol>
+              </td>
+            </tr>
+        </table>
+ 
+       
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="git-about.html">About Git</a></dd>
+        </dl>
+        <hr><small><a href="credits.html">Legal Notices</a></small>
+        
+    </body>
+</html>

@@ -48,9 +48,14 @@ package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.dd.api.web.SecurityConstraint;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.ddloaders.web.DDDataLoader;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
+import org.netbeans.modules.j2ee.ddloaders.web.DDWeb25DataLoader;
+import org.netbeans.modules.j2ee.ddloaders.web.DDWeb30DataLoader;
+import org.netbeans.modules.j2ee.ddloaders.web.DDWebFragment30DataLoader;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.ConfirmDialog;
 import org.netbeans.modules.xml.multiview.ui.SectionContainer;
@@ -62,8 +67,10 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  * SecurityMultiViewElement.java
@@ -72,8 +79,19 @@ import org.openide.util.RequestProcessor;
  *
  * @author ptliu
  */
+@MultiViewElement.Registration(
+    displayName="#TTL_" + DDDataObject.MULTIVIEW_SECURITY,
+    iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=DDDataObject.DD_MULTIVIEW_PREFIX + DDDataObject.MULTIVIEW_SECURITY,
+    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+    position=1000
+)
 public class SecurityMultiViewElement extends ToolBarMultiViewElement
         implements PropertyChangeListener {
+
+    public static final int SECURITY_ELEMENT_INDEX = 6;
+
     private SecurityView view;
     private DDDataObject dObj;
     private ToolBarDesignEditor editor;
@@ -89,11 +107,10 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
     private static final String HELP_ID_PREFIX=DDDataObject.HELP_ID_PREFIX_SECURITY;
     
     /** Creates a new instance of SecurityMultiViewElement */
-    public SecurityMultiViewElement(DDDataObject dObj, int index) {
-        super(dObj);
-        
-        this.dObj = dObj;
-        this.index = index;
+    public SecurityMultiViewElement(Lookup context) {
+        super(context.lookup(DDDataObject.class));
+        this.dObj = context.lookup(DDDataObject.class);
+        this.index = SECURITY_ELEMENT_INDEX;
         editor = new ToolBarDesignEditor();
         factory = new SecurityFactory(editor, dObj);
         addConstraintAction = new AddConstraintAction(dObj);
