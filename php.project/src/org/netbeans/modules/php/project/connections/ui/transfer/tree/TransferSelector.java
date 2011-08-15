@@ -66,6 +66,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -74,7 +75,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 public final class TransferSelector extends TransferFilesChooserPanel implements ExplorerManager.Provider {
+
     private static final long serialVersionUID = 875487456455313L;
+
+    static final Comparator<TransferFile> TRANSFER_FILE_COMPARATOR = new TransferFileComparator();
 
     final TransferSelectorModel model;
     private final TransferType transferType;
@@ -272,7 +276,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         private static final String RESOURCE_ICON_FOLDER_OPENED = "org/netbeans/modules/php/project/ui/resources/folderOpen.gif"; // NOI18N
 
         protected FolderNode(TransferFile transferFile) {
-            super(transferFile, new FileChildren(transferFile), Lookups.singleton(transferFile));
+            super(transferFile, Children.create(new FileChildFactory(transferFile), !transferFile.hasChildrenFetched()), Lookups.singleton(transferFile));
         }
 
         protected FolderNode(Children children) {
@@ -333,7 +337,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
             }
             projectRoot = projRoot;
 
-            Collections.sort(roots, new TransferFileComparator());
+            Collections.sort(roots, TRANSFER_FILE_COMPARATOR);
             setKeys(roots);
         }
 
@@ -347,18 +351,33 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         }
     }
 
-    private class FileChildren extends Children.Keys<TransferFile> {
+    private class FileChildFactory extends ChildFactory<TransferFile> {
 
-        public FileChildren(TransferFile transferFile) {
-            List<TransferFile> children = transferFile.getChildren();
-            Collections.sort(children, new TransferFileComparator());
-            setKeys(children);
+        private final TransferFile transferFile;
+        private final boolean selectNodes;
+
+
+        public FileChildFactory(TransferFile transferFile) {
+            this.transferFile = transferFile;
+            selectNodes = !transferFile.hasChildrenFetched();
         }
 
         @Override
-        protected Node[] createNodes(TransferFile file) {
-            return new Node[] {TransferSelector.this.create(file)};
+        protected boolean createKeys(List<TransferFile> transferFiles) {
+            transferFiles.addAll(transferFile.getChildren());
+            Collections.sort(transferFiles, TRANSFER_FILE_COMPARATOR);
+            return true;
         }
+
+        @Override
+        protected Node createNodeForKey(TransferFile file) {
+            Node node = TransferSelector.this.create(file);
+            if (selectNodes) {
+                model.setNodeSelected(node, true);
+            }
+            return node;
+        }
+
     }
 
     private static class TransferFileComparator implements Comparator<TransferFile> {

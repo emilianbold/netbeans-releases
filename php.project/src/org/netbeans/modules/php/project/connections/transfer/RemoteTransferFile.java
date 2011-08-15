@@ -41,6 +41,12 @@
  */
 package org.netbeans.modules.php.project.connections.transfer;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
@@ -48,16 +54,23 @@ import org.netbeans.modules.php.project.connections.spi.RemoteFile;
  */
 final class RemoteTransferFile extends TransferFile {
 
+    private static final Logger LOGGER  = Logger.getLogger(RemoteTransferFile.class.getName());
+
     // @GuardedBy(file)
     private final RemoteFile file;
+    private final RemoteClient remoteClient;
 
 
-    public RemoteTransferFile(RemoteFile file, TransferFile parent, String baseDirectory) {
-        super(parent, baseDirectory);
+    public RemoteTransferFile(RemoteFile file, TransferFile parent, RemoteClient remoteClient) {
+        super(parent, remoteClient.getBaseRemoteDirectory());
         this.file = file;
+        this.remoteClient = remoteClient;
 
         if (file == null) {
             throw new NullPointerException("Remote file cannot be null");
+        }
+        if (remoteClient == null) {
+            throw new NullPointerException("Remote client cannot be null");
         }
         if (!baseDirectory.startsWith(REMOTE_PATH_SEPARATOR)) {
             throw new IllegalArgumentException("Base directory '" + baseDirectory + "' must start with '" + REMOTE_PATH_SEPARATOR + "'");
@@ -89,6 +102,16 @@ final class RemoteTransferFile extends TransferFile {
         }
         // +1 => remove '/' from the beginning of the relative path
         return absolutePath.substring(baseDirectory.length() + REMOTE_PATH_SEPARATOR.length());
+    }
+
+    @Override
+    protected Collection<TransferFile> fetchChildren() {
+        try {
+            return remoteClient.listFiles(this);
+        } catch (RemoteException ex) {
+            LOGGER.log(Level.WARNING, "Error while getting children for " + this, ex);
+        }
+        return Collections.emptyList();
     }
 
     @Override
