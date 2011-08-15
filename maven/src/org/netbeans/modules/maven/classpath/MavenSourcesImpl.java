@@ -467,7 +467,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 return null;
             }
             FileUtil.refreshFor(folder);
-            checkChanges(false, true);
+            checkChanges(true, true);
             FileObject fo = FileUtil.toFileObject(folder);
             assert fo != null;
             SourceGroup[] grps = getSourceGroups(type);

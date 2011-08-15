@@ -43,13 +43,17 @@
 package org.netbeans.modules.maven.classpath;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
+import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.test.MockChangeListener;
 
 public class MavenSourcesImplTest extends NbTestCase {
 
@@ -132,6 +136,25 @@ public class MavenSourcesImplTest extends NbTestCase {
         assertEquals(2, grps.length);
         assertEquals(gsrc, grps[0].getRootFolder());
         assertEquals(gtsrc, grps[1].getRootFolder());
+    }
+
+    public void testNewlyCreatedSourceGroup() throws Exception { // #200969
+        TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>0</version></project>");
+        FileObject main = FileUtil.createFolder(d, "src/main/java");
+        Project p = ProjectManager.getDefault().findProject(d);
+        Sources s = ProjectUtils.getSources(p);
+        SourceGroup[] grps = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(1, grps.length);
+        assertEquals(main, grps[0].getRootFolder());
+        MockChangeListener l = new MockChangeListener();
+        s.addChangeListener(l);
+        SourceGroup g2 = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
+        l.assertEvent();
+        grps = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        assertEquals(2, grps.length);
+        assertEquals(main, grps[0].getRootFolder());
+        assertEquals(g2, grps[1]);
+        // XXX may also be desirable to fire a change if source root created on disk w/o going thru SourceGroupModifier
     }
 
 }
