@@ -45,16 +45,17 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.HelpCtx;
 
 /**
  * Provides support for extending a JSF framework with a JSF component library.
- * It allows to modify the web module to make use of the JSF suite in JSF framework. 
- * 
+ * It allows to modify the web module to make use of the JSF suite in JSF framework.
+ *
  * @author Martin Fousek <marfous@netbeans.org>
- * 
+ *
  * @since 1.27
  */
-public interface JsfComponentCustomizer {
+public interface JsfComponentCustomizer extends HelpCtx.Provider {
 
     /**
      * Attaches a change listener that is to be notified of changes
@@ -69,13 +70,13 @@ public interface JsfComponentCustomizer {
      * Removes a change listener.
      *
      * @param  listener a listener.
-     */    
+     */
     public void removeChangeListener(@NonNull ChangeListener listener);
 
     /**
      * Returns a UI component used to allow the user to update this customizer.
      *
-     * @return a component. This method might be called more than once and it is 
+     * @return a component. This method might be called more than once and it is
      * expected to always return the same instance.
      */
     @NonNull
@@ -94,9 +95,9 @@ public interface JsfComponentCustomizer {
 
     /**
      * Get error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}.
-     * 
+     *
      * @return error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}
-     * 
+     *
      * @see #isValid()
      * @see #getWarningMessage()
      */
@@ -106,9 +107,9 @@ public interface JsfComponentCustomizer {
     /**
      * Get warning message that can be not {@code null} even for {@link #isValid() valid} customizer.
      * In other words, it is safe to extend web module even if this method returns a message.
-     * 
+     *
      * @return warning message or {@code null}
-     * 
+     *
      * @see #isValid()
      * @see #getErrorMessage()
      */
@@ -116,7 +117,7 @@ public interface JsfComponentCustomizer {
     public String getWarningMessage();
 
     /**
-     * Allow to save actual configuration of UI component. 
+     * Allow to save actual configuration of UI component.
      * <p>
      * This method is called after closing component by OK button.
      */
