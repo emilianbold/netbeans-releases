@@ -48,6 +48,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Information about remote file transfer.
+ * <p>
+ * This class is not thread-safe.
+ */
 public final class TransferInfo {
 
     private final Set<TransferFile> transfered = new HashSet<TransferFile>();
@@ -57,6 +62,7 @@ public final class TransferInfo {
     private final Map<TransferFile, String> partiallyFailed = new HashMap<TransferFile, String>();
     // file, reason
     private final Map<TransferFile, String> ignored = new HashMap<TransferFile, String>();
+
     private long runtime;
 
 
