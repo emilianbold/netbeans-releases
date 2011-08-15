@@ -234,7 +234,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
      * @param stop array of booleans that is checked for [0], if true the method imediatelly returns
      * @return array of two elements [0] is equals, if it exists, [1] is hashCode, if it exists, otherwise the indexes are null
      */
-    public static ExecutableElement[] overridesHashCodeAndEquals(CompilationInfo compilationInfo, Element type, boolean[] stop) {
+    public static ExecutableElement[] overridesHashCodeAndEquals(CompilationInfo compilationInfo, Element type, Cancel stop) {
         ExecutableElement[] ret = new ExecutableElement[2];
 
         TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Object"); // NOI18N
@@ -256,7 +256,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         ExecutableElement equals = null;
         
         for (ExecutableElement method : ElementFilter.methodsIn(el.getEnclosedElements())) {
-            if (stop != null && stop[0]) {
+            if (stop != null && stop.isCanceled()) {
                 return ret;
             }
             if (method.getSimpleName().contentEquals("equals") && method.getParameters().size() == 1 && !method.getModifiers().contains(Modifier.STATIC)) { // NOI18N
@@ -278,7 +278,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
         TypeElement clazz = (TypeElement)type;
         for (Element ee : type.getEnclosedElements()) {
-            if (stop != null && stop[0]) {
+            if (stop != null && stop.isCanceled()) {
                 return ret;
             }
             if (ee.getKind() != ElementKind.METHOD) {
@@ -663,6 +663,10 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             return false;
         }
 
+    }
+
+    public interface Cancel {
+        public boolean isCanceled();
     }
 
 }
