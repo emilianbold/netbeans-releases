@@ -347,6 +347,17 @@ attrib
     
       RBRACKET
 ;
+catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(IDENT, LBRACE)); 
+    }
+
+syncTo_IDENT_RBRACKET_LBRACE
+    @init {
+        syncToSet(BitSet.of(IDENT, RBRACKET, LBRACE));
+    }
+    	:	
+    	;
 
 //bit similar naming to attrvalue, attrname - but these are different - for functions
 attrib_name
