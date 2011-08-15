@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
@@ -56,12 +57,24 @@ import org.netbeans.modules.xml.multiview.Error;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author mkuchtiak
  */
+@MultiViewElement.Registration(
+    displayName="#TTL_" + DDDataObject.MULTIVIEW_SERVLETS,
+    iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=DDDataObject.DD_MULTIVIEW_PREFIX + DDDataObject.MULTIVIEW_SERVLETS,
+    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+    position=600
+)
 public class ServletsMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
+
+    public static final int SERVLETS_ELEMENT_INDEX = 2;
 
     private static final Logger LOG = Logger.getLogger(ServletsMultiViewElement.class.getName());
     
@@ -78,10 +91,10 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
     private static final String HELP_ID_PREFIX=DDDataObject.HELP_ID_PREFIX_SERVLETS;
     
     /** Creates a new instance of DDMultiViewElement */
-    public ServletsMultiViewElement(final DDDataObject dObj, int index) {
-        super(dObj);
-        this.dObj=dObj;
-        this.index=index;
+    public ServletsMultiViewElement(Lookup context) {
+        super(context.lookup(DDDataObject.class));
+        this.dObj=context.lookup(DDDataObject.class);
+        this.index=SERVLETS_ELEMENT_INDEX;
         comp = new ToolBarDesignEditor();
         factory = new ServletPanelFactory(comp, dObj);
         addAction = new AddAction(dObj, NbBundle.getMessage(ServletsMultiViewElement.class,"LBL_addServlet"));
