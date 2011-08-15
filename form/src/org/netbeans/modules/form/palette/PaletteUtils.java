@@ -66,6 +66,7 @@ import org.openide.util.lookup.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.form.FormServices;
 import org.netbeans.modules.form.FormUtils;
 
 import org.netbeans.modules.form.project.ClassSource;
@@ -138,7 +139,7 @@ public final class PaletteUtils {
     public static void showPaletteManager() {
         try {
             PaletteFactory.createPalette("FormDesignerPalette", // NOI18N
-                                         new FormPaletteActions(),
+                                         createPaletteActions(),
                                          new ClassPathFilter(null), // filters out only invisible Layouts category
                                          null)
                     .showCustomizer();
@@ -146,6 +147,11 @@ public final class PaletteUtils {
         catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+
+    private static PaletteActions createPaletteActions() {
+        FormServices services = Lookup.getDefault().lookup(FormServices.class);
+        return services.createPaletteActions();
     }
 
     public static void setContext(FileObject fileInProject) {
@@ -301,7 +307,7 @@ public final class PaletteUtils {
     private static PaletteController createPalette(ClassPathFilter filter) {
         try {
             return PaletteFactory.createPalette("FormDesignerPalette", // NOI18N
-                                                new FormPaletteActions(),
+                                                createPaletteActions(),
                                                 filter,
                                                 null);
         }
@@ -430,7 +436,7 @@ public final class PaletteUtils {
         return res;
     }
     
-    static String getBundleString(String key) {
+    public static String getBundleString(String key) {
         return NbBundle.getBundle(PaletteUtils.class).getString(key);
     }
     

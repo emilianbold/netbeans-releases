@@ -50,7 +50,6 @@
  */
 package org.netbeans.spi.mobility.end2end;
 
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.Lookup;
 
 /**
@@ -65,13 +64,13 @@ public interface E2EServiceProvider {
      * @see org.netbeans.modules.mobility.end2end.client.config.Configuration.JSR172_TYPE
      */
     public String getServiceType();
-    
+
     /**
      * @param lookup singleton having E2EDataObject representing type to call generation on
      * @return visual representation in MultiView
      */
-    public DesignMultiViewDesc[] getMultiViewDesc(Lookup lookup);
-    
+    // manowar: Substituted by new EditorHistoryTab
+//    public DesignMultiViewDesc[] getMultiViewDesc(Lookup lookup);
     
     /**
      * Calls the generation of stubs

@@ -48,19 +48,16 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,45 +77,34 @@ public class FinalizeNotProtected {
             if (modifiers.contains(Modifier.PUBLIC)) {
                 return ErrorDescriptionFactory.forName(ctx, tp,
                         NbBundle.getMessage(FinalizeNotProtected.class, "TXT_FinalizeNotProtected"),
-                        new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
+                        JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(tp, ctx.getInfo()))),
                         FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "FinalizeNotProtected"));    //NOI18N
             }
         }
         return null;
     }
 
-    static class FixImpl implements Fix {
-
-        private final TreePathHandle handle;
+    static class FixImpl extends JavaFix {
 
         FixImpl(final TreePathHandle handle) {
+            super(handle);
             assert handle != null;
-            this.handle = handle;
         }
 
         public String getText() {
             return NbBundle.getMessage(FinalizeNotProtected.class, "FIX_FinalizeNotProtected_MakePublic");
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(handle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    final TreePath tp = handle.resolve(wc);
-                    if (tp == null) {
-                        return;
-                    }
-                    final Tree tree = tp.getLeaf();
-                    if (tree.getKind() != Tree.Kind.METHOD) {
-                        return;
-                    }
-                    final TreeMaker tm = wc.getTreeMaker();
-                    wc.rewrite(((MethodTree)tree).getModifiers(), tm.addModifiersModifier(
-                            tm.removeModifiersModifier(((MethodTree)tree).getModifiers(), Modifier.PUBLIC),
-                            Modifier.PROTECTED));
-                }
-            }).commit();
-            return null;
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            final Tree tree = tp.getLeaf();
+            if (tree.getKind() != Tree.Kind.METHOD) {
+                return;
+            }
+            final TreeMaker tm = wc.getTreeMaker();
+            wc.rewrite(((MethodTree)tree).getModifiers(), tm.addModifiersModifier(
+                    tm.removeModifiersModifier(((MethodTree)tree).getModifiers(), Modifier.PUBLIC),
+                    Modifier.PROTECTED));
         }
     }
 }

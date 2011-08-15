@@ -41,21 +41,18 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -207,7 +204,7 @@ public class Braces extends AbstractHint {
             return ErrorDescriptionFactory.createErrorDescription(
                         getSeverity().toEditorSeverity(), 
                         getDisplayName(), 
-                        Collections.<Fix>singletonList(new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info) ) ), 
+                        Collections.<Fix>singletonList(JavaFix.toEditorFix(new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info) ) )),
                         info.getFileObject(),
                         (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), statement ),
                         (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), statement ) );
@@ -248,7 +245,7 @@ public class Braces extends AbstractHint {
             result.add( ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(), 
                 getDisplayName(), 
-                Collections.<Fix>singletonList( bf ), 
+                Collections.<Fix>singletonList(JavaFix.toEditorFix(bf)),
                 info.getFileObject(),
                 (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), thenSt ),
                 (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), thenSt ) ) ); 
@@ -261,7 +258,7 @@ public class Braces extends AbstractHint {
             result.add( ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(), 
                 getDisplayName(), 
-                Collections.<Fix>singletonList( bf ), 
+                Collections.<Fix>singletonList(JavaFix.toEditorFix(bf)),
                 info.getFileObject(),
                 (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), elseSt ),
                 (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), elseSt ) ) ); 
@@ -280,35 +277,21 @@ public class Braces extends AbstractHint {
         return false;
     }
     
-    private static class BracesFix implements Fix, Task<WorkingCopy> {
+    private static class BracesFix extends JavaFix {
 
-        
-        FileObject file;
-        TreePathHandle tph;
-        int kind;
-        
         boolean fixThen;
         boolean fixElse;
         
         public BracesFix(FileObject file, TreePathHandle tph) {
-            this.file = file;
-            this.tph = tph;
+            super(tph);
         }
         
         public String getText() {
             return NbBundle.getMessage(Braces.class, "LBL_Braces_Fix"); // NOI18N
         }
 
-        public ChangeInfo implement() throws IOException {
-            JavaSource js = JavaSource.forFileObject(file);
-            js.runModificationTask(this).commit();
-            return null;
-        }
-
-        public void run(WorkingCopy copy) throws Exception {
-            copy.toPhase(JavaSource.Phase.PARSED);
-            TreePath path = tph.resolve(copy);
-            
+        @Override
+        protected void performRewrite(WorkingCopy copy, TreePath path, boolean canShowUI) {
             if ( path != null ) {
                 
                 TreeMaker make = copy.getTreeMaker();

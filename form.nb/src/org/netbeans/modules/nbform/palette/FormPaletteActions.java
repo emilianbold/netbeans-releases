@@ -42,11 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.palette.PaletteActions;
 

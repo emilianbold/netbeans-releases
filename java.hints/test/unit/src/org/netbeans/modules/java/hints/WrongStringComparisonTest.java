@@ -48,6 +48,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -212,4 +214,12 @@ public class WrongStringComparisonTest extends TreeRuleTestBase {
         return wsc.run(info, path);
     }
 
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
+    static {
+        NbBundle.setBranding("test");
+    }
 }

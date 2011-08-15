@@ -67,6 +67,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -134,7 +135,7 @@ public class ReturnEncapsulation {
                new FixProvider());   //NOI18N
     }
 
-    @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false) //NOI18N
+    @Hint(category="encapsulation",suppressWarnings="ReturnOfCollectionOrArrayField", enabled=false, options=Options.QUERY) //NOI18N
     @TriggerPatterns ({
         @TriggerPattern(value="return $expr",    //NOI18N
             constraints={
@@ -189,7 +190,7 @@ public class ReturnEncapsulation {
             "ReturnOfCollectionOrArrayField");  //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"ReturnOfDateField"}, enabled=false) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"ReturnOfDateField"}, enabled=false, options=Options.QUERY) //NOI18N
     @TriggerPatterns({
         @TriggerPattern(value="return $expr",   //NOI18N
             constraints={

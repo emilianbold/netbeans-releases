@@ -64,6 +64,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -227,7 +228,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="performance", suppressWarnings="SetReplaceableByEnumSet")
+    @Hint(category="performance", suppressWarnings="SetReplaceableByEnumSet", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern("new $coll<$param>($params$)")
     })

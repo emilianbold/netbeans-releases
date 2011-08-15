@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -56,9 +56,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -67,10 +64,9 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -162,7 +158,7 @@ public class AssignmentIssues {
         return null;
     }
 
-    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "ValueOfIncrementOrDecrementUsed") //NOI18N
+    @Hint(category = "assignment_issues", enabled = false, suppressWarnings = "ValueOfIncrementOrDecrementUsed", options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Kind.PREFIX_INCREMENT, Kind.PREFIX_DECREMENT, Kind.POSTFIX_INCREMENT, Kind.POSTFIX_DECREMENT})
     public static ErrorDescription incrementDecrementUsed(HintContext context) {
         final TreePath path = context.getPath();
@@ -192,7 +188,7 @@ public class AssignmentIssues {
     public static ErrorDescription replaceAssignWithOpAssign(HintContext context) {
         final TreePath path = context.getPath();
         return ErrorDescriptionFactory.forTree(context, path, NbBundle.getMessage(AssignmentIssues.class, "MSG_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), //NOI18N
-                new ReplaceAssignmentFix(NbBundle.getMessage(AssignmentIssues.class, "FIX_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), TreePathHandle.create(path, context.getInfo()))); //NOI18N
+                JavaFix.toEditorFix(new ReplaceAssignmentFix(NbBundle.getMessage(AssignmentIssues.class, "FIX_ReplaceAssignmentWithOperatorAssignment", path.getLeaf()), TreePathHandle.create(path, context.getInfo())))); //NOI18N
     }
 
     private static final class AssignmentFinder extends TreePathScanner<Void, List<TreePath>> {
@@ -244,14 +240,13 @@ public class AssignmentIssues {
         }
     }
 
-    private static final class ReplaceAssignmentFix implements Fix {
+    private static final class ReplaceAssignmentFix extends JavaFix {
 
         private final String text;
-        private final TreePathHandle handle;
 
         public ReplaceAssignmentFix(String text, TreePathHandle handle) {
+            super(handle);
             this.text = text;
-            this.handle = handle;
         }
 
         @Override
@@ -260,61 +255,49 @@ public class AssignmentIssues {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(handle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    final TreePath path = handle.resolve(wc);
-                    if (path == null) {
-                        return;
-                    }
-                    final AssignmentTree at = (AssignmentTree) path.getLeaf();
-                    Kind kind = null;
-                    switch (at.getExpression().getKind()) {
-                        case AND:
-                            kind = Kind.AND_ASSIGNMENT;
-                            break;
-                        case DIVIDE:
-                            kind = Kind.DIVIDE_ASSIGNMENT;
-                            break;
-                        case LEFT_SHIFT:
-                            kind = Kind.LEFT_SHIFT_ASSIGNMENT;
-                            break;
-                        case MINUS:
-                            kind = Kind.MINUS_ASSIGNMENT;
-                            break;
-                        case MULTIPLY:
-                            kind = Kind.MULTIPLY_ASSIGNMENT;
-                            break;
-                        case OR:
-                            kind = Kind.OR_ASSIGNMENT;
-                            break;
-                        case PLUS:
-                            kind = Kind.PLUS_ASSIGNMENT;
-                            break;
-                        case REMAINDER:
-                            kind = Kind.REMAINDER_ASSIGNMENT;
-                            break;
-                        case RIGHT_SHIFT:
-                            kind = Kind.RIGHT_SHIFT_ASSIGNMENT;
-                            break;
-                        case UNSIGNED_RIGHT_SHIFT:
-                            kind = Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
-                            break;
-                        case XOR:
-                            kind = Kind.XOR_ASSIGNMENT;
-                            break;
-                    }
-                    if (kind == null) {
-                        return;
-                    }
-                    final CompoundAssignmentTree cat = wc.getTreeMaker().CompoundAssignment(kind, at.getVariable(), ((BinaryTree) at.getExpression()).getRightOperand());
-                    wc.rewrite(at, cat);
-                }
-            }).commit();
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
+            final AssignmentTree at = (AssignmentTree) path.getLeaf();
+            Kind kind = null;
+            switch (at.getExpression().getKind()) {
+                case AND:
+                    kind = Kind.AND_ASSIGNMENT;
+                    break;
+                case DIVIDE:
+                    kind = Kind.DIVIDE_ASSIGNMENT;
+                    break;
+                case LEFT_SHIFT:
+                    kind = Kind.LEFT_SHIFT_ASSIGNMENT;
+                    break;
+                case MINUS:
+                    kind = Kind.MINUS_ASSIGNMENT;
+                    break;
+                case MULTIPLY:
+                    kind = Kind.MULTIPLY_ASSIGNMENT;
+                    break;
+                case OR:
+                    kind = Kind.OR_ASSIGNMENT;
+                    break;
+                case PLUS:
+                    kind = Kind.PLUS_ASSIGNMENT;
+                    break;
+                case REMAINDER:
+                    kind = Kind.REMAINDER_ASSIGNMENT;
+                    break;
+                case RIGHT_SHIFT:
+                    kind = Kind.RIGHT_SHIFT_ASSIGNMENT;
+                    break;
+                case UNSIGNED_RIGHT_SHIFT:
+                    kind = Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
+                    break;
+                case XOR:
+                    kind = Kind.XOR_ASSIGNMENT;
+                    break;
+            }
+            if (kind == null) {
+                return;
+            }
+            final CompoundAssignmentTree cat = wc.getTreeMaker().CompoundAssignment(kind, at.getVariable(), ((BinaryTree) at.getExpression()).getRightOperand());
+            wc.rewrite(at, cat);
         }
     }
 }

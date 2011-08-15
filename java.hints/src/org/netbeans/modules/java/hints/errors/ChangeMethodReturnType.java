@@ -76,7 +76,8 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
     @Override
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
-        if (treePath.getParentPath().getLeaf().getKind() != Kind.RETURN) return null;
+        TreePath parentPath = treePath.getParentPath();
+        if (parentPath == null || parentPath.getLeaf().getKind() != Kind.RETURN) return null;
         
         TreePath method = null;
         TreePath tp = treePath;

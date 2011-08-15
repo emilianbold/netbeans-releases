@@ -38,7 +38,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -47,20 +46,17 @@ import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.semantic.RemoveUnusedImportFix;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -350,9 +346,8 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
             paths.add(TreePathHandle.create( t.getPath(cut, tree), ci ));
         }
         
-        return new ImportsFix( ci.getFileObject(),
-                        paths, 
-                        ihk );
+        return JavaFix.toEditorFix(new ImportsFix(paths, 
+                        ihk ));
     }
     
     private static enum ImportHintKind {
@@ -380,14 +375,13 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         }
     }
 
-    private static class ImportsFix implements Fix, Task<WorkingCopy> {
+    private static class ImportsFix extends JavaFix {
 
-        FileObject file;
         List<TreePathHandle> tphList;
         ImportHintKind ihk;
         
-        public ImportsFix(FileObject file, List<TreePathHandle> tphList, ImportHintKind ihk) {
-            this.file = file;
+        public ImportsFix(List<TreePathHandle> tphList, ImportHintKind ihk) {
+            super(tphList.get(0));
             this.tphList = tphList;
             this.ihk = ihk;
         }
@@ -401,15 +395,8 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
             }
         }
 
-        public ChangeInfo implement() throws IOException {
-            JavaSource js = JavaSource.forFileObject(file);
-            js.runModificationTask(this).commit();
-            return null;
-        }
-
-
-        public void run(WorkingCopy copy) throws Exception {
-            copy.toPhase(JavaSource.Phase.PARSED);            
+        @Override
+        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
             CompilationUnitTree cut = copy.getCompilationUnit();
             
             TreeMaker make = copy.getTreeMaker();

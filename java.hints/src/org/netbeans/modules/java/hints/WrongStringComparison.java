@@ -48,14 +48,12 @@ import java.util.prefs.Preferences;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -119,13 +117,13 @@ public class WrongStringComparison extends AbstractHint {
                     if (getStringLiteralsFirst()) {
                         reverseOperands = true;
                     } else {
-                        fixes.add(new WrongStringComparisonFix(file, tph, WrongStringComparisonFix.Kind.NULL_CHECK));
+                        fixes.add(JavaFix.toEditorFix(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.NULL_CHECK)));
                     }
                 } else {
-                    fixes.add(new WrongStringComparisonFix(file, tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck())));
+                    fixes.add(JavaFix.toEditorFix(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck()))));
                 }
             }
-            fixes.add(new WrongStringComparisonFix(file, tph, WrongStringComparisonFix.Kind.reverseOperands(reverseOperands)));
+            fixes.add(JavaFix.toEditorFix(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.reverseOperands(reverseOperands))));
             return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), 
@@ -214,15 +212,12 @@ public class WrongStringComparison extends AbstractHint {
         p.putBoolean(STRING_LITERALS_FIRST, selected);
     }
 
-    static class WrongStringComparisonFix implements Fix, Task<WorkingCopy> {
+    static class WrongStringComparisonFix extends JavaFix {
 
-        protected FileObject file;
-        protected TreePathHandle tph;
-        protected Kind kind;
+        protected final Kind kind;
 
-        public WrongStringComparisonFix(FileObject file, TreePathHandle tph, Kind kind) {
-            this.file = file;
-            this.tph = tph;
+        public WrongStringComparisonFix(TreePathHandle tph, Kind kind) {
+            super(tph);
             this.kind = kind;
         }
 
@@ -239,20 +234,8 @@ public class WrongStringComparison extends AbstractHint {
             }
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource js = JavaSource.forFileObject(file);
-            js.runModificationTask(this).commit();
-            return null;
-        }
-
         @Override
-        public String toString() {
-            return "[WrongStringComparisonFix:" + getText() + "]";
-        }
-
-        public void run(WorkingCopy copy) throws Exception {
-            copy.toPhase(JavaSource.Phase.PARSED);
-            TreePath path = tph.resolve(copy);
+        protected void performRewrite(WorkingCopy copy, TreePath path, boolean canShowUI) {
             if (path != null) {
                 TreeMaker make = copy.getTreeMaker();
                 BinaryTree oldTree = (BinaryTree) path.getLeaf();

@@ -42,10 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import javax.swing.*;
 
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.nodes.Node;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.*;

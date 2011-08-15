@@ -52,6 +52,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -79,7 +80,8 @@ public class ParamEncapsulation {
 
     @Hint(category="encapsulation",                                     //NOI18N
         suppressWarnings={"AssignmentToCollectionOrArrayFieldFromParameter"},   //NOI18N
-        enabled=false)
+        enabled=false,
+        options=Options.QUERY)
     @TriggerPatterns ({
         @TriggerPattern(value="$var=$expr",                             //NOI18N
             constraints={
@@ -100,7 +102,8 @@ public class ParamEncapsulation {
 
     @Hint(category="encapsulation",                                             //NOI18N
         suppressWarnings={"AssignmentToCollectionOrArrayFieldFromParameter"},   //NOI18N
-        enabled=false)
+        enabled=false,
+        options=Options.QUERY)
     @TriggerPatterns ({
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
@@ -157,7 +160,8 @@ public class ParamEncapsulation {
 
     @Hint(category="encapsulation",
         suppressWarnings={"AssignmentToDateFieldFromParameter"},
-        enabled=false)
+        enabled=false,
+        options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$var=$expr",   //NOI18N
             constraints={

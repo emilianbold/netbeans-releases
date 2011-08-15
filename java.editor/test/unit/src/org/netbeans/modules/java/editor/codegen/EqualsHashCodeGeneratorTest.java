@@ -419,7 +419,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.overridesHashCodeAndEquals(copy, copy.getTrees().getElement(clazz), new boolean[1]);
+                EqualsHashCodeGenerator.overridesHashCodeAndEquals(copy, copy.getTrees().getElement(clazz), null);
             }
         }
 
@@ -458,7 +458,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.overridesHashCodeAndEquals(copy, copy.getTrees().getElement(clazz), new boolean[1]);
+                EqualsHashCodeGenerator.overridesHashCodeAndEquals(copy, copy.getTrees().getElement(clazz), null);
             }
         }
 

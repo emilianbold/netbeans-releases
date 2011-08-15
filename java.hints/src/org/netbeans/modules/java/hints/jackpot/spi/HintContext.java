@@ -62,6 +62,7 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
  */
 public class HintContext {
 
+    //XXX: cancel missing!
     private final CompilationInfo info;
     private final Preferences preferences;
     private final HintSeverity severity;
