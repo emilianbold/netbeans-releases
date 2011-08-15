@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 
 /**
@@ -76,12 +77,12 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     Richfaces4CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     boolean initialize = true;
-    
+
     public static final Logger LOGGER = Logger.getLogger(Richfaces4Customizer.class.getName());
 
     public Richfaces4Customizer() {
     }
-    
+
     @Override
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
@@ -91,7 +92,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
-    
+
     @Override
     public JComponent getComponent() {
         if (panel == null) {
@@ -102,7 +103,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
                     changeSupport.fireChange();
                 }
             });
-            
+
             panel.addAncestorListener(new AncestorListener() {
 
                 @Override
@@ -148,7 +149,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
         if (LibraryManager.getDefault().getLibrary(richfacesLibrary) != null) {
             return true;
         }
-        
+
         for (Library library : LibraryManager.getDefault().getLibraries()) {
             if (!"j2se".equals(library.getType())) { // NOI18N
                 continue;
@@ -157,9 +158,9 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
             List<URL> content = library.getContent("classpath"); //NOI18N
             if (isValidRichfacesLibrary(content)) {
                 return true;
-            } 
+            }
         }
-        
+
         return false;
     }
 
@@ -181,7 +182,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
 
     public static List<Library> getRichfacesLibraries() {
         List<Library> libraries = new ArrayList<Library>();
-        List<URL> content; 
+        List<URL> content;
         for (Library library : LibraryManager.getDefault().getLibraries()) {
             if (!"j2se".equals(library.getType())) { // NOI18N
                 continue;
@@ -190,11 +191,11 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
             content = library.getContent("classpath"); //NOI18N
             if (Richfaces4Customizer.isValidRichfacesLibrary(content)) {
                 libraries.add(library);
-            } 
+            }
         }
         return libraries;
     }
-        
+
     public static boolean isValidRichfacesLibrary(List<URL> libraryContent) {
         Set<Entry<String, String>> entrySet = Richfaces4Implementation.RF_LIBRARIES.entrySet();
         for (Entry<String, String> entry : entrySet) {
@@ -209,5 +210,10 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
         }
         return true;
     }
-    
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return panel.getHelpCtx();
+    }
+
 }
