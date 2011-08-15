@@ -111,6 +111,20 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>isExcluded() added to VersioningSupport</summary>
+            <version major="1" minor="25"/>
+            <date day="19" month="7" year="2011"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                Method <code>isExcluded</code> states that a given folder is excluded from version control completely. 
+                All version control systems should respect the return value and consider such folders to be unversioned.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VersioningSupport"/>
+            <issue number="199986"/>
+        </change>
+        <change>
+            <api name="versioning_spi"/>
             <summary>New @VersioningSystem.Registration annotation</summary>
             <version major="1" minor="24"/>
             <date day="23" month="5" year="2011"/>

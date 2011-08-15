@@ -125,7 +125,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
      */
     
     public void testNameExceededSize() throws Exception {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (; sb.toString().length() < Preferences.MAX_NAME_LENGTH + 1; ) {
             sb.append("1234567890");
         }

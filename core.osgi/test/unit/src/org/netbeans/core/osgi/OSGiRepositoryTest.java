@@ -42,6 +42,7 @@
 
 package org.netbeans.core.osgi;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -176,6 +177,26 @@ public class OSGiRepositoryTest extends NbTestCase {
     public static class BrandingLayersInstall extends ModuleInstall {
         public @Override void restored() {
             System.setProperty("branded.out", Boolean.toString(FileUtil.getConfigFile("Menu/Help") == null));
+        }
+    }
+
+    public void testURLs() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().clazz(URLsInstall.class).sourceFile("custom/layer.xml", "<filesystem>",
+                "<file name='hello'>world</file>",
+                "</filesystem>").manifest(
+                "OpenIDE-Module: custom",
+                "OpenIDE-Module-Install: " + URLsInstall.class.getName(),
+                "OpenIDE-Module-Layer: custom/layer.xml",
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
+        assertEquals("5", System.getProperty("hello.contents.length"));
+    }
+    public static class URLsInstall extends ModuleInstall {
+        public @Override void restored() {
+            try {
+                System.setProperty("hello.contents.length", Integer.toString(FileUtil.getConfigFile("hello").getURL().openConnection().getContentLength()));
+            } catch (IOException x) {
+                System.setProperty("hello.contents.length", x.toString());
+            }
         }
     }
 

@@ -77,7 +77,7 @@ implements PropertyChangeListener, Runnable {
     public CloseAllButThisAction() {
         this.isContext = false;
         putValue(NAME, NbBundle.getMessage(CloseAllButThisAction.class,
-            "CTL_CloseAllButThisAction")); //NOI18N
+            "CTL_CloseAllButThisAction_MainMenu")); //NOI18N
 
         TopComponent.getRegistry().addPropertyChangeListener(
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));

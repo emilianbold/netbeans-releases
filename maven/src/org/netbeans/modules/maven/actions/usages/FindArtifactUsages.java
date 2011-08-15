@@ -65,7 +65,7 @@ public class FindArtifactUsages extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent event) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("<b>"); //NOI18N
         buffer.append(artifact.getArtifactId());
         buffer.append("</b>"); //NOI18N

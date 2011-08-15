@@ -50,9 +50,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Authenticator;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -233,7 +236,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
             Map<String, List<String>> apps = Collections.emptyMap();
-            Commands.ListComponentsCommand cmd = new Commands.ListComponentsCommand(container);
+            Commands.ListComponentsCommand cmd = new Commands.ListComponentsCommand(container,Util.computeTarget(ip));
             OperationState state = inner.execute(cmd).get();
             if (state == OperationState.COMPLETED) {
                 apps = cmd.getApplicationMap();
@@ -241,10 +244,10 @@ public class CommandRunner extends BasicTask<OperationState> {
             if (null == apps || apps.isEmpty()) {
                 return result;
             }
-            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*");
+            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*"); // NOI18N
             state = inner.execute(getCmd).get();
             if (state == OperationState.COMPLETED) {
-                ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.server.application-ref.*");
+                ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.*.application-ref.*"); // NOI18N
                 state = inner.execute(getRefs).get();
                 if (OperationState.COMPLETED == state) {
                     result = processApplications(apps, getCmd.getData(),getRefs.getData());
@@ -288,7 +291,14 @@ public class CommandRunner extends BasicTask<OperationState> {
                     path = (new File(path)).getAbsolutePath();
                 }
 
-                String enabledKey = "servers.server.server.application-ref."+name+".enabled";
+                String enabledKey = "servers.server.server.application-ref."+name+".enabled";  //NOI18N
+                // XXX - this needs to be more focused... does it need to list of
+                //  servers that are associated with the target?
+                for (String possibleKey : refProperties.keySet()) {
+                    if (possibleKey.endsWith(".application-ref."+name+".enabled")) { // NOI18N
+                        enabledKey = possibleKey;
+                    }
+                }
                 String enabledValue = refProperties.get(enabledKey);
                 if (null != enabledValue) {
                     enabled = Boolean.parseBoolean(enabledValue);
@@ -342,7 +352,7 @@ public class CommandRunner extends BasicTask<OperationState> {
     public List<ResourceDesc> getResources(String type) {
         List<ResourceDesc> result = Collections.emptyList();
         try {
-            Commands.ListResourcesCommand cmd = new Commands.ListResourcesCommand(type);
+            Commands.ListResourcesCommand cmd = new Commands.ListResourcesCommand(type, Util.computeTarget(ip));
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
@@ -438,14 +448,14 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties, File[] libraries) {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.DeployCommand(dir, moduleName,
-                contextRoot, computePreserveSessions(ip), properties, libraries));
+                contextRoot, computePreserveSessions(ip), properties, libraries, Util.computeTarget(ip)));
     }
 
     public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
         LogViewMgr.displayOutput(ip,null);
         boolean preserve = computePreserveSessions(ip).booleanValue();
         return execute(new Commands.RedeployCommand(moduleName, contextRoot,
-                preserve, libraries, resourcesChanged, computeAdditionalParam(ip, preserve)));
+                preserve, libraries, resourcesChanged, computeAdditionalParam(ip, preserve), Util.computeTarget(ip)));
     }
 
     private static String computeAdditionalParam(Map<String,String> ip, boolean preserve) {
@@ -472,19 +482,19 @@ public class CommandRunner extends BasicTask<OperationState> {
 
     public Future<OperationState> undeploy(String moduleName) {
         LogViewMgr.displayOutput(ip,null);
-        return execute(new Commands.UndeployCommand(moduleName));
+        return execute(new Commands.UndeployCommand(moduleName, Util.computeTarget(ip)));
     }
 
     public Future<OperationState> enable(String moduleName) {
-        return execute(new Commands.EnableCommand(moduleName));
+        return execute(new Commands.EnableCommand(moduleName, Util.computeTarget(ip)));
     }
 
     public Future<OperationState> disable(String moduleName) {
-        return execute(new Commands.DisableCommand(moduleName));
+        return execute(new Commands.DisableCommand(moduleName, Util.computeTarget(ip)));
     }
 
     public Future<OperationState> unregister(String resourceName, String suffix, String cmdPropName, boolean cascade) {
-        return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade));
+        return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade,  Util.computeTarget(ip)));
     }
 
     /**
@@ -651,10 +661,15 @@ public class CommandRunner extends BasicTask<OperationState> {
                             } else if (respCode == HttpURLConnection.HTTP_MOVED_TEMP
                                     || respCode == HttpURLConnection.HTTP_MOVED_PERM) {
                                 String newUrl = hconn.getHeaderField("Location");
-                                Logger.getLogger("glassfish").log(Level.FINER, "moved to {0}", newUrl);
-                                urlToConnectTo = new URL(newUrl);
-                                conn = urlToConnectTo.openConnection();
-                                hconn.disconnect();
+                                if (null == newUrl || "".equals(newUrl.trim())) {
+                                    Logger.getLogger("glassfish").log(Level.SEVERE,
+                                            "invalid redirect for {0}", urlToConnectTo.toString());  //NOI18N
+                                } else {
+                                    Logger.getLogger("glassfish").log(Level.FINE, "  moved to {0}", newUrl); // NOI18N
+                                    urlToConnectTo = new URL(newUrl);
+                                    conn = urlToConnectTo.openConnection();
+                                    hconn.disconnect();
+                                }
                             }
                         } while (urlToConnectTo != oldUrlToConnectTo);
 
@@ -667,6 +682,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                         if(handleReceive(hconn)) {
                             commandSucceeded = serverCmd.processResponse();
                         } else {
+                            if (!serverCmd.isSilentFailureAllowed()) {
                             Logger.getLogger("glassfish").log(Level.WARNING, hconn.toString());
                             Logger.getLogger("glassfish").log(Level.WARNING, hconn.getContentType());
                             Logger.getLogger("glassfish").log(Level.WARNING, hconn.getContentEncoding());
@@ -677,6 +693,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                                 for (String v : e.getValue()) {
                                     Logger.getLogger("glassfish").log(Level.WARNING, "     "+v);
                                 }
+                            }
                             }
                         }
 
@@ -722,13 +739,33 @@ public class CommandRunner extends BasicTask<OperationState> {
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
         String protocol = "http";
         String url = ip.get(GlassfishModule.URL_ATTR);
-        if (null == url || !url.contains("ee6wc")) {
-            protocol = Utils.getHttpListenerProtocol(host,port);
+        if (null == url) {
+            protocol = getHttpListenerProtocol(host,port, ":::"+cmd+"?"+query);  //NOI18N
+        } else if (!(url.contains("ee6wc"))) {
+            protocol = getHttpListenerProtocol(host,port,url+":::"+cmd+"?"+query);  // NOI18N
         }
         URI uri = new URI(protocol, null, host, port, cmdSrc + cmd, query, null); // NOI18N
         return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
     }
 
+
+    private static String getHttpListenerProtocol(String hostname, int port, String url) {
+        String retVal = "http";  // NOI18N
+        try {
+            if (Utils.isSecurePort(hostname, port)) {
+                retVal = "https"; // NOI18N
+            }
+        } catch (ConnectException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, hostname + ":" + port + "::" + url, ex); // NOI18N
+        } catch (SocketException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, hostname + ":" + port + "::" + url, ex); // NOI18N
+        } catch (SocketTimeoutException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, hostname + ":" + port + "::" + url, ex); // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, hostname + ":" + port + "::" + url, ex); // NOI18N
+        }
+        return retVal;
+    }
 
     /*
      * Note: this is based on reading the code of CLIRemoteCommand.java

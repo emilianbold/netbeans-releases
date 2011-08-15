@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -158,27 +158,34 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
     
     public Iterable<? extends TypeDescriptor> getSelectedTypes(final boolean visible) {
+        return getSelectedTypes(visible, null);
+    }
+
+    public Iterable<? extends TypeDescriptor> getSelectedTypes(final boolean visible, String initSearchText) {
         Iterable<? extends TypeDescriptor> result = Collections.emptyList();
         try {
             panel = new GoToPanel(this, multiSelection);
             dialog = createDialog(panel);
-            
-            Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
-            String initSearchText = null;
-            if (arr.length > 0) {
-                EditorCookie ec = arr[0].getCookie (EditorCookie.class);
-                if (ec != null) {
-                    JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
-                    if (recentPane != null) {
-                        initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(recentPane);
-                        if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
-                            panel.setInitialText(initSearchText);
-                        } else {
-                            panel.setInitialText(arr[0].getName());
+
+            if (initSearchText != null) {
+                panel.setInitialText(initSearchText);
+            } else {
+                Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+                if (arr.length > 0) {
+                    EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+                    if (ec != null) {
+                        JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                        if (recentPane != null) {
+                            initSearchText = org.netbeans.editor.Utilities.getSelectionOrIdentifier(recentPane);
+                            if (initSearchText != null && org.openide.util.Utilities.isJavaIdentifier(initSearchText)) {
+                                panel.setInitialText(initSearchText);
+                            } else {
+                                panel.setInitialText(arr[0].getName());
+                            }
                         }
                     }
                 }
-            }            
+            }
             
             dialog.setVisible(visible);
             result = panel.getSelectedTypes();

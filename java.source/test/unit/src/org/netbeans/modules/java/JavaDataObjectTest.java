@@ -68,7 +68,7 @@ public class JavaDataObjectTest extends NbTestCase {
         
         Object c = od.getCookie(EditorCookie.class);
         
-        assertTrue(c instanceof JavaDataObject.JavaEditorSupport);
+//        assertTrue(c instanceof JavaDataObject.JavaEditorSupport);
         assertTrue(c == od.getCookie(OpenCookie.class));
         
         assertTrue(c == od.getLookup().lookup(EditorCookie.class));

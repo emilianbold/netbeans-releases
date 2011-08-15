@@ -128,6 +128,8 @@ import org.openide.util.WeakSet;
 * This class supports collecting multiple edits into a group which is treated
 * as a single edit by undo/redo. Send {@link #BEGIN_COMMIT_GROUP} and
 * {@link #END_COMMIT_GROUP} to UndoableEditListener. These must always be paired.
+* Send {@link #MARK_COMMIT_GROUP} to commit accumulated edits and to continue
+* accumulating.
 *
 * @author Jaroslav Tulach
 */
@@ -140,7 +142,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * Start a group of edits which will be committed as a single edit
      * for purpose of undo/redo.
      * Nesting semantics are that any BEGIN_COMMIT_GROUP and
-     * END_COMMIT_GROUP delimits a commit-group.
+     * END_COMMIT_GROUP delimits a commit-group, unless the group is
+     * empty in which case the begin/end is ignored.
      * While coalescing edits, any undo/redo/save implicitly delimits
      * a commit-group.
      * @since 6.34
@@ -150,6 +153,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @since 6.34
      */
     public static final UndoableEdit END_COMMIT_GROUP = UndoGroupManager.END_COMMIT_GROUP;
+    /**
+     * Any coalesced edits become a commit-group and a new commit-group
+     * is started.
+     * @since 6.40
+     */
+    public static final UndoableEdit MARK_COMMIT_GROUP = UndoGroupManager.MARK_COMMIT_GROUP;
     private static final String PROP_PANE = "CloneableEditorSupport.Pane"; //NOI18N
     private static final int DOCUMENT_NO = 0;
     private static final int DOCUMENT_LOADING = 1;
@@ -3474,13 +3483,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * {@link CompoundEdit}.
      * Thus <tt>undo()</tt> and <tt>redo()</tt> treat them 
      * as a single undo/redo.</li>
-     * <li> Use {@link #commitUndoGroup} to commit accumulated
-     * <tt>UndoableEdit</tt>s into a single <tt>CompoundEdit</tt>
-     * (and to continue accumulating);
-     * an application could do this at strategic points, such as EndOfLine
-     * input or cursor movement. In this way, the application can accumulate
-     * large chunks.</li>
      * <li>BEGIN/END nest.</li>
+     * <li> Issue MARK_COMMIT_GROUP to commit accumulated
+     * <tt>UndoableEdit</tt>s into a single <tt>CompoundEdit</tt>
+     * and to continue accumulating;
+     * an application could do this at strategic points, such as EndOfLine
+     * input or cursor movement.</li>
      * </ol>
      * @see UndoManager
      */
@@ -3489,18 +3497,30 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private int buildUndoGroup;
         /** accumulate edits here in undoGroup */
         private CompoundEdit undoGroup;
+        /**
+         * Signal that nested group started and that current undo group
+         * must be committed if edit is added. Then can avoid doing the commit
+         * if the nested group turns out to be empty.
+         */
+        private int needsNestingCommit;
 
         /**
          * Start a group of edits which will be committed as a single edit
          * for purpose of undo/redo.
          * Nesting semantics are that any BEGIN_COMMIT_GROUP and
-         * END_COMMIT_GROUP delimits a commit-group.
+         * END_COMMIT_GROUP delimits a commit-group, unless the group is
+         * empty in which case the begin/end is ignored.
          * While coalescing edits, any undo/redo/save implicitly delimits
          * a commit-group.
          */
         static final UndoableEdit BEGIN_COMMIT_GROUP = new CommitGroupEdit();
         /** End a group of edits. */
         static final UndoableEdit END_COMMIT_GROUP = new CommitGroupEdit();
+        /**
+         * Any coalesced edits become a commit-group and a new commit-group
+         * is started.
+         */
+        static final UndoableEdit MARK_COMMIT_GROUP = new CommitGroupEdit();
 
         /** SeparateEdit tags an UndoableEdit so the
          * UndoGroupManager does not coalesce it.
@@ -3513,6 +3533,18 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             public boolean isSignificant() {
                 return false;
             }
+
+            @Override
+            public boolean canRedo()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean canUndo()
+            {
+                return true;
+            }
         }
 
         @Override
@@ -3522,6 +3554,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 beginUndoGroup();
             } else if(ue.getEdit() == END_COMMIT_GROUP) {
                 endUndoGroup();
+            } else if(ue.getEdit() == MARK_COMMIT_GROUP) {
+                commitUndoGroup();
             } else {
                 super.undoableEditHappened(ue);
             }
@@ -3531,13 +3565,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
          * Direct this <tt>UndoGroupManager</tt> to begin coalescing any
          * <tt>UndoableEdit</tt>s that are added into a <tt>CompoundEdit</tt>.
          * <p>If edits are already being coalesced and some have been 
-         * accumulated, they are commited as an atomic group and a new
-         * group is started.
+         * accumulated, they are flagged for commitment as an atomic group and
+         * a new group will be started.
          * @see #addEdit
          * @see #endUndoGroup
          */
         private synchronized void beginUndoGroup() {
-            commitUndoGroup();
+            if(undoGroup != null)
+                needsNestingCommit++;
             ERR.log(Level.FINE, "beginUndoGroup: nesting {0}", buildUndoGroup);
             buildUndoGroup++;
         }
@@ -3555,10 +3590,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             ERR.log(Level.FINE, "endUndoGroup: nesting {0}", buildUndoGroup);
             if(buildUndoGroup < 0) {
                 ERR.log(Level.INFO, null, new Exception("endUndoGroup without beginUndoGroup"));
+                // slam buildUndoGroup to 0 to disable nesting
                 buildUndoGroup = 0;
             }
-            // slam buildUndoGroup to 0 to disable nesting
-            commitUndoGroup();
+            if(needsNestingCommit <= 0)
+                commitUndoGroup();
+            if(--needsNestingCommit < 0)
+                needsNestingCommit = 0;
         }
 
         /**
@@ -3575,6 +3613,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if(undoGroup == null) {
                 return;
             }
+
+            // undoGroup is being set to null,
+            // needsNestingCommit has no meaning now
+            needsNestingCommit = 0;
+
             // super.addEdit may end up in this.addEdit,
             // so buildUndoGroup must be false
             int saveBuildUndoGroup = buildUndoGroup;
@@ -3602,6 +3645,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         /**
+         * If there's a pending undo group that needs to be committed
+         * then commit it.
          * If this <tt>UndoManager</tt> is coalescing edits then add
          * <tt>anEdit</tt> to the accumulating <tt>CompoundEdit</tt>.
          * Otherwise, add it to this UndoManager. In either case the
@@ -3614,6 +3659,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         public synchronized boolean addEdit(UndoableEdit anEdit) {
             if(!isInProgress())
                 return false;
+
+            if(needsNestingCommit > 0) {
+                commitUndoGroup();
+            }
 
             if(buildUndoGroup > 0) {
                 if(anEdit instanceof SeparateEdit)

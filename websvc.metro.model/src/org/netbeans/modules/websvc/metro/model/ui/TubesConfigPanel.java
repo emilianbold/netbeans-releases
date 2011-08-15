@@ -231,22 +231,22 @@ public class TubesConfigPanel extends JPanel {
         tubeTable = new TubeTable();
         overrideDefChBox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(addBtn, org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "LBL_Add")); // NOI18N
-        addBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "HINT_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addBtn, org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "LBL_Add")); // NOI18N
+        addBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "HINT_Add")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "LBL_Remove")); // NOI18N
-        removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "HINT_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeBtn, org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "LBL_Remove")); // NOI18N
+        removeBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "HINT_Remove")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(upBtn, org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "LBL_Move_Up")); // NOI18N
-        upBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "HINT_Move_Up")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(upBtn, org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "LBL_Move_Up")); // NOI18N
+        upBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "HINT_Move_Up")); // NOI18N
         upBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveUpHandler(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(downBtn, org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "LBL_Move_Down")); // NOI18N
-        downBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "HINT_Move_Down")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(downBtn, org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "LBL_Move_Down")); // NOI18N
+        downBtn.setToolTipText(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "HINT_Move_Down")); // NOI18N
         downBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveDownHandler(evt);
@@ -257,54 +257,54 @@ public class TubesConfigPanel extends JPanel {
         tubeTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         tubeTable.setModel(tubeTableModel);
         jScrollPane2.setViewportView(tubeTable);
-        tubeTable.getAccessibleContext().setAccessibleName("null");
-        tubeTable.getAccessibleContext().setAccessibleDescription("null");
+        tubeTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "ACSD_MessageHandlerTable")); // NOI18N
+        tubeTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "ACSD_MessageHandlerTable")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(overrideDefChBox, org.openide.util.NbBundle.getMessage(TubesProjectConfigPanel.class, "LBL_OverrideDefaults")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(overrideDefChBox, org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "LBL_OverrideDefaults")); // NOI18N
         overrideDefChBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 overrideDefChBoxActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(addBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
-                            .add(upBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
-                            .add(removeBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
-                            .add(downBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)))
-                    .add(overrideDefChBox))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(addBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                            .addComponent(upBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                            .addComponent(removeBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
+                            .addComponent(downBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)))
+                    .addComponent(overrideDefChBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(overrideDefChBox)
-                .add(12, 12, 12)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(addBtn)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeBtn)
-                        .add(23, 23, 23)
-                        .add(upBtn)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(downBtn))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
+                .addComponent(overrideDefChBox)
+                .addGap(12, 12, 12)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(addBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeBtn)
+                        .addGap(23, 23, 23)
+                        .addComponent(upBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(downBtn))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        addBtn.getAccessibleContext().setAccessibleName("null");
+        addBtn.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TubesConfigPanel.class, "LBL_Add")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void moveUpHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpHandler

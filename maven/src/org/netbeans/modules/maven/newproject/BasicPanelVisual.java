@@ -802,7 +802,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
 
     static String getPackageName (String displayName) {
-        StringBuffer builder = new StringBuffer ();
+        StringBuilder builder = new StringBuilder ();
         boolean firstLetter = true;
         for (int i=0; i< displayName.length(); i++) {
             char c = displayName.charAt(i);

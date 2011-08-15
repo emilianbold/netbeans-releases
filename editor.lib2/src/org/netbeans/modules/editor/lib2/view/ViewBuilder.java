@@ -44,14 +44,12 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -139,7 +137,20 @@ final class ViewBuilder {
      * List of all paragraph replaces done so far.
      */
     private List<ViewReplace<ParagraphView,EditorView>> allReplaces;
-
+    
+    private volatile boolean staleCreation;
+    
+    private int startCreationOffset;
+    
+    private static enum RebuildCause {
+        FULL_REBUILD, // Full rebuild of all paragraphs
+        CHANGED_REGION, // Rebuild a document region that has changed (e.g. highlights changed or fold collapsed/expanded)
+        MOD_UPDATE, // Update after modification in the document
+        INIT_PARAGRAPHS // Initialize children of one or more paragraphs
+    }
+    
+    /** Cause of the rebuild for logging purposes. */
+    private RebuildCause rebuildCause;
 
     /**
      * Construct view builder.
@@ -165,6 +176,7 @@ final class ViewBuilder {
         docReplace.removeTillEnd();
         creationOffset = docViewStartOffset;
         matchOffset = docViewEndBoundOffset;
+        rebuildCause = RebuildCause.FULL_REBUILD;
         // No local rebuild => leave firstReplace == null
     }
 
@@ -179,6 +191,7 @@ final class ViewBuilder {
         docReplace.removeCount = endRebuildIndex - startRebuildIndex;
         creationOffset = startOffset;
         matchOffset = endOffset;
+        rebuildCause = RebuildCause.INIT_PARAGRAPHS;
     }
 
     /**
@@ -189,7 +202,7 @@ final class ViewBuilder {
      *  method should be called. If false is returned createViews() should not be called
      *  and just finish() should be called.
      */
-    boolean initRebuild(OffsetRegion rRegion) {
+    boolean initChangedRegionRebuild(OffsetRegion rRegion) {
         DocumentView docView = docReplace.view;
         int startAffectedOffset = rRegion.startOffset();
         int endAffectedOffset = rRegion.endOffset();
@@ -199,7 +212,7 @@ final class ViewBuilder {
         } else if (docView.hasExtraEndBound() && startAffectedOffset >= docViewEndBoundOffset) {
             // Affected area completely above docView's end
         } else {
-            startRebuildIndex = docView.getViewIndexFirst(startAffectedOffset);
+            startRebuildIndex = docView.getViewIndex(startAffectedOffset);
             // would be -1 for pViewCount == 0
         }
         if (startRebuildIndex == -1) {
@@ -210,6 +223,7 @@ final class ViewBuilder {
         updateRebuildIndexes(startRebuildIndex, endAffectedOffset);
         checkCreateLocalViews(startAffectedOffset, endAffectedOffset);
         checkLocalRebuild(startAffectedOffset, endAffectedOffset, 0);
+        rebuildCause = RebuildCause.CHANGED_REGION;
         return true;
     }
 
@@ -259,13 +273,13 @@ final class ViewBuilder {
             // but the first paragraph view still carries the original (moved) position
             allowLocalRebuild = false;
         } else {
-            startRebuildIndex = docView.getViewIndexFirst(startAffectedOffset);
+            startRebuildIndex = docView.getViewIndex(startAffectedOffset);
             if (modLength > 0) { // Insert
                 // Check for insert right at pView's begining => should rebuild next pView since
                 // it's affected by the insertion
                 if (endAffectedOffset == modOffset + modLength) {
                     if (startRebuildIndex + 1 < docView.getViewCount() &&
-                            docView.getEditorView(startRebuildIndex + 1).getStartOffset() == modOffset + modLength)
+                            docView.getParagraphView(startRebuildIndex + 1).getStartOffset() == modOffset + modLength)
                     { // Insert at begining of pView => force rebuild of next pView
                         endAffectedOffset++;
                         allowLocalRebuild = false;
@@ -276,7 +290,7 @@ final class ViewBuilder {
                 // in which case it's necessary to rebuild previous view
                 if (startAffectedOffset == modOffset) {
                     if (startRebuildIndex < docView.getViewCount() &&
-                            docView.getEditorView(startRebuildIndex).getStartOffset() == modOffset)
+                            docView.getParagraphView(startRebuildIndex).getStartOffset() == modOffset)
                     {
                         if (startRebuildIndex > 0) {
                             startRebuildIndex--; // Rebuild previous view
@@ -299,6 +313,15 @@ final class ViewBuilder {
         if (allowLocalRebuild) {
             checkLocalRebuild(startAffectedOffset, endAffectedOffset, modLength);
         }
+        rebuildCause = RebuildCause.MOD_UPDATE;
+        return true;
+    }
+    
+    boolean createReplaceRepaintViews(boolean force) {
+        if (!createViews(force)) {
+            return false;
+        }
+        replaceRepaintViews();
         return true;
     }
     
@@ -306,7 +329,7 @@ final class ViewBuilder {
         DocumentView docView = docReplace.view;
         docReplace.index = startRebuildIndex;
         creationOffset = (startRebuildIndex != 0)
-                ? docView.getEditorView(startRebuildIndex).getStartOffset()
+                ? docView.getParagraphView(startRebuildIndex).getStartOffset()
                 : docViewStartOffset;
         int pViewCount = docView.getViewCount();
         // Find ending paragraph index for rebuild; look to next paragraph start to possibly save one binary search
@@ -317,7 +340,7 @@ final class ViewBuilder {
             if (endRebuildIndex < pViewCount) {
                 int nextParagraphViewOffset = docView.getView(endRebuildIndex).getStartOffset();
                 if (endAffectedOffset > nextParagraphViewOffset) {
-                    endRebuildIndex = docView.getViewIndexFirst(endAffectedOffset) + 1;
+                    endRebuildIndex = docView.getViewIndex(endAffectedOffset) + 1;
                     if (endRebuildIndex < pViewCount) {
                         matchOffset = docView.getView(endRebuildIndex).getStartOffset();
                     } // Leave matchOffset == docViewEndBoundOffset
@@ -339,13 +362,13 @@ final class ViewBuilder {
     private void checkLocalRebuild(int startAffectedOffset, int endAffectedOffset, int modLength) {
         // Check whether local single-paragraph update should be attempted
         if (docReplace.removeCount == 1) {
-            ParagraphView pView = (ParagraphView) docReplace.view.getEditorView(docReplace.index);
+            ParagraphView pView = (ParagraphView) docReplace.view.getParagraphView(docReplace.index);
             if (pView.getViewCount() > 0) { // Also requires (pView.children != null)
                 // For local rebuild use (startAffectedOffset-1) since otherwise
                 // the rebuild could be done right at boundary of an existing local view
                 // so two adjacent views could be created instead of a single one
                 // that would naturally be created when rebuilding entire paragraph views.
-                int startLocalIndex = pView.getViewIndexFirst(startAffectedOffset - 1);
+                int startLocalIndex = pView.getViewIndex(startAffectedOffset - 1);
                 EditorView startLocalView = pView.getEditorView(startLocalIndex);
                 int localViewCount = pView.getViewCount();
                 int endLocalIndex;
@@ -365,7 +388,7 @@ final class ViewBuilder {
                     if (origEndAffectedOffset <= localView.getEndOffset()) {
                         endLocalIndex = startLocalIndex + 1;
                     } else {
-                        endLocalIndex = Math.min(pView.getViewIndexFirst(origEndAffectedOffset) + 1, localViewCount);
+                        endLocalIndex = Math.min(pView.getViewIndex(origEndAffectedOffset) + 1, localViewCount);
                     }
                     if (startLocalIndex > 0 || endLocalIndex < localViewCount) { // Not all children removed
                         firstReplace = new ViewReplace<ParagraphView, EditorView>(pView);
@@ -388,7 +411,8 @@ final class ViewBuilder {
         }
     }
     
-    void createViews() {
+    boolean createViews(boolean force) {
+        startCreationOffset = creationOffset; // Remember for logging and firing
         if (creationOffset > matchOffset) {
             throw new IllegalStateException(
                 "creationOffset=" + creationOffset + " > matchOffset=" + matchOffset); // NOI18N
@@ -403,13 +427,21 @@ final class ViewBuilder {
 
         for (int i = 0; i < factoryStates.length; i++) {
             FactoryState state = factoryStates[i];
-            state.init(creationOffset, matchOffset);
+            state.init(this, creationOffset, matchOffset);
         }
         allReplaces = new ArrayList<ViewReplace<ParagraphView, EditorView>>(2);
 
         if (creationOffset < matchOffset) {
             // Create all new views
-            while (createNextView()) { }
+            while (createNextView()) {
+                if (staleCreation && !force) {
+                    ViewStats.incrementStaleViewCreations();
+                    if (ViewHierarchy.BUILD_LOG.isLoggable(Level.FINE)) {
+                        ViewHierarchy.BUILD_LOG.fine("STALE-CREATION notified => View Rebuild Terminated\n"); // NOI18N
+                    }
+                    return false;
+                }
+            }
         }
 
         if (localReplace != null && localReplace != firstReplace) {
@@ -425,30 +457,33 @@ final class ViewBuilder {
             localReplace = null;
         }
 
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("ViewBuilder-creationEndOffset=" + creationOffset + "\n");
-        }
-        if (LOG.isLoggable(Level.FINER)) {
-            if (LOG.isLoggable(Level.FINEST)) {
+        if (ViewHierarchy.BUILD_LOG.isLoggable(Level.FINE)) {
+            if (ViewHierarchy.BUILD_LOG.isLoggable(Level.FINEST)) {
                 // Log original docView state
                 // Use separate string builder to at least log original state if anything goes wrong.
-                LOG.finer("ViewBuilder-Original:\n" + docReplace.view.toStringDetail() + '\n');
+                ViewHierarchy.BUILD_LOG.finer("ViewBuilder: DocView-Original-Content:\n" + // NOI18N
+                        docReplace.view.toStringDetailUnlocked() + '\n'); // NOI18N
             }
             StringBuilder sb = new StringBuilder(200);
-            sb.append("ViewBuilder.createViews():\n");
-            sb.append("Creation for document: ").append(doc).append('\n');
+            sb.append("ViewBuilder.createViews(): in <").append(startCreationOffset); // NOI18N
+            sb.append(",").append(creationOffset).append("> cause:").append(rebuildCause).append("\n"); // NOI18N
+            sb.append("Document:").append(doc).append('\n'); // NOI18N
             if (firstReplace != null) {
-                sb.append("firstReplace:").append(firstReplace);
+                sb.append("FirstReplace:\n").append(firstReplace); // NOI18N
+            } else {
+                sb.append("No-FirstReplace\n"); // NOI18N
             }
-            sb.append("docReplace:").append(docReplace);
-            sb.append("pReplaceList:\n");
+            sb.append("DocReplace:\n").append(docReplace); // NOI18N
+            sb.append("pReplaceList:\n"); // NOI18N
             int digitCount = ArrayUtilities.digitCount(allReplaces.size());
             for (int i = 0; i < allReplaces.size(); i++) {
                 ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
                 sb.append(allReplaces.get(i));
             }
-            LOG.fine(sb.toString());
+            sb.append("-------------END-OF-VIEW-REBUILD-------------\n"); // NOI18N
+            ViewUtils.log(ViewHierarchy.BUILD_LOG, sb.toString());
         }
+        return true;
     }
 
     /**
@@ -498,7 +533,7 @@ final class ViewBuilder {
                     firstReplace.removeCount = firstReplace.view.getViewCount() - firstReplace.index;
                     int index = docReplace.removeEndIndex();
                     if (index < docReplace.view.getViewCount()) {
-                        matchOffset = docReplace.view.getEditorView(index).getStartOffset();
+                        matchOffset = docReplace.view.getParagraphView(index).getStartOffset();
                     } else {
                         matchOffset = docViewEndBoundOffset;
                     }
@@ -523,7 +558,7 @@ final class ViewBuilder {
                             do {
                                 int index = docReplace.removeNext();
                                 if (index < pViewCount) {
-                                    matchOffset = docReplace.view.getEditorView(index).getStartOffset();
+                                    matchOffset = docReplace.view.getParagraphView(index).getStartOffset();
                                 } else {
                                     matchOffset = docViewEndBoundOffset;
                                     break;
@@ -596,127 +631,128 @@ final class ViewBuilder {
         throw new IllegalStateException("No factory returned view for offset=" + creationOffset);
     }
 
-    private void replaceAndRepaintViews() {
+    private void replaceRepaintViews() {
         // Compute repaint region as area of views being removed
         DocumentView docView = docReplace.view;
         final JTextComponent textComponent = docView.getTextComponent();
-        final Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
         assert (textComponent != null) : "Null textComponent"; // NOI18N
-        boolean docViewHeightChanged = false;
-        boolean docViewWidthChanged = false;
-        Rectangle2D.Double docViewBounds = docView.getAllocation();
-        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
-        VisualUpdate<?> fUpdate = null;
         if (firstReplace != null) {
-            fUpdate = firstReplace.replaceViews(modLength); // modLength needed to update possible gapStorage
-            if (fUpdate != null) {
-                // firstReplace is at (docReplace.index - 1)
-                Shape childAlloc = docView.getChildAllocation(docReplace.index - 1, docViewBounds);
-                fUpdate.updateSpansAndLayout(childAlloc);
-                if (fUpdate.isPreferenceChanged()) {
-                    docViewWidthChanged |= fUpdate.isWidthChanged();
-                    docViewHeightChanged |= fUpdate.isHeightChanged();
-                }
-                if (!fUpdate.getRepaintBounds().isEmpty()) {
-                    repaintBounds.add(fUpdate.getRepaintBounds());
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.fine("firstReplace:REPAINT:" + ViewUtils.toString(fUpdate.getRepaintBounds()) + '\n');
-                    }
-                }
+            if (firstReplace.isChanged()) {
+                firstReplace.view.replace(firstReplace.index,
+                        firstReplace.removeCount, firstReplace.addedViews(), modLength);
             }
         }
-
         // Remove paragraphs from text-layout-cache
+        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
         for (int i = 0; i < docReplace.removeCount; i++) {
-            ParagraphView paragraphView = (ParagraphView) docView.getEditorView(docReplace.index + i);
-            if (paragraphView.children != null) {
-                textLayoutCache.remove(paragraphView);
+            ParagraphView pView = docView.getParagraphView(docReplace.index + i);
+            if (pView.children != null) {
+                textLayoutCache.remove(pView, false);
             }
         }
-//        String err = textLayoutCache.findIntegrityError(); if (err != null) throw new IllegalStateException(err);
-
-        // Repaint removed paragraph views
-        docReplace.retainSpans(); // Attempt to retain spans of paragraph views
-        VisualUpdate<?> dUpdate = docReplace.replaceViews(0);
-        // dUpdate.updateSpansAndLayout() will be done later once
-        // all the paragraph-update.updateSpansAndLayout() get called.
-        // This way the exact measurement of paragraph-views heights can only be done
-        // in one iteration.
-
-        for (int i = 0; i < allReplaces.size(); i++) {
-            ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(i);
-            VisualUpdate<?> pUpdate = replace.replaceViews(0);
-            if (pUpdate != null) {
-                Shape childAlloc = docView.getChildAllocation(docReplace.index + i, docViewBounds);
-                pUpdate.updateSpansAndLayout(childAlloc);
-                if (pUpdate.isPreferenceChanged()) {
-                    docViewWidthChanged |= pUpdate.isWidthChanged();
-                    docViewHeightChanged |= pUpdate.isHeightChanged();
-                }
-                if (!pUpdate.getRepaintBounds().isEmpty()) {
-                    repaintBounds.add(pUpdate.getRepaintBounds());
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.fine("pReplaceList[" + i + "]:REPAINT:" + // NOI18N
-                                ViewUtils.toString(pUpdate.getRepaintBounds()) + '\n');
-                    }
+        // Possibly retain vertical spans from original views
+        List<ParagraphView> addedPViews = docReplace.added;
+        int addedSize = docReplace.addedSize();
+        if (addedSize == docReplace.removeCount) {
+            int index = docReplace.index;
+            int replaceViewCount = docReplace.removeCount;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("RetainSpans: index=" + index + ", count=" + replaceViewCount + '\n'); // NOI18N
+            }
+            for (int i = 0; i < replaceViewCount; i++) {
+                ParagraphView pView = docView.getParagraphView(index + i);
+                ParagraphView addedPView = addedPViews.get(i);
+                float origWidth = pView.getWidth();
+                addedPView.setWidth(origWidth);
+                float origHeight = pView.getHeight();
+                addedPView.setHeight(origHeight);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("RetainSpans: [" + (index + i) + "]: WxH: " + origWidth + " x " + origHeight + '\n'); // NOI18N
                 }
             }
-        }
-
-        if (dUpdate != null) {
-            dUpdate.updateSpansAndLayout(docViewBounds);
-            if (dUpdate.isPreferenceChanged()) {
-                docViewWidthChanged |= dUpdate.isWidthChanged();
-                docViewHeightChanged |= dUpdate.isHeightChanged();
-            }
-            if (!dUpdate.getRepaintBounds().isEmpty()) {
-                repaintBounds.add(dUpdate.getRepaintBounds());
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.fine("docReplace:REPAINT:" + ViewUtils.toString(dUpdate.getRepaintBounds()) + '\n');
+            LOG.fine("RetainSpans: -----------\n"); // NOI18N
+        } else {
+            // Update lines with default spans
+            if (docReplace.added != null) {
+                float defaultLineHeight = docView.getDefaultLineHeight();
+                float defaultCharWidth = docView.getDefaultCharWidth();
+                for (int i = 0; i < addedSize; i++) {
+                    ParagraphView addedPView = addedPViews.get(i);
+                    addedPView.setHeight(defaultLineHeight);
+                    addedPView.setWidth(defaultCharWidth * addedPView.getLength());
                 }
             }
         }
         
-        // Since fUpdate is not visually included in dUpdate => use docView.preferenceChanged()
-        if (fUpdate != null && fUpdate.isPreferenceChanged()) {
-            // Explicitly call preferenceChanged() which will fix vertical span
-            // in docView if the paragraph view's height changed
-            docView.preferenceChanged(docReplace.index - 1,   
-                    fUpdate.isWidthChanged(), fUpdate.isHeightChanged(), false);
-        }
-
-        if (!repaintBounds.isEmpty()) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.fine("REPAINT-bounds:" + ViewUtils.toString(repaintBounds) + '\n');
-            }
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ViewUtils.repaint(textComponent, repaintBounds);
+        // New paragraph views are currently not measured (they use spans
+        // that were retained from old views or they use defaults).
+        double yDelta;
+        if (docReplace.isChanged()) {
+            // Replace views in docView (includes possible call to notifyHeightChange())
+            yDelta = docView.replaceViews(docReplace.index, docReplace.removeCount, docReplace.addedViews());
+            // Replace contents of each added paragraph view (if the contents are built too).
+            for (int i = 0; i < allReplaces.size(); i++) {
+                ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(i);
+                if (replace.isChanged()) {
+                    replace.view.replace(replace.index, replace.removeCount, replace.addedViews());
                 }
-            });
+            }
+        } else {
+            yDelta = 0d;
         }
-        if (docViewWidthChanged || docViewHeightChanged) {
-            docView.preferenceChanged(null, docViewWidthChanged, docViewHeightChanged);
+        
+        // For accurate span force computation of text layouts
+        Rectangle2D.Double docViewRect = docView.getAllocation();
+        if (docView.isAccurateSpan()) {
+            int pIndex = docReplace.index;
+            int endIndex = docReplace.addEndIndex();
+            if (firstReplace != null) {
+                pIndex--;
+            }
+            for (; pIndex < endIndex; pIndex++) {
+                ParagraphView pView = docView.getParagraphView(pIndex);
+                Shape childAlloc = docView.getChildAllocation(pIndex, docViewRect);
+                if (pView.children != null) {
+                    pView.children.ensureIndexMeasured(pView, pView.getViewCount(), ViewUtils.shapeAsRect(childAlloc));
+                    docView.children.checkChildrenSpanChange(docView, pIndex);
+                }
+            }
         }
-    }
-    
-    void createReplaceAndRepaintViews() {
-        createViews();
-        replaceAndRepaintViews();
+        
+        // Schedule repaints based on current docView allocation.
+        // For valid firstReplace the current impl repaints whole line.
+        double endY;
+        if (firstReplace != null) {
+            docViewRect.y = docView.getY(docReplace.index - 1);
+            if (docReplace.isChanged()) {
+                if (yDelta != 0d) {
+                    endY = docViewRect.getMaxY();
+                } else {
+                    endY = docView.getY(docReplace.addEndIndex());
+                }
+            } else {
+                endY = docView.getY(docReplace.index);
+            }
+        } else {
+            docViewRect.y = docView.getY(docReplace.index);
+            endY = docView.getY(docReplace.addEndIndex());
+        }
+        docViewRect.height = endY - docViewRect.y;
+        docView.notifyRepaint(docView.extendToVisibleWidth(docViewRect));
     }
     
     void finish() {
         // Finish factories
         if (factoryStates != null) {
             for (FactoryState factoryState : factoryStates) {
-                factoryState.factory.finish();
+                factoryState.finish();
             }
         }
-
-        docReplace.view.checkIntegrityIfLoggable();
+        DocumentView docView = docReplace.view;
+        docView.checkIntegrityIfLoggable();
         // Fire change of views
-//[TODO]        docReplace.view.fireViewHierarchyEvent();
+        ViewHierarchyEvent evt = new ViewHierarchyEvent(docView.viewHierarchy, startCreationOffset);
+        docView.viewHierarchy.fireViewHierarchyEvent(evt);
 
     }
 
@@ -730,6 +766,10 @@ final class ViewBuilder {
             Element line = lineRoot.getElement(lineIndex);
             lineEndOffset = line.getEndOffset();
         }
+    }
+    
+    void notifyStaleCreation() {
+        staleCreation = true;
     }
 
     @Override
@@ -760,7 +800,8 @@ final class ViewBuilder {
             this.factory = factory;
         }
 
-        void init(int startOffset, int matchOffset) {
+        void init(ViewBuilder viewBuilder, int startOffset, int matchOffset) {
+            factory.setViewBuilder(viewBuilder);
             factory.restart(startOffset, matchOffset);
             updateNextViewStartOffset(startOffset);
         }
@@ -772,6 +813,11 @@ final class ViewBuilder {
                         " returned nextViewStartOffset=" + nextViewStartOffset + // NOI18N
                         " < offset=" + offset); // NOI18N
             }
+        }
+
+        void finish() {
+            factory.finishCreation();
+            factory.setViewBuilder(null);
         }
 
     }

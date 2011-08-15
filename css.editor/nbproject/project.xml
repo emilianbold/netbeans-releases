@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.css.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -148,6 +157,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -169,6 +186,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.28</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -306,21 +331,22 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.css.devtools</friend>
+                <!-- ??? -->
                 <friend>org.netbeans.modules.css.visual</friend>
-                <friend>org.netbeans.modules.editor.kit</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
-                <friend>org.netbeans.modules.php.prado</friend>
-                <friend>org.netbeans.modules.php.smarty</friend>
-                <friend>org.netbeans.modules.web.core.syntax</friend>
-                <package>org.netbeans.modules.css.editor.model</package>
-                <package>org.netbeans.modules.css.formatting.api</package>
-                <package>org.netbeans.modules.css.formatting.api.embedding</package>
-                <package>org.netbeans.modules.css.formatting.api.support</package>
-                <package>org.netbeans.modules.css.gsf.api</package>
-                <package>org.netbeans.modules.css.lexer.api</package>
-                <package>org.netbeans.modules.css.parser</package>
+                <!-- uses the refactoring.api -->
+                <package>org.netbeans.modules.css.editor.api</package>
+                <package>org.netbeans.modules.css.editor.api.model</package>
                 <package>org.netbeans.modules.css.refactoring.api</package>
             </friend-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/flute-1.3.jar</runtime-relative-path>
+                <binary-origin>external/flute-1.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/sac-1.3.jar</runtime-relative-path>
+                <binary-origin>external/sac-1.3.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

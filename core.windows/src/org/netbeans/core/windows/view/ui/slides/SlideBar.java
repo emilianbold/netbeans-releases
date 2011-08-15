@@ -53,6 +53,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,10 +62,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ButtonModel;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.SingleSelectionModel;
 import javax.swing.SwingUtilities;
@@ -73,6 +76,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.Tabbed;
@@ -85,6 +89,10 @@ import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.netbeans.swing.tabcontrol.plaf.TabControlButton;
+import org.netbeans.swing.tabcontrol.plaf.TabControlButtonFactory;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 
 /*
@@ -97,8 +105,8 @@ import org.openide.windows.TopComponent;
  *
  * @author Dafe Simonek
  */
-public final class SlideBar extends Box implements ComplexListDataListener,
-    SlideBarController, Tabbed.Accessor, ChangeListener {
+public final class SlideBar extends JPanel implements ComplexListDataListener,
+    SlideBarController, Tabbed.Accessor, ChangeListener, ActionListener {
     
     /** Command indicating request for slide in (appear) of sliding component */
     public static final String COMMAND_SLIDE_IN = "slideIn"; //NOI18N
@@ -134,12 +142,19 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     /** true when this slide bar is active in winsys, false otherwise */
     private boolean active = false;
     
+    private final TabDisplayer dummyDisplayer = new TabDisplayer();
+    
+    private final int separatorOrientation;
+    private final Insets slidingButtonInsets = new Insets( 0, 0, 0, 0 );
+    
+    private int row = 0;
+    private int col = 0;
+    
     /** Creates a new instance of SlideBarContainer with specified orientation.
      * See SlideBarDataModel for possible orientation values.
      */
     public SlideBar(TabbedSlideAdapter tabbed, SlideBarDataModel dataModel, SingleSelectionModel selModel) {
-        super(dataModel.getOrientation() == SlideBarDataModel.SOUTH
-                ? BoxLayout.X_AXIS : BoxLayout.Y_AXIS);
+        super(new GridBagLayout() );
         this.tabbed = tabbed;                
         this.dataModel = dataModel;
         this.selModel = selModel;
@@ -147,6 +162,11 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         gestureRecognizer = new SlideGestureRecognizer(this, commandMgr.getResizer());
         buttons = new ArrayList<SlidingButton>(5);
         
+        separatorOrientation = tabbed.isHorizontal() ? JSeparator.VERTICAL : JSeparator.HORIZONTAL;
+        dummyDisplayer.addActionListener( this );
+        SlidingButton dummyButton = new SlidingButton( new TabData( this, null, "dummy", null), dataModel.getOrientation());
+        dummyButton.getInsets( slidingButtonInsets );
+                
         syncWithModel();
         
         dataModel.addComplexListDataListener(this);
@@ -155,6 +175,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         if( isAqua ) {
             if( dataModel.getOrientation() == SlideBarDataModel.SOUTH ) {
                 setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 0));
+            } else if( dataModel.getOrientation() == SlideBarDataModel.NORTH ) {
+                setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 1));
             } else if( dataModel.getOrientation() == SlideBarDataModel.WEST ) {
                 setBorder(BorderFactory.createEmptyBorder(1, 0, 0, 4));
             } else if( dataModel.getOrientation() == SlideBarDataModel.EAST ) {
@@ -175,51 +197,32 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     /***** reactions to changes in data model, synchronizes AWT hierarchy and display ***/
     
+    @Override
     public void intervalAdded(ListDataEvent e) {
-        assert SwingUtilities.isEventDispatchThread();
-        
-        int first = e.getIndex0();
-        int last = e.getIndex1();
-        SlideBarDataModel data = (SlideBarDataModel)e.getSource();
-        SlidingButton curButton;
-        for (int i = first; i <= last; i++) {
-            curButton = new SlidingButton(data.getTab(i), data.getOrientation());
-            gestureRecognizer.attachButton(curButton);
-            buttons.add(i, curButton);
-            add(isAqua ? new AquaButtonPanel(curButton) : curButton, i * 2 );
-            add(createStrut(), i * 2 + 1);
-            revalidate();
-        }
+        syncWithModel();
     }
     
+    @Override
     public void intervalRemoved(ListDataEvent e) {
-        assert SwingUtilities.isEventDispatchThread();
-        
-        int first = e.getIndex0();
-        int last = e.getIndex1();
-        SlideBarDataModel data = (SlideBarDataModel)e.getSource();
-        SlidingButton curButton = null;
-        for (int i = last; i >= first; i--) {
-            gestureRecognizer.detachButton((SlidingButton)buttons.get(i));
-            buttons.remove(i);
-            // have to remove also strut (space) component
-            remove(i * 2 + 1);
-            remove(i * 2);
-        }
+        syncWithModel();
     }
     
+    @Override
     public void contentsChanged(ListDataEvent e) {
         syncWithModel();
     }
     
+    @Override
     public void indicesAdded(ComplexListDataEvent e) {
         syncWithModel();
     }
     
+    @Override
     public void indicesChanged(ComplexListDataEvent e) {
         syncWithModel();
     }
     
+    @Override
     public void indicesRemoved(ComplexListDataEvent e) {
         syncWithModel();
     }
@@ -247,7 +250,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         while (iter.hasNext()) {
             Component comp = (Component)iter.next();
             comp.getBounds(curBounds);
-            if (dataModel.getOrientation() == SlideBarDataModel.SOUTH) {
+            if (tabbed.isHorizontal()) {
                 if (curBounds.x  + (curBounds.width/2) < x) {
                     index = index + 1;
                     continue;
@@ -267,6 +270,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     /** Implementation of ChangeListener, reacts to selection changes
      * and assures that currently selected component is slided in
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
         int selIndex = selModel.getSelectedIndex();
         
@@ -286,16 +290,19 @@ public final class SlideBar extends Box implements ComplexListDataListener,
 
     /********** implementation of SlideBarController *****************/
     
+    @Override
     public void userToggledAutoHide(int tabIndex, boolean enabled) {
         commandMgr.slideIntoDesktop(tabIndex, true);
     }
     
+    @Override
     public void userToggledTransparency(int tabIndex) {
         if( tabIndex != getSelectionModel().getSelectedIndex() )
             getSelectionModel().setSelectedIndex( tabIndex );
         commandMgr.toggleTransparency( tabIndex );
     }
     
+    @Override
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton) {
         int index = getButtonIndex(clickedButton);
         commandMgr.showPopup(mouseEvent, index);
@@ -329,6 +336,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     }
 
     /** Triggers slide operation by changing selected index */
+    @Override
     public void userClickedSlidingButton(Component clickedButton) {
         int index = getButtonIndex(clickedButton);
         SlidingButton button = (SlidingButton) buttons.get(index);
@@ -346,6 +354,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     }
 
     /** Request for automatic slide in from gesture recognizer */
+    @Override
     public boolean userTriggeredAutoSlideIn(Component sourceButton) {
         int index = getButtonIndex(sourceButton);
         if (index < 0) {
@@ -362,6 +371,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     }    
     
     /** Request for automatic slide out from gesture recognizer */
+    @Override
     public void userTriggeredAutoSlideOut() {
         selModel.setSelectedIndex(-1);
     }
@@ -374,18 +384,15 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         Insets insets = getInsets();
         Point leftTop = new Point(insets.left, insets.top);
         
-        Dimension strutPrefSize = createStrut().getPreferredSize();
-        if (dataModel.getOrientation() == SlideBarDataModel.SOUTH) {
+        if (tabbed.isHorizontal()) {
             // horizontal layout
-            for (int i = 0; i < tabIndex; i++) {
-                leftTop.x += getButton(i).getPreferredSize().width;
-                leftTop.x += strutPrefSize.width;
+            if( tabIndex < dataModel.size() ) {
+                leftTop.x = getButton(tabIndex).getLocation().x;
             }
         } else {
             // vertical layout
-            for (int i = 0; i < tabIndex; i++) {
-                leftTop.y += getButton(i).getPreferredSize().height;
-                leftTop.y += strutPrefSize.height;
+            if( tabIndex < dataModel.size() ) {
+                leftTop.y = getButton(tabIndex).getLocation().y;
             }
         }
         return new Rectangle(leftTop, button.getPreferredSize());
@@ -393,6 +400,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     /********* implementation of Tabbed.Accessor **************/
     
+    @Override
     public Tabbed getTabbed () {
         return tabbed;
     }
@@ -402,8 +410,83 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     public WinsysInfoForTabbedContainer createWinsysInfo() {
         return new SlidedWinsysInfoForTabbedContainer();
     }
+
+    @Override
+    public void actionPerformed( ActionEvent e ) {
+        if( e instanceof TabActionEvent ) {
+            TabActionEvent tae = ( TabActionEvent ) e;
+            if( TabbedContainer.COMMAND_RESTORE_GROUP.equals( tae.getActionCommand() ) ) {
+                String nameOfModeToRestore = tae.getGroupName();
+                WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                ModeImpl modeToRestore = ( ModeImpl ) wm.findMode( nameOfModeToRestore );
+                if( null != modeToRestore ) {
+                    wm.userRestoredMode( tabbed.getSlidingMode(), modeToRestore );
+                }
+            }
+        }
+    }
+    
+    private GridBagConstraints createConstraints() {
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = row;
+        c.gridy = col;
+        c.fill = GridBagConstraints.BOTH;
+        c.anchor = GridBagConstraints.CENTER;
+
+        if( tabbed.isHorizontal() )
+            row++;
+        else
+            col++;
+        
+        return c;
+    }
+    
+
+    private void addSeparator() {
+        int separatorSize = UIManager.getInt( "NbSlideBar.GroupSeparator.Size" ); //NOI18N
+        if( separatorSize > 0 ) {
+            addStrut( separatorSize );
+        } else {
+            JSeparator separator = new JSeparator(separatorOrientation);
+            Dimension maxSize = separator.getMaximumSize();
+            if( separatorOrientation == JSeparator.VERTICAL ) {
+                maxSize.height = 16;
+                maxSize.width = 1;
+            } else {
+                maxSize.width = 16;
+                maxSize.height = 1;
+            }
+            separator.setMaximumSize( maxSize );
+            separator.setPreferredSize( maxSize );
+            separator.setBorder( BorderFactory.createEmptyBorder( 2, 2, 2, 2) );
+            addStrut(14-slidingButtonInsets.right);
+            GridBagConstraints c = createConstraints();
+            c.fill = GridBagConstraints.BOTH;
+            add( separator, c );
+            addStrut(8);
+        }
+    }
+    
+    private void addRestoreButton( String modeName ) {
+        if( null == modeName )
+            return;
+        
+        TabControlButton restoreButton = TabControlButtonFactory.createRestoreGroupButton( dummyDisplayer, modeName );
+        add( restoreButton, createConstraints() );
+        restoreButton.putClientProperty( "NbSlideBar.RestoreButton.Orientation", getModel().getOrientation() ); //NOI18N
+        int gap = UIManager.getInt( "NbSlideBar.RestoreButton.Gap" ); //NOI18N
+        if( gap == 0 )
+            gap = 11-slidingButtonInsets.left;
+        addStrut(gap);
+    }
+    
+    private void addButton( SlidingButton sb ) {
+        JComponent btn = isAqua ? new AquaButtonPanel(sb) : sb;
+        add( btn, createConstraints() );
+    }
     
     private class SlidedWinsysInfoForTabbedContainer extends WinsysInfoForTabbedContainer {
+        @Override
         public Object getOrientation(Component comp) {
             if (WindowManagerImpl.getInstance().getEditorAreaState() != Constants.EDITOR_AREA_JOINED) {
                 return TabDisplayer.ORIENTATION_INVISIBLE;
@@ -411,6 +494,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             return TabDisplayer.ORIENTATION_CENTER;
         }
 
+        @Override
         public boolean inMaximizedMode(Component comp) {
             return TabbedAdapter.isInMaximizedMode(comp);
         }
@@ -444,6 +528,16 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         public boolean isTopComponentSlidingEnabled(TopComponent tc) {
             return !Boolean.TRUE.equals(tc.getClientProperty(TopComponent.PROP_SLIDING_DISABLED));
         }
+
+        @Override
+        public boolean isModeSlidingEnabled() {
+            return Switches.isModeSlidingEnabled();
+        }
+
+        @Override
+        public boolean isSlidedOutContainer() {
+            return true;
+        }
     }
     
     /*************** non public stuff **************************/
@@ -470,7 +564,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     
     int getButtonIndex(Component button) {
         return buttons.indexOf(button);
-    }
+        }
     
     SlidingButton getButton(int index) {
         return (SlidingButton)buttons.get(index);
@@ -489,10 +583,15 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return false;
     }
     
-    private Component createStrut () {
-        int strutSize = isAqua ? 0 : 5;
-        return dataModel.getOrientation() == SlideBarDataModel.SOUTH
-            ? createHorizontalStrut(strutSize) : createVerticalStrut(strutSize);
+    private void addStrut( int size ) {
+        JLabel lbl = new JLabel();
+        Dimension dim = new Dimension( size, size );
+        lbl.setMinimumSize( dim );
+        lbl.setPreferredSize( dim );
+        lbl.setMaximumSize( dim );
+        GridBagConstraints c = createConstraints();
+        c.fill = GridBagConstraints.NONE;
+        add( lbl, c );
     }
     
     private void syncWithModel () {
@@ -511,25 +610,68 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         buttons.clear();
         
         List<TabData> dataList = dataModel.getTabs();
-        SlidingButton curButton;
-        for (Iterator iter = dataList.iterator(); iter.hasNext(); ) {
-            TabData td = (TabData) iter.next();
+        SlidingButton curButton = null;
+        String currentMode = null;
+        boolean first = true;
+        
+        row = 0;
+        col = 0;
+        
+        if( Switches.isModeSlidingEnabled() && !buttons.isEmpty() ) {
+            addStrut( 4 );
+        }
+        
+        for( TabData td : dataList ) {
             curButton = new SlidingButton(td, dataModel.getOrientation());
             if (blinks != null && blinks.contains(td)) {
                 curButton.setBlinking(true);
             }
+            String modeName = getRestoreModeNameForTab( td );
             gestureRecognizer.attachButton(curButton);
             buttons.add(curButton);
-            add( isAqua ? new AquaButtonPanel(curButton) : curButton );
-            add(createStrut());
+        
+            if( Switches.isModeSlidingEnabled() ) {
+                if( null == currentMode || !currentMode.equals( modeName ) ) {
+                    if( !first ) {
+                        addSeparator();
+                    }
+                    addRestoreButton( modeName );
+                    currentMode = modeName;
+                    first = false;
+                }
+                addButton( curButton );
+            } else {
+                add( isAqua ? new AquaButtonPanel(curButton) : curButton );
+            }
         }
 
+        GridBagConstraints c = createConstraints();
+        if( tabbed.isHorizontal() )
+            c.weightx = 1.0;
+        else
+            c.weighty = 1.0;
+        c.fill = GridBagConstraints.NONE;
+        add( new JLabel(), c );
         commandMgr.syncWithModel();
         // #46488 - add(...) is sometimes not enough for proper repaint, god knows why
         revalidate();
         //#47227 - repaint the bar when removing component from bar.
         //#48318 - repaint when changing name -> can change the width of buttons.
         repaint();
+    }
+
+    private String getRestoreModeNameForTab( TabData tab ) {
+        Component c = tab.getComponent();
+        if( c instanceof TopComponent ) {
+            WindowManagerImpl wm = WindowManagerImpl.getInstance();
+            String tcId = wm.findTopComponentID( (TopComponent)c );
+            if( null != tcId ) {
+                Mode prevMode = wm.getPreviousModeForTopComponent( tcId, tabbed.getSlidingMode() );
+                if( null != prevMode )
+                    return prevMode.getName();
+            }
+        }
+        return null;
     }
     
     boolean isSlidedTabTransparent() {
@@ -551,7 +693,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         public AquaButtonPanel( JToggleButton button ) {
             super( new GridBagLayout() );
             this.slidingButton = button;
-            if( getModel().getOrientation() == SlideBarDataModel.SOUTH ) {
+            if( tabbed.isHorizontal() ) {
                 pressedBorder = new BottomBorder();
             } else {
                 pressedBorder = new VerticalBorder();
@@ -559,6 +701,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             add( button, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0) );
             button.getModel().addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     AquaButtonPanel.this.repaint();
                 }
@@ -619,6 +762,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
 
     private static final class BottomBorder implements Border {
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
             g.drawLine(x, y, x, y+height);
@@ -626,10 +770,12 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             g.drawLine(x+width-1, y, x+width-1, y+height);
         }
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(3,1,3,1);
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return false;
         }
@@ -637,6 +783,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
 
     private static final class VerticalBorder implements Border {
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             g.setColor(UIManager.getColor("NbBrushedMetal.darkShadow")); //NOI18N
             g.drawLine(x, y, x+width-1, y);
@@ -644,10 +791,12 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             g.drawLine(x, y+height-1, x+width-1, y+height-1);
         }
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(1,3,1,3);
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return false;
         }

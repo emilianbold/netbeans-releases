@@ -43,10 +43,12 @@
  */
 package org.netbeans.api.java.queries;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
-
 
 /**
  * Indicates whether a Java package should be considered publicly accessible.
@@ -86,7 +88,8 @@ public class AccessibilityQuery {
      *         other compilation units, false if it is definitely not, or null if
      *         this information is not known
      */
-    public static Boolean isPubliclyAccessible(FileObject pkg) {
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    public static @CheckForNull Boolean isPubliclyAccessible(@NonNull FileObject pkg) {
         if (!pkg.isFolder()) {
             throw new IllegalArgumentException("Not a folder: " + pkg); // NOI18N
         }

@@ -119,15 +119,15 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
         includesTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, "aop - http://www.springframework.org/schema/aop"},
-                {null, "context - http://www.springframework.org/schema/context"},
-                {null, "flow - http://www.springframework.org/schema/webflow-config"},
-                {null, "jms - http://www.springframework.org/schema/jms"},
-                {null, "jee - http://www.springframework.org/schema/jee"},
-                {null, "lang - http://www.springframework.org/schema/lang"},
-                {null, "osgi - http://www.springframework.org/schema/osgi"},
-                {null, "tx - http://www.springframework.org/schema/tx"},
-                {null, "util - http://www.springframework.org/schema/util"},
+                {null, "aop - http://www.springframework.org/schema/aop/spring-aop-2.5.xsd"},
+                {null, "context - http://www.springframework.org/schema/context/spring-context-2.5.xsd"},
+                {null, "flow - http://www.springframework.org/schema/webflow-config/spring-webflow-config-1.0.xsd"},
+                {null, "jms - http://www.springframework.org/schema/jms/spring-jms-2.5.xsd"},
+                {null, "jee - http://www.springframework.org/schema/jee/spring-jee-2.5.xsd"},
+                {null, "lang - http://www.springframework.org/schema/lang/spring-lang-2.5.xsd"},
+                {null, "osgi - http://www.springframework.org/schema/osgi/spring-osgi.xsd"},
+                {null, "tx - http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"},
+                {null, "util - http://www.springframework.org/schema/util/spring-util-2.5.xsd"},
                 {null, "p - http://www.springframework.org/schema/p"}
             },
             new String [] {
@@ -151,7 +151,6 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         });
         includesTable.setShowHorizontalLines(false);
         includesTable.setShowVerticalLines(false);
-        includesTable.setTableHeader(null);
         includesTable.setShowGrid(false);
         includesTable.setDragEnabled(false);
         includesTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
@@ -174,30 +173,30 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(addSpringButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(159, 159, 159))
-            .add(layout.createSequentialGroup()
-                .add(springNotOnClassPathLabel)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(includesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 513, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(addSpringButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(159, 159, 159))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(springNotOnClassPathLabel)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(includesScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 196, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 36, Short.MAX_VALUE)
-                .add(springNotOnClassPathLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addSpringButton)
-                    .add(cbSpringVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(includesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                .addComponent(springNotOnClassPathLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(addSpringButton)
+                    .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.18.1
+#Version 7.20
 
 CLSS public abstract interface java.io.Serializable
 
@@ -350,6 +350,10 @@ innr public static ArrayIterator
 meth protected void initialize()
 meth protected void updateState()
 meth public final <%0 extends java.lang.Object> void setPanelsAndSettings(org.openide.WizardDescriptor$Iterator<{%%0}>,{%%0})
+meth public final void doCancelClick()
+meth public final void doFinishClick()
+meth public final void doNextClick()
+meth public final void doPreviousClick()
 meth public final void setPanels(org.openide.WizardDescriptor$Iterator)
  anno 0 java.lang.Deprecated()
 meth public java.lang.Object getProperty(java.lang.String)

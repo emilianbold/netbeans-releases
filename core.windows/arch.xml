@@ -583,6 +583,15 @@ FileObject fo = FileUtil.getConfigFile("Actions/Window/org-netbeans-core-windows
 Action obj = (Action)fo.getAttribute("instanceCreate");
  </pre>
   </api>
+  <api name="org.netbeans.core.WindowSystem.designMode" category="friend" group="systemproperty"
+    type="export">
+    Special property for apisupport project to run an application in a 
+    <b>design mode</b> to define new layout. 
+    In such mode user components are removed and replaced with uniform ones
+    allowing change of a mode name. Don't rely on this property much, it may
+    soon go away - as soon as apisupport is rewritten to have quasi-preview
+    editor.
+    </api>
   </p>
  </answer>
 

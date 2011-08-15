@@ -49,6 +49,80 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.getMIMEType...">
+            <api name="filesystems"/>
+            <summary>FileObject.getMIMEType(String... withinMIMETypes)</summary>
+            <version major="7" minor="52"/>
+            <date day="5" month="8" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Introducing <a href="@TOP@/org/openide/filesystems/FileObject.html#getMIMEType(java.lang.String...)">
+                    FileObject.getMIMEType(String...)    
+                    </a> that can be overriden by different implementations
+                    of file system API.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="199642"/>
+        </change>
+        <change id="validateResource_196452">
+            <api name="filesystems"/>
+            <summary><code>LayerBuilder</code> can validate resources</summary>
+            <version major="7" minor="51"/>
+            <date day="25" month="7" year="2011"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>LayerBuilder</code> has a new <code>validateResource</code> method.
+                    <code>absolutizeResource</code> was also added.
+                </p>
+            </description>
+            <class package="org.openide.filesystems.annotations" name="LayerBuilder"/>
+            <issue number="196452"/>
+        </change>
+        <change id="LayerGenerationException_194545">
+            <api name="filesystems"/>
+            <summary><code>LayerGenerationException</code> has new constructors</summary>
+            <version major="7" minor="50"/>
+            <date day="25" month="7" year="2011"/>
+            <author login="jglick"/>
+            <compatibility addition="yes">
+                <p>
+                    Code using the constructors not specifying an annotation should now do so.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    <code>LayerGenerationException</code> has new constructors making it easier to specify
+                    the particular annotation responsible for a problem.
+                    Some methods in <code>LayerBuilder</code> have new overloads to take advantage of it.
+                </p>
+            </description>
+            <class package="org.openide.filesystems.annotations" name="LayerGenerationException"/>
+            <class package="org.openide.filesystems.annotations" name="LayerBuilder"/>
+            <issue number="194545"/>
+        </change>
+        <change id="getConfigObject">
+            <api name="filesystems"/>
+            <summary>FileUtil.getConfigObject</summary>
+            <version major="7" minor="49"/>
+            <date day="25" month="6" year="2011"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    One can convert files in SystemFileSystem to Object with
+                    a
+                    <a href="@TOP@org/openide/filesystems/FileUtil.html#getConfigObject(java.lang.String,%20java.lang.Class)">
+                    single utility method</a>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="169338"/>
+        </change>
         <change id="to.parent">
             <api name="filesystems"/>
             <summary>FileObject.getFileObject accepts ".."</summary>

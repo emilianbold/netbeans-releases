@@ -56,10 +56,25 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javahelp</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.23</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.maven</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>2.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.maven.checkstyle</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -72,7 +87,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.maven.grammar</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -86,6 +101,12 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.maven.osgi</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.maven.refactoring</code-name-base>
+                    <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>

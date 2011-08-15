@@ -39,36 +39,31 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven.indexer;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.util.Cancellable;
-import org.openide.util.NbBundle;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.ScanningResult;
 import org.apache.maven.index.context.IndexingContext;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import static org.netbeans.modules.maven.indexer.Bundle.*;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.openide.util.Cancellable;
+import org.openide.util.NbBundle.Messages;
 
-/**
- *
- * @author Anuradha G
- */
 public class RepositoryIndexerListener implements ArtifactScanningListener, Cancellable {
 
     private final IndexingContext indexingContext;
-    private long tstart;
-    
     private int count;
     private ProgressHandle handle;
     private final AtomicBoolean canceled = new AtomicBoolean();
-    
     private final RepositoryInfo ri;
     private final Set<File> expectedDirs = new HashSet<File>();
     private final Set<File> encounteredDirs = new HashSet<File>();
@@ -78,31 +73,23 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         this.indexingContext = indexingContext;
         ri = RepositoryPreferences.getInstance().getRepositoryInfoById(indexingContext.getId());
         Cancellation.register(this);
-
-//        if (DEBUG) {
-//            io = IOProvider.getDefault().getIO("Indexing " +(ri!=null? ri.getName():indexingContext.getId()), true); //NOI18N
-//            writer = io.getOut();
-//        }
     }
 
-    public void scanningStarted(IndexingContext ctx) {
-//        if (DEBUG) {
-//            writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
-//            writer.println("Index Directory : " + ctx.getIndexDirectory().toString());//NOI18N
-//            writer.println("--------------------------------------------------------");//NOI18N
-//            writer.println("Scanning started at " + SimpleDateFormat.getInstance().format(new Date()));//NOI18N
-//        }
+    @Messages({
+        "# {0} - repo name", "LBL_indexing_repo=Indexing Maven repository: {0}",
+        "LBL_findIndexableDirs=Counting indexable directories..."
+    })
+    @Override public void scanningStarted(IndexingContext ctx) {
         if (handle != null) {
             handle.finish();
         }
         expectedDirs.clear();
         encounteredDirs.clear();
-//        System.err.println("looking for indexable dirs...");
+        handle = ProgressHandleFactory.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
+        handle.start();
+        handle.progress(LBL_findIndexableDirs());
         findIndexableDirs(ctx.getRepository());
-//        System.err.println("...done; found: " + expectedDirs.size());
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
-        handle.start(expectedDirs.size());
-        tstart = System.currentTimeMillis();
+        handle.switchToDeterminate(expectedDirs.size());
     }
     private void findIndexableDirs(File d) {
         // Try to guess what DefaultScanner might find. Hard to know for sure, so guess that nonempty leaf dirs will contain real artifacts.
@@ -133,30 +120,11 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         return canceled.compareAndSet(false, true);
     }
 
-    public void artifactDiscovered(ArtifactContext ac) {
+    @Override public void artifactDiscovered(ArtifactContext ac) {
         if (canceled.get()) {
             throw new Cancellation();
         }
-
         count++;
-
-
-//        ArtifactInfo ai = ac.getArtifactInfo();
-//
-//        if (DEBUG) {
-//            if ("maven-plugin".equals(ai.packaging)) {//NOI18N
-//                writer.printf("Plugin: %s:%s:%s - %s %s\n", //NOI18N
-//                        ai.groupId,
-//                        ai.artifactId,
-//                        ai.version,
-//                        ai.prefix,
-//                        "" + ai.goals);//NOI18N
-//            }
-//
-//
-//            // ArtifactInfo ai = ac.getArtifactInfo();
-//            writer.printf("  %6d %s\n", count, formatFile(ac.getPom()));//NOI18N
-//        }
         if (handle != null) {
             String label = ac.getArtifactInfo().groupId + ":" + ac.getArtifactInfo().artifactId + ":" + ac.getArtifactInfo().version;
             File art = ac.getArtifact();
@@ -167,57 +135,19 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
                 File d = art.getParentFile();
                 if (expectedDirs.contains(d)) {
                     encounteredDirs.add(d);
-                } else {
-//                    System.err.println("encountered unexpected artifact " + art);
                 }
-            } else {
-//                System.err.println("no artifact file for " + label);
             }
             handle.progress(label, encounteredDirs.size());
         }
     }
 
-    public void artifactError(ArtifactContext ac, Exception e) {
+    @Override public void artifactError(ArtifactContext ac, Exception e) {
         if (canceled.get()) {
             throw new Cancellation();
         }
-
-//        if (DEBUG) {
-//            writer.printf("! %6d %s - %s\n", count, formatFile(ac.getPom()), e.getMessage());//NOI18N
-//
-//            writer.printf("         %s\n", formatFile(ac.getArtifact()));//NOI18N
-//            e.printStackTrace(writer);
-//        }
-
     }
 
-    private String formatFile(File file) {
-        return file.getAbsolutePath().substring(indexingContext.getRepository().getAbsolutePath().length() + 1);
-    }
-
-    public void scanningFinished(IndexingContext ctx, ScanningResult result) {
-//        if (DEBUG) {
-//            writer.println("Scanning ended at " + SimpleDateFormat.getInstance().format(new Date())); //NOI18N
-//
-//            if (result.hasExceptions()) {
-//                writer.printf("Total scanning errors: %s\n", result.getExceptions().size()); //NOI18N
-//            }
-//
-//            writer.printf("Total files scanned: %s\n", result.getTotalFiles()); //NOI18N
-//
-//            long t = System.currentTimeMillis() - tstart;
-//
-//            long s = t / 1000L;
-//
-//            if (t > 60 * 1000) {
-//                long m = t / 1000L / 60L;
-//
-//                writer.printf("Total time: %d min %d sec\n", m, s - (m * 60)); //NOI18N
-//            } else {
-//                writer.printf("Total time: %d sec\n", s); //NOI18N
-//
-//            }
-//        }
+    @Override public void scanningFinished(IndexingContext ctx, ScanningResult result) {
 //        Set<File> unencountered = new TreeSet<File>(expectedDirs);
 //        unencountered.removeAll(encounteredDirs);
 //        System.err.println("did not encounter " + unencountered.size() + ":");

@@ -604,7 +604,7 @@ public abstract class Module extends ModuleInfo {
     }
     
     /** Get the history object representing what has happened to this module before.
-     * @see ModuleHistory
+     * @see org.netbeans.core.startup.ModuleHistory
      */
     public final Object getHistory() {
         return history;

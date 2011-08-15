@@ -66,6 +66,7 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
         supported.add(NbMavenProject.TYPE_WAR);
         supported.add(NbMavenProject.TYPE_EAR);
         supported.add(NbMavenProject.TYPE_EJB);
+        supported.add(NbMavenProject.TYPE_APPCLIENT);
     }
     
     

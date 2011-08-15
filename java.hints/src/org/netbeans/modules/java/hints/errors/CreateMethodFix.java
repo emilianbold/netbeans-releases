@@ -189,18 +189,7 @@ public final class CreateMethodFix implements Fix {
                         return;
                     }
 
-                    String argName;
-
-                    Element elem = working.getTypes().asElement(tm);
-                    if (elem != null && elem.getKind() == ElementKind.ENUM) {
-                        StringBuffer buf = new StringBuffer(elem.getSimpleName().toString());
-                        buf.setCharAt(0, Character.toLowerCase(buf.charAt(0)));
-                        argName = buf.toString();
-                    } else {
-                        argName = nameIt.next();
-                    }
-                    
-                    argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), argName, make.Type(tm), null));
+                    argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), nameIt.next(), make.Type(tm), null));
                 }
                 
                 BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, returnType) : null;

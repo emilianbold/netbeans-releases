@@ -364,6 +364,13 @@ made subject to such option by the copyright holder.
                 can be used to hide close buttons by default.
             </p>
         </api>
+        <api category="devel" group="systemproperty" name="winsys.stretching_view_tabs" type="export">
+            <p>
+                The system property <code>winsys.stretching_view_tabs</code>
+                can be used to switch to stretching tab layout as implemented 
+                in NetBeans version 7.0 and older.
+            </p>
+        </api>
     </answer>
 
 

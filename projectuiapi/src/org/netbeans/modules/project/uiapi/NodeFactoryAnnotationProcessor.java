@@ -73,10 +73,10 @@ public class NodeFactoryAnnotationProcessor extends LayerGeneratingProcessor {
             return false;
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(NodeFactory.Registration.class)) {
-            NodeFactory.Registration lpr = e.getAnnotation(NodeFactory.Registration.class);
-            for (String type : lpr.projectType()) {
-                layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class). //NOI18N
-                        position(lpr.position()).write();
+            NodeFactory.Registration r = e.getAnnotation(NodeFactory.Registration.class);
+            for (String type : r.projectType()) {
+                layer(e).instanceFile("Projects/" + type + "/Nodes", null, NodeFactory.class, r, null). //NOI18N
+                        position(r.position()).write();
             }
         }
         return true;

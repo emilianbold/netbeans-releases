@@ -475,6 +475,15 @@ made subject to such option by the copyright holder.
         group='property'>
         Allows to redefine default title of Options Dialog.
    </api>
+   <api name='USE_Authentication' 
+        category='devel'
+        type='export'
+        group='property'>
+        One can use branding to disable installation of NetBeans own
+        <code> java.net.Authenticator</code>. Just brand 
+        <code>org.netbeans.core.Bundle</code>
+        to say <code>USE_Authentication=false</code>
+   </api>
   </p>
  </answer>
 

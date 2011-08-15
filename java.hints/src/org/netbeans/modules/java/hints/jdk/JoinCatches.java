@@ -50,11 +50,16 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
@@ -100,8 +105,15 @@ public class JoinCatches {
         for (int i = 0; i < catches.size(); i++) {
             CatchTree toTest = catches.get(0);
             TreePath toTestPath = new TreePath(ctx.getPath(), toTest);
-            VariableElement excVar = (VariableElement) ctx.getInfo().getTrees().getElement(new TreePath(toTestPath, toTest.getParameter()));
-            List<Integer> duplicates = new LinkedList<Integer>();
+            TreePath mainVar = new TreePath(toTestPath, toTest.getParameter());
+            VariableElement excVar = (VariableElement) ctx.getInfo().getTrees().getElement(mainVar);
+            TypeMirror mainVarType = ctx.getInfo().getTrees().getTypeMirror(mainVar);
+
+            if (mainVarType == null || mainVarType.getKind() == TypeKind.ERROR) continue;
+
+            Map<TypeMirror, Integer> duplicates = new LinkedHashMap<TypeMirror, Integer>();
+
+            duplicates.put(mainVarType, i);
 
             for (int j = i + 1; j < catches.size(); j++) {
                 if (CopyFinder.isDuplicate(ctx.getInfo(), new TreePath(toTestPath, toTest.getBlock()), new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock()), true, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), false, Collections.singleton(excVar), new AtomicBoolean())) {
@@ -114,16 +126,31 @@ public class JoinCatches {
                         statements.add(new TreePath(blockPath, t));
                     }
 
-                    if (!UseSpecificCatch.assignsTo(ctx, var, statements)) {
-                        duplicates.add(j);
+                    TypeMirror varType = ctx.getInfo().getTrees().getTypeMirror(var);
+
+                    if (varType == null || varType.getKind() == TypeKind.ERROR) continue;
+
+                    boolean subtype = false;
+
+                    for (Iterator<TypeMirror> it = duplicates.keySet().iterator(); it.hasNext();) {
+                        TypeMirror existingType = it.next();
+
+                        if (ctx.getInfo().getTypes().isSubtype(existingType, varType)) {
+                            subtype = true;
+                            it.remove();
+                        }
+                    }
+
+                    if (!subtype && !UseSpecificCatch.assignsTo(ctx, var, statements)) {
+                        duplicates.put(varType, j);
                     }
                 }
             }
 
-            if (!duplicates.isEmpty()) {
+            if (duplicates.size() >= 2) {
                 String displayName = NbBundle.getMessage(JoinCatches.class, "ERR_JoinCatches");
 
-                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath(), i, duplicates)));
+                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath(), new ArrayList<Integer>(duplicates.values()))));
             }
         }
 
@@ -132,12 +159,10 @@ public class JoinCatches {
 
     private static final class FixImpl extends JavaFix {
 
-        private final int first;
-        private final List<Integer> duplicates;
+        private final Collection<Integer> duplicates;
         
-        public FixImpl(CompilationInfo info, TreePath tryStatement, int first, List<Integer> duplicates) {
+        public FixImpl(CompilationInfo info, TreePath tryStatement, Collection<Integer> duplicates) {
             super(info, tryStatement);
-            this.first = first;
             this.duplicates = duplicates;
         }
 
@@ -150,7 +175,9 @@ public class JoinCatches {
         protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             List<Tree> disjointTypes = new LinkedList<Tree>();
             TryTree tt = (TryTree) tp.getLeaf();
+            int first = duplicates.iterator().next();
 
+            duplicates.remove(first);
             disjointTypes.add(tt.getCatches().get(first).getParameter().getType());
 
             for (Integer d : duplicates) {

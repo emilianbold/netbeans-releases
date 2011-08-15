@@ -50,8 +50,6 @@ import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.lib.editor.util.PriorityMutex;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.RequestProcessor;
@@ -64,7 +62,7 @@ import org.openide.util.WeakListeners;
  */
 
 public final class ViewUpdates implements DocumentListener, EditorViewFactoryListener {
-
+    
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUpdates.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUpdates.class.getName());
     
@@ -73,24 +71,14 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
      */
     private static final int REBUILD_DELAY = 0;
     
-//    /**
-//     * Maximum number of characters that will be synced directly when
-//     * syncViewsRebuild() gets called.
-//     */
-//    private static final int MAX_DIRECT_SYNC_LENGTH = 2000;
-    
     /**
-     * How many lines should be initialized at once at minimum.
+     * Maximum number of attempts to rebuild the views after some of the view factories
+     * reported stale creation.
      */
-    private static final int LAZY_CHILDREN_MIN_BATCH_LINES = 5; // How many lines init at once
+    private static final int MAX_VIEW_REBUILD_ATTEMPTS = 10;
 
     private static final RequestProcessor rebuildRegionRP = 
             new RequestProcessor("ViewHierarchy-Region-Rebuilding", 1, false, false); // NOI18N
-
-    /** 
-     * Whether views are rebuilt immediately when a view factory fires change.
-     * Primarily used in tests to avoid their randomness. */
-    private static boolean directViewRebuild;
 
     private final Object rebuildRegionLock = new String("rebuild-region-lock"); // NOI18N
 
@@ -101,12 +89,6 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     private DocumentListener incomingModificationListener;
 
     private OffsetRegion rebuildRegion;
-    
-    /**
-     * Whether currently building views. Some highlighting layers may fire changes
-     * when asked for highlights but such changes must not influence current views building.
-     */
-    private boolean buildingViews;
     
     private DocumentEvent incomingEvent;
     
@@ -140,32 +122,27 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
 
         // Init view factories
         assert (viewFactories == null);
-        JTextComponent component = docView.getTextComponent();
-        assert (component != null) : "Null component; doc=" + docView.getDocument(); // NOI18N
         List<EditorViewFactory.Factory> factoryFactories = EditorViewFactory.factories();
         viewFactories = new EditorViewFactory[factoryFactories.size()];
         for (int i = 0; i < factoryFactories.size(); i++) {
-            viewFactories[i] = factoryFactories.get(i).createEditorViewFactory(component);
+            viewFactories[i] = factoryFactories.get(i).createEditorViewFactory(docView);
             viewFactories[i].addEditorViewFactoryListener(WeakListeners.create(
                     EditorViewFactoryListener.class, this, viewFactories[i]));
         }
     }
-    
+
     /**
      * Start view building process (it must be followed by finishBuildViews() in try-finally).
      */
     private ViewBuilder startBuildViews() {
 //        assert (DocumentUtilities.isReadLocked(documentView.getDocument())) :
 //                "Document NOT READ-LOCKED: " + documentView.getDocument(); // NOI18N
-        assert !isBuildingViews() : "Already building views"; // NOI18N
         ViewBuilder viewBuilder = new ViewBuilder(docView, viewFactories);
         docView.checkMutexAcquiredIfLogging();
-        setBuildingViews(true);
         return viewBuilder;
     }
     
     private void finishBuildViews(ViewBuilder viewBuilder) {
-        setBuildingViews(false);
         viewBuilder.finish(); // Includes factory.finish() in each factory
         docView.checkIntegrityIfLoggable();
         if (LOG.isLoggable(Level.FINEST)) {
@@ -173,86 +150,96 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         }
     }
 
-    private boolean isBuildingViews() {
-        return buildingViews;
-    }
-
-    private void setBuildingViews(boolean buildingViews) {
-        assert (buildingViews != this.buildingViews) : "buildingViews=" + buildingViews + // NOI18N
-                " == this.buildingViews=" + this.buildingViews; // NOI18N
-        this.buildingViews = buildingViews;
-    }
-
     void reinitAllViews() {
         // Build views lazily; boundaries may differ from start/end of doc e.g. for fold preview
-        ViewBuilder viewBuilder = startBuildViews();
-        try {
-            // Possibly clear rebuild region - all the views will be re-inited anyway
-            fetchRebuildRegion();
-            viewBuilder.initFullRebuild();
-            viewBuilder.createReplaceAndRepaintViews();
-        } finally {
-            finishBuildViews(viewBuilder);
-        }
-    }
-
-    /**
-     * Init children of views in given range.
-     *
-     * @param startIndex lower bound (can possibly be < 0)
-     * @param endIndex upper bound (can possibly be >= viewCount).
-     */
-    void initChildren(int startIndex, int endIndex) {
-        if (endIndex - startIndex < LAZY_CHILDREN_MIN_BATCH_LINES) {
-            // Build views around too
-            startIndex -= (LAZY_CHILDREN_MIN_BATCH_LINES >> 1);
-            endIndex += (LAZY_CHILDREN_MIN_BATCH_LINES >> 1);
-        }
-        int viewCount = docView.getViewCount();
-        if (viewCount == 0) {
-            return;
-        }
-        startIndex = Math.max(startIndex, 0);
-        endIndex = Math.min(endIndex, viewCount);
-
-        assert (startIndex >= 0) : "startIndex=" + startIndex; // NOI18N
-        assert (endIndex >= startIndex) : "endIndex=" + endIndex + " < startIndex=" + startIndex; // NOI18N
-        
-        // Possibly shrink the area if some part already built
-        ParagraphView startChild = docView.getEditorView(startIndex);
-        while (startChild.children != null && startIndex < endIndex - 1) {
-            startChild = docView.getEditorView(++startIndex);
-        }
-        ParagraphView lastChild = null;
-        while (endIndex > startIndex && (lastChild = docView.getEditorView(endIndex - 1)).children != null) {
-            endIndex--;
-        }
-        // lastChild is paragraphView at (endIndex - 1)
-
-        if (endIndex > startIndex) { // lastChild should be inited in this case
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Lazy-children init: [" + startIndex + "," + endIndex + "]\n"); // NOI18N
-                if (LOG.isLoggable(Level.FINER)) {
-                    LOG.log(Level.INFO, "Lazy creation cause", new Exception()); // NOI18N
-                }
-            }
+        for (int i = MAX_VIEW_REBUILD_ATTEMPTS; i >= 0; i--) {
             ViewBuilder viewBuilder = startBuildViews();
             try {
-                viewBuilder.initParagraphs(startIndex, endIndex,
-                        startChild.getStartOffset(), lastChild.getEndOffset());
-                viewBuilder.createReplaceAndRepaintViews();
+                // Possibly clear rebuild region - all the views will be re-inited anyway
+                fetchRebuildRegion();
+                viewBuilder.initFullRebuild();
+                if (viewBuilder.createReplaceRepaintViews(i == 0)) {
+                    break; // Creation finished successfully
+                }
             } finally {
                 finishBuildViews(viewBuilder);
             }
         }
     }
 
+    /**
+     * Ensure that all paragraph views in the given range have their children valid (build them if necessary).
+     *
+     * @param startIndex lower bound (can possibly be < 0)
+     * @param endIndex upper bound (can possibly be >= viewCount).
+     * @param extraStart extra lines to initialize at the begining in case the the first view
+     *  (at startIndex) has no children.
+     * @return true if there was any view rebuild necessary or false if all children views for requested range
+     *  were already initialized.
+     */
+    boolean ensureChildrenValid(int startIndex, int endIndex, int extraStart, int extraEnd) {
+        int viewCount = docView.getViewCount();
+        assert (startIndex < endIndex) : "startIndex=" + startIndex + " >= endIndex=" + endIndex; // NOI18N
+        assert (endIndex <= viewCount) : "endIndex=" + endIndex + " > viewCount=" + viewCount; // NOI18N
+        if (viewCount > 0) {
+            // Find out what needs to be rebuilt
+            ParagraphView pView = docView.getParagraphView(startIndex);
+            if (pView.children != null) {
+                // Search for first which has null children
+                while (++startIndex < endIndex && (pView = docView.getParagraphView(startIndex)).children != null) { }
+            } else { // pView.children == null
+                for (; startIndex > 0 && extraStart > 0; extraStart--) {
+                    pView = docView.getParagraphView(--startIndex);
+                    // Among extraStart pViews only go back until first pView with valid children is found
+                    if (pView.children != null) {
+                        startIndex++;
+                        break;
+                    }
+                }
+            }
+            // Here the startIndex points to first index to be built or to endIndex
+            // Go back till startIndex + 1 and search for first pView with null 
+            if (startIndex < endIndex) {
+                // There will be at least one view to rebuild
+                pView = docView.getParagraphView(endIndex - 1);
+                if (pView.children != null) {
+                    endIndex--;
+                    while (endIndex > startIndex && (pView = docView.getParagraphView(endIndex - 1)).children != null) {
+                        endIndex--;
+                    }
+                } else { // pView.children == null
+                    for (;endIndex < viewCount && extraEnd > 0; extraEnd--) {
+                        pView = docView.getParagraphView(endIndex++);
+                        if (pView.children != null) {
+                            break;
+                        }
+                    }
+                }
+                
+                for (int i = MAX_VIEW_REBUILD_ATTEMPTS; i >= 0; i--) {
+                    ViewBuilder viewBuilder = startBuildViews();
+                    try {
+                        viewBuilder.initParagraphs(startIndex, endIndex,
+                                docView.getParagraphView(startIndex).getStartOffset(),
+                                docView.getParagraphView(endIndex - 1).getEndOffset()
+                        );
+                        if ((viewBuilder.createReplaceRepaintViews(i == 0))) {
+                            break; // Creation finished successfully
+                        }
+                    } finally {
+                        finishBuildViews(viewBuilder);
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void insertUpdate(DocumentEvent evt) {
         clearIncomingEvent(evt);
-        PriorityMutex mutex = docView.getMutex();
-        if (mutex != null) {
-            mutex.lock();
+        if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try { // No return prior this "try" to properly unset incomingModification
                 if (!docView.isUpdatable() || docView.getViewCount() == 0) {
@@ -270,19 +257,23 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                             ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
 
-                ViewBuilder viewBuilder = startBuildViews();
-                try {
-                    // Possibly clear rebuild region - all the views will be re-inited anyway
-                    if (viewBuilder.initModUpdate(insertOffset, insertLength, fetchRebuildRegion())) {
-                        viewBuilder.createReplaceAndRepaintViews();
+                for (int i = MAX_VIEW_REBUILD_ATTEMPTS; i >= 0; i--) {
+                    ViewBuilder viewBuilder = startBuildViews();
+                    try {
+                        // Possibly clear rebuild region - all the views will be re-inited anyway
+                        if (viewBuilder.initModUpdate(insertOffset, insertLength, fetchRebuildRegion())) {
+                            if (viewBuilder.createReplaceRepaintViews(i == 0)) {
+                                break; // Creation finished successfully
+                            }
+                        }
+                    } finally {
+                        finishBuildViews(viewBuilder);
                     }
-                } finally {
-                    finishBuildViews(viewBuilder);
                 }
                 
             } finally {
                 docView.setIncomingModification(false);
-                mutex.unlock();
+                docView.unlock();
             }
         }
     }
@@ -290,9 +281,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     @Override
     public void removeUpdate(DocumentEvent evt) {
         clearIncomingEvent(evt);
-        PriorityMutex mutex = docView.getMutex();
-        if (mutex != null) {
-            mutex.lock();
+        if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try { // No return prior this "try" to properly unset incomingModification
                 if (!docView.isUpdatable() || docView.getViewCount() == 0) {
@@ -310,18 +299,22 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                             ", current-docViewEndOffset=" + (evt.getDocument().getLength()+1) + '\n'); // NOI18N
                 }
                 
-                ViewBuilder viewBuilder = startBuildViews();
-                try {
-                    // Possibly clear rebuild region - all the views will be re-inited anyway
-                    if (viewBuilder.initModUpdate(removeOffset, -removeLength, fetchRebuildRegion())) {
-                        viewBuilder.createReplaceAndRepaintViews();
+                for (int i = MAX_VIEW_REBUILD_ATTEMPTS; i >= 0; i--) {
+                    ViewBuilder viewBuilder = startBuildViews();
+                    try {
+                        // Possibly clear rebuild region - all the views will be re-inited anyway
+                        if (viewBuilder.initModUpdate(removeOffset, -removeLength, fetchRebuildRegion())) {
+                            if (viewBuilder.createReplaceRepaintViews(i == 0)) {
+                                break; // Creation finished successfully
+                            }
+                        }
+                    } finally {
+                        finishBuildViews(viewBuilder);
                     }
-                } finally {
-                    finishBuildViews(viewBuilder);
                 }
             } finally {
                 docView.setIncomingModification(false);
-                mutex.unlock();
+                docView.unlock();
             }
         }
     }
@@ -329,9 +322,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     @Override
     public void changedUpdate(DocumentEvent evt) {
         clearIncomingEvent(evt);
-        PriorityMutex mutex = docView.getMutex();
-        if (mutex != null) {
-            mutex.lock();
+        if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try {
                 if (!docView.isUpdatable()) {
@@ -340,26 +331,23 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 // TODO finish
                 docView.checkIntegrityIfLoggable();
             } finally {
-                mutex.unlock();
+                docView.unlock();
             }
         }
     }
 
     @Override
     public void viewFactoryChanged(EditorViewFactoryEvent evt) {
+        // Do not build views directly (when event arrives) since it could damage
+        // view hierarchy processing. For example painting requires paint highlights
+        // and fetching them could trigger the change event
+        // and a synchronous rebuild of views would affect paint operation processing.
         boolean postRebuildTask;
-        boolean directRebuild = directViewRebuild;
         synchronized (rebuildRegionLock) {
             docView.checkDocumentLockedIfLogging();
             // Post the task only if the region is null (if it would be non-null
             // a pending task would be started for it previously)
             postRebuildTask = (rebuildRegion == null);
-            directRebuild |= (evt.getPriority() > 0);
-            if (isBuildingViews()) {
-                // It may happen that somee highlighting layer when asked for highlights (during views rebuilding)
-                // reports a highlights change so in such case the views rebuild must be delayed anyway.
-                directRebuild = false;
-            }
             List<EditorViewFactory.Change> changes = evt.getChanges();
             for (EditorViewFactory.Change change : changes) {
                 int startOffset = change.getStartOffset();
@@ -370,19 +358,12 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 startOffset = Math.min(startOffset, docTextLen);
                 endOffset = Math.min(endOffset, docTextLen);
                 rebuildRegion = OffsetRegion.union(rebuildRegion, doc, startOffset, endOffset, false);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("ViewUpdates.viewFactoryChanged: <" + startOffset + "," + endOffset + ">\n"); // NOI18N
-                }
             }
         }
 
-        if (directRebuild) {
-            new RebuildViews().run();
-        } else {
-            if (postRebuildTask) {
-                rebuildRegionTask.schedule(REBUILD_DELAY);
-            } // Otherwise the task is scheduled already
-        }
+        if (postRebuildTask) {
+            rebuildRegionTask.schedule(REBUILD_DELAY);
+        } // Otherwise the task is scheduled already
     }
 
     void syncedViewsRebuild() {
@@ -390,21 +371,21 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
             OffsetRegion region = fetchRebuildRegion();
             if (region != null) {
                 docView.checkDocumentLockedIfLogging();
-                // Do nothing if docView is not active. Once becomes active a full rebuild will be done.
-                ViewBuilder viewBuilder = startBuildViews();
-                try {
-                    if (viewBuilder.initRebuild(region)) {
-                        viewBuilder.createReplaceAndRepaintViews();
+                for (int i = MAX_VIEW_REBUILD_ATTEMPTS; i >= 0; i--) {
+                    // Do nothing if docView is not active. Once becomes active a full rebuild will be done.
+                    ViewBuilder viewBuilder = startBuildViews();
+                    try {
+                        if (viewBuilder.initChangedRegionRebuild(region)) {
+                            if (viewBuilder.createReplaceRepaintViews(i == 0)) {
+                                break; // Creation finished successfully
+                            }
+                        }
+                    } finally {
+                        finishBuildViews(viewBuilder);
                     }
-                } finally {
-                    finishBuildViews(viewBuilder);
                 }
             }
         }
-    }
-
-    static void setDirectViewRebuild(boolean directRebuild) { // Used to increase determinancy in random tests
-        directViewRebuild = directRebuild;
     }
 
     private OffsetRegion fetchRebuildRegion() {
@@ -418,7 +399,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     /*private*/ void incomingEvent(DocumentEvent evt) {
         if (incomingEvent != null) {
             // Rebuild the view hierarchy: temporary solution until the real cause is found.
-            docView.releaseChildren();
+            docView.releaseChildrenUnlocked();
             LOG.log(Level.INFO, "View hierarchy rebuild due to pending document event", // NOI18N
                     new Exception("Pending incoming event: " + incomingEvent)); // NOI18N
         }

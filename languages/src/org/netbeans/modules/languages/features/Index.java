@@ -70,6 +70,7 @@ import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.modules.languages.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 
 
@@ -197,17 +198,7 @@ public class Index {
     
     private static synchronized File getCacheFolder () {
         if (cacheFolder == null) {
-            String userDir = System.getProperty ("netbeans.user");
-            assert userDir != null;
-            String cacheDir = userDir + File.separatorChar + 
-                "var" + File.separatorChar + "cache" + File.separatorChar + 
-                "sindex" + File.separatorChar + "1.0";
-            cacheFolder = FileUtil.normalizeFile (new File (cacheDir));
-            if (!cacheFolder.exists ()) {
-                boolean created = cacheFolder.mkdirs ();                
-                assert created : "Cannot create cache folder";  //NOI18N
-            } else
-                assert cacheFolder.isDirectory () && cacheFolder.canRead () && cacheFolder.canWrite ();
+            cacheFolder = Places.getCacheSubdirectory("sindex/1.0");
         }
         return cacheFolder;
     }

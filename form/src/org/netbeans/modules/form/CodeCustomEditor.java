@@ -52,6 +52,7 @@ import java.awt.Insets;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -59,7 +60,6 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -122,7 +122,8 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
 
         int codePos = -1;
         FormDataObject dobj = FormEditor.getFormDataObject(formModel);
-        SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
+        EditorSupport es = dobj.getFormEditorSupport();
+        SimpleSection sec = es.getGuardedSectionManager().findSimpleSection(EditorSupport.SECTION_INIT_COMPONENTS);
         if ((property instanceof RADProperty) && (property.getWriteMethod() != null)) {
             RADComponent metacomp = ((RADProperty)property).getRADComponent();
             headerLabel.setText("<html>" + metacomp.getName() + ".<b>" // NOI18N
@@ -176,15 +177,15 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
     private void resetLayout() {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setAutocreateContainerGaps(true);
+        layout.setAutoCreateContainerGaps(true);
         layout.setHorizontalGroup(layout.createSequentialGroup()
-            .add(headerLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-            .add(3)
-            .add(layout.createParallelGroup(GroupLayout.LEADING)
-                .add(jScrollPane, GroupLayout.PREFERRED_SIZE, 320, Short.MAX_VALUE)
-                .add(typeField))
-            .add(3)
-            .add(footerLabel));        
+            .addComponent(headerLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .addGap(3)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane, GroupLayout.PREFERRED_SIZE, 320, Short.MAX_VALUE)
+                .addComponent(typeField))
+            .addGap(3)
+            .addComponent(footerLabel));        
         
                
         int prefHeight;
@@ -198,12 +199,12 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
         }
         
         layout.setVerticalGroup(layout.createSequentialGroup()
-            .add(layout.createParallelGroup(GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(jScrollPane.getInsets().top)
-                    .add(layout.createParallelGroup().add(headerLabel).add(footerLabel)))
-                .add(jScrollPane, GroupLayout.DEFAULT_SIZE, prefHeight, maxHeight))
-            .add(typeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(jScrollPane.getInsets().top)
+                    .addGroup(layout.createParallelGroup().addComponent(headerLabel).addComponent(footerLabel)))
+                .addComponent(jScrollPane, GroupLayout.DEFAULT_SIZE, prefHeight, maxHeight))
+            .addComponent(typeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
     }
     
     void setValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {

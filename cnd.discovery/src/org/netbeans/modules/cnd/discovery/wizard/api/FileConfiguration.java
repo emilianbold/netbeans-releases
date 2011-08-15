@@ -70,6 +70,8 @@ public interface FileConfiguration extends NodeConfiguration {
      */
     String getFilePath();
     
+    String getCompileLine();
+    
     /**
      * Get item name (name relative from compile path)
      */

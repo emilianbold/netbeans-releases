@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>PHP Projects</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>PHP Projects</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>A project is a group of source files and the settings with which you
+	 run and debug those source files. In the IDE, PHP development takes 
+         place within a project, though you can also edit, run and debug
+         a PHP file that is not in a project. </p>
+<p>To create a project, click Ctrl-Shift-N, or click the New Project icon <img 
+        src="images/newProject.png" alt="new Project icon">. You can create an empty
+    PHP project or you can convert an existing PHP application to a NetBeans project.
+    You can also create a project with sources on a remote server, over FTP or SFTP.
+    However, it is preferable to use version control with remote projects and use
+    the version control system to commit your changes to the remote server.
+</p>
+<h3>Source File and Metadata locations</h3>
+<p>By default, NetBeans IDE places all project files in your web server's public folder 
+    (such as /htdocs). The IDE reads the location of your web server from your PHP 
+environment. However, you have other options for file locations. These options appear
+in the New Project wizard:</p>
+<ul><li>Have the NetBeans metadata stored in another folder.</li>
+    <li>Copy the source files to another location. With this option, you could keep
+    the PHP project in one location (such as the same folder as your Java projects) and
+    the IDE could copy it to the public folder of your web server.</li></ul>
+<h3>Run Configuration</h3>
+<p>Every NetBeans PHP project has at least one run configuration. You set this default 
+configuration when you create the project. You can add as many additional run configurations
+as you want. In the Projects window, right-click on the project's node and select Set
+Configuration to switch between run configurations or add a run configuration.
+In a run configuration, you set whether the project runs: </p>
+<ul>
+    <li>As a local web site, on your local web server (default)</li>
+    <li>As a remote web site, over FTP/SFTP</li>
+    <li>As a command-line script</li>
+</ul>
+<h3>Frameworks</h3>
+<p>NetBeans IDE supports some PHP frameworks. Add a framework to a project when you create
+the project, by selecting the framework in the last page of the New PHP Project wizard.
+If a project includes framework support, that framework's commands are available in the project's
+context menu in the Projects window.</p>
+<h3>Opening and Closing Projects</h3>
+<p>To open an existing project, click Ctrl-Shift-O or go to File &gt; Open Project. A dialog
+opens in which you browse for the project.</p>
+<p>To close a project, go to File &gt; Close Project, or right-click the project's node in the
+Projects Window and select Close.</p>
+<h3>Projects Window</h3>
+<p>Your open PHP projects appear in the Projects Window. To open the projects window, click
+    Ctrl-1 or go to Window &gt; Projects.</p>
+<p>If you right-click on a project's node or a file's node, a context menu appears. For
+information about the functionality you can access in the Projects window, select any item
+in the Projects window and press F1. The Projects Window help opens.</p>
+<h3>Adding Files to a Project</h3>
+<p>To add a file to a project, go to the Projects window and select the project's node or the node
+for the folder in which you want to place the file. Then open the New File wizard, either by pressing
+Ctrl-N or the New Files icon, or through the node's context menu.</p>
+<p></p>
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/project-setup.html">
+                <param name="text" value="<html><u>Setting Up a PHP Project</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+      </object></dd>
+  <dd><a href="process.html">Working with PHP</a></dd>
+  <dd><a href="php_quickref.html">Project Tasks: Quick Reference</a>
+  </dd></dl>
+
+<hr><small><a href="credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

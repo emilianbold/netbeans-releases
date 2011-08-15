@@ -457,7 +457,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     if ("maven.surefire.debug".equals(entry.getKey())) { //NOI18N
                         continue;
                     }
-                    if ("jpda.listen".equals(entry.getKey())) {//NOI18N
+                    if (Constants.ACTION_PROPERTY_JPDALISTEN.equals(entry.getKey())) {
                         continue;
                     }
                     if ("jpda.stopclass".equals(entry.getKey())) {//NOI18N

@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 import java.util.Hashtable;
@@ -67,6 +68,7 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
     protected static final String warmup_started = "Warmup started";
     protected static final String warmup_finished = "Warmup finished, took ";
     public static final String suiteName="J2SE Startup suite";
+    public static final String separator= System.getProperty("file.separator");
     
     
     /** Define testcase
@@ -96,7 +98,7 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         Hashtable measuredValues = parseMeasuredValues(measureFile);
         
         if(measuredValues==null)
-            fail("It isn't possible measure Warm Up.");
+            fail("It isn't possible to measure Warm Up.");
         
         java.util.Iterator iter = measuredValues.keySet().iterator();
         String name;
@@ -105,7 +107,7 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
             name = (String)iter.next();
             value = ((Long)measuredValues.get(name)).longValue();
             System.out.println(name+"="+value);
-            reportPerformance(name,value,"ms",1);
+//            reportPerformance(name,value,"ms",1);
         }
     }
     
@@ -124,6 +126,9 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         
         //add guitracker on classpath
         String classpath = System.getProperty("performance.testutilities.dist.jar");
+        if (classpath == null) {
+            classpath = ideHome.getAbsolutePath()+separator+"extra"+separator+"modules"+separator+"org-netbeans-modules-performance.jar";
+        }
         
         //add property on command line
         String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");
@@ -144,7 +149,14 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         }
 
         // construct command line
-        StringBuffer cmd = new StringBuffer((new File(ideBinDir,executor)).getAbsolutePath());
+        StringBuffer cmd = new StringBuffer();
+        String execDir = System.getProperty("netbeans.performance.exec.dir");
+        if (execDir==null) {
+            cmd.append((new File(ideBinDir,executor)).getAbsolutePath());
+        } else {
+            cmd.append(execDir);
+        }
+        
 
         // add other argumens
         // guiltracker lib
@@ -164,14 +176,17 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         // close the IDE after warmup
         cmd.append(" -J-Dnetbeans.warm.close=true");
         // wait after startup, need to set longer time for complex startup because rescan rises
-        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup="+timeout);
+//        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup="+timeout);
+        cmd.append(" -J-Dnetbeans.logger.console=false");
         // disable rescaning after startup
-        //        cmd += " -J-Dnetbeans.javacore.noscan=true";
+//        cmd.append(" -J-Dnetbeans.javacore.noscan=true");
         // test command line suffix
         if(test_cmd_suffix!=null && !test_cmd_suffix.equalsIgnoreCase("${xtest.perf.commandline.suffix}"))
             cmd.append(" "+test_cmd_suffix.replace('\'',' ').trim());
+//        cmd.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=localhost:1234");  //debugging
         
         System.out.println("Running: "+cmd);
+        System.out.println("Userdir: "+userdir.getAbsolutePath());
         
         Runtime runtime = Runtime.getRuntime();
         
@@ -180,8 +195,10 @@ public class MeasureWarmUp extends  MeasureStartupTimeTestCase {
         
         // track out and errs from ide - the last parameter is PrintStream where the
         // streams are copied - currently set to null, so it does not hit performance much
-        ThreadReader sout = new ThreadReader(ideProcess.getInputStream(), null);
-        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), null);
+//        PrintStream outp = new PrintStream(new File(measureFile.getAbsolutePath().replace("txt", "out")));
+//        PrintStream errp = new PrintStream(new File(measureFile.getAbsolutePath().replace("txt", "err")));
+//        ThreadReader sout = new ThreadReader(ideProcess.getInputStream(), outp);
+//        ThreadReader serr = new ThreadReader(ideProcess.getErrorStream(), errp);
         try {
             int exitStatus = ideProcess.waitFor();
             System.out.println("IDE exited with status = "+exitStatus);

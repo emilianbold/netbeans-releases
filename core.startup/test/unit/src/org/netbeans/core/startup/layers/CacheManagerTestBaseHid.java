@@ -193,7 +193,7 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         FileObject fo = f.findResource(path);
         if (fo == null) return null;
         InputStream is = fo.getInputStream();
-        StringBuffer text = new StringBuffer((int)fo.getSize());
+        StringBuilder text = new StringBuilder((int)fo.getSize());
         byte[] buf = new byte[1024];
         int read;
         while ((read = is.read(buf)) != -1) {

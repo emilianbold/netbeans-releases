@@ -40,8 +40,6 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,13 +63,12 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -179,26 +176,27 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
             if (aid == null) {
-                throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e);
+                throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e, processingEnv, ar);
             }
             if (aid.category().startsWith("Actions/")) {
-                throw new LayerGenerationException("@ActionID category() cannot contain /", e);
+                throw new LayerGenerationException("@ActionID category() cannot contain /", e, processingEnv, aid, "category");
             }
             if (!FQN.matcher(aid.id()).matches()) {
-                throw new LayerGenerationException("@ActionID id() must be valid fully qualified name", e);
+                throw new LayerGenerationException("@ActionID id() must be valid fully qualified name", e, processingEnv, aid, "id");
             }
             String id = aid.id().replace('.', '-');
-            File f = layer(e).file("Actions/" + aid.category() + "/" + id + ".instance");
-            f.bundlevalue("displayName", ar.displayName());
+            LayerBuilder builder = layer(e);
+            File f = builder.file("Actions/" + aid.category() + "/" + id + ".instance");
+            f.bundlevalue("displayName", ar.displayName(), ar, "displayName");
             
             String menuText = ar.menuText();
             if(!menuText.isEmpty()) {
-                f.bundlevalue("menuText", menuText);
+                f.bundlevalue("menuText", menuText, ar, "menuText");
             }
 
             String popupText = ar.popupText();
             if (!popupText.isEmpty()) {
-                f.bundlevalue("popupText", popupText);
+                f.bundlevalue("popupText", popupText, ar, "popupText");
             }
             
             String key;
@@ -212,25 +210,25 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     !e.getModifiers().contains(Modifier.STATIC) ||
                     !e.getModifiers().contains(Modifier.FINAL)
                 ) {
-                    throw new LayerGenerationException("Only static string constant fields can be annotated", e);
+                    throw new LayerGenerationException("Only static string constant fields can be annotated", e, processingEnv, ar);
                 }
                 if (ar.key().length() != 0) {
-                    throw new LayerGenerationException("When annotating field, one cannot define key()", e);
+                    throw new LayerGenerationException("When annotating field, one cannot define key()", e, processingEnv, ar, "key");
                 }
                 
                 createDelegate = false;
                 key = var.getConstantValue().toString();
             } else if (e.getKind() == ElementKind.CLASS) {
                 if (!isAssignable(e.asType(), actionListener)) {
-                    throw new LayerGenerationException("Class annotated with @ActionRegistration must implement java.awt.event.ActionListener!", e);
+                    throw new LayerGenerationException("Class annotated with @ActionRegistration must implement java.awt.event.ActionListener!", e, processingEnv, ar);
                 }
                 if (!e.getModifiers().contains(Modifier.PUBLIC)) {
-                    throw new LayerGenerationException("Class has to be public", e);
+                    throw new LayerGenerationException("Class has to be public", e, processingEnv, ar);
                 }
                 key = ar.key();
             } else {
                 assert e.getKind() == ElementKind.METHOD : e;
-                layer(e).instanceFile("dummy", null, ActionListener.class);
+                builder.instanceFile("dummy", null, ActionListener.class, ar, null);
                 key = ar.key();
             }
 
@@ -244,7 +242,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             
             if (direct) {
                 if (key.length() != 0) {
-                    throw new LayerGenerationException("Cannot specify key and implement Presenter interface", e);
+                    throw new LayerGenerationException("Cannot specify key and implement Presenter interface", e, processingEnv, ar, "key");
                 }
                 f.instanceAttribute("instanceCreate", Action.class);
             } else {
@@ -259,29 +257,13 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 }
                 if (createDelegate) {
                     try {
-                        f.instanceAttribute("delegate", ActionListener.class);
+                        f.instanceAttribute("delegate", ActionListener.class, ar, null);
                     } catch (LayerGenerationException ex) {
-                        generateContext(e, f);
+                        generateContext(e, f, ar);
                     }
                 }
                 if (ar.iconBase().length() > 0) {
-                    boolean found = false;
-                    for (StandardLocation l : StandardLocation.values()) {
-                        try {
-                            processingEnv.getFiler().getResource(l, "", ar.iconBase());
-                            found = true;
-                            break;
-                        } catch (IOException ex) {
-                            continue;
-                        } catch (IllegalArgumentException x) {
-                            throw new LayerGenerationException("Problem with " + ar.iconBase() + " (should be resource path with no leading slash)", e);
-                        }
-                    }
-                    if (!found) {
-                        throw new LayerGenerationException(
-                            "Cannot find iconBase file at " + ar.iconBase(), e
-                        );
-                    }
+                    builder.validateResource(ar.iconBase(), e, ar, "iconBase", true);
                     f.stringvalue("iconBase", ar.iconBase());
                 }
                 f.boolvalue("noIconInMenu", !ar.iconInMenu());
@@ -310,35 +292,34 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
+            ActionReference ref = e.getAnnotation(ActionReference.class);
             ActionID id = e.getAnnotation(ActionID.class);
             if (id != null) {
-                ActionReference ref = e.getAnnotation(ActionReference.class);
                 processReferences(e, ref, id);
                 continue;
             }
-            throw new LayerGenerationException("Don't use @ActionReference without @ActionID", e);
+            throw new LayerGenerationException("Don't use @ActionReference without @ActionID", e, processingEnv, ref);
         }
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionReferences.class)) {
             if (e.getAnnotation(ActionRegistration.class) != null) {
                 continue;
             }
+            ActionReferences refs = e.getAnnotation(ActionReferences.class);
             if (e.getKind() != ElementKind.PACKAGE) {
                 ActionID id = e.getAnnotation(ActionID.class);
                 if (id == null) {
-                    throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e);
+                    throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e, processingEnv, refs);
                 }
-                ActionReferences refs = e.getAnnotation(ActionReferences.class);
                 for (ActionReference actionReference : refs.value()) {
                     if (!actionReference.id().id().isEmpty() || !actionReference.id().category().isEmpty()) {
-                        throw new LayerGenerationException("Don't specify additional id=@ActionID(...) when using @ActionID on the element", e);
+                        throw new LayerGenerationException("Don't specify additional id=@ActionID(...) when using @ActionID on the element", e, processingEnv, actionReference.id());
                     }
                     processReferences(e, actionReference, id);
                 }
             } else {
-                ActionReferences refs = e.getAnnotation(ActionReferences.class);
                 for (ActionReference actionReference : refs.value()) {
                     if (actionReference.id().id().isEmpty() || actionReference.id().category().isEmpty()) {
-                        throw new LayerGenerationException("Specify real id=@ActionID(...)", e);
+                        throw new LayerGenerationException("Specify real id=@ActionID(...)", e, processingEnv, actionReference.id());
                     }
                     processReferences(e, actionReference, actionReference.id());
                 }
@@ -352,7 +333,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         return e == null ? null : e.asType();
     }
 
-    private void generateContext(Element e, File f) throws LayerGenerationException {
+    private void generateContext(Element e, File f, ActionRegistration ar) throws LayerGenerationException {
         ExecutableElement ee = null;
         ExecutableElement candidate = null;
         for (ExecutableElement element : ElementFilter.constructorsIn(e.getEnclosedElements())) {
@@ -362,7 +343,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     continue;
                 }
                 if (ee != null) {
-                    throw new LayerGenerationException("Only one public constructor allowed", e); // NOI18N
+                    throw new LayerGenerationException("Only one public constructor allowed", e, processingEnv, ar); // NOI18N
                 }
                 ee = element;
             }
@@ -412,7 +393,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
     private void processReferences(Element e, ActionReference ref, ActionID aid) throws LayerGenerationException {
         if (!ref.id().category().isEmpty() && !ref.id().id().isEmpty()) {
             if (!aid.id().equals(ref.id().id()) || !aid.category().equals(ref.id().category())) {
-                throw new LayerGenerationException("Can't specify id() attribute when @ActionID provided on the element", e);
+                throw new LayerGenerationException("Can't specify id() attribute when @ActionID provided on the element", e, processingEnv, aid);
             }
         }
         String name = ref.name();
@@ -427,7 +408,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     "Registrations in Shortcuts folder need to represent a key. "
                     + "Specify value for 'name' attribute.\n"
                     + "See org.openide.util.Utilities.stringToKeys for possible values. Current "
-                    + "name=\"" + name + "\" is not valid.\n"
+                    + "name=\"" + name + "\" is not valid.\n", e, processingEnv, ref, "path"
                 );
             }
         }
@@ -439,7 +420,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         
         if (ref.separatorAfter() != Integer.MAX_VALUE) {
             if (ref.position() == Integer.MAX_VALUE || ref.position() >= ref.separatorAfter()) {
-                throw new LayerGenerationException("separatorAfter() must be greater than position()", e);
+                throw new LayerGenerationException("separatorAfter() must be greater than position()", e, processingEnv, ref);
             }
             File after = layer(e).file(ref.path() + "/" + name + "-separatorAfter.instance");
             after.newvalue("instanceCreate", JSeparator.class.getName());
@@ -448,7 +429,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         }
         if (ref.separatorBefore() != Integer.MAX_VALUE) {
             if (ref.position() == Integer.MAX_VALUE || ref.position() <= ref.separatorBefore()) {
-                throw new LayerGenerationException("separatorBefore() must be lower than position()", e);
+                throw new LayerGenerationException("separatorBefore() must be lower than position()", e, processingEnv, ref);
             }
             File before = layer(e).file(ref.path() + "/" + name + "-separatorBefore.instance");
             before.newvalue("instanceCreate", JSeparator.class.getName());

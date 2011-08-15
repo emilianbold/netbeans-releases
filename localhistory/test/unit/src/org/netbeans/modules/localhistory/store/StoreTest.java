@@ -55,6 +55,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.LogHandler;
 import org.netbeans.modules.localhistory.utils.FileUtils;
@@ -169,6 +170,7 @@ public class StoreTest extends LHTestCase {
         assertFile(file, store, ts, -1, 2, 1, "data2", TOUCHED);
     }
 
+    @RandomlyFails
     public void testFileChangeSymlink() throws Exception {
         LocalHistoryTestStore store = createStore();
         LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);

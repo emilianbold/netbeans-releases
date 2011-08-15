@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -66,12 +66,18 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
 import org.netbeans.modules.db.core.SQLOptions;
 import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
@@ -79,11 +85,16 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditor;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -96,7 +107,15 @@ import org.openide.windows.TopComponent;
  *
  * @author Andrei Badea
  */
-public class SQLCloneableEditor extends CloneableEditor {
+@Messages("Source=&Source")
+@MultiViewElement.Registration(
+displayName = "#Source",
+iconBase = "org/netbeans/modules/db/sql/loader/resources/sql16.png",
+persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+mimeType = SQLDataLoader.SQL_MIME_TYPE,
+preferredID = "sql.source",
+position = 1)
+public class SQLCloneableEditor extends CloneableEditor implements MultiViewElement {
 
     private transient JSplitPane splitter;
     private transient JTabbedPane resultComponent;
@@ -117,14 +136,16 @@ public class SQLCloneableEditor extends CloneableEditor {
     private transient Lookup ourLookup = new AbstractLookup(instanceContent);
 
     private transient SQLCloneableEditorLookup resultingLookup;
+    private MultiViewElementCallback callback;
 
     public SQLCloneableEditor() {
         super(null);
         putClientProperty("oldInitialize", Boolean.TRUE); // NOI18N
+        initialize();
     }
 
-    public SQLCloneableEditor(SQLEditorSupport support) {
-        super(support);
+    public SQLCloneableEditor(Lookup context) {
+        super(context.lookup(SQLEditorSupport.class), true);
         putClientProperty("oldInitialize", Boolean.TRUE); // NOI18N
         initialize();
     }
@@ -211,6 +232,7 @@ public class SQLCloneableEditor extends CloneableEditor {
      */
     private void createResultPopupMenu() {
         closeTabAction = new AbstractAction(getMessage("CLOSE_TAB_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 resultComponent.remove(resultComponent.getSelectedComponent());
                 enableTabActions();
@@ -222,6 +244,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         };
 
         closeOtherTabsAction = new AbstractAction(getMessage("CLOSE_OTHER_TABS_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (Component component : resultComponent.getComponents()) {
                     if (! component.equals(resultComponent.getSelectedComponent())) {
@@ -235,6 +258,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         };
 
         closePreviousTabsAction = new AbstractAction(getMessage("CLOSE_PREVIOUS_TABS_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 for (Component component : resultComponent.getComponents()) {
                     if ((currentResultTabs != null) && (! currentResultTabs.contains(component))) {
@@ -251,6 +275,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         };
 
         closeAllTabsAction = new AbstractAction(getMessage("CLOSE_ALL_TABS_ACTION")) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 resultComponent.removeAll();
                 hideResultComponent();
@@ -273,6 +298,7 @@ public class SQLCloneableEditor extends CloneableEditor {
 
         resultComponent.addChangeListener(new ChangeListener() {
 
+            @Override
             public void stateChanged(ChangeEvent e) {
                 enableTabActions();
             }
@@ -280,6 +306,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         });
 
         resultComponent.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
                     int selected = resultComponent.getSelectedIndex();
@@ -389,7 +416,7 @@ public class SQLCloneableEditor extends CloneableEditor {
     }
 
     @Override
-    protected void componentDeactivated() {
+    public void componentDeactivated() {
         SQLEditorSupport sqlEditorSupport = sqlEditorSupport();
         // #132333: need to test if the support is still valid (it may be not, because
         // the DataObject was deleted as the editor was closing.)
@@ -404,7 +431,7 @@ public class SQLCloneableEditor extends CloneableEditor {
     }
 
     @Override
-    protected void componentClosed() {
+    public void componentClosed() {
         sqlExecution.editorClosed();
         super.componentClosed();
     }
@@ -430,12 +457,140 @@ public class SQLCloneableEditor extends CloneableEditor {
     private void initialize() {
         sqlExecution = new SQLExecutionImpl();
         instanceContent.add(sqlExecution);
+        instanceContent.add(this);
     }
 
     private SQLEditorSupport sqlEditorSupport() {
         return (SQLEditorSupport)cloneableEditorSupport();
     }
 
+    @Override
+    public JComponent getVisualRepresentation() {
+        return this;
+    }
+
+    private transient JToolBar bar;
+    @Override
+    public JComponent getToolbarRepresentation() {
+        Document doc = getEditorPane().getDocument();
+        if (doc instanceof NbDocument.CustomToolbar) {
+            if (bar == null) {
+                bar = ((NbDocument.CustomToolbar)doc).createToolbar(getEditorPane());
+            }
+        }
+        if (bar == null) {
+            bar = new JToolBar();
+        }
+        return bar;
+    }
+
+    @Override
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+        this.callback = callback;
+    }
+
+    @Messages({
+        "MSG_SaveModified=File {0} is modified. Save?"
+    })
+    @Override
+    public CloseOperationState canCloseElement() {
+        if (sqlEditorSupport().isConsole()) {
+            return CloseOperationState.STATE_OK;
+        } else {
+            DataObject sqlDO = sqlEditorSupport().getDataObject();
+            FileObject sqlFO = sqlEditorSupport().getDataObject().getPrimaryFile();
+            if (sqlDO.isModified()) {
+                if (sqlFO.canWrite()) {
+                    Savable sav = sqlDO.getLookup().lookup(Savable.class);
+                    if (sav != null) {
+                        AbstractAction save = new AbstractAction() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                try {
+                                    sqlEditorSupport().saveDocument();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        };
+                        save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(sqlFO.getNameExt()));
+                        return MultiViewFactory.createUnsafeCloseState("editor", save, null);
+                    }
+                }
+            }
+        }
+        return CloseOperationState.STATE_OK;
+   }
+
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    public void componentOpened() {
+        super.componentOpened();
+    }
+
+    @Override
+    public void componentShowing() {
+        if (callback != null) {
+            updateName();
+        }
+        super.componentShowing();
+    }
+
+    @Override
+    public void requestVisible() {
+        if (callback != null) {
+            callback.requestVisible();
+        } else {
+            super.requestVisible();
+        }
+    }
+    
+    @Override
+    public void requestActive() {
+        if (callback != null) {
+            callback.requestActive();
+        } else {
+            super.requestActive();
+        }
+    }
+    
+    
+    @Override
+    public void updateName() {
+        super.updateName();
+        if (callback != null) {
+            TopComponent tc = callback.getTopComponent();
+            tc.setHtmlDisplayName(getHtmlDisplayName());
+            tc.setDisplayName(getDisplayName());
+            tc.setName(getName());
+            tc.setToolTipText(getToolTipText());
+        }
+    }
+    
+    @Override
+    public void open() {
+        if (callback != null) {
+            callback.requestVisible();
+        } else {
+            super.open();
+        }
+        
+    }
+
+    @Override
+    protected boolean closeLast() {
+        return super.closeLast(false);
+    }
+    
     private static final class DelegateActionMap extends ActionMap {
 
         private ActionMap delegate;
@@ -529,28 +684,35 @@ public class SQLCloneableEditor extends CloneableEditor {
             sqlEditorSupport().removeSQLPropertyChangeListener(this);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent event) {
             propChangeSupport.firePropertyChange(event);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             propChangeSupport.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             propChangeSupport.removePropertyChangeListener(listener);
         }
 
+        @Override
         public DatabaseConnection getDatabaseConnection() {
             return sqlEditorSupport().getActiveDatabaseConnection();
         }
 
+        @Override
         public void setDatabaseConnection(DatabaseConnection dbconn) {
             sqlEditorSupport().setDatabaseConnection(dbconn);
         }
 
+        @Override
         public void execute() {
             String text = Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+                @Override
                 public String run() {
                     return getText(getEditorPane());
                 }
@@ -558,9 +720,11 @@ public class SQLCloneableEditor extends CloneableEditor {
             sqlEditorSupport().execute(text, 0, text.length());
         }
 
+        @Override
         public void executeSelection() {
             final int[] offsets = new int[2];
             String text = Mutex.EVENT.readAccess(new Mutex.Action<String>() {
+                @Override
                 public String run() {
                     JEditorPane editorPane = getEditorPane();
                     int startOffset = editorPane.getSelectionStart();
@@ -579,12 +743,15 @@ public class SQLCloneableEditor extends CloneableEditor {
             sqlEditorSupport().execute(text, offsets[0], offsets[1]);
         }
 
+        @Override
         public boolean isExecuting() {
             return sqlEditorSupport().isExecuting();
         }
 
+        @Override
         public boolean isSelection() {
             Boolean result = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
                 public Boolean run() {
                     JEditorPane editorPane = getEditorPane();
                     return Boolean.valueOf(editorPane.getSelectionStart() < editorPane.getSelectionEnd());
@@ -612,9 +779,11 @@ public class SQLCloneableEditor extends CloneableEditor {
             }
         }
 
+        @Override
         public void showHistory() {
             getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());

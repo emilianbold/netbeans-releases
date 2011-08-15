@@ -33,7 +33,10 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
 import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Collections;
+import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -788,6 +791,72 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/package-info.java"));
         System.err.println(res);
         assertEquals(golden, res);
+    }
+    
+    public void test196276() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package zoo;\n" +
+            "\n" +
+            "public class A {\n" +
+            "}\n"
+        );
+
+        FileObject emptyJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        emptyJava.setAttribute("template", Boolean.TRUE);
+        FileObject classJava = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java");
+        classJava.setAttribute("template", Boolean.TRUE);
+        Writer w = new OutputStreamWriter(classJava.getOutputStream(), "UTF-8");
+        w.write("package zoo;\npublic class Template {\n    public Template() {}\n}");
+        w.close();
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden1 =
+            "package zoo;\n" +
+            "\n" +
+            "\n" + //XXX
+            "public class Krtek {\n" +
+            "    public Krtek() {}\n" +
+            "}\n";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree newTree = make.CompilationUnit(
+                        sourceRoot,
+                        "zoo/Krtek.java",
+                        Collections.<ImportTree>emptyList(),
+                        Collections.<Tree>emptyList()
+                );
+                MethodTree constr = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "Krtek", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
+                newTree = make.addCompUnitTypeDecl(newTree, make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), "Krtek", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>singletonList(constr)));
+                workingCopy.rewrite(null, newTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(new File(getDataDir().getAbsolutePath() + "/zoo/Krtek.java"));
+        System.err.println(res);
+        assertEquals(res, golden1);
     }
     
     String getGoldenPckg() {

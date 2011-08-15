@@ -68,7 +68,7 @@ public class PropertiesEditor extends PropertyEditorSupport {
         if(value instanceof Properties) {
             Properties prop = (Properties)value;
 
-            StringBuffer buff = new StringBuffer();
+            StringBuilder buff = new StringBuilder();
             
             for(Enumeration e = prop.keys(); e.hasMoreElements(); ) {
                 if(buff.length() > 0) {

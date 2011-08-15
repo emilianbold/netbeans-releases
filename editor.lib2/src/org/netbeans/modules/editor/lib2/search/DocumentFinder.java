@@ -331,7 +331,59 @@ public class DocumentFinder
      */
     public static FindReplaceResult findReplaceResult(String replaceString, Document doc, int startOffset, int endOffset, Map props,
                              boolean oppositeDir) throws BadLocationException{
-        return findReplaceImpl(replaceString, doc, startOffset, endOffset, props, oppositeDir);
+        FindReplaceResult findReplaceImpl = findReplaceImpl(replaceString, doc, startOffset, endOffset, props, oppositeDir);
+        return preserveCaseImpl(findReplaceImpl, replaceString, doc, props);
+    }
+    
+     private static boolean getBoolFromEditorFindSupport(Map searchProps, String editorFindSupportConstant) {
+        Boolean b = (Boolean) searchProps.get(editorFindSupportConstant);
+        return (b != null && b.booleanValue());
+     }
+
+    private static boolean getMatchCaseFromEditorFindSupport(Map searchProps, String text) {
+        boolean matchCase = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_MATCH_CASE);
+        boolean smartCase = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_SMART_CASE);
+        if (smartCase && !matchCase) {
+            for (int i = 0; i < text.length(); i++) {
+                if (Character.isUpperCase(text.charAt(i))) {
+                    matchCase = true;
+                    break;
+                }
+            }
+        }
+        return matchCase;
+    }
+    
+    private static FindReplaceResult preserveCaseImpl(FindReplaceResult findReplaceResult, String replaceString, Document doc, Map searchProps) throws BadLocationException {
+        if (replaceString == null || findReplaceResult.getFoundPositions()[0] == -1) {
+            return findReplaceResult;
+        }
+        boolean regExpSearch = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_REG_EXP);
+        boolean preserveCase = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_PRESERVE_CASE);
+        boolean matchCase = getMatchCaseFromEditorFindSupport(searchProps, replaceString);
+        
+        if (preserveCase && !regExpSearch && !matchCase) {
+            assert(findReplaceResult.getFoundPositions()[0] <= findReplaceResult.getFoundPositions()[1]);
+            int length = findReplaceResult.getFoundPositions()[1] - findReplaceResult.getFoundPositions()[0];
+            String findStr = doc.getText(findReplaceResult.getFoundPositions()[0], length);
+            String replStr = replaceString.toString();
+            if (findStr.equals(findStr.toUpperCase())) {
+                replStr = replStr.toUpperCase();
+            } else if (findStr.equals(findStr.toLowerCase())) {
+                replStr = replStr.toLowerCase();
+            } else if (Character.isUpperCase(findStr.charAt(0))) {
+                        replStr = Character.toUpperCase(replStr.charAt(0)) + replStr.substring(1);
+            } else if (Character.isLowerCase(findStr.charAt(0))) {
+                    if (findStr.substring(1).equals(findStr.substring(1).toUpperCase())) 
+                        replStr = Character.toLowerCase(replStr.charAt(0)) + replStr.substring(1).toUpperCase();
+                    else
+                        replStr = Character.toLowerCase(replStr.charAt(0)) + replStr.substring(1);
+            }
+            
+            return new FindReplaceResult(findReplaceResult.getFoundPositions(), replStr);
+        } else {
+            return findReplaceResult;
+        }
     }
     
 
@@ -808,11 +860,10 @@ public class DocumentFinder
 
         public final int find(int initOffset, CharSequence chars) {
             int offset = (initOffset != 0) ? initOffset-1 : chars.length() - 1;
-            int offset2;
             int limitPos = 0;
             int limitOffset = chars.length();
             while (offset >= 0 && offset < limitOffset) {
-                offset += scan(chars.charAt(offset), (offset == limitOffset));
+                offset += scan(chars.charAt(offset), (offset == limitPos));
                 if (found) {
                     break;
                 }

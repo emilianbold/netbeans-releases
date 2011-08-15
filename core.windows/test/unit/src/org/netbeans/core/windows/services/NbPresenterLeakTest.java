@@ -60,6 +60,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 
 /** Tests issue 96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter
  *
@@ -78,13 +79,24 @@ public class NbPresenterLeakTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #1189
     public void testLeakingNbPresenterDescriptor () throws InterruptedException, InvocationTargetException {
+        try {
+            Class.forName("java.lang.AutoCloseable");
+        } catch (ClassNotFoundException ex) {
+            // this test is known to fail due to JDK bugs 7070542 & 7072167
+            // which are unlikely to be fixed on JDK6. Thus, if AutoCloseable
+            // is not present, skip the test
+            return;
+        }
+        
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels(), null);
         wizardDescriptor.setModal (false);
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
         WeakReference<WizardDescriptor> w = new WeakReference<WizardDescriptor> (wizardDescriptor);
         
         SwingUtilities.invokeAndWait (new EDTJob(dialog, true));
+        assertShowing("button is visible", true, dialog);
         SwingUtilities.invokeAndWait (new EDTJob(dialog, false));
+        assertShowing("button is no longer visible", false, dialog);
         boolean cancelled = wizardDescriptor.getValue() !=
             WizardDescriptor.FINISH_OPTION;
         Dialog d = new JDialog();
@@ -97,15 +109,35 @@ public class NbPresenterLeakTest extends NbTestCase {
         p.add(btn, BorderLayout.NORTH);
         
         SwingUtilities.invokeAndWait (new EDTJob(d, true));
-        Thread.sleep(1000); // let it actually paint
+        assertShowing("button is visible", true, btn);
+        dialog.setBounds(Utilities.findCenterBounds(dialog.getSize()));
         SwingUtilities.invokeAndWait (new EDTJob(d, false));
+        assertShowing("button is no longer visible", false, btn);
 
-        //assertNull ("BufferStrategy was disposed.", dialog.getBufferStrategy ());
+        assertNull ("BufferStrategy was disposed.", dialog.getBufferStrategy ());
         
         dialog = null;
         wizardDescriptor = null;
         
         assertGC ("Dialog disappears.", w);
+    }
+
+    private static void assertShowing(String msg, boolean showing, final Component c)
+    throws InterruptedException, InvocationTargetException {
+        final boolean[] res = { false };
+        for (int i = 0; i < 50; i++) {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    res[0] = c.isShowing();
+                }
+            });
+            if (showing == res[0]) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(msg, showing, res[0]);
     }
     
     private static class EDTJob implements Runnable {

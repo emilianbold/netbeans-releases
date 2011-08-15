@@ -221,21 +221,21 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
 
         warningJdk14Label.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk14")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout setJdk14PanelLayout = new org.jdesktop.layout.GroupLayout(setJdk14Panel);
+        javax.swing.GroupLayout setJdk14PanelLayout = new javax.swing.GroupLayout(setJdk14Panel);
         setJdk14Panel.setLayout(setJdk14PanelLayout);
         setJdk14PanelLayout.setHorizontalGroup(
-            setJdk14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(warningJdk14Label, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-            .add(setJdk14PanelLayout.createSequentialGroup()
-                .add(downgradeJdk14CheckBox)
+            setJdk14PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(warningJdk14Label, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .addGroup(setJdk14PanelLayout.createSequentialGroup()
+                .addComponent(downgradeJdk14CheckBox)
                 .addContainerGap())
         );
         setJdk14PanelLayout.setVerticalGroup(
-            setJdk14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(setJdk14PanelLayout.createSequentialGroup()
-                .add(warningJdk14Label)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(downgradeJdk14CheckBox))
+            setJdk14PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(setJdk14PanelLayout.createSequentialGroup()
+                .addComponent(warningJdk14Label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(downgradeJdk14CheckBox))
         );
 
         downgradeJdk14CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetJdk14")); // NOI18N
@@ -250,21 +250,21 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
 
         jLabel2.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel15")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout setSourceLevel15PanelLayout = new org.jdesktop.layout.GroupLayout(setSourceLevel15Panel);
+        javax.swing.GroupLayout setSourceLevel15PanelLayout = new javax.swing.GroupLayout(setSourceLevel15Panel);
         setSourceLevel15Panel.setLayout(setSourceLevel15PanelLayout);
         setSourceLevel15PanelLayout.setHorizontalGroup(
-            setSourceLevel15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-            .add(setSourceLevel15PanelLayout.createSequentialGroup()
-                .add(downgradeSourceLevel15CheckBox)
+            setSourceLevel15PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .addGroup(setSourceLevel15PanelLayout.createSequentialGroup()
+                .addComponent(downgradeSourceLevel15CheckBox)
                 .addContainerGap())
         );
         setSourceLevel15PanelLayout.setVerticalGroup(
-            setSourceLevel15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(setSourceLevel15PanelLayout.createSequentialGroup()
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(downgradeSourceLevel15CheckBox))
+            setSourceLevel15PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(setSourceLevel15PanelLayout.createSequentialGroup()
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downgradeSourceLevel15CheckBox))
         );
 
         downgradeSourceLevel15CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetSourceLevel15")); // NOI18N
@@ -279,21 +279,21 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetJdk15")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout setJdk15PanelLayout = new org.jdesktop.layout.GroupLayout(setJdk15Panel);
+        javax.swing.GroupLayout setJdk15PanelLayout = new javax.swing.GroupLayout(setJdk15Panel);
         setJdk15Panel.setLayout(setJdk15PanelLayout);
         setJdk15PanelLayout.setHorizontalGroup(
-            setJdk15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-            .add(setJdk15PanelLayout.createSequentialGroup()
-                .add(downgradeJdk15CheckBox)
+            setJdk15PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .addGroup(setJdk15PanelLayout.createSequentialGroup()
+                .addComponent(downgradeJdk15CheckBox)
                 .addContainerGap())
         );
         setJdk15PanelLayout.setVerticalGroup(
-            setJdk15PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(setJdk15PanelLayout.createSequentialGroup()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(downgradeJdk15CheckBox))
+            setJdk15PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(setJdk15PanelLayout.createSequentialGroup()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downgradeJdk15CheckBox))
         );
 
         downgradeJdk15CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetJdk15")); // NOI18N
@@ -308,44 +308,44 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
 
         warningSourceLevel14Label.setText(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("MSG_RecommendationSetSourceLevel14")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout setSourceLevel14PanelLayout = new org.jdesktop.layout.GroupLayout(setSourceLevel14Panel);
+        javax.swing.GroupLayout setSourceLevel14PanelLayout = new javax.swing.GroupLayout(setSourceLevel14Panel);
         setSourceLevel14Panel.setLayout(setSourceLevel14PanelLayout);
         setSourceLevel14PanelLayout.setHorizontalGroup(
-            setSourceLevel14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(warningSourceLevel14Label, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
-            .add(setSourceLevel14PanelLayout.createSequentialGroup()
-                .add(downgradeSourceLevel14CheckBox)
+            setSourceLevel14PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(warningSourceLevel14Label, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+            .addGroup(setSourceLevel14PanelLayout.createSequentialGroup()
+                .addComponent(downgradeSourceLevel14CheckBox)
                 .addContainerGap())
         );
         setSourceLevel14PanelLayout.setVerticalGroup(
-            setSourceLevel14PanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(setSourceLevel14PanelLayout.createSequentialGroup()
-                .add(warningSourceLevel14Label)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(downgradeSourceLevel14CheckBox))
+            setSourceLevel14PanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(setSourceLevel14PanelLayout.createSequentialGroup()
+                .addComponent(warningSourceLevel14Label, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downgradeSourceLevel14CheckBox))
         );
 
         downgradeSourceLevel14CheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(J2eeVersionWarningPanel.class).getString("ACS_AgreeSetSourceLevel14")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(setJdk14Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(setJdk15Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(setSourceLevel14Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(setSourceLevel15Panel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(setJdk14Panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(setJdk15Panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(setSourceLevel14Panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(setSourceLevel15Panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(setJdk14Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0)
-                .add(setSourceLevel14Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0)
-                .add(setJdk15Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0)
-                .add(setSourceLevel15Panel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(setJdk14Panel, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(setSourceLevel14Panel, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(setJdk15Panel, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(setSourceLevel15Panel, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

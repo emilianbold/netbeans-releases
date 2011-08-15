@@ -52,8 +52,9 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -62,14 +63,15 @@ import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
 public class ProjectChildren extends SelectorChildren<ProjectNode> {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private final Project project;
+    private final Lookup.Provider project;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
-    public ProjectChildren(final Project project) {
+    public ProjectChildren(final Lookup.Provider project) {
         this.project = project;
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
+    @Override
     protected List<SelectorNode> prepareChildren(ProjectNode parent) {
         List<SelectorNode> contents = new ArrayList<SelectorNode>();
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);

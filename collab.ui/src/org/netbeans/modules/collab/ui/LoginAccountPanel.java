@@ -467,7 +467,7 @@ public class LoginAccountPanel extends JPanel {
     //		else
     //			return null;
     //	}
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -489,14 +489,15 @@ public class LoginAccountPanel extends JPanel {
 
         FormListener formListener = new FormListener();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setOpaque(false);
         setPreferredSize(new java.awt.Dimension(275, 300));
         setRequestFocusEnabled(false);
+        setLayout(new java.awt.GridBagLayout());
+
         accountScrollPane.setBorder(null);
         accountScrollPane.setMinimumSize(new java.awt.Dimension(200, 22));
+
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(newAccountLink, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountForm_newAccountLink")); // NOI18N
@@ -505,22 +506,20 @@ public class LoginAccountPanel extends JPanel {
         newAccountLink.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         newAccountLink.setMinimumSize(new java.awt.Dimension(109, 15));
         newAccountLink.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weighty = 0.01;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         jPanel2.add(newAccountLink, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(jSeparator2, gridBagConstraints);
 
+        accountPanel.setOpaque(false);
         accountPanel.setLayout(new java.awt.GridBagLayout());
 
-        accountPanel.setOpaque(false);
         accountLabel.setLabelFor(accountComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(accountLabel, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_Account")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -531,7 +530,6 @@ public class LoginAccountPanel extends JPanel {
         accountComboBox.setMinimumSize(new java.awt.Dimension(24, 22));
         accountComboBox.setPreferredSize(new java.awt.Dimension(24, 22));
         accountComboBox.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -561,7 +559,6 @@ public class LoginAccountPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(rememberPasswordCheckBox, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_RememberPassword")); // NOI18N
         rememberPasswordCheckBox.setOpaque(false);
         rememberPasswordCheckBox.addItemListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -569,7 +566,6 @@ public class LoginAccountPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(autoLoginCheckBox, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_AutoLogin")); // NOI18N
         autoLoginCheckBox.addItemListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -593,9 +589,9 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(accountScrollPane, gridBagConstraints);
 
+        jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setOpaque(false);
         messageLabel.setForeground(new java.awt.Color(89, 78, 191));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -605,7 +601,6 @@ public class LoginAccountPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(loginButton, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "BTN_LoginAccountPanel_Login")); // NOI18N
         loginButton.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -616,7 +611,6 @@ public class LoginAccountPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(LoginAccountPanel.class, "LBL_LoginAccountPanel_cancelButton")); // NOI18N
         cancelButton.setEnabled(false);
         cancelButton.addActionListener(formListener);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -627,7 +621,6 @@ public class LoginAccountPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jPanel1, gridBagConstraints);
-
     }
 
     // Code for dispatching events from components to event handlers.

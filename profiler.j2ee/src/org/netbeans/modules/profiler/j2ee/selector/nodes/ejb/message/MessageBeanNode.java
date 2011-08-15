@@ -43,21 +43,20 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.ejb.message;
 
-import org.netbeans.api.java.source.ClasspathInfo;
-import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
-import org.netbeans.modules.profiler.selector.java.nodes.JavaClassNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.selector.api.nodes.ClassNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class MessageBeanNode extends JavaClassNode {
+public class MessageBeanNode extends ClassNode {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
-    public MessageBeanNode(final ClasspathInfo cpInfo, String displayName, final Icon icon, final TypeElement classElement, final ContainerNode parent) {
-        super(cpInfo, displayName, icon, false, classElement, parent);
+    public MessageBeanNode(SourceClassInfo clz, String displayName, final Icon icon, final ContainerNode parent) {
+        super(clz, displayName, icon, parent);
     }
 }

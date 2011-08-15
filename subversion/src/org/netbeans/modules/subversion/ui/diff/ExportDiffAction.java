@@ -96,6 +96,7 @@ public class ExportDiffAction extends ContextAction {
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY |
             FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
+    @Override
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_ExportDiff";  // NOI18N
     }
@@ -160,6 +161,7 @@ public class ExportDiffAction extends ContextAction {
             public void writeDiffFile(final File toFile) {
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
                 SvnProgressSupport ps = new SvnProgressSupport() {
+                    @Override
                     protected void perform() {
                         async(this, nodes, toFile, singleDiffSetup);
                     }
@@ -176,53 +178,56 @@ public class ExportDiffAction extends ContextAction {
     }
 
     private void async(SvnProgressSupport progress, Node[] nodes, File destination, boolean singleDiffSetup) {
+        // prepare setups and common parent - root
+
+        File root;
+        List<Setup> setups;
+
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated instanceof DiffSetupSource) {
+            if (!singleDiffSetup) {
+                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+            } else {
+                if (nodes.length > 0 && nodes[0] instanceof DiffNode) {
+                    setups = new ArrayList<Setup>(Collections.singletonList(((DiffNode)nodes[0]).getSetup()));
+                } else {
+                    return;
+                }
+            }
+            List<File> setupFiles = new ArrayList<File>(setups.size());
+            for (Iterator i = setups.iterator(); i.hasNext();) {
+                Setup setup = (Setup) i.next();
+                setupFiles.add(setup.getBaseFile()); 
+            }
+            root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
+        } else {
+            Context context = getContext(nodes);
+            File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            root = getCommonParent(context.getRootFiles());
+            setups = new ArrayList<Setup>(files.length);
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
+                setups.add(setup);
+            }
+        }
+        exportDiff(setups, destination, root, progress);
+    }
+
+    public void exportDiff (List<Setup> setups, File destination, File root, SvnProgressSupport progress) {
+        if (root == null) {
+            NotifyDescriptor nd = new NotifyDescriptor(
+                    NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Prompt"), 
+                    NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Title"), 
+                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
+            DialogDisplayer.getDefault().notify(nd);
+            return;
+        }
         boolean success = false;
         OutputStream out = null;
         int exportedFiles = 0;
+
         try {
-
-            // prepare setups and common parent - root
-
-            File root;
-            List<Setup> setups;
-
-            TopComponent activated = TopComponent.getRegistry().getActivated();
-            if (activated instanceof DiffSetupSource) {
-                if (!singleDiffSetup) {
-                    setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
-                } else {
-                    if (nodes.length > 0 && nodes[0] instanceof DiffNode) {
-                        setups = new ArrayList<Setup>(Collections.singletonList(((DiffNode)nodes[0]).getSetup()));
-                    } else {
-                        return;
-                    }
-                }
-                List<File> setupFiles = new ArrayList<File>(setups.size());
-                for (Iterator i = setups.iterator(); i.hasNext();) {
-                    Setup setup = (Setup) i.next();
-                    setupFiles.add(setup.getBaseFile()); 
-                }
-                root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
-            } else {
-                Context context = getContext(nodes);
-                File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
-                root = getCommonParent(context.getRootFiles());
-                setups = new ArrayList<Setup>(files.length);
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
-                    setups.add(setup);
-                }
-            }
-            if (root == null) {
-                NotifyDescriptor nd = new NotifyDescriptor(
-                        NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Prompt"), 
-                        NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Title"), 
-                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, null, null);
-                DialogDisplayer.getDefault().notify(nd);
-                return;
-            }
-
             String sep = System.getProperty("line.separator"); // NOI18N
             out = new BufferedOutputStream(new FileOutputStream(destination));
             // Used by PatchAction as MAGIC to detect right encoding
@@ -234,6 +239,7 @@ public class ExportDiffAction extends ContextAction {
 
 
             Collections.sort(setups, new Comparator<Setup>() {
+                @Override
                 public int compare(Setup o1, Setup o2) {
                     return o1.getBaseFile().compareTo(o2.getBaseFile());
                 }
@@ -362,7 +368,7 @@ public class ExportDiffAction extends ContextAction {
         if (file.canRead()) {
             Utils.copyStreamsCloseAll(baos, new FileInputStream(file));
         }
-        sb.append("MIME: application/octet-stream; encoding: Base64; length: " + (file.canRead() ? file.length() : -1)); // NOI18N
+        sb.append("MIME: application/octet-stream; encoding: Base64; length: ").append(file.canRead() ? file.length() : -1); // NOI18N
         sb.append(System.getProperty("line.separator")); // NOI18N
         sb.append(Base64Encoder.encode(baos.toByteArray(), true));
         sb.append(System.getProperty("line.separator")); // NOI18N

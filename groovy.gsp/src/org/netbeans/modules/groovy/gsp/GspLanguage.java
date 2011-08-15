@@ -54,7 +54,7 @@ import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 
 
-@LanguageRegistration(mimeType="text/x-gsp", useCustomEditorKit=true) //NOI18N
+@LanguageRegistration(mimeType="text/x-gsp", useCustomEditorKit=true, useMultiview=true) //NOI18N
 public class GspLanguage extends DefaultLanguageConfig {
 
     public GspLanguage() {

@@ -1329,8 +1329,34 @@ public class FileObjectTestHid extends TestBaseHid {
         if (real != null) {
             assertEquals("Renamed too", real.getName(), uName + '.' + uExt);
         }
-    }
 
+    }
+    
+    public void testCaseSensitiveRenameEvent() throws Exception {
+        checkSetUp();
+        FileObject fo = getTestFile1(root);
+        FileObject parent = fo.getParent();
+        registerDefaultListener(parent);
+        FileObject file;
+        try {
+            file = parent.createData("origi.nal");
+        } catch (IOException iex) {
+            if (!fs.isReadOnly() && !root.isReadOnly()) {
+                throw iex;
+            }
+            fsAssert("FileObject could not be renamed. So there was expected fs or fo are read-only",
+            fs.isReadOnly() || root.isReadOnly());
+            fileRenamedAssert("fs or fo is read-only. So no event should be fired",0);
+            return;
+        } 
+        FileLock lock = file.lock();
+        file.rename(lock, "Origi", "nal");
+        lock.releaseLock();
+        FileRenameEvent fe = fileRenamedL.get(0);
+        assertEquals("origi", fe.getName());
+        assertEquals("nal", fe.getExt());
+    }
+    
     /** Test of fireFileRenamedEvent method, of class org.openide.filesystems.FileObject. */
     public void  testFireFileRenamedEvent_FS() {
         checkSetUp();

@@ -354,6 +354,26 @@ public final class Startup {
      * current look and feel.
      */
     private LFCustoms findCustoms () {
+        ResourceBundle b = bundle != null ? bundle : ResourceBundle.getBundle( "org.netbeans.swing.plaf.Bundle" ); // NOI18N
+        String uiClassName = b.getString( "LookAndFeelCustomsClassName" ); // NOI18N
+        if( "default".equals( uiClassName ) ) { // NOI18N
+            return findDefaultCustoms();
+        }
+        try {
+            Class klazz = UIUtils.classForName( uiClassName );
+            Object inst = klazz.newInstance();
+            if( inst instanceof LFCustoms )
+                return ( LFCustoms ) inst;
+        } catch( ClassNotFoundException e ) {
+            System.err.println( "LF Customs " + uiClassName + " not on classpath." ); // NOI18N
+        } catch( Exception e ) {
+            System.err.println( "While loading: " + uiClassName ); // NOI18N
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private LFCustoms findDefaultCustoms() {
         if (FORCED_CUSTOMS != null) {
             System.err.println("Using explicitly set UI customizations: " + //NOI18N
                 FORCED_CUSTOMS);

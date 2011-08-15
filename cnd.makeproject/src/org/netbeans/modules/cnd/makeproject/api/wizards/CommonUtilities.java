@@ -65,7 +65,10 @@ public final class CommonUtilities {
     }
 
     public static String getLdLibraryPath() {
-        ExecutionEnvironment eenv = ExecutionEnvironmentFactory.getLocal();
+        return getLdLibraryPath(ExecutionEnvironmentFactory.getLocal());
+    }
+    
+    public static String getLdLibraryPath(ExecutionEnvironment eenv) {
         String ldLibraryPathName = getLdLibraryPathName(eenv);
         String paths = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName);
         if (paths == null) {

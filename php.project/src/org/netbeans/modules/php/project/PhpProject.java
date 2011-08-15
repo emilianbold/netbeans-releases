@@ -102,7 +102,6 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -446,7 +445,7 @@ public final class PhpProject implements Project {
         NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
                 NbBundle.getMessage(PhpProject.class, "MSG_CanFolderRestore", dir.getAbsolutePath()),   //NOI18N
                 NbBundle.getMessage(PhpProject.class, "LBL_TitleCanFolderRestore", projectName),        //NOI18N
-                NotifyDescriptor.YES_NO_OPTION, 
+                NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 null, NotifyDescriptor.NO_OPTION);
         if (DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.YES_OPTION) {
@@ -551,8 +550,8 @@ public final class PhpProject implements Project {
                 continue;
             }
             for (File file : ignoredFilesExtender.getIgnoredFiles()) {
-                assert file != null : "Ignored file = null found in " + provider.getName();
-                assert file.isAbsolute() : "Not absolute file found in " + provider.getName();
+                assert file != null : "Ignored file = null found in " + provider.getIdentifier();
+                assert file.isAbsolute() : "Not absolute file found in " + provider.getIdentifier();
 
                 ignored.add(file);
             }
@@ -578,7 +577,7 @@ public final class PhpProject implements Project {
                 for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
                     if (frameworkProvider.isInPhpModule(phpModule)) {
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getName(), getSourcesDirectory()));
+                            LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getSourcesDirectory()));
                         }
                         frameworks.add(frameworkProvider);
                     }
@@ -1010,7 +1009,7 @@ public final class PhpProject implements Project {
         private SearchInfo.Files delegate = null;
 
         private PhpSearchInfo(PhpProject project) {
-            this.project = project;            
+            this.project = project;
         }
 
         public static SearchInfo create(PhpProject project) {

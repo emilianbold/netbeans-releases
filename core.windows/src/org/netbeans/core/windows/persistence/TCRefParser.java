@@ -367,7 +367,7 @@ class TCRefParser {
                     PersistenceManager.LOG.log(Level.WARNING,
                     "[WinSys.TCRefParser.handleTcId]" // NOI18N
                     + " Error: Value of attribute \"id\" of element \"tc-id\"" // NOI18N
-                    + " and configuration file name must be the same."); // NOI18N
+                    + " and configuration file name must be the same: " + tc_id + " x " + TCRefParser.this.getName()); // NOI18N
                     throw new SAXException("Invalid attribute value"); // NOI18N
                 }
             } else {

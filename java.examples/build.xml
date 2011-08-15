@@ -85,16 +85,6 @@ made subject to such option by the copyright holder.
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>
         </zip>
-        <zip basedir="DocumentEditor" destfile="${examples}/DocumentEditor.zip">
-            <exclude name="build/"/>
-            <exclude name="dist/"/>
-            <exclude name="nbproject/private/"/>
-        </zip>
-        <zip basedir="MarsRoverViewer" destfile="${examples}/MarsRoverViewer.zip">
-            <exclude name="build/"/>
-            <exclude name="dist/"/>
-            <exclude name="nbproject/private/"/>
-        </zip>
         <zip basedir="ClientEditor" destfile="${examples}/ClientEditor.zip">
             <exclude name="dist/"/>
             <exclude name="nbproject/private/"/>

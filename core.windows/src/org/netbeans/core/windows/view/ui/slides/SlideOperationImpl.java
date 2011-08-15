@@ -186,6 +186,8 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
             side = Constants.RIGHT;
         } else if (orientation == SlideBarDataModel.SOUTH) {
             side = Constants.BOTTOM;
+        } else if (orientation == SlideBarDataModel.NORTH) {
+            side = Constants.TOP;
         }
         return side;
     }
@@ -208,6 +210,8 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
             orientation = SlideBarDataModel.EAST;
         } else if (Constants.BOTTOM.equals(side)) {
             orientation = SlideBarDataModel.SOUTH;
+        } else if (Constants.TOP.equals(side)) {
+            orientation = SlideBarDataModel.NORTH;
         }
         return orientation;
     }

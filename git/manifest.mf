@@ -3,4 +3,3 @@ OpenIDE-Module: org.netbeans.modules.git
 OpenIDE-Module-Layer: org/netbeans/modules/git/git-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/git/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
-OpenIDE-Module-Install: org/netbeans/modules/git/ModuleLifecycleManager.class

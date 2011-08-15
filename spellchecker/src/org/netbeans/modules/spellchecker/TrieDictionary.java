@@ -69,6 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
+import org.openide.modules.Places;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -225,10 +226,8 @@ public class TrieDictionary implements Dictionary {
 
     private static final int CURRENT_TRIE_DICTIONARY_VERSION = 1;
 
-    private static final File CACHE_DIR = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "dict");
-
     public static Dictionary getDictionary(String suffix, List<URL> sources) throws IOException {
-        File trie = new File(CACHE_DIR, "dictionary" + suffix + ".trie" + CURRENT_TRIE_DICTIONARY_VERSION);
+        File trie = Places.getCacheSubfile("dict/dictionary" + suffix + ".trie" + CURRENT_TRIE_DICTIONARY_VERSION);
         
         return getDictionary(trie, sources);
     }

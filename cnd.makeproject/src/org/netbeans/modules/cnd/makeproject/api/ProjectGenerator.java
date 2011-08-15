@@ -45,10 +45,12 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -63,7 +65,9 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
 
 public class ProjectGenerator {
 
@@ -364,10 +368,25 @@ public class ProjectGenerator {
     }
 
     /*
-     * Used by Sun Studio
+     * Used by OSS
      */
-    public static void createProjectFromTemplate(URL templateResourceURL, ProjectParameters prjParams) throws IOException {
-        MakeSampleProjectGenerator.createProjectFromTemplate(templateResourceURL.openStream(), prjParams);
+    public static Set<DataObject> createProjectFromTemplate(URL templateResourceURL, ProjectParameters prjParams) throws IOException {
+        return MakeSampleProjectGenerator.createProjectFromTemplate(templateResourceURL.openStream(), prjParams);
+    }
+    
+    /*
+     * Used by OSS
+     */
+    public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+        return MakeSampleProjectGenerator.createProjectFromTemplate(inputStream, prjParams);
+    }
+    
+    /*
+     * Used by OSS
+     */
+    public static Set<DataObject> createProjectFromTemplate(FileObject template, ProjectGenerator.ProjectParameters prjParams) throws IOException {
+        return MakeSampleProjectGenerator.createProjectFromTemplate(template, prjParams);
+        
     }
 
     private ProjectGenerator() {

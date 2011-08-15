@@ -43,12 +43,14 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.Customizer;
 import java.io.File;
 import java.util.Collection;
 import java.util.ArrayList;
@@ -56,6 +58,7 @@ import java.util.Arrays;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
+import java.util.Collections;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -82,13 +85,18 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
 
-    private static final int CLASSPATH = 0;
-    private static final int SOURCES = 1;
-    private static final int JAVADOC = 2;
+    private static final String CUSTOMIZERS_PATH =
+        "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
+
+    static final int CLASSPATH = 0;
+    static final int SOURCES = 1;
+    static final int JAVADOC = 2;
 
     private J2SEPlatformImpl platform;    
 
@@ -97,13 +105,30 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         this.initComponents ();
     }
 
-
     private void initComponents () {
         this.getAccessibleContext().setAccessibleName (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AN_J2SEPlatformCustomizer"));
         this.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(J2SEPlatformCustomizer.class,"AD_J2SEPlatformCustomizer"));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Classes"), createPathTab(CLASSPATH));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Sources"), createPathTab(SOURCES));
         this.addTab(NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_Javadoc"), createPathTab(JAVADOC));
+        final Lookup lkp = Lookups.forPath(CUSTOMIZERS_PATH);
+        for (Lookup.Item<? extends Customizer> li : lkp.lookupResult(Customizer.class).allItems()) {
+            final Customizer c = li.getInstance();
+            if (!(c instanceof Component)) {
+                continue;
+            }
+            String name = li.getId();
+            final FileObject fo = FileUtil.getConfigFile(String.format("%s.instance",name));    //NOI18N
+            if (fo != null) {
+                try {
+                    name = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.<FileObject>singleton(fo));
+                } catch (FileStateInvalidException ex) {
+                    name = fo.getName();
+                }
+            }
+            c.setObject(platform);
+            this.addTab(name, (Component)c);
+        }
     }
 
 
@@ -343,20 +368,37 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
 
         private void addPathElement () {
-            JFileChooser chooser = new JFileChooser ();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            final int firstIndex = this.resources.getModel().getSize();
+            final File[] cwd = new File[]{currentDir};
+            if (select((PathModel)this.resources.getModel(),cwd, this)) {
+                final int lastIndex = this.resources.getModel().getSize()-1;
+                if (firstIndex<=lastIndex) {
+                    int[] toSelect = new int[lastIndex-firstIndex+1];
+                    for (int i = 0; i < toSelect.length; i++) {
+                        toSelect[i] = firstIndex+i;
+                    }
+                    this.resources.setSelectedIndices(toSelect);
+                }
+                this.currentDir = cwd[0];
+            }
+        }
+
+        private static boolean select(
+            final PathModel model,
+            final File[] currentDir,
+            final Component parentComponent) {
+            final JFileChooser chooser = new JFileChooser ();
             chooser.setMultiSelectionEnabled (true);
             String title = null;
             String message = null;
             String approveButtonName = null;
             String approveButtonNameMne = null;
-            if (this.type == SOURCES) {
+            if (model.type == SOURCES) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Sources");
                 approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenSources");
                 approveButtonNameMne = NbBundle.getMessage (J2SEPlatformCustomizer.class,"MNE_OpenSources");
-            }
-            else if (this.type == JAVADOC) {
+            } else if (model.type == JAVADOC) {
                 title = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
                 message = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_Javadoc");
                 approveButtonName = NbBundle.getMessage (J2SEPlatformCustomizer.class,"TXT_OpenJavadoc");
@@ -373,14 +415,12 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
             chooser.setFileFilter (new ArchiveFileFilter(message,new String[] {"ZIP","JAR"}));   //NOI18N
-            if (this.currentDir != null) {
-                chooser.setCurrentDirectory(this.currentDir);
+            if (currentDir[0] != null) {
+                chooser.setCurrentDirectory(currentDir[0]);
             }
-            if (chooser.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
+            if (chooser.showOpenDialog(parentComponent) == JFileChooser.APPROVE_OPTION) {
                 File[] fs = chooser.getSelectedFiles();
-                PathModel model = (PathModel) this.resources.getModel();
                 boolean addingFailed = false;
-                int firstIndex = this.resources.getModel().getSize();
                 for (File f : fs) {
                     //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
                     // E.g. for /foo/src it returns /foo/src/src
@@ -399,16 +439,10 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     new NotifyDescriptor.Message (NbBundle.getMessage(J2SEPlatformCustomizer.class,"TXT_CanNotAddResolve"),
                             NotifyDescriptor.ERROR_MESSAGE);
                 }
-                int lastIndex = this.resources.getModel().getSize()-1;
-                if (firstIndex<=lastIndex) {
-                    int[] toSelect = new int[lastIndex-firstIndex+1];
-                    for (int i = 0; i < toSelect.length; i++) {
-                        toSelect[i] = firstIndex+i;
-                    }
-                    this.resources.setSelectedIndices(toSelect);
-                }
-                this.currentDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+                currentDir[0] = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+                return true;
             }
+            return false;
         }
 
         private void removePathElement () {
@@ -465,7 +499,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     }
 
 
-    private static class PathModel extends AbstractListModel/*<String>*/ {
+    static class PathModel extends AbstractListModel/*<String>*/ {
 
         private J2SEPlatformImpl platform;
         private int type;
@@ -541,7 +575,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
         }       
 
-        private boolean addPath (URL url) {
+        boolean addPath (URL url) {
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
             }

@@ -98,6 +98,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -1274,16 +1275,7 @@ public class Utilities {
     }
 
     private static File getCacheDirectory () {
-        File cacheDir = null;
-        String userDir = System.getProperty ("netbeans.user"); // NOI18N
-        if (userDir != null) {
-            cacheDir = new File (new File (new File (userDir, "var"), "cache"), "catalogcache"); // NOI18N
-        } else {
-            File dir = FileUtil.toFile (FileUtil.getConfigRoot());
-            cacheDir = new File (dir, "catalogcache"); // NOI18N
-        }
-        cacheDir.mkdirs();
-        return cacheDir;
+        return Places.getCacheSubdirectory("catalogcache");
     }
     
     private static Preferences getPreferences() {

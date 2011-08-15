@@ -134,6 +134,7 @@ import org.openide.util.NbBundle;
         jTextArea1.setText(st.toString());
 
         SyncUtils.arrangeComboBox(cbSyncMode, data.getExecutionEnvironment());
+        cbSyncMode.setSelectedItem(record.getSyncFactory());
     }
 
     String getHostDisplayName() {

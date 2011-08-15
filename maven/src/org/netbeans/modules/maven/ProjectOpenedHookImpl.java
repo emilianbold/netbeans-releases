@@ -42,8 +42,11 @@
 package org.netbeans.modules.maven;
 
 import java.util.prefs.BackingStoreException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
@@ -64,6 +67,7 @@ import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
@@ -71,11 +75,18 @@ import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.maven.problems.BatchProblemNotifier;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 /**
  * openhook implementation, register global classpath and also
@@ -105,13 +116,14 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
     ProjectOpenedHookImpl(NbMavenProjectImpl proj) {
         project = proj;
     }
-    
+
+    @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
     protected @Override void projectOpened() {
         checkBinaryDownloads();
         checkSourceDownloads();
         checkJavadocDownloads();
         project.attachUpdater();
-        MavenFileOwnerQueryImpl.getInstance().registerProject(project);
+        registerWithSubmodules(FileUtil.toFile(project.getProjectDirectory()), new HashSet<File>());
         Set<URI> uris = new HashSet<URI>();
         uris.addAll(Arrays.asList(project.getSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getSourceRoots(true)));
@@ -136,7 +148,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
         GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         GlobalPathRegistry.getDefault().register(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
-        project.doBaseProblemChecks();
+        BatchProblemNotifier.opened(project);
         
         //UI logging.. log what was the packaging type for the opened project..
         LogRecord record = new LogRecord(Level.INFO, "UI_MAVEN_PROJECT_OPENED"); //NOI18N
@@ -151,11 +163,19 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         record.setParameters(new Object[] {project.getProjectWatcher().getPackagingType()});
         USG_LOGGER.log(record);
 
-        for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
-            if (RepositoryPreferences.getInstance().getRepositoryInfoById(rep.getId()) == null) {
+        REPO: for (ArtifactRepository rep : project.getOriginalMavenProject().getRemoteArtifactRepositories()) {
+            String id = rep.getId();
+            if (RepositoryPreferences.getInstance().getRepositoryInfoById(id) == null) {
+                String url = rep.getMirroredRepositories().size() == 1 ? rep.getMirroredRepositories().get(0).getUrl() : rep.getUrl();
+                for (RepositoryInfo ri : RepositoryPreferences.getInstance().getRepositoryInfos()) { // #195130
+                    if (url.equals(ri.getRepositoryUrl())) {
+                        LOGGER.log(Level.WARNING, "Refusing to add duplicate repository definition for {0} with ID {1} when already registered as {2}", new Object[] {url, id, ri.getId()});
+                        continue REPO;
+                    }
+                }
                 RepositoryInfo ri;
                 try {
-                    ri = new RepositoryInfo(rep.getId(), RepositoryPreferences.TYPE_NEXUS, rep.getId(), null, rep.getUrl());
+                    ri = new RepositoryInfo(id, RepositoryPreferences.TYPE_NEXUS, id, null, url);
                 } catch (URISyntaxException x) {
                     LOGGER.log(Level.WARNING, "Ignoring repo with malformed URL: {0}", x.getMessage());
                     continue;
@@ -199,11 +219,7 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
     }
     private boolean existsDefaultIndexLocation() {
-        String userdir = System.getProperty("netbeans.user"); //NOI18N
-        if (userdir == null) {
-            return false; // from a unit test
-        }
-        File cacheDir = new File(new File(new File(userdir, "var"), "cache"), "mavenindex");//NOI18N
+        File cacheDir = new File(Places.getCacheDirectory(), "mavenindex");//NOI18N
         return cacheDir.exists() && cacheDir.isDirectory();
     }
     private boolean checkDiff(String repoid, long amount) {
@@ -319,5 +335,89 @@ class ProjectOpenedHookImpl extends ProjectOpenedHook {
        }
    }
 
+    /** Similar to {@link SubprojectProviderImpl#addProjectModules} but more efficient for large numbers of modules. */
+    private static void registerWithSubmodules(File basedir, Set<File> registered) { // #200445
+        if (!registered.add(basedir)) {
+            return;
+        }
+        File pom = new File(basedir, "pom.xml");
+        if (!pom.isFile()) {
+            return;
+        }
+        Element project;
+        try {
+            project = XMLUtil.parse(new InputSource(pom.toURI().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement();
+        } catch (Exception x) {
+            LOGGER.log(Level.FINE, "could not parse " + pom, x);
+            return;
+        }
+        Element parent = XMLUtil.findElement(project, "parent", null);
+        Element groupIdE = XMLUtil.findElement(project, "groupId", null);
+        if (groupIdE == null) {
+            groupIdE = XMLUtil.findElement(parent, "groupId", null);
+            if (groupIdE == null) {
+                LOGGER.log(Level.WARNING, "no groupId in {0}", pom);
+                return;
+            }
+        }
+        String groupId = XMLUtil.findText(groupIdE);
+        Element artifactIdE = XMLUtil.findElement(project, "artifactId", null);
+        if (artifactIdE == null) {
+            artifactIdE = XMLUtil.findElement(parent, "artifactId", null);
+            if (artifactIdE == null) {
+                LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
+                return;
+            }
+        }
+        String artifactId = XMLUtil.findText(artifactIdE);
+        if (groupId.contains("${") || artifactId.contains("${")) {
+            LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId in {0}", basedir);
+            FileObject basedirFO = FileUtil.toFileObject(basedir);
+            if (basedirFO != null) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject(basedirFO);
+                    if (p != null) {
+                        NbMavenProjectImpl nbmp = p.getLookup().lookup(NbMavenProjectImpl.class);
+                        if (nbmp != null) {
+                            MavenFileOwnerQueryImpl.getInstance().registerProject(nbmp);
+                        } else {
+                            LOGGER.log(Level.FINE, "not a Maven project in {0}", basedir);
+                        }
+                    } else {
+                        LOGGER.log(Level.FINE, "no project in {0}", basedir);
+                    }
+                } catch (IOException x) {
+                    LOGGER.log(Level.FINE, null, x);
+                }
+            } else {
+                LOGGER.log(Level.FINE, "no FileObject for {0}", basedir);
+            }
+        } else {
+            try {
+                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, basedir.toURI().toURL());
+            } catch (MalformedURLException x) {
+                LOGGER.log(Level.FINE, null, x);
+            }
+        }
+        scanForSubmodulesIn(project, basedir, registered);
+        Element profiles = XMLUtil.findElement(project, "profiles", null);
+        if (profiles != null) {
+            for (Element profile : XMLUtil.findSubElements(profiles)) {
+                if (profile.getTagName().equals("profile")) {
+                    scanForSubmodulesIn(profile, basedir, registered);
+                }
+            }
+        }
+    }
+    private static void scanForSubmodulesIn(Element projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
+        Element modules = XMLUtil.findElement(projectOrProfile, "modules", null);
+        if (modules != null) {
+            for (Element module : XMLUtil.findSubElements(modules)) {
+                if (module.getTagName().equals("module")) {
+                    registerWithSubmodules(FileUtilities.resolveFilePath(basedir, XMLUtil.findText(module)), registered);
+                }
+            }
+        }
+    }
 
 }

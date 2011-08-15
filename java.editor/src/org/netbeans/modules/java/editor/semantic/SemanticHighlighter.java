@@ -419,7 +419,8 @@ public class SemanticHighlighter extends JavaParserResultTask {
     }
     
     private static boolean isLocalVariableClosure(Element el) {
-        return el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.EXCEPTION_PARAMETER;
+        return el.getKind() == ElementKind.PARAMETER || el.getKind() == ElementKind.LOCAL_VARIABLE
+                || el.getKind() == ElementKind.RESOURCE_VARIABLE || el.getKind() == ElementKind.EXCEPTION_PARAMETER;
     }
     
     /** Detects static final long SerialVersionUID 
@@ -644,7 +645,8 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 return c;
             }
             
-            if (decl.getKind() == ElementKind.LOCAL_VARIABLE || decl.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+            if (decl.getKind() == ElementKind.LOCAL_VARIABLE || decl.getKind() == ElementKind.RESOURCE_VARIABLE
+                    || decl.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 c.add(ColoringAttributes.LOCAL_VARIABLE);
                 
                 return c;

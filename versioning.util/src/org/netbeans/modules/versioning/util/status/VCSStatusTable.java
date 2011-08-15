@@ -293,6 +293,17 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
 
     protected abstract JPopupMenu getPopup ();
 
+    /**
+     * Called when user dbl-clicks on a node. May be intercepted and handled in a different way. By default a node's preferred action is invoked.
+     * @param node 
+     */
+    protected void mouseClicked (VCSStatusNode node) {
+        Action action = node.getPreferredAction();
+        if (action != null && action.isEnabled()) {
+            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
+        }
+    }
+
     @Override
     public void mouseEntered(MouseEvent e) {
     }
@@ -323,10 +334,7 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
                 return;
             }
             VCSStatusNode node = tableModel.getNode(table.convertRowIndexToModel(row));
-            Action action = node.getPreferredAction();
-            if (action != null && action.isEnabled()) {
-                action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
-            }
+            mouseClicked(node);
         }
     }
 

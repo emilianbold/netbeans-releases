@@ -234,7 +234,10 @@ public class HyperlinkImpl implements HyperlinkProviderExt {
                 return "";
             }
         } catch (IOException ex) {
-            LOG.log(Level.FINE, null, ex);
+            LOG.log(Level.FINE, url != null ? url.toString() : null, ex);
+        } catch (IllegalArgumentException iae) {
+            // #198333
+            LOG.log(Level.FINE, url != null ? url.toString() : null, iae);
         } finally {
             if (baos != null) {
                 try {

@@ -314,4 +314,5 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }
+
 }

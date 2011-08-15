@@ -371,5 +371,10 @@ public class ModelSource implements SourceFileProperties {
     public LanguageStandard getLanguageStandard() {
         return LanguageStandard.Unknown;
     }
+
+    @Override
+    public String getCompileLine() {
+        return null;
+    }
 }
 

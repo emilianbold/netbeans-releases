@@ -54,6 +54,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
@@ -73,8 +74,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.netbeans.modules.xml.multiview.Error;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  * Multiview element for persistence.xml.
@@ -82,6 +85,14 @@ import org.openide.util.RequestProcessor;
  * @author Martin Adamek
  * @author Erno Mononen
  */
+@MultiViewElement.Registration(
+    displayName ="#LBL_Design",// NOI18N
+    iconBase=PUDataObject.ICON,
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=PUDataObject.PREFERRED_ID_DESIGN,
+    mimeType=PUDataObject.MIMETYPE,
+    position=1300
+)
 public class PersistenceToolBarMVElement extends ToolBarMultiViewElement implements PropertyChangeListener {
     
     private ToolBarDesignEditor comp;
@@ -94,15 +105,15 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     private RequestProcessor.Task repaintingTask;
     
     /** Creates a new instance of DesignMultiViewElement */
-    public PersistenceToolBarMVElement(PUDataObject dObj) {
-        super(dObj);
-        this.puDataObject=dObj;
-        this.project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
+    public PersistenceToolBarMVElement(Lookup context) {
+        super(context.lookup(PUDataObject.class));
+        this.puDataObject=context.lookup(PUDataObject.class);
+        this.project = FileOwnerQuery.getOwner(puDataObject.getPrimaryFile());
         addAction = new AddAction(NbBundle.getMessage(PersistenceToolBarMVElement.class,"LBL_Add"));
         removeAction = new RemoveAction(NbBundle.getMessage(PersistenceToolBarMVElement.class,"LBL_Remove"));
         
         comp = new ToolBarDesignEditor();
-        factory=new PersistenceUnitPanelFactory(comp,dObj);
+        factory=new PersistenceUnitPanelFactory(comp,puDataObject);
         setVisualEditor(comp);
         repaintingTask = RequestProcessor.getDefault().create(new Runnable() {
             @Override
@@ -137,16 +148,33 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     
     @Override
     public void componentShowing() {
-        super.componentShowing();
-        if (needInit){
-            if (!puDataObject.viewCanBeDisplayed()) {
-                view = new PersistenceView();
-                view.setRoot(Node.EMPTY);
-                comp.setContentView(view);
-                return;
-            }
-            needInit = !repaintView();
+       super.componentShowing();
+        view = new PersistenceView();
+        
+        if (!puDataObject.viewCanBeDisplayed()) {
+            view.setRoot(Node.EMPTY);
+            comp.setContentView(view);
+            return;
         }
+
+        view.initialize(puDataObject);
+        comp.setContentView(view);
+
+        Object lastActive = comp.getLastActive();
+        if (lastActive != null) {
+            view.openPanel(lastActive);
+        } else {
+            // Expand the first node in session factory if there is one
+            Node childrenNodes[] = view.getPersistenceUnitsNode().getChildren().getNodes();
+            if (childrenNodes.length > 0) {
+                view.selectNode(childrenNodes[0]);
+                if(childrenNodes[0].getChildren().getNodes().length>0){
+                    view.selectNode(childrenNodes[0].getChildren().getNodes()[0]);
+                }
+            }
+        }
+
+        view.checkValidity();
     }
 
     /**
@@ -249,7 +277,14 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             Node[] persistenceUnitNode = new Node[persistenceUnits.length];
             Children ch = new Children.Array();
             for (int i=0;i<persistenceUnits.length;i++) {
-                persistenceUnitNode[i] = new PersistenceUnitNode(persistenceUnits[i]);
+                //
+                Node mainPUNode = new ElementLeafNode(NbBundle.getMessage(PersistenceToolBarMVElement.class, "LBL_PU_General"));
+                // Node for properties
+                Node propertiesNode = new ElementLeafNode(NbBundle.getMessage(PersistenceToolBarMVElement.class, "LBL_PU_Properties"));
+                // Container Node for the properties inside the pu
+                Children puCh = new Children.Array();
+                puCh.add(new Node[]{mainPUNode, propertiesNode});
+                persistenceUnitNode[i] = new PersistenceUnitNode(puCh, persistenceUnits[i]);
             }
             ch.add(persistenceUnitNode);
             persistenceUnitsNode = new SectionContainerNode(ch);
@@ -264,13 +299,18 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             Node root = new AbstractNode(rootChildren);
             
             // creatings section panels for Chapters
-            SectionPanel[] pan = new SectionPanel[persistenceUnits.length];
+            SectionContainer[] pan = new SectionContainer[persistenceUnits.length];
             for (int i=0; i < persistenceUnits.length; i++) {
-                pan[i] = new SectionPanel(this, persistenceUnitNode[i],
-                        persistenceUnitNode[i].getDisplayName(), persistenceUnits[i], false, false);
+                pan[i] = new SectionContainer(this, persistenceUnitNode[i],
+                        persistenceUnitNode[i].getDisplayName(), false);
                 pan[i].setHeaderActions(new javax.swing.Action[]{removeAction});
                 persistenceUnitsCont.addSection(pan[i]);
-            }
+                Node mainPUNode = persistenceUnitNode[i].getChildren().getNodes()[0];
+                Node propertiesNode = persistenceUnitNode[i].getChildren().getNodes()[1];
+                Provider prov = persistenceUnits[i].getProvider()!=null ? ProviderUtil.getProvider(persistenceUnits[i]) : Util.getDefaultProvider(project);
+                pan[i].addSection(new SectionPanel(this, mainPUNode, mainPUNode.getDisplayName(), persistenceUnits[i], false, false));
+                pan[i].addSection(new SectionPanel(this, propertiesNode, propertiesNode.getDisplayName(), new PropertiesPanel.PropertiesParamHolder(persistenceUnits[i], prov), false, false));
+            }        
             addSection(persistenceUnitsCont);
             setRoot(root);
         }
@@ -288,8 +328,8 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     
     
     private class PersistenceUnitNode extends org.openide.nodes.AbstractNode {
-        PersistenceUnitNode(PersistenceUnit persistenceUnit) {
-            super(org.openide.nodes.Children.LEAF);
+        PersistenceUnitNode(Children children, PersistenceUnit persistenceUnit) {
+            super(children);
             setDisplayName(persistenceUnit.getName());
             setIconBaseWithExtension("org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"); //NOI18N
         }
@@ -300,6 +340,20 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         }
         
     }
+    
+    private class ElementLeafNode extends org.openide.nodes.AbstractNode {
+
+        ElementLeafNode(String displayName) {
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(displayName);
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            //return new HelpCtx(HibernateCfgDataObject.HELP_ID_DESIGN_HIBERNATE_CONFIGURATION); //NOI18N
+            return null;
+        }
+    }    
     
     /**
      * Handles adding of a new Persistence Unit via multiview.

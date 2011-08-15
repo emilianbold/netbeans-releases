@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.web.jsf;
 
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -60,7 +61,6 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;

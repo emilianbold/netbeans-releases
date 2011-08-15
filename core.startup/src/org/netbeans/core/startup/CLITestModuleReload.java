@@ -96,7 +96,7 @@ public final class CLITestModuleReload extends CLIHandler {
     
     protected void usage(PrintWriter w) {
         w.println("Module reload options:"); // NOI18N
-        w.println("  --reload /path/to/module.jar  Installs or reinstalls a module JAR file."); // NOI18N
+        w.println("  --reload /path/to/module.jar  install or reinstall a module JAR file"); // NOI18N
     }
 
 }

@@ -95,13 +95,13 @@ import org.openide.util.lookup.Lookups;
  * @author Maros Sandor
  */
 public class Annotator {
-    private static String badgeModified = "org/netbeans/modules/subversion/resources/icons/modified-badge.png";
-    private static String badgeConflicts = "org/netbeans/modules/subversion/resources/icons/conflicts-badge.png";
+    private static final String badgeModified = "org/netbeans/modules/subversion/resources/icons/modified-badge.png"; //NOI18N
+    private static final String badgeConflicts = "org/netbeans/modules/subversion/resources/icons/conflicts-badge.png"; //NOI18N
 
-    private static String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
+    private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally"); //NOI18N
+    private static final String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts"); //NOI18N
 
     private static final int STATUS_TEXT_ANNOTABLE = FileInformation.STATUS_NOTVERSIONED_EXCLUDED |
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_UPTODATE |
@@ -423,57 +423,60 @@ public class Annotator {
      */
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         List<Action> actions = new ArrayList<Action>(20);
+        File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
+        boolean noneVersioned = isNothingVersioned(files);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance").getAttribute("instanceCreate");
+            Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance", Action.class);
             if(a != null) actions.add(a);
-            a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
-            if(a instanceof ContextAwareAction) {
-                a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
-            }            
-            if(a != null) actions.add(a);
-            actions.add(SystemAction.get(RelocateAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
-            actions.add(SystemAction.get(UpdateToAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(StatusAction.class));
-            actions.add(SystemAction.get(DiffAction.class));
-            actions.add(SystemAction.get(UpdateAction.class));
-            actions.add(SystemAction.get(CommitAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(ExportDiffAction.class));
-            actions.add(SystemAction.get(PatchAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(CreateCopyAction.class));
-            actions.add(SystemAction.get(SwitchToAction.class));
-            actions.add(SystemAction.get(MergeAction.class));
-            actions.add(SystemAction.get(ExportAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(BlameAction.class));
-            actions.add(SystemAction.get(SearchHistoryAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(RevertModificationsAction.class));
-            actions.add(SystemAction.get(ResolveConflictsAction.class));
-            actions.add(SystemAction.get(IgnoreAction.class));
-            SystemAction lockAction = SystemAction.get(LockAction.class);
-            if (lockAction.isEnabled()) {
-                actions.add(lockAction);
+            if (noneVersioned) {
+                a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
+                if(a instanceof ContextAwareAction) {
+                    a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
+                }            
+                if(a != null) actions.add(a);
+            } else {
+                actions.add(SystemAction.get(RelocateAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(UpdateWithDependenciesAction.class));
+                actions.add(SystemAction.get(UpdateToAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(StatusAction.class));
+                actions.add(SystemAction.get(DiffAction.class));
+                actions.add(SystemAction.get(UpdateAction.class));
+                actions.add(SystemAction.get(CommitAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(ExportDiffAction.class));
+                actions.add(SystemAction.get(PatchAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(CreateCopyAction.class));
+                actions.add(SystemAction.get(SwitchToAction.class));
+                actions.add(SystemAction.get(MergeAction.class));
+                actions.add(SystemAction.get(ExportAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(BlameAction.class));
+                actions.add(SystemAction.get(SearchHistoryAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(RevertModificationsAction.class));
+                actions.add(SystemAction.get(ResolveConflictsAction.class));
+                actions.add(SystemAction.get(IgnoreAction.class));
+                SystemAction lockAction = SystemAction.get(LockAction.class);
+                if (lockAction.isEnabled()) {
+                    actions.add(lockAction);
+                }
+                SystemAction unlockAction = SystemAction.get(UnlockAction.class);
+                if ((unlockAction = SystemAction.get(UnlockAction.class)).isEnabled()) {
+                    actions.add(unlockAction);
+                }
+                actions.add(null);
+                actions.add(SystemAction.get(CleanupAction.class));
+                actions.add(SystemAction.get(VersioningInfoAction.class));
+                actions.add(SystemAction.get(SvnPropertiesAction.class));
             }
-            SystemAction unlockAction = SystemAction.get(UnlockAction.class);
-            if ((unlockAction = SystemAction.get(UnlockAction.class)).isEnabled()) {
-                actions.add(unlockAction);
-            }
-            actions.add(null);
-            actions.add(SystemAction.get(CleanupAction.class));
-            actions.add(SystemAction.get(VersioningInfoAction.class));
-            actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-            File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
             Lookup context = ctx.getElements();
-            boolean noneVersioned = isNothingVersioned(files);
             if (noneVersioned) {
-                Action a = (Action) FileUtil.getConfigFile("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance").getAttribute("instanceCreate");
+                Action a = FileUtil.getConfigObject("Actions/Subversion/org-netbeans-modules-subversion-ui-project-ImportAction.instance", Action.class);
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.singleton(ctx));
                 }            

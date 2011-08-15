@@ -48,13 +48,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.cookies.EditorCookie;
@@ -67,6 +67,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.RestrictThreadCreation;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -140,6 +141,10 @@ public class ProjectUtilitiesTest extends NbTestCase {
         (tc1_1_navigator = new SimpleTopComponent2 (do1_1_open, NAVIGATOR_MODE)).open ();
         
         ExitDialog.SAVE_ALL_UNCONDITIONALLY = true;
+
+        RestrictThreadCreation.permitStandard();
+        RestrictThreadCreation.permit(OpenProjectList.class.getName() + "$LoadOpenProjects.waitFinished");
+        RestrictThreadCreation.forbidNewThreads(false);
     }
     
     @SuppressWarnings("deprecation")
@@ -245,15 +250,15 @@ public class ProjectUtilitiesTest extends NbTestCase {
             }
         }
     }
-    
+
+    @RandomlyFails // in NB-Core-Build #6826, and reproducibly if testSavingModifiedNotOpenedFiles67526 is not run first
     public void testCloseAndOpenProjectAndClosedWithoutOpenFiles () {
         closeProjectWithOpenedFiles ();
 
         OpenProjectList.getDefault ().open (project1, false);
 
-        Iterator/*<TopComponent>*/ openTCs = WindowManager.getDefault ().getRegistry ().getOpened ().iterator ();
-        while (openTCs.hasNext ()) {
-            assertTrue ("TopComponent has been closed successfully.", ((TopComponent)openTCs.next ()).close ());
+        for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
+            assertTrue("TopComponent has been closed successfully.", tc.close());
         }
         
         if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false)) {

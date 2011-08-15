@@ -144,6 +144,7 @@ public class WebServiceClientWizardIterator implements TemplateWizard.Iterator {
         switch (wsdlSource) {
             case 0: params[4] = "FROM PROJECT";break; //NOI18N
             case 1: params[4] = "FROM FILE";break; //NOI18N
+            case 3: params[4] = "FROM SAAS WSDL";break; //NOI18N
             default: params[4] = "FROM URL"; //NOI18N
         }
         LogUtils.logWsWizard(params);

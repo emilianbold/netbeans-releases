@@ -141,7 +141,8 @@ public class CodeCustomizer implements CustomCodeView.Listener {
      *         declaration code
      */
     private int[] getSourcePositions() {
-        SimpleSection sec = FormEditor.getFormDataObject(formModel).getFormEditorSupport().getInitComponentSection();
+        EditorSupport es = FormEditor.getFormDataObject(formModel).getFormEditorSupport();
+        SimpleSection sec = es.getGuardedSectionManager().findSimpleSection(EditorSupport.SECTION_INIT_COMPONENTS);
         return new int[] { sec.getText().indexOf('{') + 2 + sec.getStartPosition().getOffset(),
                            sec.getEndPosition().getOffset() + 1 };
     }

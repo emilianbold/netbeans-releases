@@ -28,7 +28,7 @@ Other names may be trademarks of their respective owners.
     <tocitem text="Searching Files" target="files.search" />
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />
- <tocitem text="Working with Tasks List" target="org.netbeans.modules.tasklist.docscan.SourceTasksView" />
+    <tocitem text="Adding Tasks to the Task List" target="files.tasklist" />
     <tocitem text="Creating a Template" target="files.template" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />

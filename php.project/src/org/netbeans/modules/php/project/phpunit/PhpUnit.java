@@ -51,13 +51,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
@@ -87,6 +85,9 @@ import org.openide.windows.InputOutput;
  * @author Tomas Mysik
  */
 public abstract class PhpUnit extends PhpProgram {
+
+    protected static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
+
     // for keeping log files to able to evaluate and fix issues
     public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
     // options
@@ -105,6 +106,9 @@ public abstract class PhpUnit extends PhpProgram {
     public static final String PARAM_FILTER = "--filter"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
+    public static final String PARAM_LIST_GROUPS = "--list-groups"; // NOI18N
+    public static final String PARAM_GROUP = "--group"; // NOI18N
+
     // for older PHP Unit versions
     public static final String PARAM_SKELETON_OLD = "--skeleton"; // NOI18N
     // bootstrap & config
@@ -114,8 +118,8 @@ public abstract class PhpUnit extends PhpProgram {
     private static final String CONFIGURATION_FILENAME = "configuration%s.xml"; // NOI18N
 
     // output files
-    public static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-log.xml"); // NOI18N
-    public static final File COVERAGE_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-phpunit-coverage.xml"); // NOI18N
+    public static final File XML_LOG;
+    public static final File COVERAGE_LOG;
 
     // suite file
     public static final File SUITE;
@@ -148,7 +152,22 @@ public abstract class PhpUnit extends PhpProgram {
         if (SUITE == null || !SUITE.isFile()) {
             throw new IllegalStateException("Could not locate file " + SUITE_REL_PATH);
         }
-    }
+        // output files, see #200775
+        String logDirName = System.getProperty("java.io.tmpdir"); // NOI18N
+        String userLogDirName = System.getProperty("nb.php.phpunit.logdir"); // NOI18N
+        if (userLogDirName != null) {
+            LOGGER.log(Level.INFO, "Custom directory for PhpUnit logs provided: {0}", userLogDirName);
+            File userLogDir = new File(userLogDirName);
+            if (userLogDir.isDirectory() && userLogDir.canWrite()) {
+                logDirName = userLogDirName;
+            } else {
+                LOGGER.log(Level.WARNING, "Directory for PhpUnit logs {0} is not writable directory", userLogDirName);
+            }
+        }
+        LOGGER.log(Level.FINE, "Directory for PhpUnit logs: {0}", logDirName);
+        XML_LOG = new File(logDirName, "nb-phpunit-log.xml"); // NOI18N
+        COVERAGE_LOG = new File(logDirName, "nb-phpunit-coverage.xml"); // NOI18N
+     }
 
     PhpUnit(String command) {
         super(command);
@@ -164,7 +183,7 @@ public abstract class PhpUnit extends PhpProgram {
         if (hasValidVersion(new PhpUnitCustom(command))
                 && version[0] >= MINIMAL_VERSION_PHP53[0]
                 && version[1] >= MINIMAL_VERSION_PHP53[1]) {
-            return new PhpUnit34(command);
+            return new PhpUnitImpl(command);
         }
         return new PhpUnit33(command);
     }
@@ -291,7 +310,7 @@ public abstract class PhpUnit extends PhpProgram {
             case PHP_53:
                 if (version[0] <= MINIMAL_VERSION_PHP53[0]
                         && version[1] < MINIMAL_VERSION_PHP53[1]) {
-                    // this instanceof PhpUnit34; - would not work with PhpUnit35 etc.
+                    // this instanceof PhpUnitImpl; - would not work with PhpUnit35 etc.
                     error = NbBundle.getMessage(PhpUnit.class, "MSG_OldPhpUnitPhp53", PhpUnit.getVersions(phpUnit, project));
                 }
                 break;
@@ -334,16 +353,9 @@ public abstract class PhpUnit extends PhpProgram {
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new OutputProcessorFactory());
-        ExecutionService service = ExecutionService.newService(externalProcessBuilder, executionDescriptor, null);
-        Future<Integer> result = service.run();
-        try {
-            result.get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            // ignored
-            LOGGER.log(Level.INFO, null, ex);
-        }
+        String message = NbBundle.getMessage(PhpUnit.class, "LBL_ValidatingPhpUnit");
+        execute(externalProcessBuilder, executionDescriptor, message, message);
+
         return version;
     }
 

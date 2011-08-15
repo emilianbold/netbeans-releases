@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author marek.fukala@sun.com
+ * @author mfukala@netbeans.org
  */
 public class CssHelpResolver {
 
@@ -128,7 +128,7 @@ public class CssHelpResolver {
                 file_content = baos.toString();
                 baos.close();
             } catch (java.io.IOException e) {
-                Logger.global.log(Level.WARNING, "Cannot read css help file.", e); //NOI18N
+                Logger.getAnonymousLogger().log(Level.WARNING, "Cannot read css help file.", e); //NOI18N
             }
 
             pages_cache.put(path, file_content);
@@ -197,7 +197,7 @@ public class CssHelpResolver {
             try {
                 return new URL(hzurl + pd.helpLink);
             } catch (MalformedURLException ex) {
-                Logger.global.log(Level.WARNING, "Error creating URL for property " + propertyName, ex); //NOI18N
+                Logger.getAnonymousLogger().log(Level.WARNING, "Error creating URL for property " + propertyName, ex); //NOI18N
                 return null;
             }
         }
@@ -208,12 +208,12 @@ public class CssHelpResolver {
 //        if (pd != null) {
 //            String valueHelpLink = pd.values.get(propertyValueName);
 //            if (valueHelpLink == null) {
-//                Logger.global.warning("No such value " + propertyValueName + " for property " + propertyName);
+//                Logger.getAnonymousLogger().warning("No such value " + propertyValueName + " for property " + propertyName);
 //            } else {
 //                try {
 //                    return new URL(valueHelpLink);
 //                } catch (MalformedURLException ex) {
-//                    Logger.global.log(Level.WARNING, "Error creating URL for property value " + propertyValueName + " (property " + propertyName + ")", ex);
+//                    Logger.getAnonymousLogger().log(Level.WARNING, "Error creating URL for property value " + propertyValueName + " (property " + propertyName + ")", ex);
 //                }
 //            }
 //        }
@@ -222,7 +222,7 @@ public class CssHelpResolver {
     private PropertyDescriptor getPD(String propertyName) {
         PropertyDescriptor pd = properties.get(propertyName.toLowerCase());
         if (pd == null) {
-            Logger.global.warning("No such property: " + propertyName); //NOI18N
+            Logger.getAnonymousLogger().log(Level.WARNING, "No such property: {0}", propertyName); //NOI18N
             return null;
         } else {
             return pd;

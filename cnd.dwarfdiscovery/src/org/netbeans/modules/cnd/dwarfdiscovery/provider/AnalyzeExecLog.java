@@ -239,21 +239,21 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
         String root = "";
         if (p != null) {
             root = (String) p.getValue();
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, storage);
         progress = null;
         return res;
 
     }
 
-    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project) {
+    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, CompileLineStorage storage) {
         ExecLogReader clrf = new ExecLogReader(objFileName, root, project);
-        List<SourceFileProperties> list = clrf.getResults(progress, isStoped);
+        List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
         return list;
     }
     private Progress progress;
@@ -285,7 +285,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     if (myFileProperties == null) {
                         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null);
+                            myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, new CompileLineStorage());
                         }
                     }
                     return myFileProperties;
@@ -360,7 +360,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         //        findme.o
         //
 
-        private void run(Progress progress, AtomicBoolean isStoped) {
+        private void run(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
             result = new ArrayList<SourceFileProperties>();
             File file = new File(fileName);
             if (file.exists() && file.canRead()) {
@@ -404,7 +404,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             if (line.length()==0) {
                                 // create new result entry
                                 try {
-                                    addSources(tool, params);
+                                    addSources(tool, params, storage);
                                 } catch (Throwable ex) {
                                     // ExecSource constructor can throw IllegalArgumentException for non source exec
                                     if (TRACE) {
@@ -432,14 +432,14 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             }
         }
 
-        public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped) {
+        public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
             if (result == null) {
-                run(progress, isStoped);
+                run(progress, isStoped, storage);
             }
             return result;
         }
         
-        private void addSources(String tool, List<String> args) {
+        private void addSources(String tool, List<String> args, CompileLineStorage storage) {
             String compiler = null;
             ItemProperties.LanguageKind language = null;
             String compilePath = null;
@@ -530,13 +530,23 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             language = ItemProperties.LanguageKind.C;
                         }
                     }
-                    ExecSource res = new ExecSource();
+                    ExecSource res = new ExecSource(storage);
                     res.compilePath = compilePath;
                     res.sourceName = sourceName;
                     res.fullName = fullName;
                     res.language = language;
                     res.userIncludes = userIncludes;
                     res.userMacros = userMacros;
+                    if (storage != null) {
+                        StringBuilder buf = new StringBuilder();
+                        for (int i = 2; i < args.size(); i++) {
+                            if (buf.length() > 0) {
+                                buf.append(' ');
+                            }
+                            buf.append(args.get(i));
+                        }
+                        res.handler = storage.putCompileLine(buf.toString());
+                    }
                     result.add(res);
                 } else {
                     continue;
@@ -557,8 +567,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private Map<String, String> userMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
+        private final CompileLineStorage storage;
+        private int handler = -1;
 
-        private ExecSource() {
+        private ExecSource(CompileLineStorage storage) {
+            this.storage = storage;
         }
         
         @Override
@@ -569,6 +582,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         @Override
         public String getItemPath() {
             return fullName;
+        }
+
+        @Override
+        public String getCompileLine() {
+            return storage.getCompileLine(handler);
         }
 
         @Override

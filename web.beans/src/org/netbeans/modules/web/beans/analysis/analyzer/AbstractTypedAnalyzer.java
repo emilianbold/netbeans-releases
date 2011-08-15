@@ -60,7 +60,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 
 
 /**
@@ -72,20 +72,21 @@ public abstract class AbstractTypedAnalyzer {
     private static final String TYPED = "javax.enterprise.inject.Typed";    // NOI18N
     
     public void analyze( Element element, TypeMirror elementType, 
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel , CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         List<TypeMirror> list = getRestrictedTypes(element, compInfo, cancel);
         if ( list == null ){
             return;
         }
+        result.requireCdiEnabled(element);
         for (TypeMirror type : list) {
             if ( cancel.get()){
                 return;
             }
             boolean isSubtype = hasBeanType(element, elementType, type, compInfo);
             if (!isSubtype) {
-                addError(element, compInfo, descriptions);
+                addError(element, result );
             }
         }
         // check @Specializes types restriction conformance
@@ -95,14 +96,13 @@ public abstract class AbstractTypedAnalyzer {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.SPECIALIZES, 
                 compInfo))
         {
-            checkSpecializes( element , elementType , list, compInfo , 
-                    descriptions , cancel );
+            result.requireCdiEnabled(element);
+            checkSpecializes( element , elementType , list,  cancel , result );
         }
     }
     
     protected abstract void checkSpecializes( Element element, TypeMirror elementType,
-            List<TypeMirror> restrictedTypes, CompilationInfo compInfo, 
-            List<ErrorDescription> descriptions,AtomicBoolean cancel );
+            List<TypeMirror> restrictedTypes, AtomicBoolean cancel , CdiAnalysisResult result );
 
     protected boolean hasBeanType( Element subject, TypeMirror elementType, 
             TypeMirror requiredBeanType,CompilationInfo compInfo )
@@ -111,7 +111,7 @@ public abstract class AbstractTypedAnalyzer {
     }
     
     protected abstract void addError ( Element element , 
-            CompilationInfo compInfo , List<ErrorDescription> descriptions );
+            CdiAnalysisResult result );
 
     protected void collectAncestors(TypeElement type , Set<TypeElement> ancestors, 
             CompilationInfo compInfo )

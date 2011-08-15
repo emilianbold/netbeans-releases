@@ -87,9 +87,17 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
             <file name="org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
             <file name="org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-DockWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloseModeAction.instance"/>
             <file name="org-netbeans-core-windows-actions-MinimizeModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MinimizeWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-UndockModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-DockModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-NewTabGroupAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-CollapseTabGroupAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-ResizeModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MoveModeAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-MoveWindowAction.instance"/>
         </folder>
     </folder>
     
@@ -156,42 +164,93 @@ made subject to such option by the copyright holder.
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	        <attr name="position" intvalue="2000"/>
             </file>
-            <file name="CloseWindowAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+            <folder name="ConfigureWindow">
                 <attr name="position" intvalue="2100"/>
-            </file>
-            <file name="MaximizeWindowAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
-                <attr name="position" intvalue="2200"/>
-            </file>
-            <file name="org-netbeans-core-windows-actions-UndockAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
-                <attr name="position" intvalue="2300"/>
-            </file>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.windows.resources.Bundle"/>
+                
+                <!-- maximize window -->
+                <file name="MaximizeWindowAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                
+                <!-- float window -->
+                <file name="org-netbeans-core-windows-actions-UndockAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                
+                <!-- float group -->
+                <file name="org-netbeans-core-windows-actions-UndockModeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-UndockModeAction.instance"/>
+                    <attr name="position" intvalue="300"/>
+                </file>
+                
+                <!-- minimize window -->
+                <file name="org-netbeans-core-windows-actions-MinimizeWindowAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MinimizeWindowAction.instance"/>
+                    <attr name="position" intvalue="400"/>
+                </file>
+                
+                <!-- minimize group -->
+                <file name="org-netbeans-core-windows-actions-MinimizeModeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MinimizeModeAction.instance"/>
+                    <attr name="position" intvalue="500"/>
+                </file>
+                
+                <!-- dock window -->
+                <file name="org-netbeans-core-windows-actions-DockWindowAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DockWindowAction.instance"/>
+                    <attr name="position" intvalue="600"/>
+                </file>
+                
+                <!-- dock group -->
+                <file name="org-netbeans-core-windows-actions-DockModeAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DockModeAction.instance"/>
+                    <attr name="position" intvalue="700"/>
+                </file>
+
+                <file name="Separator1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="800"/>
+                </file>
+
+                <!-- clone document -->
+                <file name="CloneDocumentAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
+                    <attr name="position" intvalue="900"/>
+                </file>
+                
+                <file name="NewDocumentTabGroupAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NewTabGroupAction.instance"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+                
+                <file name="CollapseDocumentTabGroupAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CollapseTabGroupAction.instance"/>
+                    <attr name="position" intvalue="1100"/>
+                </file>
+
+            </folder>
             <file name="Separator4.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="2400"/>
+	        <attr name="position" intvalue="2300"/>
             </file>
-            <file name="CloneDocumentAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
-                <attr name="position" intvalue="2500"/>
+            <file name="CloseWindowAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+                <attr name="position" intvalue="2400"/>
             </file>
             <file name="CloseAllDocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
-                <attr name="position" intvalue="2600"/>
+                <attr name="position" intvalue="2500"/>
             </file>
             <file name="CloseAllButThisAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
-                <attr name="position" intvalue="2700"/>
+                <attr name="position" intvalue="2600"/>
             </file>
             <file name="DocumentsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance"/>
-                <attr name="position" intvalue="2800"/>
-            </file>
-            
-            <file name="Separator5.instance">
-	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="2900"/>
+                <attr name="position" intvalue="2700"/>
             </file>
             
         </folder>

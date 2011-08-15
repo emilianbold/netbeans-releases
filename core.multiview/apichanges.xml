@@ -110,6 +110,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="tab.switching.action.in.popup">
+        <api name="multiview_api"/>
+        <summary>Tab switching action in popup</summary>
+        <version major="1" minor="25"/>
+        <date day="18" month="7" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" semantic="incompatible"/>
+        <description>
+            Toolbar can be <a href="@TOP@architecture-summary.html#preferences-multiview.toolbarVisible">
+            hidden completely</a>. To compensate that new
+            tab switching action is available in popup of multi view 
+            components by default.
+        </description>
+        <issue number="199545"/>
+    </change>
     <change id="MultiViewEditorElement">
         <api name="multiview_text"/>
         <summary>MultiViewEditorElement</summary>
@@ -150,7 +165,7 @@ is the proper place.
             <a href="@TOP@org/netbeans/core/spi/multiview/MultiViewElement.html">
             MultiViewElement</a> via 
             <a href="@TOP@org/netbeans/core/spi/multiview/MultiViewElement.Registration.html">
-            @Registration</a> annotation.
+            Registration</a> annotation.
         </description>
         <class package="org.netbeans.core.spi.multiview" name="MultiViewElement"/>
         <issue number="196810"/>

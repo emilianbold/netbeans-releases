@@ -53,6 +53,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -80,16 +81,21 @@ public class UpdateAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        update(HgUtils.getCurrentContext(nodes));
+        update(HgUtils.getCurrentContext(nodes), null);
     }
-    
-    public static void update(final VCSContext ctx){
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/mercurial/resources/icons/update.png"; // NOI18N
+    }
+
+    public static void update(final VCSContext ctx, HgLogMessage rev){
 
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
 
-        final Update update = new Update(root);
+        final Update update = new Update(root, rev);
         if (!update.showDialog()) {
             return;
         }

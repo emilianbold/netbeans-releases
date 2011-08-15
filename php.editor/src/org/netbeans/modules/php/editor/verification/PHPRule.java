@@ -279,6 +279,11 @@ abstract class PHPRule implements AstRule, UserConfigurableRule, Visitor {
     public void visit(PHPVarComment node) {
     }
 
+    @Override
+    public void visit(PHPDocMethodTag node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     public void visit(PostfixExpression postfixExpression) {
     }
 

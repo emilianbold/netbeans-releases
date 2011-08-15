@@ -166,6 +166,9 @@ public class HtmlHintsProvider implements HintsProvider {
         for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
             ext.computeSelectionHints(manager, context, suggestions, start, end);
         }
+        
+        suggestions.add(new SurroundWithTag(context, new OffsetRange(start, end)));
+        suggestions.add(new RemoveSurroundingTag(context, new OffsetRange(start, end)));
     }
 
     /**

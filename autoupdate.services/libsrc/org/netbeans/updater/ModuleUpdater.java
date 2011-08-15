@@ -665,7 +665,7 @@ public final class ModuleUpdater extends Thread {
     }
 
     /** Gets the netbeans directory */
-    private File getMainDirectory (File activeCluster) {
+    private static File getMainDirectory (File activeCluster) {
         // #72918: Post-install cannot write into platform cluster
         File mainDirectory = new File (activeCluster, UpdateTracking.FILE_SEPARATOR + UpdaterDispatcher.UPDATE_DIR + UpdateTracking.FILE_SEPARATOR + UPDATE_MAIN_DIR);
         if (! mainDirectory.isDirectory ()) {
@@ -675,7 +675,7 @@ public final class ModuleUpdater extends Thread {
         return mainDirectory;
     }
     
-    private String getMainDirString (File activeCluster) {
+    private static String getMainDirString (File activeCluster) {
         return getMainDirectory (activeCluster).getPath ();
     }
     
@@ -687,7 +687,7 @@ public final class ModuleUpdater extends Thread {
       */
      public static final String quoteString(String s) {
          if ( s.indexOf( SPACE ) > -1 ) {
-             StringBuffer sb = new StringBuffer(s);
+             StringBuilder sb = new StringBuilder(s);
              int i = 0;
              while ( i < sb.length() ) {
                  if ( sb.charAt(i) == QUOTE )
@@ -929,7 +929,7 @@ public final class ModuleUpdater extends Thread {
 
     
     /** read jvm parameters from jvm parameters file */
-    class MainConfig extends Object {
+    static class MainConfig extends Object {
         
         /** The names of properties from jvm parameters file */
         private final String PAR_MAIN = "mainClass";               // NOI18N
@@ -941,6 +941,7 @@ public final class ModuleUpdater extends Thread {
         private final String VAR_IDE_HOME = "%IDE_HOME%";          // NOI18N
         private final String VAR_IDE_USER = "%IDE_USER%";          // NOI18N
         private final String VAR_FILE_SEPARATOR = "%FS%";          // NOI18N        
+        private final String VAR_PATH_SEPARATOR = "%PS%";          // NOI18N        
         private final String VAR_JAVA_HOME = "%JAVA_HOME%";        // NOI18N        
     
         /** joined all parameters of jvm java command */
@@ -1023,6 +1024,8 @@ public final class ModuleUpdater extends Thread {
                 UpdateTracking.getUserDir () == null ? "" : UpdateTracking.getUserDir ().getPath());
             original = replaceAll(original, VAR_FILE_SEPARATOR,
                 UpdateTracking.FILE_SEPARATOR);            
+            original = replaceAll(original, VAR_PATH_SEPARATOR,
+                UpdateTracking.PATH_SEPARATOR);            
             original = replaceAll(original, VAR_JAVA_HOME,
                 System.getProperty ("java.home")); // NOI18N
             return original;
@@ -1038,7 +1041,7 @@ public final class ModuleUpdater extends Thread {
         
         /** replace all occurences of String what by String repl in the String sin */
         private String replaceAll(String sin, String what, String repl) {
-            StringBuffer sb = new StringBuffer(sin);
+            StringBuilder sb = new StringBuilder(sin);
             int i = sb.toString().indexOf(what);
             int len = what.length();
             while ( i > -1 ) {

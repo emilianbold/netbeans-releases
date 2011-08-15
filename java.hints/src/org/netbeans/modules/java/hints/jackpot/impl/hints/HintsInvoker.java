@@ -146,7 +146,7 @@ public class HintsInvoker {
             }
 
             if (caret != -1) {
-                if (m.kind == HintMetadata.Kind.SUGGESTION || m.kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
+                if (m.kind == HintMetadata.Kind.SUGGESTION) {
                     descs.addAll(e.getValue());
                 } else {
                     Preferences pref = RulesManager.getPreferences(m.id, HintsSettings.getCurrentProfileId());
@@ -155,7 +155,7 @@ public class HintsInvoker {
                     }
                 }
             } else {
-                if (m.kind == HintMetadata.Kind.HINT || m.kind == HintMetadata.Kind.HINT_NON_GUI) {
+                if (m.kind == HintMetadata.Kind.HINT) {
                     Preferences pref = RulesManager.getPreferences(m.id, HintsSettings.getCurrentProfileId());
                     if (HintsSettings.getSeverity(m, pref) != HintSeverity.CURRENT_LINE_WARNING) {
                         descs.addAll(e.getValue());

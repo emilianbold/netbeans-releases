@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.css.indexing;
 
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,15 +59,9 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.css.gsf.CssGSFParser;
-import org.netbeans.modules.css.gsf.CssLanguage;
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserConstants;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.NodeVisitor;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.css.parser.Token;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
+import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -78,7 +77,7 @@ import org.openide.util.Exceptions;
 /**
  * Instances of this class represents a css model associated with a snapshot of the file content.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class CssFileModel {
 
@@ -88,10 +87,10 @@ public class CssFileModel {
     private Collection<Entry> classes, ids, htmlElements, imports, colors;
     private final Snapshot snapshot;
     private final Snapshot topLevelSnapshot;
-    private SimpleNode parseTreeRoot;
+    private Node parseTreeRoot;
 
     public static CssFileModel create(Source source) throws ParseException {
-        final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
+        final AtomicReference<CssCslParserResult> result = new AtomicReference<CssCslParserResult>();
         final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
 
@@ -99,13 +98,13 @@ public class CssFileModel {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
                 snapshot.set(resultIterator.getSnapshot());
-                result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
+                result.set(cssRi == null ? null : (CssCslParserResult) cssRi.getParserResult());
             }
         });
 
         assert snapshot.get() != null; //at least the top level snapshot should always be available
 
-        return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get(), snapshot.get());
+        return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get().getWrappedCssParserResult(), snapshot.get());
     }
 
     public static CssFileModel create(CssParserResult result) {
@@ -117,12 +116,13 @@ public class CssFileModel {
     }
 
     private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
-        snapshot = parserResult.getSnapshot();
-        parseTreeRoot = parserResult.root();
+        this.snapshot = parserResult.getSnapshot();
         this.topLevelSnapshot = topLevelSnapshot;
-
+        this.parseTreeRoot = parserResult.getParseTree();
+        
         if (parseTreeRoot != null) {
-            SimpleNodeUtil.visitChildren(parseTreeRoot, new AstVisitor());
+            ParseTreeVisitor visitor = new ParseTreeVisitor();
+            visitor.visitChildren(parseTreeRoot);
         } //else broken source, no parse tree
 
     }
@@ -247,54 +247,34 @@ public class CssFileModel {
         return buf.toString();
     }
 
-    private class AstVisitor implements NodeVisitor {
+    private class ParseTreeVisitor extends NodeVisitor {
 
+        private int[] currentBodyRange;
+        
         @Override
-        public void visit(SimpleNode node) {
-            if (node.kind() == CssParserTreeConstants.JJTIMPORTRULE) {
+        public boolean visit(Node node) {
+            if (node.type() == NodeType.imports) {
                 Entry entry = getImportedEntry(node);
                 if (entry != null) {
                     getImportsCollectionInstance().add(entry);
                 }
-            } else if (node.kind() == CssParserTreeConstants.JJT_CLASS
-                    || node.kind() == CssParserTreeConstants.JJTHASH
-                    || node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
+            } else if (node.type() == NodeType.ruleSet) {
+                currentBodyRange = NodeUtil.getRuleBodyRange(node);
+            } else if (NodeUtil.isSelectorNode(node)) {
 
                 Collection<Entry> collection;
                 int start_offset_diff;
-                //find the selector body range if possible
-                SimpleNode styleRuleNode = SimpleNodeUtil.getAncestorByType(node, CssParserTreeConstants.JJTSTYLERULE);
-                OffsetRange body = null;
-                if (styleRuleNode != null) {
-                    //find the opening left curly bracket {
-                    Token first = styleRuleNode.jjtGetFirstToken();
-                    Token last = styleRuleNode.jjtGetLastToken();
-                    int from = -1;
-                    do {
-                        if (first.kind == CssParserConstants.LBRACE) {
-                            from = first.offset + 1;
-                            break;
-                        }
-                    } while ((first = first.next) != last);
 
-                    //get the closing right curly bracket }
-                    int to = last.kind == CssParserConstants.RBRACE ? last.offset : -1;
-
-                    if (from != -1 && to != -1) {
-                        body = new OffsetRange(from, to);
-                    }
-                }
-
-                switch (node.kind()) {
-                    case CssParserTreeConstants.JJT_CLASS:
+                switch (node.type()) {
+                    case cssClass:
                         collection = getClassesCollectionInstance();
                         start_offset_diff = 1; //cut off the dot (.)
                         break;
-                    case CssParserTreeConstants.JJTHASH:
+                    case cssId:
                         collection = getIdsCollectionInstance();
                         start_offset_diff = 1; //cut of the hash (#)
                         break;
-                    case CssParserTreeConstants.JJTELEMENTNAME:
+                    case elementName:
                         collection = getHtmlElementsCollectionInstance();
                         start_offset_diff = 0;
                         break;
@@ -303,51 +283,53 @@ public class CssFileModel {
                         start_offset_diff = 0;
                 }
 
-                String image = node.image().substring(start_offset_diff);
-                OffsetRange range = new OffsetRange(node.startOffset() + start_offset_diff, node.endOffset());
+                CharSequence image = node.image().subSequence(start_offset_diff, node.image().length());
+                OffsetRange range = new OffsetRange(node.from() + start_offset_diff, node.to());
 
                 //check if the real start offset can be translated to the original offset
-                boolean isVirtual = getSnapshot().getOriginalOffset(node.startOffset()) == -1;
+                boolean isVirtual = getSnapshot().getOriginalOffset(node.from()) == -1;
 
-                Entry e = createEntry(image, range, body, isVirtual);
+                OffsetRange body = currentBodyRange != null ? new OffsetRange(currentBodyRange[0], currentBodyRange[1]) : OffsetRange.NONE;
+                Entry e = createEntry(image.toString(), range, body, isVirtual);
                 if (e != null) {
                     collection.add(e);
                 }
 
-            } else if (node.kind() == CssParserTreeConstants.JJTHEXCOLOR) {
-                String image = SimpleNodeUtil.getNodeImage(node);
+            } else if (node.type() == NodeType.hexColor) {
+                CharSequence image = node.image();
                 int[] wsLens = getTextWSPreAndPostLens(image);
-                image = image.substring(wsLens[0], image.length() - wsLens[1]);
-                OffsetRange range = new OffsetRange(node.startOffset() + wsLens[0], node.endOffset() - wsLens[1]);
-                Entry e = createEntry(image, range, false);
+                image = image.subSequence(wsLens[0], image.length() - wsLens[1]);
+                OffsetRange range = new OffsetRange(node.from() + wsLens[0], node.to() - wsLens[1]);
+                Entry e = createEntry(image.toString(), range, false);
                 if (e != null) {
                     getColorsCollectionInstance().add(e);
                 }
             }
+            return false;
         }
 
-        private Entry getImportedEntry(SimpleNode node) {
+        private Entry getImportedEntry(Node node) {
             //@import "resources/global.css";
-            Token token = SimpleNodeUtil.getNodeToken(node, CssParserConstants.STRING);
+            Node token = NodeUtil.getChildTokenNode(node, CssTokenId.STRING);
             if (token != null) {
-                String image = token.image;
+                CharSequence image = token.image();
                 boolean quoted = WebUtils.isValueQuoted(image);
                 return createEntry(WebUtils.unquotedValue(image),
-                        new OffsetRange(token.offset + (quoted ? 1 : 0),
-                        token.offset + image.length() - (quoted ? 1 : 0)),
+                        new OffsetRange(token.from() + (quoted ? 1 : 0),
+                        token.to() - (quoted ? 1 : 0)),
                         false);
             }
 
             //@import url("another.css");
-            token = SimpleNodeUtil.getNodeToken(node, CssParserConstants.URI);
+            token = NodeUtil.getChildTokenNode(node, CssTokenId.URL);
             if (token != null) {
-                Matcher m = URI_PATTERN.matcher(token.image);
+                Matcher m = URI_PATTERN.matcher(token.image());
                 if (m.matches()) {
                     int groupIndex = 1;
                     String content = m.group(groupIndex);
                     boolean quoted = WebUtils.isValueQuoted(content);
-                    int from = token.offset + m.start(groupIndex) + (quoted ? 1 : 0);
-                    int to = token.offset + m.end(groupIndex) - (quoted ? 1 : 0);
+                    int from = token.from() + m.start(groupIndex) + (quoted ? 1 : 0);
+                    int to = token.from() + m.end(groupIndex) - (quoted ? 1 : 0);
                     return createEntry(WebUtils.unquotedValue(content),
                             new OffsetRange(from, to),
                             false);
@@ -364,14 +346,14 @@ public class CssFileModel {
 
     private Entry createEntry(String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
         //do not create entries for virtual generated code
-        if (CssGSFParser.containsGeneratedCode(name)) {
-            return null;
-        }
+//        if (CssGSFParser.containsGeneratedCode(name)) {
+//            return null;
+//        }
 
         return new LazyEntry(name, range, bodyRange, isVirtual);
     }
 
-    private static int[] getTextWSPreAndPostLens(String text) {
+    private static int[] getTextWSPreAndPostLens(CharSequence text) {
         int preWSlen = 0;
         int postWSlen = 0;
 

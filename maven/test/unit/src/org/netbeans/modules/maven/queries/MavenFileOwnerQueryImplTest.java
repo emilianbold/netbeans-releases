@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
+import java.util.Arrays;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -60,8 +61,12 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
         clearWorkDir();
     }
 
-    protected @Override int timeOut() {
-        return 300000;
+    public void testFindCoordinates() throws Exception {
+        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        assertEquals("[test, prj, 1.0]", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(new File(repo, "test/prj/1.0/prj-1.0.jar"))));
+        assertEquals("[my.test, prj, 1.0-SNAPSHOT]", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(new File(repo, "my/test/prj/1.0-SNAPSHOT/prj-1.0-SNAPSHOT.pom"))));
+        assertEquals("null", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(new File(repo, "test/prj/1.0"))));
+        assertEquals("null", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(getWorkDir())));
     }
 
     public void testMultipleVersions() throws Exception {

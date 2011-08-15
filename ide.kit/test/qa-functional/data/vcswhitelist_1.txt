@@ -1,10 +1,5 @@
+#serves for VCSClassloadingTest.testOpenIDE
 #include biglist.txt
-javax.management.ObjectName
-javax.swing.BoxLayout
-org.apache.lucene.index.DirectoryReader$MultiTermEnum
-org.apache.lucene.index.DirectoryReader$ReaderCommit
-org.apache.lucene.index.StaleReaderException
-
 
 #Versioning classes that should be loaded on startup:
 org.netbeans.lib.cvsclient.admin.AdminHandler
@@ -21,23 +16,6 @@ org.netbeans.lib.cvsclient.file.TransmitTextFilePreprocessor
 org.netbeans.lib.cvsclient.file.WriteRcsDiffFilePreprocessor
 org.netbeans.lib.cvsclient.file.WriteTextFilePreprocessor
 org.netbeans.modules.git.ModuleLifecycleManager
-org.netbeans.modules.mercurial.FileInformation
-org.netbeans.modules.mercurial.FileStatusCache
-org.netbeans.modules.mercurial.HgException
-org.netbeans.modules.mercurial.HgException$HgCommandCanceledException
-org.netbeans.modules.mercurial.HgException$HgTooLongArgListException
-org.netbeans.modules.mercurial.HgModuleConfig
-org.netbeans.modules.mercurial.Mercurial
-org.netbeans.modules.mercurial.MercurialAnnotator
-org.netbeans.modules.mercurial.MercurialInterceptor
-org.netbeans.modules.mercurial.MercurialInterceptor$HgFolderEventsHandler
-org.netbeans.modules.mercurial.MercurialInterceptor$LockedRepositoryRefreshTask
-org.netbeans.modules.mercurial.MercurialInterceptor$RefreshTask
-org.netbeans.modules.mercurial.MercurialVCS
-org.netbeans.modules.mercurial.kenai.HgKenaiAccessor
-org.netbeans.modules.mercurial.kenai.KenaiNotificationListener
-org.netbeans.modules.mercurial.util.HgCommand
-org.netbeans.modules.mercurial.util.HgUtils
 org.netbeans.modules.subversion.ModuleLifecycleManager
 org.netbeans.modules.subversion.SvnMetadataFolderLoader
 org.netbeans.modules.versioning.system.cvss.Annotator

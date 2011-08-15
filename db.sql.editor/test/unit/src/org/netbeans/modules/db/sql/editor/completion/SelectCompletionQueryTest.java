@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -132,6 +132,9 @@ public class SelectCompletionQueryTest extends NbTestCase {
 
         suite.addTest(new SelectCompletionQueryTest("dropTableAll"));
         suite.addTest(new SelectCompletionQueryTest("dropTableSimple"));
+        
+        // #200367: CC breaks with use of DECLARE/SET
+        suite.addTest(new SelectCompletionQueryTest("selectAfterDeclare"));
 
         return suite;
     }

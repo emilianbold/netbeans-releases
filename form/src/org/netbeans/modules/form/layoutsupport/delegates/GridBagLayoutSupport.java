@@ -1014,7 +1014,22 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                              Insets.class,
                              getBundle().getString("PROP_insets"), // NOI18N
                              getBundle().getString("HINT_insets"), // NOI18N
-                             null)
+                             null) {
+                                @Override
+                                public void setTargetValue(Object value) {
+                                    // Issue 195715: insets cannot be null
+                                    if (value == null) {
+                                        String msg = getBundle().getString("MSG_null_insets"); // NOI18N
+                                        IllegalArgumentException ex = new IllegalArgumentException(msg);
+                                        // Workaround for a screwed code in the property sheet:
+                                        // simple 'throw new IAE(msg) results in an empty message
+                                        // shown in the displayed dialog.
+                                        Exceptions.attachLocalizedMessage(ex, msg);
+                                        throw ex;
+                                    }
+                                    super.setTargetValue(value);
+                                }
+                             }
             };
 
             // properties with editable combo box
@@ -1084,7 +1099,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
          * property, updateCodeExpression is called to reflect the change in
          * the code.
          */
-        private final class Property extends FormProperty {
+        private class Property extends FormProperty {
             private Field field;
             private Class<? extends PropertyEditor> propertyEditorClass;
 
@@ -1411,7 +1426,6 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             javaInitStrings = initStringList.toArray(new String[initStringList.size()]);
 
             otherValuesAllowed = false;
-            property.setCurrentEditor(this);
         }
 
         @Override

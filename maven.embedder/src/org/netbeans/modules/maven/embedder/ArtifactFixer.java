@@ -43,7 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
-import org.apache.maven.artifact.Artifact;
+import org.sonatype.aether.artifact.Artifact;
 
 /**
  * Service which can resolve an artifact before a request is sent to the local repo.

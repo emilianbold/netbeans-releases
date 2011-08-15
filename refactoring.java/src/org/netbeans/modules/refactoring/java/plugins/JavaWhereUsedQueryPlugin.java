@@ -44,6 +44,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.net.URL;
+import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -51,11 +52,15 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.*;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
@@ -65,20 +70,26 @@ import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
+import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author  Jan Becicka
+ * @author  Ralph Ruijs
  */
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private WhereUsedQuery refactoring;
+    private ClasspathInfo cp;
+    private TreePathHandle basem;
     
     /** Creates a new instance of WhereUsedQuery */
     public JavaWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
@@ -94,6 +105,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
+        cancelRequest = false;
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         if (!handle.getFileObject().isValid() || RetoucheUtils.getElementKind(handle) == null) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
@@ -105,27 +117,103 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
-        return getRelevantFiles(
-                tph,
-                getClasspathInfo(refactoring),
-                isFindSubclasses(),
-                isFindDirectSubclassesOnly(),
-                isFindOverridingMethods(),
-                isFindUsages()
-                );
+        Set<FileObject> fileSet;
+        Scope customScope = refactoring.getContext().lookup(Scope.class);
+        if (customScope != null) {
+            fileSet = new HashSet<FileObject>();
+            fileSet.addAll(customScope.getFiles());
+            if (!customScope.getSourceRoots().isEmpty()) {
+                ClassPath cpath = ClassPathSupport.createClassPath(customScope.getSourceRoots().toArray(new FileObject[0]));
+                fileSet.addAll(getRelevantFiles(tph,
+                        ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, cpath),
+                        isFindSubclasses(),
+                        isFindDirectSubclassesOnly(),
+                        isFindOverridingMethods(),
+                        isFindUsages(),
+                        null));
+            }
+            Map<FileObject, Set<NonRecursiveFolder>> folders = new HashMap<FileObject, Set<NonRecursiveFolder>>();
+            
+            for(NonRecursiveFolder nonRecursiveFolder : customScope.getFolders()) {
+                FileObject folder = nonRecursiveFolder.getFolder();
+                ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
+                final FileObject sourceRoot = cp.findOwnerRoot(folder);
+                Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
+                if(packages == null) {
+                    packages = new HashSet<NonRecursiveFolder>();
+                    folders.put(sourceRoot, packages);
+                }
+                packages.add(nonRecursiveFolder);
+            }
+            
+            for (FileObject sourceRoot : folders.keySet()) {
+                Set<NonRecursiveFolder> packages = folders.get(sourceRoot);
+                if (packages != null && !packages.isEmpty()) {
+                    ClassPath cpath = ClassPathSupport.createClassPath(sourceRoot);
+                    fileSet.addAll(getRelevantFiles(tph,
+                            ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, cpath),
+                            isFindSubclasses(),
+                            isFindDirectSubclassesOnly(),
+                            isFindOverridingMethods(),
+                            isFindUsages(), packages));
+                }
+            }
+            return fileSet;
+        } else {
+            JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            try {
+                source.runWhenScanFinished(new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController info) throws Exception {
+                        Element element = tph.resolveElement(info);
+                        ElementKind kind = element.getKind();
+                        if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
+                            Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, info);
+                            if(!overridens.isEmpty()) {
+                                ExecutableElement el = (ExecutableElement) overridens.iterator().next();                        
+                                assert el!=null;
+                                basem = TreePathHandle.create(el, info);
+                                refactoring.setRefactoringSource(Lookups.fixed(basem));
+                            }
+                            if (basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
+                                cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
+                            } else {
+                                cp = RetoucheUtils.getClasspathInfoFor(basem);
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if(cp == null) {
+                cp = getClasspathInfo(refactoring);
+            }
+            fileSet = getRelevantFiles(
+                    basem!=null?basem:tph,
+                    cp,
+                    isFindSubclasses(),
+                    isFindDirectSubclassesOnly(),
+                    isFindOverridingMethods(),
+                    isFindUsages(),
+                    null);
+        }
+        return fileSet;
     }
     
     public static Set<FileObject> getRelevantFiles(
             final TreePathHandle tph, final ClasspathInfo cpInfo,
             final boolean isFindSubclasses, final boolean isFindDirectSubclassesOnly,
-            final boolean isFindOverridingMethods, final boolean isFindUsages) {
+            final boolean isFindOverridingMethods, final boolean isFindUsages,
+            final Set<NonRecursiveFolder> folders) {
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> set = new HashSet<FileObject>();
-                
+        final Set<NonRecursiveFolder> packages = (folders == null)? Collections.EMPTY_SET : folders;
+        
         final FileObject file = tph.getFileObject();
         JavaSource source;
         if (file!=null) {
-           set.add(file);
            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT),ClassPath.getClassPath(file, ClassPath.BOOT));
            final ClassPath mergedCompilePath  = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE),ClassPath.getClassPath(file, ClassPath.COMPILE));
            final ClassPath mergedSourcePath   = merge(cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),ClassPath.getClassPath(file, ClassPath.SOURCE));
@@ -145,22 +233,43 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 if (el == null) {
                     throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
                 }
+                Set<SearchScopeType> searchScopeType = new HashSet<SearchScopeType>(1);
+                if(packages.isEmpty()) {
+                    searchScopeType.add(ClassIndex.SearchScope.SOURCE);
+                } else {
+                    final Set<String> packageSet = new HashSet<String>(packages.size());
+                    for (NonRecursiveFolder nonRecursiveFolder : packages) {
+                        String resourceName = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).getResourceName(nonRecursiveFolder.getFolder());
+                        packageSet.add(resourceName);
+                    }
+                    searchScopeType.add(new SearchScopeType() {
+                        public Set<? extends String> getPackages() {
+                            return packageSet;
+                        }
+                        public boolean isSources() {
+                            return true;
+                        }
+                        public boolean isDependencies() {
+                            return false;
+                        }
+                    });
+                }                
                 if (el.getKind().isField()) {
                     //get field references from index
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
                         if (isFindDirectSubclassesOnly) {
                             //get direct implementors from index
                             EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-                            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind,EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            set.addAll(idx.getResources(ElementHandle.create((TypeElement)el), searchKind, searchScopeType));
                         } else {
                             //itererate implementors recursively
                             set.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement)el));
                         }
                     } else {
                         //get type references from index
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
                     }
                 } else if (el.getKind() == ElementKind.METHOD && isFindOverridingMethods) {
                     //Find overriding methods
@@ -178,14 +287,14 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                         for (Element e:te.getEnclosedElements()) {
                             if (e instanceof ExecutableElement) {
                                 if (info.getElements().overrides((ExecutableElement)e, (ExecutableElement)el, te)) {
-                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                                    set.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType));
                                 }
                             }
                         }
                     }
-                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES),EnumSet.of(ClassIndex.SearchScope.SOURCE))); //?????
+                    set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType)); //?????
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
-                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
                 }
                     
             }
@@ -193,7 +302,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         try {
             source.runUserActionTask(task, true);
         } catch (IOException ioe) {
-            throw (RuntimeException) new RuntimeException().initCause(ioe);
+            throw new RuntimeException(ioe);
         }
         return set;
     }
@@ -276,7 +385,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS);
     }
     private boolean isSearchFromBaseClass() {
-        return false;
+        return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
     }
 
     private static ClassPath merge (final ClassPath... cps) {
@@ -328,7 +437,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             
             Collection<TreePath> result = new ArrayList<TreePath>();
             if (isFindUsages()) {
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(refactoring.SEARCH_IN_COMMENTS));
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS));
                 findVisitor.scan(compiler.getCompilationUnit(), element);
                 result.addAll(findVisitor.getUsages());
                 for (FindUsagesVisitor.UsageInComment usageInComment : findVisitor.getUsagesInComments()) {

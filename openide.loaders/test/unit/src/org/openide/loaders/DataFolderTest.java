@@ -724,4 +724,18 @@ public class DataFolderTest extends LoggingTestCaseHid {
         }
         
     }
+    public void testRenameSlow() throws DataObjectNotFoundException, IOException {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        DataObject obj = DataObject.find(root);
+        Node n = obj.getNodeDelegate();
+        assertNull("not slow rename by default", n.getValue("slowRename"));
+        registerIntoLookup(new MyHandler());
+        assertEquals("now rename is slow", Boolean.TRUE, n.getValue("slowRename"));
+    }
+    
+    private static final class MyHandler implements FolderRenameHandler {
+        @Override
+        public void handleRename(DataFolder folder, String newName) throws IllegalArgumentException {
+        }
+    }
 }

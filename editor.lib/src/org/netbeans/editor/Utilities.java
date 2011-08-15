@@ -99,10 +99,8 @@ import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
-import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.openide.util.Exceptions;
@@ -363,80 +361,10 @@ public class Utilities {
     */
     public static int getPositionAbove(JTextComponent c, int offset, int x)
     throws BadLocationException {
-        if (BaseKit.LINEWRAP_ENABLED) {
-            // Ignore returned bias
-            offset = c.getUI().getNextVisualPositionFrom(c,
-                              offset, Bias.Forward, SwingConstants.NORTH, null);
-            return offset;
-        }
-        
-        int rowStart = getRowStart(c, offset);
-        int endInit = c.getUI().getNextVisualPositionFrom(c,
-                              rowStart, Position.Bias.Forward, javax.swing.SwingConstants.WEST, null);
-
-        if (x == BaseKit.MAGIC_POSITION_MAX){
-            return endInit;
-        }
-
-        EditorUI eui = getEditorUI(c);
-        if (eui == null){
-            return offset; //skip
-        }
-        
-        Rectangle2D r = modelToView(c, endInit);
-        if (r == null){
-            return offset; //skip
-        }
-        
-        if (x == eui.textLeftMarginWidth){
-            return getRowStart(c, endInit);
-        }
-        
-        int end = viewToModel(c, Math.max(eui.textLeftMarginWidth, r.getX() + 2*r.getWidth()), r.getY());
-        Rectangle tempRect = c.modelToView(end);
-        if (tempRect == null || tempRect.x < x){
-            end = endInit;
-        }
-        
-        int start = viewToModel(c, Math.max(eui.textLeftMarginWidth, r.getX() - 2*r.getWidth()),r.getY());
-        tempRect = c.modelToView(start);
-        if (tempRect == null || tempRect.x > x){
-            start = getRowStart(c, end);
-        }
-        
-        int best = findBestSpan(c, start, end, x);
-        
-        if (best<c.getDocument().getLength()){
-			// #56056
-			int tmp = best + 1;
-			int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-					tmp, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
-            if (nextVisualPosition<best && nextVisualPosition >= 0){
-				// #164820
-				// We are in the collapsed fold, now try to find which position
-				// is the best, whether foldEnd or foldStart
-				tempRect = c.modelToView(nextVisualPosition);
-				if (tempRect == null) {
-					return nextVisualPosition;
-				}
-				int leftX = tempRect.x;
-				int nextVisualPositionRight = c.getUI().getNextVisualPositionFrom(c,
-						nextVisualPosition, javax.swing.text.Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
-				tempRect = c.modelToView(nextVisualPositionRight);
-				if (tempRect == null) {
-					return nextVisualPosition;
-				}
-				int rightX = tempRect.x;
-
-				if (Math.abs(leftX - x) < Math.abs(rightX - x)) {
-					return nextVisualPosition;
-				} else {
-					return nextVisualPositionRight;
-				}
-			}
-        }
-
-        return best;
+        // Ignore returned bias
+        offset = c.getUI().getNextVisualPositionFrom(c,
+                          offset, Bias.Forward, SwingConstants.NORTH, null);
+        return offset;
     }
 
     /** Get the position that is one line above and visually at some
@@ -449,77 +377,14 @@ public class Utilities {
     */
     public static int getPositionBelow(JTextComponent c, int offset, int x)
     throws BadLocationException {
-        if (BaseKit.LINEWRAP_ENABLED) {
-            // Ignore returned bias
-            offset = c.getUI().getNextVisualPositionFrom(c,
-                              offset, Bias.Forward, SwingConstants.SOUTH, null);
-            return offset;
-        }
-        
-	int startInit = getRowEnd(c, offset) + 1;
-
-        Rectangle2D r = modelToView(c, startInit);
-        if (r == null){
-            return offset; // skip
-        }
-        
-        EditorUI eui = getEditorUI(c);
-        if (eui != null && x ==eui.textLeftMarginWidth){
-            return startInit;
-        }
-        
-        int start = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x - 2*r.getWidth()), r.getY());
-        Rectangle tempRect = c.modelToView(start);
-        if (tempRect!=null && tempRect.x > x){
-            start = startInit;
-        }
-        
-        int end = viewToModel(c, Math.min(Integer.MAX_VALUE, r.getX() + x + 2*r.getWidth()), r.getY());
-        tempRect = c.modelToView(end);
-        if (tempRect!=null && tempRect.x < x){
-            end = getRowEnd(c, start);
-        }
-        
-        int best = findBestSpan(c, start, end, x);
-        
-        if (best>0){
-            // #70254 - make sure $best is not in collapsed fold area. Try
-            // getNextVisualPositionFrom to EAST from the position $best-1.
-            // If the resulted next visual position is not equal to $best,
-            // $best is in the collapsed fold and foldEnd or foldStart 
-            // should be returned.
-            int tmp = best - 1;
-            int nextVisualPosition = c.getUI().getNextVisualPositionFrom(c,
-                    tmp, javax.swing.text.Position.Bias.Forward, javax.swing.SwingConstants.EAST, null);
-            if (nextVisualPosition>best && nextVisualPosition <= c.getDocument().getLength()){
-                // We are in the collapsed fold, now try to find which position
-                // is the best, whether foldEnd or foldStart
-                tempRect = c.modelToView(nextVisualPosition);
-                if (tempRect == null){
-                    return nextVisualPosition;
-                }
-                int rightX = tempRect.x;
-                int nextVisualPositionLeft = c.getUI().getNextVisualPositionFrom(c,
-                        nextVisualPosition, javax.swing.text.Position.Bias.Backward, javax.swing.SwingConstants.WEST, null);
-                tempRect = c.modelToView(nextVisualPositionLeft);
-                if (tempRect == null){
-                    return nextVisualPosition;
-                }
-                int leftX = tempRect.x;
-                
-                if (Math.abs(leftX - x) > Math.abs(rightX - x)){
-                    return nextVisualPosition;
-                } else {
-                    return nextVisualPositionLeft;
-                }
-            }
-        }
-        
-        return best;
+        // Ignore returned bias
+        offset = c.getUI().getNextVisualPositionFrom(c,
+                          offset, Bias.Forward, SwingConstants.SOUTH, null);
+        return offset;
     }
 
     /** Get start of the current word. If there are no more words till
-    * the begining of the document, this method returns -1.
+    * the beginning of the document, this method returns -1.
     * @param c text component to operate on
     * @param offset position in document from which the current line is determined
     */
@@ -1379,11 +1244,7 @@ public class Utilities {
      * (or for a bunch of lines in case there is a code folding present).
      */
     public static View getDocumentView(JTextComponent component) {
-        if (HighlightingManager.LINEWRAP_ENABLED) {
-            return getRootView(component, DocumentView.class);
-        } else {
-            return getRootView(component, DrawEngineDocView.class);
-        }
+        return getRootView(component, DocumentView.class);
     }
 
     /**
@@ -1403,11 +1264,7 @@ public class Utilities {
         Runnable wrapRun = new Runnable() {
             @Override
             public void run() {
-                if (HighlightingManager.LINEWRAP_ENABLED) {
-                    ((DocumentView) getDocumentView(component)).runTransaction(r);
-                } else {
-                    r.run();
-                }
+                ((DocumentView) getDocumentView(component)).runTransaction(r);
             }
         };
         Document doc;

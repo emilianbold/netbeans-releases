@@ -68,6 +68,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.VariableNode#getFullName()
      */
+    @Override
     public String getFullName() {
         return getProperty().getFullName();
     }
@@ -75,6 +76,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.VariableNode#getName()
      */
+    @Override
     public String getName() {
         Property property = getProperty();
         String propertyName = property != null ? property.getName()  : null;
@@ -90,6 +92,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getChildren(int, int)
      */
+    @Override
     public ModelNode[] getChildren( int from, int to ) {
         List<AbstractVariableNode> subList = getVariables().subList(from, to);
         return subList.toArray( new ModelNode[ subList.size() ] );
@@ -98,6 +101,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getChildrenSize()
      */
+    @Override
     public int getChildrenSize() {
         return getVariables().size();
     }
@@ -105,6 +109,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getIconBase()
      */
+    @Override
     public String getIconBase() {
         AbstractModelNode node = getParent();
         if ( node instanceof ObjectVariableNode ) {
@@ -116,6 +121,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getShortDescription()
      */
+    @Override
     public String getShortDescription() {
         // TODO Auto-generated method stub
         return null;
@@ -124,6 +130,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getType()
      */
+    @Override
     public String getType() {
         return getProperty().getType();
     }
@@ -131,6 +138,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#getValue()
      */
+    @Override
     public String getValue() throws UnsufficientValueException {
         return  getProperty().getStringValue();
     }
@@ -138,6 +146,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#isReadOnly()
      */
+    @Override
     public boolean isReadOnly() {
         return false;
     }
@@ -145,6 +154,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.VariableNode#findDeclarationLine()
      */
+    @Override
     public Line findDeclarationLine() {
         // TODO Auto-generated method stub
         return null;
@@ -153,6 +163,7 @@ public abstract class AbstractVariableNode extends AbstractModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#isLeaf()
      */
+    @Override
     public boolean isLeaf() {
         return !getProperty().hasChildren();
     }

@@ -72,7 +72,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.InvalidArgumentException;
 import org.netbeans.tax.ReadOnlyException;
@@ -460,6 +460,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         if (el == null) {
             throw new FileNotFoundException(name);
         }
+        /* no good for refactoring
         TreeAttribute externalName = el.getAttribute("url"); // NOI18N
         try {
             if (externalName != null && !new URI(externalName.getValue()).isAbsolute()) {
@@ -473,6 +474,7 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         } catch (URISyntaxException x) {
             // #189739: never mind
         }
+        */
         try {
             deleteWithIndent((TreeChild) el);
         } catch (ReadOnlyException e) {
@@ -608,6 +610,10 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         TreeElement el = findElement(name);
         if (el == null) {
             return null;
+        }
+        if (attrName.equals("WritableXMLFileSystem.url")) {
+            TreeAttribute urlAttr = el.getAttribute("url"); // NOI18N
+            return urlAttr != null ? urlAttr.getValue() : null;
         }
         boolean literal = false;
         if (attrName.startsWith("literal:")) { // NOI18N
@@ -844,9 +850,6 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
             throw new IOException("illegal attribute name for leaf layer: " + attrName);
         }
         //System.err.println("wA: " + name + " " + attrName + " " + v);
-        if (v != null && v.getClass().getName().equals("org.openide.filesystems.MultiFileObject$VoidValue")) {
-            v = null; // XXX #16761 workaround
-        }
         TreeElement el = findElement(name);
         if (el == null) {
             throw new FileNotFoundException(name);

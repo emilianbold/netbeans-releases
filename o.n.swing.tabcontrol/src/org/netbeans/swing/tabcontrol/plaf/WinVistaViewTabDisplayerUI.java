@@ -81,7 +81,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
     /**
      * Space between text and left side of the tab
      */
-    private static final int TXT_X_PAD = 9;
+    private final int TXT_X_PAD = isUseStretchingTabs() ? 9 : 4;
     private static final int TXT_Y_PAD = 3;
 
     private static final int ICON_X_PAD = 4;
@@ -146,6 +146,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
         super.installUI(c);
         initColors();
         c.setOpaque(true);
+        getLayoutModel().setPadding( new Dimension( 2*TXT_X_PAD, 0 ) );
     }
 
     @Override
@@ -176,17 +177,24 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
             Component buttons = getControlButtons();
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
-                txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
+                if( width < buttonsSize.width+ICON_X_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
+                    buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
+                }
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
         }
-        
-        // draw bump (dragger)
-        ColorUtil.paintVistaTabDragTexture(getDisplayer(), g, x + BUMP_X_PAD, y
-                 + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
-                 + BUMP_Y_PAD_BOTTOM));
+
+        if( isUseStretchingTabs() ) {
+            // draw bump (dragger)
+            ColorUtil.paintVistaTabDragTexture(getDisplayer(), g, x + BUMP_X_PAD, y
+                     + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
+                     + BUMP_Y_PAD_BOTTOM));
+        }
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
                 + TXT_Y_PAD, txtWidth, height, getTxtFont(),
                 txtC,
@@ -196,7 +204,7 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
     @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
-        boolean isFirst = index == 0;
+        boolean isFirst = index == 0 || index < 0;
         boolean isHighlighted = isTabHighlighted(index);
 
         g.translate(x, y);
@@ -281,6 +289,8 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
      * @return true if tab with given index should have highlighted border, false otherwise.
      */
     private boolean isTabHighlighted(int index) {
+        if( index < 0 )
+            return false;
         if (((OwnController) getController()).getMouseIndex() == index) {
             return true;
         }
@@ -292,6 +302,8 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
      * the selected one, false otherwise.
      */
     private boolean isMouseOver(int index) {
+        if( index < 0 )
+            return false;
         return ((OwnController) getController()).getMouseIndex() == index
                 && !isSelected(index);
     }
@@ -367,6 +379,20 @@ public final class WinVistaViewTabDisplayerUI extends AbstractViewTabDisplayerUI
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,28 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EqualsMethodHintTest extends TreeRuleTestBase {
+public class EqualsMethodHintTest extends TestBase {
     
     public EqualsMethodHintTest(String testName) {
-        super(testName);
+        super(testName, EqualsMethodHint.class);
     }
 
     public void testSimple1() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "    public boolean e|quals(Object o) {\n" +
+                            "    public boolean equals(Object o) {\n" +
                             "        return true;" +
                             "    }" +
                             "}\n",
@@ -76,7 +70,7 @@ public class EqualsMethodHintTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "    public boolean e|quals(String s) {\n" +
+                            "    public boolean equals(String s) {\n" +
                             "        return true;" +
                             "    }" +
                             "}\n");
@@ -87,7 +81,7 @@ public class EqualsMethodHintTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "    public boolean e|quals(Object o) {\n" +
+                            "    public boolean equals(Object o) {\n" +
                             "        return o instanceof Test;" +
                             "    }" +
                             "}\n");
@@ -98,7 +92,7 @@ public class EqualsMethodHintTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "    public boolean e|quals(Object o) {\n" +
+                            "    public boolean equals(Object o) {\n" +
                             "        return o.getClass() == Test.class;" +
                             "    }" +
                             "}\n");
@@ -109,38 +103,20 @@ public class EqualsMethodHintTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {\n" +
-                            "    public boolean e|quals(Object o);\n" +
+                            "    public boolean equals(Object o);\n" +
                             "}\n");
                              
     }
     
-    public void test153642() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
-                       "public class Test {\n" +
-                       "    public boolean e|quals(Object o) { return this == o; }\n" +
-                       "}\n",
-                       "2:19-2:25:verifier:ENC",
-                       "FixImpl",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    @SuppressWarnings(\"EqualsWhichDoesntCheckParameterClass\")\n" +
-                       "    public boolean equals(Object o) { return this == o; }\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
-    }
+    public void testAnnotations() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    @SuppressWarnings(\"a\") public boolean equals(Object o) {\n" +
+                            "        return true;" +
+                            "    }" +
+                            "}\n",
+                            "2:42-2:48:verifier:ENC");
 
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return new EqualsMethodHint().run(info, path);
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return "FixImpl";
-    }
-
-    static {
-        NbBundle.setBranding("test");
-    }
-    
 }

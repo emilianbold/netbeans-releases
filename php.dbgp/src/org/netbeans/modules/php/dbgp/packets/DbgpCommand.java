@@ -55,6 +55,7 @@ import sun.misc.BASE64Encoder;
  *
  */
 public abstract class DbgpCommand {
+    protected static final String SPACE = " "; // NOI18N
     private static final String DATA_SEPARATOR = " -- ";        // NOI18N
     private static final String TRANSACTION_OPT = " -i ";       // NOI18N
     private String command;

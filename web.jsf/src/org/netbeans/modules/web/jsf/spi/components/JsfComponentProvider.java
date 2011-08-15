@@ -1,7 +1,10 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -13,9 +16,9 @@
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -34,20 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.web.jsf.spi.components;
 
-import java.util.Set;
-import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- *
- * @author alexeybutenko
+ * Provides all {@link JsfComponentImplementation}s in given {@link JsfComponentProvider}.
+ * JSF Support searches in registered {@link JsfComponentProvider}s for all 
+ * {@link JsfComponentImplementation}s to offer them as JSF component libraries.
+ * 
+ * <p>
+ * Every JSF suite module should contain only one {@link JsfComponentProvider} which 
+ * can return more {@link JsfComponentImplementation}s.
+ * 
+ * 
+ * @author Martin Fousek <marfous@netbeans.org>
+ * 
+ * @since 1.27
  */
 public interface JsfComponentProvider {
 
-    public Set<JsfComponentDescriptor> getComponents();
+    public static final String COMPONENTS_PATH = "j2ee/jsf/components";    //NOI18N
+    
+    /**
+     * Get all registered {@link JsfComponentImplementation}s  contained in the module.
+     * 
+     * @return a set of registered {@link JsfComponentImplementation}s; never null.
+     */
+    @NonNull
+    public Collection<JsfComponentImplementation> getJsfComponents();
     
 }

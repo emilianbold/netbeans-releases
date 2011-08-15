@@ -436,7 +436,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (t == null) {
                 return false;
             }
-            task.waitFinished();
+            t.waitFinished();
             return true;
         }
 

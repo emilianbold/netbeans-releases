@@ -44,6 +44,7 @@ class NullVariableNode extends
         return NbBundle.getMessage( NullVariableNode.class, TYPE_NULL);
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.NULL );
     }

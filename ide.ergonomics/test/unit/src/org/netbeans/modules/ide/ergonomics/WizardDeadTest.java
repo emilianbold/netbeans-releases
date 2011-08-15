@@ -76,6 +76,7 @@ public class WizardDeadTest extends NbTestCase {
         @SuppressWarnings("unchecked")
         final WizardDescriptor wd = new WizardDescriptor(new Panel[0]);
         FileObject fob = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        assertNotNull("Template found", fob);
         wd.putProperty(FeatureOnDemandWizardIterator.CHOSEN_TEMPLATE, fob);
 
         DescriptionStep step = new DescriptionStep(true);

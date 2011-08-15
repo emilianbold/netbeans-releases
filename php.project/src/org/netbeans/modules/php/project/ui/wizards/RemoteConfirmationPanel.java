@@ -44,7 +44,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
 import java.io.File;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,8 +55,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.openide.WizardDescriptor;
@@ -185,7 +185,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
                 try {
                     handle.start();
 
-                    Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
+                    Set<TransferFile> remoteFiles = Collections.emptySet();
                     String reason = ""; // NOI18N
                     try {
                         remoteFiles = getRemoteFiles();
@@ -195,7 +195,7 @@ public class RemoteConfirmationPanel implements WizardDescriptor.Panel<WizardDes
                     }
 
                     final boolean hasAnyTransferableFiles = TransferFilesChooser.forDownload(remoteFiles).hasAnyTransferableFiles();
-                    final Set<TransferFile> rmt = remoteFiles;
+                    final Set<TransferFile> rmt = Collections.synchronizedSet(remoteFiles);
                     final String rsn = reason;
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override

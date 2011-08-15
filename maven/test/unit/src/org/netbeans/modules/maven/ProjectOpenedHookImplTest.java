@@ -42,10 +42,18 @@
 
 package org.netbeans.modules.maven;
 
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -60,6 +68,39 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
+    }
+
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override protected String logRoot() {
+        return "org.netbeans.modules.maven";
+    }
+
+    public void testDoubleOpen() throws Exception { // #200500
+        final AtomicInteger openCount = new AtomicInteger();
+        ProjectOpenedHookImpl.USG_LOGGER.addHandler(new Handler() {
+            @Override public void publish(LogRecord record) {
+                openCount.incrementAndGet();
+            }
+            @Override public void flush() {}
+            @Override public void close() throws SecurityException {}
+        });
+        TestFileUtils.writeFile(d, "pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId><artifactId>a</artifactId><version>0</version>" +
+                "</project>");
+        Method projectOpened = ProjectOpenedHook.class.getDeclaredMethod("projectOpened");
+        projectOpened.setAccessible(true);
+        Method projectClosed = ProjectOpenedHook.class.getDeclaredMethod("projectClosed");
+        projectClosed.setAccessible(true);
+        for (ProjectOpenedHook hook : ProjectManager.getDefault().findProject(d).getLookup().lookupAll(ProjectOpenedHook.class)) {
+            projectOpened.invoke(hook);
+        }
+        for (ProjectOpenedHook hook : ProjectManager.getDefault().findProject(d).getLookup().lookupAll(ProjectOpenedHook.class)) {
+            projectClosed.invoke(hook);
+        }
+        assertEquals(1, openCount.get());
     }
 
     public void testGeneratedSources() throws Exception { // #187595
@@ -111,9 +152,45 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
         FileObject src = d.createFolder("src");
         FileObject tsrc = d.createFolder("tsrc");
         Project prj = ProjectManager.getDefault().findProject(p);
-        new ProjectOpenedHookImpl((NbMavenProjectImpl) prj).projectOpened();
-        assertEquals(prj, FileOwnerQuery.getOwner(src));
-        assertEquals(prj, FileOwnerQuery.getOwner(tsrc));
+        ProjectOpenedHookImpl pohi = new ProjectOpenedHookImpl((NbMavenProjectImpl) prj);
+        pohi.projectOpened();
+        try {
+            assertEquals(prj, FileOwnerQuery.getOwner(src));
+            assertEquals(prj, FileOwnerQuery.getOwner(tsrc));
+        } finally {
+            pohi.projectClosed();
+        }
+    }
+
+    public void testRegistrationOfSubmodules() throws Exception { // #200445
+        TestFileUtils.writeFile(d, "pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId><artifactId>p</artifactId><version>0</version>" +
+                "<packaging>pom</packaging><profiles><profile><id>special</id><modules><module>p2</module></modules></profile></profiles>" +
+                "</project>");
+        TestFileUtils.writeFile(d, "p2/pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent><artifactId>p2</artifactId>" +
+                "<packaging>pom</packaging><modules><module>m</module></modules>" +
+                "</project>");
+        TestFileUtils.writeFile(d, "p2/m/pom.xml", "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+                "<groupId>g</groupId><properties><my.name>m</my.name></properties><artifactId>${my.name}</artifactId><version>0</version>" +
+                "</project>");
+        Project p = ProjectManager.getDefault().findProject(d);
+        ProjectOpenedHookImpl pohi = new ProjectOpenedHookImpl((NbMavenProjectImpl) p);
+        pohi.projectOpened();
+        try {
+            File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+            File mArt = new File(repo, "g/m/0/m-0.jar");
+            // XXX verify that p2 has not yet been loaded
+            Project m = FileOwnerQuery.getOwner(mArt.toURI());
+            assertNotNull(m);
+            assertEquals(d.getFileObject("p2/m"), m.getProjectDirectory());
+            File p2Art = new File(repo, "g/p2/0/p2-0.pom");
+            Project p2 = FileOwnerQuery.getOwner(p2Art.toURI());
+            assertNotNull(p2);
+            assertEquals(d.getFileObject("p2"), p2.getProjectDirectory());
+        } finally {
+            pohi.projectClosed();
+        }
     }
 
 }

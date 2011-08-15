@@ -42,7 +42,6 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.method;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
@@ -51,13 +50,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -70,28 +67,27 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
 {
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer.MethodAnalyzer#analyze(javax.lang.model.element.ExecutableElement, javax.lang.model.type.TypeMirror, javax.lang.model.element.TypeElement, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result)
      */
     @Override
     public void analyze( ExecutableElement element, TypeMirror returnType,
             TypeElement parent, WebBeansModel model,
-            List<ErrorDescription> descriptions , 
-            CompilationInfo info , AtomicBoolean cancel )
+            AtomicBoolean cancel,  Result result )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.PRODUCES_FQN, 
                 model.getCompilationController()))
         {
-            analyzeScope(element, model, descriptions, info , cancel );
+            result.requireCdiEnabled(element,model);
+            analyzeScope(element, model, cancel,  result );
         }
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.List, org.netbeans.api.java.source.CompilationInfo, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer#checkScope(javax.lang.model.element.TypeElement, javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.WebBeansModel, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result)
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            WebBeansModel model, List<ErrorDescription> descriptions , 
-            CompilationInfo info , AtomicBoolean cancel)
+            WebBeansModel model, AtomicBoolean cancel, Result result )
     {
         if ( scopeElement.getQualifiedName().contentEquals( AnnotationUtil.DEPENDENT)){
             return;
@@ -103,14 +99,10 @@ public class ScopedMethodAnalyzer extends AbstractScopedAnalyzer implements
                 return;
             }
             if ( hasTypeVarParameter( returnType )){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, model, info ,  
+                result.addError( element, model,   
                             NbBundle.getMessage(ScopedMethodAnalyzer.class, 
                                     "ERR_WrongScopeParameterizedProducerReturn",    // NOI18N
                                     scopeElement.getQualifiedName().toString()));
-                if ( description != null ){
-                    descriptions.add( description );
-                }
             }
         }
     }

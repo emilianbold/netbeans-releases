@@ -14,7 +14,7 @@
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/JavaFXApp.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.NewJ2SEProjectWizardIterator"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator"/>
                 </file>
             </folder>
         </folder>

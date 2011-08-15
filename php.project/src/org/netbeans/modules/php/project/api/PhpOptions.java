@@ -47,12 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_INTERPRETER;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_PORT;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_SESSION_ID;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_STOP_AT_FIRST_LINE;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_DEBUGGER_WATCHES_AND_EVAL;
-import static org.netbeans.modules.php.project.ui.options.PhpOptions.PHP_GLOBAL_INCLUDE_PATH;
+import static org.netbeans.modules.php.project.ui.options.PhpOptions.*;
 
 /**
  * Helper class to get actual PHP properties like debugger port etc.
@@ -68,6 +63,10 @@ public final class PhpOptions {
     public static final String PROP_PHP_DEBUGGER_SESSION_ID = "propPhpDebuggerSessionId"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE = "propPhpDebuggerStopAtFirstLine"; // NOI18N
     public static final String PROP_PHP_DEBUGGER_WATCHES_AND_EVAL = "propPhpDebuggerWatchesAndEval"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_MAX_STRUCTURES_DEPTH = "propPhpDebuggerMaxStructuresDepth"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_MAX_CHILDREN = "propPhpDebuggerMaxChildren"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_SHOW_URLS = "propPhpDebuggerShowUrls"; // NOI18N
+    public static final String PROP_PHP_DEBUGGER_SHOW_CONSOLE = "propPhpDebuggerShowConsole"; // NOI18N
     public static final String PROP_PHP_GLOBAL_INCLUDE_PATH = "propPhpGlobalIncludePath"; // NOI18N
 
     private static final PhpOptions INSTANCE = new PhpOptions();
@@ -91,6 +90,14 @@ public final class PhpOptions {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_STOP_AT_FIRST_LINE, null, Boolean.valueOf(newValue));
                 } else if (PHP_DEBUGGER_WATCHES_AND_EVAL.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_WATCHES_AND_EVAL, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_MAX_STRUCTURES_DEPTH.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_MAX_STRUCTURES_DEPTH, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_MAX_CHILDREN.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_MAX_CHILDREN, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_SHOW_URLS.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_SHOW_URLS, null, Boolean.valueOf(newValue));
+                } else if (PHP_DEBUGGER_SHOW_CONSOLE.equals(key)) {
+                    propertyChangeSupport.firePropertyChange(PROP_PHP_DEBUGGER_SHOW_CONSOLE, null, Boolean.valueOf(newValue));
                 } else if (PHP_GLOBAL_INCLUDE_PATH.equals(key)) {
                     propertyChangeSupport.firePropertyChange(PROP_PHP_GLOBAL_INCLUDE_PATH, null, newValue);
                 }
@@ -133,6 +140,26 @@ public final class PhpOptions {
     }
 
     /**
+     * Get the maximum depth of structures to be retrieved from PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_STRUCTURES_DEPTH}</code>.
+     * @return the maximum depth of structures to be retrieved from PHP debugger.
+     * @since 2.33
+     */
+    public int getDebuggerMaxStructuresDepth() {
+        return getPhpOptions().getDebuggerMaxStructuresDepth();
+    }
+
+    /**
+     * Get the maximum number of children to be retrieved from PHP debugger, the default is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_MAX_CHILDREN}</code>.
+     * @return the maximum number of children to be retrieved from PHP debugger.
+     * @since 2.33
+     */
+    public int getDebuggerMaxChildren() {
+        return getPhpOptions().getDebuggerMaxChildren();
+    }
+
+    /**
      * Check whether debugger stops at the first line of a PHP script. The default value is
      * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE}</code>.
      * @return <code>true</code> if the debugger stops at the first line of a PHP script, <code>false</code> otherwise.
@@ -149,6 +176,26 @@ public final class PhpOptions {
      */
     public boolean isDebuggerWatchesAndEval() {
         return getPhpOptions().isDebuggerWatchesAndEval();
+    }
+
+    /**
+     * Check whether debugger shows requested URLs to the Output Window. The default value is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_SHOW_URLS}</code>.
+     * @return <code>true</code> if the debugger shows requested URLs, <code>false</code> otherwise.
+     * @since 2.35
+     */
+    public boolean isDebuggerShowRequestedUrls() {
+        return getPhpOptions().isDebuggerShowUrls();
+    }
+
+    /**
+     * Check whether debugger shows debugger console to the Output Window. The default value is
+     * <code>{@value org.netbeans.modules.php.project.ui.options.PhpOptions#DEFAULT_DEBUGGER_SHOW_CONSOLE}</code>.
+     * @return <code>true</code> if the debugger shows debugger console, <code>false</code> otherwise.
+     * @since 2.35
+     */
+    public boolean isDebuggerShowDebuggerConsole() {
+        return getPhpOptions().isDebuggerShowConsole();
     }
 
     /**

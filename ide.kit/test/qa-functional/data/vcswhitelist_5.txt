@@ -1,40 +1,4 @@
+#serves for VCSClassloadingTest.testTraverseHGMenu
 #include vcswhitelist_4.txt
 
 # Hg offenders - remove after fix
-org.netbeans.modules.mercurial.HgProgressSupport
-org.netbeans.modules.mercurial.ui.actions.ContextAction
-org.netbeans.modules.mercurial.ui.commit.CommitAction
-org.netbeans.modules.mercurial.ui.diff.DiffAction
-org.netbeans.modules.mercurial.ui.diff.DiffSetupSource
-org.netbeans.modules.mercurial.ui.diff.ExportBundleAction
-org.netbeans.modules.mercurial.ui.diff.ExportDiff
-org.netbeans.modules.mercurial.ui.diff.ExportDiffAction
-org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction
-org.netbeans.modules.mercurial.ui.diff.ImportDiffAction
-org.netbeans.modules.mercurial.ui.log.IncomingAction
-org.netbeans.modules.mercurial.ui.log.LogAction
-org.netbeans.modules.mercurial.ui.log.OutAction
-org.netbeans.modules.mercurial.ui.log.SearchHistoryAction
-org.netbeans.modules.mercurial.ui.log.SearchHistoryTopComponent$DiffResultsViewFactory
-org.netbeans.modules.mercurial.ui.menu.DynamicMenu
-org.netbeans.modules.mercurial.ui.menu.ExportMenu
-org.netbeans.modules.mercurial.ui.menu.MergeMenu
-org.netbeans.modules.mercurial.ui.menu.RecoverMenu
-org.netbeans.modules.mercurial.ui.menu.ShareMenu
-org.netbeans.modules.mercurial.ui.menu.ShowMenu
-org.netbeans.modules.mercurial.ui.merge.MergeAction
-org.netbeans.modules.mercurial.ui.properties.PropertiesAction
-org.netbeans.modules.mercurial.ui.pull.FetchAction
-org.netbeans.modules.mercurial.ui.pull.PullAction
-org.netbeans.modules.mercurial.ui.pull.PullOtherAction
-org.netbeans.modules.mercurial.ui.push.PushAction
-org.netbeans.modules.mercurial.ui.push.PushOtherAction
-org.netbeans.modules.mercurial.ui.rollback.BackoutAction
-org.netbeans.modules.mercurial.ui.rollback.RollbackAction
-org.netbeans.modules.mercurial.ui.rollback.StripAction
-org.netbeans.modules.mercurial.ui.rollback.VerifyAction
-org.netbeans.modules.mercurial.ui.status.StatusAction
-org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction
-org.netbeans.modules.mercurial.ui.update.RevertModificationsAction
-org.netbeans.modules.mercurial.ui.update.UpdateAction
-org.netbeans.modules.mercurial.ui.view.ViewAction

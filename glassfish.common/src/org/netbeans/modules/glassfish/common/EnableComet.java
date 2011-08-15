@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,7 +68,7 @@ public class EnableComet implements Runnable {
     }
 
     public void run() {
-        GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled");
+        GetPropertyCommand gpc = new GetPropertyCommand("*.comet-support-enabled"); // NOI18N
         Future<OperationState> result = support.execute(gpc);
         //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);
         try {
@@ -76,12 +76,12 @@ public class EnableComet implements Runnable {
                 Map<String, String> retVal = gpc.getData();
                 String newValue = support.getInstanceProperties().get(GlassfishModule.COMET_FLAG);
                 if (null == newValue || newValue.trim().length() < 1) {
-                    newValue = "false";
+                    newValue = "false"; // NOI18N
                 }
                 for (Entry<String, String> entry : retVal.entrySet()) {
                     String key = entry.getKey();
                     // do not update the admin listener....
-                    if (null != key && !key.contains("admin-listener")) {
+                    if (null != key && !key.contains("admin-listener")) { // NOI18N
                         SetPropertyCommand spc = support.getCommandFactory().getSetPropertyCommand(key, newValue);
                         Future<OperationState> results = support.execute(spc);
                         //((GlassfishModule) si.getBasicNode().getLookup().lookup(GlassfishModule.class)).execute(gpc);

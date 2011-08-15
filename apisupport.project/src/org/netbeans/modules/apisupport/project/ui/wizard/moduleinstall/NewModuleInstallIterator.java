@@ -46,9 +46,10 @@ package org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wizard for creating Module Installer.
@@ -61,6 +62,7 @@ final class NewModuleInstallIterator extends BasicWizardIterator {
 
     private NewModuleInstallIterator() {}
 
+    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 700, displayName = "#Templates/NetBeansModuleDevelopment/newModuleInstall", iconBase = "org/netbeans/modules/apisupport/project/ui/wizard/moduleinstall/module.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newModuleInstall.html", category = "nbm-specific")
     public static NewModuleInstallIterator createIterator() {
         return new NewModuleInstallIterator();
     }

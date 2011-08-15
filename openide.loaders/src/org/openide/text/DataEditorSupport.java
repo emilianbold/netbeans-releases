@@ -45,6 +45,7 @@
 package org.openide.text;
 
 
+import org.netbeans.modules.openide.loaders.SimpleES;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedOutputStream;
@@ -138,8 +139,17 @@ public class DataEditorSupport extends CloneableEditorSupport {
         this(obj, new DOEnvLookup (obj), env);
     }
     
-    DataEditorSupport(DataObject obj, Lookup lkp, CloneableEditorSupport.Env env) {
-        super (env, lkp);
+    /** Editor support for given data object. The content of editor is taken
+     * from the primary file of the data object. The lookup can be anything,
+     * but it is recommended to use {@link DataObject#getLookup()}. 
+     * 
+     * @param obj object to create editor for
+     * @param lkp lookup to use. if <code>null</code>, then {@link DataObject#getLookup()} is used.
+     * @param env environment responsible for loading/storing the strams
+     * @since 7.28
+     */
+    public DataEditorSupport(DataObject obj, @NullAllowed Lookup lkp, CloneableEditorSupport.Env env) {
+        super (env, lkp == null ? obj.getLookup() : lkp);
         this.obj = obj;
     }
     

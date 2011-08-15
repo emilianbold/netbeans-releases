@@ -66,6 +66,7 @@ import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Places;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -116,7 +117,8 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
-            configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this));
+            configMap.put("netigso.archive", NetigsoArchiveFactory.DEFAULT.create(this)); // NOI18N
+            configMap.put("felix.log.level", "4"); // NOI18N
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
             FrameworkFactory frameworkFactory = lkp.lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
@@ -229,6 +231,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                         while (en.hasMoreElements()) {
                             URL url = (URL) en.nextElement();
                             if (url.getFile().startsWith("/META-INF")) {
+                                pkgs.add(url.getFile().substring(9));
                                 continue;
                             }
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
@@ -310,12 +313,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     private File getNetigsoCache() throws IllegalStateException {
         // Explicitly specify the directory to use for caching bundles.
-        String ud = System.getProperty("netbeans.user");
-        if (ud == null) {
-            throw new IllegalStateException();
-        }
-        File udf = new File(ud);
-        return new File(new File(new File(udf, "var"), "cache"), "netigso");
+        return Places.getCacheSubdirectory("netigso");
     }
 
     private void deleteRec(File dir) {

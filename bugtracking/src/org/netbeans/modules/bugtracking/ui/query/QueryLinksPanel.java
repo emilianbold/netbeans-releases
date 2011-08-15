@@ -58,7 +58,6 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
-import org.jdesktop.layout.Baseline;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -270,6 +269,7 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
     /*
      * To make it work correctly with GroupLayout.
      */
+    @Override
     public int getBaseline(int width, int height) {
         return getBaseline();
     }
@@ -296,9 +296,7 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
                 QueryButton button = buttons[i];
                 Dimension buttonPrefSize = button.getPreferredSize();
 
-                int aboveBaseline = Baseline.getBaseline(button,
-                                                         buttonPrefSize.width,
-                                                         buttonPrefSize.height);
+                int aboveBaseline = button.getBaseline(buttonPrefSize.width,buttonPrefSize.height);
                 int belowBaseline = buttonPrefSize.height - aboveBaseline;
 
                 buttonPrefSizes[i] = buttonPrefSize;
@@ -317,8 +315,9 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
     /*
      * To make it work correctly with GroupLayout.
      */
-    public int getBaselineResizeBehaviorInt() {
-        return Baseline.BRB_CONSTANT_ASCENT;
+    @Override
+    public BaselineResizeBehavior getBaselineResizeBehavior() {
+        return BaselineResizeBehavior.CONSTANT_ASCENT;
     }
 
     @Override

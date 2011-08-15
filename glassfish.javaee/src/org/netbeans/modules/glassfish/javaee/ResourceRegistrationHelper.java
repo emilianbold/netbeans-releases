@@ -129,7 +129,11 @@ public class ResourceRegistrationHelper {
         if(sunResourcesXml.exists()) {
             checkUpdateServerResources(sunResourcesXml, dm);
             GlassfishModule commonSupport = dm.getCommonServerSupport();
-            AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml,dm.isLocal());
+            String uri = 
+                    commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
+            String target = Hk2DeploymentManager.getTargetFromUri(uri);
+            AddResourcesCommand cmd = new AddResourcesCommand(sunResourcesXml,dm.isLocal(),
+                    target);
             try {
                 Future<OperationState> result = commonSupport.execute(cmd);
                 if(result.get(TIMEOUT, TIMEOUT_UNIT) == OperationState.COMPLETED) {
@@ -247,9 +251,12 @@ public class ResourceRegistrationHelper {
         boolean isLocal;
         File path;
         
-        public AddResourcesCommand(File sunResourcesXmlPath,boolean isLocal) {
+        public AddResourcesCommand(File sunResourcesXmlPath,boolean isLocal, String target) {
             super("add-resources"); // NOI18N
             query = "DEFAULT=" + sunResourcesXmlPath.getAbsolutePath(); // NOI18N
+            if (null != target) {
+                query += "&target="+target; // NOI18N
+            }
             this.isLocal = isLocal;
             this.path=sunResourcesXmlPath;
         }

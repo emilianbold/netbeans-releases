@@ -71,23 +71,43 @@ import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.MethodModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
  * @author ads
  *
  */
-class WebBeansAnalysisTask extends AbstractAnalysisTask {
+public class WebBeansAnalysisTask extends AbstractAnalysisTask {
     
     private final static Logger LOG = Logger.getLogger( 
             WebBeansAnalysisTask.class.getName());
+    
+    protected Result createResult( CompilationInfo compInfo  ){
+        return new Result( compInfo );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#getResult()
+     */
+    @Override
+    protected Result getResult() {
+        return (Result)super.getResult();
+    }
+    
+    @Override
+    List<ErrorDescription> getProblems(){
+        return getResult().getProblems();
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.analysis.AbstractAnalysisTask#run(org.netbeans.api.java.source.CompilationInfo)
      */
     @Override
-    void run( final CompilationInfo compInfo ) {
+    protected void run( final CompilationInfo compInfo ) {
+        setResult( createResult( compInfo ) );
         List<? extends TypeElement> types = compInfo.getTopLevelElements();
         final List<ElementHandle<TypeElement>> handles = 
             new ArrayList<ElementHandle<TypeElement>>(1);
@@ -135,8 +155,7 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
         ElementKind kind = typeElement.getKind();
         ModelAnalyzer analyzer = ANALIZERS.get( kind );
         if ( analyzer != null ){
-            analyzer.analyze(typeElement, parent, model, getProblems(), info ,
-                    getCancel());
+            analyzer.analyze(typeElement, parent, model, getCancel(), getResult());
         }
         if ( isCancelled() ){
             return;
@@ -170,8 +189,7 @@ class WebBeansAnalysisTask extends AbstractAnalysisTask {
         if ( analyzer == null ){
             return;
         }
-        analyzer.analyze(element, typeElement, model, getProblems(), info , 
-                getCancel());
+        analyzer.analyze(element, typeElement, model, getCancel(), getResult());
     }
     
     private static final Map<ElementKind,ModelAnalyzer> ANALIZERS = 

@@ -100,6 +100,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -1139,6 +1141,24 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
     private synchronized void onProjectOpened() {
         if (!isOpenHookDone) {
+            FileObject dir = getProjectDirectory();
+            if (dir != null) { // high resistance mode paranoia
+                final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
+                if (env != null && env.isRemote()) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ConnectionManager.getInstance().connectTo(env);
+                            } catch (IOException ex) {
+
+                            } catch (CancellationException ex) {
+                                // don't log CancellationException
+                            }
+                        }
+                    });
+                }
+            }            
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {

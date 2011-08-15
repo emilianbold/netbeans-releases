@@ -46,9 +46,11 @@ import java.util.Collection;
 import java.util.Enumeration;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
-import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.nbimpl.javac.ClasspathInfoFactory;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -57,22 +59,23 @@ import org.openide.util.lookup.Lookups;
  */
 abstract public class ProjectNode extends ContainerNode {
     /** Creates a new instance of ProjectNode */
-    public ProjectNode(final Project project, ContainerNode root) {
-        super(ProjectUtilities.getProjectName(project), ProjectUtilities.getProjectIcon(project), root, Lookups.fixed(project)); // NOI18N
-        setValid(ProjectUtilities.getClasspathInfo(project, false) != null);
+    public ProjectNode(final Lookup.Provider project, ContainerNode root) {
+        super(ProjectUtilities.getDisplayName(project), ProjectUtilities.getIcon(project), root, Lookups.fixed(project)); // NOI18N
+        // TODO
+//        setValid(ClasspathInfoFactory.infoFor(project, false) != null);
     }
 
-    public ProjectNode(Project project) {
+    public ProjectNode(Lookup.Provider project) {
         this(project, null);
     }
 
     @Override
     public Collection<SourceCodeSelection> getRootMethods(boolean all) {
         Collection<SourceCodeSelection> roots = new ArrayList<SourceCodeSelection>();
-        Enumeration children = children();
+        Enumeration childEnum = children();
 
-        while (children.hasMoreElements()) {
-            roots.addAll(((SelectorNode) children.nextElement()).getRootMethods(all));
+        while (childEnum.hasMoreElements()) {
+            roots.addAll(((SelectorNode) childEnum.nextElement()).getRootMethods(all));
         }
 
         return roots;

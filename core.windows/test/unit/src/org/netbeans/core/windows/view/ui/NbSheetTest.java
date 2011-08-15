@@ -45,6 +45,9 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.actions.GlobalPropertiesAction;
 import org.netbeans.junit.NbTestCase;
@@ -68,12 +71,27 @@ public class NbSheetTest extends NbTestCase {
     
     NbSheet s;
     GlobalPropertiesAction a;
-    TopComponent tc;
+    static TopComponent tc;
     
     public NbSheetTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
+    protected String logRoot() {
+        return NbSheetTest.class.getPackage().getName();
+    }
     
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
     @Override
     protected void setUp() throws Exception {
         Lookup.getDefault().lookup(ModuleInfo.class);
@@ -87,12 +105,9 @@ public class NbSheetTest extends NbTestCase {
         assertNotNull("Sheet found", s);
         assertFalse("Not yet visible", s.isShowing());
         a = GlobalPropertiesAction.get(GlobalPropertiesAction.class);
-        tc = new TopComponent();
-    }
-    
-    @Override
-    protected int timeOut() {
-        return 15000;
+        if (tc == null) {
+            tc = new TopComponent();
+        }
     }
 
     public void testIssue97069EgUseSetActivatedNodesNull() throws Exception {
@@ -136,8 +151,14 @@ public class NbSheetTest extends NbTestCase {
         
         final N another = new N("another");
         
-        tc.setActivatedNodes(new Node[] { another });
-        tc.requestActive();
+        SwingUtilities.invokeAndWait( new Runnable() {
+
+            @Override
+            public void run() {
+                tc.setActivatedNodes(new Node[] { another });
+                tc.requestActive();
+            }
+        });
                 
         
         class R2 implements Runnable {
@@ -173,8 +194,9 @@ public class NbSheetTest extends NbTestCase {
 
 
     public void testMemoryLeakIssue125057() throws Exception {
-        NbSheet sheet = NbSheet.getDefault();
+        final NbSheet sheet = NbSheet.getDefault();
         SwingUtilities.invokeAndWait( new Runnable() {
+            @Override
             public void run() {
                 N node = new N("node1");
                 tc.setActivatedNodes(new Node[] { node });
@@ -188,10 +210,18 @@ public class NbSheetTest extends NbTestCase {
                 assertEquals(activated.length, 1);
                 assertEquals(activated[0], node);
                 sheet.close();
+                assertEquals("NbSheet's nodes are gone", 0, sheet.getNodes().length );
 
             }
         });
-        assertEquals("PropertySheet still holds activated nodes after closing", 0, sheet.getNodes().length );
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                List<Node> arr = Arrays.asList(sheet.getNodes());
+                assertEquals("NbSheet's nodes point to tc: " + arr, 1, arr.size());
+                assertEquals("It is the one of tc", tc.getActivatedNodes()[0], arr.get(0));
+            }
+        });
     }
 }
 

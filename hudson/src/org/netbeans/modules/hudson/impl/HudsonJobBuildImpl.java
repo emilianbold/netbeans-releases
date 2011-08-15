@@ -118,7 +118,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         if (changes == null || /* #171978 */changes.isEmpty()) {
             Document changeSet = connector.getDocument(getUrl() +
                     // XXX use ?tree (but means that each HudsonSCM must add its own pieces)
-                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet"); // NOI18N
+                    HudsonXmlApiConstants.XML_API_URL + "?xpath=/*/changeSet", true); // NOI18N
             if (changeSet != null) {
                 for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
                     changes = scm.parseChangeSet(job, changeSet.getDocumentElement());

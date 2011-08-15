@@ -47,7 +47,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.css.gsf.CssLanguage;
+import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.netbeans.modules.parsing.api.Source;
@@ -66,7 +66,7 @@ public class CssFileModelTest extends CslTestBase {
     }
 
     public void testBasic() throws ParseException {
-        String code = ".myclass { color: red }; #myid { color: blue }";
+        String code = ".myclass { color: red }  #myid { color: blue }";
         //             01234567890123456789012345678901234567890123456789
         //             0         1         2         3         4
         Document doc = getDocument(code);
@@ -89,8 +89,8 @@ public class CssFileModelTest extends CslTestBase {
         assertNotNull(e);
         assertEquals("myclass", e.getName());
         assertTrue(e.isValidInSourceDocument());
-        assertEquals(new OffsetRange(10,22), e.getBodyRange());
-        assertEquals(new OffsetRange(10,22), e.getDocumentBodyRange());
+        assertEquals(new OffsetRange(9,23), e.getBodyRange());
+        assertEquals(new OffsetRange(9,23), e.getDocumentBodyRange());
         assertEquals(0, e.getLineOffset());
         assertFalse(e.isVirtual());
         assertEquals(code, e.getLineText());
@@ -107,7 +107,7 @@ public class CssFileModelTest extends CslTestBase {
     }
 
      public void testBasicInEmbeddedCss() throws ParseException {
-        String code = "<html><head><title>x</title><style>.myclass { color: red }; #myid { color: blue }</style></head></html>";
+        String code = "<html><head><title>x</title><style>.myclass { color: red }  #myid { color: blue }</style></head></html>";
         //             0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
         //             0         1         2         3         4         5         6         7         8         9
         
@@ -130,11 +130,11 @@ public class CssFileModelTest extends CslTestBase {
         assertNotNull(e);
         assertEquals("myclass", e.getName());
         assertTrue(e.isValidInSourceDocument());
-        assertEquals(new OffsetRange(10,22), e.getBodyRange());
-        assertEquals(new OffsetRange(45,57), e.getDocumentBodyRange());
+        assertEquals(new OffsetRange(9,23), e.getBodyRange());
+        assertEquals(new OffsetRange(44,58), e.getDocumentBodyRange());
         assertEquals(0, e.getLineOffset());
         assertFalse(e.isVirtual());
-        assertEquals(".myclass { color: red }; #myid { color: blue }", e.getLineText());
+        assertEquals(".myclass { color: red }  #myid { color: blue }", e.getLineText());
         assertEquals(new OffsetRange(1, 8), e.getRange());
         assertEquals(new OffsetRange(36, 43), e.getDocumentRange());
 

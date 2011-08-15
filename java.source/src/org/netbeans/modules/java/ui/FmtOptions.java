@@ -239,6 +239,18 @@ public class FmtOptions {
     public static final String packagesForStarImport = "packagesForStarImport"; //NOI18N
     public static final String importsOrder = "importsOrder"; //NOI18N
     
+    public static final String enableCommentFormatting = "enableCommentFormatting"; //NOI18N
+    public static final String wrapCommentText = "wrapCommentText"; //NOI18N
+    public static final String wrapOneLineComment = "wrapOneLineComment"; //NOI18N
+    public static final String preserveNewLinesInComments = "preserveNewLinesInComments"; //NOI18N
+    public static final String blankLineAfterJavadocDescription = "blankLineAfterJavadocDescription"; //NOI18N
+    public static final String blankLineAfterJavadocParameterDescriptions = "blankLineAfterJavadocParameterDescriptions"; //NOI18N
+    public static final String blankLineAfterJavadocReturnTag = "blankLineAfterJavadocReturnTag"; //NOI18N
+    public static final String generateParagraphTagOnBlankLines = "generateParagraphTagOnBlankLines"; //NOI18N
+    public static final String alignJavadocParameterDescriptions = "alignJavadocParameterDescriptions"; //NOI18N
+    public static final String alignJavadocReturnDescription = "alignJavadocReturnDescription"; //NOI18N
+    public static final String alignJavadocExceptionDescriptions = "alignJavadocExceptionDescriptions"; //NOI18N
+
     public static CodeStyleProducer codeStyleProducer;
     
     static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
@@ -477,6 +489,18 @@ public class FmtOptions {
             { countForUsingStaticStarImport, "3"}, //NOI18N // XXX
             { packagesForStarImport, ""}, //NOI18N // XXX
             { importsOrder, ""}, //NOI18N // XXX
+            
+            { enableCommentFormatting, TRUE}, //NOI18N
+            { wrapCommentText, TRUE}, //NOI18N
+            { wrapOneLineComment, TRUE}, //NOI18N
+            { preserveNewLinesInComments, FALSE}, //NOI18N
+            { blankLineAfterJavadocDescription, TRUE}, //NOI18N
+            { blankLineAfterJavadocParameterDescriptions, FALSE}, //NOI18N
+            { blankLineAfterJavadocReturnTag, FALSE}, //NOI18N
+            { generateParagraphTagOnBlankLines, FALSE}, //NOI18N
+            { alignJavadocParameterDescriptions, FALSE}, //NOI18N
+            { alignJavadocReturnDescription, FALSE}, //NOI18N
+            { alignJavadocExceptionDescriptions, FALSE}, //NOI18N                        
         };
         
         defaults = new HashMap<String,String>();
@@ -543,7 +567,7 @@ public class FmtOptions {
             for (String[] option : forcedOptions) {
                 forcedPrefs.put( option[0], option[1]);
             }
-            this.previewPrefs = new ProxyPreferences(preferences, forcedPrefs);
+            this.previewPrefs = new ProxyPreferences(forcedPrefs, preferences);
 
             // Load and hook up all the components
             loadFrom(preferences);
@@ -671,7 +695,10 @@ public class FmtOptions {
 
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
-                    return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                    CategorySupport categorySupport = new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                    if (categorySupport.panel instanceof Runnable)
+                        ((Runnable)categorySupport.panel).run();
+                    return categorySupport;
                 } catch (Exception e) {
                     return null;
                 }

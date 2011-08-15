@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
@@ -98,30 +98,31 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     
     private String doPerform() {
         int[] span = new int[2];
-        FileObject file = getCurrentFile(span);
+        JTextComponent pane = getCurrentFile(span);
+        Document doc = pane.getDocument();
         
-        if (file == null) {
+        if (doc == null) {
             if (span[0] != span[1])
                 return "ERR_Not_Selected"; //NOI18N
             else
                 return "ERR_No_Selection"; //NOI18N
         }
         
-        JavaSource js = JavaSource.forFileObject(file);
+        JavaSource js = JavaSource.forDocument(doc);
         
         if (js == null)
             return  "ERR_Not_Supported"; //NOI18N
         
-        perform(js, span);
+        perform(js, pane, span);
         
         return null;
     }
     
-    protected abstract void perform(JavaSource js, int[] selection);
+    protected abstract void perform(JavaSource js, JTextComponent pane, int[] selection);
 
     private Reference<EditorCookie.Observable> lastECO;
     private Reference<PropertyChangeListener> lastECOListener;
-    private FileObject getCurrentFile(int[] span) {
+    private JTextComponent getCurrentFile(int[] span) {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         Lookup l = tc != null ? tc.getLookup() : null;
         EditorCookie ec = l != null ? l.lookup(EditorCookie.class) : null;
@@ -164,7 +165,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
         FileObject result = dObj.getPrimaryFile();
         
         if ("text/x-java".equals(FileUtil.getMIMEType(result))) //NOI18N
-            return result;
+            return pane;
         else
             return null;
     }

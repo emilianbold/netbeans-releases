@@ -34,10 +34,12 @@
 
 package org.netbeans.modules.settings;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -47,6 +49,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -68,6 +71,22 @@ import org.openide.util.lookup.implspi.NamedServicesProvider;
 public final class RecognizeInstanceObjects extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceObjects.class.getName());
     
+    @Override
+    public <T> T lookupObject(String path, Class<T> type) {
+        FileObject fo = FileUtil.getConfigFile(path)    ;
+        if (fo != null) {
+            try {
+                InstanceCookie ic = DataObject.find(fo).getLookup().lookup(InstanceCookie.class);
+                Object obj = ic != null ? ic.instanceCreate() : null;
+                return type.isInstance(obj) ? type.cast(obj) : null;
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Cannot create instance for " + path, ex);
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.INFO, "Cannot create instance for " + path, ex);
+            }
+        }
+        return null;
+    }
     
     @Override
     public Lookup create(String path) {

@@ -53,7 +53,7 @@ import org.netbeans.jellytools.Bundle;
 public class Labels {
 
         public static String standard = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
-        public static String javaApp = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
+        public static String javaApp = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "template_app");
         public static String libMgrDlgLbl = Bundle.getString("org.netbeans.api.project.libraries.Bundle", "TXT_LibrariesManager");
         public static String tools = Bundle.getString("org.openide.actions.Bundle", "CTL_Tools");
         public static String libraries = Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle", "CTL_LibrariesManager");

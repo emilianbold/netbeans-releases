@@ -50,6 +50,22 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="slowRename">
+        <api name="explorer"/>
+        <summary>In-place rename can be processed on background</summary>
+        <version major="6" minor="38"/>
+        <date day="30" month="6" year="2011"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            By providing <a href="@TOP@/architecture-summary.html#property-slowRename">slowRename</a>
+            property, nodes can request in-place rename to be finished on background.
+        </description>
+        <class package="org.openide.explorer.view" name="TreeView"/>
+        <class package="org.openide.explorer.view" name="TreeTableView"/>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="190736"/>
+    </change>
     <change id="BaseTable.setQuickSearchAllowed">
         <api name="explorer"/>
         <summary>Allows one to disable quick search in property sheets, either globally or per-instance.</summary>

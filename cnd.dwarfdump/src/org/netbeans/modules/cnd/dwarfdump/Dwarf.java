@@ -296,7 +296,7 @@ public class Dwarf {
             int startReal = -1;
             int startVirtual = -1;
             int len = -1;
-            for(int j = 0; j < splitVirtual.length; j++) {
+            loop2:for(int j = 0; j < splitVirtual.length; j++) {
                 if (splitReal[i].equals(splitVirtual[j])) {
                     startReal = i;
                     startVirtual = j;
@@ -320,10 +320,31 @@ public class Dwarf {
                         for(int k = startVirtual+len; k < splitVirtual.length; k++) {
                             buf.append('/').append(splitVirtual[k]); //NOI18N
                         }
+                        if (path.equals(buf.toString().substring(1))) {
+                            continue loop2;
+                        }
                         return buf.toString();
                     }
                 }
             }
+        }
+        int common = 0;
+        for(int i = 0; i < Math.min(splitReal.length, splitVirtual.length); i++) {
+            if (splitReal[i].equals(splitVirtual[i])) {
+                common++;
+            } else {
+                break;
+            }
+        }
+        if (common >= 2 && common < splitReal.length - 1) {
+            StringBuilder buf = new StringBuilder();
+            for(int k = 0; k < common+1; k++) {
+                buf.append('/').append(splitReal[k]); //NOI18N
+            }
+            for(int k = common+1; k < splitVirtual.length; k++) {
+                buf.append('/').append(splitVirtual[k]); //NOI18N
+            }
+            return buf.toString();
         }
         return null;
     }

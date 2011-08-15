@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="mark-commit-group">
+        <api name="text"/>
+        <summary>fix hole in commit-groups about empty commit group</summary>
+        <version major="6" minor="40"/>
+        <date day="20" month="7" year="2011"/>
+        <author login="err"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Define semantics of a nested empty commit group.
+                Add <code>MARK_COMMIT_GROUP</code> to fill a gap in API;
+                It adds an inprogress commit-group and starts a new one.
+            </p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <issue number="199568"/>
+    </change>
     <change id="CE.closeLast.boolean">
         <api name="text"/>
         <summary>CloneableEditor.closeLast</summary>

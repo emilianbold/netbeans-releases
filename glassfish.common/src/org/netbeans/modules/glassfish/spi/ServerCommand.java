@@ -49,6 +49,7 @@ import java.net.HttpURLConnection;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -69,6 +70,7 @@ public abstract class ServerCommand {
     protected String query = null;
     protected boolean retry = false;
     private String serverMessage = "";
+    protected boolean silentFailureAllowed = false;
 
     public String getServerMessage() {
         return serverMessage;
@@ -203,7 +205,7 @@ public abstract class ServerCommand {
         Manifest m = new Manifest();
         m.read(in);
         String outputCode = m.getMainAttributes().getValue("exit-code"); // NOI18N
-        if(outputCode.equalsIgnoreCase("Success")) { // NOI18N
+        if(null == outputCode || !"FAILURE".equals(outputCode.toUpperCase(Locale.ENGLISH))) { // NOI18N
             readManifest(m);
             result = true;
         } else {
@@ -272,12 +274,18 @@ public abstract class ServerCommand {
         private Manifest info;
         private Map<String,String> propertyMap;
 
-        public GetPropertyCommand(final String property) {
+        public GetPropertyCommand(final String property, boolean allowSilentFail) {
             super("get"); // NOI18N
             
             this.query = "pattern=" + property; // NOI18N
             this.propertyMap = new HashMap<String, String>();
+            this.silentFailureAllowed = allowSilentFail;
         }
+
+        public GetPropertyCommand(final String property) {
+            this(property,false);
+        }
+
 
         @Override
         public void readManifest(Manifest manifest) throws IOException {
@@ -363,4 +371,10 @@ public abstract class ServerCommand {
         }
     }
 
+    /** Allow commands to fail without a big message
+     *
+     */
+     public boolean isSilentFailureAllowed() {
+         return silentFailureAllowed;
+     }
 }

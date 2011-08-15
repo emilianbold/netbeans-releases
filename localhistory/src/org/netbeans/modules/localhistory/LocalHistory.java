@@ -145,16 +145,18 @@ public class LocalHistory {
     }
 
     void init() {
-        LocalHistoryStore s = getLocalHistoryStore(false);
-        if(s != null) {
-            getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+        if(!LocalHistorySettings.getInstance().getKeepForever()) {
+            LocalHistoryStore s = getLocalHistoryStore(false);
+            if(s != null) {
+                getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+            }
         }
         getParallelRequestProcessor().post(new Runnable() {
             public void run() {                       
                 setRoots(OpenProjects.getDefault().getOpenProjects());                                
                 OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(openProjectsListener, null));                                  
             }
-        });        
+        });
     }
 
     private void setRoots(Project[] projects) {        

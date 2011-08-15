@@ -366,7 +366,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     public Collection<? extends MethodScope> getDeclaredConstructors() {
-        System.out.println("getDeclaredConstructors");
         return ModelUtils.filter(getDeclaredMethods(), new ModelUtils.ElementFilter<MethodScope>() {
             public boolean isAccepted(MethodScope methodScope) {
                 return methodScope.isConstructor();

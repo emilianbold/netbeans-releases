@@ -56,13 +56,17 @@ import java.awt.image.BufferedImage;
 import java.awt.Paint;
 import java.awt.TexturePaint;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
+import org.openide.nodes.Node;
 
 /**
  * {@code GridInfoProvider} for {@code GrigBagLayout} layout manager.
  *
- * @author Jan Stola, Petr Somol
+ * @author Jan Stola
+ * @author Petr Somol
  */
 public class GridBagInfoProvider implements GridInfoProvider {
     /** Texture to mark components with size set to REMAINDER */
@@ -79,6 +83,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
     private static final int IPADDING_COLOR_ALPHA = 64;
     
     private Container container;
+    private LayoutSupportManager layoutManager;
     /**
      * {@code tempX} field of GridBagConstraints used to get real grid X
      * coordinate. We cannot use {@code gridx} field because it can contain
@@ -103,9 +108,14 @@ public class GridBagInfoProvider implements GridInfoProvider {
      * or {@code REMAINDER} value.
      */
     private Field tempHeightField;
+    /**
+     * Color to be used when painting insets etc. To be derived from current background.
+     */
+    private Color containerEmphColor;
 
-    public GridBagInfoProvider(Container container) {
+    public GridBagInfoProvider(Container container, LayoutSupportManager layoutManager) {
         this.container = container;
+        this.layoutManager = layoutManager;
         LayoutManager containerLayout = container.getLayout();
         if (!(containerLayout instanceof GridBagLayout)) {
             throw new IllegalArgumentException();
@@ -129,6 +139,100 @@ public class GridBagInfoProvider implements GridInfoProvider {
         return (GridBagLayout)container.getLayout();
     }
 
+    public Object getLayoutProperty(String propertyName) {
+        Node.Property property = layoutManager.getLayoutProperty(propertyName);
+        Object layoutProp = null;
+        try {
+            layoutProp = property.getValue();
+        } catch (IllegalAccessException iaex) {
+            FormUtils.LOGGER.log(Level.WARNING, iaex.getMessage(), iaex);
+        } catch (InvocationTargetException itex) {
+            FormUtils.LOGGER.log(Level.WARNING, itex.getMessage(), itex);
+        }
+        return layoutProp;
+    }
+
+    public int getGapXArrayLength() {
+        int gapXArray[] = (int[]) getLayoutProperty("columnWidths");
+        if(gapXArray == null) {
+            return 0;
+        } else {
+            return gapXArray.length;
+        }
+    }
+    
+    public int getGapYArrayLength() {
+        int gapYArray[] = (int[]) getLayoutProperty("rowHeights");
+        if(gapYArray == null) {
+            return 0;
+        } else {
+            return gapYArray.length;
+        }
+    }
+
+    @Override
+    public boolean hasGaps() {
+        if(getLayoutProperty("columnWidths") == null) return false;
+        if(getLayoutProperty("rowHeights") == null) return false;
+        return true;
+    }
+
+    @Override
+    public int getGapWidth() {
+        int gapXArray[] = (int[]) getLayoutProperty("columnWidths");
+        if(gapXArray == null) {
+            return -1;
+        } else {
+            if(gapXArray.length < 2) {
+                return -1;
+            } else {
+                return gapXArray[1];
+            }
+        }
+    }
+
+    @Override
+    public int getGapHeight() {
+        int gapYArray[] = (int[]) getLayoutProperty("rowHeights");
+        if(gapYArray == null) {
+            return -1;
+        } else {
+            if(gapYArray.length < 2) {
+                return -1;
+            } else {
+                return gapYArray[1];
+            }
+        }
+    }
+
+    @Override
+    public boolean isGapColumn(int columnIndex) {
+        if( hasGaps() && (columnIndex % 2) == 1 && columnIndex >= 0 ) {
+            return true;
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean isGapRow(int rowIndex) {
+        if( hasGaps() && (rowIndex % 2) == 1 && rowIndex >= 0 ) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int getLastGapColumn() {
+        int gapXArrayLength = getGapXArrayLength();
+        return gapXArrayLength >=3 ? gapXArrayLength - 1 : -1;
+    }
+
+    @Override
+    public int getLastGapRow() {
+        int gapYArrayLength = getGapYArrayLength();
+        return gapYArrayLength >=3 ? gapYArrayLength - 1 : -1;
+    }
+    
     @Override
     public int getX() {
         return getLayout().getLayoutOrigin().x;
@@ -298,7 +402,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
         GridBagConstraints constraints = getLayout().getConstraints(component);
         return constraints.insets;
     }
-    
+
     @Override
     public void paintConstraints(Graphics g, Component component, boolean selected) {
         assert g instanceof Graphics2D;
@@ -413,8 +517,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
         }
         gg.dispose();
     }
-
-    private Color containerEmphColor;
+  
     private static Color deriveEmphColor(Component component) {
         // derive the color for emphasizing from background
         Color backColor = component.getBackground();

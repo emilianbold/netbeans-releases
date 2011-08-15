@@ -48,6 +48,7 @@ import java.io.File;
 import javax.swing.JPanel;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
 import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiffPanel;
@@ -59,14 +60,14 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport.AbstractExportDiff
  */
 public class ExportDiffPanel extends ChangesetPickerPanel {
 
-    private RepositoryRevision              repoRev;
+    private HgLogMessage              repoRev;
     private File fileToDiff;
     private final File repo;
 
     AbstractExportDiffPanel p;
 
     /** Creates new form ExportDiffPanel */
-    public ExportDiffPanel(File repo, RepositoryRevision repoRev, File [] roots, File fileToDiff) {
+    public ExportDiffPanel(File repo, HgLogMessage repoRev, File [] roots, File fileToDiff) {
         super(repo, roots);
         this.fileToDiff = fileToDiff;
         this.repoRev = repoRev;
@@ -89,7 +90,7 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
     }
 
     @Override
-    protected RepositoryRevision getDisplayedRevision() {
+    protected HgLogMessage getDisplayedRevision() {
         return repoRev;
     }
 
@@ -123,14 +124,14 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
     private void setDefaultOutputFile() {
         String folderName = HgModuleConfig.getDefault().getPreferences().get("ExportDiff.saveFolder", HgModuleConfig.getDefault().getExportFolder()); // NOI18N
         String fileName;
-        if (fileToDiff != null && repoRev != null && repoRev.getLog() != null && repo != null) { //"<filename-ext>_%b_%r_%h"
+        if (fileToDiff != null && repoRev != null && repo != null) { //"<filename-ext>_%b_%r_%h"
             fileName = fileToDiff.getName().replace('.', '-') + "_" +  //NOI18N
-                    repoRev.getLog().getRevisionNumber() + "_" +  //NOI18N
-                    repoRev.getLog().getCSetShortID(); //NOI18N
-        }else if (repoRev != null && repoRev.getLog() != null && repo != null){
+                    repoRev.getRevisionNumber() + "_" +  //NOI18N
+                    repoRev.getCSetShortID(); //NOI18N
+        } else if (repoRev != null && repo != null) {
             fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repo.getName()); //NOI18N
-            fileName = fileName.replace("%r", repoRev.getLog().getRevisionNumber()); //NOI18N
-            fileName = fileName.replace("%h", repoRev.getLog().getCSetShortID()); //NOI18N
+            fileName = fileName.replace("%r", repoRev.getRevisionNumber()); //NOI18N
+            fileName = fileName.replace("%h", repoRev.getCSetShortID()); //NOI18N
         }else if (repo != null){
             fileName = HgModuleConfig.getDefault().getExportFilename().replace("%b", repo.getName()); //NOI18N
         }else{

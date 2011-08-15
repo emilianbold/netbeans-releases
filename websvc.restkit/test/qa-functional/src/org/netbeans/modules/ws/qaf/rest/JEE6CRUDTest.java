@@ -54,11 +54,13 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class JEE6CRUDTest extends CRUDTest {
 
+     protected static Server server = Server.GLASSFISH;
+    
     /** Default constructor.
      * @param testName name of particular test case
      */
     public JEE6CRUDTest(String name) {
-        super(name);
+        super(name, server);
     }
 
     @Override

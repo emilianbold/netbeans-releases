@@ -110,6 +110,7 @@ public class ArchetypeWizardUtils {
     static final Archetype[] WEB_APP_ARCHS;
     static final Archetype[] EJB_ARCHS;
     static final Archetype[] EAR_ARCHS;
+    static final Archetype[] APPCLIENT_ARCHS;
     static final Archetype EA_ARCH;
     
     static final String[] EE_LEVELS = {
@@ -157,6 +158,27 @@ public class ArchetypeWizardUtils {
         arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ejb-j2ee14"); //NOI18N
         EJB_ARCHS[2] = arch;
+
+        APPCLIENT_ARCHS = new Archetype[3];
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-20110808.231428-2"); //NOI18N
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/"); // XXX temporary!
+        arch.setArtifactId("appclient-javaee6"); //NOI18N
+        APPCLIENT_ARCHS[0] = arch;
+
+        arch = new Archetype();
+        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+        arch.setVersion("1.0-20110808.231333-2"); //NOI18N
+        arch.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/"); // XXX temporary!
+        arch.setArtifactId("appclient-jee5"); //NOI18N
+        APPCLIENT_ARCHS[1] = arch;
+        
+//        arch = new Archetype();
+//        arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
+//        arch.setVersion("1.0"); //NOI18N
+//        arch.setArtifactId("appclient-javaee14"); //NOI18N
+        APPCLIENT_ARCHS[2] = arch;
 
         EAR_ARCHS = new Archetype[3];
         arch = new Archetype();

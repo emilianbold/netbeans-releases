@@ -67,6 +67,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.util.Utilities;
@@ -82,37 +83,28 @@ public final class CompositeFCS extends FontColorSettings {
     
     public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
     
-    // A few words about the default coloring. It's special, it always contains
-    // foreground, background and font related attributes. If they hadn't been
-    // supplied by a user the default coloring will use system defaults. Therefore
-    // this coloring should not be merged with any other colorings when folowing
-    // the chain of coloring delegates.
-    
-    /** The name of the default coloring. */
-    private static final String DEFAULT = "default"; //NOI18N
-    
     // Special instance to mark 'no attributes' for a token. This should never
     // be passed outside of this class, use SimpleAttributeSet.EMPTY instead. There
     // might be other code doing 'attribs == SAS.EMPTY'.
     private static final AttributeSet NULL = new SimpleAttributeSet();
     
-    private final FontColorSettingsImpl [] allFcsi;
+    private final FontColorSettingsImpl[] allFcsi;
     /* package */ final String profile;
     private final Map<String, AttributeSet> tokensCache = new HashMap<String, AttributeSet>();
     
     private final Preferences preferences;
-    
+
     /** Creates a new instance of CompositeFCS */
     public CompositeFCS(MimePath mimePath, String profile, Preferences preferences) {
         super();
-        
+
         assert mimePath != null : "The parameter allPaths should not be null"; //NOI18N
         assert profile != null : "The parameter profile should not be null"; //NOI18N
-        
+
         // Skip all mime types from the end that do not define any colorings.
         // This is here to support dummy languages like text/x-java/text/x-java-string that
         // inherit all colorings from the outer language.
-        while(mimePath.size() > 1) {
+        while (mimePath.size() > 1) {
             String lastMimeType = mimePath.getMimeType(mimePath.size() - 1);
             boolean empty = FontColorSettingsImpl.get(MimePath.parse(lastMimeType)).getColorings(profile).isEmpty();
             if (!empty) {
@@ -120,15 +112,15 @@ public final class CompositeFCS extends FontColorSettings {
             }
             mimePath = mimePath.getPrefix(mimePath.size() - 1);
         }
-        
-        MimePath [] allPaths = computeInheritedMimePaths(mimePath);
+
+        MimePath[] allPaths = computeInheritedMimePaths(mimePath);
         assert allPaths.length > 0 : "allPaths should always contain at least MimePath.EMPTY"; //NOI18N
-        
-        this.allFcsi = new FontColorSettingsImpl [allPaths.length];
-        for(int i = 0; i < allPaths.length; i++) {
+
+        this.allFcsi = new FontColorSettingsImpl[allPaths.length];
+        for (int i = 0; i < allPaths.length; i++) {
             allFcsi[i] = FontColorSettingsImpl.get(allPaths[i]);
         }
-        
+
         this.profile = profile;
         this.preferences = preferences;
     }
@@ -142,17 +134,29 @@ public final class CompositeFCS extends FontColorSettings {
     @Override
     public AttributeSet getFontColors(String highlightName) {
         assert highlightName != null : "The parameter highlightName must not be null."; //NOI18N
-        
-        if (highlightName.equals(DEFAULT)) {
-            return getTokenFontColors(DEFAULT);
-        }
-        
+
         AttributeSet attribs = null;
         Map<String, AttributeSet> coloringsMap = EditorSettings.getDefault().getHighlightings(profile);
         if (coloringsMap != null) {
             attribs = coloringsMap.get(highlightName);
         }
-        
+
+        if (highlightName.equals(FontColorNames.DEFAULT_COLORING) && (attribs == null || attribs.getAttribute(StyleConstants.FontFamily) == null) ) {
+            ArrayList<AttributeSet> colorings = new ArrayList<AttributeSet>();
+            String name = highlightName;
+
+            for (FontColorSettingsImpl fcsi : allFcsi) {
+                name = processLayer(fcsi, name, colorings);
+            }
+
+            colorings.add(getHardcodedDefaultColoring());
+            colorings.add(AttributesUtilities.createImmutable(
+                    EditorStyleConstants.RenderingHints, getRenderingHints()));
+
+            return AttributesUtilities.createImmutable(colorings.toArray(new AttributeSet[colorings.size()]));
+
+        }
+
 //        dumpAttribs(attribs, highlightName, false);
         return attribs;
     }
@@ -160,7 +164,7 @@ public final class CompositeFCS extends FontColorSettings {
     @Override
     public AttributeSet getTokenFontColors(String tokenName) {
         assert tokenName != null : "The parameter tokenName must not be null."; //NOI18N
-        
+
         synchronized (tokensCache) {
             AttributeSet attribs = tokensCache.get(tokenName);
 
@@ -171,13 +175,13 @@ public final class CompositeFCS extends FontColorSettings {
 //            } else {
 //                System.out.println("Using cached value for token '" + tokenName + "' CompoundFCS.this = " + this);
             }
-            
+
             return attribs == NULL ? null : attribs;
         }
     }
-    
+
     public boolean isDerivedFromMimePath(MimePath mimePath) {
-        for(FontColorSettingsImpl fcsi : allFcsi) {
+        for (FontColorSettingsImpl fcsi : allFcsi) {
             if (fcsi.getMimePath() == mimePath) {
                 return true;
             }
@@ -192,24 +196,19 @@ public final class CompositeFCS extends FontColorSettings {
     private AttributeSet findColoringForToken(String tokenName) {
         ArrayList<AttributeSet> colorings = new ArrayList<AttributeSet>();
         String name = tokenName;
-        
-        for(FontColorSettingsImpl fcsi : allFcsi) {
+
+        for (FontColorSettingsImpl fcsi : allFcsi) {
             name = processLayer(fcsi, name, colorings);
         }
 
-        if (tokenName.equals(DEFAULT)) {
-            colorings.add(getHardcodedDefaultColoring());
-            colorings.add(AttributesUtilities.createImmutable(
-                EditorStyleConstants.RenderingHints, getRenderingHints()));
-        }
-        
         if (colorings.size() > 0) {
             return AttributesUtilities.createImmutable(colorings.toArray(new AttributeSet[colorings.size()]));
         } else {
             return NULL;
         }
     }
-    
+
+    //side effect colorings
     private String processLayer(FontColorSettingsImpl fcsi, String name, ArrayList<AttributeSet> colorings) {
         // Try colorings first
         AttributeSet as = fcsi.getColorings(profile).get(name);
@@ -224,7 +223,7 @@ public final class CompositeFCS extends FontColorSettings {
 
             String nameOfColoring = (String) as.getAttribute(StyleConstants.NameAttribute);
             String nameOfDelegate = (String) as.getAttribute(EditorStyleConstants.Default);
-            if (nameOfDelegate != null && !nameOfDelegate.equals(DEFAULT)) {
+            if (nameOfDelegate != null && !nameOfDelegate.equals(FontColorNames.DEFAULT_COLORING)) {
                 if (!nameOfDelegate.equals(nameOfColoring)) {
                     // Find delegate on the same layer
                     nameOfDelegate = processLayer(fcsi, nameOfDelegate, colorings);
@@ -241,12 +240,12 @@ public final class CompositeFCS extends FontColorSettings {
         // the coloring's delegate
         return name;
     }
-    
+
     private void dumpAttribs(AttributeSet attribs, String name, boolean tokenColoring) {
 //        if (!allFcsi[0].getMimePath().getPath().equals("text/x-java")) { //NOI18N
 //            return;
 //        }
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("Attribs for base mime path '"); //NOI18N
         sb.append(allFcsi[0].getMimePath().getPath());
@@ -258,7 +257,7 @@ public final class CompositeFCS extends FontColorSettings {
         }
         sb.append(name);
         sb.append("' = {"); //NOI18N
-        
+
         Enumeration<?> keys = attribs.getAttributeNames();
         while (keys.hasMoreElements()) {
             Object key = keys.nextElement();
@@ -272,11 +271,11 @@ public final class CompositeFCS extends FontColorSettings {
 
         sb.append("} CompoundFCS.this = "); //NOI18N
         sb.append(this.toString());
-        
+
         System.out.println(sb.toString());
     }
 
-    private static MimePath [] computeInheritedMimePaths(MimePath mimePath) {
+    private static MimePath[] computeInheritedMimePaths(MimePath mimePath) {
         List<String> paths = null;
         try {
             Method m = MimePath.class.getDeclaredMethod("getInheritedPaths", String.class, String.class); //NOI18N
@@ -297,7 +296,7 @@ public final class CompositeFCS extends FontColorSettings {
 
             return mimePaths.toArray(new MimePath[mimePaths.size()]);
         } else {
-            return new MimePath [] { mimePath, MimePath.EMPTY };
+            return new MimePath[]{mimePath, MimePath.EMPTY};
         }
     }
 
@@ -309,7 +308,7 @@ public final class CompositeFCS extends FontColorSettings {
         Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("System provided desktop hints:"); //NOI18N
-            for(Object key : desktopHints.keySet()) {
+            for (Object key : desktopHints.keySet()) {
                 Object value = desktopHints.get(key);
                 String humanReadableKey = translateRenderingHintsConstant(key);
                 String humanReadableValue = translateRenderingHintsConstant(value);
@@ -330,29 +329,29 @@ public final class CompositeFCS extends FontColorSettings {
 //            reason = "editor preferences property '" + TEXT_ANTIALIASING_PROP + "'"; //NOI18N
 //        } else {
 
-            // These two properties are questionable. I haven't found any oficial docs
-            // saying that JVM recognizes them. However, we have been using them in Netbeans
-            // for a long time and so keep supporting them. But they most likely have absolutely
-            // no effect on JVM.
-            //
-            // There is another 'officially unsupported' property called awt.useSystemAAFontSetings
-            // introduced in JDK1.6, please http://java.sun.com/javase/6/docs/technotes/guides/2d/flags.html#aaFonts
-            //
-            String systemProperty = System.getProperty("javax.aatext"); //NOI18N
-            if (systemProperty == null) {
-                systemProperty = System.getProperty("swing.aatext"); //NOI18N
-            }
+        // These two properties are questionable. I haven't found any oficial docs
+        // saying that JVM recognizes them. However, we have been using them in Netbeans
+        // for a long time and so keep supporting them. But they most likely have absolutely
+        // no effect on JVM.
+        //
+        // There is another 'officially unsupported' property called awt.useSystemAAFontSetings
+        // introduced in JDK1.6, please http://java.sun.com/javase/6/docs/technotes/guides/2d/flags.html#aaFonts
+        //
+        String systemProperty = System.getProperty("javax.aatext"); //NOI18N
+        if (systemProperty == null) {
+            systemProperty = System.getProperty("swing.aatext"); //NOI18N
+        }
 
-            if (systemProperty != null) {
-                aaOn = Boolean.valueOf(systemProperty);
-                reason = "system property 'javax.aatext' or 'swing.aatext'"; //NOI18N
-            } else {
-                // Traditionally we turn text AA on when on Mac OS X
-                if (Utilities.isMac()) {
-                    aaOn = Boolean.TRUE;
-                    reason = "running on Mac OSX";//NOI18N
-                }
+        if (systemProperty != null) {
+            aaOn = Boolean.valueOf(systemProperty);
+            reason = "system property 'javax.aatext' or 'swing.aatext'"; //NOI18N
+        } else {
+            // Traditionally we turn text AA on when on Mac OS X
+            if (Utilities.isMac()) {
+                aaOn = Boolean.TRUE;
+                reason = "running on Mac OSX";//NOI18N
             }
+        }
 //        }
 
         Map<Object, Object> hints;
@@ -369,10 +368,10 @@ public final class CompositeFCS extends FontColorSettings {
             LOG.fine("Text Antialiasing was set " + (aaOn.booleanValue() ? "ON" : "OFF") + " by " + reason + "."); //NOI18N
             if (desktopHints != null) {
                 LOG.fine("Using system provided desktop hints"); //NOI18N
-                hints = new  HashMap<Object, Object>(desktopHints);
+                hints = new HashMap<Object, Object>(desktopHints);
             } else {
                 LOG.fine("No system provided desktop hints available, using hardcoded defaults"); //NOI18N
-                hints = new  HashMap<Object, Object>();
+                hints = new HashMap<Object, Object>();
             }
             if (aaOn.booleanValue()) {
                 // aaOn == true normally means that we should use system defaults,
@@ -385,7 +384,7 @@ public final class CompositeFCS extends FontColorSettings {
                 hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
             }
         }
-        
+
         if (Boolean.getBoolean("org.netbeans.editor.aa.extra.hints")) {
             // Get "bolder" Liberation Mono
             hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -397,7 +396,7 @@ public final class CompositeFCS extends FontColorSettings {
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Editor Rendering hints:"); //NOI18N
-            for(Object key : hints.keySet()) {
+            for (Object key : hints.keySet()) {
                 Object value = hints.get(key);
                 String humanReadableKey = translateRenderingHintsConstant(key);
                 String humanReadableValue = translateRenderingHintsConstant(value);
@@ -416,7 +415,7 @@ public final class CompositeFCS extends FontColorSettings {
         if (c != null) {
             s = renderingHintsConstants.get(c);
             if (s == null) {
-                for(Field f : RenderingHints.class.getFields()) {
+                for (Field f : RenderingHints.class.getFields()) {
                     try {
                         f.setAccessible(true);
                         if ((f.getModifiers() & Modifier.STATIC) != 0 && f.get(null) == c) {
@@ -438,23 +437,23 @@ public final class CompositeFCS extends FontColorSettings {
     }
 
     private static AttributeSet hardCodedDefaultColoring = null;
+    private static final int DEFAULT_FONTSIZE = 13;
     private static AttributeSet getHardcodedDefaultColoring() {
         if (hardCodedDefaultColoring == null) {
             int defaultFontSize;
             if (GraphicsEnvironment.isHeadless()) {
-                defaultFontSize = 12;
+                defaultFontSize = DEFAULT_FONTSIZE;
             } else {
-                Integer i = (Integer)UIManager.get("customFontSize"); //NOI18N
+                Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
                 defaultFontSize = (i != null) ? i : UIManager.getFont("TextField.font").getSize(); //NOI18N
             }
 
             hardCodedDefaultColoring = AttributesUtilities.createImmutable(
-                StyleConstants.NameAttribute, DEFAULT,
-                StyleConstants.Foreground, Color.black,
-                StyleConstants.Background, Color.white,
-                StyleConstants.FontFamily, "Monospaced", //NOI18N
-                StyleConstants.FontSize, defaultFontSize < 13 ? 13 : defaultFontSize
-            );
+                    StyleConstants.NameAttribute, FontColorNames.DEFAULT_COLORING,
+                    StyleConstants.Foreground, Color.black,
+                    StyleConstants.Background, Color.white,
+                    StyleConstants.FontFamily, "Monospaced", //NOI18N
+                    StyleConstants.FontSize, Math.max(defaultFontSize, DEFAULT_FONTSIZE));
         }
         assert hardCodedDefaultColoring != null;
         return hardCodedDefaultColoring;

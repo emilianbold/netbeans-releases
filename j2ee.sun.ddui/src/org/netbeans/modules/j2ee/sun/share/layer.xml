@@ -80,6 +80,7 @@
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.Bundle"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                 </folder>
             </folder>
@@ -87,6 +88,7 @@
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.Bundle"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                 </folder>
             </folder>
@@ -94,6 +96,7 @@
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.Bundle"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                 </folder>
             </folder>
@@ -101,6 +104,7 @@
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2ee-sun-ddloaders-SunDescriptorDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.Bundle"/>
+                        <attr name="position" intvalue="1500"/>
                     </file>
                 </folder>
             </folder>

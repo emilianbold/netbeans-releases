@@ -49,7 +49,6 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import javax.swing.event.ChangeEvent;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 import javax.swing.*;
@@ -57,7 +56,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
-import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.openide.windows.TopComponent;
@@ -84,7 +82,8 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         super(displayer);
     }
 
-    protected final TabLayoutModel createLayoutModel() {
+    @Override
+    protected TabLayoutModel createLayoutModel() {
         DefaultTabLayoutModel dtlm = new DefaultTabLayoutModel(
                 displayer.getModel(),
                 displayer);
@@ -92,14 +91,17 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 displayer.getModel());
     }
 
+    @Override
     protected TabState createTabState() {
         return new ScrollingTabState();
     }
     
+    @Override
     protected HierarchyListener createHierarchyListener() {
         return new ScrollingHierarchyListener();
     }
 
+    @Override
     public void makeTabVisible (int tab) {
         if (scroll().makeVisible(tab, getTabsAreaWidth())) {
             getTabsVisibleArea(scratch);
@@ -125,10 +127,12 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         return result - (ins.left + ins.right);
     }
 
+    @Override
     public Insets getTabAreaInsets() {
         return new Insets(0, 0, 0, getControlButtons().getPreferredSize().width + 5);
     }
 
+    @Override
     protected final int getLastVisibleTab() {
         if (displayer.getModel().size() == 0) {
             return -1;
@@ -136,6 +140,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         return scroll().getLastVisibleTab(getTabsAreaWidth());
     }
 
+    @Override
     protected final int getFirstVisibleTab() {
         if (displayer.getModel().size() == 0) {
             return -1;
@@ -143,6 +148,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         return scroll().getFirstVisibleTab(getTabsAreaWidth());
     }
 
+    @Override
     protected void install() {
         super.install();
         installControlButtons();
@@ -150,6 +156,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 defaultRenderer.getPixelsToAddToSelection());
     }
 
+    @Override
     protected void uninstall() {
         super.uninstall();
         displayer.setLayout(null);
@@ -227,6 +234,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         return controlButtons;
     }
     
+    @Override
     protected ComponentListener createComponentListener() {
         return new ScrollingDisplayerComponentListener();
     }
@@ -237,6 +245,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
      * to clear cached width/last-visible-tab data in the layout model, and ensure that
      * the selected tab is visible.
      */
+    @Override
     protected void modelChanged() {
         scroll().clearCachedData();
         int index = selectionModel.getSelectedIndex();
@@ -274,6 +283,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
      * Overridden to update the offset of the ScrollingTabLayoutModel on mouse
      * wheel events
      */
+    @Override
     protected void processMouseWheelEvent(MouseWheelEvent e) {
         int i = e.getWheelRotation();
         //clear the mouse-in-tab index so we don't occasionally have
@@ -302,6 +312,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
 
 
     protected class ScrollingTabState extends BasicTabState {
+        @Override
         public int getState(int tabIndex) {
             int result = super.getState(tabIndex);
             int first = getFirstVisibleTab();
@@ -339,6 +350,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
     }
 
     protected class ScrollingDisplayerComponentListener extends ComponentAdapter {
+        @Override
         public void componentResized(ComponentEvent e) {
             //Notify the layout model that its cached sizes are invalid
             makeTabVisible(selectionModel.getSelectedIndex());
@@ -346,6 +358,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
     }
     
     protected class ScrollingHierarchyListener extends DisplayerHierarchyListener {
+        @Override
         public void hierarchyChanged(HierarchyEvent e) {
             super.hierarchyChanged (e);
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
@@ -411,9 +424,11 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
      */
     private class WCLayout implements LayoutManager {
 
+        @Override
         public void addLayoutComponent(String name, Component comp) {
         }
 
+        @Override
         public void layoutContainer(java.awt.Container parent) {
             
             Rectangle r = getControlButtonsRectangle( parent );
@@ -421,14 +436,17 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             c.setBounds( r );
         }
 
+        @Override
         public Dimension minimumLayoutSize(Container parent) {
             return getMinimumSize((JComponent) parent);
         }
 
+        @Override
         public Dimension preferredLayoutSize(Container parent) {
             return getPreferredSize((JComponent) parent);
         }
 
+        @Override
         public void removeLayoutComponent(java.awt.Component comp) {
         }
     }

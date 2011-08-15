@@ -1757,7 +1757,9 @@ public class FilterNode extends Node {
 
             @Override
             protected LazySnapshot createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
-                return delayed ? new FilterDelayedLazySnapshot(entries, e2i) : new FilterLazySnapshot(entries, e2i);
+                synchronized (LOCK) {
+                    return delayed ? new FilterDelayedLazySnapshot(entries, e2i) : new FilterLazySnapshot(entries, e2i);
+                }
             }
         
             public Node[] callGetNodes(boolean optimalResult) {

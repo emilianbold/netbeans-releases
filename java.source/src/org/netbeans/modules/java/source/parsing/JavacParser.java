@@ -323,6 +323,8 @@ public class JavacParser extends Parser {
     public void parse(final Snapshot snapshot, final Task task, SourceModificationEvent event) throws ParseException {
         try {
             parseImpl(snapshot, task, event);
+        } catch (FileObjects.InvalidFileException ife) {
+            invalidate();
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe); //NOI18N
         }

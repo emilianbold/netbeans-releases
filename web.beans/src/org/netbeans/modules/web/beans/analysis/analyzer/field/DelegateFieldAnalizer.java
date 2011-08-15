@@ -55,10 +55,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.FieldElementAnalyzer.FieldAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -73,52 +72,48 @@ public class DelegateFieldAnalizer implements FieldAnalyzer {
      */
     @Override
     public void analyze( VariableElement element, TypeMirror elementType,
-            TypeElement parent, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+            TypeElement parent, AtomicBoolean cancel,
+            CdiAnalysisResult result )
     {
+        CompilationInfo compInfo = result.getInfo();
         if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.DELEGATE_FQN, 
                 compInfo))
         {
             return;
         }
+        result.requireCdiEnabled(element);
         if (!AnnotationUtil.hasAnnotation(element, AnnotationUtil.INJECT_FQN,
                 compInfo))
         {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+            result.addError(element,  NbBundle.getMessage(
                             DelegateFieldAnalizer.class,
                             "ERR_DelegateHasNoInject"));        // NOI18N
-            descriptions.add(description);
         }
         Element clazz = element.getEnclosingElement();
         if (!AnnotationUtil.hasAnnotation(clazz, AnnotationUtil.DECORATOR,
                 compInfo))
         {
-            ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+            result.addError(element,  NbBundle.getMessage(
                             DelegateFieldAnalizer.class,
                             "ERR_DelegateIsNotInDecorator"));   // NOI18N
-            descriptions.add(description);
         }
         if ( cancel.get()){
             return;
         }
-        checkDelegateType(element, elementType, parent, compInfo, descriptions);
+        checkDelegateType(element, elementType, parent, result );
     }
 
     private void checkDelegateType( VariableElement element,
             TypeMirror elementType, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions )
+            CdiAnalysisResult result  )
     {
         Collection<TypeMirror> decoratedTypes = getDecoratedTypes( parent , 
-                compInfo );
+                result.getInfo() );
         for (TypeMirror decoratedType : decoratedTypes) {
-            if ( !compInfo.getTypes().isSubtype( elementType,decoratedType )){
-                ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, compInfo, NbBundle.getMessage(
+            if ( !result.getInfo().getTypes().isSubtype( elementType,decoratedType )){
+                result.addError(element, NbBundle.getMessage(
                         DelegateFieldAnalizer.class,
                         "ERR_DelegateTypeHasNoDecoratedType"));   // NOI18N
-                descriptions.add(description);
                 return;
             }
         }

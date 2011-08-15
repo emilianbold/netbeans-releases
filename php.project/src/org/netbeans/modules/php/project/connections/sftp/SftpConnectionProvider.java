@@ -71,6 +71,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
     static final String PASSWORD = "password"; // NOI18N
     static final String INITIAL_DIRECTORY = "initialDirectory"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
+    static final String KEEP_ALIVE_INTERVAL = "keepAliveInterval"; // NOI18N
 
     private static final Set<String> PROPERTIES = new HashSet<String>(Arrays.asList(
         TYPE,
@@ -81,10 +82,12 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         KNOWN_HOSTS_FILE,
         IDENTITY_FILE,
         INITIAL_DIRECTORY,
-        TIMEOUT
+        TIMEOUT,
+        KEEP_ALIVE_INTERVAL
     ));
     private static final int DEFAULT_PORT = 22;
-    protected static final int DEFAULT_TIMEOUT = 30;
+    static final int DEFAULT_TIMEOUT = 30;
+    static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/var/www"; // NOI18N
 
     private SftpConnectionProvider() {
@@ -119,13 +122,13 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
 
         assert accept(configuration) : "Not my configuration?!";
 
-        return new SftpConfiguration(configuration);
+        return new SftpConfiguration(configuration, false);
     }
 
     @Override
-    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets) {
         if (accept(configuration)) {
-            return new SftpConfiguration(configuration);
+            return new SftpConfiguration(configuration, createWithSecrets);
         }
         return null;
     }

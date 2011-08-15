@@ -45,20 +45,13 @@ package org.netbeans.modules.git;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.MissingResourceException;
-import org.netbeans.modules.git.utils.GitUtils;
 import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -73,15 +66,11 @@ import org.openide.util.NbPreferences;
 public class GitVCS extends VersioningSystem implements PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.GitVCS"); //NOI18N
-    private final Set<File> disconnectedRepositories;
 
     public GitVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName()); 
         putProperty(PROP_MENU_LABEL, org.openide.util.NbBundle.getMessage(GitVCS.class, "CTL_Git_MainMenu")); // NOI18N
         
-        putProperty("Integer VCS.Priority", Utils.getPriority("git"));
-        
-        this.disconnectedRepositories = initializeDisconnectedRepositories();
         Git.getInstance().registerGitVCS(this);
     }
 
@@ -106,7 +95,7 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
 
     @Override
     public File getTopmostManagedAncestor(File file) {
-        return Git.getInstance().getTopmostManagedAncestor(file, true);
+        return Git.getInstance().getTopmostManagedAncestor(file);
     }
     
     @Override
@@ -150,82 +139,4 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
         fireStatusChanged(files == null || files.isEmpty() ? null : files);
     }
 
-    boolean isDisconnected (File topmost) {
-        boolean disconnected = false;
-        synchronized (disconnectedRepositories) {
-            for (File disconnectedRepository : disconnectedRepositories) {
-                if (Utils.isAncestorOrEqual(disconnectedRepository, topmost)) {
-                    disconnected = true;
-                    LOG.log(Level.FINE, "isDisconnected: Folder is disconnected: {0}, disconnected root: {1}", new Object[] { topmost, disconnectedRepository }); //NOI18N
-                    break;
-                }
-            }
-        }
-        return disconnected;
-    }
-
-    private Set<File> initializeDisconnectedRepositories () {
-        Set<File> disconnected = new HashSet<File>();
-        try {
-            String uf = NbPreferences.forModule(GitVCS.class).get("disconnectedFolders", null); //NOI18N
-            if (uf != null && !uf.isEmpty()) {
-                String [] paths = uf.split("\\;"); //NOI18N
-                for (String path : paths) {
-                    if (!path.isEmpty()) {
-                        disconnected.add(new File(path));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOG.log(Level.INFO, e.getMessage(), e);
-        }
-        return disconnected;
-    }
-
-    void connectRepository (File repository) {
-        synchronized (disconnectedRepositories) {
-            boolean changed = false;
-            for (Iterator<File> it = disconnectedRepositories.iterator(); it.hasNext(); ) {
-                File disconnectedRepository = it.next();
-                if (disconnectedRepository.equals(repository)) {
-                    LOG.log(Level.FINE, "connectRepository: Connecting repository: {0}", new Object[] { repository }); //NOI18N
-                    it.remove();
-                    changed = true;
-                    break;
-                }
-            }
-            if (changed) {
-                saveDisconnectedRepositories();
-            }
-        }
-    }
-
-    void disconnectRepository (File repository) {
-        synchronized (disconnectedRepositories) {
-            boolean add = true;
-            for (File disconnectedRepository : disconnectedRepositories) {
-                if (disconnectedRepository.equals(repository)) {
-                    LOG.log(Level.FINE, "disconnectRepository: Repository already disconnected: {0}", new Object[] { repository }); //NOI18N
-                    add = false;
-                    break;
-                }
-            }
-            if (add) {
-                disconnectedRepositories.add(repository);
-                saveDisconnectedRepositories();
-            }
-        }
-    }
-
-    private void saveDisconnectedRepositories () {
-        StringBuilder packed = new StringBuilder();
-        for (File repository : disconnectedRepositories) {
-            packed.append(repository.getAbsolutePath()).append(";"); //NOI18N
-        }
-        if (packed.length() > 0) {
-            NbPreferences.forModule(GitVCS.class).put("disconnectedFolders", packed.toString()); //NOI18N
-        } else {
-            NbPreferences.forModule(GitVCS.class).remove("disconnectedFolders"); //NOI18N
-        }
-    }
 }

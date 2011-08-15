@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -158,7 +159,9 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
         TopComponent result = TopComponent.getRegistry().getActivated();
         Action[] acts = result.getActions();
         assertNotNull(acts);
-        assertEquals(1, acts.length);
+        assertEquals("Three actions: " + Arrays.toString(acts), 3, acts.length);
+        assertEquals("Second is null", null, acts[1]);
+        assertTrue("Last one instance of tab switching",  acts[2] instanceof EditorsAction);
         Object name = acts[0].getValue(Action.NAME);
         assertEquals("act2", name);
         
@@ -168,7 +171,7 @@ public abstract class AbstractMultiViewTopComponentTestCase extends NbTestCase {
         hand.requestActive(Accessor.DEFAULT.createPerspective(desc1));
         acts = result.getActions();
         assertNotNull(acts);
-        assertEquals(1, acts.length);
+        assertEquals(3, acts.length);
         name = acts[0].getValue(Action.NAME);
         assertEquals("act1", name);
         

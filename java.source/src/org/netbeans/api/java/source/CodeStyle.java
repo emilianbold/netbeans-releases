@@ -767,6 +767,56 @@ public final class CodeStyle {
         return null;
     }
 
+    // Comments -----------------------------------------------------------------
+
+    public boolean enableBlockCommentFormatting() {
+        return preferences.getBoolean(enableCommentFormatting, getDefaultAsBoolean(enableCommentFormatting));
+    }
+
+    public boolean enableJavadocFormatting() {
+        return preferences.getBoolean(enableCommentFormatting, getDefaultAsBoolean(enableCommentFormatting));
+    }
+
+    public boolean wrapCommentText() {
+        return preferences.getBoolean(wrapCommentText, getDefaultAsBoolean(wrapCommentText));
+    }
+
+    public boolean wrapOneLineComments() {
+        return preferences.getBoolean(wrapOneLineComment, getDefaultAsBoolean(wrapOneLineComment));
+    }
+
+    public boolean preserveNewLinesInComments() {
+        return preferences.getBoolean(preserveNewLinesInComments, getDefaultAsBoolean(preserveNewLinesInComments));
+    }
+
+    public boolean blankLineAfterJavadocDescription() {
+        return preferences.getBoolean(blankLineAfterJavadocDescription, getDefaultAsBoolean(blankLineAfterJavadocDescription));
+    }
+
+    public boolean blankLineAfterJavadocParameterDescriptions() {
+        return preferences.getBoolean(blankLineAfterJavadocParameterDescriptions, getDefaultAsBoolean(blankLineAfterJavadocParameterDescriptions));
+    }
+
+    public boolean blankLineAfterJavadocReturnTag() {
+        return preferences.getBoolean(blankLineAfterJavadocReturnTag, getDefaultAsBoolean(blankLineAfterJavadocReturnTag));
+    }
+
+    public boolean generateParagraphTagOnBlankLines() {
+        return preferences.getBoolean(generateParagraphTagOnBlankLines, getDefaultAsBoolean(generateParagraphTagOnBlankLines));
+    }
+
+    public boolean alignJavadocParameterDescriptions() {
+        return preferences.getBoolean(alignJavadocParameterDescriptions, getDefaultAsBoolean(alignJavadocParameterDescriptions));
+    }
+
+    public boolean alignJavadocReturnDescription() {
+        return preferences.getBoolean(alignJavadocReturnDescription, getDefaultAsBoolean(alignJavadocReturnDescription));
+    }
+
+    public boolean alignJavadocExceptionDescriptions() {
+        return preferences.getBoolean(alignJavadocExceptionDescriptions, getDefaultAsBoolean(alignJavadocExceptionDescriptions));
+    }
+
     // Nested classes ----------------------------------------------------------
 
     public enum BracePlacement {

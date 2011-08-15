@@ -45,21 +45,39 @@
 package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
+import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -67,10 +85,14 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
     
 /**
  *
@@ -356,26 +378,17 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
     @Override
     public File getServerHome() {
-        String gfRootStr = dm.getProperties().getGlassfishRoot();
-        File returnedElement;
-        if (gfRootStr != null) {
-            returnedElement = new File(gfRootStr);
-            if (returnedElement.exists()) {
-                return returnedElement;
-            }
-        }
-        return null;
+        return getExistingFolder(dm.getProperties().getGlassfishRoot());
     }
 
     @Override
     public File getDomainHome() {
-        // FIXME perhaps we want to return GF domain
-        return null;
+        return getExistingFolder(dm.getProperties().getDomainDir());
     }
 
     @Override
     public File getMiddlewareHome() {
-        return null;
+        return getExistingFolder(dm.getProperties().getInstallRoot());
     }
     
     /**
@@ -450,12 +463,20 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     @Override
     public Lookup getLookup() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
-        Lookup baseLookup = Lookups.fixed(gfRootStr);
+        Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl() );
         return LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey()); 
-//
-//        WSStackSPI metroStack = new GlassfishJaxWsStack(gfRootStr);
-//        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
     }
+
+    private File getExistingFolder(String path) {
+        if (path != null) {
+            File returnedElement = new File(path);
+            if (returnedElement.exists()) {
+                return returnedElement;
+            }
+        }
+        return null;
+    }
+
     /* return the string within quotes
      **/
     private String quotedString(String s){
@@ -515,5 +536,256 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             }
         }
         return null;
+    }
+    
+    private class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
+        
+        private static final String VERSION_30X = "v3";     // NOI18N
+        private static final String VERSION_31X = "3.1";    // NOI18N
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#addJsr311Api(org.netbeans.api.project.Project)
+         */
+        @Override
+        public boolean addJsr311Api( Project project ) {
+            String version = getGFVersion();
+            try {
+                if (version == null) {
+                    return false;
+                } 
+                else if (version.startsWith(VERSION_30X)) {
+                    File jsr311 = ServerUtilities.getJarName(dm.getProperties().
+                            getGlassfishRoot(), "jsr311-api.jar");          // NOI18N
+                    if ( jsr311== null || !jsr311.exists()){
+                        return false;
+                    }
+                    return addJars(project, Collections.singletonList(
+                            jsr311.toURI().toURL()));
+                } 
+                else if (version.startsWith(VERSION_31X)) {
+                    File jerseyCore = ServerUtilities.getJarName(dm.getProperties().
+                            getGlassfishRoot(), "jersey-core.jar");          // NOI18N
+                    if ( jerseyCore== null || !jerseyCore.exists()){
+                        return false;
+                    }
+                    return addJars(project, Collections.singletonList(
+                            jerseyCore.toURI().toURL()));
+                }
+            } catch (MalformedURLException ex) {
+                return false;
+            }
+            return false;
+        }
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#extendsJerseyProjectClasspath(org.netbeans.api.project.Project)
+         */
+        @Override
+        public boolean extendsJerseyProjectClasspath( Project project ) {
+            List<URL> urls = getJerseyLibraryURLs();
+            if ( urls.size() >0 ){
+                return addJars( project , urls );
+            }
+            return false;
+        }
+        
+        @Override
+        public void removeJaxRsLibraries(Project project) {
+            List<URL> urls = getJerseyLibraryURLs();
+            if ( urls.size() >0 ){
+                SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (sourceGroups == null || sourceGroups.length < 1) {
+                    return;
+                }
+                FileObject sourceRoot = sourceGroups[0].getRootFolder();
+                String[] classPathTypes = new String[]{ ClassPath.COMPILE , ClassPath.EXECUTE };
+                for (String type : classPathTypes) {
+                    try {
+                        ProjectClassPathModifier.removeRoots(urls.toArray( 
+                            new URL[ urls.size()]), sourceRoot, type);
+                    }    
+                    catch(UnsupportedOperationException ex) {
+                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                                log (Level.INFO, null , ex );
+                    }
+                    catch( IOException e ){
+                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                                log(Level.INFO, null , e );
+                    }
+                }     
+            }
+        }
+        
+        private List<URL> getJerseyLibraryURLs() {
+            String version = getGFVersion();
+            String gfRoot = dm.getProperties().getGlassfishRoot();
+            List<URL> urls = new LinkedList<URL>();
+            if ( version == null ){
+                return Collections.emptyList();
+            }
+            else if ( version.startsWith( VERSION_30X )){
+                File jackson = ServerUtilities.getJarName( gfRoot, 
+                        "jackson(|-core-asl).jar");          // NOI18N
+                addURL( urls , jackson);
+                File jerseyBundle = ServerUtilities.getJarName( gfRoot, 
+                        "jersey-gf-bundle.jar");          // NOI18N
+                addURL( urls , jerseyBundle);
+                File jettison = ServerUtilities.getJarName( gfRoot, 
+                        "jettison.jar");          // NOI18N
+                addURL( urls , jettison);
+                File jsr311 = ServerUtilities.getJarName(gfRoot, 
+                        "jsr311-api.jar");          // NOI18N
+                addURL( urls , jsr311);
+                File miltipart = ServerUtilities.getJarName(gfRoot, 
+                        "jersey-multipart.jar");          // NOI18N
+                addURL( urls , miltipart);
+                File mimepull = ServerUtilities.getJarName(gfRoot, 
+                        "mimepull.jar");          // NOI18N
+                addURL( urls , mimepull);
+            }
+            else if ( version.startsWith( VERSION_31X )){
+                File jackson = ServerUtilities.getJarName( gfRoot, 
+                        "jackson(-core-asl).jar");          // NOI18N
+                addURL( urls , jackson);
+                File jacksonJaxRs = ServerUtilities.getJarName( gfRoot, 
+                        "jackson-jaxrs.jar");          // NOI18N
+                addURL( urls , jacksonJaxRs);
+                File jacksonMapper = ServerUtilities.getJarName( gfRoot, 
+                        "jackson-mapper(-asl).jar");          // NOI18N
+                addURL( urls , jacksonMapper);
+                File jerseyServer = ServerUtilities.getJarName( gfRoot, 
+                        "jersey-gf-server.jar");          // NOI18N
+                addURL( urls , jerseyServer);
+                File jettison = ServerUtilities.getJarName( gfRoot, 
+                        "jettison.jar");          // NOI18N
+                addURL( urls , jettison);
+                File miltipart = ServerUtilities.getJarName(gfRoot, 
+                        "jersey-multipart.jar");          // NOI18N
+                addURL( urls , miltipart);
+                File mimepull = ServerUtilities.getJarName(gfRoot, 
+                        "mimepull.jar");          // NOI18N
+                addURL( urls , mimepull);
+                File jerseyClient = ServerUtilities.getJarName( gfRoot, 
+                        "jersey-client");          // NOI18N
+                addURL( urls , jerseyClient);
+                File jerseyCore = ServerUtilities.getJarName( gfRoot, 
+                        "jersey-core");          // NOI18N
+                addURL( urls , jerseyCore);
+                File jerseyJson = ServerUtilities.getJarName( gfRoot, 
+                        "jersey-json");          // NOI18N
+                addURL( urls , jerseyJson);
+            }
+            return urls;
+        }
+        
+        private void addURL( Collection<URL> urls, File file ){
+            if ( file == null || !file.exists()) {
+                return;
+            }
+            try {
+                urls.add( file.toURI().toURL());
+            } catch (MalformedURLException ex) {
+                // ignore the file
+            }
+        }
+        
+        private boolean addJars( Project project, Collection<URL> jars ){
+            List<URL> urls = new ArrayList<URL>();
+            for (URL url : jars) {
+                if ( FileUtil.isArchiveFile( url)){
+                    urls.add(FileUtil.getArchiveRoot(url));
+                }
+            }
+            SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sourceGroups == null || sourceGroups.length < 1) {
+               return false;
+            }
+            FileObject sourceRoot = sourceGroups[0].getRootFolder();
+            try {
+                ProjectClassPathModifier.addRoots(urls.toArray( new URL[ urls.size()]), 
+                        sourceRoot, ClassPath.COMPILE);
+            } 
+            catch(UnsupportedOperationException ex) {
+                return false;
+            }
+            catch ( IOException e ){
+                return false;
+            }
+            return true;
+        }
+        
+        private String getGFVersion() {
+            String gfRootStr = dm.getProperties().getGlassfishRoot();
+            File serviceTag = new File(gfRootStr,
+                    "lib/registration/servicetag-registry.xml");
+            if (!serviceTag.exists()) {
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                        Level.WARNING, "Couldn't recognize GF version",
+                        new Exception());
+                return null;
+            }
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            try {
+                SAXParser saxParser = factory.newSAXParser();
+                RegistrationHandler handler = new RegistrationHandler();
+                saxParser.parse(serviceTag, handler);
+                return handler.getVersion();
+            }
+            catch (ParserConfigurationException e) {
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                        Level.INFO, null, e);
+            }
+            catch (SAXException e) {
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                        Level.INFO, null, e);
+            }
+            catch (IOException e){
+                Logger.getLogger(JaxRsStackSupportImpl.class.getName()).log(
+                        Level.INFO, null, e);
+            }
+            return "";
+        }
+    }
+    
+    private static class RegistrationHandler extends DefaultHandler {
+        
+        private static final String VERSION_TAG = "product_version";    // NOI18N
+
+        @Override
+        public void startElement(String uri, String localName, String qName,
+            Attributes attributes) throws SAXException 
+        {
+            super.startElement(uri, localName, qName, attributes);
+            if (VERSION_TAG.equals( localName )|| VERSION_TAG.equals( qName )){
+                versionTag = true;
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) 
+                throws SAXException 
+        {
+            super.endElement(uri, localName, qName);
+            if (VERSION_TAG.equals( localName )|| VERSION_TAG.equals( qName )){
+                versionTag = false;
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            super.characters(ch, start, length);
+            if ( versionTag ){
+                version.append(ch, start, length);
+            }
+        }
+        
+        String getVersion() {
+            return version.toString();
+        }
+        
+        private boolean versionTag;
+        private StringBuilder version = new StringBuilder();
     }
 }

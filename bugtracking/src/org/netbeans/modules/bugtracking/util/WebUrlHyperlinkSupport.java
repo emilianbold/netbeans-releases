@@ -42,7 +42,22 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Element;
+import javax.swing.SwingUtilities;
+import java.awt.event.MouseEvent;
+import java.net.URL;
+import org.openide.awt.HtmlBrowser;
+import javax.swing.text.StyledDocument;
+import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.util.logging.Level;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import java.net.URI;
+import javax.swing.JTextPane;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.SearchMachine.State.*;
 
 /**
@@ -50,9 +65,66 @@ import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.Searc
  *
  * @author Marian Petras
  */
-public class WebUrlHyperlinkSupport {
+class WebUrlHyperlinkSupport {
 
-    public static int[] findBoundaries(String text) {
+    static void register(final JTextPane pane) {
+        StyledDocument doc = pane.getStyledDocument();
+        String text = pane.getText();
+        final int[] boundaries = findBoundaries(text);
+        if ((boundaries != null) && (boundaries.length != 0)) {
+            Style defStyle = StyleContext.getDefaultStyleContext()
+                             .getStyle(StyleContext.DEFAULT_STYLE);
+            Style hlStyle = doc.addStyle("regularBlue-url", defStyle);      //NOI18N
+            hlStyle.addAttribute(HyperlinkSupport.URL_ATTRIBUTE, new UrlAction());
+            StyleConstants.setForeground(hlStyle, Color.BLUE);
+            StyleConstants.setUnderline(hlStyle, true);
+
+            for (int i = 0; i < boundaries.length; i+=2) {
+                doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
+            }
+        }
+        pane.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        JTextPane pane = (JTextPane)e.getSource();
+                        StyledDocument doc = pane.getStyledDocument();
+                        Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                        AttributeSet as = elem.getAttributes();
+
+                        UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
+                        if (urlAction != null) {
+                            int startOffset = elem.getStartOffset();
+                            int endOffset = elem.getEndOffset();
+                            int length = endOffset - startOffset;
+                            String hyperlinkText = doc.getText(startOffset, length);
+                            urlAction.openUrlHyperlink(hyperlinkText);
+                            return;
+                        }
+                    }
+                } catch(Exception ex) {
+                    BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+    }
+    
+    private static class UrlAction {
+        void openUrlHyperlink(String hyperlinkText) {
+            try {
+                URL url = new URI(hyperlinkText).toURL();
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } catch (Exception ex) {
+                assert false;
+                BugtrackingManager.LOG.log(Level.WARNING,
+                                              "Could not open URL: "    //NOI18N
+                                                      + hyperlinkText);
+            }
+        }
+    }
+    
+    static int[] findBoundaries(String text) {
         return new SearchMachine(text).findBoundaries();
     }
 
@@ -95,10 +167,10 @@ public class WebUrlHyperlinkSupport {
         private static final String RESERVED = GEN_DELIMS + SUB_DELIMS;
         private static final String PUNCT_CHARS = ".,:;()[]{}";         //NOI18N
         private static final String[] SUPPORTED_SCHEMES
-                                      = new String[] {"http", "https"}; //NOI18N
+                                      = new String[] {"http", "https", "mailto"}; //NOI18N
 
         private static final int LOWER_A = 'a';     //automatic conversion to int
-        private static final int LOWER_F = 'a';     //automatic conversion to int
+        private static final int LOWER_F = 'f';     //automatic conversion to int
         private static final int LOWER_Z = 'z';     //automatic conversion to int
 
         private State state = INIT;
@@ -758,7 +830,7 @@ public class WebUrlHyperlinkSupport {
 
             if (wasValidUri) {
                 assert (start != -1);
-                if (authorityStart != -1) {
+                if (authorityStart != -1 || text.subSequence(start, length).toString().startsWith("mailto")) {
                     checkAndStoreResult(start, length, bracketsDepth);
                 }
             }
@@ -792,11 +864,11 @@ public class WebUrlHyperlinkSupport {
                 if (!uri.isAbsolute()) {
                     return false;
                 }
-                if (uri.isOpaque()) {
+                String scheme = uri.getScheme();
+                if (uri.isOpaque() && !scheme.equals("mailto")) {
                     return false;
                 }
-                String scheme = uri.getScheme();
-                if (!scheme.equals("http") && !scheme.equals("https")) {//NOI18N
+                if (!scheme.equals("http") && !scheme.equals("https") && !scheme.equals("mailto")) {//NOI18N
                     return false;
                 }
                 uri.toURL();             //just a check

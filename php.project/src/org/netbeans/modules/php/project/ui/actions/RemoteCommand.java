@@ -57,8 +57,8 @@ import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.TransferFile;
-import org.netbeans.modules.php.project.connections.TransferInfo;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -278,12 +278,12 @@ public abstract class RemoteCommand extends Command {
     }
 
     private static void printSuccess(InputOutput io, int maxRelativePath, TransferFile file) {
-        String message = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getRelativePath());
+        String message = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getRemotePath());
         printSuccess(io, message);
     }
 
     private static void printError(OutputWriter writer, int maxRelativePath, TransferFile file, String reason) {
-        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRelativePath(), reason);
+        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRemotePath(), reason);
         writer.println(msg);
     }
 
@@ -292,7 +292,7 @@ public abstract class RemoteCommand extends Command {
     }
 
     private static void printIgnore(InputOutput io, int maxRelativePath, TransferFile file, String reason) {
-        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRelativePath(), reason);
+        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRemotePath(), reason);
         printIgnore(io, msg);
     }
 
@@ -342,7 +342,7 @@ public abstract class RemoteCommand extends Command {
     private static int getRelativePathMaxSize(Collection<TransferFile> files) {
         int max = 0;
         for (TransferFile file : files) {
-            int length = file.getRelativePath().length();
+            int length = file.getRemotePath().length();
             if (length > max) {
                 max = length;
             }

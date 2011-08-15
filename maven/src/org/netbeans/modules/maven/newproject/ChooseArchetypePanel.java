@@ -103,7 +103,7 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
         if (local == null) {
             return null;
         }
-        List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", local); // NOI18N
+        List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", Collections.singletonList(local)); // NOI18N
         if (versions.isEmpty()) {
             return null;
         }
@@ -288,7 +288,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
                     if (info != null) {
                         List<NBVersionInfo> rec = RepositoryQueries.getRecords(arch.getGroupId(),
-                                arch.getArtifactId(), arch.getVersion(), info);
+                                arch.getArtifactId(), arch.getVersion(), Collections.singletonList(info));
                         for (NBVersionInfo record : rec) {
                             Artifact a = RepositoryUtil.createArtifact(record);
                             RepositoryIndexer.deleteArtifactFromIndex(info, a);

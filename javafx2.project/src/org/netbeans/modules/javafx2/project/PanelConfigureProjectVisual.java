@@ -61,9 +61,9 @@ public class PanelConfigureProjectVisual extends JPanel {
 //    private boolean noDir = true;
     private SettingsPanel projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
-    private NewJ2SEProjectWizardIterator.WizardType type;
+    private NewJFXProjectWizardIterator.WizardType type;
 
-    public PanelConfigureProjectVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
+    public PanelConfigureProjectVisual(PanelConfigureProject panel, NewJFXProjectWizardIterator.WizardType type) {
 //        this.panel = panel;
         initComponents();
         this.type = type;

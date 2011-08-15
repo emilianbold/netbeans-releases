@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import junit.framework.TestResult;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Mutex;
@@ -62,10 +61,16 @@ public class SequentialPropertyEvaluatorTest extends NbTestCase {
         super(n);
     }
 
-    public @Override void run(final TestResult result) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-            public Void run() {
-                SequentialPropertyEvaluatorTest.super.run(result);
+    @Override protected void runTest() throws Throwable {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            @Override public Void run() throws Exception {
+                try {
+                    SequentialPropertyEvaluatorTest.super.runTest();
+                } catch (Exception x) {
+                    throw x;
+                } catch (Throwable x) {
+                    throw new Exception(x);
+                }
                 return null;
             }
         });

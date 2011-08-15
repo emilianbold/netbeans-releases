@@ -55,6 +55,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.SaveAsCapable;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
@@ -64,21 +65,7 @@ import org.openide.util.Lookup;
  * @author Ian Formanek, Petr Hamernik
  */
 public class FormDataObject extends MultiDataObject {
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = 7952143476761137063L;
-
-    //--------------------------------------------------------------------
-    // Private variables
-
-//    /** If true, a postInit method is called after reparsing - used after createFromTemplate */
-//    transient private boolean templateInit;
-//    /** If true, the form is marked as modified after regeneration - used if created from template */
-//    transient private boolean modifiedInit;
-//    /** A flag to prevent multiple registration of ComponentRefListener */
-//    transient private boolean componentRefRegistered;
-
-    transient private FormEditorSupport formEditor;
-
+    transient private EditorSupport formEditor;
     transient private OpenEdit openEdit;
 
     /** The entry for the .form file */
@@ -113,7 +100,7 @@ public class FormDataObject extends MultiDataObject {
             if (openEdit == null)
                 openEdit = new OpenEdit();
             retValue = type.cast(openEdit);
-        } else if (type.isAssignableFrom(FormEditorSupport.class)) {
+        } else if (type.isAssignableFrom(getFormEditorSupport().getClass())) {
             retValue = (T) getFormEditorSupport();
         } else {
             retValue = super.getCookie(type);
@@ -153,18 +140,17 @@ public class FormDataObject extends MultiDataObject {
         return !formEntry.getFile().canWrite();
     }
 
-    public synchronized FormEditorSupport getFormEditorSupport() {
+    public final CookieSet getCookies() {
+        return getCookieSet();
+    }
+
+    public synchronized EditorSupport getFormEditorSupport() {
         if (formEditor == null) {
-            formEditor = new FormEditorSupport(getPrimaryEntry(), this, getCookieSet());
+            EditorSupport.Provider provider = Lookup.getDefault().lookup(EditorSupport.Provider.class);
+            formEditor = provider.create(this);
         }
         return formEditor;
     }
-
-    // PENDING remove when form_new_layout is merged to trunk
-    public FormEditorSupport getFormEditor() {
-        return getFormEditorSupport();
-    }
-    // END of PENDING
 
     FileEntry getFormEntry() {
         return formEntry;

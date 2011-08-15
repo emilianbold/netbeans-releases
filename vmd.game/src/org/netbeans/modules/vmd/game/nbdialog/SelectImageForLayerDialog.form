@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -7,9 +7,11 @@
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -21,8 +23,8 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jSeparator1" alignment="1" pref="624" max="32767" attributes="2"/>
-                  <Component id="jScrollPane2" alignment="0" pref="624" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="1" pref="681" max="32767" attributes="2"/>
+                  <Component id="jScrollPane2" alignment="0" pref="681" max="32767" attributes="0"/>
                   <Component id="panelError" alignment="1" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="panelCustomizer" max="32767" attributes="0"/>
@@ -62,7 +64,7 @@
                   <Component id="labelImageFile" min="-2" max="-2" attributes="0"/>
                   <EmptySpace pref="236" max="32767" attributes="0"/>
               </Group>
-              <Component id="jScrollPane1" alignment="0" pref="305" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" alignment="0" pref="333" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -107,7 +109,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="panelImage" alignment="0" pref="301" max="32767" attributes="2"/>
+                      <Component id="panelImage" alignment="0" pref="330" max="32767" attributes="2"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="labelImagePreview" min="-2" max="-2" attributes="0"/>
                           <EmptySpace pref="222" max="32767" attributes="0"/>
@@ -157,7 +159,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="labelError" alignment="1" pref="624" max="32767" attributes="0"/>
+              <Component id="labelError" alignment="1" pref="681" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">

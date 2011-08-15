@@ -65,11 +65,9 @@ public final class POMQName {
     }
 
     private final QName qName;
-    private boolean ns;
 
-    POMQName(QName name, boolean ns) {
+    POMQName(QName name) {
         qName = name;
-        this.ns = ns;
     }
     
     public QName getQName() {
@@ -78,10 +76,6 @@ public final class POMQName {
 
     public String getName() {
         return qName.getLocalPart();
-    }
-    
-    public String getQualifiedName() {
-        return (ns ? "" : (qName.getPrefix() + ":")) + qName.getLocalPart();      // NOI18N
     }
     
 }

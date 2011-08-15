@@ -141,6 +141,7 @@ final public class EjbJarProjectProperties {
 
     public static final String JAR_NAME = "jar.name"; // NOI18N
     public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
+    public static final String INCLUDE_JARS = "jars.in.ejbjar"; // NOI18N
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; // NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
@@ -239,6 +240,7 @@ final public class EjbJarProjectProperties {
     Document DIST_JAR_MODEL; 
     Document BUILD_CLASSES_EXCLUDES_MODEL; 
     ButtonModel JAR_COMPRESS_MODEL;
+    ButtonModel INCLUDE_JARS_MODEL;
                 
     // CustomizerJavadoc
     ButtonModel JAVADOC_PRIVATE_MODEL;
@@ -368,6 +370,7 @@ final public class EjbJarProjectProperties {
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
         BUILD_CLASSES_EXCLUDES_MODEL = projectGroup.createStringDocument( evaluator, BUILD_CLASSES_EXCLUDES );
         JAR_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
+        INCLUDE_JARS_MODEL = projectGroup.createToggleButtonModel( evaluator, INCLUDE_JARS );
         
         // CustomizerJavadoc
         JAVADOC_PRIVATE_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVADOC_PRIVATE );

@@ -295,7 +295,6 @@ public class NewProjectWizardsTest extends J2eeTestCase {
 
     private Node checkProjectNodes() {
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
-        node.waitExpanded();
         return node;
     }
     

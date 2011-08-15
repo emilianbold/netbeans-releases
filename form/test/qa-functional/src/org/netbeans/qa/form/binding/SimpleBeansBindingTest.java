@@ -49,6 +49,8 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.qa.form.ExtJellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import junit.framework.Test;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.BindDialogOperator;
 
@@ -83,10 +85,23 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         String actionPath = "Bind|text";  // NOI18N
         String bindSource = "jLabel2";  // NOI18N
         String bindExpression = "${text}";  // NOI18N
+        ProjectRootNode prn;
+        ProjectsTabOperator pto;
+        
         
         // create frame
         String frameName = createJFrameFile();
+        
+        
+        pto = new ProjectsTabOperator();
+        prn = pto.getProjectRootNode("SampleProject");
+        prn.select();
+        Node formnode = new Node(prn, "Source Packages|" + "data" + "|" + frameName);
+        OpenAction openAction = new OpenAction();
+        openAction.perform(formnode);
         FormDesignerOperator designer = new FormDesignerOperator(frameName);
+        designer.source();
+        designer.design();
         ComponentInspectorOperator inspector = new ComponentInspectorOperator();
         
         // add two labels
@@ -120,9 +135,18 @@ public class SimpleBeansBindingTest extends ExtJellyTestCase {
         // check generated binding code
         findInCode("createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, jLabel2, org.jdesktop.beansbinding.ELProperty.create(\"${text}\"), jLabel1, org.jdesktop.beansbinding.BeanProperty.create(\"text\"));", designer);  // NOI18N
         findInCode("bindingGroup.bind();", designer);  // NOI18N
-
+        
+        formnode.select();
+        openAction.perform(formnode);
+        designer.source();
+        designer.design();
+        inspector = new ComponentInspectorOperator();
+        String jLabel1Text=ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel1NodePath);
+        designer.source();
+        designer.design();
+        inspector = new ComponentInspectorOperator();
+        String jLabel2Text=ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel2NodePath);
         // get values of text properties of jLabels and test them
-        assertEquals(ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel1NodePath),
-                ExtJellyTestCase.getTextValueOfLabel(inspector, jLabel2NodePath));
+        assertEquals(jLabel1Text,jLabel2Text);
     }
 }

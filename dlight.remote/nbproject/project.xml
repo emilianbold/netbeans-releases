@@ -90,20 +90,18 @@
                 <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.common</friend>
+                <friend>com.sun.tools.ide.analysis.discover</friend>
+                <friend>com.sun.tools.ide.analysis.previse</friend>
+                <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote</friend>
                 <friend>com.sun.tools.ide.remote.project</friend>
+                <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
+                <friend>com.sun.tools.sendto</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
-                <friend>com.sun.tools.sendto</friend>
-                <friend>com.sun.tools.ide.analysis.common</friend>
-                <friend>com.sun.tools.ide.analysis.analytics</friend>
-                <friend>com.sun.tools.ide.analysis.previse</friend>
-                <friend>com.sun.tools.ide.analysis.discover</friend>
-                <friend>com.sun.tools.ide.analysis.tha</friend>
-                <friend>org.netbeans.modules.dlight.discover</friend>
-                <friend>org.netbeans.modules.dlight.previse</friend>
-                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
@@ -116,7 +114,10 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <package>org.netbeans.modules.remote.api</package>
                 <package>org.netbeans.modules.remote.api.ui</package>
                 <package>org.netbeans.modules.remote.spi</package>

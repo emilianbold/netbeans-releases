@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -78,9 +80,31 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
                 System.arraycopy(files, 0, filesToCheck, 0, files.length);
                 filesToCheck[files.length] = new File(workingDir);
             }
-            return mapper.checkRemotePaths(filesToCheck, true);
+            // or is filtering inexistent paths a responsibiity of path mapper?
+            // it seems it's rather not since it's too common
+            return mapper.checkRemotePaths(filterInexistent(filesToCheck), true);
         }
         return true;
+    }
+
+    private static File[] filterInexistent(File[] files) {
+        boolean inexistentFound = false;
+        for (File file : files) {
+            if (!file.exists()) {
+                inexistentFound = true;
+                break;
+            }
+        }
+        if (inexistentFound) {
+            List<File> l = new ArrayList<File>();
+            for (File file : files) {
+                if (file.exists()) {
+                    l.add(file);
+                }
+            }
+            return l.toArray(new File[l.size()]);
+        }
+        return files;
     }
 
     @Override

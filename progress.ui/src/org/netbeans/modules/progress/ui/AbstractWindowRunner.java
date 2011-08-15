@@ -349,7 +349,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
             if (hintsMap == null || !RenderingHints.VALUE_TEXT_ANTIALIAS_OFF.equals(hintsMap.get(RenderingHints.KEY_TEXT_ANTIALIASING))) {
                 JFrame jf = (JFrame) f;
                 RunOffEDTImpl.TranslucentMask mask = new RunOffEDTImpl.TranslucentMask();
-                oldGlassPane = jf.getGlassPane();
+                oldGlassPane = jf.getGlassPane();        
                 jf.setGlassPane(mask);
                 mask.setVisible(true);
                 mask.setBounds(0, 0, jf.getContentPane().getWidth(), jf.getContentPane().getHeight());
@@ -365,6 +365,7 @@ abstract class AbstractWindowRunner<T> extends WindowAdapter implements Runnable
         if (oldGlassPane != null) {
             JFrame jf = (JFrame) WindowManager.getDefault().getMainWindow();
             jf.setGlassPane(oldGlassPane);
+            jf.getGlassPane().setVisible(false);          
             jf.invalidate();
             jf.repaint();
         }

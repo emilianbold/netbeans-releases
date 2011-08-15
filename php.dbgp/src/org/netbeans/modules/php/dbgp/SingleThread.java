@@ -76,6 +76,7 @@ public abstract class SingleThread extends ThreadPoolExecutor implements Runnabl
 
     public static ThreadFactory getDaemonThreadFactory() {
         return new ThreadFactory() {
+            @Override
             public Thread newThread(Runnable r) {
                 ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
                 Thread newThread = defaultThreadFactory.newThread(r);

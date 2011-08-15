@@ -47,6 +47,7 @@ package org.netbeans.modules.versioning.system.cvss.util;
 import junit.framework.TestCase;
 
 import java.io.File;
+import org.openide.util.Utilities;
 
 /**
  * Tests for the Util class.
@@ -60,24 +61,27 @@ public class UtilTest extends TestCase {
 
     public static void testIsParentOrEqual() {
 
-        assertTrue(Utils.isParentOrEqual(new File("/"), new File("/")));
-        assertTrue(Utils.isParentOrEqual(new File("C:\\"), new File("C:\\")));
-        assertTrue(Utils.isParentOrEqual(new File("/"), new File("/a")));
-        assertTrue(Utils.isParentOrEqual(new File("C:\\"), new File("C:\\a")));
-        assertTrue(Utils.isParentOrEqual(new File("/a"), new File("/a")));
-        assertTrue(Utils.isParentOrEqual(new File("C:\\a"), new File("C:\\a")));
-        assertTrue(Utils.isParentOrEqual(new File("/a/b"), new File("/a/b")));
-        assertTrue(Utils.isParentOrEqual(new File("C:\\a\\b"), new File("C:\\a\\b")));
-        assertTrue(Utils.isParentOrEqual(new File("/"), new File("/a/b")));
-        assertTrue(Utils.isParentOrEqual(new File("C:\\"), new File("C:\\a\\b")));
-        assertTrue(Utils.isParentOrEqual(new File("/a/b/c"), new File("/a/b/c/d/e/f")));
-        assertTrue(Utils.isParentOrEqual(new File("C:\\a\\b\\c"), new File("C:\\a\\b\\c\\d\\e\\f")));
+        if (Utilities.isWindows()) {
+            assertTrue(Utils.isParentOrEqual(new File("C:\\"), new File("C:\\")));
+            assertTrue(Utils.isParentOrEqual(new File("C:\\"), new File("C:\\a")));
+            assertTrue(Utils.isParentOrEqual(new File("C:\\a"), new File("C:\\a")));
+            assertTrue(Utils.isParentOrEqual(new File("C:\\a\\b"), new File("C:\\a\\b")));
+            assertTrue(Utils.isParentOrEqual(new File("C:\\"), new File("C:\\a\\b")));
+            assertTrue(Utils.isParentOrEqual(new File("C:\\a\\b\\c"), new File("C:\\a\\b\\c\\d\\e\\f")));
+            assertFalse(Utils.isParentOrEqual(new File("C:\\a\\b"), new File("C:\\c")));
+            assertFalse(Utils.isParentOrEqual(new File("C:\\abc"), new File("C:\\abcxyz")));
+        } else {
+            assertTrue(Utils.isParentOrEqual(new File("/"), new File("/")));
+            assertTrue(Utils.isParentOrEqual(new File("/"), new File("/a")));
+            assertTrue(Utils.isParentOrEqual(new File("/a"), new File("/a")));
+            assertTrue(Utils.isParentOrEqual(new File("/a/b"), new File("/a/b")));
+            assertTrue(Utils.isParentOrEqual(new File("/"), new File("/a/b")));
+            assertTrue(Utils.isParentOrEqual(new File("/a/b/c"), new File("/a/b/c/d/e/f")));
 
-        assertFalse(Utils.isParentOrEqual(new File("/a"), new File("/")));
-        assertFalse(Utils.isParentOrEqual(new File("/a/b"), new File("/")));
-        assertFalse(Utils.isParentOrEqual(new File("/a/b/c/d"), new File("/a/b/c")));
-        assertFalse(Utils.isParentOrEqual(new File("C:\\a\\b"), new File("C:\\c")));
-        assertFalse(Utils.isParentOrEqual(new File("/a/b"), new File("/a/bc")));
-        assertFalse(Utils.isParentOrEqual(new File("C:\\abc"), new File("C:\\abcxyz")));
+            assertFalse(Utils.isParentOrEqual(new File("/a"), new File("/")));
+            assertFalse(Utils.isParentOrEqual(new File("/a/b"), new File("/")));
+            assertFalse(Utils.isParentOrEqual(new File("/a/b/c/d"), new File("/a/b/c")));
+            assertFalse(Utils.isParentOrEqual(new File("/a/b"), new File("/a/bc")));
+        }
     }
 }

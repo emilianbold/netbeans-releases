@@ -42,12 +42,10 @@
 package org.netbeans.modules.php.editor.lexer;
 
 import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.css.lexer.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.openide.filesystems.FileObject;
 
 /**

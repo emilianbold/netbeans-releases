@@ -99,6 +99,11 @@ public class RevertModificationsAction extends ContextAction {
         revert(context);
     }
 
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/mercurial/resources/icons/get_clean.png"; // NOI18N
+    }
+
     public static void revert(final VCSContext ctx) {
         final File files[] = HgUtils.getActionRoots(ctx);
         if (files == null || files.length == 0) return;
@@ -120,8 +125,6 @@ public class RevertModificationsAction extends ContextAction {
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Revert_Progress")); // NOI18N
-
-        return;
     }
 
     public static void performRevert(File repository, String revStr, File file, boolean doBackup, OutputLogger logger) {

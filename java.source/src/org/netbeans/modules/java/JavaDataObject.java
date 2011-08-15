@@ -48,11 +48,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.IOException;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -60,44 +55,23 @@ import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.TreeMaker;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.cookies.PrintCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileLock;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.loaders.SaveAsCapable;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
-import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
-import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.TopComponent;
 
 public final class JavaDataObject extends MultiDataObject {
     
-    private JavaEditorSupport jes;
-    
     public JavaDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
-            public void saveAs( FileObject folder, String fileName ) throws IOException {
-                createJavaEditorSupport().saveAs( folder, fileName );
-            }
-        });
-        getCookieSet().add(JavaEditorSupport.class, new CookieSet.Factory() {
-            public <T extends Cookie> T createCookie(Class<T> klass) {
-                return klass.cast(createJavaEditorSupport ());
-            }
-        });
+        registerEditor("text/x-java", true);
     }
 
     public @Override Node createNodeDelegate() {
@@ -105,10 +79,10 @@ public final class JavaDataObject extends MultiDataObject {
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
-    
+
     protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
         FileObject fo = getPrimaryEntry ().copyRename (df.getPrimaryFile (), name, ext);
         DataObject dob = DataObject.find( fo );
@@ -116,109 +90,16 @@ public final class JavaDataObject extends MultiDataObject {
         return dob;
     }
     
-    private synchronized JavaEditorSupport createJavaEditorSupport () {
-        if (jes == null) {
-            jes = new JavaEditorSupport (this);
-        }
-        return jes;
-    }            
-    
-    public static final class JavaEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
-        
-        private static final class Environment extends DataEditorSupport.Env {
-            
-            private static final long serialVersionUID = -1;
-            
-            private transient SaveSupport saveCookie = null;
-
-            private final class SaveSupport implements SaveCookie {
-                public void save() throws java.io.IOException {
-                    ((JavaEditorSupport)findCloneableOpenSupport()).saveDocument();
-                    getDataObject().setModified(false);
-                }
-            }
-            
-            public Environment(JavaDataObject obj) {
-                super(obj);
-            }
-            
-            protected FileObject getFile() {
-                return this.getDataObject().getPrimaryFile();
-            }
-            
-            protected FileLock takeLock() throws java.io.IOException {
-                return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
-            }
-            
-            public @Override CloneableOpenSupport findCloneableOpenSupport() {
-                return (CloneableEditorSupport) ((JavaDataObject)this.getDataObject()).getCookie(EditorCookie.class);
-            }
-            
-            
-            public void addSaveCookie() {
-                JavaDataObject javaData = (JavaDataObject) this.getDataObject();
-                if (javaData.getCookie(SaveCookie.class) == null) {
-                    if (this.saveCookie == null)
-                        this.saveCookie = new SaveSupport();
-                    javaData.getCookieSet().add(this.saveCookie);
-                    javaData.setModified(true);
-                }
-            }
-            
-            public void removeSaveCookie() {
-                JavaDataObject javaData = (JavaDataObject) this.getDataObject();
-                if (javaData.getCookie(SaveCookie.class) != null) {
-                    javaData.getCookieSet().remove(this.saveCookie);
-                    javaData.setModified(false);
-                }
-
-            }
-        }
-        
-        public JavaEditorSupport(JavaDataObject dataObject) {
-            super(dataObject, new Environment(dataObject));
-            setMIMEType("text/x-java"); // NOI18N
-        }
-        
-        
-        protected boolean notifyModified() {
-            if (!super.notifyModified())
-                return false;
-            ((Environment)this.env).addSaveCookie();
-            return true;
-        }
-        
-        
-        protected @Override void notifyUnmodified() {
-            super.notifyUnmodified();
-            ((Environment)this.env).removeSaveCookie();
-        }
-
-        protected @Override CloneableEditor createCloneableEditor() {
-            return new JavaEditor(this);
-        }
-
-        @Override
-        protected boolean asynchronousOpen() {
-            return true;
-        }
-        
-        public @Override boolean close(boolean ask) {
-            return super.close(ask);
-        }
-    }
-    
-    private static final class JavaEditor extends CloneableEditor {
-        
-        private static final long serialVersionUID = -1;        
-        
-        public JavaEditor() {
-        }
-        
-        public JavaEditor(JavaEditorSupport sup) {
-            super(sup);
-        }
-        
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="org/netbeans/modules/java/resources/class.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="java.source",
+        mimeType="text/x-java",
+        position=2000
+    )
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
     
     /**

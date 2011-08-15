@@ -157,7 +157,7 @@ public class BindingDescriptor {
      * may depend on the context and should be determined using
      * <code>BindingDesignSupport.determineType()</code> method.
      */
-    void markTypeAsRelative() {
+    public void markTypeAsRelative() {
         genericValueType = null;
     }
 

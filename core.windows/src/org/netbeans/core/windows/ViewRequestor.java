@@ -55,6 +55,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.openide.windows.TopComponent;
 
 
@@ -356,6 +357,10 @@ class ViewRequestor {
 
     private static void debugLog(String message) {
         Debug.log(ViewRequestor.class, message);
+    }
+
+    void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
+        view.userStartedKeyboardDragAndDrop( draggable );
     }
 
 }

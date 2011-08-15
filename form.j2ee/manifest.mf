@@ -5,4 +5,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/form/j2ee/Bundle2.propert
 OpenIDE-Module-Layer: org/netbeans/modules/form/j2ee/resources/layer.xml
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
+OpenIDE-Module-Requires: org.netbeans.modules.form.BindingDesignSupportProvider
 AutoUpdate-Show-In-Client: false

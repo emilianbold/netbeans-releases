@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.66.1
+#Version 1.68
 
 CLSS public java.io.IOException
 cons public init()
@@ -430,6 +430,7 @@ intf org.netbeans.junit.NbTest
 meth protected boolean runInEQ()
 meth protected final int getTestNumber()
 meth protected int timeOut()
+meth protected java.lang.String logRoot()
 meth protected java.util.logging.Level logLevel()
 meth public boolean canRun()
 meth public java.io.File getDataDir()

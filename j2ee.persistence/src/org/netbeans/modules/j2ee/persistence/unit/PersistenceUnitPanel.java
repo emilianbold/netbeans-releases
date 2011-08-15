@@ -752,7 +752,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         jtaCheckBox.setSelected(true);
         jtaCheckBox.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_JTA")); // NOI18N
         jtaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jtaCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -762,7 +761,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         add(jtaCheckBox, gridBagConstraints);
 
         dsCombo.setEditable(true);
-        dsCombo.setMinimumSize(new java.awt.Dimension(23, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -771,7 +769,6 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         add(dsCombo, gridBagConstraints);
 
         providerCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        providerCombo.setMinimumSize(new java.awt.Dimension(23, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -833,19 +830,16 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         buttonGroup2.add(ddCreate);
         ddCreate.setText(bundle1.getString("LBL_Create")); // NOI18N
         ddCreate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddCreate.setOpaque(false);
         tableGenerationPanel.add(ddCreate);
 
         buttonGroup2.add(ddDropCreate);
         ddDropCreate.setText(bundle1.getString("LBL_DropCreate")); // NOI18N
         ddDropCreate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddDropCreate.setOpaque(false);
         tableGenerationPanel.add(ddDropCreate);
 
         buttonGroup2.add(ddUnknown);
         ddUnknown.setText(bundle1.getString("LBL_None")); // NOI18N
         ddUnknown.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddUnknown.setOpaque(false);
         tableGenerationPanel.add(ddUnknown);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -953,31 +947,26 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         buttonGroup1.add(ddAll);
         ddAll.setText(bundle1.getString("LBL_All")); // NOI18N
         ddAll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddAll.setOpaque(false);
         cachingStrategyPanel.add(ddAll);
 
         buttonGroup1.add(ddNone);
         ddNone.setText(bundle1.getString("LBL_None")); // NOI18N
         ddNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddNone.setOpaque(false);
         cachingStrategyPanel.add(ddNone);
 
         buttonGroup1.add(ddEnableSelective);
         ddEnableSelective.setText(bundle1.getString("LBL_EnableSelective")); // NOI18N
         ddEnableSelective.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddEnableSelective.setOpaque(false);
         cachingStrategyPanel.add(ddEnableSelective);
 
         buttonGroup1.add(ddDisableSelective);
         ddDisableSelective.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_DisableSelective")); // NOI18N
         ddDisableSelective.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddDisableSelective.setOpaque(false);
         cachingStrategyPanel.add(ddDisableSelective);
 
         buttonGroup1.add(ddDefault);
         ddDefault.setText(org.openide.util.NbBundle.getMessage(PersistenceUnitPanel.class, "LBL_Default")); // NOI18N
         ddDefault.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddDefault.setOpaque(false);
         cachingStrategyPanel.add(ddDefault);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1004,19 +993,16 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         ddAuto.setSelected(true);
         ddAuto.setText(bundle1.getString("LBL_Auto")); // NOI18N
         ddAuto.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddAuto.setOpaque(false);
         validationStrategyPanel.add(ddAuto);
 
         buttonGroup3.add(ddCallBack);
         ddCallBack.setText(bundle1.getString("LBL_CallBack")); // NOI18N
         ddCallBack.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddCallBack.setOpaque(false);
         validationStrategyPanel.add(ddCallBack);
 
         buttonGroup3.add(ddNoValidation);
         ddNoValidation.setText(bundle1.getString("LBL_None")); // NOI18N
         ddNoValidation.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ddNoValidation.setOpaque(false);
         validationStrategyPanel.add(ddNoValidation);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

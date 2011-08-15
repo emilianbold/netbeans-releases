@@ -48,8 +48,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.marker.Mark;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -75,7 +75,7 @@ public class LifecycleEJBMarkingProvider extends BaseEJBMarkingProvider {
         }
     };
 
-    public LifecycleEJBMarkingProvider(Project project, Mark assignedMark) {
+    public LifecycleEJBMarkingProvider(Lookup.Provider project, Mark assignedMark) {
         super(project, assignedMark);
     }
 

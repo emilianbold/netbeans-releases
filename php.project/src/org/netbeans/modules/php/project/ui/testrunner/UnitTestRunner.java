@@ -65,6 +65,7 @@ import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO.D
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestSuiteVO;
 import org.netbeans.modules.php.project.ui.testrunner.TestSessionVO.TestCaseVO;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.phpunit.PhpUnitTestRunInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
@@ -84,19 +85,20 @@ public final class UnitTestRunner {
 
     private final PhpProject project;
     private final TestSession testSession;
-    private final boolean allTests;
+    private final PhpUnitTestRunInfo info;
 
     private volatile boolean started = false;
 
-    public UnitTestRunner(PhpProject project, TestSession.SessionType sessionType, RerunHandler rerunHandler, boolean allTests) {
+    public UnitTestRunner(PhpProject project, TestSession.SessionType sessionType, RerunHandler rerunHandler, PhpUnitTestRunInfo info) {
         assert project != null;
         assert sessionType != null;
         assert rerunHandler != null;
+        assert info != null;
 
         this.project = project;
-        this.allTests = allTests;
+        this.info = info;
 
-        testSession = new TestSession("PHPUnit test session", project, sessionType, new PhpTestRunnerNodeFactory()); // NOI18N
+        testSession = new TestSession(getOutputTitle(project, info), project, sessionType, new PhpTestRunnerNodeFactory());
         testSession.setRerunHandler(rerunHandler);
         testSession.setOutputLineHandler(PHP_OUTPUT_LINE_HANDLER);
     }
@@ -104,30 +106,20 @@ public final class UnitTestRunner {
     public void start() {
         MANAGER.testStarted(testSession);
         started = true;
+        deleteOldLogFiles();
     }
 
     public void showResults() {
         if (!started) {
             throw new IllegalStateException("Test runner must be started. Call start() method first.");
         }
-        Reader reader;
-        try {
-            // #163633 - php unit always uses utf-8 for its xml logs
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.XML_LOG), "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            Exceptions.printStackTrace(ex);
+        TestSessionVO session = createTestSession();
+        if (session == null) {
+            // some error occured
             return;
-        } catch (FileNotFoundException ex) {
-            processPhpUnitError();
-            return;
-        }
-        TestSessionVO session = new TestSessionVO();
-        PhpUnitLogParser.parse(reader, session);
-        if (!PhpUnit.KEEP_LOGS) {
-            PhpUnit.XML_LOG.delete();
         }
 
-        if (allTests) {
+        if (info.allTests()) {
             // custom suite?
             File customSuite = PhpUnit.getCustomSuite(project);
             if (customSuite != null) {
@@ -182,6 +174,46 @@ public final class UnitTestRunner {
                 + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
         MANAGER.displayOutput(testSession, NbBundle.getMessage(UnitTestRunner.class, "MSG_PerhapsError"), true);
         MANAGER.sessionFinished(testSession);
+    }
+
+    private void deleteOldLogFiles() {
+        if (PhpUnit.XML_LOG.exists()) {
+            PhpUnit.XML_LOG.delete();
+        }
+        if (PhpUnit.COVERAGE_LOG.exists()) {
+            PhpUnit.COVERAGE_LOG.delete();
+        }
+    }
+
+    private TestSessionVO createTestSession() {
+        Reader reader;
+        try {
+            // #163633 - php unit always uses utf-8 for its xml logs
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(PhpUnit.XML_LOG), "UTF-8")); // NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (FileNotFoundException ex) {
+            processPhpUnitError();
+            return null;
+        }
+        TestSessionVO session = new TestSessionVO();
+        PhpUnitLogParser.parse(reader, session);
+        if (!PhpUnit.KEEP_LOGS) {
+            PhpUnit.XML_LOG.delete();
+        }
+        return session;
+    }
+
+    private String getOutputTitle(PhpProject project, PhpUnitTestRunInfo info) {
+        StringBuilder sb = new StringBuilder(30);
+        sb.append(project.getName());
+        String testName = info.getTestName();
+        if (testName != null) {
+            sb.append(":"); // NOI18N
+            sb.append(testName);
+        }
+        return sb.toString();
     }
 
     private static final class PhpOutputLineHandler implements OutputLineHandler {

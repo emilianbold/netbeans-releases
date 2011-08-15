@@ -53,8 +53,8 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.TransferFile;
-import org.netbeans.modules.php.project.connections.TransferInfo;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -137,8 +137,6 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 }
 
                 if (reallyShowDialog) {
-                    // avoid timeout errors
-                    remoteClient.disconnect();
                     long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
                     forDownload = TransferFilesChooser.forDownload(forDownload, timestamp).showDialog();
                 }

@@ -42,45 +42,34 @@
 
 package org.netbeans.modules.apisupport.project.ui.branding;
 
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author S. Aubrecht
  */
-class BrandingEditorPanel extends javax.swing.JPanel {
+public class BrandingEditorPanel extends javax.swing.JPanel {
 
-    private final Project project;
     private final String title;
-    private final BasicBrandingModel model;
+    private final BrandingModel model;
     private final AbstractBrandingPanel[] panels;
     private boolean isModified = false;
     private boolean isValid = true;
-    private final boolean contextAvailable;
     private DialogDescriptor descriptor;
     private boolean brandingEnabled = true;
 
-    /** Creates new form BrandingEditorPanel */
-    public BrandingEditorPanel( String title, Project p, final BasicBrandingModel model, boolean contextAvailable ) {
+    public BrandingEditorPanel(String title, BrandingModel model) {
         initComponents();
-        this.project = p;
         this.title = title;
-        this.contextAvailable = contextAvailable;
         this.model = model;
         panels = new AbstractBrandingPanel[] {
             new BasicBrandingPanel(model),
@@ -124,7 +113,7 @@ class BrandingEditorPanel extends javax.swing.JPanel {
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
-    Dialog open() {
+    public Dialog open() {
         descriptor = new DialogDescriptor(this, title, false, DialogDescriptor.OK_CANCEL_OPTION, null, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -166,27 +155,7 @@ class BrandingEditorPanel extends javax.swing.JPanel {
         for( AbstractBrandingPanel panel : panels ) {
             panel.store();
         }
-        final SuiteProperties props = model.getSuiteProperties();
-        if( null != props ) {
-            try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws IOException {
-                        props.storeProperties();
-                        return null;
-                    }
-                });
-            } catch (MutexException e) {
-                Exceptions.printStackTrace(e);
-            }
-        } else {
-            try {
-                model.store();
-            } catch( IOException ioE ) {
-                Exceptions.printStackTrace(ioE);
-            }
-        }
-
+        model.doSave();
         isModified = false;
     }
 
@@ -207,9 +176,7 @@ class BrandingEditorPanel extends javax.swing.JPanel {
     }
 
     private void refreshBrandingEnabled() {
-        SuiteProperties props = model.getSuiteProperties();
-        if( null != props )
-            props.reloadProperties();
+        model.reloadProperties();
         model.brandingEnabledRefresh();
         brandingEnabled = model.isBrandingEnabled();
         if( null != descriptor ) {

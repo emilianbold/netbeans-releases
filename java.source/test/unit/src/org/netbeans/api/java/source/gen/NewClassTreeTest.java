@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
@@ -205,6 +206,46 @@ public class NewClassTreeTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
     
+    public void testRemoveEnclosingExpression() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    class T{}\n" +
+            "    public void taragui() {\n" +
+            "        new Test().new T();\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    class T{}\n" +
+            "    public void taragui() {\n" +
+            "        new T();\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(2);
+                ExpressionStatementTree st = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                NewClassTree nct = (NewClassTree) st.getExpression();
+                workingCopy.rewrite(nct, make.NewClass(null, (List<? extends ExpressionTree>) nct.getTypeArguments(), nct.getIdentifier(), nct.getArguments(), nct.getClassBody()));
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.i18n.wizard;
 
+import javax.swing.LayoutStyle;
+import javax.swing.GroupLayout;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -56,8 +58,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
@@ -70,10 +70,10 @@ import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.awt.Mnemonics;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 
 /**
  * Bundle access, ...
@@ -105,7 +105,7 @@ final class Util extends org.netbeans.modules.i18n.Util {
      * Used by actions to populate wizard.
      * @param activatedNodes selected nodes 
      * @return map with accepted data objects as keys or empty map if no such
-     * data objec were found.
+     * data object were found.
      */
     public static Map<DataObject,SourceData> createWizardSourceMap(Node[] activatedNodes) {
         Map<DataObject,SourceData> sourceMap = createWizardSourceMap();
@@ -291,34 +291,33 @@ final class Util extends org.netbeans.modules.i18n.Util {
         filesSelection.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(LEADING)
-            .add(lblSelection)
-            .add(layout.createSequentialGroup()
-                .add(scrollPane, 0, DEFAULT_SIZE, Integer.MAX_VALUE)
+            .addComponent(lblSelection)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(scrollPane, 0, DEFAULT_SIZE, Integer.MAX_VALUE)
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(LEADING)
-                    .add(button1)
-                    .add(button2)))
+                .addGroup(layout.createParallelGroup(LEADING)
+                    .addComponent(button1)
+                    .addComponent(button2)))
         );
 
-        layout.linkSize(new Component[] {button1, button2},
-                        GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, button1, button2);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(LEADING)
-            .add(layout.createSequentialGroup()
-                .add(lblSelection)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(lblSelection)
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(LEADING)
-                    .add(scrollPane, 0, DEFAULT_SIZE, Integer.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(button1)
+                .addGroup(layout.createParallelGroup(LEADING)
+                    .addComponent(scrollPane, 0, DEFAULT_SIZE, Integer.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(button1)
                         .addPreferredGap(RELATED)
-                        .add(button2))))
+                        .addComponent(button2))))
         );
 
         LayoutStyle layoutStyle = layout.getLayoutStyle();
         if (layoutStyle == null) {
-            layoutStyle = LayoutStyle.getSharedInstance();
+            layoutStyle = LayoutStyle.getInstance();
         }
 
         BorderLayout mainLayout = new BorderLayout();

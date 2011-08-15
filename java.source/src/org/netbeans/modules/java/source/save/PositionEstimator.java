@@ -1221,7 +1221,7 @@ public abstract class PositionEstimator {
                         case WHITESPACE:
                             int indexOf = token.text().toString().indexOf('\n');
                             if (indexOf > -1) {
-                                localResult = seq.offset() + indexOf + 1;
+                                localResult = seq.offset() + indexOf;
                             }
                             break;
                         case LINE_COMMENT:

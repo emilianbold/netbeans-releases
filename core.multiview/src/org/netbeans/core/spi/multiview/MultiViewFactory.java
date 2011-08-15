@@ -415,6 +415,7 @@ public final class MultiViewFactory {
         public MultiViewElement createElement() {
             String name = get("class", String.class); // NOI18N
             String method = (String)map.get("method"); // NOI18N
+            Exception first = null;
             try {
                 ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
                 if (cl == null) {
@@ -429,6 +430,7 @@ public final class MultiViewFactory {
                         Constructor<?> lookupC = clazz.getConstructor(Lookup.class);
                         return (MultiViewElement)lookupC.newInstance(context);
                     } catch (Exception ex) {
+                        first = ex;
                         Constructor<?> defC = clazz.getConstructor();
                         return (MultiViewElement)defC.newInstance();
                     }
@@ -437,12 +439,19 @@ public final class MultiViewFactory {
                         Method m = clazz.getMethod(method, Lookup.class);
                         return (MultiViewElement) m.invoke(null, context);
                     } catch (NoSuchMethodException ex) {
+                        first = ex;
                         Method m = clazz.getMethod(method);
                         return (MultiViewElement) m.invoke(null);
                     }
                 }
             } catch (Exception ex) {
-                throw new IllegalStateException("Cannot instantiate " + name, ex);
+                IllegalStateException ise = new IllegalStateException("Cannot instantiate " + name, ex);
+                Throwable t = ise;
+                while (t.getCause() != null) {
+                    t = t.getCause();
+                }
+                t.initCause(first);
+                throw ise;
             }
         }
 

@@ -93,7 +93,7 @@ public class IndentEngineIntTest extends NbTestCase {
         String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
         os.write(txt.getBytes());
         os.close();
-        fo.setAttribute("javax.script.ScriptEngine", "JavaScript");
+        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "JavaScript");
         
         
         DataObject obj = DataObject.find(fo);

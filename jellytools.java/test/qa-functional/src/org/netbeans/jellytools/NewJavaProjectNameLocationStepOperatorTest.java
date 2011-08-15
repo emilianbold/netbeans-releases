@@ -105,7 +105,7 @@ public class NewJavaProjectNameLocationStepOperatorTest extends JellyTestCase {
         // Standard
         op.selectCategory(standardLabel);
         // Java Application
-        op.selectProject(Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml"));
+        op.selectProject(Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "template_app"));
         op.next();
         NewJavaProjectNameLocationStepOperator stpop = new NewJavaProjectNameLocationStepOperator();
         stpop.txtProjectName().setText("NewProject");   // NOI18N
@@ -163,7 +163,7 @@ public class NewJavaProjectNameLocationStepOperatorTest extends JellyTestCase {
         NewProjectWizardOperator op = NewProjectWizardOperator.invoke();
         op.selectCategory(standardLabel);
         // Java Class Library
-        op.selectProject(Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SElibrary.xml"));
+        op.selectProject(Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "template_library"));
         op.next();
         NewJavaProjectNameLocationStepOperator stpop = new NewJavaProjectNameLocationStepOperator();
         stpop.txtProjectLocation().setText("/tmp"); //NOI18N
@@ -181,7 +181,7 @@ public class NewJavaProjectNameLocationStepOperatorTest extends JellyTestCase {
         NewProjectWizardOperator op = NewProjectWizardOperator.invoke();
         op.selectCategory(standardLabel);
         // "Java Project with Existing Sources"
-        op.selectProject(Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/existingJ2SE.xml"));
+        op.selectProject(Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "template_existing"));
         op.next();
         
         NewJavaProjectNameLocationStepOperator stpop = new NewJavaProjectNameLocationStepOperator();

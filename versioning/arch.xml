@@ -656,6 +656,9 @@ made subject to such option by the copyright holder.
     metadata folder name will be ".svn" if <code>System.getenv("SVN_ASP_DOT_NET_HACK") == null</code>, or "_svn" 
     if <code>System.getenv("SVN_ASP_DOT_NET_HACK") != null</code>.
   </p>
+  <api name="versioning.netbeans.user.versioned" group="property" category="private" type="export">
+      NetBeans userdir is by default excluded from version control for performance reason. This can be overridden by setting the property to <code>true</code>.
+  </api>
  </answer>
 
 

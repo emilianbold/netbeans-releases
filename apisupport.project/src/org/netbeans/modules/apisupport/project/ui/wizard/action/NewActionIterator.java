@@ -46,25 +46,23 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.io.IOException;
 import java.util.Set;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Wizard for creating new Actions.
  *
  * @author Martin Krauskopf
  */
-final class NewActionIterator extends BasicWizardIterator {
+@TemplateRegistration(folder="NetBeansModuleDevelopment", displayName="#template_action", iconBase="org/netbeans/modules/apisupport/project/ui/resources/newAction.png", position=100, description="../../resources/newAction.html", category="nbm-specific")
+@Messages("template_action=Action")
+public final class NewActionIterator extends BasicWizardIterator {
 
     private DataModel data;
 
-    private NewActionIterator() {}
-
-    public static NewActionIterator createIterator() {
-        return new NewActionIterator();
-    }
-    
     public Set instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();

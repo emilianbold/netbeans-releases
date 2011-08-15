@@ -139,6 +139,25 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return prefSize;
     }
 
+    @Override
+    protected void paintDisplayerBackground( Graphics g, JComponent c ) {
+        
+        int tabCount = getDataModel().size();
+        int x = getLayoutModel().getX( tabCount-1 );
+        x += getLayoutModel().getW( tabCount-1 )-5;
+        int y = 0;
+        int width = c.getWidth()-x;
+        int height = c.getHeight();
+        ColorUtil.paintXpTabHeader(ColorUtil.XP_REGULAR_TAB, g, x,
+                                   0, width); 
+        Color borderColor = borderC;
+        g.setColor(borderColor);
+        g.drawLine(x+width - 1, 3, x+width - 1, height - 2);
+        g.setColor(bottomBorderC);
+        g.drawLine(x, height - 1, x+width - 1, height - 1);
+    }
+
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         FontMetrics fm = getTxtFontMetrics();
@@ -154,8 +173,13 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             Component buttons = getControlButtons();
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
-                txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
+                if( width < buttonsSize.width+ICON_X_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    txtWidth = width - (buttonsSize.width + ICON_X_PAD + TXT_X_PAD);
+                    buttons.setLocation( x + txtWidth+TXT_X_PAD, y + (height-buttonsSize.height)/2 );
+                }
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -163,15 +187,18 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         
         int highlightedRaiseCompensation = (!isTabInFront(index) && isMoreThanOne()) ? HIGHLIGHTED_RAISE : 0;
         // draw bump (dragger)
-        ColorUtil.paintXpTabDragTexture(getDisplayer(), g, x + BUMP_X_PAD, y
-                 + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
-                 + BUMP_Y_PAD_BOTTOM)+highlightedRaiseCompensation);
+        if( isUseStretchingTabs() ) {
+            ColorUtil.paintXpTabDragTexture(getDisplayer(), g, x + BUMP_X_PAD, y
+                     + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
+                     + BUMP_Y_PAD_BOTTOM)+highlightedRaiseCompensation);
+        }
         HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
                 + TXT_Y_PAD, txtWidth, height, getTxtFont(),
                 txtC,
                 HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
         boolean isFirst = index == 0;
@@ -195,6 +222,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         g.translate(-x, -y);
     }
 
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         // shrink rectangle - don't affect border and tab header
@@ -241,6 +269,8 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      *         highlight header, false otherwise.
      */
     private boolean isTabHighlighted(int index) {
+        if( index < 0 )
+            return false;
         if (((OwnController) getController()).getMouseIndex() == index) {
             return true;
         }
@@ -252,6 +282,8 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
      *         active
      */
     private boolean isTabInFront(int index) {
+        if( index < 0 )
+            return false;
         return isSelected(index) && (isActive() || isMoreThanOne());
     }
 
@@ -321,6 +353,20 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/xp_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 
