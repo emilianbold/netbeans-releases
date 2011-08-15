@@ -101,7 +101,7 @@ public final class RemoteClient implements Cancellable {
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
-    public static enum Operation { UPLOAD, DOWNLOAD, DELETE };
+    public static enum Operation { UPLOAD, DOWNLOAD, DELETE, LIST };
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
@@ -235,27 +235,34 @@ public final class RemoteClient implements Cancellable {
         ensureConnected();
 
         LOGGER.log(Level.FINE, "Getting children for {0}", file);
-        List<RemoteFile> remoteFiles = Collections.emptyList();
-        synchronized (this) {
-            if (cdBaseRemoteDirectory(file.getRemotePath(), false)) {
-                remoteFiles = remoteClient.listFiles();
+        try {
+            operationMonitor.operationStart(Operation.LIST, Collections.singleton(file));
+            List<RemoteFile> remoteFiles = Collections.emptyList();
+            synchronized (this) {
+                if (cdBaseRemoteDirectory(file.getRemotePath(), false)) {
+                    remoteFiles = remoteClient.listFiles();
+                }
             }
-        }
-        if (remoteFiles.isEmpty()) {
-            LOGGER.log(Level.FINE, "No children found for {0}", file);
-            return Collections.emptyList();
-        }
-        List<TransferFile> transferFiles = new ArrayList<TransferFile>(remoteFiles.size());
-        for (RemoteFile remoteFile : remoteFiles) {
-            if (isVisible(remoteFile.getName())) {
-                LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
-                transferFiles.add(TransferFile.fromRemoteFile(file, remoteFile, this));
-            } else {
-                LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", remoteFile);
+            if (remoteFiles.isEmpty()) {
+                LOGGER.log(Level.FINE, "No children found for {0}", file);
+                return Collections.emptyList();
             }
+            List<TransferFile> transferFiles = new ArrayList<TransferFile>(remoteFiles.size());
+            for (RemoteFile remoteFile : remoteFiles) {
+                if (isVisible(remoteFile.getName())) {
+                    LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
+                    TransferFile transferFile = TransferFile.fromRemoteFile(file, remoteFile, this);
+                    operationMonitor.operationProcess(Operation.LIST, transferFile);
+                    transferFiles.add(transferFile);
+                } else {
+                    LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", remoteFile);
+                }
+            }
+            LOGGER.log(Level.FINE, "{0} children found for {1}", new Object[] {transferFiles.size(), file});
+            return transferFiles;
+        } finally {
+            operationMonitor.operationFinish(Operation.LIST, Collections.singleton(file));
         }
-        LOGGER.log(Level.FINE, "{0} children found for {1}", new Object[] {transferFiles.size(), file});
-        return transferFiles;
     }
 
     public Set<TransferFile> prepareUpload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
@@ -895,6 +902,7 @@ public final class RemoteClient implements Cancellable {
         TransferInfo transferInfo = new TransferInfo();
 
         try {
+            operationMonitor.operationStart(Operation.DELETE, filesToDelete);
             // first, remove all the files
             //  then remove _empty_ directories (motivation is to prevent data loss; somebody else could upload some file there)
             Set<TransferFile> files = getFiles(filesToDelete);
@@ -911,6 +919,7 @@ public final class RemoteClient implements Cancellable {
 
             assert filesToDelete.size() == files.size() + dirs.size() : String.format("%s does not match files and dirs: %s %s", filesToDelete, files, dirs);
         } finally {
+            operationMonitor.operationFinish(Operation.DELETE, filesToDelete);
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -927,6 +936,7 @@ public final class RemoteClient implements Cancellable {
             }
 
             try {
+                operationMonitor.operationProcess(Operation.DELETE, file);
                 deleteFile(transferInfo, file);
             } catch (IOException exc) {
                 transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
