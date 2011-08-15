@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui.actions;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.File;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
@@ -111,14 +112,19 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
-        DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor("LBL_Uploading"); // NOI18N
+        DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor();
         RemoteClient remoteClient = getRemoteClient(remoteLog, uploadOperationMonitor);
-        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
-        TransferInfo transferInfo = null;
+
+        Set<TransferFile> forUpload = prepareUpload(sources, filesToUpload, preselectedFiles, remoteClient);
+        upload(forUpload, sources, filesToUpload, uploadOperationMonitor, remoteLog, remoteClient);
+    }
+
+    private Set<TransferFile> prepareUpload(FileObject sources, FileObject[] filesToUpload, FileObject[] preselectedFiles, RemoteClient remoteClient) {
+        Set<TransferFile> forUpload = Collections.emptySet();
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
         try {
             progressHandle.start();
-            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources, filesToUpload);
+            forUpload = remoteClient.prepareUpload(sources, filesToUpload);
 
             // manage preselected files - it is just enough to touch the file
             if (preselectedFiles != null && preselectedFiles.length > 0) {
@@ -145,15 +151,21 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             if (showDialog) {
                 forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
             }
-            if (forUpload.isEmpty()) {
-                return;
-            }
+        } catch (RemoteException ex) {
+            processRemoteException(ex);
+        } finally {
+            progressHandle.finish();
+        }
+        return forUpload;
+    }
 
+    private void upload(Set<TransferFile> forUpload, FileObject sources, FileObject[] filesToUpload,
+            DefaultOperationMonitor uploadOperationMonitor, InputOutput remoteLog, RemoteClient remoteClient) {
+        TransferInfo transferInfo = null;
+        try {
             if (forUpload.size() > 0) {
-                progressHandle.finish();
-                progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
-                uploadOperationMonitor.progressHandle = progressHandle;
-                progressHandle.start(getWorkUnits(forUpload));
+                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
+                uploadOperationMonitor.setProgressHandle(progressHandle, forUpload);
                 transferInfo = remoteClient.upload(sources, forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
@@ -173,10 +185,10 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             if (transferInfo != null) {
                 processTransferInfo(transferInfo, remoteLog);
             }
-            progressHandle.finish();
         }
     }
 
+    @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
     }

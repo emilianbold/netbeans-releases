@@ -512,7 +512,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
         RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
-        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
+        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor();
         RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
                     .setInputOutput(remoteLog)
                     .setOperationMonitor(downloadOperationMonitor)

@@ -43,7 +43,9 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -363,41 +365,86 @@ public abstract class RemoteCommand extends Command {
         return true;
     }
 
-    protected static int getWorkUnits(Set<TransferFile> files) {
-        int totalSize = 0;
-        for (TransferFile file : files) {
-            totalSize += file.getSize();
-        }
-        return totalSize / 1024;
-    }
 
+    /**
+     * Default operation monitor for file upload and download.
+     */
     public static final class DefaultOperationMonitor implements RemoteClient.OperationMonitor {
-        private final String processMessageKey;
 
-        int progressSize = 0;
-        ProgressHandle progressHandle = null;
+        private final Deque<Operation> operations = new ArrayDeque<Operation>();
 
-        public DefaultOperationMonitor(String processMessageKey) {
-            assert processMessageKey != null;
-            this.processMessageKey = processMessageKey;
+        private int workUnits;
+        private ProgressHandle progressHandle = null;
+
+        private int workUnit = 0;
+
+
+        public void setProgressHandle(ProgressHandle progressHandle, Set<TransferFile> forFiles) {
+            this.progressHandle = progressHandle;
+            workUnits = getWorkUnits(forFiles);
         }
 
         @Override
         public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
+            if (operations.isEmpty()) {
+                if (progressHandle == null) {
+                    throw new IllegalStateException("Progress handle must be set");
+                }
+                progressHandle.start(workUnits);
+            }
+            operations.offerFirst(operation);
+            if (operation == Operation.LIST) {
+                progressHandle.progress(NbBundle.getMessage(RemoteCommand.class, "LBL_ListingFiles", forFiles.iterator().next().getName()));
+                progressHandle.switchToIndeterminate();
+            }
         }
 
         @Override
         public void operationProcess(Operation operation, TransferFile forFile) {
-            long size = forFile.getSize();
-            if (size > 0) {
-                assert progressHandle != null;
-                progressHandle.progress(NbBundle.getMessage(DefaultOperationMonitor.class, processMessageKey, forFile.getName()), progressSize);
-                progressSize += size / 1024;
+            switch (operation) {
+                case LIST:
+                    if (progressHandle != null) {
+                        long size = forFile.getSize();
+                        if (size > 0) {
+                            workUnits += size / 1024;
+                        }
+                    }
+                    break;
+                case UPLOAD:
+                case DOWNLOAD:
+                    String processMessageKey = operation == Operation.DOWNLOAD ? "LBL_Downloading" : "LBL_Uploading"; // NOI18N
+                    long size = forFile.getSize();
+                    if (size > 0) {
+                        assert progressHandle != null;
+                        progressHandle.progress(NbBundle.getMessage(DefaultOperationMonitor.class, processMessageKey, forFile.getName()), workUnit);
+                        workUnit += size / 1024;
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException("Unsupported operation: " + operation);
             }
         }
 
         @Override
         public void operationFinish(Operation operation, Collection<TransferFile> forFiles) {
+            operations.pollFirst();
+            if (operation == Operation.LIST) {
+                progressHandle.switchToDeterminate(workUnits);
+                progressHandle.progress(workUnit);
+            }
+            if (operations.isEmpty()) {
+                progressHandle.finish();
+            }
         }
+
+        private int getWorkUnits(Set<TransferFile> forFiles) {
+            int size = 0;
+            for (TransferFile file : forFiles) {
+                size += file.getSize();
+            }
+            return size / 1024;
+        }
+
     }
+
 }
