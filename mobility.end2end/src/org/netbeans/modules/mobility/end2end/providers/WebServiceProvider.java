@@ -53,10 +53,8 @@ package org.netbeans.modules.mobility.end2end.providers;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.end2end.codegenerator.ConnectionGenerator;
-import org.netbeans.modules.mobility.end2end.multiview.DDView;
 import org.netbeans.spi.mobility.end2end.E2EServiceProvider;
 import org.netbeans.spi.mobility.end2end.ServiceGeneratorResult;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.Lookup;
 
 /**
@@ -66,18 +64,20 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.end2end.E2EServiceProvider.class, position=20)
 public class WebServiceProvider implements E2EServiceProvider{
         
+    @Override
     public String getServiceType() {
         return Configuration.WSDLCLASS_TYPE;
     }
     
-    public DesignMultiViewDesc[] getMultiViewDesc(final Lookup lookup) {
-        final E2EDataObject doj = lookup.lookup(E2EDataObject.class);
-        return new DesignMultiViewDesc[] {
-            new DDView( doj, DDView.MULTIVIEW_CLIENT ),
-            new DDView( doj, DDView.MULTIVIEW_SERVER )
-        };
-    }
+//    public DesignMultiViewDesc[] getMultiViewDesc(final Lookup lookup) {
+//        final E2EDataObject doj = lookup.lookup(E2EDataObject.class);
+//        return new DesignMultiViewDesc[] {
+//            new DDView( doj, DDView.MULTIVIEW_CLIENT ),
+//            new DDView( doj, DDView.MULTIVIEW_SERVER )
+//        };
+//    }
     
+    @Override
     public ServiceGeneratorResult generateStubs(final Lookup lookup) {
         return ConnectionGenerator.generate(lookup.lookup(E2EDataObject.class));
     }

@@ -50,7 +50,7 @@
  */
 package org.netbeans.modules.mobility.end2end.multiview;
 
-import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
@@ -60,155 +60,166 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Michal Skvor
+ * @author Michal Skvor, Anton Chechel
  */
+@Messages("CTL_ClientTabCaption=Client") // NOI18N
 public class ClientMultiViewElement extends ToolBarMultiViewElement {
-    
-    private SectionView view;
-    private ToolBarDesignEditor comp;    
-    private int index;
+    private static final String CLIENT_NODE_ICON_BASE = "org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"; // NOI18N
     
     protected ClientViewFactory factory;
-    
+
+    private SectionView view;
+    private ToolBarDesignEditor comp;
+    private int index;
     private boolean needInit = true;
-    
-    /** Creates a new instance of ClientMultiViewElement */
-    public ClientMultiViewElement( E2EDataObject dataObject, int index ) {
-        super( dataObject );
+
+    public ClientMultiViewElement(E2EDataObject dataObject, int index) {
+        super(dataObject);
         this.index = index;
-        
+
         comp = new ToolBarDesignEditor();
         factory = new ClientViewFactory( comp, dataObject );
         setVisualEditor( comp );
-        RequestProcessor.getDefault().create( new Runnable() {
-            public void run() {
-                javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                        repaintView();
-                    }
-                });
-            }
-        });
     }
-    
+
+    @MultiViewElement.Registration(mimeType = E2EDataObject.MIME_TYPE_CLASS,
+        iconBase = E2EDataObject.ICON_BASE,
+        persistenceType = TopComponent.PERSISTENCE_NEVER,
+        preferredID = "e2e.client", // NOI18N
+        displayName = "#CTL_ClientTabCaption", // NOI18N
+        position = 100
+    )
+    public static MultiViewElement createClassClientViewElement(Lookup lookup) {
+        return new ClientMultiViewElement(lookup.lookup(E2EDataObject.class), 0);
+    }
+
+    @MultiViewElement.Registration(mimeType = E2EDataObject.MIME_TYPE_WSDL,
+        iconBase = E2EDataObject.ICON_BASE,
+        persistenceType = TopComponent.PERSISTENCE_NEVER,
+        preferredID = "e2e.client", // NOI18N
+        displayName = "#CTL_ClientTabCaption", // NOI18N
+        position = 100
+    )
+    public static MultiViewElement createWsdlClientViewElement(Lookup lookup) {
+        return new ClientMultiViewElement(lookup.lookup(E2EDataObject.class), 0);
+    }
+
+    @Override
     public void componentShowing() {
         super.componentShowing();
-        dObj.setLastOpenView( index );
-        if( needInit ) {
+        dObj.setLastOpenView(index);
+        if (needInit) {
             repaintView();
             needInit = false;
         }
     }
-    
+
     protected void repaintView() {
         view = new ClientView();
-        comp.setContentView( view );
+        comp.setContentView(view);
         final Object lastActive = comp.getLastActive();
-        if( lastActive != null ) {
-            view.openPanel( lastActive );
+        if (lastActive != null) {
+            view.openPanel(lastActive);
         } else {
-            view.openPanel( "clientOptions" );  // NOI18N
-            view.openPanel( "clientGeneralInfo" );  // NOI18N
-            view.openPanel( "services" );  // NOI18N
+            view.openPanel(ClientViewFactory.PROP_PANEL_CLIENT_OPTIONS);
+            view.openPanel(ClientViewFactory.PROP_PANEL_CLIENT_GENERAL);
+            view.openPanel(ClientViewFactory.PROP_PANEL_SERVICES);
         }
         view.checkValidity();
     }
-    
+
+    @Override
     public SectionView getSectionView() {
         return view;
     }
-    
-    public CloseOperationState canCloseElement() {
-        // FIXME: save state
-        return CloseOperationState.STATE_OK;
-    }
-    
+
     private class ClientView extends SectionView {
-        
         final private Node servicesNode, clientGeneralInfoNode, clientOptionsNode;
-        
+
         public ClientView() {
-            super( factory );
-            
+            super(factory);
+
             servicesNode = new ServicesNode();
-            addSection( new SectionPanel( this, servicesNode, ClientViewFactory.PROP_PANEL_SERVICES ));
-            
+            addSection(new SectionPanel(this, servicesNode, ClientViewFactory.PROP_PANEL_SERVICES));
+
             clientGeneralInfoNode = new ClientGeneralInfoNode();
-            addSection( new SectionPanel( this, clientGeneralInfoNode, ClientViewFactory.PROP_PANEL_CLIENT_GENERAL ));
-            
+            addSection(new SectionPanel(this, clientGeneralInfoNode, ClientViewFactory.PROP_PANEL_CLIENT_GENERAL));
+
             clientOptionsNode = new ClientOptionsNode();
-            addSection( new SectionPanel( this, clientOptionsNode, ClientViewFactory.PROP_PANEL_CLIENT_OPTIONS )); // NOI18N
-            
+            addSection(new SectionPanel(this, clientOptionsNode, ClientViewFactory.PROP_PANEL_CLIENT_OPTIONS));
+
             Children rootChildren = new Children.Array();
-            rootChildren.add( new Node[]{ servicesNode, clientGeneralInfoNode, clientOptionsNode });
-            AbstractNode root = new AbstractNode( rootChildren );
-            setRoot( root );
+            rootChildren.add(new Node[]{servicesNode, clientGeneralInfoNode, clientOptionsNode});
+            AbstractNode root = new AbstractNode(rootChildren);
+            setRoot(root);
         }
-        
+
         Node getServicesNode() {
             return servicesNode;
         }
-        
+
         Node getClientGeneralInfoNode() {
             return clientGeneralInfoNode;
         }
-        
+
         Node getClientOptionsNode() {
             return clientOptionsNode;
         }
     }
-    
+
     /**
      * Represents section for Services view
      */
     private class ServicesNode extends AbstractNode {
         ServicesNode() {
-            super( org.openide.nodes.Children.LEAF );
-            setDisplayName( NbBundle.getMessage( ClientMultiViewElement.class, "TTL_ServicesSection" ));
-            setIconBaseWithExtension("org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"); //NOI18N
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(NbBundle.getMessage(ClientMultiViewElement.class, "TTL_ServicesSection")); // NOI18N
+            setIconBaseWithExtension(CLIENT_NODE_ICON_BASE);
             componentOpened();
         }
-        
+
+        @Override
         public HelpCtx getHelpCtx() {
-            // FIXME: help prefix fix
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("overviewNode"); // NOI18N
         }
     }
-    
+
     /**
      * Represents section for General Information about client
      */
     private class ClientGeneralInfoNode extends AbstractNode {
         ClientGeneralInfoNode() {
-            super( org.openide.nodes.Children.LEAF );
-            setDisplayName( NbBundle.getMessage( ClientMultiViewElement.class, "TTL_ClientGeneralInfoSection" ));
-            setIconBaseWithExtension("org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"); //NOI18N
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(NbBundle.getMessage(ClientMultiViewElement.class, "TTL_ClientGeneralInfoSection")); // NOI18N
+            setIconBaseWithExtension(CLIENT_NODE_ICON_BASE);
         }
-        
+
+        @Override
         public HelpCtx getHelpCtx() {
-            // FIXME: help prefix fix
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("overviewNode"); // NOI18N
         }
     }
-    
+
     /**
      * Represents section for Client Options
      */
     private class ClientOptionsNode extends AbstractNode {
         ClientOptionsNode() {
-            super( org.openide.nodes.Children.LEAF );
-            setDisplayName( NbBundle.getMessage( ClientMultiViewElement.class, "TTL_ClientOptionsSection" ));
-            setIconBaseWithExtension("org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"); //NOI18N
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(NbBundle.getMessage(ClientMultiViewElement.class, "TTL_ClientOptionsSection")); // NOI18N
+            setIconBaseWithExtension(CLIENT_NODE_ICON_BASE);
         }
-        
+
+        @Override
         public HelpCtx getHelpCtx() {
-            // FIXME: help prefix fix
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("overviewNode"); // NOI18N
         }
     }
 }
