@@ -89,7 +89,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         return new CdiAnalysisTestTask();
     }
     
-    public void testTypedClass() throws IOException{
+       public void testTypedClass() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
                 "import java.util.List; "+
@@ -349,8 +349,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
-    public void disabledTestDelegateField() throws IOException{
-        getUtilities().clearRoot();
+    public void testDelegateField() throws IOException{
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
                 "package foo; " +
@@ -387,22 +386,38 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
                 " int field1; "+
                 "}");
         
-        /*FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+        FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
                 "package foo; " +
                 "import javax.decorator.Decorator; "+
                 "import javax.decorator.Delegate; "+
+                "import javax.inject.Inject; "+
                 " @Decorator "+
                 " public class Clazz3 implements Iface { "+
                 " @Inject @Delegate Object delegateInjection; "+
                 " int field1; "+
                 "}");
-        */
+        
         
         ResultProcessor processor = new ResultProcessor (){
 
             @Override
             public void process( TestProblems result ) {
-                checkFieldElement(result, "foo.Clazz1", "delegateInjection");
+                checkFieldElement(result, "foo.Clazz1", "delegateInjection",
+                        true);
+                Set<Element> elements = result.getErrors().keySet();
+                assertEquals( "Exactly two errors should be detected" , 
+                        2, elements.size());
+                boolean clazzFound = false;
+                for (Element element : elements) {
+                    if ( element instanceof  TypeElement ){
+                        String fqn = ((TypeElement)element).
+                                getQualifiedName().toString();
+                        if ( fqn.equals("foo.Clazz1")){
+                            clazzFound = true;
+                        }
+                    }
+                }
+                assertTrue("foo.Clazz1 should be marked with an error ",clazzFound);
             }
             
         };
@@ -426,7 +441,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
             }
             
         };
-        //runAnalysis(errorFile3 , processor);
+        runAnalysis(errorFile3 , processor);
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
 
@@ -447,19 +462,30 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
     private void checkFieldElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
+        checkFieldElement(result, enclosingClass, expectedName, false );
+    }
+    
+    private void checkFieldElement(TestProblems result , String enclosingClass, 
+            String expectedName , boolean checkOnlyFields )
+    {
         Set<Element> elements = result.getErrors().keySet();
         Set<Element> classElements = new HashSet<Element>();
         TypeElement enclosingClazz = null;
         for( Element element : elements ){
             Element enclosingElement = element.getEnclosingElement();
             TypeElement clazz = null;
+            boolean forAdd = false ;
             if ( enclosingElement instanceof TypeElement ){
+                forAdd = true;
                 clazz = (TypeElement) enclosingElement;
             }
             else if ( element instanceof TypeElement ){
+                if ( !checkOnlyFields ){
+                    forAdd = true;
+                }
                 clazz = (TypeElement)element;
             }
-            if ( clazz.getQualifiedName().contentEquals( enclosingClass )){
+            if (  forAdd && clazz.getQualifiedName().contentEquals( enclosingClass )){
                 enclosingClazz = clazz;
                 System.out.println( "Found element : "+element);
                 classElements.add( element );
