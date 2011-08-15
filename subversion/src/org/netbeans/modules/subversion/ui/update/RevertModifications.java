@@ -210,6 +210,7 @@ public class RevertModifications implements PropertyChangeListener {
 
     protected final void setLocalModificationsFieldsEnabled (boolean b) {
         getPanel().cbRecursiveRevert.setEnabled(b);
+        getPanel().revertNewFilesCheckBox.setEnabled(b);
     }
         
     private abstract class RevertType implements ActionListener, DocumentListener {
@@ -225,7 +226,7 @@ public class RevertModifications implements PropertyChangeListener {
         }
 
         boolean revertNewFiles() {
-            return panel.revertNewFilesCheckBox.isSelected();
+            return false;
         }
         
         boolean revertRecursively () {
@@ -298,6 +299,11 @@ public class RevertModifications implements PropertyChangeListener {
         @Override
         boolean revertRecursively () {
             return getPanel().cbRecursiveRevert.isSelected();
+        }
+        
+        @Override
+        boolean revertNewFiles() {
+            return panel.revertNewFilesCheckBox.isSelected();
         }
     }
 

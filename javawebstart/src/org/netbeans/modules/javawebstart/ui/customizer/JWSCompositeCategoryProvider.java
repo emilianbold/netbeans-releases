@@ -115,11 +115,19 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
 
     public JWSCompositeCategoryProvider() {}
     
+    @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(CAT_WEBSTART,
-                    NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart"), null);
+        boolean fxOverride = false;
+        final Project project = context.lookup(Project.class);
+        if (project != null) {
+            final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
+            fxOverride = JWSProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")); //NOI18N
+        }
+        return fxOverride ? null : ProjectCustomizer.Category.create(CAT_WEBSTART,
+                    NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart"), null); //NOI18N
     }
     
+    @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         jwsProps = new JWSProjectProperties(context);
         // use OkListener to create new configuration first

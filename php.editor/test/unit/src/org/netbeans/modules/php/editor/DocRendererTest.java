@@ -52,7 +52,7 @@ public class DocRendererTest extends NbTestCase {
         super(name);
     }
 
-    public void testProcessPhpDoc() {
+    public void testProcespsPhpDoc() {
         // text => result
         final Map<String, String> testCases = new LinkedHashMap<String, String>();
         testCases.put(
@@ -93,4 +93,23 @@ public class DocRendererTest extends NbTestCase {
             assertEquals(expected, processed);
         }
     }
+    
+    public void testLinksInDescription01() {
+
+        String tested = "Sort the given array of {@link MyObject}s by ORDER field.";
+        String expected = "Sort the given array of <a href=\"MyObject\">MyObject</a>s by ORDER field.";
+
+        DocRenderer.PHPDocExtractor extractor = new DocRenderer.PHPDocExtractor(null, null, null);
+
+        String result = extractor.processDescription(tested);
+
+        if (!expected.equals(result)) {
+            System.err.println("[" + result + "] => [" + expected + "]");
+        }
+        assertEquals(expected, result);
+    }
+    
+    
+    
+    
 }

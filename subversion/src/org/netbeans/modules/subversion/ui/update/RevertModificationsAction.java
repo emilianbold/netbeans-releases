@@ -243,8 +243,10 @@ public class RevertModificationsAction extends ContextAction {
         }
         
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        for (File file : cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            if (file.isDirectory()) {
+        for (File file : cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+            FileInformation fi;
+            if (file.isDirectory() 
+                    || (fi = cache.getCachedStatus(file)) != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) { // added files turned to not versioned
                 cache.refresh(file, null);
             }
         }
