@@ -136,6 +136,16 @@ public enum NodeType {
         ruleSet, 
         selector, 
         simpleSelectorSequence, 
+        
+        /**
+         * error recovery rule
+         */
+        syncTo_IDENT_RBRACE,
+        /**
+         * error recovery rule
+         */
+//        syncTo_IDENT_RBRACKET_LBRACE,
+        
         synpred2_Css3, 
         selectorsGroup, 
         styleSheet, 
