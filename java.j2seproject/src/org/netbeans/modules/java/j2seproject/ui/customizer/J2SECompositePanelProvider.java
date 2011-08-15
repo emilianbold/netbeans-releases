@@ -47,6 +47,9 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -101,12 +104,22 @@ public class J2SECompositePanelProvider implements ProjectCustomizer.CompositeCa
                     bundle.getString( "LBL_Config_Javadoc" ), // NOI18N
                     null);
         } else if (RUN.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    RUN,
-                    bundle.getString( "LBL_Config_Run" ), // NOI18N
-                    null);
+            boolean fxOverride = false;
+            final Project project = context.lookup(Project.class);
+            if (project != null) {
+                final J2SEProject j2sepe = project.getLookup().lookup(J2SEProject.class);
+                fxOverride = J2SEProjectUtil.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")); // NOI18N
+            }
+            if(fxOverride) {
+                toReturn = null;
+            } else {
+                toReturn = ProjectCustomizer.Category.create(
+                        RUN,
+                        bundle.getString( "LBL_Config_Run" ), // NOI18N
+                        null);
+            }
         }
-        assert toReturn != null : "No category for name:" + name;
+        assert toReturn != null || RUN.equals(name) : "No category for name:" + name;
         return toReturn;
     }
 

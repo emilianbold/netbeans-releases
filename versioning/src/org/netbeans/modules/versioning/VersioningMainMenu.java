@@ -115,7 +115,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             for (final VersioningSystem system : systems) {
                 if (Utils.isLocalHistory(system)) {
                     localHistory = system;
-                } else {
+                } else if (!"".equals(Utils.getMenuLabel(system))) { //NOI18N
                     JMenu menu = createVersioningSystemMenu(system, true);
                     items.add(menu);
                 }
