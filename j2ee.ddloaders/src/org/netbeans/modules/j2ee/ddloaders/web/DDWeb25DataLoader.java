@@ -30,6 +30,11 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.web;
 
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+
 /**
  * A data loader for web.xml version 2.5. Required for providing
  * a different action context than for older versions - see #85570.
@@ -40,7 +45,7 @@ public class DDWeb25DataLoader extends DDDataLoader{
 
     private static final long serialVersionUID = 1L;
 
-    private static final String REQUIRED_MIME = "text/x-dd-servlet2.5"; // NOI18N
+    public static final String REQUIRED_MIME = "text/x-dd-servlet2.5"; // NOI18N
 
     public DDWeb25DataLoader() {
         super("org.netbeans.modules.j2ee.ddloaders.web.DDDataObject");  // NOI18N
@@ -55,4 +60,11 @@ public class DDWeb25DataLoader extends DDDataLoader{
     protected String[] getSupportedMimeTypes() {
         return new String[]{REQUIRED_MIME};
     }
+
+    @Override
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
+            throws DataObjectExistsException, IOException {
+        return createMultiObject(primaryFile, REQUIRED_MIME);
+    }
+
 }
