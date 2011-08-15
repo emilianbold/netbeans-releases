@@ -292,6 +292,7 @@ class OccurenceBuilder {
     void prepare(Kind kind, Expression node, Scope scope) {
         ASTNodeInfo<Expression> nodeInfo = null;
         if (node instanceof Identifier) {
+
             nodeInfo = ASTNodeInfo.create(kind, (Identifier) node);
         } else if (node instanceof NamespaceName) {
             nodeInfo = ASTNodeInfo.create(kind, (NamespaceName) node);
@@ -812,7 +813,7 @@ class OccurenceBuilder {
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self")) {//NOI18N
+            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
@@ -1184,7 +1185,7 @@ class OccurenceBuilder {
                     final Scope scope = entry.getValue().getInScope();
                     if (clzName != null) {
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                            if (clzName.getName().equalsIgnoreCase("self")) {
+                            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equals("static")) {  //NOI18N
                                 clzName = ((TypeScope) scope).getFullyQualifiedName();
                             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
                                 clzName = ((ClassScope) scope).getSuperClassName();

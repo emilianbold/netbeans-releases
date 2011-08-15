@@ -558,6 +558,18 @@ public class GotoDeclarationTest extends TestBase {
 //testfiles/gotodeclaration/testStaticMethodInvocation/testStaticMethodInvocation.php
         checkDeclaration(getTestPath(), "print Ca^t::kindInfo();", "class ^Cat extends Mammal {");
     }
+    
+    public void testStaticMethodInvocation_Issue_200700_01() throws Exception {
+        checkDeclaration(getTestPath(), "echo static::kin^dInfo();", "public static function ^kindInfo() {return \"cat is ...\";}");
+    }
+    
+    public void testStaticMethodInvocation_Issue_200700_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo static::getCla^ssDesc(); // navigate to parent", "public static function ^getClassDesc() {return \"Mammal class\";}");
+    }
+    
+    public void testStaticMethodInvocation_Issue_200700_03() throws Exception {
+        checkDeclaration(getTestPath(), "echo static::get^Animal(); // navigate to parent", "public static function ^getAnimal() {");
+    }
 
     public void testVardoc166660() throws Exception {
         //testfiles/gotodeclaration/testVardoc166660/testVardoc166660.php
