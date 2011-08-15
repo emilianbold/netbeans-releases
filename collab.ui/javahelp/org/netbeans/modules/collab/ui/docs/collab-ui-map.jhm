@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -51,15 +51,7 @@ made subject to such option by the copyright holder.
 	<mapID target="collab_ui_credits" url="credits.html"/>
 	<mapID target="collab_ww_groups_contacts" url="ww_groups_contacts.html"/>
 	<mapID target="collab_login_to_server" url="login_to_server.html"/>
-        <!-- Below map id is used for Context Sensitive Help, please make sure to
-             update all references (usually java files like CollabExplorerPanel.java) 
-             to this id if you change it
-        -->        
 	<mapID target="collab_about_collab" url="about_collab.html"/>
-        <!-- Below map id is used for Context Sensitive Help, please make sure to 
-             update all references (usually java files like AccountManagementPanel.java) 
-             to this id if you change it
-        -->        
 	<mapID target="collab_creating_accounts" url="creating_accounts.html"/>
 	<mapID target="collab_starting_conversation" url="starting_conversation.html"/>
 </map>
