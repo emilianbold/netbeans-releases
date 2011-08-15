@@ -43,7 +43,9 @@ package org.netbeans.modules.css.lib;
 
 import java.util.Collection;
 import java.util.List;
+import org.antlr.runtime.BitSet;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.debug.BlankDebugEventListener;
@@ -69,17 +71,14 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     //the error recovery implementation in syncToSet(...)
     //calls DBG.enter/exit/Rule("recovery") itself.
     private String[] IGNORED_RULES = new String[]{"syncToFollow", "syncTo_IDENT_RBRACE"}; //must be sorted alphabetically!
-    
     Stack<RuleNode> callStack = new Stack<RuleNode>();
     List<CommonToken> hiddenTokens = new ArrayList<CommonToken>();
     private int backtracking = 0;
     private CommonToken lastConsumedToken;
-    private boolean resyncing;
     private CharSequence source;
     static boolean debug_tokens = false; //testing 
-
     private List<ErrorNode> errorNodes = new ArrayList<ErrorNode>();
-    
+
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
         callStack.push(new RootNode(source));
@@ -103,20 +102,19 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private boolean isIgnoredRule(String ruleName) {
         return Arrays.binarySearch(IGNORED_RULES, ruleName) >= 0;
     }
-    
+
     @Override
     public void enterRule(String filename, String ruleName) {
         if (backtracking > 0) {
             return;
         }
-        if(isIgnoredRule(ruleName)) {
-            return ;
+        if (isIgnoredRule(ruleName)) {
+            return;
         }
 
         AbstractParseTreeNode parentRuleNode = callStack.peek();
         RuleNode ruleNode = new RuleNode(NodeType.valueOf(ruleName), source);
-        parentRuleNode.addChild(ruleNode);
-        ruleNode.setParent(parentRuleNode);
+        addNodeChild(parentRuleNode, ruleNode);
         callStack.push(ruleNode);
     }
 
@@ -125,8 +123,8 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
-        if(isIgnoredRule(ruleName)) {
-            return ;
+        if (isIgnoredRule(ruleName)) {
+            return;
         }
 
         RuleNode ruleNode = callStack.pop();
@@ -162,10 +160,10 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         }
 
         //also ignore error tokens - they are added as children of ErrorNode-s in the recognitionException(...) method
-        if(token.getType() == Token.INVALID_TOKEN_TYPE) {
-            return ;
+        if (token.getType() == Token.INVALID_TOKEN_TYPE) {
+            return;
         }
-        
+
         lastConsumedToken = (CommonToken) token;
 
         RuleNode ruleNode = callStack.peek();
@@ -175,19 +173,12 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         ruleNode.addChild(elementNode);
 
         updateFirstTokens(ruleNode, lastConsumedToken);
-
-        
-        
-        if (resyncing) {
-//            System.out.println("resyncing over token " + token);
-        }
-
     }
 
     //set first token for all RuleNode-s in the stack without the first token set
     private void updateFirstTokens(RuleNode ruleNode, CommonToken token) {
         while (true) {
-            
+
             if (ruleNode.from() != -1) {
                 break;
             }
@@ -198,7 +189,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             }
         }
     }
-    
+
     @Override
     public void consumeHiddenToken(Token token) {
         if (backtracking > 0) {
@@ -212,21 +203,6 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         }
 
         hiddenTokens.add((CommonToken) token);
-
-        if (resyncing) {
-//            System.out.println("resyncing over hidden token " + token);
-        }
-
-    }
-
-    @Override
-    public void beginResync() {
-        resyncing = true;
-    }
-
-    @Override
-    public void endResync() {
-        resyncing = false;
     }
 
     @Override
@@ -246,7 +222,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         int unexpectedTokenCode = e.getUnexpectedType();
         CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
 
-        
+
         //let the error range be the area between last consumed token end and the error token end
         from = lastConsumedToken != null
                 ? CommonTokenUtil.getCommonTokenOffsetRange(lastConsumedToken)[1]
@@ -254,14 +230,14 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
         to = CommonTokenUtil.getCommonTokenOffsetRange(unexpectedToken)[0]; //beginning of the unexpected token
 
-        if(uneexpectedToken == CssTokenId.ERROR) {
+        if (uneexpectedToken == CssTokenId.ERROR) {
             //for error tokens always include them to the error node range,
             //they won't be matched by any other rule. Otherwise 
             //limit the error node to the beginning of the unexpected token
             //since the token may be matched later
             to++;
         }
-        
+
         if (uneexpectedToken == CssTokenId.EOF) {
             message = String.format("Premature end of file");
         } else {
@@ -279,26 +255,24 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
                 message,
                 ProblemDescription.Keys.PARSING.name(),
                 ProblemDescription.Type.ERROR);
-        
+
         //create an error node and add it to the parse tree
         ErrorNode errorNode = new ErrorNode(from, to, problemDescription, source);
-        ruleNode.addChild(errorNode);
-        errorNode.setParent(ruleNode);
+        addNodeChild(ruleNode, errorNode);
 
-        if(uneexpectedToken == CssTokenId.ERROR) {
+        if (uneexpectedToken == CssTokenId.ERROR) {
             //if the unexpected token is error token, add the token as a child of the error node
             TokenNode tokenNode = new TokenNode(unexpectedToken);
-            errorNode.addChild(tokenNode);
-            tokenNode.setParent(errorNode);
+            addNodeChild(errorNode, tokenNode);
         }
-        
+
         //create and artificial error token so the rules on stack can properly set their ranges
         lastConsumedToken = new CommonToken(Token.INVALID_TOKEN_TYPE);
         lastConsumedToken.setStartIndex(from);
         lastConsumedToken.setStopIndex(to - 1); // ... ( -1 => last *char* index )
-        
+
         errorNodes.add(errorNode);
- 
+
     }
 
     @Override
@@ -307,30 +281,79 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         //This fixes the problem with rules where RecognitionException happened
         //but the errorneous or missing token has been matched in somewhere further
         super.terminate();
-        
-        for(ErrorNode en : errorNodes) {
+
+        for (ErrorNode en : errorNodes) {
             RuleNode n = en;
-            for(;;) {
-                if(n == null) {
+            for (;;) {
+                if (n == null) {
                     break;
                 }
-                if(n.from() == -1 || n.to() == -1) {
+                if (n.from() == -1 || n.to() == -1) {
                     //set the node range to the same range as the error node
                     n.from = en.from();
                     n.to = en.to();
                 }
-                n = (RuleNode)n.parent();
+                n = (RuleNode) n.parent();
             }
-            
+
         }
-        
+
     }
-    
+
     public Collection<ProblemDescription> getProblems() {
         Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
-        for(ErrorNode errorNode : errorNodes) {
+        for (ErrorNode errorNode : errorNodes) {
             problems.add(errorNode.getProblemDescription());
         }
         return problems;
     }
+
+    //note: it would be possible to handle this all in consumeToken since it is called from the
+    //BaseRecognizer.consumeUntil(...) {   input.consume();   } but for the better usability
+    //it is done this way. So the beginResyn/endResync doesn't have to be used.
+    //the NbParseTreeBuilder.consumeToken() method ignores tokens with ERROR type so they
+    //won't be duplicated in the parse tree
+    
+    //creates a "recovery" node with all the skipped tokens as children
+    void consumeSkippedTokens(List<Token> tokens) {
+        if(tokens.isEmpty()) {
+            return ;
+        }
+
+        CommonToken first = (CommonToken)tokens.get(0);
+        CommonToken last = (CommonToken)tokens.get(tokens.size() - 1);
+        
+        //do not add the first token as children of the recovery node if it has been already
+        //added as a child of the error node created for the RecognitionException
+        int fromIndex = lastConsumedToken != null && lastConsumedToken.getStartIndex() == first.getStartIndex() ? 1 : 0;
+
+        //if there's just one recovered token and the token is the same as the lastConsumedToken just skip the 
+        //recovery node creation, the parse tree for the errorneous piece of code is already complete
+        if(fromIndex == 1 && tokens.size() == 1) {
+            return ;
+        }
+        
+        //add tree node for the skipped/consumed characters
+        RuleNode ruleNode = callStack.peek();
+        RuleNode recoveryNode = new RuleNode(NodeType.recovery, source);
+        addNodeChild(ruleNode, recoveryNode);
+        
+        recoveryNode.setFirstToken(fromIndex == 0 ? first : (CommonToken)tokens.get(1));
+        recoveryNode.setLastToken(last);
+        
+        //set the error tokens as children of the error node
+        for(int i = fromIndex ; i < tokens.size(); i++) {
+            CommonToken t = (CommonToken)tokens.get(i);
+            TokenNode tokenNode = new TokenNode(t);
+            addNodeChild(recoveryNode, tokenNode);
+        }
+        
+    }
+    
+    
+    private void addNodeChild(AbstractParseTreeNode parent, AbstractParseTreeNode child) {
+        parent.addChild(child);
+        child.setParent(parent);
+    }
+    
 }

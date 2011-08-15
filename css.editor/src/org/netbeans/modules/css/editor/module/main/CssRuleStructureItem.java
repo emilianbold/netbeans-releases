@@ -130,5 +130,5 @@ public class CssRuleStructureItem implements StructureItem {
     public ImageIcon getCustomIcon() {
         return null;
     }
-    
+
 }

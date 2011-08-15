@@ -7,6 +7,7 @@ package org.netbeans.modules.php.editor.codegen;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
@@ -19,7 +20,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
@@ -238,19 +238,37 @@ public class CGSInfo {
         @Override
         public void visit(MethodDeclaration node) {
             String name = node.getFunction().getFunctionName().getName();
-            String propertyName;
+            String possibleProperty;
             if (name != null) {
                 if (name.startsWith(CGSGenerator.START_OF_GETTER)) {
-                    propertyName = name.substring(CGSGenerator.START_OF_GETTER.length());
-                    existingGetters.add(propertyName.toLowerCase());
+                    possibleProperty = name.substring(CGSGenerator.START_OF_GETTER.length());
+                    existingGetters.addAll(getAllPossibleProperties(possibleProperty));
                 } else if (name.startsWith(CGSGenerator.START_OF_SETTER)) {
-                    propertyName = name.substring(CGSGenerator.START_OF_SETTER.length());
-                    existingSetters.add(propertyName.toLowerCase());
+                    possibleProperty = name.substring(CGSGenerator.START_OF_GETTER.length());
+                    existingSetters.addAll(getAllPossibleProperties(possibleProperty));
                 }
                 else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
                     hasConstructor = true;
                 }
             }
+        }
+
+        /**
+         * Returns all possible properties which are based on the passed property derived from method name.
+         *
+         * @param possibleProperty Name of the property which was derived from method name (setField() -> field).
+         * @return field => (field, _field) OR _field => (_field, field)
+         */
+        private List<String> getAllPossibleProperties(String possibleProperty) {
+            List<String> allPossibleProperties = new LinkedList<String>();
+            possibleProperty = possibleProperty.toLowerCase();
+            allPossibleProperties.add(possibleProperty);
+            if (possibleProperty.startsWith("_")) { // NOI18N
+                allPossibleProperties.add(possibleProperty.substring(1));
+            } else {
+                allPossibleProperties.add("_" + possibleProperty); // NOI18N
+            }
+            return allPossibleProperties;
         }
     }
 }

@@ -277,7 +277,7 @@ public class Css3ParserTest extends CslTestBase {
         String code = "   h1 { }    ";
         //             012345678901234
         CssParserResult res = TestUtil.parse(code);
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
         
         Node root = res.getParseTree();
         assertEquals(0, root.from());
@@ -288,7 +288,7 @@ public class Css3ParserTest extends CslTestBase {
         String code = "@import \"file.css\";";
         CssParserResult res = TestUtil.parse(code);
         
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
         Node imports = NodeUtil.query(res.getParseTree(), "styleSheet/imports"); 
         assertNotNull(imports);
         
@@ -472,6 +472,32 @@ public class Css3ParserTest extends CslTestBase {
         assertEquals("\"url\"", res.image().toString());
         
         assertResult(result, 0);
+    }
+    
+    public void testErrorCase7() throws ParseException, BadLocationException {
+        String content = "h1[ $@# ]{ }";
+        
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        Node ns = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence|1/elementSubsequent/attrib/attrib_name");
+        assertNotNull(ns);
+        
+        Node error = NodeUtil.getChildByType(ns, NodeType.error);
+        assertNotNull(error);
+        assertEquals("$", error.image().toString());
+        assertEquals(4, error.from());
+        assertEquals(5, error.to());
+        
+        Node recovery = NodeUtil.getChildByType(ns, NodeType.recovery);
+        assertNotNull(recovery);        
+        assertEquals("@#", recovery.image().toString());
+        assertEquals(5, recovery.from());
+        assertEquals(7, recovery.to());
+        
     }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
