@@ -4,37 +4,59 @@
 *     Use is subject to license terms.
 -->
 <html>
-<head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Editing a Cascading Style Sheet</title> 
-<link rel="StyleSheet" href="../../ide.css" type="text/css">
-</head>
-<body>
-<h2>Editing a Cascading Style Sheet</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>When editing CSS files, you can take advantage of typical Source Editor features,
-  including indentation, syntax coloring, and standard clipboard commands.
+    <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Editing a Cascading Style Sheet</title> 
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Editing a Cascading Style Sheet</h2>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+        <p>When editing CSS files, you can take advantage of typical Source Editor features,
+            including indentation, syntax coloring, and standard clipboard commands. NetBeans
+            IDE also provides a CSS Style Builder and a Preview window. Use these features 
+            together to experiment with different styles.</p>
 
-<h4>To open a CSS file in the Source Editor:</h4>
+        <h4>To open a CSS file in the Source Editor:</h4>
 
-<ol>
-  <li>Right-click the CSS file's node (<img src="../images/css.gif" alt="CSS node icon image">) in the Files window.  
-  <li>Choose Edit from the pop-up menu. 
-    <p>The IDE opens the CSS file in a new Source Editor
-      tab and shifts focus to it. Alternately, you can also simply double-click
-    the file's node in the Files window. 
-</ol>
+        <ol>
+            <li>Right-click the CSS file's node (<img src="../images/css.gif" alt="CSS node icon image">) in the Files window.  
+            <li>Choose Edit from the pop-up menu. 
+                <p>The IDE opens the CSS file in a new Source Editor
+                    tab and shifts focus to it. Alternately, you can also simply double-click
+                    the file's node in the Files window. 
+        </ol>
+        <h3>CSS Style Builder</h3>
+        <p>To open the Style Builder, go to Window &gt; Other &gt; CSS Style Builder. The Style Builder opens below the Editor window.</p>
+        <p>To use the Style Builder, go to the Editor window and place your cursor 
+            in the element whose style you want to define. A set of tabs appear in the Style
+            Builder. The tabs correspond to style categories, such as Font and Background. 
+            Select a tab and select style settings in that tab. For example, to set the font
+            of the &lt;h2&gt; element as Verdana, find <span style="color:green"><b>h2</b></span>
+            in the Editor, open the Font tab in the Style builder, and select "Verdana, Arial, Helvetica,
+            sans-serif" in the list of fonts.  
+        </p>
+        <h3>Preview Window</h3>
+        <p>The IDE provides a Preview window in which you can preview what HTML elements
+            look like according to your CSS. By default, the Preview window appears below and to 
+            the right of the Editor window when you open a CSS file. If the Preview window is
+            closed, open it by going to Window &gt; Other &gt; CSS Preview.</p>
+        <p>The Preview window requires a CSS Previewer plugin. The NetBeans Update Center
+            includes one CSS Previewer, the Flying Saucer Renderer. To install Flying Saucer,
+            go to Tools &gt; Plugins, open the Available Plugins tab, and find the CSS Preview
+            Flying Saucer plugin.</p>
+        <p>To use the Preview window, select a CSS element in the Editor window. If the previewer
+            can render the element, sample text in that style appears in the Preview window.</p>
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd> <a href="css_create.html">Creating a Cascading Style Sheet</a></dd>
+            <dd><a href="css_check.html">Checking a Cascading Style Sheet for Validity</a></dd>
+            <dd><a href="../dtd/dtd_document.html">Generating DTD Documentation</a> </dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+        <p>&nbsp;</p>
 
-<dl> 
-<dt><a name="seealso">See Also</a></dt>
-<dd> <a href="css_create.html">Creating a Cascading Style Sheet</a></dd>
-<dd><a href="css_check.html">Checking a Cascading Style Sheet for Validity</a></dd>
-<dd><a href="../dtd/dtd_document.html">Generating DTD Documentation</a> </dd>
-</dl>
-<hr>
-<small><a href="../../credits.html">Legal Notices</a></small> 
-<p>&nbsp;</p>
-
-<table border="0" cellpadding="50">
-<tr><td>&nbsp;</td></tr>
-</table></body>
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
 </html>
