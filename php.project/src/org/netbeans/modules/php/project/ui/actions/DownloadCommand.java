@@ -137,8 +137,6 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 }
 
                 if (reallyShowDialog) {
-                    // avoid timeout errors
-                    remoteClient.disconnect();
                     long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
                     forDownload = TransferFilesChooser.forDownload(forDownload, timestamp).showDialog();
                 }

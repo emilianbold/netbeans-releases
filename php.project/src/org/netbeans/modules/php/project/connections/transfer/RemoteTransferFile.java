@@ -48,6 +48,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteFile;
  */
 final class RemoteTransferFile extends TransferFile {
 
+    // @GuardedBy(file)
     private final RemoteFile file;
 
 
@@ -72,12 +73,17 @@ final class RemoteTransferFile extends TransferFile {
 
     @Override
     public String getName() {
-        return file.getName();
+        synchronized (file) {
+            return file.getName();
+        }
     }
 
     @Override
     public String getRemotePath() {
-        String absolutePath = file.getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
+        String absolutePath;
+        synchronized (file) {
+            absolutePath = file.getParentDirectory() + REMOTE_PATH_SEPARATOR + getName();
+        }
         if (absolutePath.equals(baseDirectory)) {
             return REMOTE_PROJECT_ROOT;
         }
@@ -88,29 +94,39 @@ final class RemoteTransferFile extends TransferFile {
     @Override
     protected long getSizeImpl() {
         if (isFile()) {
-            return file.getSize();
+            synchronized (file) {
+                return file.getSize();
+            }
         }
         return 0L;
     }
 
     @Override
     public boolean isDirectory() {
-        return file.isDirectory();
+        synchronized (file) {
+            return file.isDirectory();
+        }
     }
 
     @Override
     public boolean isFile() {
-        return file.isFile();
+        synchronized (file) {
+            return file.isFile();
+        }
     }
 
     @Override
     public boolean isLink() {
-        return file.isLink();
+        synchronized (file) {
+            return file.isLink();
+        }
     }
 
     @Override
     protected long getTimestampImpl() {
-        return file.getTimestamp();
+        synchronized (file) {
+            return file.getTimestamp();
+        }
     }
 
 }
