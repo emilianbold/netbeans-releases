@@ -387,6 +387,7 @@ public final class SvnProperties implements ActionListener {
                         return;
                     }
                     boolean recursively = panel.cbxRecursively.isSelected();
+                    Set<File> toRefresh = new HashSet<File>();
                     try {
                         String propName = getPropertyName();
                         for (File root : getAllowedFiles(propName, recursively)) {
@@ -394,17 +395,21 @@ public final class SvnProperties implements ActionListener {
                             if (isLoadedFromFile()) {
                                 try {
                                     client.propertySet(root, propName, getLoadedValueFile(), recursively);
+                                    toRefresh.add(root);
                                 } catch (IOException ex) {
                                     Subversion.LOG.log(Level.SEVERE, null, ex);
                                     return;
                                 }
                             } else {
                                 client.propertySet(root, propName, getPropertyValue(), recursively);
+                                toRefresh.add(root);
                             }
                         }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
+                    } finally {
+                        Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new File[toRefresh.size()]));
                     }
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -480,14 +485,16 @@ public final class SvnProperties implements ActionListener {
                         return;
                     }
 
+                    boolean recursively = panel.cbxRecursively.isSelected();
+                    Set<File> toRefresh = new HashSet<File>();
                     try {
-                        boolean recursively = panel.cbxRecursively.isSelected();
                         SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
                         List<SvnPropertiesNode> lstSvnPropertiesNodes = Arrays.asList(svnPropertiesNodes);
                         for (int i = rows.length - 1; i >= 0; i--) {
                             String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[i])].getName();
                             for (File root : getFilesWithProperty(svnPropertyName)) {
                                 client.propertyDel(root, svnPropertyName, recursively);
+                                toRefresh.add(root);
                             }
                             try {
                                 lstSvnPropertiesNodes.remove(svnPropertiesNodes[propTable.getModelIndex(rows[i])]);
@@ -514,7 +521,8 @@ public final class SvnProperties implements ActionListener {
                         });
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
-                        return;
+                    } finally {
+                        Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new File[toRefresh.size()]));
                     }
                 }
             };
@@ -550,6 +558,7 @@ public final class SvnProperties implements ActionListener {
                 final String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getName();
                 final String svnPropertyValue = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getValue();
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         panel.comboName.getEditor().setItem(svnPropertyName);
                         panel.txtAreaValue.setText(svnPropertyValue);
