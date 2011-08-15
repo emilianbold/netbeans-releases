@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.swing.Icon;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
@@ -76,6 +75,7 @@ import org.netbeans.spi.project.SourceGroupModifierImplementation;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.maven.classpath.Bundle.*;
@@ -106,7 +106,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     public static final String NAME_GENERATED_TEST_SOURCE = "7GeneratedSourceRoot"; //NOI18N
     
     private final NbMavenProjectImpl project;
-    private final List<ChangeListener> listeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     private Map<String, SourceGroup> javaGroup;
     private Map<File, SourceGroup> genSrcGroup;
@@ -122,7 +122,6 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     /** Creates a new instance of MavenSourcesImpl */
     public MavenSourcesImpl(NbMavenProjectImpl proj) {
         project = proj;
-        listeners = new ArrayList<ChangeListener>();
         javaGroup = new TreeMap<String, SourceGroup>();
         genSrcGroup = new TreeMap<File, SourceGroup>();
         otherMainGroups = new TreeMap<File, OtherGroup>();
@@ -174,32 +173,17 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
         if (changed) {
             if (fireChanges) {
-                fireChange();
+                cs.fireChange();
             }
         }
     }
 
-    private void fireChange() {
-        List<ChangeListener> currList;
-        synchronized (listeners) {
-            currList = new ArrayList<ChangeListener>(listeners);
-        }
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener list : currList) {
-            list.stateChanged(event);
-        }
-    }
-    
     public @Override void addChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.add(changeListener);
-        }
+        cs.addChangeListener(changeListener);
     }
     
     public @Override void removeChangeListener(ChangeListener changeListener) {
-        synchronized (listeners) {
-            listeners.remove(changeListener);
-        }
+        cs.removeChangeListener(changeListener);
     }
     
     public @Override SourceGroup[] getSourceGroups(String str) {
