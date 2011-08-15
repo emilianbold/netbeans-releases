@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -52,6 +52,7 @@ import java.util.*;
 import javax.swing.event.*;
 import java.awt.event.*;
 
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.WizardDescriptor;
 
 import org.netbeans.modules.form.project.ClassSource;

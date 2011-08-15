@@ -69,7 +69,7 @@ import org.netbeans.modules.form.project.ClassSource;
  * @author Tomas Pavek
  */
 
-class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory {
+public class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory {
 
     static final String XML_ROOT = "palette_item"; // NOI18N
     static final String ATTR_VERSION = "version"; // NOI18N
@@ -211,7 +211,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
      * @param source classpath source type - "jar", "library", "project"
      * @param classpath names of classpath roots - e.g. JAR file paths
      */
-    static void createFile(FileObject folder, ClassSource classSource)
+    public static void createFile(FileObject folder, ClassSource classSource)
         throws IOException
     {
         String classname = classSource.getClassName();

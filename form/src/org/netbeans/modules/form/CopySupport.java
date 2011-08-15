@@ -68,7 +68,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.form.project.*;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
-import org.netbeans.modules.form.palette.BeanInstaller;
+import org.openide.util.Lookup;
 
 /**
  * Support class for copy/cut/paste operations in form editor.
@@ -596,7 +596,8 @@ class CopySupport {
     }
 
     static String getCopiedBeanClassName(FileObject fo) {
-        return BeanInstaller.findJavaBeanName(fo);
+        FormServices services = Lookup.getDefault().lookup(FormServices.class);
+        return services.findJavaBeanName(fo);
     }
 
     static ClassSource getCopiedBeanClassSource(Transferable t) {

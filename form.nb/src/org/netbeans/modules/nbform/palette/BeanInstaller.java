@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.nbform.palette;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
@@ -68,6 +68,8 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Method;
 
+import org.netbeans.modules.form.palette.PaletteItemDataObject;
+import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.*;
