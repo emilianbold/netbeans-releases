@@ -51,7 +51,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -246,7 +248,10 @@ public class ClassStructure {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
         if (parent.getKind() == Kind.COMPILATION_UNIT) {
-            final List<? extends Tree> typeDecls = ((CompilationUnitTree) parent).getTypeDecls();
+            final List<? extends Tree> typeDecls = new ArrayList<Tree>(((CompilationUnitTree) parent).getTypeDecls());
+            for (Iterator<? extends Tree> it = typeDecls.iterator(); it.hasNext();) {
+                if (it.next().getKind() == Kind.EMPTY_STATEMENT) it.remove();
+            }
             if (typeDecls.size() > 1 && typeDecls.get(0) != cls) {
                 return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_MultipleTopLevelClassesInFile"), //NOI18N
                         FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "MultipleTopLevelClassesInFile")); //NOI18N
