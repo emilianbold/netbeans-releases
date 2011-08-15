@@ -68,6 +68,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.qa.form.ExtJellyTestCase;
 
 /**
  * This test should cover all actions of the Form module
@@ -80,9 +81,9 @@ import org.netbeans.junit.NbModuleSuite;
  * <b>Adam Senk</b>
  * 20 April 2011 WORKS
  */
-public class actionsTest extends JellyTestCase {
+public class actionsTest extends ExtJellyTestCase {
 
-    public String DATA_PROJECT_NAME = "SampleDesktopApplication";
+    public String DATA_PROJECT_NAME = "SampleProject";
     public String PACKAGE_NAME = "data";
     public String PROJECT_NAME = "Java";
     private String FILE_NAME = "clear_JFrame";
@@ -173,12 +174,7 @@ public class actionsTest extends JellyTestCase {
         inspectorRootNode.select();
         inspectorRootNode.expand();
 
-        Node gridBagNode = new Node(inspectorRootNode, "GridBagLayout");
-        gridBagNode.select();
-        new ActionNoBlock(null, "Customize").perform(gridBagNode);
-        NbDialogOperator nbo = new NbDialogOperator("Customize Layout");
-        nbo.btClose().push();
-
+       
         new Action(null, "Add From Palette|Swing Containers|Panel").perform(inspectorRootNode);
 
         Node panelNode = new Node(inspectorRootNode, "jPanel1 [JPanel]");
@@ -436,41 +432,4 @@ public class actionsTest extends JellyTestCase {
         tbo.push();
     }
 
-    /**
-     * Find a string in a code
-     * @param lines array list of strings to find
-     * @param designer operator "with text"
-     */
-    private void findInCode(String stringToFind, FormDesignerOperator designer) {
-        EditorOperator oPeditor = designer.editor();
-        findStringInCode(stringToFind, oPeditor.getText());
-        designer.design();
-    }
-
-    /**
-     * Find a substring in a string
-     * Test fail() method is called, when code string doesnt contain stringToFind.
-     * @param stringToFind string to find
-     * @param string to search
-     */
-    private void findStringInCode(String stringToFind, String code) {
-        if (!code.contains(stringToFind)) {
-            fail("Missing string \"" + stringToFind + "\" in code."); // NOI18N
-        }
-    }
-
-    /**
-     * Find a strings in a code
-     * @param lines array list of strings to find
-     * @param designer operator "with text"
-     */
-    public void findInCode(ArrayList<String> lines, FormDesignerOperator designer) {
-        EditorOperator editor = designer.editor();
-        String code = editor.getText();
-
-        for (String line : lines) {
-            findStringInCode(line, code);
-        }
-        designer.design();
-    }
 }
