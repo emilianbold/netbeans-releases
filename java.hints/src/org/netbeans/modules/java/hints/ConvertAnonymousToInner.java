@@ -103,7 +103,7 @@ import org.openide.util.NbBundle;
 public class ConvertAnonymousToInner extends AbstractHint {
     
     public ConvertAnonymousToInner() {
-        super(true, true, HintSeverity.CURRENT_LINE_WARNING);
+        super(true, false, HintSeverity.CURRENT_LINE_WARNING);
     }
     
     public Set<Kind> getTreeKinds() {

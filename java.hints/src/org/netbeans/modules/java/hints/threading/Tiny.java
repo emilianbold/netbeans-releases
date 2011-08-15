@@ -73,6 +73,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -103,7 +104,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="thread", suppressWarnings="WaitCalledOnCondition")
+    @Hint(category="thread", suppressWarnings="WaitCalledOnCondition", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$cond.wait()",
                         constraints=@Constraint(variable="$cond", type="java.util.concurrent.locks.Condition")),
@@ -136,7 +137,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="thread", suppressWarnings="CallToThreadStartDuringObjectConstruction")
+    @Hint(category="thread", suppressWarnings="CallToThreadStartDuringObjectConstruction", options=Options.QUERY)
     @TriggerPattern(value="$thread.start()",
                     constraints=@Constraint(variable="$thread", type="java.lang.Thread"))
     public static ErrorDescription threadStartInConstructor(HintContext ctx) {
@@ -149,14 +150,14 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread", suppressWarnings="CallToThreadYield")
+    @Hint(category="thread", suppressWarnings="CallToThreadYield", options=Options.QUERY)
     @TriggerPattern(value="java.lang.Thread.yield()")
     public static ErrorDescription threadYield(HintContext ctx) {
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ThreadYield");
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread")
+    @Hint(category="thread", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$thread.stop()",
                         constraints=@Constraint(variable="$thread", type="java.lang.Thread")),
@@ -170,7 +171,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread", suppressWarnings="NestedSynchronizedStatement")
+    @Hint(category="thread", suppressWarnings="NestedSynchronizedStatement", options=Options.QUERY)
     @TriggerPattern(value="synchronized ($lock) $block",
                     constraints=@Constraint(variable="$lock", type="java.lang.Object"))
     public static ErrorDescription nestedSynchronized(HintContext ctx) {
@@ -220,7 +221,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread", suppressWarnings="EmptySynchronizedStatement")
+    @Hint(category="thread", suppressWarnings="EmptySynchronizedStatement", options=Options.QUERY)
     @TriggerPattern(value="synchronized ($lock) {}",
                     constraints=@Constraint(variable="$lock", type="java.lang.Object"))
     public static ErrorDescription emptySynchronized(HintContext ctx) {
@@ -239,7 +240,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="thread", suppressWarnings="VolatileArrayField")
+    @Hint(category="thread", suppressWarnings="VolatileArrayField", options=Options.QUERY)
     @TriggerPatterns({
 //        @TriggerPattern(value="volatile $mods$ $type[] $name;"),
 //        @TriggerPattern(value="volatile $mods$ $type[] $name = $init;")
@@ -282,7 +283,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, mark, displayName, f);
     }
 
-    @Hint(category="thread", suppressWarnings="WaitWhileNotSynced")
+    @Hint(category="thread", suppressWarnings="WaitWhileNotSynced", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$site.wait()",
                         constraints=@Constraint(variable="$site", type="java.lang.Object")),
@@ -302,7 +303,7 @@ public class Tiny {
         return unsyncHint(ctx, "ERR_UnsyncedWait");
     }
     
-    @Hint(category="thread", suppressWarnings="NotifyWhileNotSynced")
+    @Hint(category="thread", suppressWarnings="NotifyWhileNotSynced", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$site.notify()",
                         constraints=@Constraint(variable="$site", type="java.lang.Object")),
@@ -389,7 +390,7 @@ public class Tiny {
         }
     }
     
-    @Hint(category="thread", suppressWarnings="SleepWhileHoldingLock")
+    @Hint(category="thread", suppressWarnings="SleepWhileHoldingLock", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
@@ -409,7 +410,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="thread", suppressWarnings="SleepWhileInLoop")
+    @Hint(category="thread", suppressWarnings="SleepWhileInLoop", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),

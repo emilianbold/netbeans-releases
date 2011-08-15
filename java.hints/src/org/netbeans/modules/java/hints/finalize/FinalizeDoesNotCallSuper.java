@@ -55,19 +55,16 @@ import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,7 +92,7 @@ public class FinalizeDoesNotCallSuper {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, method, NbBundle.getMessage(FinalizeDoesNotCallSuper.class, "TXT_FinalizeDoesNotCallSuper"),
-                new FixImpl(TreePathHandle.create(ctx.getPath(), ctx.getInfo())),
+                JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(ctx.getPath(), ctx.getInfo()))),
                 FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "FinalizeDoesntCallSuperFinalize"));
     }
 
@@ -132,13 +129,11 @@ public class FinalizeDoesNotCallSuper {
         }
     }
 
-    static class FixImpl implements Fix {
-
-        private final TreePathHandle handle;
+    static class FixImpl extends JavaFix {
 
         public FixImpl(final TreePathHandle handle) {
+            super(handle);
             assert handle != null;
-            this.handle = handle;
         }
 
 
@@ -148,30 +143,18 @@ public class FinalizeDoesNotCallSuper {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(handle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    final TreePath tp = handle.resolve(wc);
-                    if (tp == null || tp.getLeaf().getKind() != Tree.Kind.METHOD) {
-                        return;
-                    }
-
-                    final BlockTree oldBody = ((MethodTree)tp.getLeaf()).getBody();
-                    final TreeMaker tm = wc.getTreeMaker();
-                    final List<StatementTree> statements = new ArrayList<StatementTree>(1+oldBody.getStatements().size());
-                    statements.add(
-                            tm.ExpressionStatement(
-                                tm.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                                    tm.MemberSelect(
-                                        tm.Identifier(SUPER),
-                                        FINALIZE), Collections.<ExpressionTree>emptyList())));
-                    statements.addAll(oldBody.getStatements());
-                    wc.rewrite(oldBody,tm.Block(statements, false));
-                }
-            }).commit();
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            final BlockTree oldBody = ((MethodTree)tp.getLeaf()).getBody();
+            final TreeMaker tm = wc.getTreeMaker();
+            final List<StatementTree> statements = new ArrayList<StatementTree>(1+oldBody.getStatements().size());
+            statements.add(
+                    tm.ExpressionStatement(
+                        tm.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                            tm.MemberSelect(
+                                tm.Identifier(SUPER),
+                                FINALIZE), Collections.<ExpressionTree>emptyList())));
+            statements.addAll(oldBody.getStatements());
+            wc.rewrite(oldBody,tm.Block(statements, false));
         }
     }
 }

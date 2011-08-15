@@ -60,9 +60,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -72,10 +69,9 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -199,7 +195,7 @@ public class LoggerStringConcat {
 
         FixImpl fix = new FixImpl(NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat_fix"), methodName, TreePathHandle.create(ctx.getPath(), ctx.getInfo()), TreePathHandle.create(message, ctx.getInfo()));
 
-        return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), fix);
+        return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), JavaFix.toEditorFix(fix));
     }
 
     private static void rewrite(WorkingCopy wc, ExpressionTree level, MethodInvocationTree invocation, TreePath message) {
@@ -306,17 +302,16 @@ public class LoggerStringConcat {
         return null;
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class FixImpl extends JavaFix {
 
         private final String displayName;
         private final String logMethodName; //only if != log
-        private final TreePathHandle invocation;
         private final TreePathHandle message;
 
         public FixImpl(String displayName, String logMethodName, TreePathHandle invocation, TreePathHandle message) {
+            super(invocation);
             this.displayName = displayName;
             this.logMethodName = logMethodName;
-            this.invocation = invocation;
             this.message = message;
         }
 
@@ -324,29 +319,22 @@ public class LoggerStringConcat {
             return displayName;
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(invocation.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy parameter) throws Exception {
-                    parameter.toPhase(Phase.RESOLVED);
-                    TreePath invocation = FixImpl.this.invocation.resolve(parameter);
-                    TreePath message    = FixImpl.this.message.resolve(parameter);
-                    MethodInvocationTree mit = (MethodInvocationTree) invocation.getLeaf();
-                    ExpressionTree level = null;
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath invocation, boolean canShowUI) {
+            TreePath message    = FixImpl.this.message.resolve(wc);
+            MethodInvocationTree mit = (MethodInvocationTree) invocation.getLeaf();
+            ExpressionTree level = null;
 
-                    if (logMethodName != null) {
-                        String logMethodNameUpper = logMethodName.toUpperCase();
-                        VariableElement c = findConstant(parameter, logMethodNameUpper);
+            if (logMethodName != null) {
+                String logMethodNameUpper = logMethodName.toUpperCase();
+                VariableElement c = findConstant(wc, logMethodNameUpper);
 
-                        level = parameter.getTreeMaker().QualIdent(c);
-                    } else {
-                        level = mit.getArguments().get(0);
-                    }
+                level = wc.getTreeMaker().QualIdent(c);
+            } else {
+                level = mit.getArguments().get(0);
+            }
 
-                    rewrite(parameter, level, mit, message);
-                }
-            }).commit();
-
-            return null;
+            rewrite(wc, level, mit, message);
         }
 
     }

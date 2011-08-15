@@ -285,7 +285,8 @@ public class AdvancedBeansBindingTest extends ExtJellyTestCase {
         FormDesignerOperator designer = new FormDesignerOperator(FILENAME);
         
         String jLabelPath = "[JFrame]|jLabel9 [JLabel]";  // NOI18N
-
+        designer.source();
+        designer.design();
         // test value before using convertor
         assertEquals(ExtJellyTestCase.getTextValueOfLabel(inspector, jLabelPath), Boolean.FALSE.toString());
         

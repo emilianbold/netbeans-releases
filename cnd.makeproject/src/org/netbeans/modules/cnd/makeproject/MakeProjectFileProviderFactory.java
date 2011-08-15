@@ -595,7 +595,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
         @Override
         public FileObject getFileObject() {
-            FileObject fileObject = RemoteFileUtil.getFileObject(folder.getConfigurationDescriptor().getBaseDirFileObject(), folder.getRootPath()+"/"+name);
+            FileObject fileObject = RemoteFileUtil.getFileObject(folder.getConfigurationDescriptor().getBaseDirFileObject(), folder.getRootPath()+"/"+name); //NOI18N
             if (fileObject != null && fileObject.isValid()) {
                 return fileObject;
             }

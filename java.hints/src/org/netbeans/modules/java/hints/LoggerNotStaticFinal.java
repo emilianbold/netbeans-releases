@@ -51,20 +51,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,7 +83,7 @@ public class LoggerNotStaticFinal {
                     ctx,
                     ctx.getPath(),
                     NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration", e), //NOI18N
-                    new LoggerNotStaticFinalFix(NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix", e), TreePathHandle.create(e, ctx.getInfo())), //NOI18N
+                    JavaFix.toEditorFix(new LoggerNotStaticFinalFix(NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix", e), TreePathHandle.create(e, ctx.getInfo()))), //NOI18N
                     FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "NonConstantLogger") //NOI18N
             );
         } else {
@@ -95,14 +91,13 @@ public class LoggerNotStaticFinal {
         }
     }
 
-    private static final class LoggerNotStaticFinalFix implements Fix {
+    private static final class LoggerNotStaticFinalFix extends JavaFix {
 
         private final String text;
-        private final TreePathHandle loggerFieldHandle;
 
         public LoggerNotStaticFinalFix(String text, TreePathHandle loggerFieldHandle) {
+            super(loggerFieldHandle);
             this.text = text;
-            this.loggerFieldHandle = loggerFieldHandle;
         }
 
         @Override
@@ -111,31 +106,18 @@ public class LoggerNotStaticFinal {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(loggerFieldHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            VariableTree vt = (VariableTree) tp.getLeaf();
+            ModifiersTree mt = vt.getModifiers();
+            Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
 
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    TreePath tp = loggerFieldHandle.resolve(wc);
+            modifiers.addAll(mt.getFlags());
+            modifiers.add(Modifier.FINAL);
+            modifiers.add(Modifier.STATIC);
 
-                    if (tp == null)
-                        return ;
+            ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
 
-                    VariableTree vt = (VariableTree) tp.getLeaf();
-                    ModifiersTree mt = vt.getModifiers();
-                    Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-
-                    modifiers.addAll(mt.getFlags());
-                    modifiers.add(Modifier.FINAL);
-                    modifiers.add(Modifier.STATIC);
-
-                    ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
-
-                    wc.rewrite(mt, newMod);
-                }
-            }).commit();
-            return null;
+            wc.rewrite(mt, newMod);
         }
 
     } // End of FixImpl class

@@ -53,10 +53,8 @@ package org.netbeans.modules.mobility.jsr172.providers;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.mobility.end2end.client.config.Configuration;
 import org.netbeans.modules.mobility.jsr172.generator.Jsr172Generator;
-import org.netbeans.modules.mobility.jsr172.multiview.Jsr172DDView;
 import org.netbeans.spi.mobility.end2end.E2EServiceProvider;
 import org.netbeans.spi.mobility.end2end.ServiceGeneratorResult;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.openide.util.Lookup;
 
 /**
@@ -66,17 +64,19 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.end2end.E2EServiceProvider.class, position=30)
 public class Jsr172ServiceProvider implements E2EServiceProvider {
         
+    @Override
     public String getServiceType() {
         return Configuration.JSR172_TYPE;
     }
     
-    public DesignMultiViewDesc[] getMultiViewDesc(final Lookup lookup) {
-        final E2EDataObject doj = lookup.lookup(E2EDataObject.class);
-        return new DesignMultiViewDesc[]{
-            new Jsr172DDView(doj, Jsr172DDView.MULTIVIEW_CLIENT)
-        };
-    }
+//    public DesignMultiViewDesc[] getMultiViewDesc(final Lookup lookup) {
+//        final E2EDataObject doj = lookup.lookup(E2EDataObject.class);
+//        return new DesignMultiViewDesc[]{
+//            new Jsr172DDView(doj, Jsr172DDView.MULTIVIEW_CLIENT)
+//        };
+//    }
     
+    @Override
     public ServiceGeneratorResult generateStubs(final Lookup lookup) {
         final E2EDataObject doj = lookup.lookup(E2EDataObject.class);
         return Jsr172Generator.generate(doj);

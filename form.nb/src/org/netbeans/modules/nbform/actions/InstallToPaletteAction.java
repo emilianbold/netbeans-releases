@@ -48,7 +48,7 @@ import java.util.Arrays;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.form.palette.BeanInstaller;
+import org.netbeans.modules.nbform.palette.BeanInstaller;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;

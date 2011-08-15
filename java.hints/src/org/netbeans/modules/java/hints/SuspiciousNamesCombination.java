@@ -76,7 +76,7 @@ public class SuspiciousNamesCombination extends AbstractHint {
     
     /** Creates a new instance of SuspiciousNamesCombination */
     public SuspiciousNamesCombination() {
-        super( false, false, AbstractHint.HintSeverity.WARNING );
+        super( false, true, AbstractHint.HintSeverity.WARNING );
     }
     
     public Set<Kind> getTreeKinds() {

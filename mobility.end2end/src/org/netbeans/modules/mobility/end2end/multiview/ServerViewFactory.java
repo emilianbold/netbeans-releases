@@ -61,23 +61,26 @@ import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
  * @author Michal Skvor
  */
 public class ServerViewFactory implements InnerPanelFactory {
-    
-    final private E2EDataObject dataObject;
+
+    static final String PROP_PANEL_SERVER = "server"; // NOI18N
+
+    private final E2EDataObject dataObject;
     ToolBarDesignEditor editor;
-    
     private ServerGeneralInfoPanel serverGeneralInfoPanel;
-    
+
     /** Creates a new instance of ServerViewFactory */
-    public ServerViewFactory( ToolBarDesignEditor editor, E2EDataObject dataObject ) {
+    public ServerViewFactory(ToolBarDesignEditor editor, E2EDataObject dataObject) {
         this.editor = editor;
         this.dataObject = dataObject;
     }
-    
-    public SectionInnerPanel createInnerPanel( @SuppressWarnings("unused")
-	final Object key ) {
+
+    @Override
+    public SectionInnerPanel createInnerPanel(
+            final Object key) {
         // FIXME: devel hack
-        if( serverGeneralInfoPanel == null )
-            serverGeneralInfoPanel = new ServerGeneralInfoPanel((SectionView)editor.getContentView(), dataObject );
+        if (serverGeneralInfoPanel == null) {
+            serverGeneralInfoPanel = new ServerGeneralInfoPanel((SectionView) editor.getContentView(), dataObject);
+        }
         return serverGeneralInfoPanel;
     }
 }

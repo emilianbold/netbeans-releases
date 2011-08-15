@@ -787,7 +787,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
                             if (tas != null && tas.hasNext()) {
                                 sb.append('<'); //NOI18N
-                                if (!insideNew || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
+                                if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT) 
+                                    || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
                                     while (tas.hasNext()) {
                                         TypeMirror ta = tas.next();
                                         sb.append("${PAR"); //NOI18N

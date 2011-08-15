@@ -50,7 +50,6 @@ import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
 
@@ -100,7 +99,8 @@ public class GridBagCustomizerTest extends ExtJellyTestCase {
         
         Node actNode = new Node(inspector.treeComponents(), "[JFrame]"); // NOI18N
         runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
-       // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
+        designer.source();
+        designer.design();
        // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
        // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);
        // runPopupOverNode("Add From Palette|Swing Controls|Button", actNode);

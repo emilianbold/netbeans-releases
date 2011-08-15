@@ -91,7 +91,7 @@ public class WrongPackageSuggestion extends AbstractHint {
     
     /** Creates a new instance of WrongPackageSuggestion */
     public WrongPackageSuggestion() {
-        super( true, true, AbstractHint.HintSeverity.ERROR );
+        super( true, false, AbstractHint.HintSeverity.ERROR );
     }
     
     public Set<Kind> getTreeKinds() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2011 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,49 +43,37 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import java.util.Locale;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class MissingHashCodeTest extends TreeRuleTestBase {
+public class MissingHashCodeTest extends TestBase {
 
     public MissingHashCodeTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        Locale.setDefault(Locale.US);
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
+        super(testName, MissingHashCode.class);
     }
 
     public void testMissingHashCode() throws Exception {
-        String before = "package test; public class Test ex|tends Object {" + " public boolean ";
+        String before = "package test; public class Test extends Object {" + " public boolean ";
         String after = " equals(Object snd) {" + "  return snd != null && getClass().equals(snd.getClass());" + " }" + "}";
 
         performAnalysisTest("test/Test.java", before + after, "0:65-0:71:verifier:Generate missing hashCode()");
     }
 
     public void testMissingEquals() throws Exception {
-        String before = "package test; public class Test ext|ends Object {" + " public int ";
+        String before = "package test; public class Test extends Object {" + " public int ";
         String after = " hashCode() {" + "  return 1;" + " }" + "}";
 
         performAnalysisTest("test/Test.java", before + after, "0:61-0:69:verifier:Generate missing equals(Object)");
     }
 
     public void testWhenNoFieldsGenerateHashCode() throws Exception {
-        String before = "package test; public class Test ext|ends Object {" + " public boolean equa";
+        String before = "package test; public class Test extends Object {" + " public boolean equa";
         String after = "ls(Object snd) { return snd == this; } }";
 
-        String res = performFixTest("test/Test.java", before + after, "0:64-0:70:verifier:Generate missing hashCode()", "Fix", null);
+        String res = performFixTest("test/Test.java", before + after, "0:64-0:70:verifier:Generate missing hashCode()", "FixImpl", null);
 
         if (!res.matches(".*equals.*hashCode.*")) {
             fail("We want equals and hashCode:\n" + res);
@@ -93,19 +81,14 @@ public class MissingHashCodeTest extends TreeRuleTestBase {
     }
 
     public void testWhenNoFieldsGenerateEquals() throws Exception {
-        String before = "package test; public class Test exten|ds Object {" + " public int hash";
+        String before = "package test; public class Test extends Object {" + " public int hash";
         String after = "Code() { return 1; } }";
 
-        String res = performFixTest("test/Test.java", before + after, "0:60-0:68:verifier:Generate missing equals(Object)", "Fix", null);
+        String res = performFixTest("test/Test.java", before + after, "0:60-0:68:verifier:Generate missing equals(Object)", "FixImpl", null);
 
         if (!res.matches(".*hashCode.*equals.*")) {
             fail("We want equals and hashCode:\n" + res);
         }
     }
 
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
-        return new MissingHashCode().run(info, path);
-    }
-    private String sourceLevel = "1.5";
 }

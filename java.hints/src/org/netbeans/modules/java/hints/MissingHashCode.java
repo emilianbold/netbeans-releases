@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -36,15 +36,11 @@ import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -53,7 +49,10 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -69,26 +68,23 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-public class MissingHashCode extends AbstractHint {
-    transient volatile boolean[] stop = { false }; //XXX: no write barriers for writing to the array!
-    
-    public MissingHashCode() {
-        super( true, true, AbstractHint.HintSeverity.WARNING );
-    }
-    
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.CLASS);
-    }
+@Hint(id="org.netbeans.modules.java.hints.MissingHashCode", category="general", enabled=true, options=Options.QUERY)
+public class MissingHashCode {
 
-    public List<ErrorDescription> run(CompilationInfo compilationInfo,
-                                      TreePath treePath) {
-        stop = new boolean [1];
+    @TriggerTreeKind(Kind.CLASS)
+    public static List<ErrorDescription> run(HintContext ctx) {
+        CompilationInfo compilationInfo = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         Element clazz = compilationInfo.getTrees().getElement(treePath);
         if (clazz == null || !clazz.getKind().isClass()) {
             return null;
         }
 
-        ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, clazz, stop);
+        ExecutableElement[] ret = EqualsHashCodeGenerator.overridesHashCodeAndEquals(compilationInfo, clazz, new EqualsHashCodeGenerator.Cancel() {
+            @Override public boolean isCanceled() {
+                return false;
+            }
+        });
         ExecutableElement warningToElement = null;
 
         String addHint = null;
@@ -121,7 +117,7 @@ public class MissingHashCode extends AbstractHint {
 
             if (span != null) {
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(), 
+                    ctx.getSeverity().toEditorSeverity(),
                     NbBundle.getMessage(MissingHashCode.class, addHint), 
                     fixes, 
                     compilationInfo.getFileObject(),
@@ -147,20 +143,7 @@ public class MissingHashCode extends AbstractHint {
     public String getDescription() {
         return NbBundle.getMessage(MissingHashCode.class, "HINT_MissingHashCode");
     }
-
-    public void cancel() {
-        stop[0] = true;
-    }
     
-    public Preferences getPreferences() {
-        return null;
-    }
-    
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }    
-          
     private static final class FixImpl implements Fix, Runnable, Task<WorkingCopy> {
         private TreePathHandle handle;
         private FileObject file;
