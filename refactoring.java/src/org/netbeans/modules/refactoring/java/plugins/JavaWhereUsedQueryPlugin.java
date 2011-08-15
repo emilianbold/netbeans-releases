@@ -79,6 +79,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -88,6 +89,7 @@ import org.openide.util.NbBundle;
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private WhereUsedQuery refactoring;
     private ClasspathInfo cp;
+    private TreePathHandle basem;
     
     /** Creates a new instance of WhereUsedQuery */
     public JavaWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
@@ -166,13 +168,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                     public void run(CompilationController info) throws Exception {
                         Element element = tph.resolveElement(info);
                         ElementKind kind = element.getKind();
-                        if (kind == ElementKind.METHOD && refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS)) {
-                            TreePathHandle basem = null;
+                        if (kind == ElementKind.METHOD && isSearchFromBaseClass()) {
                             Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, info);
                             if(!overridens.isEmpty()) {
                                 ExecutableElement el = (ExecutableElement) overridens.iterator().next();                        
                                 assert el!=null;
-                                 basem = TreePathHandle.create(el, info);
+                                basem = TreePathHandle.create(el, info);
+                                refactoring.setRefactoringSource(Lookups.fixed(basem));
                             }
                             if (basem != null && (basem.getFileObject() == null || basem.getFileObject().getNameExt().endsWith("class"))) { //NOI18N
                                 cp = RetoucheUtils.getClasspathInfoFor(tph, basem);
@@ -189,7 +191,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 cp = getClasspathInfo(refactoring);
             }
             fileSet = getRelevantFiles(
-                    tph,
+                    basem!=null?basem:tph,
                     cp,
                     isFindSubclasses(),
                     isFindDirectSubclassesOnly(),
@@ -431,20 +433,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             if (element==null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "element is null for handle " + handle); // NOI18N
                 return;
-            }
-            
-            if(element.getKind() == ElementKind.METHOD && isSearchFromBaseClass()) {
-                Collection<ExecutableElement> overridens = RetoucheUtils.getOverridenMethods((ExecutableElement)element, compiler);
-                if (!overridens.isEmpty()) {
-                    ExecutableElement el = overridens.iterator().next();                        
-                    assert el!=null;
-                    handle = TreePathHandle.create(el, compiler);
-                    element = handle.resolveElement(compiler);
-                    if (element==null) {
-                        ErrorManager.getDefault().log(ErrorManager.ERROR, "element is null for handle " + handle); // NOI18N
-                        return;
-                    }
-                }
             }
             
             Collection<TreePath> result = new ArrayList<TreePath>();

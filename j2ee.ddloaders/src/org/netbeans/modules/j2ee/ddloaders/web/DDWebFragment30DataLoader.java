@@ -45,7 +45,7 @@ public class DDWebFragment30DataLoader extends DDDataLoader {
 
     private static final long serialVersionUID = 1L;
 
-    private static final String REQUIRED_MIME = "text/x-dd-servlet-fragment3.0"; // NOI18N
+    public static final String REQUIRED_MIME = "text/x-dd-servlet-fragment3.0"; // NOI18N
 
     public DDWebFragment30DataLoader() {
         super("org.netbeans.modules.j2ee.ddloaders.web.DDFragmentDataObject");  // NOI18N
@@ -65,7 +65,7 @@ public class DDWebFragment30DataLoader extends DDDataLoader {
     protected MultiDataObject createMultiObject(FileObject primaryFile)
         throws DataObjectExistsException, IOException
     {
-        return new DDFragmentDataObject(primaryFile, this);
+        return new DDFragmentDataObject(primaryFile, this, REQUIRED_MIME);
     }
 
 }

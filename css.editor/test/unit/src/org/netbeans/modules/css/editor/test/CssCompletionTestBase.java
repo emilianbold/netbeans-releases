@@ -87,6 +87,10 @@ public class CssCompletionTestBase extends TestBase {
     }
 
     public void checkCC(String documentText, final String[] expectedItemsNames, final Match type) throws ParseException {
+        checkCC(documentText, expectedItemsNames, type, false);
+    }
+    
+    public void checkCC(String documentText, final String[] expectedItemsNames, final Match type, final boolean debugParseTree) throws ParseException {
         StringBuilder content = new StringBuilder(documentText);
 
         final int pipeOffset = content.indexOf("|");
@@ -106,7 +110,9 @@ public class CssCompletionTestBase extends TestBase {
 
                 CssCslParserResult cssresult = (CssCslParserResult) result;
                 
-                NodeUtil.dumpTree(cssresult.getParseTree());
+                if(debugParseTree) {
+                    NodeUtil.dumpTree(cssresult.getParseTree());
+                }
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);

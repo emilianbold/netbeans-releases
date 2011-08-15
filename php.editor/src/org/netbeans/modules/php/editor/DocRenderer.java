@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -220,6 +221,13 @@ class DocRenderer {
         // #183594
         private static final Pattern KEEP_NEWLINE_PATTERN = Pattern.compile("(\r?\n)(?=(\\s\\S|[-+#o]\\s|\\d\\.?\\s))"); // NOI18N
 
+        private static final ArrayList<String> LINK_TAGS = new ArrayList<String>();
+        
+        static {
+            LINK_TAGS.add("@link");
+            LINK_TAGS.add("@see");
+            LINK_TAGS.add("@use");
+        }
         private CCDocHtmlFormatter header;
         private StringBuilder phpDoc;
         private PhpElement indexedElement;
@@ -304,7 +312,7 @@ class DocRenderer {
             StringBuilder links = new StringBuilder();
             StringBuilder returnValue = new StringBuilder();
             StringBuilder others = new StringBuilder();
-
+            
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
 
                 switch (tag.getKind()) {
@@ -330,10 +338,45 @@ class DocRenderer {
                 }
             }
 
-            phpDoc.append(composeFunctionDoc(processPhpDoc(pHPDocBlock.getDescription()), params.toString(), returnValue.toString(), links.toString(), others.toString()));
+            phpDoc.append(composeFunctionDoc(processDescription(processPhpDoc(pHPDocBlock.getDescription())), params.toString(), returnValue.toString(), links.toString(), others.toString()));
             
         }
 
+        protected String processDescription(String text){
+            StringBuilder result = new StringBuilder();
+            int index = 0;
+            int lastIndex = 0;
+            index = text.indexOf('{', 0);
+            while (index > -1 && text.length() > (index + 1)) {
+                result.append(text.substring(lastIndex, index));
+                lastIndex = index;
+                switch (text.charAt(index + 2)) {
+                    case 'l':
+                    case 's':
+                    case 'u':
+                        int endIndex = text.indexOf(' ', index);
+                        if (endIndex > -1) {
+                            String tag = text.substring(index + 1, endIndex).trim();
+                            if (LINK_TAGS.contains(tag)) {
+                                index = endIndex + 1;
+                                endIndex = text.indexOf('}', index);
+                                if (endIndex > -1) {
+                                    String link = text.substring(index, endIndex).trim();
+                                    result.append(String.format("<a href=\"%s\">%s</a>",link, link));
+                                    lastIndex = endIndex + 1;
+                                }
+                            }
+                        }
+                }
+                
+                index = text.indexOf('{' , index + 1);
+            }
+            if (lastIndex > -1) {
+                result.append(text.substring(lastIndex));
+            }
+            return result.toString();
+        }
+        
         private String composeFunctionDoc(String description, String parameters, String returnValue, String links, String others) {
             StringBuilder value = new StringBuilder();
             

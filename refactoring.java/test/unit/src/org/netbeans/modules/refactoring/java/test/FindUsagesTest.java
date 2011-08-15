@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.refactoring.java.test;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -230,12 +233,37 @@ public class FindUsagesTest extends NbTestCase {
         }, false).get();
         setScope(wuq, true, true, false, false, false, false);
 
-        doRefactoring("FindCurrentPackageTest", wuq, 9);
+        doRefactoring("test200230", wuq, 9);
+    }
+    
+    public void test200843() throws IOException, InterruptedException, ExecutionException {
+        Utilities.openProject("SimpleJ2SEAppChild", getDataDir());
+        FileObject testFile = projectDir.getFileObject("/src/simplej2seapp/D.java");
+        JavaSource src = JavaSource.forFileObject(testFile);
+        final WhereUsedQuery[] wuq = new WhereUsedQuery[1];
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree klass = (ClassTree) controller.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree runTree = (MethodTree) klass.getMembers().get(1);
+                TreePath path = controller.getTrees().getPath(controller.getCompilationUnit(), runTree);
+                TreePathHandle element = TreePathHandle.create(path, controller);
+                wuq[0] = new WhereUsedQuery(Lookups.singleton(element));
+            }
+        }, false).get();
+        setScope(wuq, true, false, false, false, false, true);
+
+        doRefactoring("test200843", wuq, 1);
     }
     
     private void doRefactoring(final String name, final WhereUsedQuery[] wuq, final int amount) {
         RefactoringSession rs = RefactoringSession.create("Session");
 
+        wuq[0].preCheck();
+        wuq[0].fastCheckParameters();
+        wuq[0].checkParameters();
         wuq[0].prepare(rs);
         rs.doRefactoring(true);
         

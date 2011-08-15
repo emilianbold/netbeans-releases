@@ -59,7 +59,6 @@ import org.openide.DialogDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 import org.xml.sax.*;
 import org.openide.util.NbBundle;
@@ -80,12 +79,19 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.ddloaders.catalog.EnterpriseCatalog;
-import org.netbeans.modules.j2ee.ddloaders.web.multiview.*;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
-import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
+import org.netbeans.modules.j2ee.ddloaders.web.multiview.FiltersMultiViewElement;
+import org.netbeans.modules.j2ee.ddloaders.web.multiview.OverviewMultiViewElement;
+import org.netbeans.modules.j2ee.ddloaders.web.multiview.ServletsMultiViewElement;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /** Represents a DD object in the Repository.
  *
@@ -123,9 +129,36 @@ public class DDDataObject extends  DDMultiViewDataObject
     private transient RequestProcessor.Task updateTask;
     private transient RequestProcessor.Task refreshSourcesTask;
 
-    public DDDataObject (FileObject pf, DDDataLoader loader) throws DataObjectExistsException {
+    private final String editorMimeType;
+
+    public DDDataObject (FileObject pf, DDDataLoader loader, String editorMimeType) throws DataObjectExistsException {
         super (pf, loader);
+        this.editorMimeType = editorMimeType;
         init (pf,loader);
+    }
+
+    @Override
+    protected String getEditorMimeType() {
+        return editorMimeType;
+    }
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
+
+    // FIXME this is bit strange as we reference other mime types here
+    @MultiViewElement.Registration(
+        mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+        iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="multiview_xml",
+        displayName="#CTL_SourceTabCaption",
+        position=1
+    )
+    @Messages("CTL_SourceTabCaption=Source")
+    public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
     }
 
     private void init (FileObject fo,DDDataLoader loader) {
@@ -706,76 +739,6 @@ public class DDDataObject extends  DDMultiViewDataObject
     public static final String MULTIVIEW_REFERENCES = "References"; // NOI18N
     public static final String MULTIVIEW_SECURITY = "Security"; //NOI18N
 
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[] {
-            new DDView(this, MULTIVIEW_OVERVIEW),
-            new DDView(this, MULTIVIEW_SERVLETS),
-            new DDView(this, MULTIVIEW_FILTERS),
-            new DDView(this, MULTIVIEW_PAGES),
-            new DDView(this, MULTIVIEW_REFERENCES),
-            new DDView(this, MULTIVIEW_SECURITY)
-        };
-    }
-
-    static class DDView extends DesignMultiViewDesc implements Serializable {
-        private static final long serialVersionUID = -4814134594154669985L;
-        private String name;
-
-        DDView() {}
-
-        DDView(DDDataObject dObj,String name) {
-            super(dObj, name);
-            this.name=name;
-        }
-
-        public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
-            DDDataObject dObj = (DDDataObject)getDataObject();
-            if (name.equals(MULTIVIEW_OVERVIEW)) {
-                return new OverviewMultiViewElement(dObj, 0);
-            } else if (name.equals(MULTIVIEW_SERVLETS)) {
-                return new ServletsMultiViewElement(dObj, 1);
-            } else if (name.equals(MULTIVIEW_FILTERS)) {
-                return new FiltersMultiViewElement(dObj, 2);
-            } else if(name.equals(MULTIVIEW_PAGES)) {
-                return new PagesMultiViewElement(dObj, 3);
-            } else if(name.equals(MULTIVIEW_REFERENCES)) {
-                return new ReferencesMultiViewElement(dObj, 4);
-            } else if (name.equals(MULTIVIEW_SECURITY)) {
-                return new SecurityMultiViewElement(dObj, 5);
-            }
-            return null; 
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            if (name.equals(MULTIVIEW_OVERVIEW)) {
-                return new HelpCtx(HELP_ID_PREFIX_OVERVIEW+"overviewNode"); //NOI18N
-            } else if (name.equals(MULTIVIEW_SERVLETS)) {
-                return new HelpCtx(HELP_ID_PREFIX_SERVLETS+"servletsNode"); //NOI18N
-            } else if (name.equals(MULTIVIEW_FILTERS)) {
-                return new HelpCtx(HELP_ID_PREFIX_FILTERS+"filtersNode"); //NOI18N
-            } else if(name.equals(MULTIVIEW_PAGES)) {
-                return new HelpCtx(HELP_ID_PREFIX_OVERVIEW+"overviewNode"); //NOI18N
-            } else if(name.equals(MULTIVIEW_REFERENCES)) {
-                return new HelpCtx(HELP_ID_PREFIX_REFERENCES+"references"); //NOI18N
-            }
-            return null;
-        }
-
-        public java.awt.Image getIcon() {
-            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
-        }
-
-        public String preferredID() {
-            return DD_MULTIVIEW_PREFIX+name;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return NbBundle.getMessage(DDDataObject.class,"TTL_"+name);
-        }
-    }
-
     /** Enable to focus specific object in Multiview Editor
      *  The default implementation opens the XML View
      */
@@ -783,26 +746,26 @@ public class DDDataObject extends  DDMultiViewDataObject
     public void showElement(Object element) {
         Object target=null;
         if (element instanceof Servlet) {
-            openView(1);
+            openView(ServletsMultiViewElement.SERVLETS_ELEMENT_INDEX);
             target=element;
         } else if (element instanceof Filter) {
-            openView(2);
+            openView(FiltersMultiViewElement.FILTERS_ELEMENT_INDEX);
             target=element;
         } else if (element instanceof Listener) {
-            openView(0);
+            openView(OverviewMultiViewElement.OVERVIEW_ELEMENT_INDEX);
             target="listeners"; //NOI18N
         } else if (element instanceof InitParam) {
             InitParam param = (InitParam)element;
             InitParam[] params = getWebApp().getContextParam();
             for (int i=0;i<params.length;i++) {
                 if (params[i]==param) {
-                    openView(0);
+                    openView(OverviewMultiViewElement.OVERVIEW_ELEMENT_INDEX);
                     target="context_params"; //NOI18N
                     break;
                 }
             }
         } else if (element instanceof ErrorPage) {
-            openView(3);
+            openView(ServletsMultiViewElement.SERVLETS_ELEMENT_INDEX);
             target="error_pages"; //NOI18N
         }
         if (target!=null) {
