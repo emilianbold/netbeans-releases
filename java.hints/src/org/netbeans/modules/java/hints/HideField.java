@@ -84,7 +84,7 @@ public class HideField extends AbstractHint {
     }
 
     public HideField(String... sw) {
-        super( true, true, AbstractHint.HintSeverity.WARNING, sw);
+        super( true, false, AbstractHint.HintSeverity.WARNING, sw);
     }
     
     public Set<Kind> getTreeKinds() {

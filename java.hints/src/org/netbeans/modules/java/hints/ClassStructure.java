@@ -63,9 +63,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -76,11 +73,10 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -238,7 +234,7 @@ public class ClassStructure {
         final TreeUtilities treeUtilities = context.getInfo().getTreeUtilities();
         if (treeUtilities.isClass(cls) && testClassMayBeInterface(context.getInfo().getTrees(), treeUtilities, context.getPath())) {
             return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_ClassMayBeInterface", cls.getSimpleName()), //NOI18N
-                    new ConvertClassToInterfaceFixImpl(TreePathHandle.create(context.getPath(), context.getInfo()), NbBundle.getMessage(ClassStructure.class, "FIX_ConvertClassToInterface", cls.getSimpleName())), //NOI18N
+                    JavaFix.toEditorFix(new ConvertClassToInterfaceFixImpl(TreePathHandle.create(context.getPath(), context.getInfo()), NbBundle.getMessage(ClassStructure.class, "FIX_ConvertClassToInterface", cls.getSimpleName()))), //NOI18N
                     FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "ClassMayBeInterface")); //NOI18N
         }
         return null;
@@ -300,13 +296,12 @@ public class ClassStructure {
         return true;
     }
 
-    private static final class ConvertClassToInterfaceFixImpl implements Fix {
+    private static final class ConvertClassToInterfaceFixImpl extends JavaFix {
 
-        private final TreePathHandle clsHandle;
         private final String text;
 
         public ConvertClassToInterfaceFixImpl(TreePathHandle clsHandle, String text) {
-            this.clsHandle = clsHandle;
+            super(clsHandle);
             this.text = text;
         }
 
@@ -316,28 +311,16 @@ public class ClassStructure {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(clsHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    final TreePath path = clsHandle.resolve(wc);
-                    if (path == null) {
-                        return;
-                    }
-                    final ClassTree cls = (ClassTree) path.getLeaf();
-                    final TreeMaker treeMaker = wc.getTreeMaker();
-                    ModifiersTree mods = cls.getModifiers();
-                    if (mods.getFlags().contains(Modifier.ABSTRACT)) {
-                        Set<Modifier> modifiers = EnumSet.copyOf(mods.getFlags());
-                        modifiers.remove(Modifier.ABSTRACT);
-                        mods = treeMaker.Modifiers(modifiers, mods.getAnnotations());
-                    }
-                    wc.rewrite(path.getLeaf(), treeMaker.Interface(mods, cls.getSimpleName(), cls.getTypeParameters(), cls.getImplementsClause(), cls.getMembers()));
-                }
-            }).commit();
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
+            final ClassTree cls = (ClassTree) path.getLeaf();
+            final TreeMaker treeMaker = wc.getTreeMaker();
+            ModifiersTree mods = cls.getModifiers();
+            if (mods.getFlags().contains(Modifier.ABSTRACT)) {
+                Set<Modifier> modifiers = EnumSet.copyOf(mods.getFlags());
+                modifiers.remove(Modifier.ABSTRACT);
+                mods = treeMaker.Modifiers(modifiers, mods.getAnnotations());
+            }
+            wc.rewrite(path.getLeaf(), treeMaker.Interface(mods, cls.getSimpleName(), cls.getTypeParameters(), cls.getImplementsClause(), cls.getMembers()));
         }
     }
 }

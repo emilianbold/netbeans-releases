@@ -69,7 +69,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private Kind kind;
     
     private StandardJavacWarnings( Kind kind ) {
-        super( kind.defaultOn(), true, HintSeverity.WARNING );
+        super( kind.defaultOn(), false, HintSeverity.WARNING );
         this.kind = kind;        
         this.getPreferences(null); // Adds listener automatically                                              ;
     }

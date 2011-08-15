@@ -46,6 +46,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
@@ -56,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public class InitialCapacity {
 
-    @Hint(category="performance", enabled=false, suppressWarnings="CollectionWithoutInitialCapacity")
+    @Hint(category="performance", enabled=false, suppressWarnings="CollectionWithoutInitialCapacity", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="new java.util.ArrayDeque()"),
         @TriggerPattern(value="new java.util.ArrayDeque<$T$>()"),
@@ -87,7 +88,7 @@ public class InitialCapacity {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="performance", enabled=false, suppressWarnings="StringBufferWithoutInitialCapacity")
+    @Hint(category="performance", enabled=false, suppressWarnings="StringBufferWithoutInitialCapacity", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="new java.lang.StringBuffer()"),
         @TriggerPattern(value="new java.lang.StringBuilder()")

@@ -33,7 +33,6 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
@@ -41,7 +40,6 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,14 +49,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -111,11 +106,11 @@ public class DoubleCheck extends AbstractHint {
             return null;
         }
 
-        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+        List<Fix> fixes = Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(
             TreePathHandle.create(treePath, compilationInfo),
             TreePathHandle.create(outer, compilationInfo),
             compilationInfo.getFileObject()
-        ));
+        )));
 
         int span = (int)compilationInfo.getTrees().getSourcePositions().getStartPosition(
             compilationInfo.getCompilationUnit(),
@@ -253,14 +248,13 @@ public class DoubleCheck extends AbstractHint {
 
     private static final SpecificationVersion SOURCE_LEVEL_1_5 = new SpecificationVersion("1.5");
     
-    private static final class FixImpl implements Fix, Task<WorkingCopy> {
+    private static final class FixImpl extends JavaFix {
         private TreePathHandle synchHandle;
-        private TreePathHandle ifHandle;
         private FileObject file;
 
         public FixImpl(TreePathHandle synchHandle, TreePathHandle ifHandle, FileObject file) {
+            super(ifHandle);
             this.synchHandle = synchHandle;
-            this.ifHandle = ifHandle;
             this.file = file;
         }
         
@@ -269,22 +263,14 @@ public class DoubleCheck extends AbstractHint {
             return NbBundle.getMessage(DoubleCheck.class, "FIX_DoubleCheck"); // NOI18N
         }
         
-        public ChangeInfo implement() throws IOException {
-            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);
-            result.commit();
-            return null;
-        }
-        
         @Override public String toString() {
             return "FixDoubleCheck"; // NOI18N
         }
 
-
-        public void run(WorkingCopy wc) throws Exception {
-            wc.toPhase(JavaSource.Phase.RESOLVED);
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath ifTreePath, boolean canShowUI) {
             Tree syncTree = synchHandle.resolve(wc).getLeaf();
-            Tree ifTree = ifHandle.resolve(wc).getLeaf();
-            wc.rewrite(ifTree, syncTree);
+            wc.rewrite(ifTreePath.getLeaf(), syncTree);
         }
     }
     

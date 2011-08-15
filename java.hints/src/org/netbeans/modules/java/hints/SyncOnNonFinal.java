@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 public class SyncOnNonFinal extends AbstractHint {
 
     public SyncOnNonFinal() {
-        super(true, false, HintSeverity.WARNING);
+        super(true, true, HintSeverity.WARNING);
     }
 
     @Override
