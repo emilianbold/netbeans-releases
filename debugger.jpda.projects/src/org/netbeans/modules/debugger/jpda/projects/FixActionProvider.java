@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -106,7 +107,7 @@ public class FixActionProvider extends ActionsProviderSupport {
     
     public FixActionProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        sp = lookupProvider.lookupFirst(null, SourcePathProvider.class);
+        sp = getSourcePathProvider(lookupProvider);
         
         listener = new Listener ();
         MainProjectManager.getDefault ().addPropertyChangeListener (listener);
@@ -119,6 +120,16 @@ public class FixActionProvider extends ActionsProviderSupport {
             ActionsManager.ACTION_FIX,
             shouldBeEnabled ()
         );
+    }
+    
+    private SourcePathProvider getSourcePathProvider(ContextProvider lookupProvider) {
+        List<? extends SourcePathProvider> providers = lookupProvider.lookup(null, SourcePathProvider.class);
+        for (SourcePathProvider p : providers) {
+            if (p instanceof SourcePathProviderImpl) {
+                return p;
+            }
+        }
+        return providers.get(0);
     }
 
     private void destroy () {
