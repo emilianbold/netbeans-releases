@@ -23,6 +23,8 @@ abstract class Animal {
 
     public static function kindInfo() {return "animal is ...";}
 
+    public static function getClassDesc() {return "animal";}
+
 }
 
 class Mammal extends Animal {
@@ -36,11 +38,14 @@ class Mammal extends Animal {
         echo parent::$count;
         echo self::$count;
         echo parent::getCount("calling animal's getCount 1");
+        echo static::getClassDesc();
         $mammalKind = Mammal::KIND;
         $animalKind = Animal::KIND;
         $isMe = (self::KIND == $mammalKind);
         $isParentAnimal = (parent::KIND == $animalKind);
     }
+    
+    public static function getClassDesc() {return "Mammal class";}
 }
 
 class Cat extends Mammal {
@@ -60,12 +65,15 @@ class Cat extends Mammal {
         echo Cat::kindInfo();
         echo self::kindInfo();
         echo parent::kindInfo();
-
+        echo static::getAnimal(); // navigate to parent
+        echo static::getClassDesc(); // navigate to parent
+        echo static::kindInfo();
     }
     public function getCount($catLogging) {
         echo $catLogging;
         return Cat::$count;
     }
+    
     public static function kindInfo() {return "cat is ...";}
 }
 Animal::$count--;
