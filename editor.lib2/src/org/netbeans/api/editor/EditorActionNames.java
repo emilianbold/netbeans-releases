@@ -79,4 +79,20 @@ public final class EditorActionNames {
     /** Goto declaration depending on the context under the caret */
     public static final String gotoDeclaration = "goto-declaration"; // NOI18N
 
+    /**
+     * Zoom text in by increasing default font size.
+     * <br/>
+     * textComponent.getClientProperty("text-zoom") contains positive (or negative)
+     * integer of how many points the font size should be increased (decreased).
+     * @since 1.45
+     */
+    public static final String zoomTextIn = "zoom-text-in";
+
+    /**
+     * Zoom text out by decreasing default font size.
+     * @see #zoomInTextAction
+     * @since 1.45
+     */
+    public static final String zoomTextOut = "zoom-text-out";
+
 }

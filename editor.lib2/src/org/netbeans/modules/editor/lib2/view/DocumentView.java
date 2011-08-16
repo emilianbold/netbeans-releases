@@ -1842,6 +1842,9 @@ public final class DocumentView extends EditorView
                         releaseChildrenUnlocked(); // Rebuild view hierarchy
                     }
                 });
+            } else if (TEXT_ZOOM_PROPERTY.equals(propName)) {
+                releaseChildren = true;
+                updateFonts = true;
             }
         }
         if (releaseChildren) {
@@ -1866,7 +1869,6 @@ public final class DocumentView extends EditorView
                 textZoom -= evt.getWheelRotation();
                 tc.putClientProperty(TEXT_ZOOM_PROPERTY, textZoom);
             }
-            releaseChildren(true); // Release children with updating the fonts
 //            evt.consume(); // consuming the event has no effect
         } else {
             origMouseWheelListener.mouseWheelMoved(evt);
