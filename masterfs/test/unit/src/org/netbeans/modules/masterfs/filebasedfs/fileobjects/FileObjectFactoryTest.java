@@ -80,28 +80,6 @@ public class FileObjectFactoryTest extends NbTestCase {
         
     }
     
-
-    public void testIssuingFileObject() throws IOException {      
-        FileObjectFactory fbs = FileObjectFactory.getInstance(getWorkDir());
-        assertEquals(1, fbs.getSize());
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        assertNotNull(workDir);
-        //root + workdir
-        assertEquals(2, fbs.getSize());
-        assertEquals(2, fbs.getSize());
-        Reference rf = new  WeakReference(workDir.getParent());
-        assertGC("", rf);
-        assertNull(((BaseFileObj)workDir).getExistingParent());
-        assertEquals(2, fbs.getSize());
-        fbs.getRoot().getFileObject(workDir.getPath());
-        assertEquals(2, fbs.getSize());
-        rf = new  WeakReference(workDir.getParent());
-        assertGC("", rf);
-        assertNull(((BaseFileObj)workDir).getExistingParent());
-        assertEquals(2, fbs.getSize());
-        
-    }
-    
     public void testRefreshFor() throws Exception {
         EventsEvaluator fdc = new EventsEvaluator();        
         try {
