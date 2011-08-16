@@ -164,7 +164,7 @@ public class HgCommand {
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
     private static final String HG_PARENT_CMD = "parents";              //NOI18N
-    private static final String HG_PARAM_BRANCH = "--branch"; // NOI18N
+    private static final String HG_PARAM_BRANCH = "-b"; //NOI18N
 
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
