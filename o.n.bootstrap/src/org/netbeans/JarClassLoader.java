@@ -52,6 +52,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
@@ -418,7 +420,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private boolean dead;
         private int requests;
         private int used;
-        private Manifest manifest;
+        private volatile Reference<Manifest> manifest;
         /** #141110: expensive to repeatedly look for them */
         private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
         private final Set<File> warnedFiles = Collections.synchronizedSet(new HashSet<File>()); // #183696
@@ -458,15 +460,20 @@ public class JarClassLoader extends ProxyClassLoader {
 
         @Override
         public Manifest getManifest() {
-            if (manifest != null) {
-                return manifest;
+            {
+                Manifest man;
+                if (manifest != null && (man = manifest.get()) != null) {
+                    return man;
+                }
             }
             try {
                 byte[] arr = archive.getData(this, "META-INF/MANIFEST.MF");
                 if (arr == null) {
                     return null;
                 }
-                return manifest = new Manifest(new ByteArrayInputStream(arr));
+                final Manifest man = new Manifest(new ByteArrayInputStream(arr));
+                manifest = new SoftReference<Manifest>(man);
+                return man;
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, "Cannot read manifest for " + getPath(), ex);
                 return null;
