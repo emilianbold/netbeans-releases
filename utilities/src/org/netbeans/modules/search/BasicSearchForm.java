@@ -207,6 +207,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords = new JCheckBox();
         chkCaseSensitive = new JCheckBox();
         chkRegexp = new JCheckBox();
+        chkPreserveCase = new JCheckBox();
+        chkPreserveCase.setVisible(searchAndReplace);
         
         Mnemonics.setLocalizedText(
                 lblTextToFind,
@@ -242,12 +244,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         Mnemonics.setLocalizedText(
                 chkRegexp,
                 getText("BasicSearchForm.chkRegexp.text"));             //NOI18N
+        
+        Mnemonics.setLocalizedText(
+                chkPreserveCase, 
+                getText("BasicSearchForm.chkPreserveCase.text"));       //NOI18N
 
         JComponent optionsPanel
                 = createButtonsPanel("LBL_OptionsPanelTitle",           //NOI18N
-                                     chkWholeWords,
                                      chkCaseSensitive,
-                                     chkRegexp);
+                                     chkWholeWords,
+                                     chkRegexp,
+                                     chkPreserveCase);
         JComponent scopePanel
                 = createButtonsPanel("LBL_ScopePanelTitle",             //NOI18N
                                      createSearchScopeButtons());
@@ -375,6 +382,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkCaseSensitive.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkCaseSensitive.AccessibleDescription"));
         chkRegexp.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkRegexp.AccessibleDescription"));
         chkWholeWords.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkWholeWords.AccessibleDescription"));
+        chkPreserveCase.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.chkPreserveCase.AccessibleDescription"));
     }
 
     /**
@@ -391,6 +399,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(searchCriteria.isWholeWords());
         chkCaseSensitive.setSelected(searchCriteria.isCaseSensitive());
         chkRegexp.setSelected(searchCriteria.isRegexp());
+        chkPreserveCase.setSelected(searchCriteria.isPreserveCase());
     }
     
     /**
@@ -471,9 +480,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkRegexp.addItemListener(this);
         chkCaseSensitive.addItemListener(this);
         chkWholeWords.addItemListener(this);
+        chkPreserveCase.addItemListener(this);
 
         boolean regexp = chkRegexp.isSelected();
+        boolean caseSensitive = chkCaseSensitive.isSelected();
         chkWholeWords.setEnabled(!regexp);
+        chkPreserveCase.setEnabled(!regexp && !caseSensitive);
 
         searchCriteria.setUsabilityChangeListener(this);
     }
@@ -532,6 +544,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         chkWholeWords.setSelected(memory.isWholeWords());
         chkCaseSensitive.setSelected(memory.isCaseSensitive());
         chkRegexp.setSelected(memory.isRegularExpression());
+        chkPreserveCase.setSelected(memory.isPreserveCase());
     }
     
     @Override
@@ -644,11 +657,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 updateReplacePatternColor();
             }
             chkWholeWords.setEnabled(!selected);
+            chkPreserveCase.setEnabled(!selected && !chkCaseSensitive.isSelected());
             lblHintTextToFind.setVisible(!selected);
         } else if (toggle == chkCaseSensitive) {
             searchCriteria.setCaseSensitive(selected);
+            chkPreserveCase.setEnabled(!selected && !chkRegexp.isSelected());
         } else if (toggle == chkWholeWords) {
             searchCriteria.setWholeWords(selected);
+        } else if (toggle == chkPreserveCase) {
+            searchCriteria.setPreserveCase(selected);
         } else {
             assert false;
         }
@@ -815,6 +832,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         memory.setWholeWords(chkWholeWords.isSelected());
         memory.setCaseSensitive(chkCaseSensitive.isSelected());
         memory.setRegularExpression(chkRegexp.isSelected());
+        memory.setPreserveCase(chkPreserveCase.isSelected());
     }
 
     /**
@@ -1003,6 +1021,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private JCheckBox chkWholeWords;
     private JCheckBox chkCaseSensitive;
     private JCheckBox chkRegexp;
+    private JCheckBox chkPreserveCase;
     private JTextComponent textToFindEditor;
     private JTextComponent fileNamePatternEditor;
     private JTextComponent replacementPatternEditor;

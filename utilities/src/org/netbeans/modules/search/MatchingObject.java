@@ -636,12 +636,45 @@ final class MatchingObject
             if (resultModel.basicCriteria.isRegexp()){
                 Matcher m = resultModel.basicCriteria.getTextPattern().matcher(matchedSubstring);
                 replacedString = m.replaceFirst(resultModel.basicCriteria.getReplaceString());
+            } else if (resultModel.basicCriteria.isPreserveCase()) {
+                replacedString = adaptCase(replacedString, matchedSubstring);
             }
             
             content.replace(textDetail.getStartOffset() + offsetShift, textDetail.getEndOffset() + offsetShift, replacedString);
             offsetShift += replacedString.length() - matchedSubstring.length();
         }
         return null;
+    }
+    
+    /** Modify case of a string according to a case pattern. Used in "Search
+     *  and replace" action when "Preserve case" option is checked. 
+     * 
+     * Code copied from method {@link 
+     * org.netbeans.modules.editor.lib2.search.DocumentFinder#preserveCaseImpl
+     * DocumentFinder.preserveCaseImpl}
+     * in module editor.lib2.
+     * 
+     * @param value String that should modified.
+     * @param casePattern Case pattern.
+     * @return 
+     */
+    public static String adaptCase(String value, String casePattern) {
+                                                
+        if (casePattern.equals(casePattern.toUpperCase())) {
+            return value.toUpperCase();
+        } else if (casePattern.equals(casePattern.toLowerCase())) {
+            return value.toLowerCase();
+        } else if (Character.isUpperCase(casePattern.charAt(0))) {
+            return Character.toUpperCase(value.charAt(0)) + value.substring(1);
+        } else if (Character.isLowerCase(casePattern.charAt(0))) {
+            if (casePattern.substring(1).equals(casePattern.substring(1).toUpperCase())) {
+                return Character.toLowerCase(value.charAt(0)) + value.substring(1).toUpperCase();
+            } else {
+                return Character.toLowerCase(value.charAt(0)) + value.substring(1);
+            }
+        } else {
+            return value;
+        }
     }
     
     /** debug flag */
