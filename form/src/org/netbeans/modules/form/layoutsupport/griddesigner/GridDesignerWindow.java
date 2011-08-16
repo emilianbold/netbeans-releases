@@ -83,7 +83,7 @@ public class GridDesignerWindow extends JDialog implements Customizer {
     public GridDesignerWindow() {
         super(WindowManager.getDefault().getMainWindow());
         this.designer = new GridDesigner();
-        HelpCtx.setHelpIDString(designer, "gui.layouts.griddesigner"); // NOI18N
+        HelpCtx.setHelpIDString(getRootPane(), "gui.layouts.griddesigner"); // NOI18N
         initComponents();
     }
 
