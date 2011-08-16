@@ -71,15 +71,13 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     private static final String COHERENCE_TRANSACTION_JAR = COHERENCE_LIB_BASE + "coherence-transaction.jar"; //NOI18N
     private static final String COHERENCE_TX_JAR = COHERENCE_LIB_BASE + "coherence-tx.jar"; //NOI18N
 
+    private String classpath = "";
+
     private static JFileChooser fileChooser;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     public String getServerName() {
         return serverLocationTextField.getText();
-    }
-
-    public String getClassPath() {
-        return classpathTextField.getText();
     }
 
     private String validCoherenceServerDirectory(File directory) {
@@ -244,7 +242,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     }
 
     public String getClasspath() {
-        return classpathTextField.getText();
+        return classpath;
     }
 
     public String getServerLocation() {
@@ -271,10 +269,10 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                 if (txJarCheckBox.isSelected()) {
                     classpathSB.append(location.concat(COHERENCE_TX_JAR).concat(File.pathSeparator));
                 }
-                classpathTextField.setText(classpathSB.toString());
+                classpath = classpathSB.toString();
             }
         } else {
-            classpathTextField.setText(""); //NOI18N
+            classpath = "";
         }
     }
 
@@ -298,8 +296,6 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         serverLocationLabel = new javax.swing.JLabel();
         serverLocationTextField = new javax.swing.JTextField();
         serverPropertiesNoticeLabel = new javax.swing.JLabel();
-        classpathLabel = new javax.swing.JLabel();
-        classpathTextField = new javax.swing.JTextField();
         additionalClasspathPanel = new javax.swing.JPanel();
         hibernateJarCheckBox = new javax.swing.JCheckBox();
         jpaJarCheckBox = new javax.swing.JCheckBox();
@@ -318,13 +314,6 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         serverLocationTextField.setName("serverLocationTextField"); // NOI18N
 
         serverPropertiesNoticeLabel.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.serverPropertiesNoticeLabel.text")); // NOI18N
-
-        classpathLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.classpathLabel.mnemonics").charAt(0));
-        classpathLabel.setLabelFor(classpathTextField);
-        classpathLabel.setText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.classpathLabel.text")); // NOI18N
-
-        classpathTextField.setEditable(false);
-        classpathTextField.setToolTipText(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.classpathTextField.toolTipText")); // NOI18N
 
         additionalClasspathPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "ServerLocationVisual.additionalClasspathPanel.border.title"))); // NOI18N
         additionalClasspathPanel.setName(""); // NOI18N
@@ -355,7 +344,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(loadbalancerJarCheckBox)
                     .addComponent(transactionJarCheckBox)
                     .addComponent(txJarCheckBox))
-                .addContainerGap(325, Short.MAX_VALUE))
+                .addContainerGap(195, Short.MAX_VALUE))
         );
         additionalClasspathPanelLayout.setVerticalGroup(
             additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -386,20 +375,14 @@ public class ServerLocationVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(classpathLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(classpathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(serverLocationLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(browseButton))
-                            .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton))
+                    .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -408,16 +391,12 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverLocationLabel)
-                    .addComponent(serverLocationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(serverPropertiesNoticeLabel)
+                    .addComponent(browseButton)
+                    .addComponent(serverLocationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(additionalClasspathPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(classpathLabel)
-                    .addComponent(classpathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -430,8 +409,6 @@ public class ServerLocationVisual extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel additionalClasspathPanel;
     private javax.swing.JButton browseButton;
-    private javax.swing.JLabel classpathLabel;
-    private javax.swing.JTextField classpathTextField;
     private javax.swing.JCheckBox hibernateJarCheckBox;
     private javax.swing.JCheckBox jpaJarCheckBox;
     private javax.swing.JCheckBox loadbalancerJarCheckBox;
