@@ -87,13 +87,13 @@ public class CssCompletionTestBase extends TestBase {
     }
 
     public void checkCC(String documentText, final String[] expectedItemsNames, final Match type) throws ParseException {
-        checkCC(documentText, expectedItemsNames, type, false);
+        checkCC(documentText, expectedItemsNames, type, '|');
     }
 
-    public void checkCC(String documentText, final String[] expectedItemsNames, final Match type, final boolean debugParseTree) throws ParseException {
+    public void checkCC(String documentText, final String[] expectedItemsNames, final Match type, char caretChar) throws ParseException {
         StringBuilder content = new StringBuilder(documentText);
 
-        final int pipeOffset = content.indexOf("|");
+        final int pipeOffset = content.indexOf(Character.toString(caretChar));
         assert pipeOffset >= 0;
 
         //remove the pipe
@@ -119,25 +119,17 @@ public class CssCompletionTestBase extends TestBase {
                     assertCompletionItemNames(expectedItemsNames, ccresult, type);
                 } catch (junit.framework.AssertionFailedError afe) {
                     System.out.println("AssertionFailedError debug information:");
-                    dumpDebugInfo(cssresult, pipeOffset);
+                    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    System.out.println("Caret offset: " + pipeOffset);
+                    System.out.println("Parse tree:");
+                    NodeUtil.dumpTree(cssresult.getParseTree());
+                    System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
                     throw afe;
                 }
 
-                if (debugParseTree) {
-                    System.out.println("Debug information:");
-                    dumpDebugInfo(cssresult, pipeOffset);
-                }
             }
         });
 
-    }
-
-    private void dumpDebugInfo(CssCslParserResult cssresult, int pipeOffset) {
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println("Caret offset: " + pipeOffset);
-        System.out.println("Parse tree:");
-        NodeUtil.dumpTree(cssresult.getParseTree());
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     public void assertComplete(String documentText, String expectedDocumentText, final String itemToComplete) throws ParseException, BadLocationException {

@@ -220,6 +220,12 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
+        
+//        System.err.println(e);
+//        System.err.println("index:"+e.input.index());
+//        System.err.println("token:"+e.token);
+        
+        
         RuleNode ruleNode = callStack.peek();
 
         String message;
@@ -365,6 +371,12 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
             TokenNode tokenNode = new TokenNode(token);
             addNodeChild(errorNode, tokenNode);
         }
+        
+        //create and artificial error token so the rules on stack can properly set their ranges
+        lastConsumedToken = new CommonToken(Token.INVALID_TOKEN_TYPE);
+        lastConsumedToken.setStartIndex(first.getStartIndex());
+        lastConsumedToken.setStopIndex(last.getStopIndex()); 
+        
         
     }
     

@@ -521,6 +521,32 @@ public class Css3ParserTest extends CslTestBase {
         
     }
     
+    public void testErrorCase9() throws ParseException, BadLocationException {
+        String content = "h1[foo|attr=val,]";
+            
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        
+        Node error = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+        assertNotNull(error);
+        assertEquals(2, error.from());
+        assertEquals(17, error.to());
+        
+        //premature end of file
+        Node error2 = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/error");
+        assertNotNull(error2);
+        assertEquals(content.length(), error2.from());
+        assertEquals(content.length(), error2.to());
+        
+        assertResult(result, 2);
+        
+    }
+    
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);

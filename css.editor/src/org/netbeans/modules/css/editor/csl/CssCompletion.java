@@ -153,8 +153,8 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         }
 
-        ts.move(astOffset);
-        boolean hasNext = ts.moveNext();
+        int diff = ts.move(astOffset);
+        boolean tokenFound = diff == 0 ? ts.movePrevious() : ts.moveNext();
 
         Node root = info.getParseTree();
         if (root == null) {
@@ -317,7 +317,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         } else if (node.type() == NodeType.imports || node.type() == NodeType.media || node.type() == NodeType.page || node.type() == NodeType.charSet/* || node.type() == NodeType.JJTFONTFACERULE*/) {
             //complete at keywords with prefix - parse tree OK
-            if (hasNext) {
+            if (tokenFound) {
                 TokenId id = ts.token().id();
                 if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM /*|| id == CssTokenId.FONT_FACE_SYM*/
                         || id == CssTokenId.ERROR) {

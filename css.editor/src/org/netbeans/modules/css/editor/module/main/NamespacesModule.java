@@ -80,7 +80,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class NamespacesModule extends CssModule {
 
     private static final String NAMESPACE_KEYWORD = "@namespace";//NOI18N
-    
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL
 
     @Override
@@ -88,10 +87,10 @@ public class NamespacesModule extends CssModule {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
-        if(isError) {
+        if (isError) {
             activeNode = activeNode.parent();
         }
-        
+
         switch (activeNode.type()) {
             case namespace_prefix:
             case elementName:
@@ -107,10 +106,10 @@ public class NamespacesModule extends CssModule {
             case root:
             case styleSheet:
             case bodylist:
-                CompletionProposal nsKeywordProposal = 
+                CompletionProposal nsKeywordProposal =
                         CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
                 proposals.add(nsKeywordProposal);
-                
+
             case bodyset:
             case media:
             case combinator:
@@ -128,24 +127,30 @@ public class NamespacesModule extends CssModule {
 
             case namespace:
                 CssTokenId tokenId = context.getTokenSequence().token().id();
-                if(tokenId == CssTokenId.NAMESPACE_SYM) {
-                    nsKeywordProposal = 
-                        CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                if (tokenId == CssTokenId.NAMESPACE_SYM) {
+                    nsKeywordProposal =
+                            CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
                     proposals.add(nsKeywordProposal);
                 }
-                
+
             case simpleSelectorSequence:
-                if(isError) {
+                if (isError) {
                     Token<CssTokenId> token = context.getTokenSequence().token();
-                    switch(token.id()) {
+                    switch (token.id()) {
                         case IDENT:
-                            if(LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
+                            if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
                                 proposals.addAll(getNamespaceCompletionProposals(context));
                             }
+                            break;
+                        case COMMA:
+                        case LBRACKET:
+                            proposals.addAll(getNamespaceCompletionProposals(context));
+                            break;
+
                     }
                 }
                 break;
-                
+
             case attrib:
             case attrib_name:
             case namespace_wqname_prefix:
