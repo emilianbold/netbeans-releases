@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -314,6 +315,8 @@ public abstract class RemoteCommand extends Command {
             type = "LBL_TypeDirectory"; // NOI18N
         } else if (file.isFile()) {
             type = "LBL_TypeFile"; // NOI18N
+        } else if (file.isLink()) {
+            type = "LBL_TypeLink"; // NOI18N
         } else {
             type = "LBL_TypeUnknown"; // NOI18N
         }
@@ -321,15 +324,12 @@ public abstract class RemoteCommand extends Command {
     }
 
     private static int getFileTypeLabelMaxSize() {
-        String str = NbBundle.getMessage(RemoteCommand.class, "LBL_TypeDirectory");
-        int max = str.length();
-        str = NbBundle.getMessage(RemoteCommand.class, "LBL_TypeFile");
-        if (max < str.length()) {
-            max = str.length();
-        }
-        str = NbBundle.getMessage(RemoteCommand.class, "LBL_TypeUnknown");
-        if (max < str.length()) {
-            max = str.length();
+        int max = 0;
+        for (String label : Arrays.asList("LBL_TypeDirectory", "LBL_TypeFile", "LBL_TypeLink", "LBL_TypeUnknown")) { // NOI18N
+            int length = NbBundle.getMessage(RemoteCommand.class, label).length();
+            if (max < length) {
+                max = length;
+            }
         }
         return max;
     }
