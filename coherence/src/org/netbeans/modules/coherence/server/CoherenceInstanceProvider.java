@@ -71,12 +71,15 @@ public class CoherenceInstanceProvider implements ServerInstanceProvider {
     private static final Map<Integer, ServerInstance> instances = new HashMap<Integer, ServerInstance>();
     private static volatile CoherenceInstanceProvider provider;
 
+    private static volatile boolean initialized = false;
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     @Override
     public List<ServerInstance> getInstances() {
         synchronized (instances) {
-            if (instances == null) {
+            if (!initialized) {
+                initialized = true;
                 init();
             }
 
