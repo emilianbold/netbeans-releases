@@ -43,8 +43,11 @@
 package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 
@@ -57,12 +60,17 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+
+import com.sun.source.tree.Tree;
 
 
 /**
@@ -71,8 +79,11 @@ import org.openide.util.NbBundle;
  */
 public class CdiAnalysisResult {
     
-    private static final String BEANS_XML = "beans.xml";      // NOI18N
-    private static final String META_INF = "META-INF";        // NOI18N
+    
+    static final String BEANS = "beans";                 // NOI18N
+    private static final String BEANS_XML = BEANS+".xml";                 // NOI18N
+    private static final String META_INF = "META-INF";           // NOI18N
+    private static final String WEB_INF = "WEB-INF";             // NOI18N
 
     public CdiAnalysisResult( CompilationInfo info ){
         myInfo = info;
@@ -83,12 +94,21 @@ public class CdiAnalysisResult {
         addNotification( Severity.ERROR, subject, message);
     }
     
+    public void addError( Element subject, String message , Fix fix ) {
+        addNotification( Severity.ERROR, subject, message, fix );
+    }
+    
     public void addNotification( Severity severity,
             Element element, String message )
     {
+        addNotification(severity, element, message , null );           
+    }
+    
+    public void addNotification( Severity severity,
+            Element element, String message , Fix fix )
+    {
         ErrorDescription description = CdiEditorAnalysisFactory.
-            createNotification( severity, element, myInfo , 
-            message);
+            createNotification( severity, element, myInfo , message, fix );
         if ( description == null ){
             return;
         }
@@ -108,30 +128,44 @@ public class CdiAnalysisResult {
             return;
         }
         isCdiRequired = true;
-        if ( !isCdiEnabled() ) {
-            addError(element, NbBundle.getMessage(CdiAnalysisResult.class, 
-                "ERR_RequireWebBeans"));        // NOI18N
-        }
-    }
-    
-    protected boolean isCdiEnabled(){
         FileObject fileObject = getInfo().getFileObject();
         if ( fileObject ==null ){
-            return true;
+            return;
         }
         Project project = FileOwnerQuery.getOwner( fileObject );
         if ( project == null ){
-            return true;
+            return;
         }
-        FileObject parent = getBeansTargetFolder(project, false);
-        return parent!= null && parent.getFileObject(BEANS_XML)!=null;
+        if ( !isCdiEnabled( project ) ) {
+            Fix fix = new BeansXmlFix( project );
+            addError(element, NbBundle.getMessage(CdiAnalysisResult.class, 
+                "ERR_RequireWebBeans"), fix );        // NOI18N
+        }
     }
     
-    private FileObject getBeansTargetFolder(Project project, boolean create) {
-        // TODO: for fix hint <code>create</code> flag will be used to create folder if it is absent
+    protected boolean isCdiEnabled(Project project){
+        FileObject parent = getInf( project , false );
+        return parent!= null && parent.getFileObject(BEANS_XML)!=null;
+    }
+
+    static FileObject getInf( Project project , boolean create ) {
+        FileObject parent = getBeansTargetFolder(project, create );
+        return parent;
+    }
+    
+    private static FileObject getBeansTargetFolder(Project project, boolean create) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
-            return wm.getWebInf();
+            FileObject webInf = wm.getWebInf();
+            if (webInf == null && create ) {
+                try {
+                    webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
+                } catch (IOException ex) {
+                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
+                            Level.WARNING, null, ex );
+                }
+            }
+            return webInf;
         } 
         else {
             EjbJar ejbs[] = EjbJar.getEjbJars(project);
@@ -148,7 +182,18 @@ public class CdiAnalysisResult {
         SourceGroup[] sourceGroups = sources.getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if ( sourceGroups.length >0 ){
-            return sourceGroups[0].getRootFolder().getFileObject( META_INF );
+            FileObject metaInf = sourceGroups[0].getRootFolder().getFileObject( META_INF );
+            if ( metaInf == null && create ){
+                try {
+                    metaInf = FileUtil.createFolder(
+                        sourceGroups[0].getRootFolder(), META_INF);
+                }
+                catch( IOException e ){
+                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
+                            Level.WARNING, null, e );
+                }
+            }
+            return metaInf;
         }
         return null;
     }
