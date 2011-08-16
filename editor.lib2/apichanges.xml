@@ -107,6 +107,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="zoom-text-action-names-added">
+            <summary>Zoom text actions added</summary>
+            <version major="1" minor="45"/>
+            <date day="16" month="7" year="2011"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Zoom text actions allow to increase/decrease default font size
+                by Ctrl+Wheel or by actions (defined in editor.actions module).
+            </description>
+            <issue number="41807"/>
+        </change>
+
         <change id="typinghooks-spi-added">
             <summary>Typing Hooks SPI added</summary>
             <version major="1" minor="31"/>
