@@ -84,6 +84,7 @@
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>

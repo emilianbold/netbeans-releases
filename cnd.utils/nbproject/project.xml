@@ -108,6 +108,7 @@
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
                 <friend>com.sun.tools.tuxedo.suites</friend>
                 <friend>org.netbeans.modules.cnd</friend>

@@ -80,6 +80,7 @@
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
