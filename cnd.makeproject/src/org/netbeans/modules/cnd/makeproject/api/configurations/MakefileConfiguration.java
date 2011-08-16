@@ -58,7 +58,6 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -326,7 +325,7 @@ public class MakefileConfiguration {
         String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
         String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
         final JFileChooser chooser = RemoteFileUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
-                FileChooser.DIRECTORIES_ONLY, null, seed, true);
+                JFileChooser.DIRECTORIES_ONLY, null, seed, true);
         chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         chooser.setControlButtonsAreShown(false);
         propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
@@ -432,7 +431,7 @@ public class MakefileConfiguration {
     private JFileChooser createElfPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
         ExecutionEnvironment execEnv = getSourceExecutionEnvironment();
         final JFileChooser chooser = RemoteFileUtil.createFileChooser(execEnv,
-                "", "", FileChooser.FILES_ONLY, null, seed, true); //NOI18N
+                "", "", JFileChooser.FILES_ONLY, null, seed, true); //NOI18N
         chooser.setControlButtonsAreShown(false);
         chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         setElfFilters(execEnv, chooser);

@@ -94,9 +94,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingInfoOuterPanel = new PackagingInfoOuterPanel(
                     packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration),
                     packagingAdditionalInfoPanel = new PackagingAdditionalInfoPanel(packagingConfiguration.getAdditionalInfo().getValue(), packagingConfiguration));
-            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseFSPath());
         } else {
-            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseFSPath());
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
 
@@ -116,9 +116,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
 
         //  See IZ 142846
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        int width = ((int) dim.getWidth() / 10) * 6;
-        setPreferredSize(new Dimension(width, 600));
+        setPreferredSize(new Dimension(600, 500));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
