@@ -134,8 +134,8 @@ final class TransferSelectorModel {
             // dblclick on root node or not known yet
             return;
         }
-        boolean preselected = preselect(transferFile);
-        if (preselected) {
+        if (selected.contains(transferFile.getParent())
+                || preselect(transferFile)) {
             setNodeSelected(node, true);
         }
     }
