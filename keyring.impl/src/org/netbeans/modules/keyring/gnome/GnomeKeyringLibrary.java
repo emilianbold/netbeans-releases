@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.keyring.gnome;
 
+import com.sun.jna.DefaultTypeMapper;
+import com.sun.jna.FromNativeContext;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
+import com.sun.jna.ToNativeContext;
+import com.sun.jna.TypeConverter;
+import java.util.Collections;
 
 /**
  * JNA wrapper for certain functions from GNOME Keyring API.
@@ -54,7 +59,22 @@ import com.sun.jna.Structure;
  */
 public interface GnomeKeyringLibrary extends Library {
 
-    GnomeKeyringLibrary LIBRARY = (GnomeKeyringLibrary) Native.loadLibrary("gnome-keyring", GnomeKeyringLibrary.class);
+    GnomeKeyringLibrary LIBRARY = (GnomeKeyringLibrary) Native.loadLibrary("gnome-keyring", GnomeKeyringLibrary.class, Collections.singletonMap(OPTION_TYPE_MAPPER, new DefaultTypeMapper() {
+        {
+            addTypeConverter(Boolean.TYPE, new TypeConverter() { // #198921
+                @Override public Object toNative(Object value, ToNativeContext context) {
+                    return Boolean.TRUE.equals(value) ? 1 : 0;
+                }
+                @Override public Object fromNative(Object value, FromNativeContext context) {
+                    return ((Integer) value).intValue() != 0;
+                }
+                @Override public Class<?> nativeType() {
+                    // gint is 32-bit int
+                    return Integer.class;
+                }
+            });
+        }
+    }));
 
     boolean gnome_keyring_is_available();
 
