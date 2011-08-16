@@ -95,16 +95,6 @@ public class NamespacesModuleTest extends CssCompletionTestBase {
         checkCC(nsdecl + "h1[f*|attr=val]", arr("foo"), Match.CONTAINS, '*');
         checkCC(nsdecl + "h1[foo*|attr=val]", arr("foo"), Match.CONTAINS, '*');
         
-        checkCC(nsdecl + "h1[foo|attr=val,*]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo|attr=val,f*]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo|attr=val,foo*]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo|attr=val,fo*=val2]", arr("foo"), Match.CONTAINS, '*');
-        
-        checkCC(nsdecl + "h1[foo|attr=val, *]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo|attr=val, f*]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo|attr=val, foo*]", arr("foo"), Match.CONTAINS, '*');
-        checkCC(nsdecl + "h1[foo|attr=val, fo*=val2]", arr("foo"), Match.CONTAINS, '*');
-        
     }
    
 }
