@@ -203,7 +203,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Arrays.asList(PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.PHP_INSTANCEOF);
 
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
-            Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
+            Arrays.asList(new String[] {"__construct", "__destruct", "__call", "__callStatic",
+                "__clone", "__get", "__invoke", "__isset", "__set", "__set_state",
+                "__sleep", "__toString", "__unset", "__wakeup"});//NOI18N
 
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
             Arrays.asList(new String[] {"abstract","const","function", "private", "final",
