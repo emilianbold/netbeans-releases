@@ -154,10 +154,7 @@ public class Utilities {
         HashSet hintSet = new HashSet();
         for (Map.Entry<HintMetadata, Collection<? extends HintDescription>> entry: RulesManager.getInstance().allHints.entrySet()) {
             if (entry.getKey().options.contains(Options.NO_BATCH)) continue;
-            for (HintDescription hd : entry.getValue()) {
-                if (!(hd.getTrigger() instanceof PatternDescription)) continue; //TODO: only pattern based hints are currently supported
-                hintSet.add(entry.getKey());
-            }
+            hintSet.add(entry.getKey());
         }
         
         ArrayList hints = new ArrayList(hintSet); 

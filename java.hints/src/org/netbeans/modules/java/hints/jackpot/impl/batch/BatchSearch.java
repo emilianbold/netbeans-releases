@@ -67,7 +67,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +75,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -87,7 +87,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -109,12 +108,6 @@ public class BatchSearch {
     }
 
     public static BatchResult findOccurrences(final Iterable<? extends HintDescription> patterns, final Scope scope, final ProgressHandleWrapper progress) {
-        for (HintDescription pattern : patterns) {
-            if (!(pattern.getTrigger() instanceof PatternDescription)) {
-                throw new UnsupportedOperationException();
-            }
-        }
-
         return findOccurrencesLocal(patterns, scope.getIndexMapper(patterns), scope.getTodo(), progress);
     }
 
@@ -135,7 +128,16 @@ public class BatchSearch {
     }
     
     private static BatchResult findOccurrencesLocalImpl(final CompilationInfo info, final Iterable<? extends HintDescription> patterns, MapIndices indexMapper, Collection<? extends Folder> todo, ProgressHandleWrapper progress) {
-        final Callable<BulkPattern> bulkPattern = new Callable<BulkPattern>() {
+        boolean hasKindPatterns = false;
+
+        for (HintDescription pattern : patterns) {
+            if (!(pattern.getTrigger() instanceof PatternDescription)) {
+                hasKindPatterns = true;
+                break;
+            }
+        }
+
+        final Callable<BulkPattern> bulkPattern = hasKindPatterns ? null : new Callable<BulkPattern>() {
             private final AtomicReference<BulkPattern> pattern = new AtomicReference<BulkPattern>();
             public BulkPattern call() {
                 if (pattern.get() == null) {
@@ -549,7 +551,7 @@ public class BatchSearch {
         public IndexEnquirer(FileObject src) {
             this.src = src;
         }
-        public abstract Collection<? extends Resource> findResources(Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, Callable<BulkPattern> bulkPattern, Collection<? super MessageImpl> problems);
+        public abstract Collection<? extends Resource> findResources(Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, @NullAllowed Callable<BulkPattern> bulkPattern, Collection<? super MessageImpl> problems);
         public abstract void validateResource(Collection<? extends Resource> resources, ProgressHandleWrapper progress, VerifiedSpansCallBack callback, boolean doNotRegisterClassPath, Collection<? super MessageImpl> problems);
 //        public int[] getEstimatedSpan(Resource r);
     }
@@ -569,7 +571,7 @@ public class BatchSearch {
             super(src);
             this.recursive = recursive;
         }
-        public Collection<? extends Resource> findResources(final Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, final Callable<BulkPattern> bulkPattern, final Collection<? super MessageImpl> problems) {
+        public Collection<? extends Resource> findResources(final Iterable<? extends HintDescription> hints, ProgressHandleWrapper progress, final @NullAllowed Callable<BulkPattern> bulkPattern, final Collection<? super MessageImpl> problems) {
             Collection<FileObject> files = new LinkedList<FileObject>();
 
             final ProgressHandleWrapper innerProgress = progress.startNextPartWithEmbedding(30, 70);
@@ -584,34 +586,40 @@ public class BatchSearch {
 
             if (!files.isEmpty()) {
                 try {
-                    long start = System.currentTimeMillis();
+                    if (bulkPattern != null) {
+                        long start = System.currentTimeMillis();
 
-                    JavaSource.create(Utilities.createUniversalCPInfo(), files).runUserActionTask(new Task<CompilationController>() {
-                        public void run(CompilationController cc) throws Exception {
-                            if (cc.toPhase(Phase.PARSED).compareTo(Phase.PARSED) <0) {
-                                return ;
-                            }
-
-                            try {
-                                boolean matches = BulkSearch.getDefault().matches(cc, new TreePath(cc.getCompilationUnit()), bulkPattern.call());
-
-                                if (matches) {
-                                    result.add(new Resource(FileSystemBasedIndexEnquirer.this, FileUtil.getRelativePath(src, cc.getFileObject()), hints, bulkPattern.call()));
+                        JavaSource.create(Utilities.createUniversalCPInfo(), files).runUserActionTask(new Task<CompilationController>() {
+                            public void run(CompilationController cc) throws Exception {
+                                if (cc.toPhase(Phase.PARSED).compareTo(Phase.PARSED) <0) {
+                                    return ;
                                 }
-                            } catch (ThreadDeath td) {
-                                throw td;
-                            } catch (Throwable t) {
-                                LOG.log(Level.INFO, "Exception while performing batch search in " + FileUtil.getFileDisplayName(cc.getFileObject()), t);
-                                problems.add(new MessageImpl(MessageKind.WARNING, "An exception occurred while testing file: " + FileUtil.getFileDisplayName(cc.getFileObject()) + " (" + t.getLocalizedMessage() + ")."));
+
+                                try {
+                                    boolean matches = BulkSearch.getDefault().matches(cc, new TreePath(cc.getCompilationUnit()), bulkPattern.call());
+
+                                    if (matches) {
+                                        result.add(new Resource(FileSystemBasedIndexEnquirer.this, FileUtil.getRelativePath(src, cc.getFileObject()), hints, bulkPattern.call()));
+                                    }
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t) {
+                                    LOG.log(Level.INFO, "Exception while performing batch search in " + FileUtil.getFileDisplayName(cc.getFileObject()), t);
+                                    problems.add(new MessageImpl(MessageKind.WARNING, "An exception occurred while testing file: " + FileUtil.getFileDisplayName(cc.getFileObject()) + " (" + t.getLocalizedMessage() + ")."));
+                                }
+
+                                innerProgress.tick();
                             }
+                        }, true);
 
-                            innerProgress.tick();
+                        long end = System.currentTimeMillis();
+
+                        LOG.log(Level.FINE, "took: {0}, per file: {1}", new Object[]{end - start, (end - start) / files.size()});
+                    } else {
+                        for (FileObject file : files) {
+                            result.add(new Resource(this, FileUtil.getRelativePath(src, file), hints, null));
                         }
-                    }, true);
-
-                    long end = System.currentTimeMillis();
-
-                    LOG.log(Level.FINE, "took: {0}, per file: {1}", new Object[]{end - start, (end - start) / files.size()});
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
