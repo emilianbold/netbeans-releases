@@ -147,10 +147,9 @@ public abstract class RemoteCommand extends Command {
         return io;
     }
 
-    protected RemoteClient getRemoteClient(InputOutput io, RemoteClient.OperationMonitor operationMonitor) {
+    protected RemoteClient getRemoteClient(InputOutput io) {
         return new RemoteClient(getRemoteConfiguration(), new RemoteClient.AdvancedProperties()
                 .setInputOutput(io)
-                .setOperationMonitor(operationMonitor)
                 .setAdditionalInitialSubdirectory(getRemoteDirectory())
                 .setPreservePermissions(ProjectPropertiesSupport.areRemotePermissionsPreserved(getProject()))
                 .setUploadDirectly(ProjectPropertiesSupport.isRemoteUploadDirectly(getProject()))
@@ -372,14 +371,16 @@ public abstract class RemoteCommand extends Command {
     public static final class DefaultOperationMonitor implements RemoteClient.OperationMonitor {
 
         private final Deque<Operation> operations = new ArrayDeque<Operation>();
+        private final ProgressHandle progressHandle;
 
-        private int workUnits;
-        private ProgressHandle progressHandle = null;
-
+        private int workUnits = 0;
         private int workUnit = 0;
 
 
-        public void setProgressHandle(ProgressHandle progressHandle, Set<TransferFile> forFiles) {
+        public DefaultOperationMonitor(ProgressHandle progressHandle, Set<TransferFile> forFiles) {
+            if (progressHandle == null) {
+                throw new IllegalStateException("Progress handle must be set");
+            }
             this.progressHandle = progressHandle;
             workUnits = getWorkUnits(forFiles);
         }
@@ -387,9 +388,6 @@ public abstract class RemoteCommand extends Command {
         @Override
         public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
             if (operations.isEmpty()) {
-                if (progressHandle == null) {
-                    throw new IllegalStateException("Progress handle must be set");
-                }
                 progressHandle.start(workUnits);
             }
             operations.offerFirst(operation);
@@ -401,21 +399,17 @@ public abstract class RemoteCommand extends Command {
 
         @Override
         public void operationProcess(Operation operation, TransferFile forFile) {
+            long size = forFile.getSize();
             switch (operation) {
                 case LIST:
-                    if (progressHandle != null) {
-                        long size = forFile.getSize();
-                        if (size > 0) {
-                            workUnits += size / 1024;
-                        }
+                    if (size > 0) {
+                        workUnits += size / 1024;
                     }
                     break;
                 case UPLOAD:
                 case DOWNLOAD:
-                    String processMessageKey = operation == Operation.DOWNLOAD ? "LBL_Downloading" : "LBL_Uploading"; // NOI18N
-                    long size = forFile.getSize();
                     if (size > 0) {
-                        assert progressHandle != null;
+                        String processMessageKey = operation == Operation.DOWNLOAD ? "LBL_Downloading" : "LBL_Uploading"; // NOI18N
                         progressHandle.progress(NbBundle.getMessage(DefaultOperationMonitor.class, processMessageKey, forFile.getName()), workUnit);
                         workUnit += size / 1024;
                     }

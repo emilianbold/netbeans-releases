@@ -112,11 +112,10 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
-        DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor();
-        RemoteClient remoteClient = getRemoteClient(remoteLog, uploadOperationMonitor);
+        RemoteClient remoteClient = getRemoteClient(remoteLog);
 
         Set<TransferFile> forUpload = prepareUpload(sources, filesToUpload, preselectedFiles, remoteClient);
-        upload(forUpload, sources, filesToUpload, uploadOperationMonitor, remoteLog, remoteClient);
+        upload(forUpload, sources, filesToUpload, remoteLog, remoteClient);
     }
 
     private Set<TransferFile> prepareUpload(FileObject sources, FileObject[] filesToUpload, FileObject[] preselectedFiles, RemoteClient remoteClient) {
@@ -159,14 +158,16 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         return forUpload;
     }
 
-    private void upload(Set<TransferFile> forUpload, FileObject sources, FileObject[] filesToUpload,
-            DefaultOperationMonitor uploadOperationMonitor, InputOutput remoteLog, RemoteClient remoteClient) {
+    private void upload(Set<TransferFile> forUpload, FileObject sources, FileObject[] filesToUpload, InputOutput remoteLog, RemoteClient remoteClient) {
         TransferInfo transferInfo = null;
         try {
             if (forUpload.size() > 0) {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
-                uploadOperationMonitor.setProgressHandle(progressHandle, forUpload);
+                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
+                DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor(progressHandle, forUpload);
+                remoteClient.setOperationMonitor(uploadOperationMonitor);
                 transferInfo = remoteClient.upload(sources, forUpload);
+                remoteClient.setOperationMonitor(null);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
                 if (!remoteClient.isCancelled()

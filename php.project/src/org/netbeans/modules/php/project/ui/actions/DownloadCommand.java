@@ -104,10 +104,9 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         }
 
         InputOutput remoteLog = getRemoteLog(getRemoteConfiguration().getDisplayName());
-        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor();
-        RemoteClient remoteClient = getRemoteClient(remoteLog, downloadOperationMonitor);
+        RemoteClient remoteClient = getRemoteClient(remoteLog);
         String projectName = getProject().getName();
-        download(remoteClient, remoteLog, downloadOperationMonitor, projectName, true, sources, selectedFiles, null, getProject());
+        download(remoteClient, remoteLog, projectName, true, sources, selectedFiles, null, getProject());
     }
 
     @Override
@@ -115,16 +114,16 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         return DISPLAY_NAME;
     }
 
-    public static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
+    public static void download(RemoteClient remoteClient, InputOutput remoteLog, String projectName,
             FileObject sources, Set<TransferFile> forDownload) {
-        download(remoteClient, remoteLog, operationMonitor, projectName, false, sources, null, forDownload, null);
+        download(remoteClient, remoteLog, projectName, false, sources, null, forDownload, null);
     }
 
-    private static void download(RemoteClient remoteClient, InputOutput remoteLog, DefaultOperationMonitor operationMonitor, String projectName,
+    private static void download(RemoteClient remoteClient, InputOutput remoteLog, String projectName,
             boolean showDownloadDialog, FileObject sources, FileObject[] filesToDownload, Set<TransferFile> transferFilesToDownload, PhpProject project) {
 
         Set<TransferFile> forDownload = prepareDownload(transferFilesToDownload, sources, filesToDownload, project, projectName, showDownloadDialog, remoteClient);
-        download(forDownload, project, projectName, sources, filesToDownload, operationMonitor, remoteLog, remoteClient);
+        download(forDownload, project, projectName, sources, filesToDownload, remoteLog, remoteClient);
     }
 
     private static Set<TransferFile> prepareDownload(Set<TransferFile> transferFilesToDownload, FileObject sources, FileObject[] filesToDownload,
@@ -157,14 +156,16 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     }
 
     private static void download(Set<TransferFile> forDownload, PhpProject project, String projectName, FileObject sources, FileObject[] filesToDownload,
-            DefaultOperationMonitor operationMonitor, InputOutput remoteLog, RemoteClient remoteClient) {
+            InputOutput remoteLog, RemoteClient remoteClient) {
         TransferInfo transferInfo = null;
         try {
             if (forDownload.size() > 0) {
-                String progressTitle = NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName);
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
-                operationMonitor.setProgressHandle(progressHandle, forDownload);
+                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName), remoteClient);
+                DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor(progressHandle, forDownload);
+                remoteClient.setOperationMonitor(downloadOperationMonitor);
                 transferInfo = remoteClient.download(sources, forDownload);
+                remoteClient.setOperationMonitor(null);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));
                 if (project != null
