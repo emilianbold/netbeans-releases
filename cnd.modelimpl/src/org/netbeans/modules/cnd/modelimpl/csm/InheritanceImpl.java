@@ -144,10 +144,10 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
         if (!CsmBaseUtilities.isValid(resolvedClassifier)) {
             resolvedClassifier = getAncestorType().getClassifier();
             if (resolvedClassifier != null) {
-                if (UIDProviderIml.isPersistable(UIDs.get(this))) {
-                    if (UIDProviderIml.isPersistable(UIDs.get(resolvedClassifier))) {
-                        RepositoryUtils.put(this);
-                    }
+                if (UIDProviderIml.isPersistable(UIDs.get(this)) &&
+                    UIDProviderIml.isPersistable(UIDs.get(resolvedClassifier)) &&
+                    UIDProviderIml.isPersistable(scope)) {
+                    RepositoryUtils.put(this);
                 }
             }
         }
