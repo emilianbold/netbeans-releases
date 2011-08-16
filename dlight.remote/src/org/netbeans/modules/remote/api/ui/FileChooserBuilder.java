@@ -42,18 +42,22 @@
 
 package org.netbeans.modules.remote.api.ui;
 
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.HeadlessException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,6 +89,7 @@ public final class FileChooserBuilder {
     private static final String saveDialogTitleTextKey = "FileChooser.saveDialogTitleText"; // NOI18N
     private static final String readOnlyKey = "FileChooser.readOnly"; // NOI18N
     private final ExecutionEnvironment env;
+    private Preferences forModule;
 
     public FileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
@@ -110,7 +115,7 @@ public final class FileChooserBuilder {
 
             RemoteFileSystemView remoteFileSystemView = new RemoteFileSystemView("/", env); // NOI18N
 
-            RemoteFileChooserImpl chooser = new RemoteFileChooserImpl(selectedPath, remoteFileSystemView);//NOI18N
+            RemoteFileChooserImpl chooser = new RemoteFileChooserImpl(selectedPath, remoteFileSystemView, env, forModule);//NOI18N
             remoteFileSystemView.addPropertyChangeListener(chooser);
 
             UIManager.put(openDialogTitleTextKey, currentOpenTitle);
@@ -119,6 +124,11 @@ public final class FileChooserBuilder {
 
             return chooser;
         }
+    }
+
+    public FileChooserBuilder setPreferences(Preferences forModule) {
+        this.forModule = forModule;
+        return this;
     }
 
     private static String decorateTitle(String title, ExecutionEnvironment env) {
@@ -155,9 +165,13 @@ public final class FileChooserBuilder {
 
     private static class RemoteFileChooserImpl extends JFileChooserEx
             implements PropertyChangeListener {
+        private final Preferences forModule;
+       private final ExecutionEnvironment env;
 
-        public RemoteFileChooserImpl(String currentDirectory, RemoteFileSystemView fsv) {
+        public RemoteFileChooserImpl(String currentDirectory, RemoteFileSystemView fsv, ExecutionEnvironment env, Preferences forModule) {
             super(currentDirectory, fsv);
+            this.env = env;
+            this.forModule = forModule;
         }
 
         @Override
@@ -246,6 +260,21 @@ public final class FileChooserBuilder {
         @Override
         public void setDialogTitle(String dialogTitle) {
             super.setDialogTitle(decorateTitle(dialogTitle, getFileSystemView().getExecutionEnvironment()));
+        }
+
+        @Override
+        public int showOpenDialog(Component parent) throws HeadlessException {
+            int ret = super.showOpenDialog(parent);
+            if (ret != CANCEL_OPTION) {
+                if (getSelectedFile() != null) {
+                    String path = getSelectedFile().getAbsolutePath();
+                    if (forModule != null) {
+                        String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+                        forModule.put("FileChooserPath"+envID, path); // NOI18N
+                    }
+                }
+            }
+            return ret;
         }
     }
 }
