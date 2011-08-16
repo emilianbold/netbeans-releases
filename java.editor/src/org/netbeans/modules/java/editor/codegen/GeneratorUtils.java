@@ -85,7 +85,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -99,7 +99,6 @@ import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -467,36 +466,12 @@ public class GeneratorUtils {
     }
 
     /**
-     * @param file tested file
-     * @return true if file's sourcelevel supports Override
-     * @deprecated please use {@link #supportsOverride(org.​netbeans.​api.​java.​source.CompilationInfo)} instead.
-     */
-    @Deprecated
-    public static boolean supportsOverride(FileObject file) {
-        return SUPPORTS_OVERRIDE_SOURCE_LEVELS.contains(SourceLevelQuery.getSourceLevel(file));
-    }
-
-    /**
      * @param info tested file's info
      * @return true if SourceVersion of source represented by provided info supports Override
      */
-    public static boolean supportsOverride(CompilationInfo info) {
-        return SUPPORTS_OVERRIDE_SOURCE_VERSIONS.contains(info.getSourceVersion())
+    public static boolean supportsOverride(@NonNull CompilationInfo info) {
+        return SourceVersion.RELEASE_5.compareTo(info.getSourceVersion()) <= 0
                && info.getElements().getTypeElement("java.lang.Override") != null;
-    }
-    
-    private static final Set<String> SUPPORTS_OVERRIDE_SOURCE_LEVELS;
-    private static final Set<SourceVersion> SUPPORTS_OVERRIDE_SOURCE_VERSIONS;
-    
-    static {
-        SUPPORTS_OVERRIDE_SOURCE_LEVELS = new HashSet<String>();
-        SUPPORTS_OVERRIDE_SOURCE_VERSIONS = new HashSet<SourceVersion>(2);
-        
-        SUPPORTS_OVERRIDE_SOURCE_LEVELS.add("1.5");
-        SUPPORTS_OVERRIDE_SOURCE_LEVELS.add("1.6");
-
-        SUPPORTS_OVERRIDE_SOURCE_VERSIONS.add(SourceVersion.RELEASE_5);
-        SUPPORTS_OVERRIDE_SOURCE_VERSIONS.add(SourceVersion.RELEASE_6);
     }
 
     private static List<TypeElement> getAllClasses(TypeElement of) {
