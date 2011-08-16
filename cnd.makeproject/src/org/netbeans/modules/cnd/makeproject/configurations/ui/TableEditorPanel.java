@@ -73,13 +73,14 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
     private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"); // NOI18N
-    private String baseDir;
+    private FSPath baseDir;
     private MakeConfiguration conf;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
@@ -94,7 +95,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
     this(objects, null, null);
     }
      */
-    public TableEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons, String baseDir) {
+    public TableEditorPanel(MakeConfiguration conf, List<LibraryItem> objects, JButton[] extraButtons, FSPath baseDir) {
         super(objects, extraButtons);
         this.conf = conf;
         this.baseDir = baseDir;
@@ -377,8 +378,8 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 String workingDirectory = makeArtifact.getWorkingDirectory();
                 if (!abs) {
                     // retain abs/rel paths...
-                    projectLocation = CndPathUtilitities.toRelativePath(baseDir, projectLocation);
-                    workingDirectory = CndPathUtilitities.toRelativePath(baseDir, workingDirectory);
+                    projectLocation = CndPathUtilitities.toRelativePath(baseDir.getFileObject(), projectLocation);
+                    workingDirectory = CndPathUtilitities.toRelativePath(baseDir.getFileObject(), workingDirectory);
                 }
                 makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
                 makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,29 +40,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
+package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.util.List;
-import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
-import org.netbeans.modules.cnd.utils.FSPath;
+import java.io.IOException;
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
+/** Separated into own test.
  *
- * @author thp
+ * @author rmatous
  */
-public class PackagingFiles4Panel extends PackagingFilesPanel {
-    public PackagingFiles4Panel(List<PackagerFileElement> fileList, FSPath baseDir) {
-        super(fileList, baseDir);
+public class FileObjectFactorySizeTest extends NbTestCase {
+    private File testFile;
+
+
+    public FileObjectFactorySizeTest(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();        
+        testFile = new File(getWorkDir(),"testfile");//NOI18N
+        if (!testFile.exists()) {
+            assert testFile.createNewFile();
+        }
+        
     }
     
-    @Override
-    public int getActualColumnCount() {
-        return 4;
+
+    public void testIssuingFileObject() throws IOException {      
+        FileObjectFactory fbs = FileObjectFactory.getInstance(getWorkDir());
+        assertEquals("One file object exists?", 1, fbs.getSize());
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(workDir);
+        //root + workdir
+        assertEquals(2, fbs.getSize());
+        assertEquals(2, fbs.getSize());
+        Reference rf = new  WeakReference(workDir.getParent());
+        assertGC("", rf);
+        assertNull(((BaseFileObj)workDir).getExistingParent());
+        assertEquals(2, fbs.getSize());
+        fbs.getRoot().getFileObject(workDir.getPath());
+        assertEquals(2, fbs.getSize());
+        rf = new  WeakReference(workDir.getParent());
+        assertGC("", rf);
+        assertNull(((BaseFileObj)workDir).getExistingParent());
+        assertEquals(2, fbs.getSize());
     }
 }

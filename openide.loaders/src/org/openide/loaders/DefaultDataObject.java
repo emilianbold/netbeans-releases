@@ -81,7 +81,13 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     DefaultDataObject (FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
         super (fo, loader);
     }
+
+    @Override
+    protected int associateLookup() {
+        return 1;
+    }
  
+    
     /* Creates node delegate.
     */
     @Override

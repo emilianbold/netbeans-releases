@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -69,10 +68,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
 
     @Override
     public String addAction() {
-        String seed = null;
-        if (FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
-        }
+        String seed = RemoteFileUtil.getCurrentChooserFile(executionEnvironment);
         if (seed == null) {
             seed = baseDir;
         }
