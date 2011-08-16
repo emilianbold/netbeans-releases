@@ -1011,7 +1011,12 @@ public class Utilities {
         // XXX: it test can break simple modules mode
         // should find corresponing UpdateElement and check its type
         Object o = mi.getAttribute (ATTR_VISIBLE);
-        return o == null || Boolean.parseBoolean (o.toString ());
+        if (o != null) {
+            return Boolean.parseBoolean(o.toString());
+        }
+        // OSGi bundles should be considered invisible by default since they are typically autoloads.
+        // (NB modules get AutoUpdate-Show-In-Client inserted into the JAR by the build process.)
+        return mi.getAttribute("Bundle-SymbolicName") == null;
     }
     
     public static boolean isEssentialModule (ModuleInfo mi) {

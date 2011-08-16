@@ -86,6 +86,15 @@ final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
         all.addAll(m);
     }
 
+    boolean isUnderOurControl(String symbolicName) {
+        for (ModuleInfo mi : all) {
+            if (symbolicName.equals(mi.getCodeNameBase())) {
+                return mi.isEnabled();
+            }
+        }
+        return false;
+    }
+
     private static final class DelegateLoader extends ClassLoader {
 
         private final ModuleInfo mi;

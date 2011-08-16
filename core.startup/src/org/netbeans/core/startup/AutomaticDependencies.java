@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.Util;
 import org.openide.modules.Dependency;
@@ -83,6 +86,7 @@ import org.xml.sax.XMLReader;
  * @since org.netbeans.core/1 1.12
  */
 public final class AutomaticDependencies {
+    private static final Logger LOG = Logger.getLogger(AutomaticDependencies.class.getName());
 
     private AutomaticDependencies() {}
     
@@ -105,6 +109,7 @@ public final class AutomaticDependencies {
      * @return a list of parsed transformations
      */
     public static AutomaticDependencies parse(URL[] urls) throws SAXException, IOException {
+        LOG.log(Level.FINE, "Parsing automatic dependencies {0}", Arrays.asList(urls));
         AutomaticDependencies h = new AutomaticDependencies();
         Parser p = new Parser(h.new Handler());
         for (URL url : urls) {
