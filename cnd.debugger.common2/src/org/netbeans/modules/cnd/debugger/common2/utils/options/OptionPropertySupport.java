@@ -47,9 +47,9 @@ package org.netbeans.modules.cnd.debugger.common2.utils.options;
 
 import java.beans.PropertyEditor;
 
+import javax.swing.JFileChooser;
 import org.openide.ErrorManager;
 import org.openide.nodes.PropertySupport;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
@@ -147,10 +147,10 @@ public class OptionPropertySupport extends PropertySupport {
 		propertyEditor = super.getPropertyEditor();
 		break;
 	    case Option.DIRECTORY:
-		propertyEditor = new OptionDirectoryEditor(this, base, FileChooser.DIRECTORIES_ONLY);
+		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.DIRECTORIES_ONLY);
 		break;
 	    case Option.FILE:
-		propertyEditor = new OptionDirectoryEditor(this, base, FileChooser.FILES_ONLY);
+		propertyEditor = new OptionDirectoryEditor(this, base, JFileChooser.FILES_ONLY);
 		break;
 	    case Option.TEXT_AREA:
 	    case Option.RADIO_BUTTON:

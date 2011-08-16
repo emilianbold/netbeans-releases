@@ -59,10 +59,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -96,7 +97,6 @@ public class AddExistingItemAction extends NodeAction {
 
     @Override
     public void performAction(Node[] activatedNodes) {
-	boolean notifySources = false;
 	Node n = activatedNodes[0];
 	Project project = (Project)n.getValue("Project"); // NOI18N
 	assert project != null;
@@ -109,14 +109,13 @@ public class AddExistingItemAction extends NodeAction {
         if (!projectDescriptor.okToChange()) {
             return;
         }
-	String seed = null;
-	if (FileChooser.getCurrentChooserFile() != null) {
-	    seed = FileChooser.getCurrentChooserFile().getPath();
-	}
-	if (seed == null) {
-	    seed = projectDescriptor.getBaseDir();
-	}
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(projectDescriptor.getBaseDirFileSystem(), getString("SelectItem"), getString("Select"), FileChooser.FILES_ONLY, null, seed, false);                
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(projectDescriptor.getBaseDirFileSystem());
+        String seed = RemoteFileUtil.getCurrentChooserFile(env);
+        if (seed == null) {
+            seed = projectDescriptor.getBaseDir();
+        }
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(projectDescriptor.getBaseDirFileSystem(), getString("SelectItem"), getString("Select"),
+                                   JFileChooser.FILES_ONLY, null, seed, false);                
 	PathPanel pathPanel = new PathPanel();
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
@@ -130,13 +129,14 @@ public class AddExistingItemAction extends NodeAction {
         fileChooser.addChoosableFileFilter(FileFilterFactory.getAllFileFilter());
         fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
-	if (ret == FileChooser.CANCEL_OPTION) {
+	if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
 
 	File[] files = fileChooser.getSelectedFiles();
         addFilesWorker(project, projectDescriptor, folder, files);
-//        ArrayList<Item> items = new ArrayList<Item>();
+//	boolean notifySources = false;
+//      ArrayList<Item> items = new ArrayList<Item>();
 //	for (int i = 0; i < files.length; i++) {
 //	    String itemPath;
 //	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)

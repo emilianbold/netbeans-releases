@@ -50,11 +50,14 @@ import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -64,13 +67,13 @@ import org.openide.util.NbBundle;
 public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
     private MyListEditorPanel myListEditorPanel;
-    private String baseDir;
+    private FSPath baseDir;
     private boolean addPathPanel;
     private BooleanConfiguration inheritValues;
     private PropertyEditorSupport editor;
     private HelpCtx helpCtx;
 
-    public DirectoryChooserPanel(String baseDir, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
+    public DirectoryChooserPanel(FSPath baseDir, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
         this.baseDir = baseDir;
         this.addPathPanel = addPathPanel;
         this.inheritValues = inheritValues;
@@ -230,14 +233,12 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 
         @Override
         public String addAction() {
-            String seed = null;
-            if (FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
+            final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
+            String seed = RemoteFileUtil.getCurrentChooserFile(env);
             if (seed == null) {
-                seed = baseDir;
+                seed = baseDir.getPath();
             }
-            FileChooser fileChooser = new FileChooser(getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
             PathPanel pathPanel = null;
             if (addPathPanel) {
                 pathPanel = new PathPanel();
@@ -249,7 +250,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             }
             String itemPath = CndPathUtilitities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
             itemPath = ProjectSupport.toProperPath(
-                    CndPathUtilitities.naturalizeSlashes(baseDir),
+                    CndPathUtilitities.naturalizeSlashes(baseDir.getPath()),
                     itemPath,
                     MakeProjectOptions.getPathMode());
             itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
