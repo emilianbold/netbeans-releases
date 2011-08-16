@@ -43,23 +43,30 @@
  */
 package org.netbeans.modules.xml.multiview;
 
+import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.openide.util.NbBundle;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import org.openide.actions.FileSystemAction;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
  * @author pfiala
  */
 public abstract class AbstractMultiViewElement implements MultiViewElement, Serializable {
-    static final long serialVersionUID = -1161218720923844459L;
+    private static final long serialVersionUID = 20110816L;
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractMultiViewElement.class.getName());
 
     protected XmlMultiViewDataObject dObj;
     protected transient MultiViewElementCallback callback;
@@ -82,14 +89,29 @@ public abstract class AbstractMultiViewElement implements MultiViewElement, Seri
         }
     }
 
+    @Override
     public CloseOperationState canCloseElement() {
-        if (dObj == null) {
+        if (dObj == null || dObj.canClose()) {
             return CloseOperationState.STATE_OK;
-        } else if (!dObj.canClose()) {
-            return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(AbstractMultiViewElement.class,
-                    "LBL_DataObjectModified"), null, null);
+        } else if (!this.callback.isSelectedElement()) {
+            return CloseOperationState.STATE_OK;
+        } else if (!dObj.isModified()) {
+            return CloseOperationState.STATE_OK;
         } else {
-            return CloseOperationState.STATE_OK;
+            boolean differ = false;
+            String message = dObj.getEditorSupport().messageSave();
+            try {
+                String encoding = dObj.encoding();
+                differ = dObj.encodingDiffer(encoding);
+                if (differ) {
+                    message += " <b>" + dObj.encodingMessage(encoding) + "</b>";
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            message = "<html>" + message + "</html>";
+            return MultiViewFactory.createUnsafeCloseState(
+                    message, new SaveAction(differ), new DiscardAction());
         }
     }
 
@@ -113,5 +135,36 @@ public abstract class AbstractMultiViewElement implements MultiViewElement, Seri
 
     public org.openide.awt.UndoRedo getUndoRedo() {
         return dObj ==null ? null : dObj.getEditorSupport().getUndoRedo0();
+    }
+
+    private class SaveAction extends AbstractAction {
+
+        private final boolean encodingReset;
+
+        public SaveAction(boolean encodingReset) {
+            this.encodingReset = encodingReset;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (encodingReset) {
+                dObj.encodingReset();
+            }
+            try {
+                dObj.getEditorSupport().onCloseSave();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+
+    }
+
+    private class DiscardAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            dObj.getEditorSupport().onCloseDiscard();
+        }
+
     }
 }
