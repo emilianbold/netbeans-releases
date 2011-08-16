@@ -55,24 +55,32 @@ final class TransferSelectorModel {
     private final Set<TransferFile> transferFiles;
     private final Set<TransferFile> selected = Collections.synchronizedSet(new HashSet<TransferFile>());
     private final TransferFilesChangeSupport filesChangeSupport = new TransferFilesChangeSupport(this);
+    private final long timestamp;
 
 
     public TransferSelectorModel(Set<TransferFile> transferFiles, long timestamp) {
         assert transferFiles != null;
 
         this.transferFiles = Collections.synchronizedSet(copyNoProjectRoot(transferFiles));
+        this.timestamp = timestamp;
 
-        boolean select = timestamp == -1;
+
         for (TransferFile file : this.transferFiles) {
-            if (timestamp != -1) {
-                // we have some timestamp
-                select = file.getTimestamp() > timestamp;
-            }
-            if (select) {
-                // intentionally not addChildren()!
-                selected.add(file);
-            }
+            preselect(file);
         }
+    }
+
+    private boolean preselect(TransferFile file) {
+        boolean select = timestamp == -1;
+        if (timestamp != -1) {
+            // we have some timestamp
+            select = file.getTimestamp() > timestamp;
+        }
+        if (select) {
+            // intentionally not addChildren()!
+            selected.add(file);
+        }
+        return select;
     }
 
     public void addChangeListener(TransferFilesChangeListener listener) {
@@ -118,6 +126,18 @@ final class TransferSelectorModel {
             removeChildren(transferFile);
         }
         filesChangeSupport.fireSelectedFilesChange();
+    }
+
+    public void addNode(Node node) {
+        TransferFile transferFile = getTransferFile(node);
+        if (transferFile == null) {
+            // dblclick on root node or not known yet
+            return;
+        }
+        boolean preselected = preselect(transferFile);
+        if (preselected) {
+            setNodeSelected(node, true);
+        }
     }
 
     public void selectAll() {

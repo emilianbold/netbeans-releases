@@ -354,12 +354,10 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
     private class FileChildFactory extends ChildFactory<TransferFile> {
 
         private final TransferFile transferFile;
-        private final boolean selectNodes;
 
 
         public FileChildFactory(TransferFile transferFile) {
             this.transferFile = transferFile;
-            selectNodes = !transferFile.hasChildrenFetched();
         }
 
         @Override
@@ -372,9 +370,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         @Override
         protected Node createNodeForKey(TransferFile file) {
             Node node = TransferSelector.this.create(file);
-            if (selectNodes) {
-                model.setNodeSelected(node, true);
-            }
+            model.addNode(node);
             return node;
         }
 
