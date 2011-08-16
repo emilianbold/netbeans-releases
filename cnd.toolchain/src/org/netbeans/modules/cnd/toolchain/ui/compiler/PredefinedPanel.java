@@ -54,11 +54,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinition;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -74,15 +75,17 @@ public class PredefinedPanel extends javax.swing.JPanel {
     private IncludesPanel includesPanel;
     private DefinitionsPanel definitionsPanel;
     private AbstractCompiler compiler;
-    private ParserSettingsPanel parserSettingsPanel;
+    private final ParserSettingsPanel parserSettingsPanel;
+    private ExecutionEnvironment env;
 
     private boolean settingsReseted = false;
 
     /** Creates new form PredefinedPanel */
-    public PredefinedPanel(AbstractCompiler compiler, ParserSettingsPanel parserSettingsPanel) {
+    public PredefinedPanel(AbstractCompiler compiler, ParserSettingsPanel parserSettingsPanel, ExecutionEnvironment env) {
         initComponents();
         this.compiler = compiler;
         this.parserSettingsPanel = parserSettingsPanel;
+        this.env = env;
         updatePanels(false);
 
         resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
@@ -106,7 +109,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
                         if (includesPanel != null) {
                             includes.remove(includesPanel);
                         }
-                        includes.add(includesPanel = new IncludesPanel(includesList));
+                        includes.add(includesPanel = new IncludesPanel(includesList, env));
                         
                         if (definesList instanceof CompilerDefinition) {
                             ((CompilerDefinition)definesList).sort();
@@ -155,8 +158,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
         updatePanels(false);
     }
 
-    public void updateCompiler(AbstractCompiler compiler) {
+    public void updateCompiler(AbstractCompiler compiler, ExecutionEnvironment env) {
         this.compiler = compiler;
+        this.env = env;
         updatePanels(false);
     }
 
@@ -270,9 +274,11 @@ public class PredefinedPanel extends javax.swing.JPanel {
     
     private static class IncludesPanel extends ListEditorPanel<String> {
         private CCCCompiler.CompilerDefinition defs;
+        private final ExecutionEnvironment env;
 
-        public IncludesPanel(List<String> objects) {
+        public IncludesPanel(List<String> objects, ExecutionEnvironment env) {
             super(objects);
+            this.env = env;
             if (objects instanceof CCCCompiler.CompilerDefinition) {
                 defs = (CompilerDefinition) objects;
                 setCustomCellRenderer(new MyDefaultListCellRenderer(defs, "include")); // NOI18N
@@ -286,14 +292,12 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         @Override
         public String addAction() {
-            String seed = null;
-            if (FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
+            String seed = RemoteFileUtil.getCurrentChooserFile(env);
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            FileChooser fileChooser = new FileChooser(getString("SelectDirectoryTxt"), getString("SelectTxt"), JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"),
+                                                      JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;

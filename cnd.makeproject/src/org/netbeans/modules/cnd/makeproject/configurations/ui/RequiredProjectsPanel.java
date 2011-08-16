@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -65,7 +66,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
     private Project project;
     private MakeConfiguration conf;
     private MyListEditorPanel myListEditorPanel;
-    private String baseDir;
+    private FSPath baseDir;
     private PropertyEditorSupport editor;
     private JButton addProjectButton;
     private JButton addStandardLibraryButton;
@@ -73,7 +74,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
     private JButton addLibraryFileButton;
     private JButton addLibraryOption;
 
-    public RequiredProjectsPanel(Project project, MakeConfiguration conf, String baseDir, List<LibraryItem> data, PropertyEditorSupport editor, PropertyEnv env) {
+    public RequiredProjectsPanel(Project project, MakeConfiguration conf, FSPath baseDir, List<LibraryItem> data, PropertyEditorSupport editor, PropertyEnv env) {
         this.project = project;
         this.conf = conf;
         this.baseDir = baseDir;
@@ -193,11 +194,11 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, myListEditorPanel);
+            MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.PROJECT, project, baseDir, myListEditorPanel);
             if (artifacts != null) {
                 for (int i = 0; i < artifacts.length; i++) {
-                    String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
-                    String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
+                    String location = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getProjectLocation(), project);
+                    String workingdir = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getWorkingDirectory(), project);
                     location = CndPathUtilitities.normalizeSlashes(location);
                     workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);

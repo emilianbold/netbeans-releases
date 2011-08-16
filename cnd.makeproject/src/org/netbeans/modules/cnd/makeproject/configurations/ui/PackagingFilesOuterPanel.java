@@ -257,7 +257,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         tmpPanel.setLayout(tmpPanelLayout);
         tmpPanelLayout.setHorizontalGroup(
             tmpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 957, Short.MAX_VALUE)
+            .addGap(0, 592, Short.MAX_VALUE)
         );
         tmpPanelLayout.setVerticalGroup(
             tmpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

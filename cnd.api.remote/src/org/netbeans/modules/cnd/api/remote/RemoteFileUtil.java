@@ -44,9 +44,13 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -56,13 +60,17 @@ import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -267,7 +275,8 @@ public class RemoteFileUtil {
                     useParent);
         } else {
             // TODO support useParent or rework it
-            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
+            final FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(execEnv).setPreferences(NbPreferences.forModule(RemoteFileUtil.class));
+            fileChooser = fileChooserBuilder.createFileChooser(initialPath);
             fileChooser.setApproveButtonText(buttonText);
             fileChooser.setDialogTitle(titleText);
             fileChooser.setFileSelectionMode(mode);
@@ -280,13 +289,31 @@ public class RemoteFileUtil {
         }
         return fileChooser;
     }
+    public static JFileChooser createProjectChooser(ExecutionEnvironment execEnv,
+            String titleText, String description, String buttonText, String initialPath) {
+        JFileChooser fileChooser;
+        if (execEnv.isLocal()) {
+            fileChooser = ProjectChooser.projectChooser();
+            fileChooser.getAccessibleContext().setAccessibleDescription(description);
+            fileChooser.setDialogTitle(titleText);
+            fileChooser.setApproveButtonText(buttonText);
+            if (initialPath != null) {
+                fileChooser.setCurrentDirectory(new File(initialPath));
+            }
+        } else {
+            fileChooser = (JFileChooserEx) createFileChooser(execEnv,
+                          titleText, buttonText, JFileChooser.DIRECTORIES_ONLY, null, initialPath, true);
+            fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
+        }
+        return fileChooser;
+        
+    }
 
     /**
      * Returns the folder last used for creating a new project.
-     * @return File the folder, never returns null. In the case
-     * when the projects folder was not set the home folder is returned.
+     * @return File the folder
      */
-    public static String getProjectsFolder (ExecutionEnvironment env) {
+    public static String getProjectsFolder(ExecutionEnvironment env) {
         Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
         String envID = ExecutionEnvironmentFactory.toUniqueID(env);
         return pref.get("ProjectPath"+envID, null); // NOI18N
@@ -294,11 +321,102 @@ public class RemoteFileUtil {
     /**
      * Sets the folder last used for creating a new project.
      * @param folder The folder to be set as last used. Must not be null
-     * @throws IllegalArgumentException if folder parameter is null or not a directory.
      */
-    public static void setProjectsFolder (String folder, ExecutionEnvironment env) {
+    public static void setProjectsFolder(String folder, ExecutionEnvironment env) {
         Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
         String envID = ExecutionEnvironmentFactory.toUniqueID(env);
         pref.put("ProjectPath"+envID, folder); // NOI18N
     }
+
+    /**
+     * Returns the folder last used for selecting files.
+     * FileChooserBuilder.RemoteFileChooserImpl.
+     * @return File the path to last selected file.
+     */
+    public static String getCurrentChooserFile(ExecutionEnvironment env) {
+        if (env.isLocal()) {
+            if (FileChooser.getCurrentChooserFile() != null) {
+                return FileChooser.getCurrentChooserFile().getPath();
+            }
+            return null;
+        } else {
+            Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
+            String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+            return pref.get("FileChooserPath"+envID, null); // NOI18N
+        }
+    }
+    
+    /**
+     * Sets the folder last used for creating a new project.
+     * @param folder the path to be set as last used.
+     */
+    public static void setCurrentChooserFile(String path, ExecutionEnvironment env) {
+        if (env.isLocal()) {
+            if (FileChooser.getCurrentChooserFile() != null) {
+                FileChooser.setCurrentChooserFile(new File(path));
+            }
+        } else {
+            Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
+            String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+            pref.put("FileChooserPath"+envID, path); // NOI18N
+        }
+    }
+
+    private static final class ProjectSelectionFileView extends FileView implements Runnable {
+
+        private final JFileChooser chooser;
+        private final Map<File, Icon> knownProjectIcons = new HashMap<File, Icon>();
+        private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);//NOI18N
+        private File lookingForIcon;
+
+        public ProjectSelectionFileView(JFileChooser chooser) {
+            this.chooser = chooser;
+        }
+
+        @Override
+        public Icon getIcon(File f) {
+            if (f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
+                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc. //NOI18N
+                    f.getParentFile() != null) { // do not consider drive roots
+                synchronized (this) {
+                    Icon icon = knownProjectIcons.get(f);
+                    if (icon != null) {
+                        return icon;
+                    } else if (lookingForIcon == null) {
+                        lookingForIcon = f;
+                        task.schedule(20);
+                        // Only calculate one at a time.
+                        // When the view refreshes, the next unknown icon
+                        // should trigger the task to be reloaded.
+                    }
+                }
+            }
+            return chooser.getFileSystemView().getSystemIcon(f);
+        }
+
+        @Override
+        public void run() {
+            String path = lookingForIcon.getAbsolutePath();
+            String project = path + "/nbproject"; // NOI18N
+            File projectDir = chooser.getFileSystemView().createFileObject(project);
+            Icon icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+            if (projectDir.exists() && projectDir.isDirectory() && projectDir.canRead()) {
+                String projectXml = path + "/nbproject/project.xml"; // NOI18N
+                File projectFile = chooser.getFileSystemView().createFileObject(projectXml);
+                if (projectFile.exists()) {
+                    String conf = path + "/nbproject/configurations.xml"; // NOI18N
+                    File configuration = chooser.getFileSystemView().createFileObject(conf);
+                    if (configuration.exists()) {
+                        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif", true); // NOI18N
+                    }
+                }
+            }
+            synchronized (this) {
+                knownProjectIcons.put(lookingForIcon, icon);
+                lookingForIcon = null;
+            }
+            chooser.repaint();
+        }
+    }
+
 }

@@ -366,10 +366,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
             if (!inheritablePropertiesOnly) {
                 set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             }
-            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
+            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
         }
         if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
+            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
         }
         sheet.put(set1);
         if (!isQtMode) {
@@ -412,7 +412,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         set5.setName("Libraries"); // NOI18N
         set5.setDisplayName(getString("LibrariesTxt1"));
         set5.setShortDescription(getString("LibrariesHint"));
-        set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseDir(), texts));
+        set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseFSPath(), texts));
         sheet.put(set5);
 
         if (!isQtMode) {

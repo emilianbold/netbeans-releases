@@ -58,6 +58,7 @@ import java.util.ResourceBundle;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -71,7 +72,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
@@ -79,8 +80,11 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -90,7 +94,7 @@ import org.openide.util.NbBundle;
 
 public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
-    private String baseDir;
+    private FSPath baseDir;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
     private JButton addButton;
@@ -99,7 +103,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
     private JButton addLinkButton;
     private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
-    public PackagingFilesPanel(List<PackagerFileElement> fileList, String baseDir) {
+    public PackagingFilesPanel(List<PackagerFileElement> fileList, FSPath baseDir) {
         super(fileList, new JButton[]{new JButton(), new JButton(), new JButton(), new JButton()});
         getAddButton().setVisible(false);
         this.baseDir = baseDir;
@@ -194,24 +198,23 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            String seed = null;
-            if (FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileObject());
+            String seed = RemoteFileUtil.getCurrentChooserFile(env);
             if (seed == null) {
-                seed = baseDir;
+                seed = baseDir.getPath();
             }
-            FileChooser fileChooser = new FileChooser(getString("FileChooserFileTitle"), getString("FileChooserButtonText"), FileChooser.FILES_AND_DIRECTORIES, null, seed, false);
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, 
+                                       getString("FileChooserFileTitle"), getString("FileChooserButtonText"), JFileChooser.FILES_AND_DIRECTORIES, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(true);
             int ret = fileChooser.showOpenDialog(null);
-            if (ret == FileChooser.CANCEL_OPTION) {
+            if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
-                String itemPath = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
+                String itemPath = ProjectSupport.toProperPath(baseDir.getFileObject(), files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
                 itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
@@ -277,19 +280,18 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            String seed = null;
-            if (FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileObject());
+            String seed = RemoteFileUtil.getCurrentChooserFile(env);
             if (seed == null) {
-                seed = baseDir;
+                seed = baseDir.getPath();
             }
-            FileChooser fileChooser = new FileChooser(getString("FileChooserFilesTitle"), getString("FileChooserButtonText"), FileChooser.DIRECTORIES_ONLY, null, seed, false);
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, 
+                                       getString("FileChooserFilesTitle"), getString("FileChooserButtonText"), JFileChooser.DIRECTORIES_ONLY, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(false);
             int ret = fileChooser.showOpenDialog(null);
-            if (ret == FileChooser.CANCEL_OPTION) {
+            if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
             }
             final File dir = fileChooser.getSelectedFile();
@@ -369,11 +371,11 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 if (files[i].isDirectory()) {
                     addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 } else {
-                    String path = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
+                    String path = ProjectSupport.toProperPath(baseDir.getFileObject(), files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
                     if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                        path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
+                        path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir.getFileObject(), files[i].getPath());
                     } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
-                        path = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
+                        path = CndPathUtilitities.toRelativePath(baseDir.getFileObject(), files[i].getPath());
                     } else {
                         path = files[i].getPath();
                     }
@@ -459,15 +461,19 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         // Set column sizes
         if (getTargetList().getColumnModel().getColumnCount() >= 4) {
             getTargetList().getColumnModel().getColumn(0).setPreferredWidth(40);
-            getTargetList().getColumnModel().getColumn(0).setMaxWidth(200);
+            getTargetList().getColumnModel().getColumn(0).setMaxWidth(100);
+            getTargetList().getColumnModel().getColumn(1).setPreferredWidth(40);
+            getTargetList().getColumnModel().getColumn(1).setMaxWidth(300);
+            getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
+            getTargetList().getColumnModel().getColumn(2).setMaxWidth(300);
             getTargetList().getColumnModel().getColumn(3).setPreferredWidth(50);
-            getTargetList().getColumnModel().getColumn(3).setMaxWidth(200);
+            getTargetList().getColumnModel().getColumn(3).setMaxWidth(100);
         }
         if (getTargetList().getColumnModel().getColumnCount() >= 6) {
-            getTargetList().getColumnModel().getColumn(4).setPreferredWidth(50);
-            getTargetList().getColumnModel().getColumn(4).setMaxWidth(200);
-            getTargetList().getColumnModel().getColumn(5).setPreferredWidth(50);
-            getTargetList().getColumnModel().getColumn(5).setMaxWidth(200);
+            getTargetList().getColumnModel().getColumn(4).setPreferredWidth(40);
+            getTargetList().getColumnModel().getColumn(4).setMaxWidth(100);
+            getTargetList().getColumnModel().getColumn(5).setPreferredWidth(40);
+            getTargetList().getColumnModel().getColumn(5).setMaxWidth(100);
         }
         //
         // Left align table header
@@ -577,7 +583,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     String msg = getString("Directory_tt", elem.getTo()); // NOI18N
                     label.setToolTipText(msg);
                 } else if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String msg = getString("File_tt", (new File(CndPathUtilitities.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    String msg = getString("File_tt", (new File(CndPathUtilitities.toAbsolutePath(baseDir.getFileObject(), elem.getFrom())).getAbsolutePath())); // NOI18N
                     label.setToolTipText(msg);
                 }
                 String val = elem.getTo();

@@ -51,19 +51,20 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
 public class RequiredProjectsNodeProp extends PropertySupport<List> {
 
-    private RequiredProjectsConfiguration vectorConfiguration;
-    Project project;
-    MakeConfiguration conf;
-    String baseDir;
-    String[] texts;
+    private final RequiredProjectsConfiguration vectorConfiguration;
+    private final Project project;
+    private final MakeConfiguration conf;
+    private final FSPath baseDir;
+    private final String[] texts;
 
-    public RequiredProjectsNodeProp(RequiredProjectsConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
+    public RequiredProjectsNodeProp(RequiredProjectsConfiguration vectorConfiguration, Project project, MakeConfiguration conf, FSPath baseDir, String[] texts) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.project = project;
@@ -81,11 +82,13 @@ public class RequiredProjectsNodeProp extends PropertySupport<List> {
         }
     }
 
+    @Override
     public List getValue() {
         return vectorConfiguration.getValue();
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void setValue(List v) {
         vectorConfiguration.setValue(v);
     }
@@ -102,7 +105,7 @@ public class RequiredProjectsNodeProp extends PropertySupport<List> {
 
     @Override
     public boolean isDefaultValue() {
-        return vectorConfiguration.getValue().size() == 0;
+        return vectorConfiguration.getValue().isEmpty();
     }
 
     @Override
@@ -158,6 +161,7 @@ public class RequiredProjectsNodeProp extends PropertySupport<List> {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

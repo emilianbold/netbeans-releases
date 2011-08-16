@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -60,14 +59,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Misc projct related utility functions
+ * Misc project related utility functions
  * @author Vladimir Kvashin
  */
 public class RemoteProjectSupport {
@@ -155,7 +153,7 @@ public class RemoteProjectSupport {
         List<Project> subProjects = new ArrayList<Project>(conf.getSubProjects());
         // required projects are different - see #194997
         for (ProjectItem requiredProject : conf.getRequiredProjectsConfiguration().getValue() ) {
-            Project p = requiredProject.getProject(conf.getBaseDir());
+            Project p = requiredProject.getProject(conf.getBaseFSPath());
             if (p != null) {
                 subProjects.add(p);                
             }

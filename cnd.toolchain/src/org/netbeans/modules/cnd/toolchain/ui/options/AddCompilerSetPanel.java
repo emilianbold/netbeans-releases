@@ -59,6 +59,7 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
@@ -68,7 +69,6 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -289,8 +289,8 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         String seed = null;
         if (tfBaseDirectory.getText().length() > 0) {
             seed = tfBaseDirectory.getText();
-        } else if (FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
+        } else if (RemoteFileUtil.getCurrentChooserFile(csm.getExecutionEnvironment()) != null) {
+            seed = RemoteFileUtil.getCurrentChooserFile(csm.getExecutionEnvironment());
         } else {
             ExecutionEnvironment env = csm.getExecutionEnvironment();
             if (env.isLocal()){

@@ -54,16 +54,19 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -75,7 +78,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private Project project;
     private MakeConfiguration conf;
     private MyListEditorPanel myListEditorPanel;
-    private String baseDir;
+    private FSPath baseDir;
     private PropertyEditorSupport editor;
     private JButton addProjectButton;
     private JButton addStandardLibraryButton;
@@ -84,7 +87,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private JButton addLibraryFileButton;
     private JButton addLibraryOption;
 
-    public LibrariesPanel(Project project, MakeConfiguration conf, String baseDir, List<LibraryItem> data, PropertyEditorSupport editor, PropertyEnv env) {
+    public LibrariesPanel(Project project, MakeConfiguration conf, FSPath baseDir, List<LibraryItem> data, PropertyEditorSupport editor, PropertyEnv env) {
         this.project = project;
         this.conf = conf;
         this.baseDir = baseDir;
@@ -236,11 +239,11 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.LIBRARY, project, myListEditorPanel);
+            MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.LIBRARY, project, baseDir, myListEditorPanel);
             if (artifacts != null) {
                 for (int i = 0; i < artifacts.length; i++) {
-                    String location = ProjectSupport.toProperPath(baseDir, artifacts[i].getProjectLocation(), project);
-                    String workingdir = ProjectSupport.toProperPath(baseDir, artifacts[i].getWorkingDirectory(), project);
+                    String location = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getProjectLocation(), project);
+                    String workingdir = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getWorkingDirectory(), project);
                     location = CndPathUtilitities.normalizeSlashes(location);
                     workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
@@ -292,18 +295,17 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            String seed = null;
-            if (FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
+            final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
+            String seed = RemoteFileUtil.getCurrentChooserFile(env);
             if (seed == null) {
-                seed = baseDir;
+                seed = baseDir.getPath();
             }
             FileFilter[] filters = FileFilterFactory.getLibraryFilters();
             if (lastSelectedFilter == null) {
                 lastSelectedFilter = filters[0];
             }
-            FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"),
+                                       JFileChooser.FILES_ONLY, filters, seed, true);
             fileChooser.setMultiSelectionEnabled(true);
             fileChooser.setFileFilter(lastSelectedFilter);
             int ret = fileChooser.showOpenDialog(myListEditorPanel);
@@ -336,18 +338,16 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            String seed = null;
-            if (FileChooser.getCurrentChooserFile() != null) {
-                seed = FileChooser.getCurrentChooserFile().getPath();
-            }
+            final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
+            String seed = RemoteFileUtil.getCurrentChooserFile(env);
             if (seed == null) {
-                seed = baseDir;
+                seed = baseDir.getPath();
             }
             FileFilter[] filters = FileFilterFactory.getLibraryFilters();
             if (lastSelectedFilter == null) {
                 lastSelectedFilter = filters[0];
             }
-            FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
             fileChooser.setMultiSelectionEnabled(true);
             fileChooser.setFileFilter(lastSelectedFilter);
             PathPanel pathPanel = new PathPanel();
@@ -359,7 +359,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             lastSelectedFilter = fileChooser.getFileFilter();
             for(File libFile: fileChooser.getSelectedFiles()) {
                 // FIXUP: why are baseDir UNIX path when remote?
-                String path = ProjectSupport.toProperPath(baseDir, libFile.getPath(), project);
+                String path = ProjectSupport.toProperPath(baseDir.getFileObject(), libFile.getPath(), project);
                 path = CndPathUtilitities.normalizeSlashes(path);
                 myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
             }

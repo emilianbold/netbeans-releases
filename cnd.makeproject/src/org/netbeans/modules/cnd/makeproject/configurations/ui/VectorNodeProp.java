@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserPanel;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -61,12 +62,12 @@ public class VectorNodeProp extends PropertySupport<List> {
 
     private VectorConfiguration<String> vectorConfiguration;
     private BooleanConfiguration inheritValues;
-    private String baseDir;
+    private FSPath baseDir;
     private String[] texts;
     boolean addPathPanel;
     private HelpCtx helpCtx;
 
-    public VectorNodeProp(VectorConfiguration<String> vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
+    public VectorNodeProp(VectorConfiguration<String> vectorConfiguration, BooleanConfiguration inheritValues, FSPath baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
@@ -85,11 +86,13 @@ public class VectorNodeProp extends PropertySupport<List> {
         }
     }
 
+    @Override
     public List getValue() {
         return vectorConfiguration.getValue();
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void setValue(List v) {
         vectorConfiguration.setValue(v);
     }
@@ -106,7 +109,7 @@ public class VectorNodeProp extends PropertySupport<List> {
 
     @Override
     public boolean isDefaultValue() {
-        return vectorConfiguration.getValue().size() == 0;
+        return vectorConfiguration.getValue().isEmpty();
     }
 
     @Override
@@ -170,6 +173,7 @@ public class VectorNodeProp extends PropertySupport<List> {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

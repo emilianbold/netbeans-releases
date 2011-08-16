@@ -53,7 +53,6 @@ import java.awt.image.ColorConvertOp;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -263,7 +262,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         if (gray == null) {
             ColorSpace gray_space = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             ColorConvertOp convert_to_gray_op = new ColorConvertOp(gray_space, null);
-            gray = convert_to_gray_op.filter((BufferedImage) image, null);
+            gray = convert_to_gray_op.filter(image, null);
             grayImageCache.put(image, gray);
         }
         return gray;
