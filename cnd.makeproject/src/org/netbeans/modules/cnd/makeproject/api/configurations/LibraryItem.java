@@ -46,12 +46,14 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -139,12 +141,17 @@ public class LibraryItem {
 	    this.makeArtifact = makeArtifact;
 	}
 
-	public Project getProject(String baseDir) {
+	public Project getProject(FSPath baseDir) {
 	    if (project == null) {
-		String location = CndPathUtilitities.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
+		String location = CndPathUtilitities.toAbsolutePath(baseDir.getFileObject(), getMakeArtifact().getProjectLocation());
 		try {
-		    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(location));
-                    project = ProjectManager.getDefault().findProject(fo);
+		    FileObject fo = RemoteFileUtil.getFileObject(baseDir.getFileObject(), location);
+                    if (fo != null && fo.isValid()) {
+                        fo = CndFileUtils.getCanonicalFileObject(fo);
+                    }
+                    if (fo != null && fo.isValid()) {
+                        project = ProjectManager.getDefault().findProject(fo);
+                    }
 		}
 		catch (Exception e) {
 		    System.err.println("Cannot find subproject in '"+location+"' "+e); // FIXUP // NOI18N

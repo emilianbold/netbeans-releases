@@ -58,10 +58,12 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -74,13 +76,15 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     
     private ArtifactType artifactType;
     private static final RequestProcessor RP = new RequestProcessor("MakeArtifactChooser",1); // NOI18N
+    private final FSPath baseDir;
     
     /** Creates new form JarArtifactChooser */
-    public MakeArtifactChooser( ArtifactType artifactType, JFileChooser chooser ) {
+    public MakeArtifactChooser( ArtifactType artifactType, JFileChooser chooser , FSPath baseDir) {
         this.artifactType = artifactType;
+        this.baseDir = baseDir;
         
         initComponents();
-        MyDefaultListModel model = new MyDefaultListModel(null, artifactType);
+        MyDefaultListModel model = new MyDefaultListModel(null, artifactType, baseDir);
         model.init();
         listArtifacts.setModel( model);
         chooser.addPropertyChangeListener( this );
@@ -165,7 +169,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             if (dir != null) {
                 MyDefaultListModel oldModel  =(MyDefaultListModel) listArtifacts.getModel();
                 oldModel.cancel();
-                final MyDefaultListModel model = new MyDefaultListModel(dir, artifactType);
+                final MyDefaultListModel model = new MyDefaultListModel(dir, artifactType, baseDir);
                 listArtifacts.setModel(model);
                 RP.post(new Runnable() {
 
@@ -204,24 +208,18 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static MakeArtifact[] showDialog(ArtifactType artifactType, Project master, Component parent ) {
-        
-        JFileChooser chooser = ProjectChooser.projectChooser();
-        chooser.getAccessibleContext().setAccessibleDescription(getString("ADD_PROJECT_DIALOG_AD")); // NOI18N
-        chooser.setDialogTitle(getString("ADD_PROJECT_DIALOG_TITLE")); // NOI18N
-        chooser.setApproveButtonText(getString("ADD_BUTTON_TXT")); // NOI18N
-        //chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (MakeArtifactChooser.class,"AD_AACH_SelectProject"));
-        MakeArtifactChooser accessory = new MakeArtifactChooser( artifactType, chooser );
+    public static MakeArtifact[] showDialog(ArtifactType artifactType, Project master, FSPath baseDir, Component parent ) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
+        String seed = RemoteFileUtil.getCurrentChooserFile(env);
+        JFileChooser chooser = RemoteFileUtil.createProjectChooser(env,
+                getString("ADD_PROJECT_DIALOG_TITLE"), getString("ADD_PROJECT_DIALOG_AD"), getString("ADD_BUTTON_TXT"), seed); // NOI18N
+        MakeArtifactChooser accessory = new MakeArtifactChooser( artifactType, chooser, baseDir );
         chooser.setAccessory( accessory );
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
-        if (FileChooser.getCurrentChooserFile() != null && FileChooser.getCurrentChooserFile().exists() && FileChooser.getCurrentChooserFile().isDirectory()) {
-            chooser.setCurrentDirectory(FileChooser.getCurrentChooserFile());
-        }
 
         int option = chooser.showOpenDialog( parent ); // Show the chooser
-              
         if ( option == JFileChooser.APPROVE_OPTION ) {
-            FileChooser.setCurrentChooserFile(chooser.getCurrentDirectory());
+            RemoteFileUtil.setCurrentChooserFile(chooser.getCurrentDirectory().getAbsolutePath(), env);
             MyDefaultListModel model = (MyDefaultListModel) accessory.listArtifacts.getModel();
             Project selectedProject = model.getProject();
 
@@ -275,10 +273,12 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         private Project project;
         private int def = -1;
         private AtomicBoolean canceled = new AtomicBoolean(false);
+        private final FSPath baseDir;
 
-        private MyDefaultListModel(File dir, ArtifactType artifactType){
+        private MyDefaultListModel(File dir, ArtifactType artifactType, FSPath baseDir){
             this.dir = dir;
             this.artifactType = artifactType;
+            this.baseDir = baseDir;
             addElement(getString("LOADING_PROJECT")); // NOI18N
         }
 
@@ -315,7 +315,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             }
 
             try {
-                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(projectAbsPath));
+                FileObject fo = baseDir.getFileSystem().findResource(CndFileUtils.normalizeAbsolutePath(baseDir.getFileSystem(), projectAbsPath));
                 if (fo != null && fo.isValid()) {
                     return ProjectManager.getDefault().findProject(fo);
                 }

@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -474,13 +473,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectWorkingDir"),
                 getString("SelectLabel"),
-                FileChooser.DIRECTORIES_ONLY,
+                JFileChooser.DIRECTORIES_ONLY,
                 null,
                 seed,
                 true
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION) {
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         runDirectoryTextField.setText(fileChooser.getSelectedFile().getPath());
@@ -536,17 +535,20 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     }//GEN-LAST:event_projectComboBoxActionPerformed
     
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         String seed = getExecutablePath();
-        if (seed.length() == 0 && FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
+        if (seed.length() == 0 && RemoteFileUtil.getCurrentChooserFile(executionEnvironment) != null) {
+            String s = RemoteFileUtil.getCurrentChooserFile(executionEnvironment);
+            if (s != null) {
+                seed = s;
+            }
         }
         if (seed.length() == 0) {
-            seed = System.getProperty("user.home");
-        } // NOI18N
+            seed = System.getProperty("user.home"); // NOI18N
+        }
         
         FileFilter[] filter = null;
         OSFamily oSFamily = null;
-        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         try {
             oSFamily = HostInfoUtils.getHostInfo(executionEnvironment).getOSFamily();
         } catch (IOException ex) {
@@ -582,13 +584,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectExecutable"),
                 getString("SelectLabel"),
-                FileChooser.FILES_ONLY,
+                JFileChooser.FILES_ONLY,
                 filter,
                 seed,
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION) {
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         executableTextField.setText(fileChooser.getSelectedFile().getPath());

@@ -125,12 +125,14 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
     private static class CompilerSetPresenter {
 
-        private CompilerSet cs;
-        private String displayName;
+        private final CompilerSet cs;
+        private final String displayName;
+        private final ExecutionEnvironment env;
 
-        public CompilerSetPresenter(CompilerSet cs, String displayName) {
+        public CompilerSetPresenter(CompilerSet cs, ExecutionEnvironment env, String displayName) {
             this.cs = cs;
             this.displayName = displayName;
+            this.env = env;
         }
 
         @Override
@@ -186,7 +188,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 if (servers.size() > 1) {
                     for (ServerRecord record : servers) {
                         for (CompilerSet cs : getCompilerSetManager(record.getExecutionEnvironment()).getCompilerSets()) {
-                            CompilerSetPresenter csp = new CompilerSetPresenter(cs, record.getDisplayName() + " : " + cs.getName()); //NOI18N
+                            CompilerSetPresenter csp = new CompilerSetPresenter(cs, record.getExecutionEnvironment(), record.getDisplayName() + " : " + cs.getName()); //NOI18N
                             if (csToSelect == cs) {
                                 toSelect.set(csp);
                             }
@@ -204,7 +206,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                         for (Tool tool : cs.getTools()) {
                             tool.waitReady(false);
                         }
-                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
+                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, ExecutionEnvironmentFactory.getLocal(), cs.getName());
                         if (csToSelect == cs) {
                             toSelect.set(csp);
                         }
@@ -240,11 +242,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         for (Tool tool : toolSet) {
             PredefinedPanel predefinedPanel = predefinedPanels.get(tool);
             if (predefinedPanel == null) {
-                predefinedPanel = new PredefinedPanel((AbstractCompiler) tool, this);
+                predefinedPanel = new PredefinedPanel((AbstractCompiler) tool, this, csp.env);
                 predefinedPanels.put(tool, predefinedPanel);
             //modified = true; // See 126368
             } else {
-                predefinedPanel.updateCompiler((AbstractCompiler) tool);
+                predefinedPanel.updateCompiler((AbstractCompiler) tool, csp.env);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
