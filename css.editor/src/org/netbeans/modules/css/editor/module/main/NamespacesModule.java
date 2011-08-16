@@ -42,11 +42,12 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -68,6 +69,7 @@ import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.model.Namespace;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -84,8 +86,13 @@ public class NamespacesModule extends CssModule {
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        Node activeNode = context.getActiveNode();
+        boolean isError = activeNode.type() == NodeType.error;
+        if(isError) {
+            activeNode = activeNode.parent();
+        }
         
-        switch (context.getActiveNode().type()) {
+        switch (activeNode.type()) {
             case namespace_prefix:
             case elementName:
                 //already in the prefix
@@ -93,9 +100,7 @@ public class NamespacesModule extends CssModule {
                 //todo: rewrite to use index later
                 Stylesheet model = context.getParserResult().getModel();
                 for (Namespace ns : model.getNamespaces()) {
-                    if (ns.getPrefix() != null && ns.getPrefix().toString().toLowerCase(Locale.ENGLISH).startsWith(context.getPrefix().toLowerCase(Locale.ENGLISH))) {
-                        proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-                    }
+                    proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
                 }
                 break;
 
@@ -129,9 +134,26 @@ public class NamespacesModule extends CssModule {
                     proposals.add(nsKeywordProposal);
                 }
                 
+            case simpleSelectorSequence:
+                if(isError) {
+                    Token<CssTokenId> token = context.getTokenSequence().token();
+                    switch(token.id()) {
+                        case IDENT:
+                            if(LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
+                                proposals.addAll(getNamespaceCompletionProposals(context));
+                            }
+                    }
+                }
+                break;
+                
+            case attrib:
+            case attrib_name:
+            case namespace_wqname_prefix:
+                proposals.addAll(getNamespaceCompletionProposals(context));
+                break;
         }
 
-        return proposals;
+        return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
     private static List<CompletionProposal> getNamespaceCompletionProposals(CompletionContext context) {

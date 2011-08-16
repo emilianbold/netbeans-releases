@@ -266,7 +266,11 @@ simpleSelectorSequence
 	| 
 	( ((esPred)=>elementSubsequent)+ )
 	;
-	
+	catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(LBRACE)); 
+    }
+    
 /*simpleSelector
     : elementName 
         ((esPred)=>elementSubsequent)*

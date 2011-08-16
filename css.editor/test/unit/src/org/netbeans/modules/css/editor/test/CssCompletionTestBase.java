@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.test;
 
-import org.netbeans.modules.css.editor.csl.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
@@ -59,6 +58,7 @@ import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.test.TestBase;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -89,7 +89,7 @@ public class CssCompletionTestBase extends TestBase {
     public void checkCC(String documentText, final String[] expectedItemsNames, final Match type) throws ParseException {
         checkCC(documentText, expectedItemsNames, type, false);
     }
-    
+
     public void checkCC(String documentText, final String[] expectedItemsNames, final Match type, final boolean debugParseTree) throws ParseException {
         StringBuilder content = new StringBuilder(documentText);
 
@@ -109,25 +109,41 @@ public class CssCompletionTestBase extends TestBase {
                 assertTrue(result instanceof CssCslParserResult);
 
                 CssCslParserResult cssresult = (CssCslParserResult) result;
-                
-                if(debugParseTree) {
-                    NodeUtil.dumpTree(cssresult.getParseTree());
-                }
+
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);
                 CodeCompletionResult ccresult = cc.complete(createContext(pipeOffset, cssresult, prefix));
 
-                assertCompletionItemNames(expectedItemsNames, ccresult, type);
+                try {
+                    assertCompletionItemNames(expectedItemsNames, ccresult, type);
+                } catch (junit.framework.AssertionFailedError afe) {
+                    System.out.println("AssertionFailedError debug information:");
+                    dumpDebugInfo(cssresult, pipeOffset);
+                    throw afe;
+                }
+
+                if (debugParseTree) {
+                    System.out.println("Debug information:");
+                    dumpDebugInfo(cssresult, pipeOffset);
+                }
             }
         });
 
     }
 
+    private void dumpDebugInfo(CssCslParserResult cssresult, int pipeOffset) {
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        System.out.println("Caret offset: " + pipeOffset);
+        System.out.println("Parse tree:");
+        NodeUtil.dumpTree(cssresult.getParseTree());
+        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    }
+
     public void assertComplete(String documentText, String expectedDocumentText, final String itemToComplete) throws ParseException, BadLocationException {
         StringBuilder content = new StringBuilder(documentText);
         StringBuilder expectedContent = new StringBuilder(expectedDocumentText);
-        
+
         final int pipeOffset = content.indexOf("|");
         assert pipeOffset >= 0;
         final int expPipeOffset = expectedContent.indexOf("|");
@@ -136,7 +152,7 @@ public class CssCompletionTestBase extends TestBase {
         //remove the pipe
         content.deleteCharAt(pipeOffset);
         expectedContent.deleteCharAt(expPipeOffset);
-        
+
         final BaseDocument doc = getDocument(content.toString());
         Source source = Source.create(doc);
         final AtomicReference<CompletionProposal> found = new AtomicReference<CompletionProposal>();
@@ -169,12 +185,12 @@ public class CssCompletionTestBase extends TestBase {
 
         CompletionProposal proposal = found.get();
         assertNotNull(proposal);
-        
+
         final String text = proposal.getInsertPrefix();
         final int offset = proposal.getAnchorOffset();
         final int len = pipeOffset - offset;
-        
-        
+
+
         //since there's no access to the GsfCompletionItem.defaultAction() I've copied important code below:
         doc.runAtomic(new Runnable() {
 
@@ -190,7 +206,8 @@ public class CssCompletionTestBase extends TestBase {
                         return;
                     }
                     int common = 0;
-                    while (text.regionMatches(0, textToReplace, 0, ++common)) {};
+                    while (text.regionMatches(0, textToReplace, 0, ++common)) {
+                    };
                     common--;
                     Position position = doc.createPosition(offset + common);
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
@@ -207,7 +224,7 @@ public class CssCompletionTestBase extends TestBase {
 
 
         assertEquals(expectedContent.toString(), doc.getText(0, doc.getLength()));
-        
+
     }
 
     //--- utility methods ---

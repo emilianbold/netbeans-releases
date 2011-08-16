@@ -107,6 +107,8 @@ public class CssCompletion implements CodeCompletionHandler {
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
     private static char firstPrefixChar; //read getPrefix() comment!
 
+    private static final String EMPTY_STRING = ""; //NOI18N
+    
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         
@@ -172,12 +174,12 @@ public class CssCompletion implements CodeCompletionHandler {
         
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
         NodeType originalNodeKind = node.type();
-        if (node.type() == NodeType.error) {
-            node = node.parent();
-            if (node == null) {
-                return CodeCompletionResult.NONE;
-            }
-        }
+//        if (node.type() == NodeType.error) {
+//            node = node.parent();
+//            if (node == null) {
+//                return CodeCompletionResult.NONE;
+//            }
+//        }
         
         //xxx: handleLexicalBasedCompletion breaks the contract - in the case it is used the css modules are
         //     not asked for the completion results. The main reason is that the CompletionProposal doesn't 
@@ -299,10 +301,10 @@ public class CssCompletion implements CodeCompletionHandler {
                     completionProposals.addAll(proposals);
                 }
             }
-        } else if (
-                node.type() == NodeType.bodylist /* somewhere between rules */
-                || node.type() == NodeType.root /* in an empty or very broken file */
-                || node.type() == NodeType.styleSheet) {
+        } else if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.bodylist)
+                || 
+                node.type() == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.bodylist)) {
+            /* somewhere between rules, in an empty or very broken file, between rules */
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
             all.addAll(CssCompletionItem.wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, offset));
@@ -826,14 +828,17 @@ public class CssCompletion implements CodeCompletionHandler {
                 return null;
             }
         }
-        Token t = ts.token();
+        Token<CssTokenId> t = ts.token();
         int skipPrefixChars = 0;
-        if (t.id() == CssTokenId.COLON) {
-            return ""; //NOI18N
-        } else if (t.id() == CssTokenId.COMMA) {
-            return ""; //NOI18N
-        } else if (t.id() == CssTokenId.STRING) {
-            skipPrefixChars = 1; //skip the leading quotation char
+        switch(t.id()) {
+            case COLON:
+            case COMMA:
+            case LBRACKET:
+                return EMPTY_STRING;
+        
+            case STRING:
+                skipPrefixChars = 1; //skip the leading quotation char
+                break;
         }
 
         return t.text().subSequence(skipPrefixChars, diff == 0 ? t.text().length() : diff).toString().trim();

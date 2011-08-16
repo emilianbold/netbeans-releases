@@ -326,4 +326,13 @@ public final class NodeUtil {
         return new int[]{lbrace.from(), rbrace.to()};
     }
 
+    public static boolean isOfType(Node node, NodeType... types) {
+        for(NodeType type : types) {
+            if(node.type() == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
