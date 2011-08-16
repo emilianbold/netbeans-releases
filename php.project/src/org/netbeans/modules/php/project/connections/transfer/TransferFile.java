@@ -238,8 +238,8 @@ public abstract class TransferFile {
     }
 
     /**
-     * Return {@code true} if the remote file does not parent remote file.
-     * @return {@code true} if the remote file does not parent remote file
+     * Return {@code true} if the remote file does not have parent remote file.
+     * @return {@code true} if the remote file does not have parent remote file
      */
     public boolean isRoot() {
         if (isProjectRoot()) {
