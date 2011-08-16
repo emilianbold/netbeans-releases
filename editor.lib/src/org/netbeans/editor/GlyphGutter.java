@@ -412,12 +412,18 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             }
              */
             JTextComponent tc = eui.getComponent();
-            Graphics g;
-            FontRenderContext frc;
-            if (font != null && tc != null && (g = tc.getGraphics()) != null && (g instanceof Graphics2D) &&
+            if (font != null && tc != null) {
+                Graphics g;
+                FontRenderContext frc;
+                FontMetrics fm;
+                if ((g = tc.getGraphics()) != null && (g instanceof Graphics2D) &&
                     (frc = ((Graphics2D)g).getFontRenderContext()) != null)
-            {
-                newWidth += new TextLayout(String.valueOf(highestLineNumber), font, frc).getAdvance();
+                {
+                    newWidth += new TextLayout(String.valueOf(highestLineNumber), font, frc).getAdvance();
+                } else if ((fm = getFontMetrics(font)) != null) {
+                    // Use FontMetrics.stringWidth() as best approximation
+                    newWidth += fm.stringWidth(String.valueOf(highestLineNumber));
+                }
             }
         }
         
@@ -907,7 +913,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             AbstractDocument aDoc = (AbstractDocument)component.getDocument();
             aDoc.readLock();
             try {
-                Element rootElement = aDoc.getDefaultRootElement();
                 // The drag must be extended to a next line in order to perform any selection
                 int lineStartOffset = textUI.getPosFromY(e.getY());
                 boolean updateDragEndOffset = false;
@@ -1003,6 +1008,8 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
                     update();
                 } else if (TEXT_ZOOM_PROPERTY.equals(evt.getPropertyName())) {
+                    update();
+                } else if ("font".equals(evt.getPropertyName())) {
                     update();
                 }
             }
