@@ -53,7 +53,6 @@ import java.util.*;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.util.*;
-import org.netbeans.api.javahelp.Help;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
@@ -1348,12 +1347,12 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
         @Override
         public void actionPerformed(ActionEvent ev) {
-            if (ev.getActionCommand().equals("close")) // NOI18N
+            if (ev.getActionCommand().equals("close")) { // NOI18N
                 dispose();
-            else if (ev.getActionCommand().equals("help")) { // NOI18N
-                Help help = Lookup.getDefault().lookup(Help.class);
-                if (help != null)
-                    help.showHelp(HelpCtx.findHelp(customizerPanel));
+            } else if (ev.getActionCommand().equals("help")) { // NOI18N
+                KeyEvent event = new KeyEvent(this, KeyEvent.KEY_PRESSED,
+                        System.currentTimeMillis(), 0, KeyEvent.VK_F1, (char)KeyEvent.VK_F1);
+                Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(event);
             }
         }
     }

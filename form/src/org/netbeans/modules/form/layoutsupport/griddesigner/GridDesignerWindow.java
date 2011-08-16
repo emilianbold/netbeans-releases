@@ -45,8 +45,10 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.Customizer;
@@ -59,11 +61,9 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import org.netbeans.api.javahelp.Help;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -159,10 +159,9 @@ public class GridDesignerWindow extends JDialog implements Customizer {
     }//GEN-LAST:event_closeButtonActionPerformed
 
     private void helpButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
-        Help help = Lookup.getDefault().lookup(Help.class);
-        if (help != null) {
-            help.showHelp(HelpCtx.findHelp(designer));
-        }
+        KeyEvent event = new KeyEvent(this, KeyEvent.KEY_PRESSED,
+                System.currentTimeMillis(), 0, KeyEvent.VK_F1, (char)KeyEvent.VK_F1);
+        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(event);
     }//GEN-LAST:event_helpButtonActionPerformed
 
     /**
