@@ -555,7 +555,7 @@ public final class RemoteClient implements Cancellable {
         ensureConnected();
 
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
-        Queue<TransferFile> queue = new LinkedList<TransferFile>();
+        List<TransferFile> baseFiles = new LinkedList<TransferFile>();
         for (File f : filesToDownload) {
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
@@ -566,21 +566,18 @@ public final class RemoteClient implements Cancellable {
                     // assume folder for non-existing file => recursive fetch
                     tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath);
                 }
-                queue.offer(tf);
+                baseFiles.add(tf);
             } else {
                 LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", f);
             }
         }
 
         Set<TransferFile> files = new HashSet<TransferFile>();
-        boolean added = false;
-        while(!queue.isEmpty()) {
+        for (TransferFile file : baseFiles) {
             if (cancelled) {
                 LOGGER.fine("Prepare download cancelled");
                 break;
             }
-
-            TransferFile file = queue.poll();
 
             if (!files.add(file)) {
                 LOGGER.log(Level.FINE, "File {0} already in queue", file);
@@ -590,7 +587,7 @@ public final class RemoteClient implements Cancellable {
                 files.add(file);
             }
 
-            if (!added && file.isDirectory()) {
+            if (file.isDirectory()) {
                 try {
                     if (!cdBaseRemoteDirectory(file.getRemotePath(), false)) {
                         LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", file.getRemotePath());
@@ -604,12 +601,11 @@ public final class RemoteClient implements Cancellable {
                     for (RemoteFile child : remoteFiles) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            queue.offer(TransferFile.fromRemoteFile(file, child, this));
+                            files.add(TransferFile.fromRemoteFile(file, child, this));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
                     }
-                    added = true;
                 } catch (RemoteException exc) {
                     LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", file.getRemotePath());
                     // XXX maybe return somehow ignored files as well?
