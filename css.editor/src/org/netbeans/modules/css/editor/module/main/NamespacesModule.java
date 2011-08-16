@@ -144,6 +144,7 @@ public class NamespacesModule extends CssModule {
                             break;
                         case COMMA:
                         case LBRACKET:
+                        case WS:
                             proposals.addAll(getNamespaceCompletionProposals(context));
                             break;
 
