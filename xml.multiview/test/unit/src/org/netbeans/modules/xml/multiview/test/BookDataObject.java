@@ -113,6 +113,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
         return book;
     }
 
+    @Override
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[]{new DesignView(this,TYPE_TOOLBAR),new DesignView(this,TYPE_TREEPANEL)};
     }
@@ -145,7 +146,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
     public void showElement(Object element) {
         Object target=null;
         if (element instanceof Chapter) {
-            openView(0);
+            openView(1);
             target=element;
         }
         if (target!=null) {
