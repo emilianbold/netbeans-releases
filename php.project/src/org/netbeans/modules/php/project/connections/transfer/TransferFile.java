@@ -52,7 +52,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -153,10 +153,10 @@ public abstract class TransferFile {
      * Implementation for {@link RemoteFile}.
      * @param parent parent remote file, can be {@code null}
      * @param remoteFile remote file to be used
-     * @param baseDirectory base directory local and remote paths are resolved to
+     * @param remoteClient remote client
      * @return new remote file for the given parameters
      */
-    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, RemoteClient remoteClient) {
+    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, RemoteClientImplementation remoteClient) {
         TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, remoteClient);
         if (parent != null) {
             parent.addChild(transferFile);
@@ -173,8 +173,8 @@ public abstract class TransferFile {
     }
 
     /**
-     * Get children files.
-     * @return children files
+     * Get children files. If the file is not directory, returns empty list.
+     * @return children files, never {@code null}
      */
     public final List<TransferFile> getChildren() {
         if (!isDirectory()) {
@@ -189,6 +189,10 @@ public abstract class TransferFile {
         }
     }
 
+    /**
+     * Return {@code true} if the children are known or the file is not directory.
+     * @return {@code true} if the children are known or the file is not directory
+     */
     public boolean hasChildrenFetched() {
         if (!isDirectory()) {
             return true;
@@ -422,6 +426,9 @@ public abstract class TransferFile {
     }
 
     private void addChild(TransferFile child) {
+        if (!isDirectory()) {
+            throw new IllegalStateException("Cannot add child to not directory: " + this);
+        }
         initChildren();
         childrenLock.writeLock().lock();
         try {

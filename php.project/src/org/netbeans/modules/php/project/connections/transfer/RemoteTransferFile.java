@@ -45,7 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
@@ -58,10 +58,10 @@ final class RemoteTransferFile extends TransferFile {
 
     // @GuardedBy(file)
     private final RemoteFile file;
-    private final RemoteClient remoteClient;
+    private final RemoteClientImplementation remoteClient;
 
 
-    public RemoteTransferFile(RemoteFile file, TransferFile parent, RemoteClient remoteClient) {
+    public RemoteTransferFile(RemoteFile file, TransferFile parent, RemoteClientImplementation remoteClient) {
         super(parent, remoteClient.getBaseRemoteDirectory());
         this.file = file;
         this.remoteClient = remoteClient;

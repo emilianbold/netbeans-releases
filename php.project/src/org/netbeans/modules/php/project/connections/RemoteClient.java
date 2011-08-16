@@ -88,7 +88,7 @@ import org.openide.windows.InputOutput;
  * This class is thread-safe.
  * @author Tomas Mysik
  */
-public final class RemoteClient implements Cancellable {
+public final class RemoteClient implements Cancellable, RemoteClientImplementation {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
 
     public static final AtomicAction DOWNLOAD_ATOMIC_ACTION = new DownloadAtomicAction(null);
