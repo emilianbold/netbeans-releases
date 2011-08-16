@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,12 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,29 +39,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.beans.analysis;
 
-package org.netbeans.modules.cnd.makeproject.configurations.ui;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-import java.util.List;
-import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
-import org.netbeans.modules.cnd.utils.FSPath;
 
 /**
+ * @author ads
  *
- * @author thp
  */
-public class PackagingFiles4Panel extends PackagingFilesPanel {
-    public PackagingFiles4Panel(List<PackagerFileElement> fileList, FSPath baseDir) {
-        super(fileList, baseDir);
+class BeansXmlFix implements Fix {
+
+    BeansXmlFix( Project project ) {
+        myProject = project;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.editor.hints.Fix#getText()
+     */
+    @Override
+    public String getText() {   
+        return NbBundle.getMessage( BeansXmlFix.class, "MSG_HintCreateBeansXml");    // NOI18N
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.spi.editor.hints.Fix#implement()
+     */
+    @Override
+    public ChangeInfo implement() throws Exception {
+        FileObject inf = CdiAnalysisResult.getInf(myProject, true); 
+        if ( inf != null ){
+            DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, inf, 
+                    CdiAnalysisResult.BEANS);
+        }
+        return null;
     }
     
-    @Override
-    public int getActualColumnCount() {
-        return 4;
-    }
+    private Project myProject;
+
 }

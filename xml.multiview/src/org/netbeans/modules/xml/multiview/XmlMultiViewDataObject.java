@@ -54,6 +54,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
@@ -69,6 +70,8 @@ import java.util.Date;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Base class for data objects that are used as a basis for
@@ -195,6 +198,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         return retValue;
     }
 
+    @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
     }
@@ -301,14 +305,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     protected abstract String getPrefixMark();
     
     boolean acceptEncoding() throws IOException {
-        encodingHelper.resetEncoding();
-        DataCache dataCache = getDataCache();
-        String s = dataCache.getStringData();
-        String encoding = encodingHelper.detectEncoding(s.getBytes());
-        if (!encodingHelper.getEncoding().equals(encoding)) {
+        String encoding = encoding();
+        if (encodingDiffer(encoding)) {
             Object result = showChangeEncodingDialog(encoding);
             if (NotifyDescriptor.YES_OPTION.equals(result)) {
-                dataCache.setData(encodingHelper.setDefaultEncoding(s));
+                encodingReset();
             } else if (NotifyDescriptor.NO_OPTION.equals(result)) {
                 showUsingDifferentEncodingMessage(encoding);
             } else {
@@ -317,10 +318,33 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
         return true;
     }
+
+    String encoding() throws IOException {
+        encodingHelper.resetEncoding();
+        DataCache dataCache = getDataCache();
+        String s = dataCache.getStringData();
+        String encoding = encodingHelper.detectEncoding(s.getBytes());
+        return encoding;
+    }
+
+    boolean encodingDiffer(String encoding) {
+        return !encodingHelper.getEncoding().equals(encoding);
+    }
+
+    String encodingMessage(String encoding) {
+        return NbBundle.getMessage(XmlMultiViewDataObject.class,
+                        "TEXT_TREAT_USING_DIFFERENT_ENCODING",
+                        encoding, encodingHelper.getEncoding());
+    }
+
+    void encodingReset() {
+        DataCache dataCache = getDataCache();
+        String s = dataCache.getStringData();
+        dataCache.setData(encodingHelper.setDefaultEncoding(s));
+    }
     
     private void showUsingDifferentEncodingMessage(String encoding) {
-        String message = NbBundle.getMessage(XmlMultiViewDataObject.class, "TEXT_TREAT_USING_DIFFERENT_ENCODING", encoding,
-                encodingHelper.getEncoding());
+        String message = encodingMessage(encoding);
         NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
         descriptor.setTitle(getPrimaryFile().getPath());
         DialogDisplayer.getDefault().notify(descriptor);

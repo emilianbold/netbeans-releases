@@ -55,7 +55,6 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -323,8 +322,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         String seed;
         if (executableTextField.getText().length() > 0) {
             seed = executableTextField.getText();
-        } else if (FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
+        } else if (RemoteFileUtil.getCurrentChooserFile(conf.getFileSystemHost()) != null) {
+            seed = RemoteFileUtil.getCurrentChooserFile(conf.getFileSystemHost());
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
