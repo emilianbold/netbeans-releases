@@ -89,7 +89,7 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         return new CdiAnalysisTestTask();
     }
     
-       public void testTypedClass() throws IOException{
+    public void testTypedClass() throws IOException{
         FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
                 "package foo; " +
                 "import java.util.List; "+
@@ -457,6 +457,87 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         assertTrue( element instanceof TypeElement );
         String fqn = ((TypeElement)element).getQualifiedName().toString();
         assertEquals(expectedName, fqn);
+    }
+    
+    public void testProductionFieldInSession() throws IOException{
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                "import javax.ejb.Singleton; "+
+                "@Singleton "+
+                " public class Clazz { "+
+                " @Produces int production; "+
+                " int field1; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                "import javax.ejb.Singleton; "+
+                "@Singleton "+
+                " public class Clazz1  { "+
+                " static @Produces int production; "+
+                " int field1; "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "production");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testProductionFieldType() throws IOException{
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz  { "+
+                " static @Produces Class<String> production; "+
+                " int field1; "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz1<T> { "+
+                " @Produces T production; "+
+                " int field1; "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                " public class Clazz2 { "+
+                " @Produces Class<? extends String> production; "+
+                " int field1; "+
+                "}");
+        
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz1", "production");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz2", "production");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
     private void checkFieldElement(TestProblems result , String enclosingClass, 
