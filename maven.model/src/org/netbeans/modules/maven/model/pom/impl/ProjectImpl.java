@@ -461,7 +461,8 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public String getPackaging() {
-        return getChildElementText(getModel().getPOMQNames().PACKAGING.getQName());
+        String packaging = getChildElementText(getModel().getPOMQNames().PACKAGING.getQName());
+        return packaging != null ? packaging : "jar";
     }
 
     @Override

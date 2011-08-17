@@ -42,7 +42,6 @@
 package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -66,17 +65,15 @@ import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
-import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
@@ -350,25 +347,11 @@ public class ActionProviderImpl implements ActionProvider {
                 if (pnl.isRememberedAs() != null) {
                     try {
                         M2ConfigProvider conf = project.getLookup().lookup(M2ConfigProvider.class);
-                        ActionToGoalMapping mappings = new NetbeansBuildActionXpp3Reader().read(new StringReader(conf.getDefaultConfig().getRawMappingsAsString()));
                         String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
-
                         mapping.setActionName(tit);
-                        NetbeansActionMapping exist = null;
-                        for (NetbeansActionMapping m : mappings.getActions()) {
-                            if (tit.equals(m.getActionName())) {
-                                exist = m;
-                                break;
-                            }
-                        }
-                        if (exist != null) {
-                            mappings.getActions().set(mappings.getActions().indexOf(exist), mapping);
-                        } else {
-                            mappings.addAction(mapping);
-                        }
                         mapping.setDisplayName(pnl.isRememberedAs());
                         //TODO shall we write to configuration based files or not?
-                        CustomizerProviderImpl.writeNbActionsModel(project, mappings, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+                        ModelHandle.putMapping(mapping, project, conf.getDefaultConfig());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

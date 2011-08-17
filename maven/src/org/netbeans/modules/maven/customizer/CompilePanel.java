@@ -277,7 +277,7 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public JavaPlatform getDefaultValue() {
-                return getSelPlatform();
+                return JavaPlatformManager.getDefault().getDefaultPlatform();
             }
 
             @Override

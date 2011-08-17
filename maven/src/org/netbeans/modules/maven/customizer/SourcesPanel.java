@@ -56,6 +56,13 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMComponentFactory;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,7 +87,7 @@ public class SourcesPanel extends JPanel {
         File pf = FileUtil.toFile( projectFolder );
         txtProjectFolder.setText( pf == null ? "" : pf.getPath() ); // NOI18N
         
-        
+        // XXX use ComboBoxUpdater to boldface the label when not an inherited default
         comSourceLevel.setEditable(false);
         sourceLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
         comSourceLevel.setModel(new DefaultComboBoxModel(new String[] {
@@ -133,7 +140,15 @@ public class SourcesPanel extends JPanel {
     
     private void handleSourceLevelChange() {
         sourceLevel = (String)comSourceLevel.getSelectedItem();
-        ModelUtils.checkSourceLevel(handle, sourceLevel);
+        String source = PluginPropertyUtils.getPluginProperty(handle.getProject(),
+                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM,
+                "compile"); //NOI18N
+        if (source != null && source./*XXX not equals?*/contains(sourceLevel)) {
+            return;
+        }
+        POMModel mdl = handle.getPOMModel();
+        ModelUtils.setSourceLevel(mdl, sourceLevel);
+        handle.markAsModified(mdl);
     }
 
     
@@ -146,14 +161,91 @@ public class SourcesPanel extends JPanel {
         } else {
             encName = encoding;
         }
-        ModelUtils.checkEncoding(handle, encName);
+        checkEncoding(handle, encName);
         if (defaultEncoding.equals(encName)) {
             lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.PLAIN));
-        } else {
+        } else { // XXX use ComboBoxUpdater for the standard technique
             lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.BOLD));
         }
     }
     
+    private static void checkEncoding(ModelHandle handle, String enc) {
+        String source = handle.getProject().getProperties().getProperty(Constants.ENCODING_PROP);
+        if (enc.equals(source)) {
+            return;
+        }
+        //new approach, assume all plugins conform to the new setting.
+        POMModel model = handle.getPOMModel();
+        handle.markAsModified(model);
+        POMComponentFactory fact = model.getFactory();
+        Properties props = model.getProject().getProperties();
+        if (props == null) {
+            props = fact.createProperties();
+            model.getProject().setProperties(props);
+        }
+        props.setProperty(Constants.ENCODING_PROP, enc);
+        boolean createPlugins = source == null;
+
+        //check if compiler/resources plugins are configured and update them to ${project.source.encoding expression
+        Build bld = model.getProject().getBuild();
+        if (bld == null) {
+            if (createPlugins) {
+                bld = fact.createBuild();
+                model.getProject().setBuild(bld);
+            } else {
+                return;
+            }
+        }
+
+        Plugin plugin = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+        Plugin plugin2 = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES);
+
+        String compilesource = PluginPropertyUtils.getPluginProperty(handle.getProject(),
+                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER,
+                    Constants.ENCODING_PARAM, null);
+        String resourcesource = PluginPropertyUtils.getPluginProperty(handle.getProject(),
+                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES,
+                    Constants.ENCODING_PARAM, null);
+
+        boolean updateCompiler = createPlugins || compilesource != null; /** configured in parent somehow */
+        if (plugin == null && updateCompiler) {
+            plugin = fact.createPlugin();
+            plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
+            plugin.setArtifactId(Constants.PLUGIN_COMPILER);
+            plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_COMPILER));
+            bld.addPlugin(plugin);
+        }
+        if (plugin != null) {
+            Configuration conf = plugin.getConfiguration();
+            if (conf == null && updateCompiler) {
+                conf = fact.createConfiguration();
+                plugin.setConfiguration(conf);
+            }
+            if (conf != null && updateCompiler) {
+                conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
+            }
+        }
+
+        boolean updateResources = createPlugins || resourcesource != null; /** configured in parent somehow */
+        if (plugin2 == null && updateResources) {
+            plugin2 = fact.createPlugin();
+            plugin2.setGroupId(Constants.GROUP_APACHE_PLUGINS);
+            plugin2.setArtifactId(Constants.PLUGIN_RESOURCES);
+            plugin2.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_RESOURCES));
+            bld.addPlugin(plugin2);
+        }
+        if (plugin2 != null) {
+            Configuration conf = plugin2.getConfiguration();
+            if (conf == null && updateResources) {
+                conf = fact.createConfiguration();
+                plugin2.setConfiguration(conf);
+            }
+            if (conf != null && updateResources) {
+                conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

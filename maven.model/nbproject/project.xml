@@ -163,6 +163,7 @@
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.maven.osgi</friend>
+                <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
