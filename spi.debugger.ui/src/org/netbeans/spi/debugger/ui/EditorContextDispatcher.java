@@ -671,7 +671,6 @@ public final class EditorContextDispatcher {
                     currentOpenedPane = newEditor == null ? NO_EDITOR : new WeakReference<JEditorPane>(newEditor);
                     FileObject f = currentFile.get();
                     if (f != null) {
-                        MIMEType = f.getMIMEType();
                         if (newEditor != null) {
                             mostRecentOpenedPaneRef = new WeakReference<JEditorPane>(newEditor);
                             reAttachFileChangeListener(mostRecentFileRef.get(), f, false);
@@ -679,6 +678,10 @@ public final class EditorContextDispatcher {
                             if (ec != null) {
                                 mostRecentEditorCookieRef = new WeakReference<EditorCookie>(ec);
                             }
+                        }
+                        if (doFire && oldEditor != newEditor) {
+                            lazyRetrieveMIMETypeAndFire(oldEditor, newEditor, f);
+                            doFire = false;
                         }
                     } else {
                         MIMEType = null;
@@ -689,6 +692,17 @@ public final class EditorContextDispatcher {
             if (doFire && oldEditor != newEditor) {
                 refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
             }
+        }
+        
+        private void lazyRetrieveMIMETypeAndFire(final JEditorPane oldEditor, final JEditorPane newEditor, final FileObject f) {
+            refreshProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    String MIMEType = f.getMIMEType();
+                    new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType).run();
+                }
+            });
+            
         }
 
         private void reAttachFileChangeListener(FileObject oldFile, FileObject newFile, boolean current) {
