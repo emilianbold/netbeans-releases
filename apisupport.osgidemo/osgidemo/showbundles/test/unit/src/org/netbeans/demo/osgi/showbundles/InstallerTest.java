@@ -64,7 +64,7 @@ public class InstallerTest extends NbTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().addTest(InstallerTest.class).gui(false)
-            .clusters(".*")
+            .clusters(".*")<#if netbinox??>.enableModules("org.netbeans.modules.netbinox")</#if>
         );
     }
 
