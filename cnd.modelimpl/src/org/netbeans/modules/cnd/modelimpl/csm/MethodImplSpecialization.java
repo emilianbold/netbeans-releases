@@ -44,10 +44,18 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
@@ -59,14 +67,58 @@ import org.openide.util.CharSequences;
  */
 public class MethodImplSpecialization<T> extends MethodImpl<T> {
 
-    protected MethodImplSpecialization(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, cls, visibility, nameHolder, global);
+    protected MethodImplSpecialization(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static<T> MethodImplSpecialization<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        NameHolder nameHolder = NameHolder.createFunctionName(ast);//NameHolder.createName(getFunctionName(ast));
-        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<T>(ast, cls, visibility, nameHolder, register);
-        postObjectCreateRegistration(register, methodImpl);
+    public static<T> MethodImplSpecialization<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        CsmScope scope = cls;
+        CsmFile file = cls.getContainingFile();
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        boolean _virtual = false;
+        boolean _explicit = false;
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.LITERAL_static:
+                    _static = true;
+                    break;
+                case CPPTokenTypes.LITERAL_virtual:
+                    _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_explicit:
+                    _explicit = true;
+                    break;
+            }
+        }
+        
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
+
+        MethodImplSpecialization methodImpl = new MethodImplSpecialization(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, methodImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        methodImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        methodImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodImpl, file));
+        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        
+        postObjectCreateRegistration(global, methodImpl);
         nameHolder.addReference(cls.getContainingFile(), methodImpl);
         return methodImpl;
     }

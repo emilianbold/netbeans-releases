@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author nick
  */
-public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
-    private final CharSequence msg;
-    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs) {
-        super(file, offs != null ? offs.getStartOffset() : 0, offs != null ? offs.getEndOffset() : 0);
-        this.msg = DefaultCache.getManager().getString(text);
+public class Offsetable extends OffsetableBase {
+
+    public Offsetable(CsmFile file, int start, int end) {
+        super(file, start, end);
     }
-
-    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs) {
-        return new ErrorDirectiveImpl(file, msg, offs);
-    }
-
-    @Override
-    public CharSequence getText() {
-        return msg;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + msg;
-    }
-
-    @Override
-    public int hashCode() {
-        return 47 * super.hashCode() + msg.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        final ErrorDirectiveImpl other = (ErrorDirectiveImpl) obj;
-        return this.msg.equals(other.msg);
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////
-    // serialization
     
-    @SuppressWarnings("unchecked")
-    public ErrorDirectiveImpl(RepositoryDataInput input) throws IOException {
-        super(input);
-        this.msg = PersistentUtils.readUTF(input, DefaultCache.getManager());
-    }
-
-    @Override
-    public void write(RepositoryDataOutput output) throws IOException {
-        super.write(output);
-        PersistentUtils.writeUTF(msg, output);
-    }
 }

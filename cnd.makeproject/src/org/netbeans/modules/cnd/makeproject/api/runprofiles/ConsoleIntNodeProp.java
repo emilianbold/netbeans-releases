@@ -57,8 +57,8 @@ public class ConsoleIntNodeProp extends IntNodeProp {
     private final PropertyChangeSupport pcs;
 
     @SuppressWarnings("unchecked")
-    public ConsoleIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
-        super( intConfiguration,  canWrite,  unused,  name,  description);
+    public ConsoleIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String name, String displayName, String description) {
+        super( intConfiguration,  canWrite,  name,  displayName,  description);
         this.intConfiguration = intConfiguration;
         pcs = new PropertyChangeSupport(this);
     }

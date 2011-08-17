@@ -103,8 +103,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private CsmObject owner;
 
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, CsmOffsetable offset) {
-        super(file, offset == null ? getStartOffset(ast) : offset.getStartOffset(), offset == null ? getEndOffset(ast) : offset.getEndOffset());
+    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
         this._setClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
         setFlags(FLAGS_REFERENCE, reference);

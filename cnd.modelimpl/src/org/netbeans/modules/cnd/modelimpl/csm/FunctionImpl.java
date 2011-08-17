@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -78,9 +79,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private static final String OPERATOR = "operator"; // NOI18N;
 
     private final CharSequence name;
-    private final CsmType returnType;
+    private CsmType returnType;
 //    private final Collection<CsmUID<CsmParameter>>  parameters;
-    private final FunctionParameterListImpl parameterList;
+    private FunctionParameterListImpl parameterList;
     private CharSequence signature;
 
     // only one of scopeRef/scopeAccessor must be used
@@ -89,9 +90,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private final CharSequence rawName;
 
-    private final TemplateDescriptor templateDescriptor;
+    private TemplateDescriptor templateDescriptor;
 
-    protected final CharSequence classTemplateSuffix;
+    protected CharSequence classTemplateSuffix;
 
     private static final byte FLAGS_VOID_PARMLIST = 1 << 0;
     private static final byte FLAGS_STATIC = 1 << 1;
@@ -101,131 +102,70 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     protected static final int LAST_USED_FLAG_INDEX = 4;
     private byte flags;
 
-    private static final boolean CHECK_SCOPE = false;
+    protected FunctionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(file, startOffset, endOffset);
 
-    protected FunctionImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file);
-        assert !CHECK_SCOPE || (scope != null);
-
-        name = QualifiedNameCache.getManager().getString(nameHolder.getName());
-        if (name.length()==0) {
-            throw new AstRendererException((FileImpl)file, this.getStartOffset(), "Empty function name."); // NOI18N
-        }
-        rawName = initRawName(ast);
-        AST child = ast.getFirstChild();
-        if (child != null) {
-            setStatic(child.getType() == CPPTokenTypes.LITERAL_static);
-        } else {
-            System.err.println("function ast " + ast.getText() + " without childs in file " + file.getAbsolutePath());
-        }
-        if (!isStatic()) {
-            CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
-                               name, true, true, false);
-            Iterator<CsmFunction> it = CsmSelect.getStaticFunctions(file, filter);
-            while(it.hasNext()){
-                CsmFunction fun = it.next();
-                if( name.equals(fun.getName()) ) {
-                    // we don't check signature here since file-level statics
-                    // is C-style construct
-                    setStatic(true);
-                    break;
-                }
-            }
-        }
-
-        // change scope to file for static methods, but only to prevent
-        // registration in global  namespace
-        if(scope instanceof CsmNamespace) {
-            if( !NamespaceImpl.isNamespaceScope(this) ) {
-                    scope = file;
-            }
-        }
-
+        this.name = name;
+        this.rawName = rawName;
+        
+        setFlags(FLAGS_STATIC, _static);
         _setScope(scope);
-        boolean _const = initConst(ast);
         setFlags(FLAGS_CONST, _const);
-
         if (name.toString().startsWith(OPERATOR) &&
                 (name.length() > OPERATOR.length()) &&
                 !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
             setFlags(FLAGS_OPERATOR, true);
         }
-
-        temporaryRepositoryRegistration(global, this);
-        StringBuilder clsTemplateSuffix = new StringBuilder();
-        templateDescriptor = createTemplateDescriptor(ast, this, clsTemplateSuffix, global);
-        classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        if(type != null) {
-            returnType = type;
-        } else {
-            returnType = initReturnType(ast);
-        }
-
-        // set parameters, do it in constructor to have final fields
-        this.parameterList = createParameterList(ast, !global);
-        if (this.parameterList == null || this.parameterList.isEmpty()) {
-            setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
-        } else {
-            setFlags(FLAGS_VOID_PARMLIST, false);
-        }
-        if (this.parameterList == null) {
-            System.err.println("NO PARAM LIST FOR FUNC:" + name + " at " + AstUtil.getOffsetString(ast) + " in " + file.getAbsolutePath());
-        }
     }
-
-    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean register) throws AstRendererException {
+    
+    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) throws AstRendererException {
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FunctionImpl<T> functionImpl = new FunctionImpl<T>(ast, file, type, scope, nameHolder, register);
-        postObjectCreateRegistration(register, functionImpl);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
+
+        FunctionImpl<T> functionImpl = new FunctionImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, functionImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        functionImpl.setReturnType(type != null ? type : AstRenderer.FunctionRenderer.createReturnType(ast, functionImpl, file));
+        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        
+        postObjectCreateRegistration(global, functionImpl);
         nameHolder.addReference(file, functionImpl);
         return functionImpl;
     }
 
-    public static<T> FunctionImpl<T> create(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean register, int startOffset, int endOffset) {
-        FunctionImpl<T> functionImpl = new FunctionImpl<T>(file, type, scope, name, parameterList, isStatic, isConst, register, startOffset, endOffset);
-        postObjectCreateRegistration(register, functionImpl);
-        return functionImpl;
+    protected void setTemplateDescriptor(TemplateDescriptor templateDescriptor, CharSequence classTemplateSuffix) {
+        this.templateDescriptor = templateDescriptor;
+        this.classTemplateSuffix = classTemplateSuffix;
     }
 
-    private FunctionImpl(CsmFile file, CsmType type, CsmScope scope, String name, FunctionParameterListImpl parameterList, boolean isStatic, boolean isConst, boolean global, int startOffset, int endOffset) {
-        super(file, startOffset, endOffset);
-        assert !CHECK_SCOPE || (scope != null);
+    protected void setReturnType(CsmType returnType) {
+        this.returnType = returnType;
+    }
 
-        this.name = QualifiedNameCache.getManager().getString(name);
-        rawName = null;
-        setStatic(isStatic);
-
-        // change scope to file for static methods, but only to prevent
-        // registration in global  namespace
-        if(scope instanceof CsmNamespace) {
-            if( !NamespaceImpl.isNamespaceScope(this) ) {
-                    scope = file;
-            }
-        }
-
-        _setScope(scope);
-        setFlags(FLAGS_CONST, isConst);
-        if (name.toString().startsWith(OPERATOR) &&
-                (name.length() > OPERATOR.length()) &&
-                !Character.isJavaIdentifierPart(name.charAt(OPERATOR.length()))) { // NOI18N
-            setFlags(FLAGS_OPERATOR, true);
-        }
-
-        temporaryRepositoryRegistration(global, this);
-        // TODO
-        templateDescriptor = null;
-        // TODO
-        classTemplateSuffix = null;
-        returnType = type;
-
-        // set parameters, do it in constructor to have final fields
+    protected void setParameters(FunctionParameterListImpl parameterList, boolean voidParamList) {
+        if (parameterList == null) {
+            System.err.println("NO PARAM LIST FOR FUNC:" + name + " at " + getStartOffset() + " in " + getContainingFile());
+        }        
         this.parameterList = parameterList;
-        if (this.parameterList.isEmpty()) {
-            // TODO
-            //setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
-        } else {
-            setFlags(FLAGS_VOID_PARMLIST, false);
-        }
+        setFlags(FLAGS_VOID_PARMLIST, voidParamList);
     }
 
     public void setScope(CsmScope scope) {
@@ -278,23 +218,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         setFlags(FLAGS_STATIC, value);
     }
 
-    private AST findParameterNode(AST node) {
-        AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
-        if (ast != null) {
-            // for K&R-style
-            AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_KR_PARMLIST);
-            if (ast2 != null) {
-                ast = ast2;
-            }
-        }
-        return ast;
-    }
-
     protected CharSequence getScopeSuffix() {
         return classTemplateSuffix != null ? classTemplateSuffix : CharSequences.empty();
     }
 
-    protected final CharSequence initRawName(AST node) {
+    protected static CharSequence initRawName(AST node) {
         return findFunctionRawName(node);
     }
 
@@ -661,50 +589,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 //        return false;
 //    }
 
-    private CsmType initReturnType(AST node) {
-        CsmType ret = null;
-        AST token = getTypeToken(node);
-        if( token != null ) {
-            ret = AstRenderer.renderType(token, getContainingFile());
-        }
-        if( ret == null ) {
-            ret = TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
-        }
-        return TemplateUtils.checkTemplateType(ret, FunctionImpl.this);
-    }
-
     @Override
     public CsmType getReturnType() {
         return returnType;
-    }
-
-    private static AST getTypeToken(AST node) {
-        for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            int type = token.getType();
-            switch( type ) {
-                case CPPTokenTypes.CSM_TYPE_BUILTIN:
-                case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                case CPPTokenTypes.LITERAL_typename:
-                case CPPTokenTypes.LITERAL_struct:
-                case CPPTokenTypes.LITERAL_class:
-                case CPPTokenTypes.LITERAL_union:
-                    return token;
-                default:
-                    if( AstRenderer.isCVQualifier(type) ) {
-                        return token;
-                    }
-            }
-        }
-        return null;
-    }
-
-    private FunctionParameterListImpl createParameterList(AST funAST, boolean isLocal) {
-        return FunctionParameterListImpl.create(getContainingFile(), funAST, this, isLocal);
-    }
-
-    private boolean isVoidParameter(AST node) {
-        AST ast = findParameterNode(node);
-        return AstRenderer.isVoidParameter(ast);
     }
 
     @Override
@@ -824,20 +711,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
-    private static boolean initConst(AST node) {
-        AST token = node.getFirstChild();
-        while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
-            token = token.getNextSibling();
-        }
-        while( token != null ) {
-            if (AstRenderer.isConstQualifier(token.getType())) {
-                return true;
-            }
-            token = token.getNextSibling();
-        }
-        return false;
-    }
-
     /**
      * isConst was originally in MethodImpl;
      * but this methods needs internally in FunctionDefinitionImpl
@@ -915,11 +788,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         PersistentUtils.writeParameterList(this.parameterList, output);
         PersistentUtils.writeUTF(this.rawName, output);
-
-        // not null UID
-        assert !CHECK_SCOPE || this.scopeUID != null;
         factory.writeUID(this.scopeUID, output);
-
         PersistentUtils.writeUTF(this.signature, output);
         output.writeByte(flags);
         PersistentUtils.writeUTF(getScopeSuffix(), output);
@@ -934,12 +803,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameterList = (FunctionParameterListImpl) PersistentUtils.readParameterList(input);
         this.rawName = PersistentUtils.readUTF(input, NameCache.getManager());
-
         this.scopeUID = factory.readUID(input);
-        // not null UID
-        assert !CHECK_SCOPE || this.scopeUID != null;
         this.scopeRef = null;
-
         this.signature = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         this.flags = input.readByte();
         this.classTemplateSuffix = PersistentUtils.readUTF(input, NameCache.getManager());

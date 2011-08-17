@@ -50,7 +50,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -60,25 +64,74 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinition {
 
-    private final CsmCompoundStatement body;
+    private CsmCompoundStatement body;
     
-    protected MethodDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, cls, visibility, nameHolder, global);
-        body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
-        if (body == null) {
-            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
-                    "Null body in method definition."); // NOI18N
-        }
+    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static<T> MethodDDImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+    public static<T> MethodDDImpl<T> create(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        CsmScope scope = cls;
+        CsmFile file = cls.getContainingFile();
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<T>(ast, cls, visibility, nameHolder, register);
-        postObjectCreateRegistration(register, methodDDImpl);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        boolean _virtual = false;
+        boolean _explicit = false;
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.LITERAL_static:
+                    _static = true;
+                    break;
+                case CPPTokenTypes.LITERAL_virtual:
+                    _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_explicit:
+                    _explicit = true;
+                    break;
+            }
+        }
+        
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
+
+        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, methodDDImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodDDImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        methodDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        methodDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodDDImpl, file));
+        methodDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodDDImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, methodDDImpl);
+        if (body == null) {
+            throw new AstRendererException((FileImpl)file, startOffset,
+                    "Null body in method definition."); // NOI18N
+        }        
+        methodDDImpl.setCompoundStatement(body);
+
+        postObjectCreateRegistration(global, methodDDImpl);
         nameHolder.addReference(cls.getContainingFile(), methodDDImpl);
         return methodDDImpl;
     }
 
+    protected void setCompoundStatement(CsmCompoundStatement body) {
+        this.body = body;
+    }
+    
     @Override
     public CsmFunction getDeclaration() {
         return this;

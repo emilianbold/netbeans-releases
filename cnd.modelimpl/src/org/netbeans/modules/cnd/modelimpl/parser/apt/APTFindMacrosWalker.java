@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
@@ -334,7 +335,7 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                                 if (target instanceof Unresolved.UnresolvedFile) {
                                     refObj = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                                 } else {
-                                    refObj = MacroImpl.create(macroName, null, "", target, OffsetableBase.create(target, macroStartOffset, macroStartOffset + macroName.length()), CsmMacro.Kind.DEFINED);
+                                    refObj = MacroImpl.create(macroName, null, "", target, macroStartOffset, macroStartOffset + macroName.length(), CsmMacro.Kind.DEFINED);
                                     Utils.setSelfUID(refObj);
                                 }
                             }

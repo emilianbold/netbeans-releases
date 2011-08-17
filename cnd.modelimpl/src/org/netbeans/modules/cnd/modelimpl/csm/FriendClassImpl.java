@@ -83,7 +83,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     private int lastFileID = -1;
     
     private FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         this.parentUID = UIDs.get(parent);
         qid = (qid != null) ? qid : AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         if (qid == null) {

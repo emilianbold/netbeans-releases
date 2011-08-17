@@ -68,18 +68,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     public static final char UNIQUE_NAME_SEPARATOR = ':';
     
-    protected OffsetableDeclarationBase(AST ast, CsmFile file) {
-        super(ast, file);
-    }
-
     protected OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
     }
 
-    protected OffsetableDeclarationBase(CsmFile containingFile, CsmOffsetable pos) {
-        super(containingFile, pos);
-    }
-    
     @Override
     public CharSequence getUniqueName() {
         return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
@@ -142,7 +134,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return CsmBaseUtilities.isValid(getContainingFileImpl(false));
     }
 
-    protected TemplateDescriptor createTemplateDescriptor(AST node, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {
+    protected static TemplateDescriptor createTemplateDescriptor(AST node, CsmFile file, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {
         boolean _template = false, specialization = false;
         switch(node.getType()) {
             case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
@@ -214,7 +206,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             int inheritedTemplateParametersNumber = 0;
             if(templateClass){
                 templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
-                    getContainingFile(), scope, global);
+                    file, scope, global);
                 inheritedTemplateParametersNumber = templateParams.size();
             }
             CharSequence templateSuffix = "";
@@ -237,10 +229,10 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 }                
                 if(templateParams != null) {
                     templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
-                        getContainingFile(), scope, global));
+                        file, scope, global));
                 } else {
                     templateParams = TemplateUtils.getTemplateParameters(templateNode,
-                        getContainingFile(), scope, global);
+                        file, scope, global);
                 }
             }            
             return new TemplateDescriptor(

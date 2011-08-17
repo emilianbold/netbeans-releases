@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * Base class for CsmOffsetable
  * @author Vladimir Kvashin
  */
-public class OffsetableBase implements CsmOffsetable, Disposable {
+public abstract class OffsetableBase implements CsmOffsetable, Disposable {
     // only one of fileRef/fileUID must be used (USE_UID_TO_CONTAINER)
     private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
     private final CsmUID<CsmFile> fileUID;
@@ -67,16 +67,12 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     private final int startPosition;
     private final int endPosition;
     
-    protected OffsetableBase(AST ast, CsmFile file) {
-        this(file, getStartOffset(ast), getEndOffset(ast));
+    protected OffsetableBase(CsmOffsetable pos) {
+        this(pos.getContainingFile(), 
+                pos.getStartOffset(),
+                pos.getEndOffset());      
     }
-    
-    protected OffsetableBase(CsmFile containingFile, CsmOffsetable pos) {
-        this(containingFile, 
-                pos != null ? pos.getStartOffset() : 0,
-                pos != null ? pos.getEndOffset() : 0);      
-    }
-    
+
     protected OffsetableBase(CsmFile file, int start, int end) {
         // Parameters.notNull("file can not be null", file); // NOI18N
         this.fileUID = UIDCsmConverter.fileToUID(file);
@@ -91,10 +87,6 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         this.endPosition = PositionManager.createPositionID(fileUID, end, PositionManager.Position.Bias.BACKWARD);
     }
 
-    public static OffsetableBase create(CsmFile file, int start, int end) {
-        return new OffsetableBase(file, start, end);
-    }
-    
     @Override
     final public int getStartOffset() {
         return PositionManager.getOffset(fileUID, startPosition);

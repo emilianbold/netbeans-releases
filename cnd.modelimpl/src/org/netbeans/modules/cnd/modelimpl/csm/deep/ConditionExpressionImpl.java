@@ -60,7 +60,7 @@ public final class ConditionExpressionImpl extends OffsetableBase implements Csm
     private final CsmExpression expression;
     
     private ConditionExpressionImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         expression = new AstRenderer((FileImpl)getContainingFile()).renderExpression(ast, scope);
     }
 

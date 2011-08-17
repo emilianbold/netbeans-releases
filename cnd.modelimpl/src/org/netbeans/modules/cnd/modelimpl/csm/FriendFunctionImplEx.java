@@ -48,11 +48,17 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -65,15 +71,49 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 public final class FriendFunctionImplEx extends FunctionImplEx<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    private FriendFunctionImplEx(AST ast, CsmClass cls, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, cls.getContainingFile(), scope, nameHolder, global);
+    protected FriendFunctionImplEx(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
         friendClassUID = UIDCsmConverter.declarationToUID(cls);
     }
 
-    public static FriendFunctionImplEx create(AST ast, CsmClass cls, CsmScope scope, boolean register) throws AstRendererException {
+    public static FriendFunctionImplEx create(AST ast, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+        CsmFile file = cls.getContainingFile();
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FriendFunctionImplEx friendFunctionImplEx = new FriendFunctionImplEx(ast, cls, scope, nameHolder, register);
-        postObjectCreateRegistration(register, friendFunctionImplEx);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
+
+        FriendFunctionImplEx friendFunctionImplEx = new FriendFunctionImplEx(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
+        
+        temporaryRepositoryRegistration(global, friendFunctionImplEx);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionImplEx, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        friendFunctionImplEx.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        friendFunctionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionImplEx, file));
+        friendFunctionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionImplEx, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));        
+        
+        CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            friendFunctionImplEx.initClassOrNspNames(ast);
+        friendFunctionImplEx.setClassOrNspNames(classOrNspNames);        
+        
+        postObjectCreateRegistration(global, friendFunctionImplEx);
         nameHolder.addReference(cls.getContainingFile(), friendFunctionImplEx);
         return friendFunctionImplEx;
     }

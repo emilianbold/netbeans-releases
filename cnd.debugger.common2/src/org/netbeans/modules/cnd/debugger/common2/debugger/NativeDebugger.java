@@ -99,6 +99,8 @@ public interface NativeDebugger {
 
     public void postKill();
     public void shutDown();
+    
+    boolean isConnected();
 
     public void postVarContinuation(VarContinuation vc);
 

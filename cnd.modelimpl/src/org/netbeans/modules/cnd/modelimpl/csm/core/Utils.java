@@ -134,7 +134,7 @@ public class Utils {
     }
     
     public static CsmOffsetable createOffsetable(CsmFile file, int startOffset, int endOffset) {
-        return OffsetableBase.create(file, startOffset, endOffset);
+        return new Offsetable(file, startOffset, endOffset);
     }
     
     public static String getQualifiedName(String name, CsmNamespace parent) {

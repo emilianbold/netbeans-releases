@@ -257,6 +257,10 @@ public final class Handler implements ListMapItem {
 	newBpt.seedToplevelAnnotations();
 
 	if (debugger != null) {
+            if (!debugger.isConnected()) {
+                // debugger is not yet connected - just do nothing
+                return;
+            }
 	    // we have a master/validator debugger, so route bpt
 	    // creation through it
 	    // SHOULD use isValidatable()?

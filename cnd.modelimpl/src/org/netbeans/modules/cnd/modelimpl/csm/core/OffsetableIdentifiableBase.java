@@ -67,14 +67,6 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     
     private CsmUID<?> uid = null;
 
-    protected OffsetableIdentifiableBase(AST ast, CsmFile file) {
-        super(ast, file);
-    }
-
-    protected OffsetableIdentifiableBase(CsmFile containingFile, CsmOffsetable pos) {
-        super(containingFile, pos);
-    }
-
     protected OffsetableIdentifiableBase(CsmFile containingFile, int startOffset, int endOffset) {
         super(containingFile, startOffset, endOffset);
     }

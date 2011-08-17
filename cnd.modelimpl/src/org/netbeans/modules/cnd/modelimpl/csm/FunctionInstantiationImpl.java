@@ -74,7 +74,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
     private final CharSequence name;    
     
     private FunctionInstantiationImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         this.parameterList = createParameterList(ast, !global);
         _setScope(scope);
         name = QualifiedNameCache.getManager().getString(nameHolder.getName());        
