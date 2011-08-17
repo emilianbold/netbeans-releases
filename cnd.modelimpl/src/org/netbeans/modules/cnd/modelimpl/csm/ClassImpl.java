@@ -493,7 +493,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                     }
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
-                        addInheritance(InheritanceImpl.create(token, getContainingFile(), ClassImpl.this), !isRenderingLocalContext());
+                        addInheritance(InheritanceImpl.create(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext()), !isRenderingLocalContext());
                         break;
                     // class / struct / union
                     case CPPTokenTypes.LITERAL_class:
