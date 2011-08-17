@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -654,17 +656,19 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            Map<String, String> res = new LinkedHashMap<String, String>();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritPreprocessor().getValue()) {
-                vec.addAll(master.getPreprocessorConfiguration().getValue());
-                if (master.getInheritIncludes().getValue()) {
+                addToMap(res, master.getPreprocessorConfiguration().getValue(), false);
+                if (master.getInheritPreprocessor().getValue()) {
                     master = (CCCCompilerConfiguration) master.getMaster();
                 } else {
                     master = null;
                 }
             }
-            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            addToMap(res, cccCompilerConfiguration.getPreprocessorConfiguration().getValue(), true);
+            addToList(res, vec);
             vec = SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
             if (cccCompilerConfiguration instanceof CCompilerConfiguration) {
                 switch (this.getLanguageFlavor()) {
@@ -677,6 +681,35 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
         return vec;
+    }
+
+    private void addToMap(Map<String, String> res, List<String> list, boolean override) {
+        for(String macro : list){
+            int i = macro.indexOf('=');
+            String key;
+            String value;
+            if ( i > 0){
+                key = macro.substring(0,i).trim();
+                value = macro.substring(i+1).trim();
+            } else {
+                key = macro;
+                value = null;
+                res.put(macro,null);
+            }
+            if (!res.containsKey(key) || override) {
+                res.put(key, value);
+            }
+        }
+    }
+    
+    private void addToList(Map<String, String> res, List<String> list) {
+        for(Map.Entry<String,String> e : res.entrySet()) {
+            if (e.getValue() == null) {
+                list.add(e.getKey());
+            } else {
+                list.add(e.getKey()+"="+e.getValue()); //NOI18N
+            }
+        }
     }
 
     public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
