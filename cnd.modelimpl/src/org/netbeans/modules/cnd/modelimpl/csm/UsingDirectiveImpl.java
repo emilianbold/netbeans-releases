@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -107,10 +108,10 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
                 referencedNamespace = (CsmNamespace)result;
                 _setReferencedNamespace(referencedNamespace);
                 if (referencedNamespace != null) {
-                    if (UIDProviderIml.isPersistable(UIDs.get(this))) {
-                        if (UIDProviderIml.isPersistable(UIDs.get(referencedNamespace))) {
-                            RepositoryUtils.put(this);
-                        }
+                    if (UIDProviderIml.isPersistable(UIDs.get(this)) &&
+                        UIDProviderIml.isPersistable(UIDs.get(referencedNamespace)) &&
+                        CsmBaseUtilities.isValid(this)) {
+                        RepositoryUtils.put(this);
                     }
                 }
             }
