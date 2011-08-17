@@ -167,10 +167,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("default", KeywordCompletionType.ENDS_WITH_COLON);
         PHP_KEYWORDS.put("break", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("endif", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-	PHP_KEYWORDS.put("endfor", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-	PHP_KEYWORDS.put("endforeach", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-	PHP_KEYWORDS.put("endwhile", KeywordCompletionType.ENDS_WITH_SEMICOLON);
-	PHP_KEYWORDS.put("endswitch", KeywordCompletionType.ENDS_WITH_SEMICOLON);
+        PHP_KEYWORDS.put("endfor", KeywordCompletionType.ENDS_WITH_SEMICOLON);
+        PHP_KEYWORDS.put("endforeach", KeywordCompletionType.ENDS_WITH_SEMICOLON);
+        PHP_KEYWORDS.put("endwhile", KeywordCompletionType.ENDS_WITH_SEMICOLON);
+        PHP_KEYWORDS.put("endswitch", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("case", KeywordCompletionType.ENDS_WITH_COLON);
     }
 
