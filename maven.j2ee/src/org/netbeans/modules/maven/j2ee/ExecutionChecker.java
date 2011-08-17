@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -74,8 +73,9 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -300,20 +300,16 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     private static void removeNetbeansDeployFromActionMappings(Project project, String actionName) {
         try {
-            ModelHandle handle = ModelHandleUtils.createModelHandle(project);
-            NetbeansActionMapping mapp = ModelHandle.getActiveMapping(actionName, project);
+            ProjectConfiguration cfg = project.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
+            NetbeansActionMapping mapp = ModelHandle.getMapping(actionName, project, cfg);
             if (mapp != null) {
                 java.util.Properties props = mapp.getProperties();
                 if (props != null) {
                     props.remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
-                    ModelHandle.setUserActionMapping(mapp, handle.getActionMappings());
-                    handle.markAsModified(handle.getActionMappings());
-                    ModelHandleUtils.writeModelHandle(handle, project);
+                    ModelHandle.putMapping(mapp, project, cfg);
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (XmlPullParserException ex) {
             Exceptions.printStackTrace(ex);
         }
     }

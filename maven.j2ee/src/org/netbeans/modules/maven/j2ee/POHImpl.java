@@ -45,20 +45,17 @@ package org.netbeans.modules.maven.j2ee;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
@@ -71,6 +68,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -293,36 +292,26 @@ public class POHImpl {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            String newOne = ServerManager.showAddServerInstanceWizard();
-            String serverType = null;
-            if (newOne != null) {
-                serverType = privateGetServerId(newOne);
-            }
-            try {
-                ModelHandle handle = ModelHandleUtils.createModelHandle(prj);
-                //get rid of old settings.
-                POMModel model = handle.getPOMModel();
-                if (newOne != null) {
-                    Properties props = model.getProject().getProperties();
-                    if (props == null) {
-                        props = model.getFactory().createProperties();
-                        model.getProject().setProperties(props);
-                    }
-                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                } else {
-                    Properties props = model.getProject().getProperties();
-                    if (props != null) {
-                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
+            final String newOne = ServerManager.showAddServerInstanceWizard();
+            final String serverType = newOne != null ? privateGetServerId(newOne) : null;
+            Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() {
+                @Override public void performOperation(POMModel model) {
+                    if (newOne != null) {
+                        Properties props = model.getProject().getProperties();
+                        if (props == null) {
+                            props = model.getFactory().createProperties();
+                            model.getProject().setProperties(props);
+                        }
+                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
+                    } else {
+                        Properties props = model.getProject().getProperties();
+                        if (props != null) {
+                            props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
+                        }
                     }
                 }
-                prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
-                handle.markAsModified(handle.getPOMModel());
-                ModelHandleUtils.writeModelHandle(handle, prj);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (XmlPullParserException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            }));
+            prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
         }
     }
 

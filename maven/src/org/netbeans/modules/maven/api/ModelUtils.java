@@ -53,7 +53,6 @@ import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.SuppressWarnings;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -63,12 +62,10 @@ import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.DependencyManagement;
 import org.netbeans.modules.maven.model.pom.POMComponent;
-import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
-import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.openide.filesystems.FileObject;
@@ -190,19 +187,15 @@ public final class ModelUtils {
     }
 
     /**
-     * update the source level of project to given value.
-     *
-     * @param handle handle which models are to be updated
-     * @param sourceLevel the sourcelevel to set
+     * Sets the Java source level of a project.
+     * Use {@link PluginPropertyUtils#getPluginProperty(Project,String,String,String,String)} first
+     * ({@link Constants#GROUP_APACHE_PLUGINS}, {@link Constants#PLUGIN_COMPILER}, {@link Constants#SOURCE_PARAM}, {@code "compile"})
+     * to make sure that the current level is actually not what you want.
+     * @param mdl a POM model
+     * @param sourceLevel the desired source level
+     * @since 2.19
      */
-    public static void checkSourceLevel(ModelHandle handle, String sourceLevel) {
-        String source = PluginPropertyUtils.getPluginProperty(handle.getProject(),
-                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM,
-                "compile"); //NOI18N
-        if (source != null && source.contains(sourceLevel)) {
-            return;
-        }
-        POMModel mdl = handle.getPOMModel();
+    public static void setSourceLevel(POMModel mdl, String sourceLevel) {
         Plugin old = null;
         Plugin plugin;
         Build bld = mdl.getProject().getBuild();
@@ -227,92 +220,6 @@ public final class ModelUtils {
         }
         conf.setSimpleParameter(Constants.SOURCE_PARAM, sourceLevel);
         conf.setSimpleParameter(Constants.TARGET_PARAM, sourceLevel);
-        handle.markAsModified(handle.getPOMModel());
-    }
-
-    /**
-     * update the encoding of project to given value.
-     *
-     * @param handle handle which models are to be updated
-     * @param enc encoding to use
-     */
-    public static void checkEncoding(ModelHandle handle, String enc) {
-        String source = handle.getProject().getProperties().getProperty(Constants.ENCODING_PROP);
-        if (enc.equals(source)) {
-            return;
-        }
-        //new approach, assume all plugins conform to the new setting.
-        POMModel model = handle.getPOMModel();
-        handle.markAsModified(model);
-        POMComponentFactory fact = model.getFactory();
-        Properties props = model.getProject().getProperties();
-        if (props == null) {
-            props = fact.createProperties();
-            model.getProject().setProperties(props);
-        }
-        props.setProperty(Constants.ENCODING_PROP, enc);
-        boolean createPlugins = source == null;
-
-        //check if compiler/resources plugins are configured and update them to ${project.source.encoding expression
-        Plugin plugin;
-        Plugin plugin2;
-        Build bld = model.getProject().getBuild();
-        if (bld == null) {
-            if (createPlugins) {
-                bld = fact.createBuild();
-                model.getProject().setBuild(bld);
-            } else {
-                return;
-            }
-        }
-
-        plugin = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
-        plugin2 = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES);
-
-        String compilesource = PluginPropertyUtils.getPluginProperty(handle.getProject(),
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER,
-                    Constants.ENCODING_PARAM, null);
-        String resourcesource = PluginPropertyUtils.getPluginProperty(handle.getProject(),
-                    Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_RESOURCES,
-                    Constants.ENCODING_PARAM, null);
-
-        boolean updateCompiler = createPlugins || compilesource != null; /** configured in parent somehow */
-        if (plugin == null && updateCompiler) {
-            plugin = fact.createPlugin();
-            plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
-            plugin.setArtifactId(Constants.PLUGIN_COMPILER);
-            plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_COMPILER));
-            bld.addPlugin(plugin);
-        }
-        if (plugin != null) {
-            Configuration conf = plugin.getConfiguration();
-            if (conf == null && updateCompiler) {
-                conf = fact.createConfiguration();
-                plugin.setConfiguration(conf);
-            }
-            if (conf != null && updateCompiler) {
-                conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
-            }
-        }
-
-        boolean updateResources = createPlugins || resourcesource != null; /** configured in parent somehow */
-        if (plugin2 == null && updateResources) {
-            plugin2 = fact.createPlugin();
-            plugin2.setGroupId(Constants.GROUP_APACHE_PLUGINS);
-            plugin2.setArtifactId(Constants.PLUGIN_RESOURCES);
-            plugin2.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_RESOURCES));
-            bld.addPlugin(plugin2);
-        }
-        if (plugin2 != null) {
-            Configuration conf = plugin2.getConfiguration();
-            if (conf == null && updateResources) {
-                conf = fact.createConfiguration();
-                plugin2.setConfiguration(conf);
-            }
-            if (conf != null && updateResources) {
-                conf.setSimpleParameter(Constants.ENCODING_PARAM, "${" + Constants.ENCODING_PROP + "}");
-            }
-        }
     }
 
     /**

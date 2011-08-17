@@ -45,19 +45,21 @@ package org.netbeans.modules.maven.persistence;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -123,23 +125,18 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
         if ("toplink".equals(library.getName())) { //NOI18N
             //TODO would be nice if the toplink lib shipping with netbeans be the same binary
             // then we could just copy the pieces to local repo.
-            try {
-                //not necessary any more. toplink will be handled by default library impl..            
-                //TODO would be nice if the toplink lib shipping with netbeans be the same binary
-                // then we could just copy the pieces to local repo.
-                ModelHandle handle = ModelHandleUtils.createModelHandle(project);
-                
-                // checking source doesn't work anymore, the wizard requires the level to be 1.5 up front.
-                ModelUtils.checkSourceLevel(handle, SL_15);
-                ModelHandleUtils.writeModelHandle(handle, project);
-                
-                //shall not return true, needs processing by the fallback impl as well.
-                return false;
-            } catch (XmlPullParserException ex) {
-                //not going to happen XmlPull for nbactions.xml parsing.
-                Exceptions.printStackTrace(ex);
+            //not necessary any more. toplink will be handled by default library impl..            
+            // checking source doesn't work anymore, the wizard requires the level to be 1.5 up front.
+            String source = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM, "compile");
+            if (source == null || source.matches("1[.][0-4]")) {
+                Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"), Collections.singletonList(new ModelOperation<POMModel>() {
+                    @Override public void performOperation(POMModel model) {
+                        ModelUtils.setSourceLevel(model, SL_15);
+                    }
+                }));
             }
         }
+        //shall not return true, needs processing by the fallback impl as well.
         return false;
     }
     
