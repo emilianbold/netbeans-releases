@@ -72,13 +72,8 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 @TopComponent.Description(preferredID = "LogsTopComponent",
-//iconBase="SET/PATH/TO/ICON/HERE", 
 persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
-//@ActionID(category = "Window", id = "org.netbeans.modules.cloud.oracle.ui.LogsTopComponent")
-//@ActionReference(path = "Menu/Window" /*, position = 333 */)
-//@TopComponent.OpenActionRegistration(displayName = "#CTL_LogsAction",
-//preferredID = "LogsTopComponent")
 public class LogsComponent extends TopComponent {
 
     private List<Job> jobs;
@@ -90,12 +85,8 @@ public class LogsComponent extends TopComponent {
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
         this.am = oi.getApplicationManager();
-//        jobs = pm.listJobs();
-//        Collections.reverse(jobs);
         jobs = new ArrayList<Job>();
-        Job jt = new Job();
-        jt.setOperation("loading...");
-        jobs.add(jt);
+        jobs.add(createInitJob());
         jobsTable.setModel(new JobsModel(jobs));
         jobsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -106,7 +97,16 @@ public class LogsComponent extends TopComponent {
         loadJobs();
     }
     
+    private Job createInitJob() {
+        Job jt = new Job();
+        jt.setOperation("loading...");
+        return jt;
+    }
+    
     private void loadJobs() {
+        jobs = new ArrayList<Job>();
+        jobs.add(createInitJob());
+        jobsTable.setModel(new JobsModel(jobs));
         OracleInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -195,18 +195,19 @@ public class LogsComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        refreshButton = new javax.swing.JButton();
+        closeButton = new javax.swing.JButton();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jobsTable = new javax.swing.JTable();
-        refreshButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         logs = new javax.swing.JTextArea();
-        closeButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jLabel1.text")); // NOI18N
-
-        jScrollPane1.setViewportView(jobsTable);
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
@@ -215,12 +216,6 @@ public class LogsComponent extends TopComponent {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jLabel2.text")); // NOI18N
-
-        logs.setColumns(20);
-        logs.setRows(5);
-        jScrollPane2.setViewportView(logs);
-
         org.openide.awt.Mnemonics.setLocalizedText(closeButton, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.closeButton.text")); // NOI18N
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,44 +223,71 @@ public class LogsComponent extends TopComponent {
             }
         });
 
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setResizeWeight(0.2);
+        jSplitPane1.setContinuousLayout(true);
+
+        jScrollPane1.setViewportView(jobsTable);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jLabel1.text")); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+        );
+
+        jSplitPane1.setTopComponent(jPanel1);
+
+        jScrollPane2.setViewportView(logs);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LogsComponent.class, "LogsComponent.jLabel2.text")); // NOI18N
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel2)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE))
+        );
+
+        jSplitPane1.setRightComponent(jPanel2);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 515, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(refreshButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addComponent(closeButton)))
-                .addContainerGap())
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(refreshButton)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(closeButton))
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(closeButton)
-                    .addComponent(refreshButton))
-                .addContainerGap())
+                    .addComponent(refreshButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -280,27 +302,23 @@ public class LogsComponent extends TopComponent {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
-        // TODO add your handling code here:
+        close();
     }//GEN-LAST:event_closeButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTable jobsTable;
     private javax.swing.JTextArea logs;
     private javax.swing.JButton refreshButton;
     // End of variables declaration//GEN-END:variables
 
-//    private static class JobDesc {
-//        private String jobId;
-//        private String jobOperation;
-//        private String jobStatus;
-//        private String duration;
-//    }
-    
     private static class JobsModel implements TableModel {
 
         private List<Job> jobs;
@@ -316,11 +334,11 @@ public class LogsComponent extends TopComponent {
 
         @Override
         public int getColumnCount() {
-            return 4;
+            return 5;
         }
 
-        private String[] header = new String[]{"ID", "Operation", "Status", "Duration"};
-        private Class[] headerClass = new Class[]{String.class, String.class, String.class, String.class};
+        private String[] header = new String[]{"ID", "Operation", "Status", "Start", "Duration"};
+        private Class[] headerClass = new Class[]{String.class, String.class, String.class, String.class, String.class};
         
         @Override
         public String getColumnName(int columnIndex) {
@@ -346,6 +364,8 @@ public class LogsComponent extends TopComponent {
                 return jt.getOperation();
             } else if (columnIndex == 2) {
                 return jt.getStatus();
+            } else if (columnIndex == 3) {
+                return jt.getStartTime();
             } else {
                 if (jt.getStartTime() != null && jt.getEndTime() != null) {
                     return getDuration(jt.getStartTime(), jt.getEndTime());

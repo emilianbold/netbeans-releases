@@ -76,8 +76,8 @@ public class LocalInstancePanel implements WizardDescriptor.Panel<WizardDescript
         if (component == null) {
             component = new LocalInstanceComponent();
             component.addChangeListener(this);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, OracleWizardIterator.getPanelContentData());            
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(1));
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, OracleWizardIterator.getPanelContentData());
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(2));
         }
         return component;
     }

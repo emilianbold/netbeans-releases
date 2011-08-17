@@ -119,6 +119,7 @@ public class LocalInstanceComponent extends javax.swing.JPanel {
         localServerLabel = new javax.swing.JLabel();
         localServerComboBox = new javax.swing.JComboBox();
         localServerBrowseButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         localServerLabel.setLabelFor(localServerComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(LocalInstanceComponent.class, "LocalInstanceComponent.localServerLabel.text")); // NOI18N
@@ -132,28 +133,31 @@ public class LocalInstanceComponent extends javax.swing.JPanel {
             }
         });
 
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(LocalInstanceComponent.class, "LocalInstanceComponent.jLabel1.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(localServerLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(localServerComboBox, 0, 213, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE)
+                    .addComponent(localServerComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 294, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(localServerBrowseButton)
-                .addContainerGap())
+                .addComponent(localServerBrowseButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(localServerLabel)
                     .addComponent(localServerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(localServerBrowseButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(37, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -171,6 +175,7 @@ public class LocalInstanceComponent extends javax.swing.JPanel {
     }//GEN-LAST:event_localServerBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton localServerBrowseButton;
     private javax.swing.JComboBox localServerComboBox;
     private javax.swing.JLabel localServerLabel;

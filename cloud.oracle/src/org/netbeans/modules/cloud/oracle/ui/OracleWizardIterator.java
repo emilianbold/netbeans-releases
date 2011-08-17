@@ -80,8 +80,8 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
     private final ChangeSupport listeners;
     private WizardDescriptor wizard;
     private OracleWizardPanel panel;
-    private LocalInstancePanel panel2;
-    private CloudResourcesWizardPanel panel3;
+    private CloudResourcesWizardPanel panel2;
+    private LocalInstancePanel panel3;
     private int count = 0;
 
     public OracleWizardIterator() {
@@ -221,12 +221,12 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
                 return panel;
             case 1:
                 if (panel2 == null) {
-                    panel2 = new LocalInstancePanel();
+                    panel2 = new CloudResourcesWizardPanel(getPanelContentData(), 1);
                 }
                 return panel2;
             default:
                 if (panel3 == null) {
-                    panel3 = new CloudResourcesWizardPanel(getPanelContentData(), 2);
+                    panel3 = new LocalInstancePanel();
                 }
                 return panel3;
         }
@@ -235,8 +235,8 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
     static String[] getPanelContentData() {
         return new String[] {
                 NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Oracle"),
+                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Resources"),
                 NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Local"),
-                NbBundle.getMessage(OracleWizardPanel.class, "LBL_ACIW_Resources")
             };
     }
     
