@@ -47,18 +47,19 @@
  */
 package org.netbeans.modules.coherence.server.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -71,6 +72,8 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
     private DefaultListModel listModel;
     private InstanceProperties instanceProperties;
+    private JFileChooser fileChooser = new JFileChooser();
+
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
@@ -90,19 +93,17 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      */
     private void init(){
         coherenceLocationTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_LOCATION, ""));
-        coherenceClasspathTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, ""));
         javaFlagsTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_JAVA_FLAGS, ""));
         customPropertiesTextField.setText(instanceProperties.getString(CoherenceProperties.PROP_CUSTOM_PROPERTIES, ""));
 
         listModel = new DefaultListModel();
-        for (String cp : additionalClasspathFromStringToArray(instanceProperties.getString(CoherenceProperties.PROP_ADDITIONAL_CLASSPATH, ""))) {
+        for (String cp : classpathFromStringToArray(instanceProperties.getString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, ""))) {
             listModel.addElement(cp);
         }
-        additionalClasspathList.setModel(listModel);
+        classpathList.setModel(listModel);
 
         changeSupport.addChangeListener(this);
         coherenceLocationTextField.getDocument().addDocumentListener(new SaveDocumentListener());
-        coherenceClasspathTextField.getDocument().addDocumentListener(new SaveDocumentListener());
         javaFlagsTextField.getDocument().addDocumentListener(new SaveDocumentListener());
         customPropertiesTextField.getDocument().addDocumentListener(new SaveDocumentListener());
     }
@@ -138,16 +139,15 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * Storing values from this panel into {@link InstanceProperties}.
      */
     private void savePanel() {
-        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, coherenceClasspathTextField.getText());
         instanceProperties.putString(CoherenceProperties.PROP_JAVA_FLAGS, javaFlagsTextField.getText());
         instanceProperties.putString(CoherenceProperties.PROP_CUSTOM_PROPERTIES, customPropertiesTextField.getText());
 
         List<String> cpEntries = new ArrayList<String>();
-        for (int i = 0; i < additionalClasspathList.getModel().getSize(); i++) {
-            cpEntries.add((String)additionalClasspathList.getModel().getElementAt(i));
+        for (int i = 0; i < classpathList.getModel().getSize(); i++) {
+            cpEntries.add((String)classpathList.getModel().getElementAt(i));
         }
 
-        instanceProperties.putString(CoherenceProperties.PROP_ADDITIONAL_CLASSPATH, additionalClasspathFromListToString(cpEntries));
+        instanceProperties.putString(CoherenceProperties.PROP_COHERENCE_CLASSPATH, classpathFromListToString(cpEntries));
     }
 
     /**
@@ -157,7 +157,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * @param classpath {@code String} consists from all classpaths
      * @return resulting {@code String[]}
      */
-    private static String[] additionalClasspathFromStringToArray(String classpath) {
+    private static String[] classpathFromStringToArray(String classpath) {
         return classpath.split(CoherenceProperties.CLASSPATH_SEPARATOR);
     }
 
@@ -168,7 +168,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
      * @param classpaths {@code List} of all classpath entries
      * @return resulting {@code String}
      */
-    private static String additionalClasspathFromListToString(List<String> classpaths) {
+    private static String classpathFromListToString(List<String> classpaths) {
         StringBuilder sb = new StringBuilder();
         for (String cp : classpaths) {
             sb.append(cp).append(CoherenceProperties.CLASSPATH_SEPARATOR);
@@ -180,6 +180,54 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
         return resultString.substring(0, resultString.length() - CoherenceProperties.CLASSPATH_SEPARATOR.length());
     }
 
+    private void setEnabledRemoveButton(boolean setEnabled) {
+        removeClasspathButton.setEnabled(setEnabled);
+    }
+
+    private void addElementToClasspathList(String element) {
+        listModel.addElement(element);
+    }
+
+    /**
+     * Shows the fileChooser.
+     */
+    private void showFileChooser() {
+        if (fileChooser == null) {
+            fileChooser = new JFileChooser();
+        }
+
+        // set the chooser's properties
+        fileChooser.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                String fileName = f.getName();
+                String fileExt = fileName.substring(
+                        fileName.lastIndexOf(".") + 1, //NOI18N
+                        fileName.length());
+                if (f.isDirectory()) {
+                    return true;
+                } else if (f.isFile() && "jar".equalsIgnoreCase(fileExt)) { //NOI18N
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(CustomizerCommon.class, "DESC_AddJarToClasspath"); //NOI18N
+            }
+        });
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        // wait for the user to choose the file and if he clicked OK button add
+        // the selected JAR into the classpath list
+        if (fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            addElementToClasspathList(fileChooser.getSelectedFile().getPath());
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -189,11 +237,9 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        coherenceClasspathLabel = new javax.swing.JLabel();
-        coherenceClasspathTextField = new javax.swing.JTextField();
-        additionalClasspathLabel = new javax.swing.JLabel();
+        classpathLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        additionalClasspathList = new javax.swing.JList();
+        classpathList = new javax.swing.JList();
         addClasspathButton = new javax.swing.JButton();
         removeClasspathButton = new javax.swing.JButton();
         javaFlagsLabel = new javax.swing.JLabel();
@@ -205,16 +251,16 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
         setName(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "TITLE_Common")); // NOI18N
 
-        coherenceClasspathLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.coherenceClasspathLabel.text")); // NOI18N
-        coherenceClasspathLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CoherenceCommonTab.coherenceClasspathLabel.desc")); // NOI18N
+        classpathLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.classpathLabel.text")); // NOI18N
+        classpathLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CoherenceCommonTab.additionalClasspathLabel.desc")); // NOI18N
 
-        coherenceClasspathTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.coherenceClasspathTextField.text")); // NOI18N
-
-        additionalClasspathLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.additionalClasspathLabel.text")); // NOI18N
-        additionalClasspathLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CoherenceCommonTab.additionalClasspathLabel.desc")); // NOI18N
-
-        additionalClasspathList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane1.setViewportView(additionalClasspathList);
+        classpathList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        classpathList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                classpathListValueChanged(evt);
+            }
+        });
+        jScrollPane1.setViewportView(classpathList);
 
         addClasspathButton.setText(org.openide.util.NbBundle.getMessage(CustomizerCommon.class, "CustomizerCommon.addClasspathButton.text")); // NOI18N
         addClasspathButton.addActionListener(new java.awt.event.ActionListener() {
@@ -257,50 +303,39 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
                             .addComponent(customPropertiesLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(javaFlagsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
-                            .addComponent(customPropertiesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(addClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(removeClasspathButton)))
+                            .addComponent(javaFlagsTextField)
+                            .addComponent(customPropertiesTextField)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(additionalClasspathLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 394, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(coherenceLocationLabel)
-                                    .addComponent(coherenceClasspathLabel))
-                                .addGap(12, 12, 12)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(coherenceLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                                    .addComponent(coherenceClasspathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE))))))
+                        .addComponent(coherenceLocationLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(coherenceLocationTextField))
+                    .addComponent(classpathLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(addClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(removeClasspathButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(coherenceLocationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(coherenceLocationLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(coherenceClasspathLabel)
-                    .addComponent(coherenceClasspathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(additionalClasspathLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(classpathLabel)
+                .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addClasspathButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeClasspathButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(javaFlagsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(javaFlagsLabel))
@@ -313,32 +348,29 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     }// </editor-fold>//GEN-END:initComponents
 
     private void addClasspathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClasspathButtonActionPerformed
-        DialogDescriptor.InputLine inputLine = new InputLine(
-                NbBundle.getMessage(CustomizerCommon.class, "LBL_AdditionalClasspathEntry"), //NOI18N
-                NbBundle.getMessage(CustomizerCommon.class, "TITLE_AddAdditionalClasspathDialog")); //NOI18N
-        DialogDisplayer.getDefault().notify(inputLine);
-        if (inputLine.getValue() == DialogDescriptor.OK_OPTION) {
-            if (!inputLine.getInputText().isEmpty()) {
-                listModel.addElement(inputLine.getInputText());
-            }
-        }
+        showFileChooser();
         changeSupport.fireChange();
     }//GEN-LAST:event_addClasspathButtonActionPerformed
 
     private void removeClasspathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeClasspathButtonActionPerformed
-        if (additionalClasspathList.getSelectedIndex() == -1) {
+        if (classpathList.getSelectedIndex() == -1) {
             return;
         }
-        listModel.remove(additionalClasspathList.getSelectedIndex());
+        listModel.remove(classpathList.getSelectedIndex());
         changeSupport.fireChange();
     }//GEN-LAST:event_removeClasspathButtonActionPerformed
 
+private void classpathListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_classpathListValueChanged
+    if (classpathList.getSelectedValue() == null) {
+        return;
+    }
+    setEnabledRemoveButton(!((String)classpathList.getSelectedValue()).endsWith(CoherenceProperties.COHERENCE_JAR_NAME));
+}//GEN-LAST:event_classpathListValueChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addClasspathButton;
-    private javax.swing.JLabel additionalClasspathLabel;
-    private javax.swing.JList additionalClasspathList;
-    private javax.swing.JLabel coherenceClasspathLabel;
-    private javax.swing.JTextField coherenceClasspathTextField;
+    private javax.swing.JLabel classpathLabel;
+    private javax.swing.JList classpathList;
     private javax.swing.JLabel coherenceLocationLabel;
     private javax.swing.JTextField coherenceLocationTextField;
     private javax.swing.JLabel customPropertiesLabel;
