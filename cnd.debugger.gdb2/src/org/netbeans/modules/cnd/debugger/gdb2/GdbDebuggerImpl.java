@@ -298,7 +298,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * 
      * Return true if it's OK to send messages to gdb
      */
-    private boolean isConnected() {
+    public boolean isConnected() {
         // See "README.startup"
         if (gdb == null || !gdb.connected() || postedKillEngine) {
             return false;
