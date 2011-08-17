@@ -51,6 +51,7 @@
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
+                <friend>com.sun.tools.tuxedo.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>

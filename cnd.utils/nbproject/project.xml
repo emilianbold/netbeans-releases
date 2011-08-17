@@ -111,6 +111,7 @@
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
                 <friend>com.sun.tools.tuxedo.suites</friend>
+                <friend>com.sun.tools.tuxedo.testrunner</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.api.project</friend>
