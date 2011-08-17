@@ -41,11 +41,14 @@ import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormServices;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.nbform.palette.BeanInstaller;
 import org.netbeans.modules.nbform.palette.FormPaletteActions;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -93,6 +96,12 @@ public class NbFormServices implements FormServices {
     @Override
     public String findJavaBeanName(FileObject fob) {
         return BeanInstaller.findJavaBeanName(fob);
+    }
+
+    @Override
+    public ClassSource getProjectClassSource(Project project, String className) {
+        ClassSource.Entry entry = new ClassSourceResolver.ProjectEntry(project);
+        return new ClassSource(className, entry);
     }
     
 }

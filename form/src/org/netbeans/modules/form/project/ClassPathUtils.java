@@ -58,6 +58,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.form.FormServices;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -196,8 +197,8 @@ public class ClassPathUtils {
         if (project == null)
             return null; // the file is not in any project
 
-        ClassSource.Entry entry = new ClassSource.ProjectEntry(project);
-        return new ClassSource(classname, entry);
+        FormServices services = Lookup.getDefault().lookup(FormServices.class);
+        return services.getProjectClassSource(project, classname);
     }
     
     public static boolean isOnClassPath(FileObject fileInProject, String className) {

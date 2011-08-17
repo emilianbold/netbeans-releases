@@ -57,6 +57,7 @@ import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
@@ -97,7 +98,7 @@ public class DBConnectionDrop implements NewComponentDrop {
     @Override
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         PaletteItem pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
-                new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
+                new ClassSourceResolver.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
                 null);
         pItem.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/form/j2ee/resources/EntityManager.png", false).getImage()); // NOI18N
         return pItem;
