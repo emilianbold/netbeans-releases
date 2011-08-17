@@ -226,7 +226,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     /**
      * Return true if it's OK to send messages to dbx
      */
-    private boolean isConnected() {
+    public boolean isConnected() {
         // See "README.startup"
         if (dbx == null || !dbx.connected() || postedKillEngine) {
             return false;
