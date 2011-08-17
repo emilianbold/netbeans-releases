@@ -457,6 +457,10 @@ function
 		)
 		RPAREN
 	;
+catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(RPAREN, SEMI, RBRACE)); 
+}
     
 function_name
         //css spec allows here just IDENT, 

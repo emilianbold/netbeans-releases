@@ -51,15 +51,13 @@ import java.util.List;
 import java.util.Stack;
 import org.netbeans.modules.css.editor.properties.parser.PropertyValue.ResolvedToken;
 import org.netbeans.modules.css.editor.test.*;
-import java.io.IOException;
-import javax.swing.text.BadLocationException;
 
 /**
  * @author Marek Fukala
  */
 public class PropertyModelTest extends TestBase {
 
-    public PropertyModelTest(String name) throws IOException, BadLocationException {
+    public PropertyModelTest(String name) {
         super(name);
     }
 
@@ -111,13 +109,13 @@ public class PropertyModelTest extends TestBase {
         assertFalse(new PropertyValue(rule, "transparent inherit").success());
     }
 
-    private void dumpList(List<String> stack) {
+    private static void dumpList(List<String> stack) {
         for (int i = stack.size() - 1; i >= 0; i--) {
             System.out.print("\"" + stack.get(i) + "\" ");
         }
     }
 
-    private void dumpResult(PropertyValue pv) {
+    public static void dumpResult(PropertyValue pv) {
 
         System.out.println("Parsing \"" + pv.propertyDefinition() + "\"");
 
@@ -304,17 +302,6 @@ public class PropertyModelTest extends TestBase {
         PropertyValue csspv = new PropertyValue(p, text);
 
         assertTrue(csspv.success());
-    }
-
-    public void testColorValues() {
-        PropertyModel p = CssModuleSupport.getProperty("color");
-        assertTrue(new PropertyValue(p, "rgb(10,20,30)").success());
-        assertTrue(new PropertyValue(p, "rgb(10%,20,30)").success());
-        assertTrue(new PropertyValue(p, "#ffaa00").success());
-        assertTrue(new PropertyValue(p, "#fb0").success());
-        assertFalse(new PropertyValue(p, "#fa001").success());
-        assertFalse(new PropertyValue(p, "rgb(,20,30)").success());
-        assertFalse(new PropertyValue(p, "rgb(10,x,30)").success());
     }
 
     public void testBorder() {
