@@ -350,7 +350,7 @@ public /* final - because of tests */ class Controller {
                 resetTimer((int)Math.max(100, minDiff), true);
             } else {
                 dispatchRunning = false;
-                resetTimer(TIMER_QUANTUM, false);
+                resetTimer(TIMER_QUANTUM, !eventQueue.isEmpty());
             }
         }
     }
