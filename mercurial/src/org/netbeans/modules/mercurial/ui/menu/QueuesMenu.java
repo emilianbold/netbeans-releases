@@ -47,10 +47,13 @@ package org.netbeans.modules.mercurial.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
+import org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QDiffAction;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPopAllAction;
 import org.netbeans.modules.mercurial.ui.queues.QPushAllPatchesAction;
+import org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -89,6 +92,13 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Menu {
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(QPushAllPatchesAction.class), false);
             menu.add(item);
+            menu.add(new JSeparator());
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(QCreatePatchAction.class), false);
+            menu.add(item);
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(QRefreshPatchAction.class), false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QDiffAction.class), NbBundle.getMessage(QDiffAction.class, "CTL_PopupMenuItem_QDiff"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
@@ -97,6 +107,11 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Menu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QPopAllAction.class), NbBundle.getMessage(QPopAllAction.class, "CTL_PopupMenuItem_QPopAllPatches"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QPushAllPatchesAction.class), NbBundle.getMessage(QPushAllPatchesAction.class, "CTL_PopupMenuItem_QPushAllPatches"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            menu.add(new JSeparator());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QCreatePatchAction.class), NbBundle.getMessage(QCreatePatchAction.class, "CTL_PopupMenuItem_QCreatePatch"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QRefreshPatchAction.class), NbBundle.getMessage(QRefreshPatchAction.class, "CTL_PopupMenuItem_QRefreshPatch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

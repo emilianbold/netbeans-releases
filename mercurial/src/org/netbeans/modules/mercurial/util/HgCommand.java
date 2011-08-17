@@ -66,6 +66,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -217,6 +218,10 @@ public class HgCommand {
     private static final String HG_QPOP_CMD = "qpop"; //NOI18N
     private static final String HG_QPUSH_CMD = "qpush"; //NOI18N
     private static final String HG_OPT_ALL = "--all"; //NOI18N
+    private static final String HG_QCREATE_CMD = "qnew"; //NOI18N
+    private static final String HG_QREFRESH_PATCH = "qrefresh"; //NOI18N
+    private static final String HG_OPT_EXCLUDE = "--exclude"; //NOI18N
+    private static final String HG_OPT_SHORT = "--short"; //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -408,9 +413,11 @@ public class HgCommand {
         HG_MERGE_CMD,
         HG_PULL_CMD,
         HG_ROLLBACK_CMD,
+        HG_QCREATE_CMD,
         HG_QGOTO_CMD,
         HG_QPOP_CMD,
         HG_QPUSH_CMD,
+        HG_QREFRESH_PATCH,
         HG_STRIP_CMD,
         HG_TAG_CMD,
         HG_UNBUNDLE_CMD,
@@ -3255,6 +3262,108 @@ public class HgCommand {
             }
         }
         return patches.toArray(new QPatch[patches.size()]);
+    }
+
+    public static void qCreatePatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String patchId, String commitMessage, OutputLogger logger) throws HgException {
+        qCreateRefreshPatch(repository, includedFiles, excludedFiles, patchId, commitMessage, logger);
+    }
+
+    public static void qRefreshPatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String commitMessage, OutputLogger logger) throws HgException {
+        qCreateRefreshPatch(repository, includedFiles, excludedFiles, null, commitMessage, logger);
+    }
+
+    private static void qCreateRefreshPatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String patchId, String commitMessage, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(patchId == null ? HG_QREFRESH_PATCH : HG_QCREATE_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+
+        String projectUserName = new HgConfigFiles(repository).getUserName(false);
+        String globalUsername = HgModuleConfig.getDefault().getSysUserName();
+        String username = null;
+        if(projectUserName != null && projectUserName.length() > 0) {
+            username = projectUserName;
+        } else if (globalUsername != null && globalUsername.length() > 0) {
+            username = globalUsername;
+        }
+
+        if (username != null){
+            command.add(HG_OPT_USERNAME);
+            command.add(username);
+        }
+
+        File tempfile = null;
+
+        try {
+            if (commitMessage == null || commitMessage.length() == 0) {
+                commitMessage = HG_COMMIT_DEFAULT_MESSAGE;
+            }
+            // Create temporary file.
+            tempfile = File.createTempFile(HG_COMMIT_TEMPNAME, HG_COMMIT_TEMPNAME_SUFFIX);
+
+            // Write to temp file
+            BufferedWriter out = new BufferedWriter(ENCODING == null 
+                    ? new OutputStreamWriter(new FileOutputStream(tempfile)) 
+                    : new OutputStreamWriter(new FileOutputStream(tempfile), ENCODING));
+            out.write(commitMessage);
+            out.close();
+
+            command.add(HG_COMMIT_OPT_LOGFILE_CMD);
+            command.add(tempfile.getAbsolutePath());
+            if (patchId == null) {
+                command.add(HG_OPT_SHORT);
+                for (File f : excludedFiles) {
+                    command.add(HG_OPT_EXCLUDE);
+                    command.add(f.getAbsolutePath());
+                }
+            } else {
+                if (includedFiles.isEmpty()) {
+                    command.add(HG_OPT_EXCLUDE);
+                    command.add("*"); //NOI18N
+                }
+                command.add(patchId);
+            }
+            for (File f: includedFiles) {
+                if (f.getAbsolutePath().length() <= repository.getAbsolutePath().length()) {
+                    // list contains the root itself
+                    command.add(f.getAbsolutePath());
+                } else {
+                    command.add(f.getAbsolutePath().substring(repository.getAbsolutePath().length() + 1));
+                }
+            }
+            if(Utilities.isWindows()) {
+                int size = 0;
+                // Count size of command
+                for (String line : command) {
+                    size += line.length();
+                }
+                if (isTooLongCommand(size)) {
+                    throw new HgException.HgTooLongArgListException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR", command.get(1), command.size() -2 )); //NOI18N
+                }
+            }
+            List<String> list = exec(command);
+            //#132984: range of issues with upgrade to Hg 1.0, new restriction whereby you cannot commit using explicit file names after a merge.
+            if (!list.isEmpty() && isCommitAfterMerge(list.get(list.size() -1))) {
+                throw new HgException(COMMIT_AFTER_MERGE);
+            }
+
+            if (!list.isEmpty()
+                    && (isErrorNotTracked(list.get(0)) ||
+                    isErrorCannotReadCommitMsg(list.get(0)) ||
+                    isErrorAbort(list.get(list.size() -1)) ||
+                    isErrorAbort(list.get(0))))
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMIT_FAILED"), logger);
+
+        } catch (IOException ex) {
+            throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_FAILED_TO_READ_COMMIT_MESSAGE"));
+        } finally {
+            if (commitMessage != null && tempfile != null){
+                tempfile.delete();
+            }
+        }
     }
 
     private static List<String> execEnv(List<? extends Object> command, List<String> env) throws HgException{
