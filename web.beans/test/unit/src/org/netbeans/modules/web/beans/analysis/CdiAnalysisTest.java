@@ -89,408 +89,408 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         return new CdiAnalysisTestTask();
     }
     
-//       public void testTypedClass() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import java.util.List; "+
-//                "import javax.enterprise.inject.Typed; "+
-//                "@Typed({List.class}) "+
-//                " public class Clazz { "+
-//                "}");
-//        
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.enterprise.inject.Typed; "+
-//                "@Typed({Comparable.class}) "+
-//                " public class Clazz1 implements Comparable<String> { "+
-//                " public int comapreTo( String str ) {"+
-//                "   return 0; "+
-//                " }"+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testAnnotationsDecoratorInterceptor() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.interceptor.Interceptor; "+
-//                "@Decorator "+
-//                "@Interceptor "+
-//                " public class Clazz { "+
-//                "}");
-//        
-//        FileObject goodFile =TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.interceptor.Interceptor; "+
-//                "@Interceptor "+
-//                " public class Clazz1 { "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testDecoratorDelegate() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import java.util.List; "+
-//                "import javax.decorator.Decorator; "+
-//                "import javax.inject.Inject; "+
-//                "@Decorator "+
-//                " public class Clazz { "+
-//                " @Inject int injectionPoint; "+
-//                "}");
-//        
-//        /*
-//         * Create a good one class file
-//         */
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.decorator.Delegate; "+
-//                "@Decorator "+
-//                " public class Clazz1 { "+
-//                " public Clazz1( @Delegate Object arg ){ "+
-//                " }"+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testDecoratorProducerField() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.enterprise.inject.Produces; "+
-//                "@Decorator "+
-//                " public class Clazz { "+
-//                " @Produces int production; "+
-//                "}");
-//        
-//        /*
-//         * Create a good one class file
-//         */
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.decorator.Delegate; "+
-//                "import javax.inject.Inject; "+
-//                "@Decorator "+
-//                " public class Clazz1 { "+
-//                "  @Inject @Delegate Object injection; "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testInterceptorMethods() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.interceptor.Interceptor; "+
-//                "import javax.enterprise.inject.Produces; "+
-//                "@Interceptor "+
-//                " public class Clazz { "+
-//                " @Produces int production(){ return 0 } ; "+
-//                "}");
-//        
-//        /*
-//         * Create a good one class file
-//         */
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.interceptor.Interceptor; "+
-//                "import javax.enterprise.inject.Produces; "+
-//                "@Interceptor "+
-//                " public class Clazz1 { "+
-//                "  int method(){ return 0;} "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testInterceptorSessionBeans() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.interceptor.Interceptor; "+
-//                "import javax.ejb.Singleton; "+
-//                "@Interceptor "+
-//                "@Singleton "+
-//                " public class Clazz { "+
-//                "}");
-//        
-//        /*
-//         * Create a good one class file
-//         */
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.interceptor.Interceptor; "+
-//                "@Interceptor "+
-//                " public class Clazz1 { "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testInitializerCtors() throws IOException{
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.inject.Inject; "+
-//                " public class Clazz { "+
-//                " @Inject public Clazz( int i){} "+
-//                " @Inject public Clazz( String str ){} "+
-//                "}");
-//        
-//        /*
-//         * Create a good one class file
-//         */
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.inject.Inject; "+
-//                " public class Clazz1 { "+
-//                " @Inject public Clazz( int i){} "+
-//                " public Clazz( Stirng str ){} "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkTypeElement(result, "foo.Clazz");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testTypedField() throws IOException{
-//        
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import java.util.List; "+
-//                "import javax.enterprise.inject.Typed; "+
-//                " public class Clazz { "+
-//                " @Typed({List.class}) Object field; "+
-//                " int field1; "+
-//                "}");
-//        
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.enterprise.inject.Typed; "+
-//                "import java.util.List; "+
-//                "import java.util.Collection; "+
-//                " public class Clazz1  { "+
-//                " @Typed({Collection.class}) List<String> field; "+
-//                " int field1; "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkFieldElement(result, "foo.Clazz", "field");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//    
-//    public void testDelegateField() throws IOException{
-//        
-//        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
-//                "package foo; " +
-//                " public interface Iface  { "+
-//                "}");
-//        
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.decorator.Delegate; "+
-//                "import javax.inject.Inject; "+
-//                " @Decorator "+
-//                " public class Clazz  implements Iface { "+
-//                " @Inject @Delegate Iface delegateInjection; "+
-//                " int field1; "+
-//                "}");
-//        
-//        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.decorator.Delegate; "+
-//                " @Decorator "+
-//                " public class Clazz1  implements Iface  { "+
-//                " @Delegate Iface delegateInjection; "+
-//                " int field1; "+
-//                "}");
-//        
-//        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.decorator.Delegate; "+
-//                " public class Clazz2  implements Iface  { "+
-//                " @Inject @Delegate Iface delegateInjection; "+
-//                " int field1; "+
-//                "}");
-//        
-//        FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
-//                "package foo; " +
-//                "import javax.decorator.Decorator; "+
-//                "import javax.decorator.Delegate; "+
-//                "import javax.inject.Inject; "+
-//                " @Decorator "+
-//                " public class Clazz3 implements Iface { "+
-//                " @Inject @Delegate Object delegateInjection; "+
-//                " int field1; "+
-//                "}");
-//        
-//        
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkFieldElement(result, "foo.Clazz1", "delegateInjection",
-//                        true);
-//                Set<Element> elements = result.getErrors().keySet();
-//                assertEquals( "Exactly two errors should be detected" , 
-//                        2, elements.size());
-//                boolean clazzFound = false;
-//                for (Element element : elements) {
-//                    if ( element instanceof  TypeElement ){
-//                        String fqn = ((TypeElement)element).
-//                                getQualifiedName().toString();
-//                        if ( fqn.equals("foo.Clazz1")){
-//                            clazzFound = true;
-//                        }
-//                    }
-//                }
-//                assertTrue("foo.Clazz1 should be marked with an error ",clazzFound);
-//            }
-//            
-//        };
-//        runAnalysis(errorFile1 , processor);
-//        
-//        processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkFieldElement(result, "foo.Clazz2", "delegateInjection");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile2 , processor);
-//        
-//        processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkFieldElement(result, "foo.Clazz3", "delegateInjection");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile3 , processor);
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
-//
-//    private void checkTypeElement( TestProblems result , String expectedName ){
-//        Set<Element> elements = result.getErrors().keySet();
-//        if ( elements.size() > 1 ){
-//            for( Element element : elements ){
-//                System.out.println( "Found element : "+element.toString());
-//            }
-//        }
-//        assertEquals(  "Expected exactly one error element", 1 , elements.size());
-//        Element element = elements.iterator().next();
-//        assertTrue( element instanceof TypeElement );
-//        String fqn = ((TypeElement)element).getQualifiedName().toString();
-//        assertEquals(expectedName, fqn);
-//    }
-//    
-//    public void testProductionFieldInSession() throws IOException{
-//        
-//        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
-//                "package foo; " +
-//                "import javax.enterprise.inject.Produces; "+
-//                "import javax.ejb.Singleton; "+
-//                "@Singleton "+
-//                " public class Clazz { "+
-//                " @Produces int production; "+
-//                " int field1; "+
-//                "}");
-//        
-//        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
-//                "package foo; " +
-//                "import javax.enterprise.inject.Produces; "+
-//                "import javax.ejb.Singleton; "+
-//                "@Singleton "+
-//                " public class Clazz1  { "+
-//                " static @Produces int production; "+
-//                " int field1; "+
-//                "}");
-//        ResultProcessor processor = new ResultProcessor (){
-//
-//            @Override
-//            public void process( TestProblems result ) {
-//                checkFieldElement(result, "foo.Clazz", "production");
-//            }
-//            
-//        };
-//        runAnalysis(errorFile , processor);
-//        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
-//    }
+    public void testTypedClass() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import java.util.List; "+
+                "import javax.enterprise.inject.Typed; "+
+                "@Typed({List.class}) "+
+                " public class Clazz { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Typed; "+
+                "@Typed({Comparable.class}) "+
+                " public class Clazz1 implements Comparable<String> { "+
+                " public int comapreTo( String str ) {"+
+                "   return 0; "+
+                " }"+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testAnnotationsDecoratorInterceptor() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.interceptor.Interceptor; "+
+                "@Decorator "+
+                "@Interceptor "+
+                " public class Clazz { "+
+                "}");
+        
+        FileObject goodFile =TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "@Interceptor "+
+                " public class Clazz1 { "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testDecoratorDelegate() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import java.util.List; "+
+                "import javax.decorator.Decorator; "+
+                "import javax.inject.Inject; "+
+                "@Decorator "+
+                " public class Clazz { "+
+                " @Inject int injectionPoint; "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                "@Decorator "+
+                " public class Clazz1 { "+
+                " public Clazz1( @Delegate Object arg ){ "+
+                " }"+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testDecoratorProducerField() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.enterprise.inject.Produces; "+
+                "@Decorator "+
+                " public class Clazz { "+
+                " @Produces int production; "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.inject.Inject; "+
+                "@Decorator "+
+                " public class Clazz1 { "+
+                "  @Inject @Delegate Object injection; "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testInterceptorMethods() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "import javax.enterprise.inject.Produces; "+
+                "@Interceptor "+
+                " public class Clazz { "+
+                " @Produces int production(){ return 0 } ; "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "import javax.enterprise.inject.Produces; "+
+                "@Interceptor "+
+                " public class Clazz1 { "+
+                "  int method(){ return 0;} "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testInterceptorSessionBeans() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "import javax.ejb.Singleton; "+
+                "@Interceptor "+
+                "@Singleton "+
+                " public class Clazz { "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.interceptor.Interceptor; "+
+                "@Interceptor "+
+                " public class Clazz1 { "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testInitializerCtors() throws IOException{
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz { "+
+                " @Inject public Clazz( int i){} "+
+                " @Inject public Clazz( String str ){} "+
+                "}");
+        
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz1 { "+
+                " @Inject public Clazz( int i){} "+
+                " public Clazz( Stirng str ){} "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkTypeElement(result, "foo.Clazz");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testTypedField() throws IOException{
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import java.util.List; "+
+                "import javax.enterprise.inject.Typed; "+
+                " public class Clazz { "+
+                " @Typed({List.class}) Object field; "+
+                " int field1; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Typed; "+
+                "import java.util.List; "+
+                "import java.util.Collection; "+
+                " public class Clazz1  { "+
+                " @Typed({Collection.class}) List<String> field; "+
+                " int field1; "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "field");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testDelegateField() throws IOException{
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                " public interface Iface  { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.inject.Inject; "+
+                " @Decorator "+
+                " public class Clazz  implements Iface { "+
+                " @Inject @Delegate Iface delegateInjection; "+
+                " int field1; "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                " @Decorator "+
+                " public class Clazz1  implements Iface  { "+
+                " @Delegate Iface delegateInjection; "+
+                " int field1; "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                " public class Clazz2  implements Iface  { "+
+                " @Inject @Delegate Iface delegateInjection; "+
+                " int field1; "+
+                "}");
+        
+        FileObject errorFile3 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.inject.Inject; "+
+                " @Decorator "+
+                " public class Clazz3 implements Iface { "+
+                " @Inject @Delegate Object delegateInjection; "+
+                " int field1; "+
+                "}");
+        
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz1", "delegateInjection",
+                        true);
+                Set<Element> elements = result.getErrors().keySet();
+                assertEquals( "Exactly two errors should be detected" , 
+                        2, elements.size());
+                boolean clazzFound = false;
+                for (Element element : elements) {
+                    if ( element instanceof  TypeElement ){
+                        String fqn = ((TypeElement)element).
+                                getQualifiedName().toString();
+                        if ( fqn.equals("foo.Clazz1")){
+                            clazzFound = true;
+                        }
+                    }
+                }
+                assertTrue("foo.Clazz1 should be marked with an error ",clazzFound);
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz2", "delegateInjection");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz3", "delegateInjection");
+            }
+            
+        };
+        runAnalysis(errorFile3 , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+
+    private void checkTypeElement( TestProblems result , String expectedName ){
+        Set<Element> elements = result.getErrors().keySet();
+        if ( elements.size() > 1 ){
+            for( Element element : elements ){
+                System.out.println( "Found element : "+element.toString());
+            }
+        }
+        assertEquals(  "Expected exactly one error element", 1 , elements.size());
+        Element element = elements.iterator().next();
+        assertTrue( element instanceof TypeElement );
+        String fqn = ((TypeElement)element).getQualifiedName().toString();
+        assertEquals(expectedName, fqn);
+    }
+    
+    public void testProductionFieldInSession() throws IOException{
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                "import javax.ejb.Singleton; "+
+                "@Singleton "+
+                " public class Clazz { "+
+                " @Produces int production; "+
+                " int field1; "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Produces; "+
+                "import javax.ejb.Singleton; "+
+                "@Singleton "+
+                " public class Clazz1  { "+
+                " static @Produces int production; "+
+                " int field1; "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkFieldElement(result, "foo.Clazz", "production");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
     
     public void testProductionFieldType() throws IOException{
         FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
