@@ -39,50 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.php.project.connections;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.SystemAction;
+import java.util.List;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Remote client implementation, exists only for unit tests.
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
+public interface RemoteClientImplementation {
 
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
-    }
+    String getBaseRemoteDirectory();
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(DeleteAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
-    }
+    List<TransferFile> listFiles(TransferFile file) throws RemoteException;
 
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
-    @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
-    }
 }

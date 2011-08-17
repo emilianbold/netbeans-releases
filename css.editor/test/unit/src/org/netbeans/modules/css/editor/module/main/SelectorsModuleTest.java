@@ -39,50 +39,33 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.coherence.server;
+package org.netbeans.modules.css.editor.module.main;
 
-import java.io.IOException;
-import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.coherence.server.actions.CloneAction;
-import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.StartServerAction;
-import org.netbeans.modules.coherence.server.actions.StopServerAction;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.css.editor.test.CssCompletionTestBase;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
- * This class extends (@link CoherenceServerBaseNode} and complete primarily node actions.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author marekfukala
  */
-public class CoherenceServerFullNode extends CoherenceServerBaseNode implements ChangeListener {
-
-    public CoherenceServerFullNode(CoherenceInstance coherenceInstance) {
-        super(coherenceInstance);
+public class SelectorsModuleTest extends CssCompletionTestBase {
+    
+    public SelectorsModuleTest(String name) {
+        super(name);
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{
-                    SystemAction.get(StartServerAction.class),
-                    SystemAction.get(StopServerAction.class),
-                    null,
-                    SystemAction.get(CloneAction.class),
-                    SystemAction.get(DeleteAction.class),
-                    null,
-                    SystemAction.get(PropertiesAction.class)
-                };
+    public void testPseudoClassesCompletion() throws ParseException  {
+        checkCC("div:| ", arr("enabled"), Match.CONTAINS);
+        checkCC("div:ena|", arr("enabled"), Match.CONTAINS);
+        checkCC("div:ena| h1 { }", arr("enabled"), Match.CONTAINS);
+        checkCC("div:enabled| h1 { }", arr("enabled"), Match.CONTAINS);
     }
-
-    @Override
-    public boolean canDestroy() {
-        return true;
+    
+    public void testPseudoElementsCompletion() throws ParseException  {
+        checkCC("div::| ", arr("after"), Match.CONTAINS);
+        checkCC("div::af|", arr("after"), Match.CONTAINS);
+        checkCC("div::af| h1 { }", arr("after"), Match.CONTAINS);
+        checkCC("div::after| h1 { }", arr("after"), Match.CONTAINS);
     }
-
-    @Override
-    public void destroy() throws IOException {
-        coherenceInstance.remove();
-        super.destroy();
-    }
+    
 }

@@ -476,27 +476,118 @@ public class Css3ParserTest extends CslTestBase {
     
     public void testErrorCase7() throws ParseException, BadLocationException {
         String content = "h1[ $@# ]{ }";
+        //                012345678
         
         CssParserResult result = TestUtil.parse(content);        
 //        TestUtil.dumpTokens(result);
 //        TestUtil.dumpResult(result);
 
-        Node ns = NodeUtil.query(result.getParseTree(), 
+        Node error = NodeUtil.query(result.getParseTree(), 
                 TestUtil.bodysetPath 
-                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence|1/elementSubsequent/attrib/attrib_name");
-        assertNotNull(ns);
-        
-        Node error = NodeUtil.getChildByType(ns, NodeType.error);
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
         assertNotNull(error);
-        assertEquals("$", error.image().toString());
-        assertEquals(4, error.from());
+        
+        assertEquals(2, error.from());
+        assertEquals(9, error.to());
+        
+    }
+    
+    public void testErrorCase8() throws ParseException, BadLocationException {
+        String content = "h1[f { }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        
+        Node error = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+        assertNotNull(error);
+        assertEquals(2, error.from());
         assertEquals(5, error.to());
         
-        Node recovery = NodeUtil.getChildByType(ns, NodeType.recovery);
-        assertNotNull(recovery);        
-        assertEquals("@#", recovery.image().toString());
-        assertEquals(5, recovery.from());
-        assertEquals(7, recovery.to());
+        content = "h1[foo=] { }";
+            
+        result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        error = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+        assertNotNull(error);
+        assertEquals(2, error.from());
+        assertEquals(9, error.to());
+        
+    }
+    
+    public void testErrorCase9() throws ParseException, BadLocationException {
+        String content = "h1[foo|attr=val,]";
+            
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        
+        Node error = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/error");
+        assertNotNull(error);
+        assertEquals(2, error.from());
+        assertEquals(17, error.to());
+        
+        //premature end of file
+        Node error2 = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/error");
+        assertNotNull(error2);
+        assertEquals(content.length(), error2.from());
+        assertEquals(content.length(), error2.to());
+        
+        assertResult(result, 2);
+        
+    }
+    
+    public void testPseudoClasses() throws ParseException, BadLocationException {
+        String content = "div:enabled { }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        Node pseudo = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
+        assertNotNull(pseudo);
+        assertEquals(":enabled", pseudo.image().toString());
+        
+        assertResultOK(result);
+        
+        content = "div:nth-child(even) { }";
+            
+        result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        pseudo = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
+        assertNotNull(pseudo);
+        assertEquals(":nth-child(even)", pseudo.image().toString());
+        assertResultOK(result);
+        
+    }
+    
+    public void testPseudoElements() throws ParseException, BadLocationException {
+        String content = "div::before { }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+        TestUtil.dumpTokens(result);
+        TestUtil.dumpResult(result);
+        Node pseudo = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
+        assertNotNull(pseudo);
+        assertEquals("::before", pseudo.image().toString());
+        
+        assertResultOK(result);
         
     }
     

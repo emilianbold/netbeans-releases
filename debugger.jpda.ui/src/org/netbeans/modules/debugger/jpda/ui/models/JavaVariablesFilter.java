@@ -196,11 +196,20 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 // Read fields from AbstractMap.SimpleEntry
                 fs [0] = ov.getField ("key");
                 fs [1] = ov.getField ("value");
-                return fs;
+                if (fs[0] != null && fs[1] != null) {
+                    return fs;
+                }
+                // Otherwise some mistake in retrieval
             }
 
             if (isInstanceOf(ct, "java.lang.ref.Reference")) {
-                return new Object [] { ov.getField ("referent"), ov.getField("queue") };
+                Field[] fs = new Field [2];
+                fs [0] = ov.getField ("referent");
+                fs [1] = ov.getField("queue");
+                if (fs[0] != null && fs[1] != null) {
+                    return fs;
+                }
+                // Otherwise some mistake in retrieval
             }
 
             String type = ct.getName();

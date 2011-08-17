@@ -55,24 +55,32 @@ final class TransferSelectorModel {
     private final Set<TransferFile> transferFiles;
     private final Set<TransferFile> selected = Collections.synchronizedSet(new HashSet<TransferFile>());
     private final TransferFilesChangeSupport filesChangeSupport = new TransferFilesChangeSupport(this);
+    private final long timestamp;
 
 
     public TransferSelectorModel(Set<TransferFile> transferFiles, long timestamp) {
         assert transferFiles != null;
 
         this.transferFiles = Collections.synchronizedSet(copyNoProjectRoot(transferFiles));
+        this.timestamp = timestamp;
 
-        boolean select = timestamp == -1;
+
         for (TransferFile file : this.transferFiles) {
-            if (timestamp != -1) {
-                // we have some timestamp
-                select = file.getTimestamp() > timestamp;
-            }
-            if (select) {
-                // intentionally not addChildren()!
-                selected.add(file);
-            }
+            preselect(file);
         }
+    }
+
+    private boolean preselect(TransferFile file) {
+        boolean select = timestamp == -1;
+        if (timestamp != -1) {
+            // we have some timestamp
+            select = file.getTimestamp() > timestamp;
+        }
+        if (select) {
+            // intentionally not addChildren()!
+            selected.add(file);
+        }
+        return select;
     }
 
     public void addChangeListener(TransferFilesChangeListener listener) {
@@ -84,11 +92,20 @@ final class TransferSelectorModel {
     }
 
     public boolean isNodeSelected(Node node) {
-        return selected.contains(getTransferFile(node));
+        TransferFile transferFile = getTransferFile(node);
+        if (transferFile == null) {
+            // not known yet
+            return false;
+        }
+        return selected.contains(transferFile);
     }
 
     public boolean isNodePartiallySelected(Node node) {
         TransferFile transferFile = getTransferFile(node);
+        if (transferFile == null) {
+            // not known yet
+            return false;
+        }
         if (transferFile.isFile()
                 || !selected.contains(transferFile)) {
             return false;
@@ -99,7 +116,7 @@ final class TransferSelectorModel {
     public void setNodeSelected(Node node, boolean select) {
         TransferFile transferFile = getTransferFile(node);
         if (transferFile == null) {
-            // dblclick on root node
+            // dblclick on root node or not known yet
             return;
         }
         if (select) {
@@ -109,6 +126,18 @@ final class TransferSelectorModel {
             removeChildren(transferFile);
         }
         filesChangeSupport.fireSelectedFilesChange();
+    }
+
+    public void addNode(Node node) {
+        TransferFile transferFile = getTransferFile(node);
+        if (transferFile == null) {
+            // dblclick on root node or not known yet
+            return;
+        }
+        if (selected.contains(transferFile.getParent())
+                || preselect(transferFile)) {
+            setNodeSelected(node, true);
+        }
     }
 
     public void selectAll() {
@@ -137,6 +166,11 @@ final class TransferSelectorModel {
         return selected.size();
     }
 
+    /**
+     * Get {@link TransferFile} or {@code null} if the transfer file is nor known yet.
+     * @param node node to get {@link TransferFile} for
+     * @return {@link TransferFile} or {@code null} if the transfer file is nor known yet
+     */
     private TransferFile getTransferFile(Node node) {
         return node.getLookup().lookup(TransferFile.class);
     }
@@ -147,8 +181,10 @@ final class TransferSelectorModel {
             return;
         }
         selected.add(file);
-        for (TransferFile child : file.getChildren()) {
-            addChildren(child);
+        if (file.hasChildrenFetched()) {
+            for (TransferFile child : file.getChildren()) {
+                addChildren(child);
+            }
         }
     }
 
@@ -166,8 +202,10 @@ final class TransferSelectorModel {
 
     private void removeChildren(TransferFile file) {
         selected.remove(file);
-        for (TransferFile child : file.getChildren()) {
-            removeChildren(child);
+        if (file.hasChildrenFetched()) {
+            for (TransferFile child : file.getChildren()) {
+                removeChildren(child);
+            }
         }
     }
 
@@ -175,9 +213,11 @@ final class TransferSelectorModel {
         if (!selected.contains(transferFile)) {
             return false;
         }
-        for (TransferFile child : transferFile.getChildren()) {
-            if (!hasAllChildrenSelected(child)) {
-                return false;
+        if (transferFile.hasChildrenFetched()) {
+            for (TransferFile child : transferFile.getChildren()) {
+                if (!hasAllChildrenSelected(child)) {
+                    return false;
+                }
             }
         }
         return true;
