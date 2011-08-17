@@ -50,6 +50,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QDiffAction;
+import org.netbeans.modules.mercurial.ui.queues.QFinishPatchesAction;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPopAllAction;
 import org.netbeans.modules.mercurial.ui.queues.QPushAllPatchesAction;
@@ -99,6 +100,9 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Menu {
             item = new JMenuItem();
             Actions.connect(item, (Action) SystemAction.get(QRefreshPatchAction.class), false);
             menu.add(item);
+            item = new JMenuItem();
+            Actions.connect(item, (Action) SystemAction.get(QFinishPatchesAction.class), false);
+            menu.add(item);
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QDiffAction.class), NbBundle.getMessage(QDiffAction.class, "CTL_PopupMenuItem_QDiff"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
@@ -112,6 +116,8 @@ public class QueuesMenu extends DynamicMenu implements Presenter.Menu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QCreatePatchAction.class), NbBundle.getMessage(QCreatePatchAction.class, "CTL_PopupMenuItem_QCreatePatch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(QRefreshPatchAction.class), NbBundle.getMessage(QRefreshPatchAction.class, "CTL_PopupMenuItem_QRefreshPatch"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(QFinishPatchesAction.class), NbBundle.getMessage(QFinishPatchesAction.class, "CTL_PopupMenuItem_QFinishPatches"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }        
         return menu;

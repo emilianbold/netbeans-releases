@@ -222,6 +222,7 @@ public class HgCommand {
     private static final String HG_QREFRESH_PATCH = "qrefresh"; //NOI18N
     private static final String HG_OPT_EXCLUDE = "--exclude"; //NOI18N
     private static final String HG_OPT_SHORT = "--short"; //NOI18N
+    private static final String HG_QFINISH_CMD = "qfinish"; //NOI18N
 
     // TODO: replace this hack
     // Causes /usr/bin/hgmerge script to return when a merge
@@ -415,6 +416,7 @@ public class HgCommand {
         HG_ROLLBACK_CMD,
         HG_QCREATE_CMD,
         HG_QGOTO_CMD,
+        HG_QFINISH_CMD,
         HG_QPOP_CMD,
         HG_QPUSH_CMD,
         HG_QREFRESH_PATCH,
@@ -3355,7 +3357,7 @@ public class HgCommand {
                     isErrorCannotReadCommitMsg(list.get(0)) ||
                     isErrorAbort(list.get(list.size() -1)) ||
                     isErrorAbort(list.get(0))))
-                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMIT_FAILED"), logger);
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
 
         } catch (IOException ex) {
             throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_FAILED_TO_READ_COMMIT_MESSAGE"));
@@ -3363,6 +3365,24 @@ public class HgCommand {
             if (commitMessage != null && tempfile != null){
                 tempfile.delete();
             }
+        }
+    }
+    
+    public static void qFinishPatches (File repository, String patch, OutputLogger logger) throws HgException {
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_QFINISH_CMD);
+
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_OPT_CWD_CMD);
+        command.add(repository.getAbsolutePath());
+        command.add(patch);
+        
+        List<String> list = exec(command);
+        if (!list.isEmpty() && isErrorAbort(list.get(0))) {
+            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
         }
     }
 
