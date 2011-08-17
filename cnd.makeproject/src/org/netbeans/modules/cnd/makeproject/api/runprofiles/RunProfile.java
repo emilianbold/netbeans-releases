@@ -785,10 +785,10 @@ public boolean isSimpleRunCommand() {
         argumentsNodeprop.setHidden(true);
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
-        ConsoleIntNodeProp consoleTypeNP = new ConsoleIntNodeProp(getConsoleType(), true, null,
+        ConsoleIntNodeProp consoleTypeNP = new ConsoleIntNodeProp(getConsoleType(), true, "ConsoleType", //NOI18N
                 getString("ConsoleType_LBL"), getString("ConsoleType_HINT")); // NOI18N
         set.put(consoleTypeNP);
-        final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
+        final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, "TerminalType", //NOI18N
                 getString("TerminalType_LBL"), getString("TerminalType_HINT")); // NOI18N
         set.put(terminalTypeNP);
         if (disableConsoleTypeSelection) {
