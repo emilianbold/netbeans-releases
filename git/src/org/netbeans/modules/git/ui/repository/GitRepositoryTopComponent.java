@@ -86,6 +86,12 @@ public class GitRepositoryTopComponent extends TopComponent implements Externali
         return new HelpCtx(getClass());
     }
 
+    @Override
+    protected void componentOpened () {
+        super.componentOpened();
+        setName(NbBundle.getMessage(GitRepositoryTopComponent.class, "CTL_Repository_TopComponent_Title")); // NOI18N
+    }
+    
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
