@@ -44,7 +44,9 @@
 package org.netbeans.modules.cnd.makeproject.api.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import org.openide.util.Lookup;
 
 public class LogicalViewNodeProviders {
 
@@ -62,7 +64,14 @@ public class LogicalViewNodeProviders {
         if (providers == null) {
             providers = new ArrayList<LogicalViewNodeProvider>();
         }
-        return providers;
+        List<LogicalViewNodeProvider> actualProviders = new ArrayList<LogicalViewNodeProvider>(providers);
+        Collection<? extends LogicalViewNodeProvider> mwc = Lookup.getDefault().lookupAll(LogicalViewNodeProvider.class);
+        for (LogicalViewNodeProvider lvnp : mwc) {
+            if (lvnp != null) {
+                actualProviders.add(lvnp);
+            }
+        }
+        return actualProviders;
     }
 
     public LogicalViewNodeProvider[] getProvidersAsArray() {

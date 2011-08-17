@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -298,7 +299,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
         Info info = new Info();
-        Lookup lkp = Lookups.fixed(new Object[]{
+        Object[] lookups = new Object[] {
                     info,
                     aux,
                     helper.createCacheDirectoryProvider(),
@@ -323,7 +324,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources)
-                });
+                };
+        
+        MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
+        if (makeProjectCustomizer != null) {
+            lookups = makeProjectCustomizer.getLookup(getProjectDirectory(), lookups);
+        }
+        Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
@@ -654,6 +661,55 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
     public void setSourceEncoding(String sourceEncoding) {
         this.sourceEncoding = sourceEncoding;
+    }
+    
+    private MakeProjectCustomizer getProjectCustomizer(String customizerId) {
+        if (customizerId == null) {
+            return null;
+        }
+        MakeProjectCustomizer makeProjectCustomizer = null;
+        Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+        for (MakeProjectCustomizer instance : mwc) {
+            if (customizerId.equals(instance.getCustomizerId())) {
+                makeProjectCustomizer = instance;
+                break;
+            }
+        }
+        return makeProjectCustomizer;
+    }
+    
+    private String getProjectCustomizerId() {
+        String id = getCustomizerIdFromProjectXML();
+        if (id == null) {
+            FileObject[] children = getProjectDirectory().getChildren();
+            for (FileObject c : children) {
+                String name = c.getName();
+                String ext = c.getExt();
+                if (name.equals("cndcustomizerid")) { // NOI18N
+                    id = ext;
+                    break;
+                }
+            }
+        }
+        //System.out.println("getProjectCustomizerId " + id);
+        return id;
+    }
+
+    /**
+     * @return 
+     */
+    private String getCustomizerIdFromProjectXML() {
+        Element data = helper.getPrimaryConfigurationData(true);
+        data = helper.getPrimaryConfigurationData(true);
+        NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.CUSTOMIZERID_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            Node typeNode = nodeList.item(0).getFirstChild();
+            if (typeNode != null) {
+                String type = typeNode.getNodeValue();
+                return type;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1108,9 +1164,29 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 case MakeConfiguration.TYPE_QT_STATIC_LIB:
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
                     break;
+                case MakeConfiguration.TYPE_CUSTOM:
+                    MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
+                    icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
+                    break;
             }
             return icon;
         }
+        
+//        private String getProjectCustomizerId() {
+//            return getCustomizerIdFromProjectXML();
+//        }
+//        
+//        private MakeProjectCustomizer getProjectCustomizer(String customizerId) {
+//            MakeProjectCustomizer makeProjectCustomizer = null;
+//            Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+//            for (MakeProjectCustomizer instance : mwc) {
+//                if (customizerId.equals(instance.getCustomizerId())) {
+//                    makeProjectCustomizer = instance;
+//                    break;
+//                }
+//            }
+//            return makeProjectCustomizer;
+//        }
 
         @Override
         public Project getProject() {

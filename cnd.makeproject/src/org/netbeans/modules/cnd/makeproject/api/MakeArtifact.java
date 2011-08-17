@@ -59,7 +59,7 @@ public class MakeArtifact {
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
     public static final int TYPE_DB_APPLICATION = 7;
-
+    public static final int TYPE_CUSTOM = 10;
     // Project
     private String projectLocation;
     // Configuration
@@ -149,6 +149,9 @@ public class MakeArtifact {
                 break;
             case MakeConfiguration.TYPE_DB_APPLICATION:
                 configurationType = MakeArtifact.TYPE_DB_APPLICATION;
+                break;
+            case MakeConfiguration.TYPE_CUSTOM:
+                configurationType = MakeArtifact.TYPE_CUSTOM;
                 break;
             default:
                 assert false; // FIXUP: error

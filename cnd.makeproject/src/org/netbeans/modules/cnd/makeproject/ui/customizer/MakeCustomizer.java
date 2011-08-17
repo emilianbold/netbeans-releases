@@ -59,6 +59,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -536,11 +537,19 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                             if (selNode instanceof PropertyNode && ((PropertyNode)selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                                 PropertyNode propNode = (PropertyNode) selNode;
                                 for (int i = 0; i < selectedConfigurations.length; i++) {
-                                    dummyNodes.add(new DummyNode(propNode.getSheet(selectedConfigurations[i]), selectedConfigurations[i].getName()));
+                                    Sheet sheet = propNode.getSheet(selectedConfigurations[i]);
+                                    
+                                    if (((MakeConfigurationDescriptor)projectDescriptor).hasProjectCustomizer()) {
+                                        MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor)projectDescriptor).getProjectCustomizer();
+                                        sheet = makeProjectCustomizer.getPropertySheet(sheet);
+                                    }
+                                    
+                                    dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                 }
                             }
                         }
                         propertySheet.setNodes(dummyNodes.toArray(new DummyNode[dummyNodes.size()]));
+                        
                         panel.add(propertySheet, fillConstraints);
                         configurationLabel.setEnabled(true);
                         configurationComboBox.setEnabled(true);
@@ -629,7 +638,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             lastContext = new MakeContext(MakeContext.Kind.Project, project, getSelectedHost(), selectedConfigurations)
                     .setPanel(this)
                     .setConfigurationDescriptor(projectDescriptor);
-            Lookup lookup = Lookups.fixed(lastContext);
+            Lookup lookup = Lookups.fixed(lastContext, project); // FIXUP: MakeContext should be public so other projects could make use of the context. Adding 'project' so they can at least get that.
             return ProjectNodeFactory.createRootNodeProject(lookup);
         }
     }

@@ -1330,6 +1330,9 @@ AtomicLockListener, FoldHierarchyListener {
             int offset = mouse2Offset(evt);
             switch (evt.getClickCount()) {
                 case 1: // Single press
+                    if (c.isEnabled() && !c.hasFocus()) {
+                        c.requestFocus();
+                    }
                     c.setDragEnabled(true);
                     if (evt.isShiftDown()) { // Select till offset
                         moveDot(offset);
