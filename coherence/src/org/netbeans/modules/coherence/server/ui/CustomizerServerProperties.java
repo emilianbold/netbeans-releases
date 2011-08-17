@@ -49,9 +49,15 @@ package org.netbeans.modules.coherence.server.ui;
 
 import java.awt.BorderLayout;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.coherence.server.CoherenceProperties;
+import org.netbeans.modules.coherence.server.CoherenceServerProperty;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,8 +65,11 @@ import org.openide.nodes.Node;
  */
 public class CustomizerServerProperties extends javax.swing.JPanel {
 
+    private InstanceProperties instanceProperties;
+
     /** Creates new form CustomizerServerProperties */
     public CustomizerServerProperties(InstanceProperties instanceProperties) {
+        this.instanceProperties = instanceProperties;
         initComponents();
 
         // Initialize and include property sheet
@@ -73,6 +82,17 @@ public class CustomizerServerProperties extends javax.swing.JPanel {
         propertiesPanel.add(psv);
     }
 
+    /**
+     * Performs reset all Coherence server properties to defaults.
+     *
+     * @param instanceProperties properties for reseting
+     */
+    private void resetProperties() {
+        for (CoherenceServerProperty property : CoherenceProperties.SERVER_PROPERTIES) {
+            instanceProperties.removeKey(property.getPropertyName());
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -83,34 +103,63 @@ public class CustomizerServerProperties extends javax.swing.JPanel {
     private void initComponents() {
 
         propertiesPanel = new javax.swing.JPanel();
+        resetPropertiesButton = new javax.swing.JButton();
 
         setName(org.openide.util.NbBundle.getMessage(CustomizerServerProperties.class, "TITLE_Properties")); // NOI18N
 
+        propertiesPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         propertiesPanel.setName(""); // NOI18N
 
         javax.swing.GroupLayout propertiesPanelLayout = new javax.swing.GroupLayout(propertiesPanel);
         propertiesPanel.setLayout(propertiesPanelLayout);
         propertiesPanelLayout.setHorizontalGroup(
             propertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 398, Short.MAX_VALUE)
+            .addGap(0, 396, Short.MAX_VALUE)
         );
         propertiesPanelLayout.setVerticalGroup(
             propertiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 298, Short.MAX_VALUE)
+            .addGap(0, 260, Short.MAX_VALUE)
         );
+
+        resetPropertiesButton.setText(org.openide.util.NbBundle.getMessage(CustomizerServerProperties.class, "CustomizerServerProperties.resetPropertiesButton.text")); // NOI18N
+        resetPropertiesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetPropertiesButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(propertiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(resetPropertiesButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(propertiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(propertiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(resetPropertiesButton))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void resetPropertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetPropertiesButtonActionPerformed
+    // confirmation for the action
+    DialogDescriptor.Confirmation confirmation = new Confirmation(
+            NbBundle.getMessage(CustomizerServerProperties.class, "MSG_ResetProperties"), //NOI18N
+            NbBundle.getMessage(CustomizerServerProperties.class, "TITLE_ResetProperties"),  //NOI18N
+            DialogDescriptor.YES_NO_OPTION);
+    if (DialogDisplayer.getDefault().notify(confirmation) == DialogDescriptor.YES_OPTION) {
+        resetProperties();
+        propertiesPanel.repaint();
+    }
+}//GEN-LAST:event_resetPropertiesButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel propertiesPanel;
+    private javax.swing.JButton resetPropertiesButton;
     // End of variables declaration//GEN-END:variables
 }

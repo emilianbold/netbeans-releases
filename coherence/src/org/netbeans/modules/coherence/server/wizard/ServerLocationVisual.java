@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.CoherenceServer;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
@@ -253,23 +254,24 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         if (isCoherenceValid) {
             String location = serverLocationTextField.getText();
             if (location != null && location.trim().length() > 0) {
-                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR).concat(File.pathSeparator));
+                StringBuilder classpathSB = new StringBuilder(location.concat(COHERENCE_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
                 if (hibernateJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR).concat(File.pathSeparator));
+                    classpathSB.append(location.concat(COHERENCE_HIBERNATE_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
                 }
                 if (jpaJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_JPA_JAR).concat(File.pathSeparator));
+                    classpathSB.append(location.concat(COHERENCE_JPA_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
                 }
                 if (loadbalancerJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR).concat(File.pathSeparator));
+                    classpathSB.append(location.concat(COHERENCE_LOADBALANCER_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
                 }
                 if (transactionJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR).concat(File.pathSeparator));
+                    classpathSB.append(location.concat(COHERENCE_TRANSACTION_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
                 }
                 if (txJarCheckBox.isSelected()) {
-                    classpathSB.append(location.concat(COHERENCE_TX_JAR).concat(File.pathSeparator));
+                    classpathSB.append(location.concat(COHERENCE_TX_JAR).concat(CoherenceProperties.CLASSPATH_SEPARATOR));
                 }
                 classpath = classpathSB.toString();
+                classpath = classpath.substring(0, classpath.length() - CoherenceProperties.CLASSPATH_SEPARATOR.length());
             }
         } else {
             classpath = "";
@@ -344,7 +346,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addComponent(loadbalancerJarCheckBox)
                     .addComponent(transactionJarCheckBox)
                     .addComponent(txJarCheckBox))
-                .addContainerGap(195, Short.MAX_VALUE))
+                .addContainerGap(226, Short.MAX_VALUE))
         );
         additionalClasspathPanelLayout.setVerticalGroup(
             additionalClasspathPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -378,7 +380,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(serverLocationLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                        .addComponent(serverLocationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
                     .addComponent(serverPropertiesNoticeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
