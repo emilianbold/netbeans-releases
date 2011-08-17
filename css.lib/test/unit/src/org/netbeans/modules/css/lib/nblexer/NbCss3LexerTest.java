@@ -188,6 +188,24 @@ public class NbCss3LexerTest extends NbTestCase {
         assertANTLRToken("::", Css3Lexer.DCOLON, lexer.nextToken());
         assertANTLRToken("before", Css3Lexer.IDENT, lexer.nextToken());
     }
+   
+   public void testNumbers() throws Exception {
+        String source = "200 ";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("200", Css3Lexer.NUMBER, lexer.nextToken());
+        
+        source = "200px ";
+        
+        //now do the same with the netbeans lexer
+        charstream = new ANTLRStringStream(source);
+        lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("200px", Css3Lexer.LENGTH, lexer.nextToken());
+    }
     
     
    /**
