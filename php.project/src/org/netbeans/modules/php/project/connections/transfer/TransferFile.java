@@ -43,11 +43,16 @@ package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,7 +86,11 @@ public abstract class TransferFile {
 
     protected final String baseDirectory;
     protected final TransferFile parent;
-    private final Queue<TransferFile> children = new ConcurrentLinkedQueue<TransferFile>();
+
+    private final ReadWriteLock childrenLock = new ReentrantReadWriteLock();
+
+    // @GuardedBy(childrenLock)
+    private Set<TransferFile> children = null;
 
     // ok, does not matter if it is checked more times
     private volatile Long timestamp = null; // in seconds, default -1
@@ -144,11 +153,11 @@ public abstract class TransferFile {
      * Implementation for {@link RemoteFile}.
      * @param parent parent remote file, can be {@code null}
      * @param remoteFile remote file to be used
-     * @param baseDirectory base directory local and remote paths are resolved to
+     * @param remoteClient remote client
      * @return new remote file for the given parameters
      */
-    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, String baseDirectory) {
-        TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, baseDirectory);
+    public static TransferFile fromRemoteFile(TransferFile parent, RemoteFile remoteFile, RemoteClientImplementation remoteClient) {
+        TransferFile transferFile = new RemoteTransferFile(remoteFile, parent, remoteClient);
         if (parent != null) {
             parent.addChild(transferFile);
         }
@@ -164,20 +173,36 @@ public abstract class TransferFile {
     }
 
     /**
-     * Return {@code true} if the transfer file has {@link #getChildren() children}.
-     * @return {@code true} if the transfer file has {@link #getChildren() children}
-     * @see #getChildren()
+     * Get children files. If the file is not directory, returns empty list.
+     * @return children files, never {@code null}
      */
-    public final boolean hasChildren() {
-        return !children.isEmpty();
+    public final List<TransferFile> getChildren() {
+        if (!isDirectory()) {
+            return Collections.emptyList();
+        }
+        initChildren();
+        childrenLock.readLock().lock();
+        try {
+            return new ArrayList<TransferFile>(children);
+        } finally {
+            childrenLock.readLock().unlock();
+        }
     }
 
     /**
-     * Get children files.
-     * @return children files
+     * Return {@code true} if the children are known or the file is not directory.
+     * @return {@code true} if the children are known or the file is not directory
      */
-    public final List<TransferFile> getChildren() {
-        return new ArrayList<TransferFile>(children);
+    public boolean hasChildrenFetched() {
+        if (!isDirectory()) {
+            return true;
+        }
+        childrenLock.readLock().lock();
+        try {
+            return children != null;
+        } finally {
+            childrenLock.readLock().unlock();
+        }
     }
 
     /**
@@ -217,8 +242,8 @@ public abstract class TransferFile {
     }
 
     /**
-     * Return {@code true} if the remote file does not parent remote file.
-     * @return {@code true} if the remote file does not parent remote file
+     * Return {@code true} if the remote file does not have parent remote file.
+     * @return {@code true} if the remote file does not have parent remote file
      */
     public boolean isRoot() {
         if (isProjectRoot()) {
@@ -249,6 +274,12 @@ public abstract class TransferFile {
      * @see #isProjectRoot()
      */
     public abstract String getRemotePath();
+
+    /**
+     * If no children, it is asked for them, just once.
+     * @return
+     */
+    protected abstract Collection<TransferFile> fetchChildren();
 
     /**
      * Get remote (platform independent) path of the parent file
@@ -395,7 +426,47 @@ public abstract class TransferFile {
     }
 
     private void addChild(TransferFile child) {
-        children.add(child);
+        if (!isDirectory()) {
+            throw new IllegalStateException("Cannot add child to not directory: " + this);
+        }
+        initChildren();
+        childrenLock.writeLock().lock();
+        try {
+            children.add(child);
+        } finally {
+            childrenLock.writeLock().unlock();
+        }
+    }
+
+    private void initChildren() {
+        boolean fetchChildren = false;
+        childrenLock.readLock().lock();
+        try {
+            if (children == null) {
+                childrenLock.readLock().unlock();
+                childrenLock.writeLock().lock();
+                try {
+                    if (children == null) {
+                        children = new LinkedHashSet<TransferFile>();
+                        fetchChildren = true;
+                    }
+                } finally {
+                    childrenLock.readLock().lock();
+                    childrenLock.writeLock().unlock();
+                }
+            }
+        } finally {
+            childrenLock.readLock().unlock();
+        }
+        if (fetchChildren) {
+            Collection<TransferFile> fetchedChildren = fetchChildren();
+            childrenLock.writeLock().lock();
+            try {
+                children.addAll(fetchedChildren);
+            } finally {
+                childrenLock.writeLock().unlock();
+            }
+        }
     }
 
 }

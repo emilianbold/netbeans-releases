@@ -80,6 +80,10 @@
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.utils.ui</friend>
+                <friend>com.sun.tools.tuxedo.model</friend>
+                <friend>com.sun.tools.tuxedo.project</friend>
+                <friend>com.sun.tools.tuxedo.source</friend>
+                <friend>com.sun.tools.tuxedo.testrunner</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
@@ -102,6 +106,8 @@
                 <friend>com.sun.tools.sendto</friend>
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
+                <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
+                <friend>com.sun.tools.sendto</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>

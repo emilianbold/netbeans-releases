@@ -71,7 +71,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
     private final DevelopmentHostConfiguration hostConfiguration;
     private volatile boolean supportDefault = true;
     private boolean canWrite;
-    //private String txt1;
+    private String txt1;
     private String txt2;
     private String txt3;
     private String oldname;
@@ -81,7 +81,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         this.configuration = configuration;
         this.hostConfiguration = hostConf;
         this.canWrite = canWrite;
-        //this.txt1 = txt1;
+        this.txt1 = txt1;
         this.txt2 = txt2;
         this.txt3 = txt3;
         oldname = configuration.getOption();
@@ -94,6 +94,11 @@ public class CompilerSetNodeProp extends Node.Property<String> {
 
     @Override
     public String getName() {
+        return txt1;
+    }
+
+    @Override
+    public String getDisplayName() {
         return txt2;
     }
 

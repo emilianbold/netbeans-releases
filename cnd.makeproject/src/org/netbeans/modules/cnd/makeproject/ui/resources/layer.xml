@@ -284,13 +284,13 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <!-- Project operations -->
             <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingItemAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-AddExistingFolderItemsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-NewFolderAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.NewFolderAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction"/>
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-actions-RunTestAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.actions.RunTestAction"/>

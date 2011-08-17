@@ -43,9 +43,7 @@ package org.netbeans.modules.css.lib;
 
 import java.util.Collection;
 import java.util.List;
-import org.antlr.runtime.BitSet;
 import org.antlr.runtime.CommonToken;
-import org.antlr.runtime.IntStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.debug.BlankDebugEventListener;
@@ -59,10 +57,8 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 
 /**
  * A patched version of ANLR's ParseTreeBuilder 
- * - the parse tree doesn't contain empty rule nodes with the <epsilon> sub-node.
- * - parsing errors are collected
  * 
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class NbParseTreeBuilder extends BlankDebugEventListener {
 
@@ -77,7 +73,9 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     private CommonToken lastConsumedToken;
     private CharSequence source;
     static boolean debug_tokens = false; //testing 
-    private List<ErrorNode> errorNodes = new ArrayList<ErrorNode>();
+    private Stack<ErrorNode> errorNodes = new Stack<ErrorNode>();
+    private boolean resync;
+    private CommonToken unexpectedToken;
 
     public NbParseTreeBuilder(CharSequence source) {
         this.source = source;
@@ -142,8 +140,20 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
     }
 
     @Override
+    public void beginResync() {
+        super.beginResync();
+        resync = true;
+    }
+
+    @Override
+    public void endResync() {
+        super.endResync();
+        resync = false;
+    }
+    
+    @Override
     public void consumeToken(Token token) {
-        if (backtracking > 0) {
+        if (backtracking > 0 || resync) {
             return;
         }
 
@@ -192,7 +202,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
 
     @Override
     public void consumeHiddenToken(Token token) {
-        if (backtracking > 0) {
+        if (backtracking > 0 || resync) {
             return;
         }
 
@@ -210,6 +220,12 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         if (backtracking > 0) {
             return;
         }
+        
+//        System.err.println(e);
+//        System.err.println("index:"+e.input.index());
+//        System.err.println("token:"+e.token);
+        
+        
         RuleNode ruleNode = callStack.peek();
 
         String message;
@@ -218,7 +234,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         assert e.token != null;
 
         //invalid token found int the stream
-        CommonToken unexpectedToken = (CommonToken) e.token;
+        unexpectedToken = (CommonToken) e.token;
         int unexpectedTokenCode = e.getUnexpectedType();
         CssTokenId uneexpectedToken = CssTokenId.forTokenTypeCode(unexpectedTokenCode);
 
@@ -271,7 +287,7 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         lastConsumedToken.setStartIndex(from);
         lastConsumedToken.setStopIndex(to - 1); // ... ( -1 => last *char* index )
 
-        errorNodes.add(errorNode);
+        errorNodes.push(errorNode);
 
     }
 
@@ -323,30 +339,44 @@ public class NbParseTreeBuilder extends BlankDebugEventListener {
         CommonToken first = (CommonToken)tokens.get(0);
         CommonToken last = (CommonToken)tokens.get(tokens.size() - 1);
         
-        //do not add the first token as children of the recovery node if it has been already
-        //added as a child of the error node created for the RecognitionException
-        int fromIndex = lastConsumedToken != null && lastConsumedToken.getStartIndex() == first.getStartIndex() ? 1 : 0;
+        
 
-        //if there's just one recovered token and the token is the same as the lastConsumedToken just skip the 
+        //if there's just one recovered token and the token is the same as the unexpectedToken just skip the 
         //recovery node creation, the parse tree for the errorneous piece of code is already complete
-        if(fromIndex == 1 && tokens.size() == 1) {
+        boolean ignoreFirstToken = unexpectedToken  == first;
+        if(ignoreFirstToken && tokens.size() == 1) {
             return ;
         }
         
-        //add tree node for the skipped/consumed characters
-        RuleNode ruleNode = callStack.peek();
-        RuleNode recoveryNode = new RuleNode(NodeType.recovery, source);
-        addNodeChild(ruleNode, recoveryNode);
+        //do not add the first token as children of the recovery node if it has been already
+        //added as a child of the error node created for the RecognitionException
+        if(ignoreFirstToken) {
+            first = (CommonToken)tokens.get(1); //use second
+        }
         
-        recoveryNode.setFirstToken(fromIndex == 0 ? first : (CommonToken)tokens.get(1));
-        recoveryNode.setLastToken(last);
+        //find last error which triggered this recovery and add the skipped tokens to it
+        ErrorNode errorNode = errorNodes.peek();
+        
+        //set first and last token
+        errorNode.setFirstToken(first);
+        errorNode.setLastToken(last);
+        
+        //set range
+        errorNode.from = CommonTokenUtil.getCommonTokenOffsetRange(first)[0]; 
+        errorNode.to = CommonTokenUtil.getCommonTokenOffsetRange(last)[1]; 
         
         //set the error tokens as children of the error node
-        for(int i = fromIndex ; i < tokens.size(); i++) {
-            CommonToken t = (CommonToken)tokens.get(i);
-            TokenNode tokenNode = new TokenNode(t);
-            addNodeChild(recoveryNode, tokenNode);
+        for(int i = (ignoreFirstToken ? 1 : 0); i < tokens.size(); i++) {
+            CommonToken token = (CommonToken)tokens.get(i);
+            TokenNode tokenNode = new TokenNode(token);
+            addNodeChild(errorNode, tokenNode);
         }
+        
+        //create and artificial error token so the rules on stack can properly set their ranges
+        lastConsumedToken = new CommonToken(Token.INVALID_TOKEN_TYPE);
+        lastConsumedToken.setStartIndex(first.getStartIndex());
+        lastConsumedToken.setStopIndex(last.getStopIndex()); 
+        
         
     }
     

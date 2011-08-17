@@ -93,9 +93,14 @@ public final class TransferFilesChooserVisual extends JPanel {
         String msgKey = null;
         int size = filesChooserPanel.getSelectedFiles().size();
         if (size == 1) {
-            msgKey = "LBL_FileSelected";
+            msgKey = "LBL_FileSelected"; // NOI18N
         } else {
-            msgKey = "LBL_FilesSelected";
+            if (transferType == TransferFilesChooser.TransferType.DOWNLOAD) {
+                // lazy download
+                msgKey = "LBL_FilesOrMoreSelected"; // NOI18N
+            } else {
+                msgKey = "LBL_FilesSelected"; // NOI18N
+            }
         }
         selectedFilesInfoLabel.setText(NbBundle.getMessage(TransferFilesChooserVisual.class, msgKey, size));
         updateWarning();

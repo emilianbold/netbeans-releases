@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.actions;
+package org.netbeans.modules.cnd.makeproject.api.actions;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
+import org.netbeans.modules.cnd.makeproject.actions.BatchBuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -212,11 +213,11 @@ public class AddExistingItemAction extends NodeAction {
     private static ResourceBundle bundle;
     private static String getString(String s) {
 	if (bundle == null) {
-	    bundle = NbBundle.getBundle(BatchBuildAction.class);
+	    bundle = NbBundle.getBundle(AddExistingItemAction.class);
 	}
 	return bundle.getString(s);
     }
     private static String getString(String s, String arg) {
-        return NbBundle.getMessage(BatchBuildAction.class, s, arg);
+        return NbBundle.getMessage(AddExistingItemAction.class, s, arg);
     }
 }
