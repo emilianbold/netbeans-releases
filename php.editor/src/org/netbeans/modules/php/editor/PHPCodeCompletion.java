@@ -135,7 +135,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     static {
         PHP_KEYWORDS.put("use", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("namespace", KeywordCompletionType.SIMPLE);
-        PHP_KEYWORDS.put("php_user_filter", KeywordCompletionType.SIMPLE);
         PHP_KEYWORDS.put("class", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("const", KeywordCompletionType.ENDS_WITH_SPACE);
         PHP_KEYWORDS.put("continue", KeywordCompletionType.ENDS_WITH_SEMICOLON);
@@ -172,6 +171,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("endwhile", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("endswitch", KeywordCompletionType.ENDS_WITH_SEMICOLON);
         PHP_KEYWORDS.put("case", KeywordCompletionType.ENDS_WITH_COLON);
+        PHP_KEYWORDS.put("and", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("as", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("declare", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
+        PHP_KEYWORDS.put("do", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
+        PHP_KEYWORDS.put("else", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
+        PHP_KEYWORDS.put("elseif", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
+        PHP_KEYWORDS.put("enddeclare", KeywordCompletionType.ENDS_WITH_SEMICOLON);
+        PHP_KEYWORDS.put("or", KeywordCompletionType.ENDS_WITH_SPACE);
+        PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE);
     }
 
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES = {

@@ -24,7 +24,9 @@ VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
 KEYWORD    abstract                                   null
+KEYWORD    and                                        null
 KEYWORD    array                                      null
+KEYWORD    as                                         null
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
@@ -32,10 +34,15 @@ KEYWORD    class                                      null
 KEYWORD    clone                                      null
 KEYWORD    const                                      null
 KEYWORD    continue                                   null
+KEYWORD    declare                                    null
 KEYWORD    default                                    null
 KEYWORD    die();                                     Language Construct
+KEYWORD    do                                         null
 KEYWORD    echo '';                                   Language Construct
+KEYWORD    else                                       null
+KEYWORD    elseif                                     null
 KEYWORD    empty();                                   Language Construct
+KEYWORD    enddeclare                                 null
 KEYWORD    endfor                                     null
 KEYWORD    endforeach                                 null
 KEYWORD    endif                                      null
@@ -60,7 +67,7 @@ KEYWORD    isset();                                   Language Construct
 KEYWORD    list();                                    Language Construct
 KEYWORD    namespace                                  null
 KEYWORD    new                                        null
-KEYWORD    php_user_filter                            null
+KEYWORD    or                                         null
 KEYWORD    print '';                                  Language Construct
 KEYWORD    private                                    null
 KEYWORD    protected                                  null
@@ -76,3 +83,4 @@ KEYWORD    unset();                                   Language Construct
 KEYWORD    use                                        null
 KEYWORD    var                                        null
 KEYWORD    while                                      null
+KEYWORD    xor                                        null
