@@ -105,7 +105,7 @@ public class NamespacesModule extends CssModule {
             case styleSheet:
             case bodylist:
                 CompletionProposal nsKeywordProposal =
-                        CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                        CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                 proposals.add(nsKeywordProposal);
 
             case bodyset:
@@ -127,7 +127,7 @@ public class NamespacesModule extends CssModule {
                 CssTokenId tokenId = context.getTokenSequence().token().id();
                 if (tokenId == CssTokenId.NAMESPACE_SYM) {
                     nsKeywordProposal =
-                            CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                     proposals.add(nsKeywordProposal);
                 }
 

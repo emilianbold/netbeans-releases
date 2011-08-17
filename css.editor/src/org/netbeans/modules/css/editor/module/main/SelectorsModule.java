@@ -52,8 +52,6 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
-import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
-import org.netbeans.modules.css.editor.module.spi.CssCompletionItem.Kind;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
@@ -66,6 +64,8 @@ import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * The selectors module functionality is partially implemented in the DefaultCssModule
+ * from historical reasons. Newly added features are implemented here.
  *
  * @author mfukala@netbeans.org
  */
@@ -137,11 +137,11 @@ public class SelectorsModule extends CssModule {
     }
 
     private static List<CompletionProposal> getPseudoClasses(CompletionContext context) {
-        return CssCompletionItem.wrapRAWValues(Arrays.asList(PSEUDO_CLASSES), Kind.VALUE, context.getAnchorOffset());
+        return Utilities.createRAWCompletionProposals(Arrays.asList(PSEUDO_CLASSES), ElementKind.FIELD, context.getAnchorOffset());
     }
 
     private static List<CompletionProposal> getPseudoElements(CompletionContext context) {
-        return CssCompletionItem.wrapRAWValues(Arrays.asList(PSEUDO_ELEMENTS), Kind.VALUE, context.getAnchorOffset());
+        return Utilities.createRAWCompletionProposals(Arrays.asList(PSEUDO_ELEMENTS), ElementKind.FIELD, context.getAnchorOffset());
     }
 
     @Override

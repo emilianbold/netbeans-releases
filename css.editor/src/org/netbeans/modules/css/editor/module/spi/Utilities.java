@@ -41,12 +41,18 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -55,9 +61,12 @@ import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
 public class Utilities {
+
+    private Utilities() {
+    }
     
     /**
      * Creates a generic mark occurrences node visitor for given node types. 
@@ -103,5 +112,14 @@ public class Utilities {
         };
     }
 
+      public static  List<CompletionProposal> createRAWCompletionProposals(Collection<String> props, ElementKind kind, int anchor) {
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        for (String value : props) {
+            CssElement handle = new CssElement(value);
+            CompletionProposal proposal = CssCompletionItem.createRAWCompletionItem(handle, value, kind, anchor, false);
+            proposals.add(proposal);
+        }
+        return proposals;
+    }
     
 }
