@@ -85,7 +85,6 @@ public class CloneAction extends NodeAction {
         }
         // clone all base properties except instance ID
         copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_COHERENCE_CLASSPATH); //NOI18N
-        copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_ADDITIONAL_CLASSPATH); //NOI18N
         copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_JAVA_FLAGS); //NOI18N
         copyStringProperty(newProperties, oldProperties, CoherenceProperties.PROP_CUSTOM_PROPERTIES); //NOI18N
         // clone all Coherence server properties
