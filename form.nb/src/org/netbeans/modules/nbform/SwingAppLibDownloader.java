@@ -40,7 +40,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.form;
+package org.netbeans.modules.nbform;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.api.autoupdate.OperationSupport;
@@ -74,6 +74,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.netbeans.modules.form.FormUtils;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
