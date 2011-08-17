@@ -127,6 +127,25 @@ is the proper place.
 
         <change>
             <api name="jseprojects"/>
+            <summary>Enable extending existing JSE Project category panels in Project Properties dialog</summary>
+            <version major="1" minor="46"/>
+            <date day="17" month="8" year="2011"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                Replace the existing <code>J2SERunConfigProvider</code> interface by
+                <code>J2SECategoryExtensionProvider</code>. The old interface was hardwired
+                to enable extension of Run panel only with one extension panel only. The
+                new interface provides this mechanism for any category and allows
+                multiple extension panels per category. The new functionality is needed 
+                for JavaFX 2.0 support module, but is not limited to it.
+            </description>
+            <class package="org.netbeans.modules.java.j2seproject.api" name="J2SECategoryExtensionProvider"/>
+            <issue number="200704"/>
+        </change>
+
+        <change>
+            <api name="jseprojects"/>
             <summary>Added class for accessing PropertyEvaluator for given JSE Project</summary>
             <version major="1" minor="10"/>
             <date day="4" month="1" year="2007"/>
