@@ -111,7 +111,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -154,7 +153,6 @@ public class IDEValidation extends JellyTestCase {
         conf = conf.addTest("testNewProject");
         conf = conf.addTest("testShortcuts"); // sample project must exist before testShortcuts
         conf = conf.addTest("testNewFile");
-        conf = conf.addTest("testCVSLite");
         conf = conf.addTest("testProjectsView");
         conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
@@ -1104,31 +1102,6 @@ public class IDEValidation extends JellyTestCase {
         JLabelOperator jloPort = new JLabelOperator(optionsOper, proxyPortLabel);
         new JTextFieldOperator((JTextField) jloPort.getLabelFor()).setText("80"); // NOI18N
         optionsOper.ok();
-    }
-
-    /** Test CVS Lite
-     * - from main menu invoke "Team|CVS|Checkout"
-     * - wait for Checkout dialog and close it
-     * TODO - when better support for local repository implemented, we can add more tests
-     */
-    public void testCVSLite() {
-        // "Team"
-        String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
-        // "CVS"
-        String cvsItem = Bundle.getStringTrimmed(
-                "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
-                "CTL_MenuItem_CVSCommands_Label");
-        // "Checkout..."
-        String checkoutItem = Bundle.getStringTrimmed(
-                "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle",
-                "CTL_MenuItem_Checkout_Label");
-        //new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock(versioningItem + "|" + cvsItem + "|" + checkoutItem);
-        String checkoutTitle = Bundle.getString(
-                "org.netbeans.modules.versioning.system.cvss.ui.wizards.Bundle",
-                "BK0007");
-        NbDialogOperator checkoutOper = new NbDialogOperator(checkoutTitle);
-        checkoutOper.close();
     }
 
     /** Test XML

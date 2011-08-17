@@ -103,8 +103,12 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
         }
     }
 
-    public static InheritanceImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new InheritanceImpl(ast, file, scope);
+    public static InheritanceImpl create(AST ast, CsmFile file, CsmScope scope, boolean isGlobal) {
+        InheritanceImpl inheritanceImpl = new InheritanceImpl(ast, file, scope);
+        if (!isGlobal) {
+            Utils.setSelfUID(inheritanceImpl);
+        }
+        return inheritanceImpl;
     }
 
     // constructor for LWM factory
@@ -146,7 +150,7 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
             if (resolvedClassifier != null) {
                 if (UIDProviderIml.isPersistable(UIDs.get(this)) &&
                     UIDProviderIml.isPersistable(UIDs.get(resolvedClassifier)) &&
-                    UIDProviderIml.isPersistable(scope)) {
+                    CsmBaseUtilities.isValid(this)) {
                     RepositoryUtils.put(this);
                 }
             }
