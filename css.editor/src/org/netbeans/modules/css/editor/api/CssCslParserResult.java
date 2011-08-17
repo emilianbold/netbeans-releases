@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.csl.CssAnalyser;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
@@ -96,18 +97,13 @@ public class CssCslParserResult extends ParserResult {
     public List<? extends Error> getDiagnostics() {
 
         if(!analyzerErrorsComputed.getAndSet(true)) {
-            //convert all problem descriptions to the CSL Error-s
-            
-            //filter out some of the errors caused by the virtual templating code
             List<ProblemDescription> diagnostics = wrappedCssParserResult.getDiagnostics();
-//            List<Error> cslErrors = new ArrayList<Error>(diagnostics.size());
-//            for(ProblemDescription problem : diagnostics) {
-//                
-//            }
             
             
             errors.addAll(Css3Utils.getCslErrorForCss3ProblemDescription(
                         wrappedCssParserResult.getSnapshot().getSource().getFileObject(), diagnostics));
+            
+            errors.addAll(CssAnalyser.checkForErrors(getSnapshot(), getParseTree()));
         }
         
         return errors;
