@@ -85,7 +85,6 @@ public class IDECommitValidationTest extends IDEValidation {
         conf = conf.addTest("testNewProject");
         conf = conf.addTest("testShortcuts"); // sample project must exist before testShortcuts
         conf = conf.addTest("testNewFile");
-        conf = conf.addTest("testCVSLite");
         conf = conf.addTest("testProjectsView");
         conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
