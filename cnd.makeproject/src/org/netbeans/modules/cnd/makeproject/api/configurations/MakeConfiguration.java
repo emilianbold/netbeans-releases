@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +63,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -117,6 +119,10 @@ public class MakeConfiguration extends Configuration {
         getString("QtDynamicLibraryName"),
         getString("QtStaticLibraryName")
     };
+    
+    private static String[] TYPE_NAMES_CUSTOM = {
+        "CUSTOM"                                        // <=== FIXUP // NOI18N
+    };
     public static final int TYPE_MAKEFILE = 0;
     public static final int TYPE_APPLICATION = 1;
     public static final int TYPE_DYNAMIC_LIB = 2;
@@ -125,6 +131,8 @@ public class MakeConfiguration extends Configuration {
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
     public static final int TYPE_DB_APPLICATION = 7;
+    public static final int TYPE_CUSTOM = 10;
+    
     // Configurations
     private IntConfiguration configurationType;
     private MakefileConfiguration makefileConfiguration;
@@ -150,6 +158,8 @@ public class MakeConfiguration extends Configuration {
     private RemoteSyncFactory fixedRemoteSyncFactory;
     private volatile RemoteProject.Mode remoteMode;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
+    
+    private String customizerId = null;
 
     //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
@@ -162,7 +172,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, hostUID, hostCS, defaultToolCollection);
+        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, null, hostUID, hostCS, defaultToolCollection);
     }
     
     public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
@@ -170,10 +180,14 @@ public class MakeConfiguration extends Configuration {
     }
 
     public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
-        this(fsPath, name, configurationTypeValue, hostUID, null, true);
+        this(fsPath, name, configurationTypeValue, null, hostUID, null, true);
+    }
+    
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID) {
+        this(fsPath, name, configurationTypeValue, customizerId, hostUID, null, true);
     }
 
-    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
         remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
@@ -185,9 +199,12 @@ public class MakeConfiguration extends Configuration {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_DB, null, TYPE_DB_APPLICATION);
         } else if (configurationTypeValue == TYPE_QT_APPLICATION || configurationTypeValue == TYPE_QT_DYNAMIC_LIB || configurationTypeValue == TYPE_QT_STATIC_LIB) {
             configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_MANAGED_QT, null, TYPE_QT_APPLICATION);
+        } else if (configurationTypeValue == TYPE_CUSTOM) {
+            configurationType = new ManagedIntConfiguration(null, configurationTypeValue, TYPE_NAMES_CUSTOM, null, TYPE_CUSTOM);
         } else {
             assert false;
         }
+        setCustomizerId(customizerId);
         developmentHost = new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.fromUniqueID(hostUID));
         if (defaultToolCollection) {
             compilerSet = new CompilerSet2Configuration(developmentHost);
@@ -318,10 +335,22 @@ public class MakeConfiguration extends Configuration {
     }
 
     public boolean isCompileConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
-               getConfigurationType().getValue() == TYPE_STATIC_LIB;
+//        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+//               getConfigurationType().getValue() == TYPE_STATIC_LIB ||
+//               getConfigurationType().getValue() == TYPE_CUSTOM;    // <=== FIXUP
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
+            case TYPE_DYNAMIC_LIB:
+            case TYPE_STATIC_LIB:
+                return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isCompileConfiguration();
+            default:
+                return false;
+        }
     }
 
     public boolean isLibraryConfiguration() {
@@ -331,15 +360,32 @@ public class MakeConfiguration extends Configuration {
             case TYPE_QT_DYNAMIC_LIB:
             case TYPE_QT_STATIC_LIB:
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isLibraryConfiguration();
             default:
                 return false;
         }
     }
+    
+    public boolean isCustomConfiguration() {
+        return getConfigurationType().getValue() == TYPE_CUSTOM;
+    }
 
     public boolean isLinkerConfiguration() {
-        return getConfigurationType().getValue() == TYPE_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
-               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB;
+//        return getConfigurationType().getValue() == TYPE_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DB_APPLICATION ||
+//               getConfigurationType().getValue() == TYPE_DYNAMIC_LIB ||
+//               getConfigurationType().getValue() == TYPE_CUSTOM;   // <=== FIXUP
+        switch (getConfigurationType().getValue()) {
+            case TYPE_APPLICATION:
+            case TYPE_DB_APPLICATION:
+            case TYPE_DYNAMIC_LIB:
+                return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isLinkerConfiguration();
+            default:
+                return false;
+        }
     }
 
     public final boolean isMakefileConfiguration() {
@@ -351,13 +397,23 @@ public class MakeConfiguration extends Configuration {
             case TYPE_DYNAMIC_LIB:
             case TYPE_QT_DYNAMIC_LIB:
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isDynamicLibraryConfiguration();
             default:
                 return false;
         }
     }
 
     public boolean isArchiverConfiguration() {
-        return getConfigurationType().getValue() == TYPE_STATIC_LIB;
+//        return getConfigurationType().getValue() == TYPE_STATIC_LIB;
+        switch (getConfigurationType().getValue()) {
+            case TYPE_STATIC_LIB:
+                return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isArchiverConfiguration();
+            default:
+                return false;
+        }
     }
 
     public boolean isQmakeConfiguration() {
@@ -378,6 +434,8 @@ public class MakeConfiguration extends Configuration {
             case TYPE_DYNAMIC_LIB:
             case TYPE_STATIC_LIB:
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isStandardManagedConfiguration();
             default:
                 return false;
         }
@@ -476,6 +534,7 @@ public class MakeConfiguration extends Configuration {
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
         remoteMode = makeConf.remoteMode;
+        customizerId = makeConf.getCustomizerId();
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
@@ -610,7 +669,7 @@ public class MakeConfiguration extends Configuration {
     @Override
     public MakeConfiguration clone() {
         MakeConfiguration clone = new MakeConfiguration(getBaseFSPath(), getName(),
-                getConfigurationType().getValue(), getDevelopmentHost().getHostKey());
+                getConfigurationType().getValue(), getCustomizerId(), getDevelopmentHost().getHostKey());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
@@ -618,6 +677,7 @@ public class MakeConfiguration extends Configuration {
         clone.setDevelopmentHost(dhconf);
         clone.fixedRemoteSyncFactory = this.fixedRemoteSyncFactory;
         clone.remoteMode = this.remoteMode;
+        clone.customizerId = this.customizerId;
         CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
@@ -667,11 +727,11 @@ public class MakeConfiguration extends Configuration {
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
         boolean canEditHost = MakeProjectUtils.canChangeHost(project, this);
-        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
+        set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, "DevelopmentHost", getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
         set.put(rsfNodeProp);
 //        set.put(new BuildPlatformNodeProp(getDevelopmentHost().getBuildPlatformConfiguration(), developmentHost, makeCustomizer, getDevelopmentHost().isLocalhost(), "builtPlatform", getString("PlatformTxt"), getString("PlatformHint"))); // NOI18N
-        set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSCollection2", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
+        set.put(new CompilerSetNodeProp(getCompilerSet(), getDevelopmentHost(), true, "CompilerSetCollection", getString("CompilerCollectionTxt"), getString("CompilerCollectionHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getCRequired(), true, "cRequired", getString("CRequiredTxt"), getString("CRequiredHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getCppRequired(), true, "cppRequired", getString("CppRequiredTxt"), getString("CppRequiredHint"))); // NOI18N
 //        set.put(new BooleanNodeProp(getFortranRequired(), true, "fortranRequired", getString("FortranRequiredTxt"), getString("FortranRequiredHint"))); // NOI18N
@@ -852,6 +912,20 @@ public class MakeConfiguration extends Configuration {
         //asmRequired.setValueDef(hasCAsmFiles);
 
         languagesDirty = false;
+    }
+
+    /**
+     * @return the customizerId
+     */
+    public String getCustomizerId() {
+        return customizerId;
+    }
+
+    /**
+     * @param customizerId the customizerId to set
+     */
+    public void setCustomizerId(String customizerId) {
+        this.customizerId = customizerId;
     }
 
     public class LanguageBooleanConfiguration extends BooleanConfiguration {
@@ -1045,6 +1119,21 @@ public class MakeConfiguration extends Configuration {
         public String getName() {
             return getNames()[getValue() - offset];
         }
+    }
+    
+    public MakeProjectCustomizer getProjectCustomizer() {
+        if (getCustomizerId() == null){
+            return null;
+        }
+        MakeProjectCustomizer makeProjectCustomizer = null;
+        Collection<? extends MakeProjectCustomizer> mwc = Lookup.getDefault().lookupAll(MakeProjectCustomizer.class);
+        for (MakeProjectCustomizer instance : mwc) {
+            if (getCustomizerId().equals(instance.getCustomizerId())) {
+                makeProjectCustomizer = instance;
+                break;
+            }
+        }
+        return makeProjectCustomizer;
     }
 
     /** Look up i18n strings here */

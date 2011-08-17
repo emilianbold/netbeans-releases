@@ -52,22 +52,29 @@ public class IntNodeProp extends Node.Property {
 
     private final IntConfiguration intConfiguration;
     private final String name;
+    private final String displayName;
     private final String description;
     private boolean canWrite;
     IntEditor intEditor = null;
 
     @SuppressWarnings("unchecked")
-    public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
+    public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String name, String displayName, String description) {
         super(Integer.class);
         this.intConfiguration = intConfiguration;
         this.canWrite = canWrite;
         this.name = name;
+        this.displayName = displayName;
         this.description = description;
     }
 
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return displayName;
     }
 
     @Override

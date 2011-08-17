@@ -81,6 +81,8 @@ public class ProjectGenerator {
         private Iterator<SourceFolderInfo> sourceFolders;
         private String sourceFoldersFilter;
         private Iterator<String> importantFileItems;
+        private Iterator<LogicalFolderItemsInfo> logicalFolderItems;
+        private Iterator<LogicalFoldersInfo> logicalFolders;
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
@@ -94,6 +96,7 @@ public class ProjectGenerator {
         private String subProjects;
         private Map<String, Object> templateParams;
         private String databaseConnection;
+        private String customizerId;
 
         public ProjectParameters(String projectName, File projectFolder) {
             this(projectName, new FSPath(CndFileUtils.getLocalFileSystem(), projectFolder.getAbsolutePath()));
@@ -337,6 +340,48 @@ public class ProjectGenerator {
 
         public boolean isMakefileProject() {
             return configurations[0].isMakefileConfiguration();
+        }
+
+        /**
+         * @return the sourceFileItems
+         */
+        public Iterator<LogicalFolderItemsInfo> getLogicalFolderItems() {
+            return logicalFolderItems;
+        }
+
+        /**
+         * @param sourceFileItems the sourceFileItems to set
+         */
+        public void setLogicalFolderItems(Iterator<LogicalFolderItemsInfo> logicalFolderItems) {
+            this.logicalFolderItems = logicalFolderItems;
+        }
+
+        /**
+         * @return the customizerId
+         */
+        public String getCustomizerId() {
+            return customizerId;
+        }
+
+        /**
+         * @param customizerId the customizerId to set
+         */
+        public void setCustomizerId(String customizerId) {
+            this.customizerId = customizerId;
+        }
+
+        /**
+         * @return the logicalFolders
+         */
+        public Iterator<LogicalFoldersInfo> getLogicalFolders() {
+            return logicalFolders;
+        }
+
+        /**
+         * @param logicalFolders the logicalFolders to set
+         */
+        public void setLogicalFolders(Iterator<LogicalFoldersInfo> logicalFolders) {
+            this.logicalFolders = logicalFolders;
         }
 
     }

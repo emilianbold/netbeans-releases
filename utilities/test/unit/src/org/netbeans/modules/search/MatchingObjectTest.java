@@ -37,11 +37,7 @@
  */
 package org.netbeans.modules.search;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -57,30 +53,31 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openidex.search.SearchInfo;
+import org.openidex.search.SearchType;
 
 /** 
  * @author jhavlin
  */
 public class MatchingObjectTest extends NbTestCase {
 
-    public MatchingObjectTest() {
-        super("MatchingObjectTest");
+    private static final String TEST_FILE_NAME = "test.txt";
+    private static final String TEST_FILE_ENC = "UTF-8";
+       
+    public MatchingObjectTest (String name) {
+        super(name);
     }
 
     /**
      * Adapt string to case of a pattern.
      * 
      * @param found Found string - case pattern.
-     * @param replacement Replacement string - adapted value.
-     * @return 
+     * @param replacement Replacement string - value to adopt.
      */
     public String adapt(String found, String replacement) {
         return MatchingObject.adaptCase(replacement, found);
     }
 
-    /** Test adaption of case of replacement strings - simple.
-     * 
-     * @throws Exception 
+    /** Test adaption of case of replacement strings - simple. 
      */
     public void testAdaptCase() throws Exception {
 
@@ -91,8 +88,6 @@ public class MatchingObjectTest extends NbTestCase {
     }
 
     /** Test adaption of case of replacement strings - camel case.
-     * 
-     * @throws Exception 
      */
     public void testAdaptCaseCamelCase() throws Exception {
 
@@ -115,10 +110,6 @@ public class MatchingObjectTest extends NbTestCase {
     }
 
     /** Test replacing in filesystem files.
-     * 
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws InvocationTargetException 
      */
     public void testReplaceInFilePreserveCase() throws IOException,
             InterruptedException,
@@ -139,64 +130,43 @@ public class MatchingObjectTest extends NbTestCase {
 
     /** Helper method - create file, write its content, find it, replace in it
      * and return its new content.
-     * 
-     * @param fileContent
-     * @param find
-     * @param replace
-     * @return
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws InvocationTargetException 
      */
     public String replaceInFilePreserveCase(String fileContent, String find,
             String replace) throws IOException, InterruptedException,
             InvocationTargetException {
 
-        FileObject fo = null;
-        try {
-            fo = writeTempFile(fileContent);
+        BasicSearchCriteria bsc = new BasicSearchCriteria();
+        bsc.setTextPattern(find);
+        bsc.setRegexp(false);
+        bsc.setReplaceExpr(replace);
+        bsc.setPreserveCase(true);
+        bsc.onOk();
 
-            BasicSearchCriteria bsc = new BasicSearchCriteria();
-            bsc.setTextPattern(find);
-            bsc.setRegexp(false);
-            bsc.setReplaceExpr(replace);
-            bsc.setPreserveCase(true);
-            bsc.onOk();
-
-            SearchScope ss = new TempFileSearchScope(fo);
-            final SearchTask st = new SearchTask(ss, bsc,
-                    Collections.EMPTY_LIST);
-            final ResultModel rm = st.getResultModel();
-            rm.setObserver(new ResultTreeModel(rm));
-
-            Runnable setPanel = new Runnable() {
-
-                @Override
-                public void run() {
-                    rm.setObserver(new ResultViewPanel(st));
-                }
-            };
-            SwingUtilities.invokeAndWait(setPanel);            
-
-            Thread stt = new Thread(st);
-            stt.start();
-            stt.join();           
-
-            ReplaceTask rt = new ReplaceTask(
-                    st.getResultModel().getMatchingObjects());
-            Thread rtt = new Thread(rt);
-            rtt.start();
-            rtt.join();
-
-            String result = readFile(fo);
-            return result;
-        } finally {
-            fo.delete();
-        }
+        FileObject fo = createTestFile(fileContent);                       
+        SearchScope ss = new TempFileSearchScope(fo);
+        List<SearchType> customizedTypes = Collections.emptyList();        
+        final SearchTask st = new SearchTask(ss, bsc, customizedTypes);
+        
+        final ResultModel rm = st.getResultModel();        
+        rm.setObserver(new ResultTreeModel(rm));
+        Runnable setPanel = new Runnable() {
+            @Override
+            public void run() {
+                rm.setObserver(new ResultViewPanel(st));
+            }
+        };
+        SwingUtilities.invokeAndWait(setPanel);                       
+        
+        st.run();               
+        
+        ReplaceTask rt = new ReplaceTask(
+                st.getResultModel().getMatchingObjects());
+        rt.run();
+        String result = fo.asText(TEST_FILE_ENC);
+        return result;
     }
 
     /** Search scope containing one temporary file only.
-     * 
      */
     public static class TempFileSearchScope extends SearchScope {
 
@@ -256,82 +226,27 @@ public class MatchingObjectTest extends NbTestCase {
         }
     }
 
-    /** Write temporary file with simple string content.
+    /** Create an in-memory file with simple string content.
      * 
      * @param content Content of the file.
-     * @return
-     * @throws IOException 
      */
-    public FileObject writeTempFile(String content) throws IOException {
+    public FileObject createTestFile(String content) throws IOException {
 
-        FileObject fo = null;
-        OutputStream os = null;
-        OutputStreamWriter osw = null;
-
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = root.createData(TEST_FILE_NAME);
+        
+        OutputStream os = fo.getOutputStream();
         try {
-            File f = File.createTempFile("matchingObjectTest", ".tst");
-            f.deleteOnExit();
-            fo = FileUtil.createData(f);
-            os = fo.getOutputStream();
-            osw = new OutputStreamWriter(os, "UTF-8");
-            osw.write(content);
-        } finally {
+            OutputStreamWriter osw = new OutputStreamWriter(os, TEST_FILE_ENC);
             try {
+                osw.write(content);
+            } finally {
+                osw.flush();
                 osw.close();
-            } catch (Throwable t) {
             }
-            try {
-                os.close();
-            } catch (Throwable t) {
-            }
-        }
-
-        return fo;
-    }
-
-    /** Read content of a simple text file.
-     * 
-     * @param fo
-     * @return
-     * @throws IOException 
-     */
-    public String readFile(FileObject fo) throws IOException {
-
-        InputStream is = null;
-        InputStreamReader isr = null;
-        BufferedReader br = null;
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            is = fo.getInputStream();
-            isr = new InputStreamReader(is, "UTF-8");
-            br = new BufferedReader(isr);
-
-            String line = null;
-            boolean first = true;
-
-            while ((line = br.readLine()) != null) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append('\n');
-                }
-                sb.append(line);
-            }
-            return sb.toString();
         } finally {
-            try {
-                br.close();
-            } catch (Throwable t) {
-            }
-            try {
-                isr.close();
-            } catch (Throwable t) {
-            }
-            try {
-                is.close();
-            } catch (Throwable t) {
-            }
-        }
+            os.close();
+        }                               
+        return fo;
     }
 }

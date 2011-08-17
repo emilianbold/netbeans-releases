@@ -86,10 +86,15 @@ public class ExtCss3Parser extends Css3Parser {
 //        System.out.println("consumeUntil(" + set.toString(getTokenNames()) + ")");
         Token ttype;
         List<Token> skipped = new ArrayList<Token>();
-        while ((ttype = input.LT(1)) != null && ttype.getType() != Token.EOF && !set.member(ttype.getType())) {
+        beginResync();
+        try {
+            while ((ttype = input.LT(1)) != null && ttype.getType() != Token.EOF && !set.member(ttype.getType())) {
 //            System.out.println("consume during recover LA(1)=" + getTokenNames()[input.LA(1)]);
-            input.consume();
-            skipped.add(ttype);
+                input.consume();
+                skipped.add(ttype);
+            }
+        } finally {
+            endResync();
         }
         ((NbParseTreeBuilder) dbg).consumeSkippedTokens(skipped);
     }

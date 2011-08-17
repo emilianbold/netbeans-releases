@@ -46,10 +46,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
@@ -73,67 +70,58 @@ import org.openide.util.NbBundle;
  * @todo support for more completion type providers - like colors => subclass this class, remove the kind field, it's just temp. hack
  *
  */
-public class CssCompletionItem implements CompletionProposal {
-
-    public static enum Kind {
-        PROPERTY, VALUE;
-    }
+public abstract class CssCompletionItem implements CompletionProposal {
 
     private int anchorOffset;
     private String value;
-    private Kind kind;
     private CssElement element;
     protected boolean addSemicolon;
 
     public static  CssCompletionItem createValueCompletionItem(CssValueElement element,
             GrammarElement value,
-            CssCompletionItem.Kind kind, 
             int anchorOffset,
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ValueCompletionItem(element, value.toString(), value.getResolvedOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
 
     public static CssCompletionItem createColorValueCompletionItem(CssValueElement element,
             GrammarElement value,
-            CssCompletionItem.Kind kind,
             int anchorOffset,
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ColorCompletionItem(element, value.toString(), value.getResolvedOrigin(), anchorOffset, addSemicolon, addSpaceBeforeItem);
 
     }
 
     public static CssCompletionItem createPropertyNameCompletionItem(CssElement element,
             String value,
-            CssCompletionItem.Kind kind,
             int anchorOffset,
             boolean addSemicolon) {
 
-        return new PropertyCompletionItem(element, value, kind, anchorOffset, addSemicolon);
+        return new PropertyCompletionItem(element, value, anchorOffset, addSemicolon);
     }
 
-    public static CssCompletionItem createCompletionItem(CssElement element,
+    public static CssCompletionItem createRAWCompletionItem(CssElement element,
             String value,
-            CssCompletionItem.Kind kind,
+            ElementKind kind,
             int anchorOffset,
             boolean addSemicolon) {
 
-        return new CssCompletionItem(element, value, kind, anchorOffset, addSemicolon);
+        return new RAWCompletionItem(element, kind, value, anchorOffset, addSemicolon);
     }
 
     public static CssCompletionItem createHashColorCompletionItem(CssElement element,
                 String value,
                 String origin,
-                Kind kind,
                 int anchorOffset,
                 boolean addSemicolon,
                 boolean addSpaceBeforeItem,
                 boolean usedInCurrentFile) {
         
-        return new HashColorCompletionItem(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem, usedInCurrentFile);
+        return new HashColorCompletionItem(element, value, origin, anchorOffset, addSemicolon, addSpaceBeforeItem, usedInCurrentFile);
     }
 
     public static CompletionProposal createColorChooserCompletionItem(int anchor, String origin, boolean addSemicolon) {
@@ -142,11 +130,10 @@ public class CssCompletionItem implements CompletionProposal {
 
     public static CssCompletionItem createSelectorCompletionItem(CssElement element,
                 String value,
-                Kind kind,
                 int anchorOffset,
                 boolean related) {
 
-        return new SelectorCompletionItem(element, value, kind, anchorOffset, related);
+        return new SelectorCompletionItem(element, value, anchorOffset, related);
     }
 
     public static CssCompletionItem createFileCompletionItem(CssElement element,
@@ -160,15 +147,7 @@ public class CssCompletionItem implements CompletionProposal {
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
     
-    public static  List<CompletionProposal> wrapRAWValues(Collection<String> props, CssCompletionItem.Kind kind, int anchor) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
-        for (String value : props) {
-            CssElement handle = new CssElement(value);
-            CompletionProposal proposal = CssCompletionItem.createCompletionItem(handle, value, kind, anchor, false);
-            proposals.add(proposal);
-        }
-        return proposals;
-    }
+  
     
 
     protected static String WHITE_COLOR_HEX_CODE = "ffffff"; //NOI18N
@@ -177,10 +156,9 @@ public class CssCompletionItem implements CompletionProposal {
     private CssCompletionItem() {
     }
 
-    protected CssCompletionItem(CssElement element, String value, Kind kind, int anchorOffset, boolean addSemicolon) {
+    protected CssCompletionItem(CssElement element, String value, int anchorOffset, boolean addSemicolon) {
         this.anchorOffset = anchorOffset;
         this.value = value;
-        this.kind = kind;
         this.element = element;
         this.addSemicolon = addSemicolon;
     }
@@ -208,18 +186,6 @@ public class CssCompletionItem implements CompletionProposal {
     @Override
     public ImageIcon getIcon() {
         return null;
-    }
-
-    @Override
-    public ElementKind getKind() {
-        switch (kind) {
-            case PROPERTY:
-                return ElementKind.METHOD;
-            case VALUE:
-                return ElementKind.FIELD;
-            default:
-                return ElementKind.OTHER;
-        }
     }
 
     @Override
@@ -317,6 +283,22 @@ public class CssCompletionItem implements CompletionProposal {
 
         return new ImageIcon(i);
     }
+    
+    static class RAWCompletionItem extends CssCompletionItem {
+        
+        private ElementKind kind;
+
+        public RAWCompletionItem(CssElement element, ElementKind kind, String value, int anchorOffset, boolean addSemicolon) {
+            super(element, value, anchorOffset, addSemicolon);
+            this.kind = kind;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return kind;
+        }
+        
+    }
 
     static class ValueCompletionItem extends CssCompletionItem {
 
@@ -326,14 +308,18 @@ public class CssCompletionItem implements CompletionProposal {
         private ValueCompletionItem(CssElement element,
                 String value,
                 String origin,
-                Kind kind,
                 int anchorOffset,
                 boolean addSemicolon,
                 boolean addSpaceBeforeItem) {
 
-            super(element, value, kind, anchorOffset, addSemicolon);
+            super(element, value, anchorOffset, addSemicolon);
             this.origin = origin;
             this.addSpaceBeforeItem = addSpaceBeforeItem;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
         }
 
         @Override
@@ -372,12 +358,11 @@ public class CssCompletionItem implements CompletionProposal {
         private ColorCompletionItem(CssElement element,
                 String value,
                 String origin,
-                Kind kind,
                 int anchorOffset,
                 boolean addSemicolon,
                 boolean addSpaceBeforeItem) {
 
-            super(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+            super(element, value, origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
         }
 
         @Override
@@ -396,13 +381,12 @@ public class CssCompletionItem implements CompletionProposal {
         private HashColorCompletionItem(CssElement element,
                 String value,
                 String origin,
-                Kind kind,
                 int anchorOffset,
                 boolean addSemicolon,
                 boolean addSpaceBeforeItem,
                 boolean usedInCurrentFile) {
 
-            super(element, value, origin, kind, anchorOffset, addSemicolon, addSpaceBeforeItem);
+            super(element, value, origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
             this.usedInCurrentFile = usedInCurrentFile;
         }
 
@@ -529,11 +513,15 @@ public class CssCompletionItem implements CompletionProposal {
 
         private PropertyCompletionItem(CssElement element,
                 String value,
-                Kind kind,
                 int anchorOffset,
                 boolean addSemicolon) {
 
-            super(element, value, kind, anchorOffset, addSemicolon);
+            super(element, value, anchorOffset, addSemicolon);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
         }
 
         @Override
@@ -550,10 +538,9 @@ public class CssCompletionItem implements CompletionProposal {
 
        private SelectorCompletionItem(CssElement element,
                 String value,
-                Kind kind,
                 int anchorOffset,
                 boolean related) {
-            super(element, value, kind, anchorOffset, false);
+            super(element, value, anchorOffset, false);
             this.related = related;
         }
 
@@ -602,7 +589,7 @@ public class CssCompletionItem implements CompletionProposal {
                 ImageIcon icon,
                 boolean addQuotes,
                 boolean addSemicolon) {
-            super(element, value, null, anchorOffset, false);
+            super(element, value, anchorOffset, false);
             this.icon = icon;
             this.colorCode =  WebUtils.toHexCode(color).substring(1);
             this.addQuotes = addQuotes;
