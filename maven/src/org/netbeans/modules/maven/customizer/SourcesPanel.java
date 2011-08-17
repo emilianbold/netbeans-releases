@@ -80,7 +80,7 @@ public class SourcesPanel extends JPanel {
         File pf = FileUtil.toFile( projectFolder );
         txtProjectFolder.setText( pf == null ? "" : pf.getPath() ); // NOI18N
         
-        
+        // XXX use ComboBoxUpdater to boldface the label when not an inherited default
         comSourceLevel.setEditable(false);
         sourceLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
         comSourceLevel.setModel(new DefaultComboBoxModel(new String[] {
@@ -149,7 +149,7 @@ public class SourcesPanel extends JPanel {
         ModelUtils.checkEncoding(handle, encName);
         if (defaultEncoding.equals(encName)) {
             lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.PLAIN));
-        } else {
+        } else { // XXX use ComboBoxUpdater for the standard technique
             lblEncoding.setFont(lblEncoding.getFont().deriveFont(Font.BOLD));
         }
     }
