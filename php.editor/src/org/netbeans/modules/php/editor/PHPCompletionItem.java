@@ -66,6 +66,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement;
@@ -256,7 +257,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         break;
                     }
                 case UNQUALIFIED:
-                    boolean fncOrConstFromDefaultNamespace = (((ifq instanceof FunctionElement) || (ifq instanceof ConstantElement)) 
+                    boolean fncOrConstFromDefaultNamespace = (((ifq instanceof FunctionElement) || (ifq instanceof ConstantElement))
                             && (ifq.getIn() == null || ifq.getIn().isEmpty())
                             && NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME.equals(ifq.getNamespaceName().toString()));
                     final boolean isUnqualified = ifq.isAliased() &&
@@ -284,7 +285,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
             return template.toString();
         }
-        
+
         return getName();
     }
 
@@ -326,13 +327,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     return formatter.getText();
                 }
             }
-        
+
 
         return null;
     }
 
     static class NewClassItem extends MethodElementItem {
-        
+
         /**
          * @return more than one instance in case if optional parameters exists
          */
@@ -846,11 +847,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
                 formatter.appendHtml(description);
-                return formatter.getText();
+            return formatter.getText();
 
             } else {
                 return null;
-            }
+        }
         }
 
         @Override
@@ -871,7 +872,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
-            if (CLS_KEYWORDS.contains(getName())) {                
+            if (CLS_KEYWORDS.contains(getName())) {
                 scheduleShowingCompletion();
             }
             KeywordCompletionType type = PHPCodeCompletion.PHP_KEYWORDS.get(getName());
@@ -1118,7 +1119,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         // do nothing
                     }
                 }
-                
+
                 if (includeDoubleColumn) {
                     builder.append("::");
                 }
@@ -1217,7 +1218,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         }
 
-       
+
 
         @Override
         public ElementKind getKind() {
@@ -1247,8 +1248,34 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
-    static class SpecialFunctionItem extends KeywordItem{
-        public SpecialFunctionItem(String fncName, CompletionRequest request) {
+    @NbBundle.Messages("LBL_LANGUAGE_CONSTRUCT=Language Construct")
+    abstract static class LanguageConstructItem extends KeywordItem {
+        private static final String SORT_AFTER_KEYWORDS = "z"; // NOI18N
+
+        public LanguageConstructItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            formatter.appendText(Bundle.LBL_LANGUAGE_CONSTRUCT());
+            return formatter.getText();
+        }
+
+        @Override
+        public String getSortText() {
+            return SORT_AFTER_KEYWORDS + super.getSortText();
+        }
+
+        protected void prependName(HtmlFormatter formatter) {
+            formatter.name(getKind(), true);
+            formatter.appendText(getName());
+            formatter.name(getKind(), false);
+        }
+    }
+
+    static class LanguageConstructWithQuotesItem extends LanguageConstructItem {
+        public LanguageConstructWithQuotesItem(String fncName, CompletionRequest request) {
             super(fncName, request);
         }
 
@@ -1256,22 +1283,59 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String getCustomInsertTemplate() {
             StringBuilder builder = new StringBuilder();
             builder.append(getName());
-            builder.append(" '${cursor}';"); //NOI18N
+            builder.append(" '${cursor}';"); // NOI18N
             return builder.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            prependName(formatter);
+            formatter.appendText(" '';"); // NOI18N
+            return formatter.getText();
         }
     }
 
-    static class ReturnItem extends KeywordItem{
-        public ReturnItem(CompletionRequest request) {
-            super("return", request); //NOI18N
+    static class LanguageConstructWithParenthesesItem extends LanguageConstructItem {
+        public LanguageConstructWithParenthesesItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
         }
 
         @Override
         public String getCustomInsertTemplate() {
-            return "return ${cursor};"; //NOI18N
+            StringBuilder builder = new StringBuilder();
+            builder.append(getName());
+            builder.append("(${cursor});"); // NOI18N
+            return builder.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            prependName(formatter);
+            formatter.appendText("();"); // NOI18N
+            return formatter.getText();
         }
     }
 
+    static class LanguageConstructWithSemicolonItem extends LanguageConstructItem {
+        public LanguageConstructWithSemicolonItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getName());
+            builder.append(" ${cursor};"); // NOI18N
+            return builder.toString();
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            prependName(formatter);
+            formatter.appendText(" ;"); // NOI18N
+            return formatter.getText();
+        }
+    }
 
     static class TagItem extends KeywordItem {
         private int sortKey;

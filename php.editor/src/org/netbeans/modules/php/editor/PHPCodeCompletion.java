@@ -160,15 +160,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("switch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("for", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("array", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("die", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("eval", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("exit", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("empty", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("foreach", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("isset", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("list", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("print", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
-        PHP_KEYWORDS.put("unset", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("while", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("catch", KeywordCompletionType.CURSOR_INSIDE_BRACKETS);
         PHP_KEYWORDS.put("try", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS);
@@ -182,8 +174,17 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         PHP_KEYWORDS.put("case", KeywordCompletionType.ENDS_WITH_COLON);
     }
 
-    private final static String[] PHP_KEYWORD_FUNCTIONS = {
-        "echo", "include", "include_once", "require", "require_once"}; //NOI18N
+    private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES = {
+        "echo", "include", "include_once", "require", "require_once", "print" // NOI18N
+    };
+
+    private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_PARENTHESES = {
+        "die", "eval", "exit", "empty", "isset", "list", "unset" // NOI18N
+    };
+
+    private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON = {
+        "return" // NOI18N
+    };
 
     final static String PHP_CLASS_KEYWORD_THIS = "$this->"; //NOI18N
 
@@ -851,14 +852,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        for (String keyword : PHP_KEYWORD_FUNCTIONS) {
+        for (String keyword : PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES) {
             if (startsWith(keyword, request.prefix)) {
-                completionResult.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+                completionResult.add(new PHPCompletionItem.LanguageConstructWithQuotesItem(keyword, request));
             }
         }
 
-        if (startsWith("return", request.prefix)){ //NOI18N
-            completionResult.add(new PHPCompletionItem.ReturnItem(request));
+        for (String construct : PHP_LANGUAGE_CONSTRUCTS_WITH_PARENTHESES) {
+            if (startsWith(construct, request.prefix)) {
+                completionResult.add(new PHPCompletionItem.LanguageConstructWithParenthesesItem(construct, request));
+            }
+        }
+
+        for (String construct : PHP_LANGUAGE_CONSTRUCTS_WITH_SEMICOLON) {
+            if (startsWith(construct, request.prefix)) {
+                completionResult.add(new PHPCompletionItem.LanguageConstructWithSemicolonItem(construct, request));
+            }
         }
 
         final boolean offerGlobalVariables = OptionsUtils.codeCompletionVariablesScope().equals(VariablesScope.ALL);

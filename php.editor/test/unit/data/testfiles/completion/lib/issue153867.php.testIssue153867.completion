@@ -219,16 +219,16 @@ KEYWORD    clone                                      null
 KEYWORD    const                                      null
 KEYWORD    continue                                   null
 KEYWORD    default                                    null
-KEYWORD    die                                        null
-KEYWORD    echo                                       null
-KEYWORD    empty                                      null
+KEYWORD    die();                                     Language Construct
+KEYWORD    echo '';                                   Language Construct
+KEYWORD    empty();                                   Language Construct
 KEYWORD    endfor                                     null
 KEYWORD    endforeach                                 null
 KEYWORD    endif                                      null
 KEYWORD    endswitch                                  null
 KEYWORD    endwhile                                   null
-KEYWORD    eval                                       null
-KEYWORD    exit                                       null
+KEYWORD    eval();                                    Language Construct
+KEYWORD    exit();                                    Language Construct
 KEYWORD    extends                                    null
 KEYWORD    final                                      null
 KEYWORD    for                                        null
@@ -238,27 +238,27 @@ KEYWORD    global                                     null
 KEYWORD    goto                                       null
 KEYWORD    if                                         null
 KEYWORD    implements                                 null
-KEYWORD    include                                    null
-KEYWORD    include_once                               null
+KEYWORD    include '';                                Language Construct
+KEYWORD    include_once '';                           Language Construct
 KEYWORD    instanceof                                 null
 KEYWORD    interface                                  null
-KEYWORD    isset                                      null
-KEYWORD    list                                       null
+KEYWORD    isset();                                   Language Construct
+KEYWORD    list();                                    Language Construct
 KEYWORD    namespace                                  null
 KEYWORD    new                                        null
 KEYWORD    php_user_filter                            null
-KEYWORD    print                                      null
+KEYWORD    print '';                                  Language Construct
 KEYWORD    private                                    null
 KEYWORD    protected                                  null
 KEYWORD    public                                     null
-KEYWORD    require                                    null
-KEYWORD    require_once                               null
-KEYWORD    return                                     null
+KEYWORD    require '';                                Language Construct
+KEYWORD    require_once '';                           Language Construct
+KEYWORD    return ;                                   Language Construct
 KEYWORD    static                                     null
 KEYWORD    switch                                     null
 KEYWORD    throw                                      null
 KEYWORD    try                                        null
-KEYWORD    unset                                      null
+KEYWORD    unset();                                   Language Construct
 KEYWORD    use                                        null
 KEYWORD    var                                        null
 KEYWORD    while                                      null
