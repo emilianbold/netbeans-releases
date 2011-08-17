@@ -45,13 +45,9 @@ package org.netbeans.modules.websvc.rest.projects;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,8 +55,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -70,8 +64,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
@@ -80,16 +74,12 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
-import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -107,8 +97,6 @@ public class WebProjectRestSupport extends WebRestSupport {
     String[] classPathTypes = new String[] {
                 ClassPath.COMPILE
             };
-
-    private ServerLibrary serverJerseyLibrary;
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebProjectRestSupport(Project project) {
@@ -174,28 +162,31 @@ public class WebProjectRestSupport extends WebRestSupport {
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
-
-        boolean hasServerJerseeyLibrary = hasSwdpLibrary();
-        boolean serverLibraryAdded = false;
-        if (!RestUtils.isJSR_311OnClasspath(project)) {
-            if (hasServerJerseeyLibrary) {
-                addServerJerseyLibrary();
-                serverLibraryAdded = true;
-            } else {
-                addIdeJerseyLibrary(false,  WebRestSupport.CONFIG_TYPE_USER);
-            }
-        }
-
+        
         WebRestSupport.RestConfig restConfig = null;
         if (!isRestSupportOn()) {
             needsRefresh = true;
             restConfig = setApplicationConfigProperty(
                     RestUtils.isAnnotationConfigAvailable(project));
         }
+        
 
         extendBuildScripts();
 
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        
+        if (!RestUtils.isJSR_311OnClasspath(project)) {
+            boolean jsr311Added = false;
+            if ( restConfig!= null && restConfig.isServerJerseyLibSelected() ){
+                JaxRsStackSupport support = getJaxRsStackSupport(); 
+                if ( support != null ){
+                        jsr311Added = support.addJsr311Api(project);
+                    }
+            }
+            if ( !jsr311Added ){
+                JaxRsStackSupport.getDefault().addJsr311Api(project);
+            }
+        }
 
         if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType)) {
 
@@ -219,18 +210,14 @@ public class WebProjectRestSupport extends WebRestSupport {
 
         boolean added = false;
         if (restConfig != null) {
-            if (restConfig.isServerJerseyLibSelected()) {
-                added = addDeployableServerJerseyLibraries();
+            if ( restConfig.isServerJerseyLibSelected()){
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if ( support != null ){
+                    added = support.extendsJerseyProjectClasspath(project);
+                }
             }
-            if ( !added && restConfig.isJerseyLibSelected()) {
-                if (hasServerJerseeyLibrary) {
-                    if (!serverLibraryAdded) {
-                        addServerJerseyLibrary();
-                    }
-                }
-                else {
-                    addIdeJerseyLibrary(true, restConfigType);
-                }
+            if ( !added ){
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
             }
         }
 
@@ -243,6 +230,7 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
     }
 
+    @Override
     public void removeRestDevelopmentReadiness() throws IOException {
         removeResourceConfigFromWebApp();
         removeSwdpLibrary(new String[]{
@@ -255,25 +243,6 @@ public class WebProjectRestSupport extends WebRestSupport {
 
     public boolean isReady() {
         return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
-    }
-
-    private boolean platformHasRestLib(J2eePlatform j2eePlatform) {
-        if (j2eePlatform != null) {
-            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(j2eePlatform);
-            if (wsStack != null) {
-                return wsStack.isFeatureSupported(JaxRs.Feature.JAXRS);
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean hasSwdpLibrary() {
-        J2eePlatform platform = getPlatform();
-        if (platform != null && platformHasRestLib(platform)){
-            return true;
-        }
-        return false;
     }
 
     public J2eePlatform getPlatform() {
@@ -290,46 +259,6 @@ public class WebProjectRestSupport extends WebRestSupport {
             return Deployment.getDefault().getServerInstance(id).getJ2eePlatform();
         } catch (InstanceRemovedException ex) {
             return null;
-        }
-    }
-
-    private void addServerJerseyLibrary() throws IOException {
-        J2eePlatform platform = getPlatform();
-        if (platform != null) {
-            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(platform);
-            if (wsStack  == null) {
-                return;
-            }
-            URL[] libraryUrls = wsStack.getWSTool(JaxRs.Tool.JAXRS).getLibraries();
-            if ( libraryUrls == null ){
-                return;
-            }
-            for( int i = 0; i< libraryUrls.length ; i++ ){
-                if ( FileUtil.isArchiveFile( libraryUrls[i])){
-                    libraryUrls[i] = FileUtil.getArchiveRoot(libraryUrls[i]);
-                }
-            }
-            Library[] libraries = LibraryManager.getDefault().getLibraries();
-            for (Library library : libraries) {
-                List<URL> urls = library.getContent("classpath");       // NOI18N
-                if ( urls.size() >= libraryUrls.length ){
-                    Set<URL> set = new HashSet<URL>( urls );
-                    if ( set.containsAll( Arrays.asList( libraryUrls ) ) ){
-                        addSwdpLibrary(classPathTypes, library);
-                        return;
-                    }
-                }
-            }
-            addSwdpLibrary(classPathTypes, libraryUrls );
-        }
-    }
-
-    private void addIdeJerseyLibrary(boolean addJerseyLib, String configType) throws IOException {
-        if (WebRestSupport.CONFIG_TYPE_IDE.equals(configType)) {
-            // javax.ws.rs.ApplicationPath needs to be on classpath
-            addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/ApplicationPath.class"); //NOI18N
-        } else {
-            addSwdpLibrary(classPathTypes, addJerseyLib, "javax/ws/rs/Path.class"); //NOI18N
         }
     }
 

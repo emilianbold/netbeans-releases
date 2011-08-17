@@ -56,17 +56,25 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -224,4 +232,21 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         return new Font(null, Font.PLAIN, 12);
     }
 
+    
+    public static class MailtoButton extends LinkButton {
+        public MailtoButton(String text, String accessibleCtx, final String mail) {
+            super(text);
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("mailto:" + mail)); // NOI18N
+                    } catch (MalformedURLException ex) {
+                        BugtrackingManager.LOG.log(Level.INFO, "unable to invoke {0}", mail); // NOI18N
+                    }
+                }
+            });  
+            getAccessibleContext().setAccessibleDescription(accessibleCtx);
+        }
+    }      
 }

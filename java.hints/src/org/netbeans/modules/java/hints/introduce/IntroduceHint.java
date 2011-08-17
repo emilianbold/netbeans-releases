@@ -429,6 +429,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             String guessedName = Utilities.guessName(info, resolved);
             Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
             Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
+            Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
             Fix field = null;
             Fix methodFix = null;
 
@@ -503,6 +504,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 fixesMap.put(IntroduceKind.CREATE_CONSTANT, constant);
                 fixesMap.put(IntroduceKind.CREATE_FIELD, field);
                 fixesMap.put(IntroduceKind.CREATE_METHOD, methodFix);
+                fixesMap.put(IntroduceKind.CREATE_PARAMETER, parameter);
             }
 
 
@@ -521,6 +523,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (methodFix != null) {
                 fixes.add(methodFix);
             }
+            if (parameter != null) {
+                fixes.add(parameter);
+            } 
         }
 
         Fix introduceMethod = computeIntroduceMethod(info, start, end, fixesMap, errorMessage, cancel);
@@ -1040,7 +1045,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return thrown;
     }
 
-    private static final OffsetsBag introduceBag(Document doc) {
+    static final OffsetsBag introduceBag(Document doc) {
         OffsetsBag bag = (OffsetsBag) doc.getProperty(IntroduceHint.class);
 
         if (bag == null) {
@@ -1788,7 +1793,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
-    private static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
+    static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
     
     private static final class IntroduceMethodFix implements Fix {
 
@@ -2323,7 +2328,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         public HighlightsLayer[] createLayers(Context context) {
             return new HighlightsLayer[] {
-                HighlightsLayer.create(IntroduceHint.class.getName(), ZOrder.CARET_RACK, true, introduceBag(context.getDocument())),
+                HighlightsLayer.create(IntroduceHint.class.getName(), ZOrder.TOP_RACK.forPosition(500), true, introduceBag(context.getDocument())),
             };
         }
 

@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import static org.netbeans.core.startup.layers.Bundle.*;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -68,6 +69,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
 *
@@ -105,8 +107,9 @@ implements FileChangeListener {
 
 
     /** Name of the system */
-    public @Override String getDisplayName() {
-        return NbBundle.getMessage(SystemFileSystem.class, "CTL_SystemFileSystem"); // NOI18N
+    @Messages("CTL_SystemFileSystem=Default System")
+    @Override public String getDisplayName() {
+        return CTL_SystemFileSystem();
     }
     
     /** Getter for the instalation layer filesystem.
@@ -275,6 +278,7 @@ implements FileChangeListener {
         log("fileAttributeChanged", fe); // NOI18N
     }
 
+    @Messages({"# {0} - type", "# {1} - path to the file", "# {2} - file object itself", "# {3} - event itself", "LOG_FILE_EVENT=File event {0}, file {1}"})
     private static void log(String type, FileEvent fe) {
         if (LOG.isLoggable(Level.FINER)) {
             LogRecord r = new LogRecord(Level.FINER, "LOG_FILE_EVENT");

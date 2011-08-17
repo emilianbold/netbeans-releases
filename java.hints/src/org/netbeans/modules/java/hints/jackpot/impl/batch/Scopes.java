@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.IndexEnquirer;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.MapIndices;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Scope;
@@ -73,11 +74,11 @@ public class Scopes {
         }
 
         @Override
-        public Collection<? extends FileObject> getTodo() {
-            Set<FileObject> todo = new HashSet<FileObject>();
+        public Collection<? extends Folder> getTodo() {
+            Set<Folder> todo = new HashSet<Folder>();
 
             for (ClassPath source : GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
-                todo.addAll(Arrays.asList(source.getRoots()));
+                todo.addAll(Arrays.asList(Folder.convert(source.getRoots())));
             }
 
             return todo;
@@ -89,15 +90,15 @@ public class Scopes {
         }
     }
 
-    public static Scope specifiedFoldersScope(FileObject... roots) {
+    public static Scope specifiedFoldersScope(Folder... roots) {
         return new SpecificFoldersScope(roots);
     }
     
     private static final class SpecificFoldersScope extends Scope {
 
-        private final Collection<? extends FileObject> roots;
+        private final Collection<? extends Folder> roots;
 
-        public SpecificFoldersScope(FileObject... roots) {
+        public SpecificFoldersScope(Folder... roots) {
             this.roots = Arrays.asList(roots);
         }
 
@@ -107,7 +108,7 @@ public class Scopes {
         }
 
         @Override
-        public Collection<? extends FileObject> getTodo() {
+        public Collection<? extends Folder> getTodo() {
             return roots;
         }
 
@@ -120,18 +121,18 @@ public class Scopes {
     public static MapIndices getDefaultIndicesMapper() {
         return new MapIndices() {
             @Override
-            public IndexEnquirer findIndex(FileObject root, ProgressHandleWrapper progress) {
-                IndexEnquirer e = findIndexEnquirer(root, progress);
+            public IndexEnquirer findIndex(FileObject root, ProgressHandleWrapper progress, boolean recursive) {
+                IndexEnquirer e = findIndexEnquirer(root, progress, recursive);
 
                 if (e != null) return e;
-                else return new BatchSearch.FileSystemBasedIndexEnquirer(root);
+                else return new BatchSearch.FileSystemBasedIndexEnquirer(root, recursive);
             }
         };
     }
     
-    public static IndexEnquirer findIndexEnquirer(FileObject root, ProgressHandleWrapper progress) {
+    public static IndexEnquirer findIndexEnquirer(FileObject root, ProgressHandleWrapper progress, boolean recursive) {
         for (MapIndices mi : Lookup.getDefault().lookupAll(MapIndices.class)) {
-            IndexEnquirer r = mi.findIndex(root, progress);
+            IndexEnquirer r = mi.findIndex(root, progress, recursive);
 
             if (r != null) return r;
         }

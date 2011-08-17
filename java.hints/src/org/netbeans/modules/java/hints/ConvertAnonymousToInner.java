@@ -103,7 +103,7 @@ import org.openide.util.NbBundle;
 public class ConvertAnonymousToInner extends AbstractHint {
     
     public ConvertAnonymousToInner() {
-        super(true, true, HintSeverity.CURRENT_LINE_WARNING);
+        super(true, false, HintSeverity.CURRENT_LINE_WARNING);
     }
     
     public Set<Kind> getTreeKinds() {
@@ -448,7 +448,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 ExecutableElement ee = (ExecutableElement) superConstructor;
                 TypeMirror nctTypes = copy.getTrees().getTypeMirror(newClassToConvert);
                 
-                assert nctTypes.getKind() == TypeKind.DECLARED;
+                assert nctTypes.getKind() == TypeKind.DECLARED : nctTypes.getKind() + ":" + nctTypes.toString();
                 
                 ExecutableType et = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) nctTypes, ee);
                 

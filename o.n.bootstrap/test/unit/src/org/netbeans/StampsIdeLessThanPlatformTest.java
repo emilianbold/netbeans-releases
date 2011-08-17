@@ -47,11 +47,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.Places;
 
 /**
  *
@@ -85,7 +84,7 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         
         System.setProperty("netbeans.home", platform.getPath());
         System.setProperty("netbeans.dirs", ide.getPath() + File.pathSeparator + nonexist.getPath());
-        System.setProperty("netbeans.user", userdir.getPath());
+        Places.setUserDirectory(userdir);
         
         StampsTest.createModule("org.openide.awt", platform, 50000L);
         StampsTest.createModule("org.openide.nodes", platform, 60000L);
@@ -110,7 +109,7 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         StampsTest.assertStamp(-1L, userdir, false, false);
 
 
-        File checkSum = new File(new File(new File(new File(userdir, "var"), "cache"), "lastModified"), "all-checksum.txt");
+        File checkSum = Places.getCacheSubfile("lastModified/all-checksum.txt");
         assertTrue("Checksum created" , checkSum.isFile());
 
         byte[] arr = new byte[30000];

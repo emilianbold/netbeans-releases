@@ -44,47 +44,58 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.lib.editor.util.ArrayUtilities;
-
 
 /**
- * View building support.
+ * Information about views being replaced in a view.
  * 
  * @author Miloslav Metelka
  */
 
-final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
+final class ViewReplace<V extends EditorView, CV extends EditorView> {
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.ViewReplace.level=FINE
-    private static final Logger LOG = Logger.getLogger(ViewReplace.class.getName());
+    final V view; // 8=super + 4 = 12 bytes
 
-    final V view;
+    int index; // 12 + 4 = 16 bytes
 
-    int index;
+    int removeCount; // 16 + 4 = 20 bytes
 
-    int removeCount;
-
-    List<CV> added;
+    List<CV> added; // 20 + 4 = 24 bytes
 
     ViewReplace(V view) {
         assert (view != null);
         this.view = view;
     }
     
-    void add(CV view) {
+    void add(CV childView) {
         if (added == null) {
             added = new ArrayList<CV>();
         }
-        added.add(view);
+        added.add(childView);
+    }
+
+    int addedSize() {
+        return (added != null) ? added.size() : 0;
+    }
+
+    EditorView[] addedViews() {
+        EditorView[] views;
+        if (added != null) {
+            views = new EditorView[added.size()];
+            added.toArray(views);
+        } else {
+            views = null;
+        }
+        return views;
     }
 
     int removeEndIndex() {
         return index + removeCount;
+    }
+    
+    int addEndIndex() {
+        return index + addedSize();
     }
     
     int removeNext() {
@@ -96,68 +107,32 @@ final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
         removeCount = view.getViewCount() - index;
     }
 
-    private EditorView[] addedViews() {
-        EditorView[] views;
-        if (added != null) {
-            views = new EditorView[added.size()];
-            added.toArray(views);
-        } else {
-            views = new EditorView[0];
-        }
-        return views;
-    }
-
-    EditorView childViewAtIndex() {
-        return view.getEditorView(index);
-    }
-    
-    void retainSpans() {
-        // Attempt to retain spans of existing (paragraph) views to avoid blinking
-        if (added != null && removeCount == added.size()) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("RetainSpans: index=" + index + ", count=" + removeCount + '\n');
-            }
-            for (int i = 0; i < removeCount; i++) {
-                CV v = view.getEditorView(index + i);
-                ParagraphView pv = (ParagraphView) v;
-                float height = pv.getMinorAxisSpan();
-                ParagraphView npv = (ParagraphView) added.get(i);
-                npv.setMinorAxisSpan(height);
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("RetainSpans: [" + (index + i) + "]: " + height + '\n');
-                }
-            }
-            LOG.fine("RetainSpans: -----------\n");
-        }
-    }
-
-    VisualUpdate replaceViews(int offsetDelta) {
-        if (removeCount > 0 || added != null) {
-            return view.replace(index, removeCount, addedViews(), offsetDelta);
-        }
-        return null;
+    boolean isChanged() {
+        return (added != null) || (removeCount > 0);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
-        sb.append("viewId=").append(view.getDumpId());
+        sb.append(view.getDumpId());
         sb.append(": index=").append(index);
-        sb.append(", removeCount=").append(removeCount);
+        sb.append(", remove=").append(removeCount);
         EditorView[] addedViews = addedViews();
-        sb.append(", addedCount=").append(addedViews.length);
-        if (addedViews.length > 0) {
-            sb.append(", Added:\n");
-            int maxDigitCount = ArrayUtilities.digitCount(addedViews.length);
-            for (int i = 0; i < addedViews.length; i++) {
-                sb.append("    ");
-                ArrayUtilities.appendBracketedIndex(sb, i, maxDigitCount);
-                sb.append(addedViews[i].toString());
-                sb.append('\n');
-            }
+        sb.append(", added=");
+        if (addedViews != null && addedViews.length > 0) {
+            sb.append(addedViews.length);
+//            sb.append(", Added Views:\n");
+//            int maxDigitCount = ArrayUtilities.digitCount(addedViews.length);
+//            for (int i = 0; i < addedViews.length; i++) {
+//                sb.append("    ");
+//                ArrayUtilities.appendBracketedIndex(sb, i, maxDigitCount);
+//                sb.append(addedViews[i].toString());
+//                sb.append('\n');
+//            }
         } else {
-            sb.append("\n");
+            sb.append("0");
         }
+        sb.append('\n');
         return sb.toString();
     }
 

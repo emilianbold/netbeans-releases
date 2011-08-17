@@ -56,6 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.lexer.JavadocTokenId;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -64,7 +65,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -153,12 +153,25 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
             int start = seq.offset();
             do {
                 if (seq.token().id() == JavadocTokenId.DOT) {
-                    return new int [] { start, seq.offset() };
+                    if (seq.moveNext()) {
+                        if (isWhiteSpace(seq.token())) {
+                            return new int [] { start, seq.offset()};
+                        }
+                        seq.movePrevious();
+                     }
                 }
             } while (seq.moveNext());
         }
-        
         return null;
+    }
+
+    
+    private static boolean isWhiteSpace(Token<? extends TokenId> token) {
+        if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
+            return false;
+        }
+        String ws = " \t\n";
+        return ws.indexOf(token.text().charAt(0)) >= 0;
     }
 
     private final class HSImpl implements HighlightsSequence {
@@ -189,7 +202,7 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
                     TokenSequence<?> tokenSequence = scanner.tokenSequence();
                     if (tokenSequence==null) {
                         //#199027
-                        Exceptions.printStackTrace(new NullPointerException(scanner.toString()));
+                        //inactive hierarchy, no next
                         return false;
                     }
                     TokenSequence<?> seq = tokenSequence.subSequence(startOffset, endOffset);

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import javax.swing.LayoutStyle;
 import java.awt.Dimension;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
@@ -49,12 +50,10 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
-import org.jdesktop.layout.Baseline;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  * Panel containing &quot;My Queries: My Issues | High Priority | ... &quot;.
@@ -189,7 +188,7 @@ public class QueriesPanel extends ViewportWidthAwarePanel {
     private int getLinksPanelOffset() {
         if (!linksPanelOffsetValid) {
             linksPanelOffset = queriesLabel.getPreferredSize().width
-                               + LayoutStyle.getSharedInstance()
+                               + LayoutStyle.getInstance()
                                  .getPreferredGap(queriesLabel,
                                                   fakeLabel,
                                                   RELATED,
@@ -210,6 +209,7 @@ public class QueriesPanel extends ViewportWidthAwarePanel {
     /*
      * To make it work correctly with GroupLayout.
      */
+    @Override
     public int getBaseline(int width, int height) {
         return getBaseline();
     }
@@ -232,7 +232,8 @@ public class QueriesPanel extends ViewportWidthAwarePanel {
 
     private int getLabelBaseline() {
         if (!labelBaselineValid) {
-            labelBaseline = Baseline.getBaseline(queriesLabel);
+            Dimension size = queriesLabel.getPreferredSize();
+            labelBaseline = queriesLabel.getBaseline(size.width, size.height);
             labelBaselineValid = true;
         }
         return labelBaseline;
@@ -241,8 +242,9 @@ public class QueriesPanel extends ViewportWidthAwarePanel {
     /*
      * To make it work correctly with GroupLayout.
      */
-    public int getBaselineResizeBehaviorInt() {
-        return Baseline.BRB_CONSTANT_ASCENT;
+    @Override
+    public BaselineResizeBehavior getBaselineResizeBehavior() {
+        return BaselineResizeBehavior.CONSTANT_ASCENT;
     }
 
     @Override

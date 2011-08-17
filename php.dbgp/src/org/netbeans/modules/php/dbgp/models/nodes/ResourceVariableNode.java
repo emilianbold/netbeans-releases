@@ -47,6 +47,7 @@ class ResourceVariableNode extends
         return NbBundle.getMessage( ResourceVariableNode.class, TYPE_RESOURCE);
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.RESOURCE );
     }

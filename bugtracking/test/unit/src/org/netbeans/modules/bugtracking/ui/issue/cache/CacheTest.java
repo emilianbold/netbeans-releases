@@ -83,9 +83,10 @@ public class CacheTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        File wd = getWorkDir();
+        System.setProperty("netbeans.user", wd.getAbsolutePath());
         emptyStorage();
-        BugtrackingUtil.deleteRecursively(getWorkDir());
+        BugtrackingUtil.deleteRecursively(wd);
     }
 
     public void testInitialSeen2Modified2Seen() throws MalformedURLException, CoreException, IOException, InterruptedException {

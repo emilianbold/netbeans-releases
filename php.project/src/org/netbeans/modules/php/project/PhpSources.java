@@ -88,7 +88,6 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
         this.sourceRoots.addPropertyChangeListener(this);
         this.testRoots.addPropertyChangeListener(this);
         this.seleniumRoots.addPropertyChangeListener(this);
-        delegate = initSources(); // have to register external build roots eagerly
     }
 
     @Override
@@ -98,6 +97,10 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
             public SourceGroup[] run() {
                 Sources delegateCopy;
                 synchronized (PhpSources.this) {
+                    if (delegate == null) {
+                        delegate = initSources();
+                        delegate.addChangeListener(PhpSources.this);
+                    }
                     if (dirty) {
                         delegate.removeChangeListener(PhpSources.this);
                         delegate = initSources();
@@ -122,7 +125,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     }
 
     private Sources initSources() {
-        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);   //Safe to pass APH
+        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
         register(sourcesHelper, sourceRoots);
         register(sourcesHelper, testRoots);
         register(sourcesHelper, seleniumRoots);

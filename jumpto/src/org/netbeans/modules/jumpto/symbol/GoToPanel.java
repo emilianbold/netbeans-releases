@@ -324,8 +324,8 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 8, 0);
         add(caseSensitive, gridBagConstraints);
-
         caseSensitive.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GoToPanel.class, "AD_CaseSensitive")); // NOI18N
+
         jLabelLocation.setText(NbBundle.getMessage(GoToPanel.class, "LBL_GoToSymbol_LocationJLabel")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.anchor = GridBagConstraints.WEST;

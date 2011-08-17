@@ -47,6 +47,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
         myIndex = ctx.getId();
     }
     
+    @Override
     public String getName() {
         return myName;
     }
@@ -62,6 +63,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#getChildren(int, int)
      */
+    @Override
     public ModelNode[] getChildren( int from, int to ) {
         List<AbstractVariableNode> subList = getVariables().subList(from, to);
         return subList.toArray( new ModelNode[ subList.size() ] );
@@ -70,6 +72,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#getChildrenSize()
      */
+    @Override
     public int getChildrenSize() {
         return getVariables().size();
     }
@@ -77,6 +80,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#getIconBase()
      */
+    @Override
     public String getIconBase() {
         if ( isGlobal() ){
             return SUPER_ICON;
@@ -87,6 +91,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#getShortDescription()
      */
+    @Override
     public String getShortDescription() {
         // TODO Auto-generated method stub
         return null;
@@ -95,6 +100,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#getType()
      */
+    @Override
     public String getType() {
         return "";
     }
@@ -102,6 +108,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#getValue()
      */
+    @Override
     public String getValue() {
         return "";
     }
@@ -109,6 +116,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.models.ModelNode#isReadOnly()
      */
+    @Override
     public boolean isReadOnly() {
         return true;
     }
@@ -116,6 +124,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.dbgp.api.ModelNode#isLeaf()
      */
+    @Override
     public boolean isLeaf() {
         return getChildrenSize() == 0;
     }
@@ -134,6 +143,7 @@ public abstract class ContextNode extends AbstractModelNode implements ModelNode
         return SUPER_GLOBAL.equals(getDbgpName());
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> set ) {
         if ( !set.contains(FilterType.SUPERGLOBALS) ) {
             return !isGlobal();

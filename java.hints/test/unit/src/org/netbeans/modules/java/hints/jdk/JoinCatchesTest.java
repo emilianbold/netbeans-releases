@@ -63,20 +63,20 @@ public class JoinCatchesTest extends TestBase {
                        "public class Test {\n" +
                        "    {\n" +
                        "        try {\n" +
-                       "        } catch (java.net.MalformedURLException m) {\n" +
+                       "        } catch (java.net.URISyntaxException m) {\n" +
                        "            m.printStackTrace();\n" +
                        "        } catch (java.io.IOException i) {\n" +
                        "            i.printStackTrace();\n" +
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "4:26-4:47:verifier:ERR_JoinCatches",
+                       "4:26-4:44:verifier:ERR_JoinCatches",
                        "FIX_JoinCatches",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    {\n" +
                         "        try {\n" +
-                        "        } catch (java.net.MalformedURLException | java.io.IOException m) {\n" +
+                        "        } catch (java.net.URISyntaxException | java.io.IOException m) {\n" +
                         "            m.printStackTrace();\n" +
                         "        }\n" +
                         "    }\n" +
@@ -90,20 +90,20 @@ public class JoinCatchesTest extends TestBase {
                        "public class Test {\n" +
                        "    {\n" +
                        "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
-                       "        } catch (final java.net.MalformedURLException m) {\n" +
+                       "        } catch (final java.net.URISyntaxException m) {\n" +
                        "            m.printStackTrace();\n" +
                        "        } catch (final java.io.IOException i) {\n" + //XXX: final-ness should not ideally matter while searching for duplicates
                        "            i.printStackTrace();\n" +
                        "        }\n" +
                        "    }\n" +
                        "}\n",
-                       "4:32-4:53:verifier:ERR_JoinCatches",
+                       "4:32-4:50:verifier:ERR_JoinCatches",
                        "FIX_JoinCatches",
                        ("package test;\n" +
                         "public class Test {\n" +
                         "    {\n" +
                         "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
-                        "        } catch (final java.net.MalformedURLException | java.io.IOException m) {\n" +
+                        "        } catch (final java.net.URISyntaxException | java.io.IOException m) {\n" +
                         "            m.printStackTrace();\n" +
                         "        }\n" +
                         "    }\n" +
@@ -117,12 +117,29 @@ public class JoinCatchesTest extends TestBase {
                             "public class Test {\n" +
                             "    {\n" +
                             "        try {\n" +
-                            "        } catch (java.net.MalformedURLException m) {\n" +
+                            "        } catch (java.net.URISyntaxException m) {\n" +
                             "            m.printStackTrace();\n" +
                             "            m = new java.io.IOException();\n" +
                             "        } catch (java.io.IOException i) {\n" +
                             "            i.printStackTrace();" +
                             "            i = new java.io.IOException();\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n");
+    }
+
+    public void test200707() throws Exception {
+        setSourceLevel("1.7");
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "import java.io.*;\n" +
+                            "public class Test {\n" +
+                            "    {\n" +
+                            "        try (java.io.InputStream in = new java.io.FileInputStream(\"a\")){\n" +
+                            "        } catch (UnknownHostException m) {\n" +
+                            "            m.printStackTrace();\n" +
+                            "        } catch (IOException i) {\n" +
+                            "            i.printStackTrace();\n" +
                             "        }\n" +
                             "    }\n" +
                             "}\n");

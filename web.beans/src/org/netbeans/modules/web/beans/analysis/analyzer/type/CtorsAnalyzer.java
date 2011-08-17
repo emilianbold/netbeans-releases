@@ -49,11 +49,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassElementAnalyzer.ClassAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 
@@ -68,8 +66,7 @@ public class CtorsAnalyzer implements ClassAnalyzer {
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions ,
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
         List<ExecutableElement> constructors = ElementFilter.constructorsIn(
                 element.getEnclosedElements());
@@ -79,16 +76,15 @@ public class CtorsAnalyzer implements ClassAnalyzer {
                 return;
             }
             if ( AnnotationUtil.hasAnnotation( ctor , AnnotationUtil.INJECT_FQN, 
-                    compInfo))
+                    result.getInfo()))
             {
+                result.requireCdiEnabled( ctor );
                 injectCtorCount++;
             }
         }
         if ( injectCtorCount > 1){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-            createError( element, compInfo, NbBundle.getMessage(
+            result.addError( element,  NbBundle.getMessage(
                 CtorsAnalyzer.class, "ERR_InjectedCtor"));
-            descriptions.add( description );
         }
     }
 

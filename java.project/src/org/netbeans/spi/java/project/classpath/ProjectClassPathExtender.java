@@ -46,6 +46,7 @@ package org.netbeans.spi.java.project.classpath;
 
 import java.io.IOException;
 import java.net.URI;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.openide.filesystems.FileObject;
@@ -56,7 +57,7 @@ import org.openide.filesystems.FileObject;
  * allow clients to extend its compilation classpath
  * by a new classpath element (JAR, folder, dependent project, or library).
  * @since org.netbeans.modules.java.project/1 1.3
- * @deprecated Please use the {@link ProjectClassPathModifier} instead.
+ * @deprecated Please use {@link ProjectClassPathModifier} instead.
  */
 @Deprecated
 public interface ProjectClassPathExtender {

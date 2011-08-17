@@ -112,9 +112,9 @@ public class FetchCommand extends TransportCommand {
                 updates.put(upd.getLocalName(), upd);
             }
         } catch (NotSupportedException e) {
-            throw new GitException(e);
+            throw new GitException(e.getMessage(), e);
         } catch (URISyntaxException e) {
-            throw new GitException(e);
+            throw new GitException(e.getMessage(), e);
         } catch (TransportException e) {
             handleException(e);
         } finally {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.nodes;
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -120,12 +119,6 @@ public class SourcesNodeFactory implements NodeFactory {
                 return erroNode;
             }
             return PackageView.createPackageView(group);
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                fireChange();
-            }
         }
         
         @Override

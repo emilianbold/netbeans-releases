@@ -43,10 +43,10 @@
 package org.netbeans.modules.php.project.connections.ui.transfer;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JButton;
-import org.netbeans.modules.php.project.connections.TransferFile;
-import org.netbeans.modules.php.project.connections.ui.transfer.table.TransferFilter;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.tree.TransferSelector;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -54,7 +54,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 public final class TransferFilesChooser {
-    private static final boolean UI_TABLE = Boolean.getBoolean("nb.php.transfer.ui.table"); // NOI18N
 
     public enum TransferType { UPLOAD, DOWNLOAD };
 
@@ -71,7 +70,8 @@ public final class TransferFilesChooser {
         assert transferFiles != null;
         assert transferType != null;
 
-        this.transferFiles = transferFiles;
+        // make a synchronized copy of transfer files
+        this.transferFiles = Collections.synchronizedSet(new HashSet<TransferFile>(transferFiles));
         this.transferType = transferType;
         this.timestamp = timestamp;
     }
@@ -138,11 +138,7 @@ public final class TransferFilesChooser {
 
     private synchronized TransferFilesChooserPanel getTransferPanel() {
         if (transferPanel == null) {
-            if (UI_TABLE) {
-                transferPanel = TransferFilter.create(transferFiles, transferType, timestamp);
-            } else {
-                transferPanel = new TransferSelector(transferFiles, transferType, timestamp);
-            }
+            transferPanel = new TransferSelector(transferFiles, transferType, timestamp);
         }
         return transferPanel;
     }

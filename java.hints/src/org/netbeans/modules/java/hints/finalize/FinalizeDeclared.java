@@ -48,6 +48,7 @@ import com.sun.source.util.TreePath;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -57,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeDeclaration"}) //NOI18N
+@Hint(category="finalization",suppressWarnings={"FinalizeDeclaration"}, options=Options.QUERY) //NOI18N
 public class FinalizeDeclared {
 
     @TriggerTreeKind(Tree.Kind.METHOD)

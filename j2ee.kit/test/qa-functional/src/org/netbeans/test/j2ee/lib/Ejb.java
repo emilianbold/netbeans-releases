@@ -57,6 +57,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -136,24 +139,37 @@ public final class Ejb extends AbstractJ2eeFile {
     private boolean remoteIntfExists() {
         String res = pkgName.replace('.', File.separatorChar) + name + REMOTE + ".java";
         //System.err.println("intf: " + res);
-        return srcFileExistInJavaProject(res) || srcFileExist(res);
+        return remoteSrcFileExist(res);
     }
     
     private boolean remoteHomeIntfExists() {
         String res = pkgName.replace('.', File.separatorChar) + name + REMOTE + HOME + ".java";
         //System.err.println("intf: " + res);
-        return srcFileExistInJavaProject(res) || srcFileExist(res);
+        return remoteSrcFileExist(res);
     }
     
-    /** Checks remote sources created in JavaProject next to main project. */
-    protected boolean srcFileExistInJavaProject(String name) {
+    /** Checks whether remote sources created in JavaProject next to main project or in main project. */
+    protected boolean remoteSrcFileExist(String name) {
         boolean retVal = false;
-        File f = new File(remoteJavaProjectDir, srcRoot.replace("java", "").replace("beans", ""));
         try {
-            File ff = new File(f, name);
-            //System.err.println(ff.getAbsolutePath());
-            //System.err.println("srcEx: " + ff.exists());
-            retVal = ff.exists();
+            File f = new File(remoteJavaProjectDir, srcRoot.replace("java", "").replace("beans", ""));
+            final File fileInJava = new File(f, name);
+            f = new File(FileUtil.toFile(prjRoot), srcRoot);
+            final File fileInMain = new File(f, name);
+            Waiter waiter = new Waiter(new Waitable() {
+
+                @Override
+                public Object actionProduced(Object anObject) {
+                    return fileInJava.exists() || fileInMain.exists() ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return "file " + fileInJava + " or " + fileInMain + " exists";
+                }
+            });
+            waiter.waitAction(null);
+            retVal = fileInJava.exists() || fileInMain.exists();
         } catch (Exception e) {
         }
         return retVal;

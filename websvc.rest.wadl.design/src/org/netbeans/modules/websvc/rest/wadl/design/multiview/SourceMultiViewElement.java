@@ -49,12 +49,14 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -62,33 +64,47 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.ShowCookie;
+import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlDataLoader;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlDataObject;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlEditorSupport;
 import org.netbeans.modules.websvc.rest.wadl.model.WadlComponent;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.awt.UndoRedo;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
 
 /**
  * The source editor for schema documents.
  *
  * @author Ayub Khan
+ * @author changed bt ads
  */
+@MultiViewElement.Registration(
+        displayName ="#LBL_sourceView_name",// NOI18N
+    iconBase=WadlDataObject.WADL_ICON_BASE_WITH_EXT,
+    persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+    preferredID=MultiViewSupport.SOURCE_VIEW_ID,
+    mimeType=WadlDataLoader.MIME_TYPE,            
+    position=1000
+        )
 public class SourceMultiViewElement extends CloneableEditor
-        implements MultiViewElement {
+        implements MultiViewElement 
+{
 
     private static final long serialVersionUID = 4403502726950453345L;
     private transient JComponent toolbar;
     private transient MultiViewElementCallback multiViewCallback;
-    private WadlDataObject schemaDataObject;
+    private WadlDataObject wadlDataObject;
 
     /**
      * Constructs a new instance of WadlSourceMultiViewElement.
@@ -103,9 +119,9 @@ public class SourceMultiViewElement extends CloneableEditor
      *
      * @param  dobj  schema data object being edited.
      */
-    public SourceMultiViewElement(WadlDataObject dobj) {
-        super(dobj.getWadlEditorSupport());
-        this.schemaDataObject = dobj;
+    public SourceMultiViewElement(Lookup context) {
+        super(context.lookup(WadlDataObject.class).getWadlEditorSupport());
+        this.wadlDataObject = context.lookup(WadlDataObject.class);
 
         // Initialize the editor support properly, which only needs to be
         // done when the editor is created (deserialization is working
@@ -117,7 +133,7 @@ public class SourceMultiViewElement extends CloneableEditor
         // makes the columns view appear.
         // This initialization fixes CR 6380287 by ensuring that the Node
         // listener is registered with the DataObject Node delegate.
-        dobj.getWadlEditorSupport().initializeCloneableEditor(this);
+        wadlDataObject.getWadlEditorSupport().initializeCloneableEditor(this);
         initialize();
     }
 
@@ -151,7 +167,7 @@ public class SourceMultiViewElement extends CloneableEditor
         };
 
         // create and associate lookup
-        Node delegate = schemaDataObject.getNodeDelegate();
+        Node delegate = wadlDataObject.getNodeDelegate();
         SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[]{
                     Lookups.fixed(new Object[]{
                         // Need ActionMap in lookup so editor actions work.
@@ -159,7 +175,7 @@ public class SourceMultiViewElement extends CloneableEditor
                         // Need the data object registered in the lookup so that the
                         // projectui code will close our open editor windows when the
                         // project is closed.
-                        schemaDataObject,
+                        wadlDataObject,
                         // The Show Cookie in lookup to show schema component
                         showCookie,
                     }),
@@ -181,7 +197,7 @@ public class SourceMultiViewElement extends CloneableEditor
                     return;
                 }
                 try {
-                    WadlEditorSupport support = schemaDataObject.getWadlEditorSupport();
+                    WadlEditorSupport support = wadlDataObject.getWadlEditorSupport();
                     if (support == null || support.getModel().inSync()) {
                         return;
                     }
@@ -234,7 +250,7 @@ public class SourceMultiViewElement extends CloneableEditor
     }
 
     public UndoRedo getUndoRedo() {
-        return schemaDataObject.getWadlEditorSupport().getUndoManager();
+        return wadlDataObject.getWadlEditorSupport().getUndoManager();
     }
 
     /**
@@ -247,7 +263,7 @@ public class SourceMultiViewElement extends CloneableEditor
      * close handler. 
      */
     protected boolean closeLast() {
-        WadlEditorSupport ses = schemaDataObject.getWadlEditorSupport();
+        WadlEditorSupport ses = wadlDataObject.getWadlEditorSupport();
         JEditorPane[] editors = ses.getOpenedPanes();
         if (editors == null || editors.length == 0) {
             return ses.silentClose();
@@ -260,11 +276,29 @@ public class SourceMultiViewElement extends CloneableEditor
         if (!MultiViewSupport.isLastView(multiViewCallback.getTopComponent())) {
             return CloseOperationState.STATE_OK;
         }
-        // return a placeholder state - to be sure our CloseHandler is called
+        AbstractAction save = new AbstractAction(){
+                    public void actionPerformed(ActionEvent arg0) {
+                        //save changes
+                        try {
+                            wadlDataObject.getWadlEditorSupport().saveDocument();
+                            wadlDataObject.setModified(false);
+                        } catch (IOException ex) {
+                        }
+                    }
+
+                };
+        save.putValue(Action.LONG_DESCRIPTION, NbBundle.getMessage(DataObject.class,
+                            "MSG_SaveFile", // NOI18N
+                            wadlDataObject.getPrimaryFile().getNameExt()));     
         return MultiViewFactory.createUnsafeCloseState(
+                "ID_TEXT_CLOSING", // NOI18N
+                save,
+                MultiViewFactory.NOOP_CLOSE_ACTION);
+        // return a placeholder state - to be sure our CloseHandler is called
+        /*return MultiViewFactory.createUnsafeCloseState(
                 "ID_TEXT_CLOSING", // dummy ID // NOI18N
                 MultiViewFactory.NOOP_CLOSE_ACTION,
-                MultiViewFactory.NOOP_CLOSE_ACTION);
+                MultiViewFactory.NOOP_CLOSE_ACTION);*/
     }
 
     public void componentActivated() {
@@ -276,7 +310,7 @@ public class SourceMultiViewElement extends CloneableEditor
             timerSelNodes.restart();
         }
         super.componentActivated();
-        WadlEditorSupport editor = schemaDataObject.getWadlEditorSupport();
+        WadlEditorSupport editor = wadlDataObject.getWadlEditorSupport();
         editor.addUndoManagerToDocument();
     }
 
@@ -298,7 +332,7 @@ public class SourceMultiViewElement extends CloneableEditor
             timerSelNodes.stop();
         }
         super.componentDeactivated();
-        WadlEditorSupport editor = schemaDataObject.getWadlEditorSupport();
+        WadlEditorSupport editor = wadlDataObject.getWadlEditorSupport();
 //        try {
 //            if(editor.getDocument() != null) {
 //                editor.getDocument().insertString(0, "a", null);
@@ -324,13 +358,13 @@ public class SourceMultiViewElement extends CloneableEditor
 
     public void componentShowing() {
         super.componentShowing();
-        WadlEditorSupport editor = schemaDataObject.getWadlEditorSupport();
+        WadlEditorSupport editor = wadlDataObject.getWadlEditorSupport();
         editor.addUndoManagerToDocument();
     }
 
     public void componentHidden() {
         super.componentHidden();
-        WadlEditorSupport editor = schemaDataObject.getWadlEditorSupport();
+        WadlEditorSupport editor = wadlDataObject.getWadlEditorSupport();
         // Sync model before having undo manager listen to the model,
         // lest we get redundant undoable edits added to the queue.
         editor.syncModel();
@@ -340,7 +374,7 @@ public class SourceMultiViewElement extends CloneableEditor
     public void writeExternal(ObjectOutput out) throws IOException {
         // The superclass persists things such as the caret position.
         super.writeExternal(out);
-        out.writeObject(schemaDataObject);
+        out.writeObject(wadlDataObject);
     }
 
     public void readExternal(ObjectInput in)
@@ -350,7 +384,7 @@ public class SourceMultiViewElement extends CloneableEditor
         // deserialized, we need to retrieve the data object for ourselves.
         Object firstObject = in.readObject();
         if (firstObject instanceof WadlDataObject) {
-            schemaDataObject = (WadlDataObject) firstObject;
+            wadlDataObject = (WadlDataObject) firstObject;
         }
         initialize();
     }    
@@ -380,15 +414,15 @@ public class SourceMultiViewElement extends CloneableEditor
         selectionTask = rp.create(new Runnable() {
 
             public void run() {
-                if (!isActiveTC() || schemaDataObject == null ||
-                        !schemaDataObject.isValid() || schemaDataObject.isTemplate()) {
+                if (!isActiveTC() || wadlDataObject == null ||
+                        !wadlDataObject.isValid() || wadlDataObject.isTemplate()) {
                     return;
                 }
                 Node n = null;//findNode(getEditorPane().getCaret().getDot());
                 // default to node delegate if node not found
                 if (n == null) {
                     setActivatedNodes(new Node[]{
-                                schemaDataObject.getNodeDelegate()
+                                wadlDataObject.getNodeDelegate()
                             });
                 } else {
                     if (selectedNode != n) {

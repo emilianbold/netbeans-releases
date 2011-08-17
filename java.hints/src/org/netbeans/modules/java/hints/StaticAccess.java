@@ -137,7 +137,7 @@ public class StaticAccess extends AbstractHint {
         
         int[] span = info.getTreeUtilities().findNameSpan(mst);
         
-        if (span[0] == (-1) || span[1] == (-1)) {
+        if (span == null || span[0] == (-1) || span[1] == (-1)) {
             return null;
         }
         

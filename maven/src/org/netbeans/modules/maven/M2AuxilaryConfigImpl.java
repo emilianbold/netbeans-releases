@@ -42,12 +42,11 @@
 
 package org.netbeans.modules.maven;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +55,7 @@ import javax.swing.Action;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -65,7 +65,7 @@ import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
@@ -84,12 +84,15 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     private static final String AUX_CONFIG = "AuxilaryConfiguration"; //NOI18N
     private static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(M2AuxilaryConfigImpl.class.getName());
     private static final int SAVING_DELAY = 100;
     private final NbMavenProjectImpl project;
     private RequestProcessor.Task savingTask;
     private Document scheduledDocument;
     private Date timeStamp = new Date(0);
     private Document cachedDoc;
+    private final Object configIOLock = new Object();
 
     public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
         this.project = proj;
@@ -106,19 +109,18 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 }
                                 scheduledDocument = null;
                             }
-                            FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
-                            if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
-                                if (config == null) {
-                                    config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
+                            synchronized (configIOLock) {
+                                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                                if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
+                                    OutputStream out = config == null ? project.getProjectDirectory().createAndOpen(CONFIG_FILE_NAME) : config.getOutputStream();
+                                    try {
+                                        XMLUtil.write(doc, out, "UTF-8"); //NOI18N
+                                    } finally {
+                                        out.close();
+                                    }
+                                } else if (config != null) {
+                                    config.delete();
                                 }
-                                OutputStream out = config.getOutputStream();
-                                try {
-                                    XMLUtil.write(doc, out, "UTF-8"); //NOI18N
-                                } finally {
-                                    out.close();
-                                }
-                            } else if (config != null) {
-                                config.delete();
                             }
                         }
                     });
@@ -127,6 +129,13 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         });
+    }
+
+    private Document loadConfig(FileObject config) throws IOException, SAXException {
+        synchronized (configIOLock) {
+            //TODO shall be have some kind of caching here to prevent frequent IO?
+            return XMLUtil.parse(new InputSource(config.getURL().toString()), false, true, null, null);
+        }
     }
 
     public @Override Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
@@ -150,6 +159,13 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             return (Element) dummy.importNode(el, true);
         }
     }
+    @Messages({
+        "TXT_Problem_Broken_Config=Broken nb-configuration.xml file.",
+        "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
+            + "The information contained in the file will be ignored until fixed. "
+            + "This affects several features in the IDE that will not work properly as a result.\n\n "
+            + "The parsing exception follows:\n{0}"
+    })
     private synchronized Element doGetConfigurationFragment(final String elementName, final String namespace, boolean shared) {
         if (shared) {
             //first check the document schedule for persistence
@@ -164,38 +180,27 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (config != null) {
                 if (config.lastModified().after(timeStamp)) {
                     // we need to re-read the config file..
-                    Document doc;
-                    InputStream in = null;
                     try {
-                        in = config.getInputStream();
-                        //TODO shall be have some kind of caching here to prevent frequent IO?
-                        doc = XMLUtil.parse(new InputSource(in), false, true, null, null);
+                        Document doc = loadConfig(config);
                         cachedDoc = doc;
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
                         ProblemReporterImpl impl = project.getProblemReporter();
                         if (!impl.hasReportWithId(BROKEN_NBCONFIG)) {
                             ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                    NbBundle.getMessage(M2AuxilaryConfigImpl.class, "TXT_Problem_Broken_Config"),
-                                    NbBundle.getMessage(M2AuxilaryConfigImpl.class, "DESC_Problem_Broken_Config", ex.getMessage()),
+                                    TXT_Problem_Broken_Config(),
+                                    DESC_Problem_Broken_Config(ex.getMessage()),
                                     new OpenConfigAction(config));
                             rep.setId(BROKEN_NBCONFIG);
                             impl.addReport(rep);
                         }
-                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                        LOG.log(Level.INFO, ex.getMessage(), ex);
                         cachedDoc = null;
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                         cachedDoc = null;
                     } finally {
                         timeStamp = config.lastModified();
-                        if (in != null) {
-                            try {
-                                in.close();
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
                     }
                     return null;
                 } else {
@@ -235,15 +240,15 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
                 if (config != null) {
                     try {
-                        doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                        doc = loadConfig(config);
                     } catch (SAXException ex) {
-                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
+                        LOG.log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
                         if (config.getSize() == 0) {
                             //something got wrong in the past..
                             doc = createNewSharedDocument();
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "IO Error with " + config.getPath(), ex);
+                        LOG.log(Level.INFO, "IO Error with " + config.getPath(), ex);
                     }
                 } else {
                     doc = createNewSharedDocument();
@@ -300,9 +305,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (config != null) {
                     try {
                         try {
-                            doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);
+                            doc = loadConfig(config);
                         } catch (SAXException ex) {
-                            Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
+                            LOG.log(Level.INFO, "Cannot parse file " + config.getPath(), ex);
                             if (config.getSize() == 0) {
                                 //just delete the empty file, something got wrong a while back..
                                 config.delete();
@@ -310,7 +315,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                             return true;
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger(M2AuxilaryConfigImpl.class.getName()).log(Level.INFO, "IO Error with " + config.getPath(), ex);
+                        LOG.log(Level.INFO, "IO Error with " + config.getPath(), ex);
                     }
                 } else {
                     return false;
@@ -357,8 +362,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
         private FileObject fo;
 
+        @Messages("TXT_OPEN_FILE=Open File")
         OpenConfigAction(FileObject file) {
-            putValue(Action.NAME, NbBundle.getMessage(M2AuxilaryConfigImpl.class, "TXT_OPEN_FILE"));
+            putValue(Action.NAME, TXT_OPEN_FILE());
             fo = file;
         }
 

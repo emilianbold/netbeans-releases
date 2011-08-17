@@ -102,6 +102,7 @@ public class FunctionBreakpoint extends AbstractBreakpoint {
         return myFunctionName;
     }
     
+    @Override
     public boolean isSessionRelated( DebugSession session ){
         return true;
     }

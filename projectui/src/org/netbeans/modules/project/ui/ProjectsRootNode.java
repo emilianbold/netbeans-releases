@@ -616,7 +616,7 @@ public class ProjectsRootNode extends AbstractNode {
                         }
                     });
                 }
-                OpenProjectList.log(Level.FINE, "wrong directories. current: " + fo + " new " + newDir);
+                OpenProjectList.log(Level.FINER, "wrong directories. current: " + fo + " new " + newDir);
             }
         }
 

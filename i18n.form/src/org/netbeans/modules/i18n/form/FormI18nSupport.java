@@ -67,7 +67,6 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 
 import org.netbeans.modules.form.FormDataObject;
-import org.netbeans.modules.form.FormEditorSupport;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.RADComponent;
@@ -80,6 +79,7 @@ import org.netbeans.modules.i18n.java.JavaI18nFinder;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 import org.netbeans.modules.i18n.java.JavaI18nSupport;
 
+import org.netbeans.modules.nbform.FormEditorSupport;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
@@ -352,7 +352,8 @@ public class FormI18nSupport extends JavaI18nSupport {
         
         /** Constructor. */
         public ValidFormPropertyComparator(FormDataObject formDataObject) {
-            formModel = formDataObject.getFormEditor().getFormModel();
+            FormEditorSupport fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
+            formModel = fes.getFormModel();
         }
         
         
@@ -547,9 +548,9 @@ public class FormI18nSupport extends JavaI18nSupport {
             }
 
             // All components in current FormDataObject.
-            Collection<RADComponent> c
-                    = ((FormDataObject) sourceDataObject).getFormEditor()
-                      .getFormModel().getAllComponents();
+            FormDataObject formDataObject = (FormDataObject) sourceDataObject;
+            FormEditorSupport fes = (FormEditorSupport)formDataObject.getFormEditorSupport();
+            Collection<RADComponent> c = fes.getFormModel().getAllComponents();
 
             // search thru all RADComponents in the form
             for (RADComponent radComponent : c) {
@@ -1165,7 +1166,8 @@ public class FormI18nSupport extends JavaI18nSupport {
         public I18nSupport create(DataObject dataObject) throws IOException {
             I18nSupport support = super.create(dataObject);
             
-            FormEditorSupport formSupport = ((FormDataObject)dataObject).getFormEditor();
+            FormDataObject formDataObject = (FormDataObject)dataObject;
+            FormEditorSupport formSupport = (FormEditorSupport)formDataObject.getFormEditorSupport();
             if (formSupport.isOpened()) {
                 return support;
             }

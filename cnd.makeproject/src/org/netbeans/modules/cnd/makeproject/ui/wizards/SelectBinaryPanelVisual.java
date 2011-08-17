@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -366,32 +367,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         cancelSearch.setEnabled(true);
                     }
                 });
-                String ldLibPath = CommonUtilities.getLdLibraryPath();
-                ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
-                boolean search = false;
-                for(String dll : dllPaths.keySet()) {
-                    if (cancel.get()) {
-                        break;
-                    }
-                    String p = findLocation(dll, ldLibPath);
-                    if (p != null) {
-                        dllPaths.put(dll, p);
-                    } else {
-                        search = true;
-                        dllPaths.put(dll, null);
-                    }
-                }
-                updateDllArtifacts(root, dllPaths, search);
-                if (!cancel.get() && search && root.length() > 1) {
-                    ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
-                    progress.start();
-                    try {
-                        gatherSubFolders(new File(root), new HashSet<String>(), dllPaths, cancel);
-                    } finally {
-                        progress.finish();
-                    }
-                    updateDllArtifacts(root, dllPaths, false);
-                }
+                processDlls(searchPaths, binary, dllPaths, cancel, root);
                 cancelSearch.removeActionListener(actionListener);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -402,6 +378,86 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             }
             searching.set(false);
             validateController();
+        }
+    }
+    
+    private void processDlls(List<String> searchPaths, String binary, Map<String, String> dllPaths, final AtomicBoolean cancel, String root) {
+        Set<String> checkedDll = new HashSet<String>();
+        checkedDll.add(binary);
+        String ldLibPath = CommonUtilities.getLdLibraryPath();
+        ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
+        for(String dll : dllPaths.keySet()) {
+            if (cancel.get()) {
+                break;
+            }
+            String p = findLocation(dll, ldLibPath);
+            if (p != null) {
+                dllPaths.put(dll, p);
+            } else {
+                dllPaths.put(dll, null);
+            }
+        }
+        while(true) {
+            List<String> secondary = new ArrayList<String>();
+            for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                if (cancel.get()) {
+                    break;
+                }
+                if (entry.getValue() != null) {
+                    if (!checkedDll.contains(entry.getValue())) {
+                        checkedDll.add(entry.getValue());
+                        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                        final Map<String, Object> map = new HashMap<String, Object>();
+                        map.put("DW:buildResult", entry.getValue()); // NOI18N
+                        if (extension != null) {
+                            extension.discoverArtifacts(map);
+                            @SuppressWarnings("unchecked")
+                            List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
+                            if (dlls != null) {
+                                for(String so : dlls) {
+                                    if (!dllPaths.containsKey(so)) {
+                                        secondary.add(so);
+                                    }
+                                }
+                                //@SuppressWarnings("unchecked")
+                                //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
+                            }
+                        }
+                    }
+                }
+            }
+            for(String so : secondary) {
+                if (cancel.get()) {
+                    break;
+                }
+                dllPaths.put(so, findLocation(so, ldLibPath));
+            }
+            int search = 0;
+            for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                if (entry.getValue() == null) {
+                    search++;
+                }
+            }
+            updateDllArtifacts(root, dllPaths, search > 0);
+            if (!cancel.get() && search > 0 && root.length() > 1) {
+                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
+                progress.start();
+                try {
+                    gatherSubFolders(new File(root), new HashSet<String>(), dllPaths, cancel);
+                } finally {
+                    progress.finish();
+                }
+                updateDllArtifacts(root, dllPaths, false);
+            }
+            int newSearch = 0;
+            for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                if (entry.getValue() == null) {
+                    newSearch++;
+                }
+            }
+            if (newSearch == search && secondary.isEmpty()) {
+                break;
+            }
         }
     }
 

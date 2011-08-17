@@ -76,6 +76,7 @@ class ScalarTypeVariableNode extends
         return NbBundle.getMessage( ScalarTypeVariableNode.class , bundleKey);
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.SCALARS );
     }

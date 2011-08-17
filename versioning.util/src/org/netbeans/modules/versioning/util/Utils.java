@@ -123,8 +123,6 @@ public final class Utils {
      */
     private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 5, true);
 
-    private static /*final*/ File [] unversionedFolders;
-
     /**
      * Metrics logger
      */
@@ -133,30 +131,8 @@ public final class Utils {
     /**
      * Keeps track about already logged metrics events
      */
-    private static Set<String> metrics = new HashSet<String>(3);
+    private static final Set<String> metrics = new HashSet<String>(3);
 
-    static {
-        try {
-            String uf = VersioningSupport.getPreferences().get("unversionedFolders", null);
-            String ufProp = System.getProperty("versioning.unversionedFolders", null); //NOI18N
-            if (ufProp != null && ufProp.length() > 0) {
-                uf = uf == null || uf.length() == 0 ? ufProp : uf + ";" + ufProp; //NOI18N
-            }
-            if (uf == null || uf.length() == 0) {
-                unversionedFolders = new File[0];
-            } else {
-                String [] paths = uf.split("\\;");
-                unversionedFolders = new File[paths.length];
-                int idx = 0;
-                for (String path : paths) {
-                    unversionedFolders[idx++] = new File(path);
-                }
-            }
-        } catch (Exception e) {
-            unversionedFolders = new File[0];
-            Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
-        }
-    }
     private static File tempDir;
 
     private Utils() {
@@ -468,7 +444,7 @@ public final class Utils {
                 flat.add(files[i]);
             }
         }
-        if (flat.size() == 0) {
+        if (flat.isEmpty()) {
             return new File[][] { new File[0], files };
         } else {
             Set<File> allFiles = new HashSet<File>(Arrays.asList(files));
@@ -534,12 +510,13 @@ public final class Utils {
     public static Reader getDocumentReader(final Document doc) {
         final String[] str = new String[1];
         Runnable run = new Runnable() {
+            @Override
             public void run () {
                 try {
                     str[0] = doc.getText(0, doc.getLength());
                 } catch (javax.swing.text.BadLocationException e) {
                     // impossible
-                    e.printStackTrace();
+                    LOG.log(Level.INFO, null, e);
                 }
             }
         };
@@ -801,22 +778,14 @@ public final class Utils {
      * Asks for permission to scan a given folder for versioning metadata. Misconfigured automount daemons may
      * try to look for a "CVS" server if asked for "/net/CVS/Entries" file for example causing hangs and full load.
      * Versioning systems must NOT scan a folder if this method returns true and should consider it as unversioned.
-     *
+     * 
+     * @deprecated Use {@link VersioningSupport#isExcluded(java.io.File) } instead
      * @param folder a folder to query
      * @link http://www.netbeans.org/issues/show_bug.cgi?id=105161
      * @return true if scanning for versioning system metadata is forbidden in the given folder, false otherwise
      */
     public static boolean isScanForbidden(File folder) {
-        // forbid scanning for UNC paths \\ or \\computerName
-        if(folder.getPath().startsWith("\\\\")) {
-            return folder.getParent() == null || folder.getParent().equals("\\\\");
-        }
-        for (File unversionedFolder : unversionedFolders) {
-            if (isAncestorOrEqual(unversionedFolder, folder)) {
-                return true;
-            }
-        }
-        return false;
+        return VersioningSupport.isExcluded(folder);
     }
 
     /**
@@ -1091,6 +1060,7 @@ public final class Utils {
      * The property should be defined as {@code versioning.versioningSystem.priority}.
      * @param versioningSystem name of the vcs
      * @return priority or {@link Integer#MAX_VALUE} as default
+     * @deprecated should not be used any more
      */
     public static Integer getPriority (String versioningSystem) {
         Integer value = null;
@@ -1138,49 +1108,62 @@ public final class Utils {
             this.file = file;
         }
 
+        @Override
         public InputStream inputStream() throws IOException {
             return file.getInputStream();
         }
 
+        @Override
         public OutputStream outputStream() throws IOException {
             throw new IOException();
         }
 
+        @Override
         public Date getTime() {
             return file.lastModified();
         }
 
+        @Override
         public String getMimeType() {
             return file.getMIMEType();
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
         }
 
+        @Override
         public void addVetoableChangeListener(VetoableChangeListener l) {
         }
 
+        @Override
         public void removeVetoableChangeListener(VetoableChangeListener l) {
         }
 
+        @Override
         public boolean isValid() {
             return file.isValid();
         }
 
+        @Override
         public boolean isModified() {
             return false;
         }
 
+        @Override
         public void markModified() throws IOException {
             throw new IOException();
         }
 
+        @Override
         public void unmarkModified() {
         }
 
+        @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return null;
         }
@@ -1202,22 +1185,27 @@ public final class Utils {
             kit.read(new InputStreamReader(stream, charset), doc, 0);
         }
 
+        @Override
         protected String messageSave() {
             return name;
         }
 
+        @Override
         protected String messageName() {
             return name;
         }
 
+        @Override
         protected String messageToolTip() {
             return name;
         }
 
+        @Override
         protected String messageOpening() {
             return name;
         }
 
+        @Override
         protected String messageOpened() {
             return name;
         }
@@ -1269,7 +1257,26 @@ public final class Utils {
         }
     }
 
+    /**
+     * Determines versioning systems that manage files in given context.
+     * 
+     * @param ctx VCSContext to examine
+     * @return VersioningSystem systems that manage this context or an empty array if the context is not versioned
+     */
+    public static VersioningSystem[] getOwners(VCSContext ctx) {
+        Set<File> files = ctx.getRootFiles();
+        Set<VersioningSystem> owners = new HashSet<VersioningSystem>();
+        for (File file : files) {
+            VersioningSystem vs = VersioningSupport.getOwner(file);
+            if (vs != null) {
+                owners.add(vs);
+            }
+        }
+        return (VersioningSystem[]) owners.toArray(new VersioningSystem[owners.size()]);
+    }
+
     private static class LogTask implements Runnable {
+        @Override
         public void run() {
             File[] folders;
             synchronized (foldersToCheck) {

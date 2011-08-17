@@ -44,6 +44,8 @@
 
 package org.netbeans.spi.project.ui;
 
+import org.netbeans.api.templates.TemplateRegistration;
+
 /**
  * List of template types supported by a project when making a new file.
  * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
@@ -58,6 +60,7 @@ public interface RecommendedTemplates {
     /**
      * Lists supported template types.
      * @return types of supported templates (should match template file attribute names)
+     * @see TemplateRegistration#category
      */
     public String[] getRecommendedTypes();
     

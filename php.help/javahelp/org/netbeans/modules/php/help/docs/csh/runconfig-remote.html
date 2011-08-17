@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Run Configuration: Remote Web Site</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+
+        <h2>Run Configuration: Remote Web Site</h2>
+        <p>If you select Run As: Remote Web Site in the Run Configuration panel, FTP/SFTP options appear.</p>
+        <p>NetBeans provides basic support for FTP/SFTP, sufficient for a lone developer to work on
+            a simple project. If you are working on a complicated project or with multiple developers,
+            you should use a version control system. NetBeans IDE supports a number of version control
+            systems and other collaborative development tools. If you must use FTP/SFTP with a complicated project, consider
+            using the IDE in combination with a full-featured FTP client, and editing the PHP project 
+            in the IDE as a local web site.</p>
+        <h3>Remote Web Site Options</h3>
+        <ul>
+            <li><b>Project URL:</b> By default, this is http://localhost/ + the path to the copy of your project sources
+                that is in your web server's public folder. You can change the URL if you have a different path mapped to your server.</li>
+            <li><b>Index File:</b> By default, this is index.php. 
+                <ul><li><b>Browse...</b> Click to browse your project files for a
+                        different index file.</li>
+                </ul>
+            </li>
+            <li><b>Arguments:</b> Arguments for running the index file. For example, <tt>debug=true</tt>.
+            </li>
+            <li><b>Remote Connection:</b> Select which remote connection to use. To add
+                or edit a remote connection, click <b>Manage</b>.</li>
+            <li><b>Upload Directory:</b> Directory to contain your project. The Upload Directory 
+                is relative to the initial directory you specified when you set up the connection.
+                If you do not specify an Upload Directory, your project will be uploaded to the
+                initial directory. You must begin the Upload Directory with a forward slash, /.
+                The full upload path appears below the Upload Directory field.</li>
+            <li><b>Upload Files:</b> Select when to upload your files:
+                <ul>
+                    <li><b>On Run: </b>Source files are uploaded to the server when you run the project.</li>
+                    <li><b>On Save:</b> Every change (create, edit, rename, delete) is 
+                        immediately propagated to your remote server. If the operation 
+                        takes more than 1 second, a progress bar is shown.</li>
+                    <li><b>Manually: </b>Files are never uploaded automatically. You must use 
+                        the IDE's manual upload function.</li>
+
+                </ul>
+            </li>
+            <li><b>Preserve Remote File Permissions.</b> Select this if you only want remote file permissions 
+            to be preserved. </li>
+            <li><b>Upload Files Directly.</b> Select this to upload files directly instead of creating
+            temporary files and uploading those. Selecting this speeds up uploading but is less safe.</li>
+            <li><b>Advanced.</b> (Only in Project Properties, not in New PHP Project wizard.)
+                Click this button if you use remote debugging or symbolic links.
+            A dialog opens in which you set path mapping.</li>
+        </ul>
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
+</html>

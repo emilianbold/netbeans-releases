@@ -125,7 +125,7 @@ made subject to such option by the copyright holder.
 
                         <file name="org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.instance"/>
-                            <attr name="position" intvalue="1900"/>
+                            <attr name="position" intvalue="1750"/>
                         </file>
                     </folder>
             </folder>
@@ -203,4 +203,10 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Shortcuts">
+        <file name="OS-P.shadow">
+            <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-IntroduceParameterAction.instance"/>
+        </file>
+    </folder>
+
 </filesystem>

@@ -66,7 +66,9 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Wizard to create a new J2SE project.
@@ -83,19 +85,24 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
     
     private WizardType type;
     
-    /** Create a new wizard iterator. */
-    public NewJ2SEProjectWizardIterator() {
-        this(WizardType.APP);
-    }
-    
-    public NewJ2SEProjectWizardIterator(WizardType type) {
+    private NewJ2SEProjectWizardIterator(WizardType type) {
         this.type = type;
     }
-        
+
+    @TemplateRegistration(folder="Project/Standard", position=100, displayName="#template_app", iconBase="org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", description="../resources/emptyProject.html")
+    @Messages("template_app=Java Application")
+    public static NewJ2SEProjectWizardIterator app() {
+        return new NewJ2SEProjectWizardIterator(WizardType.APP);
+    }
+
+    @TemplateRegistration(folder="Project/Standard", position=200, displayName="#template_library", iconBase="org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", description="../resources/emptyLibrary.html")
+    @Messages("template_library=Java Class Library")
     public static NewJ2SEProjectWizardIterator library() {
         return new NewJ2SEProjectWizardIterator(WizardType.LIB);
     }
-    
+
+    @TemplateRegistration(folder="Project/Standard", position=300, displayName="#template_existing", iconBase="org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", description="../resources/existingProject.html")
+    @Messages("template_existing=Java Project with Existing Sources")
     public static NewJ2SEProjectWizardIterator existing() {
         return new NewJ2SEProjectWizardIterator(WizardType.EXT);
     }

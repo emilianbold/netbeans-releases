@@ -49,10 +49,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.QualifierAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.annotation.ScopeAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -66,23 +65,22 @@ public class AnnotationElementAnalyzer implements ElementAnalyzer {
      */
     @Override
     public void analyze( Element element, TypeElement parent,
-            CompilationInfo compInfo, List<ErrorDescription> descriptions, 
-            AtomicBoolean cancel )
+            AtomicBoolean cancel, CdiAnalysisResult result )
     {
         TypeElement subject = (TypeElement) element;
         for( AnnotationAnalyzer analyzer : ANALYZERS ){
             if ( cancel.get() ){
                 return;
             }
-            analyzer.analyze( subject, compInfo, descriptions, cancel );
+            analyzer.analyze( subject, cancel , result );
         }
     }
 
     public interface AnnotationAnalyzer {
         public static final String INCORRECT_RUNTIME = "ERR_IncorrectRuntimeRetention"; //NOI18N
         
-        void analyze( TypeElement element , CompilationInfo compInfo,
-                List<ErrorDescription> descriptions, AtomicBoolean cancel );
+        void analyze( TypeElement element , AtomicBoolean cancel,
+                CdiAnalysisResult result );
     }
 
     private static final List<AnnotationAnalyzer> ANALYZERS = 

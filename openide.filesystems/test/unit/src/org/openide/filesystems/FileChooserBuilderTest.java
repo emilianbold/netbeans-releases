@@ -271,6 +271,8 @@ public class FileChooserBuilderTest extends NbTestCase {
                 if (parent instanceof Dialog) {
                     return findFileChooserAcceptButton ((Dialog) parent, txt);
                 }
+            } else {
+                return btn;
             }
         }
         return null;

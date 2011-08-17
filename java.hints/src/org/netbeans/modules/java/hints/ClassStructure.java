@@ -51,7 +51,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -63,9 +65,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -75,11 +74,11 @@ import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
@@ -149,7 +148,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"NoopMethodInAbstractClass"}) //NOI18N
+    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"NoopMethodInAbstractClass"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription noopMethodInAbstractClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
@@ -219,7 +218,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}) //NOI18N
+    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription markerInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
@@ -237,19 +236,22 @@ public class ClassStructure {
         final TreeUtilities treeUtilities = context.getInfo().getTreeUtilities();
         if (treeUtilities.isClass(cls) && testClassMayBeInterface(context.getInfo().getTrees(), treeUtilities, context.getPath())) {
             return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_ClassMayBeInterface", cls.getSimpleName()), //NOI18N
-                    new ConvertClassToInterfaceFixImpl(TreePathHandle.create(context.getPath(), context.getInfo()), NbBundle.getMessage(ClassStructure.class, "FIX_ConvertClassToInterface", cls.getSimpleName())), //NOI18N
+                    JavaFix.toEditorFix(new ConvertClassToInterfaceFixImpl(TreePathHandle.create(context.getPath(), context.getInfo()), NbBundle.getMessage(ClassStructure.class, "FIX_ConvertClassToInterface", cls.getSimpleName()))), //NOI18N
                     FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "ClassMayBeInterface")); //NOI18N
         }
         return null;
     }
 
-    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}) //NOI18N
+    @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}, options=Options.QUERY) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription multipleTopLevelClassesInFile(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
         if (parent.getKind() == Kind.COMPILATION_UNIT) {
-            final List<? extends Tree> typeDecls = ((CompilationUnitTree) parent).getTypeDecls();
+            final List<? extends Tree> typeDecls = new ArrayList<Tree>(((CompilationUnitTree) parent).getTypeDecls());
+            for (Iterator<? extends Tree> it = typeDecls.iterator(); it.hasNext();) {
+                if (it.next().getKind() == Kind.EMPTY_STATEMENT) it.remove();
+            }
             if (typeDecls.size() > 1 && typeDecls.get(0) != cls) {
                 return ErrorDescriptionFactory.forName(context, cls, NbBundle.getMessage(ClassStructure.class, "MSG_MultipleTopLevelClassesInFile"), //NOI18N
                         FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "MultipleTopLevelClassesInFile")); //NOI18N
@@ -299,13 +301,12 @@ public class ClassStructure {
         return true;
     }
 
-    private static final class ConvertClassToInterfaceFixImpl implements Fix {
+    private static final class ConvertClassToInterfaceFixImpl extends JavaFix {
 
-        private final TreePathHandle clsHandle;
         private final String text;
 
         public ConvertClassToInterfaceFixImpl(TreePathHandle clsHandle, String text) {
-            this.clsHandle = clsHandle;
+            super(clsHandle);
             this.text = text;
         }
 
@@ -315,28 +316,16 @@ public class ClassStructure {
         }
 
         @Override
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(clsHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    final TreePath path = clsHandle.resolve(wc);
-                    if (path == null) {
-                        return;
-                    }
-                    final ClassTree cls = (ClassTree) path.getLeaf();
-                    final TreeMaker treeMaker = wc.getTreeMaker();
-                    ModifiersTree mods = cls.getModifiers();
-                    if (mods.getFlags().contains(Modifier.ABSTRACT)) {
-                        Set<Modifier> modifiers = EnumSet.copyOf(mods.getFlags());
-                        modifiers.remove(Modifier.ABSTRACT);
-                        mods = treeMaker.Modifiers(modifiers, mods.getAnnotations());
-                    }
-                    wc.rewrite(path.getLeaf(), treeMaker.Interface(mods, cls.getSimpleName(), cls.getTypeParameters(), cls.getImplementsClause(), cls.getMembers()));
-                }
-            }).commit();
-            return null;
+        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
+            final ClassTree cls = (ClassTree) path.getLeaf();
+            final TreeMaker treeMaker = wc.getTreeMaker();
+            ModifiersTree mods = cls.getModifiers();
+            if (mods.getFlags().contains(Modifier.ABSTRACT)) {
+                Set<Modifier> modifiers = EnumSet.copyOf(mods.getFlags());
+                modifiers.remove(Modifier.ABSTRACT);
+                mods = treeMaker.Modifiers(modifiers, mods.getAnnotations());
+            }
+            wc.rewrite(path.getLeaf(), treeMaker.Interface(mods, cls.getSimpleName(), cls.getTypeParameters(), cls.getImplementsClause(), cls.getMembers()));
         }
     }
 }

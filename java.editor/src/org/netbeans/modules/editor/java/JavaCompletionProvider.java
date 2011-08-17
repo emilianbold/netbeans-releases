@@ -74,6 +74,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -340,10 +341,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return true;
                     if (newOffset >= caretOffset) {
                         try {
-                            String prefix = component.getDocument().getText(offset, newOffset - offset);
-                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
+                            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
+                            if (ts != null && ts.move(offset) == 0 && ts.moveNext()) {
+                                int len = newOffset - offset;
+                                if (len >= 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                                        && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                                    filterPrefix = ts.token().text().toString().substring(0, len);
+                                }
+                            }
                             if (filterPrefix == null) {
-                                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
+                                String prefix = component.getDocument().getText(offset, newOffset - offset);
+                                if (prefix.length() > 0 && Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
                                     return false;
                             } else if (filterPrefix.length() == 0) {
                                 anchorOffset = newOffset;
@@ -1296,7 +1307,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void insideParameterizedType(Env env, TreePath ptPath) throws IOException {
             int offset = env.getOffset();
-            String prefix = env.getPrefix();
             ParameterizedTypeTree ta = (ParameterizedTypeTree)ptPath.getLeaf();
             TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, ta, offset);
             if (ts != null) {
@@ -1305,6 +1315,81 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case SUPER:
                     case LT:
                     case COMMA:
+                        if (queryType == COMPLETION_QUERY_TYPE) {
+                            CompilationController controller = env.getController();
+                            SourcePositions sourcePositions = env.getSourcePositions();
+                            CompilationUnitTree root = env.getRoot();
+                            int index = 0;
+                            for (Tree arg : ta.getTypeArguments()) {
+                                int parPos = (int)sourcePositions.getEndPosition(root, arg);
+                                if (parPos == Diagnostic.NOPOS || offset <= parPos)
+                                    break;
+                                index++;
+                            }
+                            Elements elements = controller.getElements();
+                            Types types = controller.getTypes();
+                            String prefix = env.getPrefix();
+                            TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(ptPath, ta.getType()));
+                            List<? extends TypeMirror> bounds = null;
+                            if (tm.getKind() == TypeKind.DECLARED) {
+                                TypeElement te = (TypeElement)((DeclaredType)tm).asElement();
+                                List<? extends TypeParameterElement> typeParams = te.getTypeParameters();
+                                if (index < typeParams.size()) {
+                                    TypeParameterElement typeParam = typeParams.get(index);
+                                    bounds = typeParam.getBounds();
+                                }
+                            }
+                            Set<? extends TypeMirror> smarts = env.getSmartTypes();
+                            if (smarts != null) {
+                                for (TypeMirror smart : smarts) {
+                                    if (smart != null) {
+                                        if (smart.getKind() == TypeKind.DECLARED && types.isSubtype(tm, types.erasure(smart))) {
+                                            List<? extends TypeMirror> typeArgs = ((DeclaredType)smart).getTypeArguments();
+                                            if (index < typeArgs.size()) {
+                                                TypeMirror lowerBound = typeArgs.get(index);
+                                                TypeMirror upperBound = null;
+                                                if (lowerBound.getKind() == TypeKind.WILDCARD) {
+                                                    upperBound = ((WildcardType)lowerBound).getSuperBound();
+                                                    lowerBound = ((WildcardType)lowerBound).getExtendsBound();
+                                                }
+                                                if (lowerBound != null && lowerBound.getKind() == TypeKind.TYPEVAR) {
+                                                    lowerBound = ((TypeVariable)lowerBound).getUpperBound();
+                                                }
+                                                if (upperBound != null && upperBound.getKind() == TypeKind.TYPEVAR) {
+                                                    upperBound = ((TypeVariable)upperBound).getUpperBound();
+                                                }
+                                                if (upperBound != null && upperBound.getKind() == TypeKind.DECLARED) {
+                                                    while(upperBound.getKind() == TypeKind.DECLARED) {
+                                                        TypeElement elem = (TypeElement)((DeclaredType)upperBound).asElement();
+                                                        if (startsWith(env, elem.getSimpleName().toString(), prefix) && withinBounds(env, upperBound, bounds)
+                                                                && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)upperBound, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                                        env.addToExcludes(elem);
+                                                        upperBound = elem.getSuperclass();
+                                                    }
+                                                } else if (lowerBound != null && lowerBound.getKind() == TypeKind.DECLARED) {
+                                                    for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
+                                                        TypeElement elem = (TypeElement)subtype.asElement();
+                                                        if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                                        env.addToExcludes(elem);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if (bounds != null && !bounds.isEmpty()) {
+                                TypeMirror lowerBound = bounds.get(0);
+                                bounds = bounds.subList(0, bounds.size());
+                                for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
+                                    TypeElement elem = (TypeElement)subtype.asElement();
+                                    if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
+                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                    env.addToExcludes(elem);
+                                }
+                            }
+                        }
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
                         break;
                     case QUESTION:
@@ -2395,6 +2480,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case EXCEPTION_PARAMETER:
                     case FIELD:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
@@ -2472,6 +2558,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case EXCEPTION_PARAMETER:
                     case FIELD:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
@@ -2523,6 +2610,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case EXCEPTION_PARAMETER:
                 case FIELD:
                 case LOCAL_VARIABLE:
+                case RESOURCE_VARIABLE:
                 case PARAMETER:
                 case CONSTRUCTOR:
                 case METHOD:
@@ -2606,6 +2694,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
@@ -2684,6 +2773,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case CONSTRUCTOR:
                             return false;
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
@@ -2716,6 +2806,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM_CONSTANT:
                     case EXCEPTION_PARAMETER:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), false));
                         break;
@@ -2753,6 +2844,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 public boolean accept(Element e, TypeMirror t) {
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
@@ -2772,6 +2864,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case ENUM_CONSTANT:
                     case EXCEPTION_PARAMETER:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), (VariableElement)e, e.asType(), anchorOffset, env.getScope().getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, e.asType(), smartTypes), false));
                         break;
@@ -2896,6 +2989,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case ENUM_CONSTANT:
                         case EXCEPTION_PARAMETER:
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString(), prefix) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
@@ -2950,6 +3044,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case EXCEPTION_PARAMETER:
                     case FIELD:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
                     case PARAMETER:
                         String name = e.getSimpleName().toString();
                         if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
@@ -3295,6 +3390,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             public boolean accept(Element e, TypeMirror t) {
                                 switch (e.getKind()) {
                                     case LOCAL_VARIABLE:
+                                    case RESOURCE_VARIABLE:
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
@@ -3371,7 +3467,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, prefix)) {
                 String value = completion.getValue().trim();
-                if (value.length() > 0) {
+                if (value.length() > 0 && startsWith(env, value, prefix)) {
                     TypeMirror type = member.getReturnType();
                     TypeElement typeElement = null;
                     while (type.getKind() == TypeKind.ARRAY) {
@@ -3830,6 +3926,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return false;
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
+                        case RESOURCE_VARIABLE:
                             if (isStatic && (e.getSimpleName().contentEquals(THIS_KEYWORD) || e.getSimpleName().contentEquals(SUPER_KEYWORD)))
                                 return false;
                         case EXCEPTION_PARAMETER:
@@ -4885,6 +4982,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 Utilities.startsWithCamelCase(theString, prefix) : 
                 Utilities.startsWithCamelCase(theString, prefix) || Utilities.startsWith(theString, prefix) :
                 Utilities.startsWith(theString, prefix);
+        }
+        
+        private boolean withinBounds(Env env, TypeMirror type, List<? extends TypeMirror> bounds) {
+            if (bounds != null) {
+                Types types = env.getController().getTypes();
+                for (TypeMirror bound : bounds) {
+                    if (!types.isSubtype(type, bound))
+                        return false;
+                }
+            }
+            return true;
         }
         
         private class SourcePositionsImpl extends TreeScanner<Void, Tree> implements SourcePositions {

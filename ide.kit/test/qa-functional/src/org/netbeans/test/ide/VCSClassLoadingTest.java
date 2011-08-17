@@ -49,8 +49,6 @@ package org.netbeans.test.ide;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -61,7 +59,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.util.Exceptions;
 
 public class VCSClassLoadingTest extends JellyTestCase {
     
@@ -76,8 +73,9 @@ public class VCSClassLoadingTest extends JellyTestCase {
     private static final String TXT = ".txt";
     private static final String ZIP = ".zip";
     private static final String BIGLIST = "biglist";
+    private static final String[] LIST = {HG.toLowerCase(),CVS.toLowerCase(),SVN.toLowerCase(),GIT.toLowerCase()};
     private static final String FS = File.separator;
-    private static final String PATH = new WhitelistTest("Dummy").getDataDir()+FS;
+    private static final String PATH = new VCSClassLoadingTest("Dummy").getDataDir()+FS;
     private static final String TMP = System.getProperty("java.io.tmpdir");
 
     public VCSClassLoadingTest(String testName)
@@ -87,30 +85,11 @@ public class VCSClassLoadingTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {
-/*        StringTokenizer tok = new StringTokenizer(PATH, FS, true);
-        StringBuilder ignore = new StringBuilder();
-        String currentToken;
-        for (int i = 0; i < tok.countTokens(); i++) {
-            currentToken = tok.nextToken();
-            if (currentToken.equalsIgnoreCase("build")) {
-                break;
-            } else {
-                ignore.append(currentToken);
-            }
-        }
-        System.setProperty("versioning.unversionedFolders", ignore.toString()); */
         super.setUp();        
     }
 
     
     public static NbTestSuite suite() {
-        System.setProperty("versioning.unversionedFolders", TMP);
-/*        String os = System.getProperty("os.name").toLowerCase();
-        if (os.indexOf( "win" ) >= 0) {
-            System.setProperty("versioning.unversionedFolders", "C:\\");
-        } else {
-            System.setProperty("versioning.unversionedFolders", "/");
-        }*/
         StringTokenizer tok = new StringTokenizer(PATH, FS, true);
         StringBuilder ignore = new StringBuilder();
         String currentToken;
@@ -122,6 +101,7 @@ public class VCSClassLoadingTest extends JellyTestCase {
                 ignore.append(currentToken);
             }
         }
+        System.setProperty("versioning.unversionedFolders", ignore.toString());
         unzipBigList();
         initBlacklistedClassesHandler();
         NbTestSuite suite = new NbTestSuite();
@@ -143,8 +123,7 @@ public class VCSClassLoadingTest extends JellyTestCase {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
         System.out.println("BlacklistedClassesHandler will be initialized with "+whitelistFN);
         bcHandler.resetInitiated();
-        if(bcHandler.initSingleton(null, whitelistFN, false))
-        {
+        if(bcHandler.initSingleton(null, whitelistFN, false)) {            
             bcHandler.register();
             System.out.println("BlacklistedClassesHandler handler added");
             System.setProperty("netbeans.warmup.skip", "true");
@@ -161,6 +140,7 @@ public class VCSClassLoadingTest extends JellyTestCase {
         bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
         try {
+            bcHandler.filterViolators(LIST);
             System.out.println("========= Using "+FILE+stage+TXT+" ===============");
             bcHandler.listViolations(getLog(FILE + stage + TXT), false);            
             bcHandler.listViolations(getLog("report_" + stage + TXT), false, true);
@@ -169,6 +149,7 @@ public class VCSClassLoadingTest extends JellyTestCase {
             String txt = null;
             if (number > 0) {
                 txt = bcHandler.reportViolations(getLog("violations_" + stage + ".xml"));
+                bcHandler.writeViolationsSnapshot(new File(getWorkDir(),"violations_" + stage + ".npss"));
             }
             if (number > allowed) {
                 fail("Too many violations. Allowed only "+allowed+" but was: "+number+":\n"+txt);

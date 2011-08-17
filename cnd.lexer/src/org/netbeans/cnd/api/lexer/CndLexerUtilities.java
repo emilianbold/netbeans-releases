@@ -172,7 +172,7 @@ public final class CndLexerUtilities {
             return null;
         }
         TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, true);
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(offset, false);
         if(!tsList.isEmpty()) {
             TokenSequence<?> ts = tsList.get(0);
             final Language<?> lang = ts.languagePath().innerLanguage();

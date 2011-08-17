@@ -279,7 +279,7 @@ final class RendererPropertyDisplayer extends JComponent implements PropertyDisp
         if (comp instanceof InplaceEditor) {
             Component inner = findInnermostRenderer(comp);
             SwingUtilities.paintComponent(g, comp, this, 0, 0, getWidth(), getHeight());
-
+            removeAll();
             return;
         }
 

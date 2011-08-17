@@ -56,9 +56,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -80,11 +81,8 @@ public class AddExternalItemAction extends AbstractAction {
         if (!makeProjectDescriptor.okToChange()) {
             return;
         }
-
-	String seed = null;
-	if (FileChooser.getCurrentChooserFile() != null) {
-	    seed = FileChooser.getCurrentChooserFile().getPath();
-	}
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(makeProjectDescriptor.getBaseDirFileSystem());
+        String seed = RemoteFileUtil.getCurrentChooserFile(env);
 	if (seed == null) {
 	    seed = makeProjectDescriptor.getBaseDir();
 	}
@@ -92,12 +90,12 @@ public class AddExternalItemAction extends AbstractAction {
                 makeProjectDescriptor.getBaseDirFileSystem(), 
                 NbBundle.getBundle(getClass()).getString("LBL_FileChooserTitle"), 
                 NbBundle.getBundle(getClass()).getString("LBL_SelectButton"), 
-                FileChooser.FILES_AND_DIRECTORIES, null, seed, true);
+                JFileChooser.FILES_AND_DIRECTORIES, null, seed, true);
 	PathPanel pathPanel = new PathPanel();
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
-	if (ret == FileChooser.CANCEL_OPTION) {
+	if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
 

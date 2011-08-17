@@ -424,6 +424,15 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
         return sb;
     }
     
+    public String toString() {
+        StringBuilder sb = new StringBuilder(200);
+        for (int i = 0; i < layers.length; i++) {
+            sb.append('[').append(i).append("]: ").append(layers[i]);
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+    
     private static final class LayerListener implements HighlightsChangeListener {
         
         private WeakReference<CompoundHighlightsContainer> ref;

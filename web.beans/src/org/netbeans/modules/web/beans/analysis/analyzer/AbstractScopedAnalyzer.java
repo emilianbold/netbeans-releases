@@ -52,11 +52,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -66,8 +64,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public abstract class AbstractScopedAnalyzer  {
     
     public void analyzeScope( Element element, 
-            WebBeansModel model, List<ErrorDescription> descriptions , 
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel , Result result )
     {
         try {
             String scope = model.getScope( element );
@@ -79,16 +76,16 @@ public abstract class AbstractScopedAnalyzer  {
             if ( scopeElement == null ){
                 return;
             }
-            checkScope( scopeElement , element , model, descriptions , info , cancel);
+            checkScope( scopeElement , element , model, cancel, result );
         }
         catch (CdiException e) {
-            informCdiException(e, element, model, descriptions, info );
+            result.requireCdiEnabled(element, model);
+            informCdiException(e, element, model, result  );
         }
     }
     
     protected abstract void checkScope( TypeElement scopeElement, Element element, 
-            WebBeansModel model, List<ErrorDescription> descriptions , 
-            CompilationInfo info , AtomicBoolean cancel );
+            WebBeansModel model, AtomicBoolean cancel, Result result  );
     
     protected boolean hasTypeVarParameter(TypeMirror type ){
         if ( type.getKind() == TypeKind.TYPEVAR){
@@ -110,13 +107,8 @@ public abstract class AbstractScopedAnalyzer  {
     }
 
     private void informCdiException(CdiException exception , Element element, 
-            WebBeansModel model, List<ErrorDescription> descriptions, CompilationInfo info )
+            WebBeansModel model, Result result )
     {
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, model, info , 
-                    exception.getMessage());
-            if ( description != null ){
-                descriptions.add( description );
-            }
+            result.addError( element, model, exception.getMessage());
     }
 }

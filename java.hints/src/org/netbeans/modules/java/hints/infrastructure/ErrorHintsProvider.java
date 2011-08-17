@@ -73,7 +73,6 @@ import com.sun.source.util.TreePath;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,6 +91,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -140,6 +140,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
      * @throws IOException
      */
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, Integer forPosition, String mimeType) throws IOException {
+        if ("text/x-javahints".equals(mimeType)) {
+            if (info.getText().startsWith("//no-errors")) return Collections.emptyList();
+        }
+
         List<Diagnostic> errors = info.getDiagnostics();
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
         
@@ -151,9 +155,14 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         Map<Class, Data> data = new HashMap<Class, Data>();
 
         for (Diagnostic d : errors) {
+            if (ConvertToDiamondBulkHint.CODES.contains(d.getCode())) {
+                if (isJava) continue; //handled separatelly in the hint
+                if (!ConvertToDiamondBulkHint.isHintEnabled()) continue; //disabled
+            }
+            
             if (isCanceled())
                 return null;
-            
+
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
                 ERR.log(ErrorManager.INFORMATIONAL, "d = " + d );
             

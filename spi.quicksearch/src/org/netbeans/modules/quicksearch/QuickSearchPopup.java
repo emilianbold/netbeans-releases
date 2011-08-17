@@ -89,6 +89,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private int resultWidth;
     private Task evalTask;
     private static final RequestProcessor RP = new RequestProcessor(QuickSearchPopup.class);
+    private static final RequestProcessor evaluatorRP = new RequestProcessor(QuickSearchPopup.class + ".evaluator"); //NOI18N
 
     public QuickSearchPopup (AbstractQuickSearchComboBar comboBar) {
         this.comboBar = comboBar;
@@ -169,13 +170,19 @@ public class QuickSearchPopup extends javax.swing.JPanel
         updateTimer.stop();
         // search only if we are not cancelled already
         if (comboBar.getCommand().isFocusOwner()) {
-            if (evalTask != null) {
-                evalTask.removeTaskListener(this);
-            }
-            evalTask = CommandEvaluator.evaluate(searchedText, rModel);
-            evalTask.addTaskListener(this);
-            // start waiting on all providers execution
-            RP.post(evalTask);
+            evaluatorRP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (evalTask != null) {
+                        evalTask.removeTaskListener(QuickSearchPopup.this);
+                    }
+                    evalTask = CommandEvaluator.evaluate(searchedText, rModel);
+                    evalTask.addTaskListener(QuickSearchPopup.this);
+                    // start waiting on all providers execution
+                    RP.post(evalTask);
+                }
+            });
         }
     }
 
@@ -205,7 +212,6 @@ public class QuickSearchPopup extends javax.swing.JPanel
         jScrollPane1.setBorder(null);
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setViewportBorder(null);
 
         jList1.setFocusable(false);
         jList1.addMouseListener(new java.awt.event.MouseAdapter() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -26,7 +26,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
@@ -61,7 +61,6 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private static StandardJavacWarnings overrides;
     private static StandardJavacWarnings divisionByZero;
     private static StandardJavacWarnings rawTypes;
-    private static StandardJavacWarnings canUseDiamond;
         
     private String JAVAC_ID = "Javac_"; // NOI18N
     
@@ -70,7 +69,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
     private Kind kind;
     
     private StandardJavacWarnings( Kind kind ) {
-        super( kind.defaultOn(), true, HintSeverity.WARNING );
+        super( kind.defaultOn(), false, HintSeverity.WARNING );
         this.kind = kind;        
         this.getPreferences(null); // Adds listener automatically                                              ;
     }
@@ -145,13 +144,6 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         return rawTypes;
     }
 
-    public static synchronized StandardJavacWarnings createCanUseDiamond() {
-        if ( canUseDiamond == null ) {
-            canUseDiamond = new StandardJavacWarnings(Kind.CAN_USE_DIAMOND);
-        }
-        return canUseDiamond;
-    }
-    
     public Set<Tree.Kind> getTreeKinds() {
         return treeKinds;        
     }
@@ -209,12 +201,7 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
         EMPTY_STATEMENT_AFTER_IF,
         OVERRIDES,
         DIVISION_BY_ZERO,
-        RAWTYPES,
-        CAN_USE_DIAMOND() {
-            boolean defaultOn() {
-                return true;
-            }
-        };
+        RAWTYPES;
         
         boolean defaultOn() {        
             return false;
@@ -242,8 +229,6 @@ public class StandardJavacWarnings extends AbstractHint implements PreferenceCha
                     return "enable_lint_overrides"; // NOI18N
                 case RAWTYPES:
                     return "enable_lint_rawtypes"; // NOI18N
-                case CAN_USE_DIAMOND:
-                    return "enable_can_use_diamond"; // NOI18N
             }
             return "unknown_kind"; // NOI18N
         }

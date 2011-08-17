@@ -50,10 +50,9 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.apisupport.feedreader</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.apisupport.project</code-name-base>
+                    <code-name-base>org.netbeans.modules.apisupport.ant</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.33</specification-version>
+                        <specification-version>2.42</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -130,6 +129,11 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.apisupport.ant</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.apisupport.feedreader</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -152,6 +156,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

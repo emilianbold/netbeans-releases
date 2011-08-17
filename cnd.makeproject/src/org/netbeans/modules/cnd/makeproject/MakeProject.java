@@ -77,6 +77,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
@@ -100,6 +101,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -857,14 +860,19 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 subProjectLocations = ((MakeConfigurationDescriptor) projectDescriptor).getSubprojectLocations();
             }
 
-            String baseDir = getProjectDirectory().getPath();
+            FileObject baseDir = getProjectDirectory();
             for (String loc : subProjectLocations) {
                 String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
-                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(location));
-                    Project project = ProjectManager.getDefault().findProject(fo);
-                    if (project != null) {
-                        subProjects.add(project);
+		    FileObject fo = RemoteFileUtil.getFileObject(baseDir, location);
+                    if (fo != null && fo.isValid()) {
+                        fo = CndFileUtils.getCanonicalFileObject(fo);
+                    }
+                    if (fo != null && fo.isValid()) {
+                        Project project = ProjectManager.getDefault().findProject(fo);
+                        if (project != null) {
+                            subProjects.add(project);
+                        }
                     }
                 } catch (Exception e) {
                     System.err.println("Cannot find subproject in '" + location + "' " + e); // FIXUP // NOI18N
@@ -1139,6 +1147,24 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
     private synchronized void onProjectOpened() {
         if (!isOpenHookDone) {
+            FileObject dir = getProjectDirectory();
+            if (dir != null) { // high resistance mode paranoia
+                final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
+                if (env != null && env.isRemote()) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ConnectionManager.getInstance().connectTo(env);
+                            } catch (IOException ex) {
+
+                            } catch (CancellationException ex) {
+                                // don't log CancellationException
+                            }
+                        }
+                    });
+                }
+            }            
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {

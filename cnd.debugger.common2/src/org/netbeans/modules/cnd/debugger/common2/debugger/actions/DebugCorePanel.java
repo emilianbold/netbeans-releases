@@ -63,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.utils.CorefileFilter;
@@ -626,12 +625,12 @@ final class DebugCorePanel extends javax.swing.JPanel {
                     final JFileChooser fileChooser = fcb.createFileChooser(startF);
                     fileChooser.setDialogTitle(getString("SelectExecutable"));
                     fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
-                    fileChooser.setFileSelectionMode(FileChooser.FILES_ONLY);
+                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             int ret = fileChooser.showOpenDialog(DebugCorePanel.this);
-                            if (ret == FileChooser.CANCEL_OPTION) {
+                            if (ret == JFileChooser.CANCEL_OPTION) {
                                 return;
                             }
                             ((JTextField)executableComboBox.getEditor().getEditorComponent()).setText(fileChooser.getSelectedFile().getPath());
@@ -671,12 +670,12 @@ final class DebugCorePanel extends javax.swing.JPanel {
                     final JFileChooser fileChooser = fcb.createFileChooser(startF);
                     fileChooser.setDialogTitle(getString("CorefileChooser"));
                     fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
-                    fileChooser.setFileSelectionMode(FileChooser.FILES_ONLY);
+                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.addChoosableFileFilter(new CorefileFilter());
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             int ret = fileChooser.showOpenDialog(DebugCorePanel.this);
-                            if (ret == FileChooser.CANCEL_OPTION) {
+                            if (ret == JFileChooser.CANCEL_OPTION) {
                                 return;
                             }
                             corefileTextField.setText(fileChooser.getSelectedFile().getPath());

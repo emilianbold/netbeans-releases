@@ -86,12 +86,13 @@ public interface RemoteConnectionProvider {
      * contains invalid values.
      * @param configuration {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
      *                      from which {@link RemoteConfiguration remote configuration} can be created.
+     * @param @param createWithSecrets whether secret parameters (typically password) should be present during creation and not on-demand
      * @return {@link RemoteConfiguration remote configuration} if this connection type is interested
      *         in {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration}
      *         or <code>null</code>.
      * @see #createRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)
      */
-    RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration);
+    RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration, boolean createWithSecrets);
 
     /**
      * Similar to {@link #getRemoteConfiguration(org.netbeans.modules.php.project.connections.ConfigManager.Configuration)};

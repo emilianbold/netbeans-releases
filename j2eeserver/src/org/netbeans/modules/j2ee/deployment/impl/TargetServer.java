@@ -893,6 +893,10 @@ public class TargetServer {
     private TargetModule[] getDeploymentDirectoryModules() {
         TargetModule[] modules = dtarget.getTargetModules();
 
+        if (modules == null) {
+            return new TargetModule[]{};
+        }
+
         ServerInstance serverInstance = dtarget.getServer().getServerInstance();
         Set<String> targetNames = new HashSet<String>();
         for (int i = 0; i < targets.length; i++) {

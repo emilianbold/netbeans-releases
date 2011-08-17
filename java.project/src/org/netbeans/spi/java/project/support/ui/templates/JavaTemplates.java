@@ -49,6 +49,7 @@ import org.netbeans.modules.java.project.JavaTargetChooserPanel;
 import org.netbeans.modules.java.project.NewJavaFileWizardIterator;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Default implementations of Java-specific template UI.
@@ -111,11 +112,28 @@ public class JavaTemplates {
         return new JavaTargetChooserPanel(project, folders, bottomPanel, NewJavaFileWizardIterator.Type.FILE, validPackageRequired);
     } 
     
-    /** Creates new WizardIterator containing standard Package chooser
+    /**
+     * Creates new WizardIterator containing standard Package chooser.
+     * Sample usage:
+     * <pre>
+     * &#64;TemplateRegistration(..., iconBase=JavaTemplates.JAVA_ICON)
+     * public static WizardDescriptor.InstantiatingIterator&lt;?> myTemplates() {
+     *     return JavaTemplates.createJavaTemplateIterator();
+     * }
+     * </pre>
      * @return WizardIterator consisting of one panel containing package chooser
+     * @see TemplateRegistration
+     * @see #JAVA_ICON
      */
-    public static WizardDescriptor.InstantiatingIterator createJavaTemplateIterator () {
+    public static WizardDescriptor.InstantiatingIterator<WizardDescriptor> createJavaTemplateIterator() {
         return new NewJavaFileWizardIterator ();
     }
+
+    /**
+     * Icon for Java templates.
+     * @see #createJavaTemplateIterator
+     * @since 1.40
+     */
+    public static final String JAVA_ICON = "org/netbeans/spi/java/project/support/ui/templates/class.png";
     
 }

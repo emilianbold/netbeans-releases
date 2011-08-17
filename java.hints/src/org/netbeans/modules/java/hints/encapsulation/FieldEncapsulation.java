@@ -79,6 +79,7 @@ import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
@@ -104,7 +105,7 @@ public class FieldEncapsulation {
     static final String ALLOW_ENUMS_KEY = "allow.enums";
     static final boolean ALLOW_ENUMS_DEFAULT = false;
 
-    @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, customizerProvider=CustomizerImpl.class) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription protectedField(final HintContext ctx) {
         return create(ctx,
@@ -113,7 +114,7 @@ public class FieldEncapsulation {
             "ProtectedField");  //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, customizerProvider=CustomizerImpl.class) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription publicField(final HintContext ctx) {
         return create(ctx,
@@ -122,7 +123,7 @@ public class FieldEncapsulation {
             "PublicField"); //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, customizerProvider=CustomizerImpl.class) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription packageField(final HintContext ctx) {
         return create(ctx,
@@ -131,7 +132,7 @@ public class FieldEncapsulation {
             "PackageVisibleField"); //NOI18N
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false) //NOI18N
+    @Hint(category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.MEMBER_SELECT)
     public static ErrorDescription privateField(final HintContext ctx) {
         assert ctx != null;

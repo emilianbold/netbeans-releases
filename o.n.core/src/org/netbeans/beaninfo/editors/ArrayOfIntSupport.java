@@ -207,7 +207,7 @@ implements XMLPropertyEditor, ExPropertyEditor  {
 
     /** @return the format info for the user. Can be rewritten in subclasses. */
     String getHintFormat() {
-        StringBuffer buf = new StringBuffer("["); // NOI18N
+        StringBuilder buf = new StringBuilder("["); // NOI18N
         for (int i = 0; i < count; i++) {
             buf.append("<n"); // NOI18N
             buf.append(i);

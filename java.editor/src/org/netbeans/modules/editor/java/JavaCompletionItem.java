@@ -159,6 +159,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final JavaCompletionItem createVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean isInherited, boolean isDeprecated, boolean smartType, boolean autoImport) {
         switch (elem.getKind()) {
             case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
                 return new VariableItem(info, type, elem.getSimpleName().toString(), substitutionOffset, false, smartType);
@@ -786,7 +787,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
                             if (tas != null && tas.hasNext()) {
                                 sb.append('<'); //NOI18N
-                                if (!insideNew || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
+                                if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT) 
+                                    || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
                                     while (tas.hasNext()) {
                                         TypeMirror ta = tas.next();
                                         sb.append("${PAR"); //NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2011 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
@@ -51,10 +51,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -62,11 +58,10 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,9 +89,8 @@ public class ThisInAnonymous {
                 return null;
             }
             
-            Fix fix = new FixImpl(TreePathHandle.create(thisVariable, ctx.getInfo()),
-                                  ElementHandle.create((TypeElement) parent),
-                                  ctx.getInfo().getFileObject());
+            Fix fix = JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(thisVariable, ctx.getInfo()),
+                                                      ElementHandle.create((TypeElement) parent)));
 
             String displayName = NbBundle.getMessage(ThisInAnonymous.class, key);
             return ErrorDescriptionFactory.forName(ctx, thisVariable, displayName, fix);
@@ -122,31 +116,21 @@ public class ThisInAnonymous {
         return null;
     }
 
-    private static final class FixImpl implements Fix, Task<WorkingCopy> {
+    private static final class FixImpl extends JavaFix {
 
-        private final TreePathHandle thisHandle;
         private final ElementHandle<TypeElement> parentClassElementHandle;
-        private final FileObject file;
 
-        public FixImpl(TreePathHandle thisHandle, ElementHandle<TypeElement> parentClassElementHandle, FileObject file) {
-            this.thisHandle = thisHandle;
+        public FixImpl(TreePathHandle thisHandle, ElementHandle<TypeElement> parentClassElementHandle) {
+            super(thisHandle);
             this.parentClassElementHandle = parentClassElementHandle;
-            this.file = file;
         }
 
         public String getText() {
             return NbBundle.getMessage(ThisInAnonymous.class, "FIX_ThisInAnonymous"); // NOI18N
         }
 
-        public ChangeInfo implement() throws Exception {
-            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);
-            result.commit();
-            return null;
-        }
-
-        public void run(WorkingCopy wc) throws Exception {
-            wc.toPhase(Phase.RESOLVED);
-            TreePath tp = thisHandle.resolve(wc);
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
             TypeElement parentClass = parentClassElementHandle.resolve(wc);
 
             assert tp != null;

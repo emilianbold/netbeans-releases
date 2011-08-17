@@ -47,6 +47,7 @@ package org.netbeans.modules.uihandler;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -165,9 +166,15 @@ public class InstallerReadPageTest extends NbTestCase {
         
         assertEquals("It has the right localized text", kun, b.getText());
 
-        JScrollPane pane = (JScrollPane)DD.d.getMessage();
-        Component c = pane.getViewport().getView();
-        assertEquals("Dimension is small", new Dimension(450, 50), c.getPreferredSize());
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JScrollPane pane = (JScrollPane)DD.d.getMessage();
+                Component c = pane.getViewport().getView();
+                assertEquals("Dimension is small", new Dimension(450, 50), c.getPreferredSize());
+            }
+        });
+        
     }
     
     public static final class DD extends DialogDisplayer {

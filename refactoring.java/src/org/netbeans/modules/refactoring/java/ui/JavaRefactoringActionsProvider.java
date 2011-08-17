@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider;
 import org.netbeans.modules.refactoring.java.ui.RefactoringActionsProvider.NodeToFileObjectTask;
@@ -79,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import sun.awt.windows.ThemeReader;
 
 /**
  *
@@ -448,11 +450,15 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public boolean canChangeParameters(Lookup lookup) {
+        TreePathHandle tph = lookup.lookup(TreePathHandle.class);
+        if (tph != null) {
+            return RetoucheUtils.isRefactorable(tph.getFileObject());
+        }
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1)
             return false;
         Node node = nodes.iterator().next();
-        TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
+        tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
             return RetoucheUtils.isRefactorable(tph.getFileObject());
         }
@@ -474,6 +480,13 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     public void doChangeParameters(Lookup lookup) {
         Runnable task;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
+        Collection<? extends ParameterInfo> params = lookup.lookupAll(ParameterInfo.class);
+        final ParameterInfo[] configuration = params.isEmpty()? null : new ParameterInfo[params.size()];
+        int index = 0;
+        for (ParameterInfo parameterInfo : params) {
+            configuration[index] = parameterInfo;
+            index++;
+        }
         if (ec != null) {
             task = new RefactoringActionsProvider.TextComponentTask(ec) {
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,
@@ -486,24 +499,42 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         //should the TreePathHandle handle elements of kind PACKAGE?
                         return null;
                     }
-                    return wrap(ChangeParametersUI.create(selectedElement, info));
+                    return wrap(ChangeParametersUI.create(selectedElement, info, configuration));
                 }
             };
         } else {
-            task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+            TreePathHandle tph = lookup.lookup(TreePathHandle.class);
+            if(tph != null) {
+                task = new TreePathHandleTask(tph) {
 
-                RefactoringUI ui;
+                    RefactoringUI ui;
 
-                @Override
-                protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
-                    ui = ChangeParametersUI.create(handle, javac);
-                }
+                    @Override
+                    protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
+                        ui = ChangeParametersUI.create(handle, javac, configuration);
+                    }
 
-                @Override
-                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
-                    return wrap(ui);
-                }
-            };
+                    @Override
+                    protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                        return wrap(ui);
+                    }
+                };
+            } else {
+                task = new TreePathHandleTask(new HashSet<Node>(lookup.lookupAll(Node.class)), true) {
+
+                    RefactoringUI ui;
+
+                    @Override
+                    protected void treePathHandleResolved(TreePathHandle handle, CompilationInfo javac) {
+                        ui = ChangeParametersUI.create(handle, javac, configuration);
+                    }
+
+                    @Override
+                    protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles) {
+                        return wrap(ui);
+                    }
+                };
+            }
         }
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.changeParametersAction()));
     }

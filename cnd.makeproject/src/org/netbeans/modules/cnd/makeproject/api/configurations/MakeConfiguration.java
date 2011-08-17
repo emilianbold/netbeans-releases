@@ -61,7 +61,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -667,7 +666,7 @@ public class MakeConfiguration extends Configuration {
         set.setName("ProjectDefaults"); // NOI18N
         set.setDisplayName(getString("ProjectDefaultsTxt"));
         set.setShortDescription(getString("ProjectDefaultsHint"));
-        boolean canEditHost = MakeProjectUtils.isFullRemote(project) ? FullRemoteExtension.canChangeHost(this) : true;
+        boolean canEditHost = MakeProjectUtils.canChangeHost(project, this);
         set.put(new DevelopmentHostNodeProp(getDevelopmentHost(), canEditHost, getString("DevelopmentHostTxt"), getString("DevelopmentHostHint"))); // NOI18N
         RemoteSyncFactoryNodeProp rsfNodeProp = new RemoteSyncFactoryNodeProp(this);
         set.put(rsfNodeProp);
@@ -689,7 +688,7 @@ public class MakeConfiguration extends Configuration {
 
         return sheet;
     }
-
+    
     public RemoteSyncFactory getRemoteSyncFactory() {
         RemoteSyncFactory result = fixedRemoteSyncFactory;
         synchronized (this) {
@@ -736,7 +735,7 @@ public class MakeConfiguration extends Configuration {
     
     public String getSourceBaseDir() {        
         if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-            FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
+            FileObject projectDirFO = getBaseFSPath().getFileObject();
             try {                
                 Project project = ProjectManager.getDefault().findProject(projectDirFO);
                 if (project != null) {
@@ -764,7 +763,7 @@ public class MakeConfiguration extends Configuration {
         set2.setName("Projects"); // NOI18N
         set2.setDisplayName(getString("ProjectsTxt1"));
         set2.setShortDescription(getString("ProjectsHint"));
-        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseDir(), texts));
+        set2.put(new RequiredProjectsNodeProp(getRequiredProjectsConfiguration(), project, conf, getBaseFSPath(), texts));
         sheet.put(set2);
 
         return sheet;
@@ -924,7 +923,7 @@ public class MakeConfiguration extends Configuration {
         for (LibraryItem item : librariesConfiguration.getValue()) {
             if (item instanceof LibraryItem.ProjectItem) {
                 LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
-                Project project = projectItem.getProject(getBaseDir());
+                Project project = projectItem.getProject(getBaseFSPath());
                 if (project != null) {
                     subProjects.add(project);
                 } else {
@@ -933,7 +932,7 @@ public class MakeConfiguration extends Configuration {
             }
         }
         for (LibraryItem.ProjectItem libProject : getRequiredProjectsConfiguration().getValue()) {
-            Project project = libProject.getProject(getBaseDir());
+            Project project = libProject.getProject(getBaseFSPath());
             if (project != null) {
                 subProjects.add(project);
             }

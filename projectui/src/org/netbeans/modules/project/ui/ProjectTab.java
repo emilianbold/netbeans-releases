@@ -83,9 +83,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeModel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -203,7 +203,7 @@ public class ProjectTab extends TopComponent
     }
 
     /**
-     * Update display to reflect {@link org.netbeans.modules.project.ui.groups.Group#getActiveGroup}.
+     * Update display to reflect {@link Group#getActiveGroup}.
      * @param group current group, or null
      */
     public void setGroup(Group g) {
@@ -383,19 +383,17 @@ public class ProjectTab extends TopComponent
         }
         initValues();
         if (!"false".equals(System.getProperty("netbeans.keep.expansion"))) { // #55701
-            KeepExpansion ke = new KeepExpansion(id, exPaths, selPaths);
+            KeepExpansion ke = new KeepExpansion(exPaths, selPaths);
             ke.task.schedule(0);
         }
     }
 
     private class KeepExpansion implements Runnable {
-        final String id;
         final RequestProcessor.Task task;
         final List<String[]> exPaths;
         final List<String[]> selPaths;
 
-        public KeepExpansion(String id, List<String[]> exPaths, List<String[]> selPaths) {
-            this.id = id;
+        KeepExpansion(List<String[]> exPaths, List<String[]> selPaths) {
             this.exPaths = exPaths;
             this.selPaths = selPaths;
             this.task = RP.create(this);
@@ -403,13 +401,6 @@ public class ProjectTab extends TopComponent
 
         @Override
         public void run() {
-            if (EventQueue.isDispatchThread()) {
-                LOG.log(Level.FINE, "{0}: selecting paths: {1}", new Object[] { id, selPaths });
-                selectPaths(selPaths);
-                LOG.log(Level.FINE, "{0}: done.", id);
-                return;
-            }
-            
             try {
                 LOG.log(Level.FINE, "{0}: waiting for projects being open", id);
                 OpenProjects.getDefault().openProjects().get(10, TimeUnit.SECONDS);
@@ -429,10 +420,35 @@ public class ProjectTab extends TopComponent
                     return;
                 }
             }
-            LOG.log(Level.FINE, "{0}: Expanding paths: {1}", new Object[] { id, exPaths });
+            LOG.log(Level.FINE, "{0}: expanding paths", id);
             btv.expandNodes(exPaths);
-            LOG.log(Level.FINE, "{0}: Switching to AWT", id);
-            EventQueue.invokeLater(this);
+            LOG.log(Level.FINE, "{0}: selecting paths", id);
+            final List<Node> selectedNodes = new ArrayList<Node>();
+            Node root = manager.getRootContext();
+            for (String[] sp : selPaths) {
+                LOG.log(Level.FINE, "{0}: selecting {1}", new Object[] {id, Arrays.asList(sp)});
+                try {
+                    Node n = NodeOp.findPath(root, sp);
+                    if (n != null) {
+                        selectedNodes.add(n);
+                    }
+                } catch (NodeNotFoundException x) {
+                    LOG.log(Level.FINE, null, x);
+                }
+            }
+            if (!selectedNodes.isEmpty()) {
+                LOG.log(Level.FINE, "{0}: Switching to AWT", id);
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            manager.setSelectedNodes(selectedNodes.toArray(new Node[selectedNodes.size()]));
+                        } catch (PropertyVetoException x) {
+                            LOG.log(Level.FINE, null, x);
+                        }
+                        LOG.log(Level.FINE, "{0}: done.", id);
+                    }
+                });
+            }
         }
 
     }
@@ -626,37 +642,6 @@ public class ProjectTab extends TopComponent
         }
         return result;
     }
-    
-    
-    private void selectPaths(List<String[]> paths) {
-        List<Node> selectedNodes = new ArrayList<Node>();
-        
-        Node root = manager.getRootContext();
-        
-        for (String[] sp : paths) {
-            try {
-                Node n = NodeOp.findPath(root, sp);
-                if ( n != null ) {
-                    selectedNodes.add( n );
-                }
-            }
-            catch( NodeNotFoundException e ) {
-                // Node wont be added                
-            }
-        }
-        
-        if ( !selectedNodes.isEmpty() ) {
-            Node nodes[] = new Node[ selectedNodes.size() ];
-            selectedNodes.toArray( nodes );
-            try { 
-                manager.setSelectedNodes( nodes );
-            }
-            catch( PropertyVetoException e ) {
-                // Bad day no selection change
-            }
-        }
-        
-    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
@@ -746,11 +731,12 @@ public class ProjectTab extends TopComponent
          */
         public void expandNodes(List<String[]> exPaths) {
             for (final String[] sp : exPaths) {
+                LOG.log(Level.FINE, "{0}: expanding {1}", new Object[] {id, Arrays.asList(sp)});
                 Node n;
                 try {
                     n = NodeOp.findPath(rootNode, sp);
                 } catch (NodeNotFoundException e) {
-                    LOG.log(Level.FINE, "got {0}", e);
+                    LOG.log(Level.FINE, "got {0}", e.toString());
                     n = e.getClosestNode();
                 }
                 if (n == null) { // #54832: it seems that sometimes we get unparented node

@@ -85,9 +85,12 @@ public class FilteringLineDiff extends LineDiff {
         if (super.compareLines(l1.trim(), l2.trim())) {
             return true;
         }
+        // ignore some specific comments
         if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0))
-            || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0))
-            || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))) {
+                || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0))
+                || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))
+                || (l1.contains("* To change this template") && l2.contains("* To change this template"))  // leading template comment (row 1)
+                || (l1.contains(" the editor.") && l2.contains(" the editor."))) {  // leading template comment (row 2)
             return true;
         }
         return false;

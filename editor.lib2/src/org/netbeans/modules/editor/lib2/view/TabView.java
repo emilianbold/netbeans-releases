@@ -45,15 +45,11 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.TabExpander;
@@ -81,7 +77,7 @@ public final class TabView extends EditorView implements TabableView {
     private static final Logger LOG = Logger.getLogger(TabView.class.getName());
 
     /** Offset of start offset of this view. */
-    private int rawOffset; // 24-super + 4 = 28 bytes
+    private int rawEndOffset; // 24-super + 4 = 28 bytes
 
     /** Number of subsequent '\t' characters. */
     private int length; // 28 + 4 = 32 bytes
@@ -98,7 +94,7 @@ public final class TabView extends EditorView implements TabableView {
     public TabView(int offset, int length, AttributeSet attributes) {
         super(null);
         assert (length > 0) : "Length == 0"; // NOI18N
-        this.rawOffset = offset;
+        this.rawEndOffset = offset + length;
         this.length = length;
         this.attributes = attributes;
     }
@@ -131,13 +127,13 @@ public final class TabView extends EditorView implements TabableView {
     }
 
     @Override
-    public int getRawOffset() {
-        return rawOffset;
+    public int getRawEndOffset() {
+        return rawEndOffset;
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
-        this.rawOffset = rawOffset;
+    public void setRawEndOffset(int rawOffset) {
+        this.rawEndOffset = rawOffset;
     }
 
     @Override
@@ -147,13 +143,13 @@ public final class TabView extends EditorView implements TabableView {
 
     @Override
     public int getStartOffset() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
+        return getEndOffset() - getLength();
     }
 
     @Override
     public int getEndOffset() {
-        return getStartOffset() + getLength();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getViewEndOffset(rawEndOffset) : rawEndOffset;
     }
 
     @Override
@@ -250,32 +246,12 @@ public final class TabView extends EditorView implements TabableView {
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
+        int viewStartOffset = getStartOffset();
         DocumentView docView = getDocumentView();
-        if (docView != null) {
-            AttributeSet attrs = getAttributes();
-            Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-            // Paint background
-            HighlightsViewUtils.paintBackground(g, mutableBounds, attrs, docView);
-            // Possibly render tab layout
-            TextLayout showTabLayout = (docView.isShowNonprintingCharacters())
-                    ? docView.getTabCharTextLayout(firstTabWidth)
-                    : null;
-            if (showTabLayout != null) {
-                HighlightsViewUtils.paintForeground(g, mutableBounds, showTabLayout, attrs, docView);
-                mutableBounds.x += firstTabWidth;
-                mutableBounds.width -= firstTabWidth;
-                int len = getLength() - 1;
-                if (len > 0) {
-                    float nextTabWidth = (width - firstTabWidth) / len;
-                    showTabLayout = docView.getTabCharTextLayout(nextTabWidth);
-                    while (--len >= 0) {
-                        HighlightsViewUtils.paintTextLayout(g, mutableBounds, showTabLayout, docView);
-                        mutableBounds.x += nextTabWidth;
-                        mutableBounds.width -= nextTabWidth;
-                    }
-                }
-            }
-        }
+        // TODO render only necessary parts
+        HighlightsViewUtils.paintHiglighted(g, alloc, clipBounds,
+                docView, this, viewStartOffset,
+                false, null, viewStartOffset, 0, getLength());
     }
 
     @Override

@@ -43,14 +43,12 @@
 
 package org.netbeans.modules.profiler.j2ee.stats;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.results.cpu.cct.CPUCCTVisitorAdapter;
 import org.netbeans.lib.profiler.results.cpu.cct.CompositeCPUCCTWalker;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.MethodCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.RuntimeCPUCCTNode;
 import org.netbeans.lib.profiler.results.cpu.cct.nodes.ServletRequestCPUCCTNode;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
-import org.netbeans.modules.profiler.ui.stats.ProjectAwareStatisticalModule;
 import org.openide.util.NbBundle;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -63,13 +61,15 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
+import org.openide.util.Lookup;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.ui.stats.ProjectAwareStatisticalModule.class)
+@org.openide.util.lookup.ServiceProvider(service=ProjectAwareStatisticalModule.class)
 public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
@@ -104,18 +104,21 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
             }
         }
 
+        @Override
         public void afterWalk() {
             servletStack.clear();
             lock.writeLock().unlock();
             refreshData();
         }
 
+        @Override
         public void beforeWalk() {
             lock.writeLock().lock();
             servletStack.clear();
             paths.clear();
         }
 
+        @Override
         public void visit(MethodCPUCCTNode node) {
             boolean first = false;
 
@@ -143,10 +146,12 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
             lastCalls = node.getNCalls();
         }
 
+        @Override
         public void visit(ServletRequestCPUCCTNode node) {
             servletStack.push(node);
         }
 
+        @Override
         public void visitPost(ServletRequestCPUCCTNode node) {
             servletStack.pop();
 
@@ -200,6 +205,7 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
+    @Override
     public void setSelectedMethodId(int methodId) {
         int lastSelectedId = getSelectedMethodId();
         super.setSelectedMethodId(methodId);
@@ -210,6 +216,7 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
     }
 
+    @Override
     public void refresh(RuntimeCPUCCTNode appNode) {
         if (appNode == null) {
             return;
@@ -221,7 +228,7 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
     }
 
-    public boolean supportsProject(Project project) {
+    public boolean supportsProject(Lookup.Provider project) {
         if (isWebProject(project)) {
             System.setProperty("org.netbeans.lib.profiler.servletTracking", "true"); // NOI18N
 
@@ -233,12 +240,12 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
         }
     }
 
-    private boolean isWebProject(Project project) {
+    private boolean isWebProject(Lookup.Provider project) {
         if (project == null) {
             return false;
         }
 
-        return WebProjectUtils.getDeploymentDescriptorFileObjects(project, true) != null;
+        return WebProjectUtils.isWebProject(project);
     }
 
     private void initComponents() {

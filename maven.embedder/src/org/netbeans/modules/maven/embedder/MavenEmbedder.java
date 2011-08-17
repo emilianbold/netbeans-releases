@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +86,10 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.repository.WorkspaceReader;
+import org.sonatype.aether.repository.WorkspaceRepository;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
@@ -179,6 +183,25 @@ public final class MavenEmbedder {
     }
 
     public MavenExecutionResult readProjectWithDependencies(MavenExecutionRequest req) {
+        req.setWorkspaceReader(new WorkspaceReader() {
+            final WorkspaceRepository repo = new WorkspaceRepository("ide", getClass());
+            final Collection<? extends ArtifactFixer> fixers = Lookup.getDefault().lookupAll(ArtifactFixer.class);
+            @Override public WorkspaceRepository getRepository() {
+                return repo;
+            }
+            @Override public File findArtifact(org.sonatype.aether.artifact.Artifact artifact) {
+                for (ArtifactFixer fixer : fixers) {
+                    File f = fixer.resolve(artifact);
+                    if (f != null) {
+                        return f;
+                    }
+                }
+                return null;
+            }
+            @Override public List<String> findVersions(org.sonatype.aether.artifact.Artifact artifact) {
+                return Collections.emptyList();
+            }
+        });
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
@@ -299,7 +322,6 @@ public final class MavenEmbedder {
         }
         
         req.setSystemProperties(getSystemProperties());
-        req.setOffline(isOffline());
         try {
             populator.populateDefaults(req);
             populator.populateFromSettings(req, getSettings());
@@ -307,6 +329,7 @@ public final class MavenEmbedder {
             // XXX where to display this?
             Exceptions.printStackTrace(x);
         }
+        req.setOffline(isOffline());
 
         return req;
     }

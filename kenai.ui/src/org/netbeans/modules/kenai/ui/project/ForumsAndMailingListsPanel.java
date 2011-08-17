@@ -400,7 +400,6 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         setBackground(new java.awt.Color(255, 255, 255));
         setLayout(new java.awt.BorderLayout());
 
-        commChannelsDisplayer.setBackground(new java.awt.Color(255, 255, 255));
         commChannelsDisplayer.setContentType(org.openide.util.NbBundle.getMessage(ForumsAndMailingListsPanel.class, "ForumsAndMailingListsPanel.commChannelsDisplayer.contentType")); // NOI18N
         commChannelsDisplayer.setEditable(false);
         commChannelsDisplayer.addFocusListener(new java.awt.event.FocusAdapter() {

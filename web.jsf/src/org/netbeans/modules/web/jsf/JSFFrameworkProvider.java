@@ -95,11 +95,12 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.jsf.api.facesmodel.DefaultRenderKitId;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
@@ -148,7 +149,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
     // better to move this to JSFConfigurationPanel
-    public Set extendImpl(WebModule webModule) {
+    public Set extendImpl(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
         Set result = new HashSet();
         Library jsfLibrary = null;      
         Library jstlLibrary = null;
@@ -214,10 +215,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 }
             }
 
-            if (panel.getJsfComponentDescriptor() != null ) {
-                ProjectClassPathModifier.addLibraries(new Library[]{panel.getJsfComponentDescriptor().getLibrary()}, javaSources[0], ClassPath.COMPILE);
-            }
-
             boolean isMyFaces;
             if (jsfLibrary != null) {
                 // find out whether the added library is myfaces jsf implementation
@@ -256,7 +253,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
 
             FileSystem fileSystem = webInf.getFileSystem();
+            
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
+            
+            // extending for JSF component libraries
+            for (JsfComponentImplementation jsfComponentDescriptor : panel.getEnabledJsfDescriptors()) {
+                result.addAll(jsfComponentDescriptor.extend(webModule, jsfComponentCustomizer));
+            }
 
             FileObject welcomeFile = (panel!=null && panel.isEnableFacelets()) ? webModule.getDocumentBase().getFileObject(WELCOME_XHTML):
                                                                 webModule.getDocumentBase().getFileObject(WELCOME_JSF);
@@ -319,7 +322,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
                 }
             }
-            panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences);
+            panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences, webModule);
         } else {
             if (webModule!=null && webModule.getDocumentBase() == null) {
                 controller.getProperties().setProperty("NoDocBase", true);  //NOI18N
@@ -582,10 +585,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB) && !isJSF20) {
                         createFacesConfig = true;
                     }
-                    if (isJSF20 && panel.getJsfComponentDescriptor() != null) {
-                        if (panel.getJsfComponentDescriptor().getDefaultRenderKitId() != null)
-                            createFacesConfig = true;
-                    }
                 }
                 if (createFacesConfig) {
                     String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
@@ -634,27 +633,27 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
                                 application.addViewHandler(viewHandler);
                             }
-                            // A component library may require a render kit
-                            if (isJSF20 && panel.getJsfComponentDescriptor() != null) {
-                                String drki = panel.getJsfComponentDescriptor().getDefaultRenderKitId();
-                                if (drki != null) {
-                                    List<DefaultRenderKitId> drkits = application.getDefaultRenderKitIds();
-                                    boolean alreadyDefined = false;
-                                    if (drkits != null){
-                                        for (DefaultRenderKitId drkit : drkits) {
-                                            if (drki.equals(drkit.getText().trim())){
-                                                alreadyDefined = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if (!alreadyDefined){
-                                        DefaultRenderKitId newdrki = model.getFactory().createDefaultRenderKitId();
-                                        newdrki.setText(drki);
-                                        application.addDefaultRenderKitId(newdrki);
-                                    }
-                                }
-                            }
+//                            // A component library may require a render kit
+//                            if (isJSF20 && panel.getJsfComponentDescriptor() != null) {
+//                                String drki = panel.getJsfComponentDescriptor().getDefaultRenderKitId();
+//                                if (drki != null) {
+//                                    List<DefaultRenderKitId> drkits = application.getDefaultRenderKitIds();
+//                                    boolean alreadyDefined = false;
+//                                    if (drkits != null){
+//                                        for (DefaultRenderKitId drkit : drkits) {
+//                                            if (drki.equals(drkit.getText().trim())){
+//                                                alreadyDefined = true;
+//                                                break;
+//                                            }
+//                                        }
+//                                    }
+//                                    if (!alreadyDefined){
+//                                        DefaultRenderKitId newdrki = model.getFactory().createDefaultRenderKitId();
+//                                        newdrki.setText(drki);
+//                                        application.addDefaultRenderKitId(newdrki);
+//                                    }
+//                                }
+//                            }
                             ClassPath cp = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
                             // FIXME icefaces on server
                             if (panel.getLibrary()!=null && panel.getLibrary().getName().indexOf("facelets-icefaces") != -1 //NOI18N
@@ -695,10 +694,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     HashMap<String, Object> params = new HashMap<String, Object>();
                     if (isJSF20) {
                         params.put("isJSF20", Boolean.TRUE);    //NOI18N
-                        if (panel.getJsfComponentDescriptor() != null) {
-                            params.put("welcomeBody", panel.getJsfComponentDescriptor().getWelcomeBody());  //NOI18N
-                            params.put("welcomeInclude", "xmlns:"+panel.getJsfComponentDescriptor().getNsPrefix()+"=\""+panel.getJsfComponentDescriptor().getNamespace()+"\"");    //NOI18N
-                        }
                     }
                     JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }

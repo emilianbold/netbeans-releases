@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.TestUtil;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils.SavableTreeEditorCookie;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -68,9 +68,9 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.test.TestFileUtils;
 
 /**
  * Test functionality of {@link WritableXMLFileSystem}.
@@ -114,16 +114,19 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
     }
     
     public void testExternalFileReads() throws Exception {
-        FileSystem fs = new Layer("<file name='x' url='x.txt'/>", Collections.singletonMap("x.txt", "stuff")).read();
+        Layer l = new Layer("<file name='x' url='x.txt'/>", Collections.singletonMap("x.txt", "stuff"));
+        FileSystem fs = l.read();
         FileObject x = fs.findResource("x");
         assertNotNull(x);
         assertTrue(x.isData());
         assertEquals(5L, x.getSize());
-        assertEquals("stuff", TestBase.slurp(x));
+        assertEquals("stuff", x.asText("UTF-8"));
+        assertEquals("x.txt", x.getAttribute("WritableXMLFileSystem.url"));
+        assertEquals("[" + l.f.getURL() + "]", Arrays.toString((URL[]) x.getAttribute("layers")));
         fs = new Layer("<file name='x' url='subdir/x.txt'/>", Collections.singletonMap("subdir/x.txt", "more stuff")).read();
         x = fs.findResource("x");
         assertNotNull(x);
-        assertEquals("more stuff", TestBase.slurp(x));
+        assertEquals("more stuff", x.asText("UTF-8"));
     }
 
     // check that nbres: and nbresloc: URL protocols work here too (with a classpath)
@@ -141,13 +144,13 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertNotNull(x);
         assertTrue(x.isData());
         assertEquals(5L, x.getSize());
-        assertEquals("stuff", TestBase.slurp(x));
+        assertEquals("stuff", x.asText("UTF-8"));
 
         FileObject y = fs.findResource("y");
         assertNotNull(y);
         assertTrue(y.isData());
         assertEquals(10L, y.getSize());
-        assertEquals("more stuff", TestBase.slurp(y));
+        assertEquals("more stuff", y.asText("UTF-8"));
     }
 
     /** #150902 - test spaces in url attribute are escaped to get valid URL. */
@@ -233,7 +236,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileSystem fs = l.read();
         FileObject f = FileUtil.createData(fs.getRoot(), "Templates/Other/Foo.java");
         f.setAttribute("hello", "there");
-        TestBase.dump(f, "some stuff");
+        TestUtil.dump(f, "some stuff");
         String xml =
                 "    <folder name=\"Templates\">\n" +
                 "        <folder name=\"Other\">\n" +
@@ -247,16 +250,16 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         Map<String,String> m = new HashMap<String,String>();
         m.put("Foo_java", "some stuff");
         assertEquals("one external file created in " + l, m, l.files());
-        TestBase.dump(f, "new stuff");
+        TestUtil.dump(f, "new stuff");
         assertEquals("same XML as before", xml, l.write());
         m.put("Foo_java", "new stuff");
         assertEquals("different external file", m, l.files());
         f = FileUtil.createData(fs.getRoot(), "Templates/Other2/Foo.java");
-        TestBase.dump(f, "unrelated stuff");
+        TestUtil.dump(f, "unrelated stuff");
         f = FileUtil.createData(fs.getRoot(), "Templates/Other2/Bar.xml");
-        TestBase.dump(f, "unrelated XML stuff");
+        TestUtil.dump(f, "unrelated XML stuff");
         f = FileUtil.createData(fs.getRoot(), "Services/foo.settings");
-        TestBase.dump(f, "scary stuff");
+        TestUtil.dump(f, "scary stuff");
         xml =
                 "    <folder name=\"Services\">\n" +
                 // *.settings are also potentially dangerous in module sources, so rename them.
@@ -282,7 +285,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         l = new Layer("", Collections.singletonMap("file.txt", "existing stuff"));
         fs = l.read();
         f = FileUtil.createData(fs.getRoot(), "wherever/file.txt");
-        TestBase.dump(f, "unrelated stuff");
+        TestUtil.dump(f, "unrelated stuff");
         xml =
                 "    <folder name=\"wherever\">\n" +
                 // Need to pick a different location even though there is no conflict inside the layer.
@@ -297,11 +300,11 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         l = new Layer("");
         fs = l.read();
         f = FileUtil.createData(fs.getRoot(), "one/bare");
-        TestBase.dump(f, "bare #1");
+        TestUtil.dump(f, "bare #1");
         f = FileUtil.createData(fs.getRoot(), "two/bare");
-        TestBase.dump(f, "bare #2");
+        TestUtil.dump(f, "bare #2");
         f = FileUtil.createData(fs.getRoot(), "three/bare");
-        TestBase.dump(f, "bare #3");
+        TestUtil.dump(f, "bare #3");
         xml =
                 "    <folder name=\"one\">\n" +
                 "        <file name=\"bare\" url=\"bare\"/>\n" +
@@ -400,7 +403,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 l.write());
 
 
-        String  txt = TestBase.slurp(l.f);
+        String  txt = l.f.asText("UTF-8");
         if (txt.indexOf("-//NetBeans//DTD Filesystem 1.1//EN") == -1) {
             fail("Enough to use DTD 1.1: " + txt);
         }
@@ -430,7 +433,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         // currently returns null:
         assertNull("Current behaviour. Improve. XXX", value);
 
-        String  txt = TestBase.slurp(l.f);
+        String  txt = l.f.asText("UTF-8");
         if (txt.indexOf("-//NetBeans//DTD Filesystem 1.2//EN") == -1) {
             fail("Wrong DTD: " + txt);
         }
@@ -477,7 +480,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         // currently returns null:
         assertNull("Current behaviour. Improve. XXX", value);
 
-        String  txt = TestBase.slurp(l.f);
+        String  txt = l.f.asText("UTF-8");
         if (txt.indexOf("-//NetBeans//DTD Filesystem 1.2//EN") == -1) {
             fail("Wrong DTD: " + txt);
         }
@@ -526,14 +529,14 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileObject f = fs.getRoot().createFolder("f");
         FileObject x = f.createData("x");
         x.setAttribute("foo", "bar");
-        TestBase.dump(x, "stuff");
+        TestUtil.dump(x, "stuff");
         FileObject y = FileUtil.createData(fs.getRoot(), "y");
         x.delete();
         assertEquals("one file and one folder left",
                 "    <folder name=\"f\"/>\n" +
                 "    <file name=\"y\"/>\n",
                 l.write());
-        assertEquals("no external files left", Collections.EMPTY_MAP, l.files());
+        assertEquals("kept external file", Collections.singletonMap("x", "stuff"), l.files());
         f.delete();
         assertEquals("one file left",
                 "    <file name=\"y\"/>\n",
@@ -544,10 +547,10 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         fs = l.read();
         f = fs.getRoot().createFolder("f");
         x = f.createData("x");
-        TestBase.dump(x, "stuff");
+        TestUtil.dump(x, "stuff");
         f.delete();
         assertEquals("layer empty again", "", l.write());
-        assertEquals("no external files left even after only implicitly deleting file", Collections.EMPTY_MAP, l.files());
+        assertEquals("kept external files after implicitly deleting file", Collections.singletonMap("x", "stuff"), l.files());
         // XXX should any associated ordering attrs also be deleted? not acc. to spec, but often handy...
         l = new Layer("");
         fs = l.read();
@@ -671,7 +674,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         Layer l = new Layer("");
         FileSystem fs = l.read();
         FileObject foo = fs.getRoot().createData("foo");
-        TestBase.dump(foo, "foo text");
+        TestUtil.dump(foo, "foo text");
         long start = foo.lastModified().getTime();
         assertEquals(start, l.externalLastModified("foo"));
         Thread.sleep(1000L); // make sure the timestamp actually changed
@@ -748,7 +751,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 String contents = (String) entry.getValue();
                 File file = new File(folder, fname.replace('/', File.separatorChar));
                 file.getParentFile().mkdirs();
-                TestBase.dump(file, contents);
+                TestFileUtils.writeFile(file, contents);
             }
         }
         private File makeFolder() throws Exception {
@@ -765,9 +768,9 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         private FileObject makeLayer(String xml, boolean wrapWithHeader) throws Exception {
             File file = new File(folder, "layer.xml");
             if (wrapWithHeader) {
-                TestBase.dump(file, HEADER + xml + FOOTER);
+                TestFileUtils.writeFile(file, HEADER + xml + FOOTER);
             } else {
-                TestBase.dump(file, xml);
+                TestFileUtils.writeFile(file, xml);
             }
             return FileUtil.toFileObject(file);
         }
@@ -787,7 +790,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         }
         String write(String head, String foot) throws Exception {
             cookie.save();
-            String raw = TestBase.slurp(f);
+            String raw = f.asText("UTF-8");
 
             for (int i = 1; i <= 2; i++) {
                 String header = new String(head).replace("1_1", "1_"+ i).replace("1.1", "1."+ i);
@@ -803,7 +806,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          * Edit the text of the layer.
          */
         public void edit(String newText) throws Exception {
-            TestBase.dump(f, HEADER + newText + FOOTER);
+            TestUtil.dump(f, HEADER + newText + FOOTER);
         }
         /**
          * Edit a referenced external file.
@@ -812,7 +815,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
             assert !path.equals("layer.xml");
             File file = new File(folder, path.replace('/', File.separatorChar));
             assert file.isFile();
-            TestBase.dump(FileUtil.toFileObject(file), newText);
+            TestUtil.dump(FileUtil.toFileObject(file), newText);
         }
         public long externalLastModified(String path) {
             File file = new File(folder, path.replace('/', File.separatorChar));
@@ -841,7 +844,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 if (file.isDirectory()) {
                     traverse(m, file, prefix + kids[i] + '/');
                 } else {
-                    m.put(path, TestBase.slurp(file));
+                    m.put(path, TestFileUtils.readFile(file));
                 }
             }
         }

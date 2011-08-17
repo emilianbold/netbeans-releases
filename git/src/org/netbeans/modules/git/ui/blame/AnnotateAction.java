@@ -57,6 +57,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.openide.awt.ActionID;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
@@ -67,7 +68,7 @@ import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 import org.openide.text.NbDocument;
 
-
+@ActionID(id = "org.netbeans.modules.git.ui.blame.AnnotateAction", category = "Git")
 public class AnnotateAction extends GitAction {
     
     @Override
@@ -88,6 +89,11 @@ public class AnnotateAction extends GitAction {
     @Override
     public String getName () {
         return NbBundle.getMessage(getClass(), visible(TopComponent.getRegistry().getActivatedNodes()) ? "CTL_MenuItem_HideAnnotations" : "CTL_MenuItem_ShowAnnotations"); //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/git/resources/icons/annotate.png"; // NOI18N
     }
 
     @Override

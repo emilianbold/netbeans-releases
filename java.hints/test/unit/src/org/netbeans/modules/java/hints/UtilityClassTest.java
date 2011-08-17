@@ -50,6 +50,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -91,7 +93,7 @@ public class UtilityClassTest extends TreeRuleTestBase {
         String gold = before + after + " private Test() { } }";
         performFixTest("test/Test.java", before + after + "}", before.length(), 
             "0:27-0:31:verifier:Utility class without constructor",
-            "FixUtilityClass",
+            "MSG_PrivateConstructor",
             gold
         );
     }
@@ -171,7 +173,16 @@ public class UtilityClassTest extends TreeRuleTestBase {
         SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
         return UtilityClass.withoutConstructor().run(info, path);
     }
-    
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
     private String sourceLevel = "1.5";
+
+    static {
+        NbBundle.setBranding("test");
+    }
     
 }

@@ -16,7 +16,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -48,17 +48,17 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="searchButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="copyFromLocalTextField" alignment="0" pref="709" max="32767" attributes="1"/>
-                          <Component id="copyFromRemoteTextField" alignment="0" pref="709" max="32767" attributes="1"/>
+                          <Component id="copyFromLocalTextField" alignment="0" pref="710" max="32767" attributes="1"/>
+                          <Component id="copyFromRemoteTextField" alignment="0" pref="710" max="32767" attributes="1"/>
                       </Group>
                   </Group>
-                  <Component id="skipCheckBox" alignment="0" pref="837" max="32767" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="0" pref="837" max="32767" attributes="0"/>
+                  <Component id="skipCheckBox" alignment="0" pref="840" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="840" max="32767" attributes="0"/>
                   <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="switchToCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="invalidValuesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="warningLabel" alignment="0" pref="837" max="32767" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" pref="837" max="32767" attributes="0"/>
+                  <Component id="warningLabel" alignment="0" pref="840" max="32767" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" pref="840" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="copyToLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -68,7 +68,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="previewTextField" alignment="0" pref="678" max="32767" attributes="2"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="urlComboBox" pref="570" max="32767" attributes="2"/>
+                              <Component id="urlComboBox" pref="573" max="32767" attributes="2"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseRepositoryButton" min="-2" max="-2" attributes="0"/>
                           </Group>

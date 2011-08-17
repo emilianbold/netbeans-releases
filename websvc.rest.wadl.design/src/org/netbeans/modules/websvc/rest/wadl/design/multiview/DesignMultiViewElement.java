@@ -63,6 +63,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.ShowCookie;
+import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlDataLoader;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlDataObject;
 import org.netbeans.modules.websvc.rest.wadl.design.loader.WadlEditorSupport;
 import org.netbeans.modules.websvc.rest.wadl.design.undo.QuietUndoManager;
@@ -83,7 +84,16 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  *
  * @author Ayub Khan
+ * @author changed by ads
  */
+@MultiViewElement.Registration(
+    displayName ="#LBL_designView_name",// NOI18N
+    iconBase=WadlDataObject.WADL_ICON_BASE_WITH_EXT,
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=MultiViewSupport.DESIGN_VIEW_ID,
+    mimeType=WadlDataLoader.MIME_TYPE,            
+    position=2000
+)
 public class DesignMultiViewElement extends TopComponent
         implements MultiViewElement, ExplorerManager.Provider, PropertyChangeListener {
     /** silence compiler warnings */
@@ -102,8 +112,8 @@ public class DesignMultiViewElement extends TopComponent
      * 
      * @param mvSupport 
      */
-    public DesignMultiViewElement(WadlDataObject dataObject) {
-        this.dataObject = dataObject;
+    public DesignMultiViewElement(Lookup context) {
+        this.dataObject = context.lookup( WadlDataObject.class );
         initialize();
     }
     

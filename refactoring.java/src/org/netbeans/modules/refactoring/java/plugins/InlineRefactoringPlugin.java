@@ -408,7 +408,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             TypeElement bodyEnclosingTypeElement = elementUtilities.enclosingTypeElement(p);
             TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(asElement);
             if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)
-                    && !access.equals(Modifier.PRIVATE)) {
+                    && (access == null || !access.equals(Modifier.PRIVATE))) {
                 result = true;
             }
             return result;

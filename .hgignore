@@ -57,7 +57,7 @@ derby\.log
 ^swingapp/src/org/netbeans/modules/swingapp/resources/BasicShellApp\.zip$
 ^swingapp/src/org/netbeans/modules/swingapp/resources/CRUDShellApp\.zip$
 ^ide/launcher/windows/netbeans\.res$
-^ide.kit/test/qa-functional/data/lime6/
+^ide.kit/test/qa-functional/data/tomcat6/
 ^ide.kit/test/whitelist/temp/
 ^identity.ant/nbproject/suite\.properties$
 ^identity.profile.api/src/org/netbeans/modules/identity/profile/api/configurator/impl/file/jaxb$

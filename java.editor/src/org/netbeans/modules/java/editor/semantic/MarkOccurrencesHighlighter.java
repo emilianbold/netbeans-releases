@@ -525,6 +525,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
                     return node.getBoolean(MarkOccurencesSettings.FIELDS, true);
                 }
             case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
             case PARAMETER:
             case EXCEPTION_PARAMETER:
                 return node.getBoolean(MarkOccurencesSettings.LOCAL_VARIABLES, true);

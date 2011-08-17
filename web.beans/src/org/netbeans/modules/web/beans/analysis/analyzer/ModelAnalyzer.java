@@ -42,15 +42,20 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
+import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 
 
 /**
@@ -60,7 +65,83 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public interface ModelAnalyzer {
     
     void analyze( Element element , TypeElement parent, WebBeansModel model,
-            List<ErrorDescription> descriptions, CompilationInfo info ,
-            AtomicBoolean cancel );
-
+            AtomicBoolean cancel, Result result );
+    
+    public class Result extends CdiAnalysisResult {
+        
+        public Result( CompilationInfo info ){
+            super(info);
+        }
+        
+        public void addNotification( Severity severity, Element element,
+                WebBeansModel model, String message )
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createNotification( severity, element, model, getInfo() , 
+                    message);
+            if ( description == null ){
+                return;
+            }
+            getProblems().add( description );            
+        }
+        
+        public void addNotification( Severity severity,
+                VariableElement element, ExecutableElement method,
+                WebBeansModel model, String message )
+        {
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createNotification( severity, element,method, model, getInfo() , 
+                message);
+            if ( description == null ){
+                return;
+            }
+            getProblems().add( description );              
+        }
+        
+        public void addError( Element element,
+                WebBeansModel model, String message )
+        {
+            addNotification(Severity.ERROR, element, model, message);          
+        }
+        
+        public void addError( VariableElement var, ExecutableElement element,
+                WebBeansModel model, String message )
+        {
+            addNotification(Severity.ERROR, var, element, model, message);                    
+        }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.web.beans.analysis.CdiAnalysisResult#addError(javax.lang.model.element.Element, java.lang.String)
+         */
+        @Override
+        public void addError( Element subject, String message ) {
+            ErrorDescription description = CdiEditorAnalysisFactory.
+                createNotification( Severity.ERROR, subject, getInfo() , 
+                message);
+            if ( description == null ){
+                return;
+            }
+            getProblems().add( description );                
+        }
+        
+        public void requireCdiEnabled( Element element , WebBeansModel model){
+            ElementHandle<Element> handle = ElementHandle.create(element);
+            Element resolved = handle.resolve( getInfo() );
+            if ( resolved == null ){
+                return;
+            }
+            requireCdiEnabled( resolved );
+        }
+        
+        public void requireCdiEnabled( VariableElement element , 
+                ExecutableElement method ,WebBeansModel model)
+        {
+            VariableElement resolved = CdiEditorAnalysisFactory.
+                resolveParameter(element, method, getInfo());
+            if ( resolved == null ){
+                return;
+            }
+            requireCdiEnabled( resolved );
+        }
+    }
 }

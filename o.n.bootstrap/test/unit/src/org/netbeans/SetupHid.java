@@ -230,6 +230,7 @@ public abstract class SetupHid extends NbTestCase {
         createTestJAR("dep-on-relvertest-3-4", null);
         createTestJAR("dep-on-relvertest-some", null);
         createTestJAR("depends-on-simple-module-2", null);
+        createTestJAR("dep-on-needs_foo-simple", null);
         createTestJAR("needs-foo", null);
         createTestJAR("recommends-foo", null);
         createTestJAR("prov-foo-depends-needs_foo", "prov-foo");
@@ -373,7 +374,7 @@ public abstract class SetupHid extends NbTestCase {
                         sourceFiles);
             }
         }
-        // Cannot trivially use TestFileUtils.writeZipFile here since we have binary content (classes).
+        // XXX use TestFileUtils.writeZipFile (or JarBuilder)
         File jar = new File(jars, name + ".jar");
         jars.mkdirs();
         OutputStream os = new FileOutputStream(jar);

@@ -168,6 +168,20 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         }
     }
 
+    private boolean setAttributeOnFO(FileObject fo, String attrToSet, Object value, boolean fire) throws IOException {
+        if (fo instanceof AbstractFolder) {
+            ((AbstractFolder) fo).setAttribute(attrToSet, value, false);
+        } else {
+            /** cannot disable firing from underlaying delegate if not AbstractFolder
+             * without API change. So I don`t fire events from this method with one
+             * exception - root.
+             */
+            fire = fire && fo.isRoot();
+            fo.setAttribute(attrToSet, value);
+        }
+        return fire;
+    }
+
     /** Updates list of all references.
     */
     private void update() {
@@ -775,6 +789,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     /** Special attributes which should not be checked for weight. See RemoveWritablesTest. */
     private static final Set<String> SPECIAL_ATTR_NAMES = new HashSet<String>(Arrays.asList("removeWritables", WEIGHT_ATTRIBUTE, "java.io.File")); // NOI18N
     private final Object getAttribute(String attrName, String path) {
+        if (path.length() == 0 && attrName.indexOf('\\') >= 0) {
+            return null;
+        }
         // Look for attribute in any file system starting at the front.
         // Additionally, look for attribute in root folder, where
         // the relative path from the folder to the target file is
@@ -954,16 +971,14 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         getAttributeCache().setDelegate(fo);
         getAttributeCache().setAttributeName(attrToSet);
-        
-        if (fo instanceof AbstractFolder) {
-            ((AbstractFolder) fo).setAttribute(attrToSet, voidify(value), false);
+
+        if (value == null) {
+            fire = setAttributeOnFO(fo, attrToSet, null, fire);
+            if (fo.getAttribute(attrToSet) != null) {
+                fire = setAttributeOnFO(fo, attrToSet, voidify(null), fire);
+            }
         } else {
-            /** cannot disable firing from underlaying delegate if not AbstractFolder
-             * without API change. So I don`t fire events from this method with one
-             * exception - root.
-             */
-            fire = fire && fo.isRoot();
-            fo.setAttribute(attrToSet, voidify(value));
+            fire = setAttributeOnFO(fo, attrToSet, voidify(value), fire);
         }
 
         // fire changes for original attribute name even if the attr is actually
@@ -989,10 +1004,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     private final Enumeration<String> getAttributes(String path) {
         Set<String> s = new HashSet<String>();
         FileSystem[] systems = getMultiFileSystem().getDelegates();
+        final boolean empty = path.length() == 0;
 
         // [PENDING] will not remove from the enumeration voided-out attributes
         // (though this is probably not actually necessary)
-        String prefix = (path.length() == 0) ? null : (path.replace('/', '\\') + '\\');
+        String prefix = empty ? null : (path.replace('/', '\\') + '\\');
 
         for (int i = 0; i < systems.length; i++) {
             if (systems[i] == null) {
@@ -1006,6 +1022,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 while (e.hasMoreElements()) {
                     String attr = e.nextElement();
+                    if (empty && attr.indexOf('\\') >= 0) {
+                        continue;
+                    }
                     s.add(attr);
                 }
             }
@@ -1213,7 +1232,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 String oldFullName = getPath();
 
                 if (isReadOnly()) {
-                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotRename",
+                    throw new FSException(NbBundle.getMessage(MultiFileObject.class, "EXC_CannotRenameFromTo",
                             getPath(), getMultiFileSystem().getDisplayName(), newFullName));
                 }
 

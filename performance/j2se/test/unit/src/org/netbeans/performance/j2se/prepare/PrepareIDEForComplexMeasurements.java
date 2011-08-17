@@ -44,6 +44,7 @@
 
 package org.netbeans.performance.j2se.prepare;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -51,7 +52,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 
 import org.netbeans.jellytools.actions.Action;
@@ -63,14 +63,16 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 
-import junit.framework.Test;
 
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
+import org.netbeans.performance.j2se.Utilities;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -103,15 +105,17 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     /** Testsuite
      * @return testuite
      */
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new PrepareIDEForComplexMeasurements("closeAllDocuments"));
-        suite.addTest(new PrepareIDEForComplexMeasurements("closeMemoryToolbar"));
-        suite.addTest(new PrepareIDEForComplexMeasurements("openFiles"));
-        suite.addTest(new PrepareIDEForComplexMeasurements("saveStatus"));
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("Prepare IDE for Complex Measurements Suite");
+        System.setProperty("suitename", PrepareIDEForComplexMeasurements.class.getCanonicalName());
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(PrepareIDEForComplexMeasurements.class)
+                .addTest("testCloseAllDocuments")                
+                .addTest("testCloseMemoryToolbar")
+                .addTest("testOpenFiles")
+                .addTest("testSaveStatus").enableModules(".*").clusters(".*")));
         return suite;
     }
-    
     
     @Override
     public void setUp() {
@@ -123,7 +127,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     /**
      * Close All Documents.
      */
-    public void closeAllDocuments(){
+    public void testCloseAllDocuments(){
 
 	if ( new Action("Window|Close All Documents",null).isEnabled() )
 	        try {
@@ -138,10 +142,10 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     /**
      * Close Memory Toolbar.
      */
-    public static void closeMemoryToolbar(){
-        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.Bundle","Toolbars/Memory"));
+    public static void testCloseMemoryToolbar(){
+        closeToolbar(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/View") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Toolbars") + "|" +
+                Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Toolbars/Memory"));
     }
 
     
@@ -161,8 +165,17 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
     /**
      * Open 10 selected files from jEdit project.
      */
-    public void openFiles(){
-        
+    public void testOpenFiles(){
+        String zipPath = Utilities.projectOpen("http://spbweb.russia.sun.com/~ok153203/jEdit41.zip", "jEdit41.zip");
+        File zipFile = FileUtil.normalizeFile(new File(zipPath));
+        Utilities.unzip(zipFile, getWorkDirPath());        
+        try {            
+            Utilities.openProject("jEdit41", getWorkDir());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        waitScanFinished();
+        JellyTestCase.closeAllModal();
         try {
             String[][] files_path = {
                 {"bsh","Interpreter.java"},
@@ -236,7 +249,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      * Save status, if one of the above defined test failed, this method creates 
      * file in predefined path and it means the complex tests will not run.
      */
-    public void saveStatus() throws IOException{
+    public void testSaveStatus() throws IOException{
         if(test_failed)
             MeasureStartupTimeTestCase.createStatusFile();
     }

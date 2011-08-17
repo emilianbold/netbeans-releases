@@ -47,6 +47,7 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Enumerations;
@@ -104,6 +105,24 @@ public class MultiFileSystemGetAttrTest extends NbTestCase {
         assertTrue("No queries on read only fs3: " + fs3.rootQueries, fs3.rootQueries.isEmpty());
         assertFalse("Some queries on main fs1: " + fs1.rootQueries, fs1.rootQueries.isEmpty());
 
+    }
+
+    public void testBackslashAttrs() throws Exception { // #199043
+        FileSystem layers = FileUtil.createMemoryFileSystem();
+        FileObject physFolder = FileUtil.createFolder(layers.getRoot(), "sub/dir");
+        FileSystem writable = FileUtil.createMemoryFileSystem();
+        writable.getRoot().createFolder("sub");
+        FileSystem sfs = new MultiFileSystem(new FileSystem[] {writable, layers});
+        FileObject virtFolder = sfs.findResource("sub/dir");
+        virtFolder.setAttribute("a", true);
+        assertNull(physFolder.getAttribute("a"));
+        assertEquals(Collections.emptyList(), Collections.list(physFolder.getAttributes()));
+        assertEquals(true, writable.getRoot().getAttribute("sub\\dir\\a"));
+        assertEquals(Collections.singletonList("sub\\dir\\a"), Collections.list(writable.getRoot().getAttributes()));
+        assertEquals(true, virtFolder.getAttribute("a"));
+        assertEquals(Collections.singletonList("a"), Collections.list(virtFolder.getAttributes()));
+        assertNull(sfs.getRoot().getAttribute("sub\\dir\\a"));
+        assertEquals(Collections.emptyList(), Collections.list(sfs.getRoot().getAttributes()));
     }
 
     public static class MyLFS extends LocalFileSystem implements AbstractFileSystem.Attr {

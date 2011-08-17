@@ -65,7 +65,6 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -466,11 +465,7 @@ public class ProjectPanel extends javax.swing.JPanel {
         
         public boolean isValid() {
             String projectName = component.getProjectName();
-            if (projectName.length() == 0
-                    || projectName.indexOf('/') >= 0 //NOI18N
-                    || projectName.indexOf('\\') >= 0 //NOI18N
-                    || projectName.indexOf(':') >= 0 //NOI18N
-                    || projectName.indexOf("\"") >= 0) {      //NOI18N
+            if (isIllegalName(projectName)) {
                 showError(NbBundle.getMessage(ProjectPanel.class, "ERR_Project_InvalidProjectsName")); // NOI18N
                 return false;
             }
@@ -582,4 +577,14 @@ public class ProjectPanel extends javax.swing.JPanel {
         
     }
     
+    static boolean isIllegalName(final String name) {
+        return name.length() == 0      || 
+            name.indexOf('/')  >= 0 ||        //NOI18N
+            name.indexOf('\\') >= 0 ||        //NOI18N
+            name.indexOf(':')  >= 0 ||        //NOI18N
+            name.indexOf("\"") >= 0 ||        //NOI18N
+            name.indexOf('<')  >= 0 ||        //NOI18N
+            name.indexOf('>')  >= 0;          //NOI18N
+    }
+
 }

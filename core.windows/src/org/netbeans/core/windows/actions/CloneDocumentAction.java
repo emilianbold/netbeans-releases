@@ -77,6 +77,7 @@ public class CloneDocumentAction extends AbstractAction implements PropertyChang
     }
     
     /** Perform the action. Sets/unsets maximzed mode. */
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         if(tc == null || !(tc instanceof TopComponent.Cloneable)) {
@@ -93,6 +94,7 @@ public class CloneDocumentAction extends AbstractAction implements PropertyChang
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             updateEnabled();
@@ -109,6 +111,7 @@ public class CloneDocumentAction extends AbstractAction implements PropertyChang
     }
 
     /** Runnable implementation, for invokeLater */
+    @Override
     public void run() {
         updateEnabled();
     }

@@ -45,15 +45,19 @@ package org.netbeans.modules.profiler.j2ee.selector;
 
 import java.util.Collections;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
 import java.util.List;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.WebProjectChildren;
-import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuilder;
+import org.netbeans.modules.profiler.selector.api.builders.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -61,10 +65,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * @author Jaroslav Bachorik
  */
 @ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
-    "org-netbeans-modules-j2ee-earproject",
-    "org-netbeans-modules-web-project",
-    "org-netbeans-modules-maven/ear",
-    "org-netbeans-modules-maven/war"
+    "org-netbeans-modules-j2ee-earproject", // NOI18N
+    "org-netbeans-modules-web-project", // NOI18N
+    "org-netbeans-modules-maven/ear", // NOI18N
+    "org-netbeans-modules-maven/war" // NOI18N
 })
 public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     public PlainWebSelectionTreeBuilder(Project project) {
@@ -72,12 +76,15 @@ public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     }
     
     public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
-        super(new Type("web-application", "Web Applications View"), isPreferred, project);
+        super(new Type("web-application", NbBundle.getMessage(PlainWebSelectionTreeBuilder.class, // NOI18N
+                "PlainWebSelectionTreeBuilder_DisplayName")), isPreferred, project); // NOI18N
     }
-
+    
+    @Override
     public List<SelectorNode> buildSelectionTree() {
         SelectorNode projectNode = new ProjectNode(project) {
 
+            @Override
             protected SelectorChildren getChildren() {
                 return new WebProjectChildren(project);
             }

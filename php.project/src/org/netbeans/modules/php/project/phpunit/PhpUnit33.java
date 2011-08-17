@@ -43,10 +43,13 @@
 package org.netbeans.modules.php.project.phpunit;
 
 /**
+ * Implementation of PHPUnit 3.3.x.
  * @author Tomas Mysik
  */
 class PhpUnit33 extends PhpUnit {
+
     private static final String PARAM_XML_LOG = "--log-xml"; // NOI18N
+
 
     PhpUnit33(String command) {
         super(command);
@@ -56,4 +59,5 @@ class PhpUnit33 extends PhpUnit {
     public String getXmlLogParam() {
         return PARAM_XML_LOG;
     }
+
 }

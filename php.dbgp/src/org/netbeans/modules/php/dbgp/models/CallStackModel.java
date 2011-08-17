@@ -75,6 +75,7 @@ public class CallStackModel extends ViewModelSupport
         setCallStack( new ArrayList<Stack>() );
     }
 
+    @Override
     public Object getRoot() {
         return ROOT;
     }
@@ -91,6 +92,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildren(java.lang.Object, int, int)
      */
+    @Override
     public Object[] getChildren(Object parent, int from, int to) 
         throws UnknownTypeException 
     {
@@ -115,6 +117,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#isLeaf(java.lang.Object)
      */
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             return false;
@@ -129,6 +132,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TreeModel#getChildrenCount(java.lang.Object)
      */
+    @Override
     public int getChildrenCount(Object node) throws UnknownTypeException {
         if (node == ROOT) {
             List<Stack> list = myStack.get();
@@ -146,6 +150,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
+    @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof Stack) {
             Stack stack = (Stack)node;
@@ -166,6 +171,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
      */
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof Stack) {
             Stack curStack = myCurrentStack.get();
@@ -186,6 +192,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
      */
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if(node == ROOT) {
             return null;
@@ -200,6 +207,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeActionsProvider#performDefaultAction(java.lang.Object)
      */
+    @Override
     public void performDefaultAction(Object node) throws UnknownTypeException {
         if (node instanceof Stack) {
             Stack stack = (Stack)node;
@@ -212,6 +220,7 @@ public class CallStackModel extends ViewModelSupport
             
             if (line != null) {
                 Mutex.EVENT.readAccess(new Runnable () {
+                    @Override
                     public void run() {
                         line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
                     }
@@ -221,6 +230,7 @@ public class CallStackModel extends ViewModelSupport
         throw new UnknownTypeException (node);
     }
 
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
         return new Action[] {};
     }
@@ -228,6 +238,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#getValueAt(java.lang.Object, java.lang.String)
      */
+    @Override
     public Object getValueAt(Object node, String columnID) 
         throws UnknownTypeException 
     {
@@ -251,6 +262,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#isReadOnly(java.lang.Object, java.lang.String)
      */
+    @Override
     public boolean isReadOnly(Object node, String columnID) 
         throws UnknownTypeException 
     {
@@ -267,6 +279,7 @@ public class CallStackModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.TableModel#setValueAt(java.lang.Object, java.lang.String, java.lang.Object)
      */
+    @Override
     public void setValueAt(Object node, String columnID, Object value) 
         throws UnknownTypeException 
     {

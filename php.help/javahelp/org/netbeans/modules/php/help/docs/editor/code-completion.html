@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Code Completion</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+
+        <h2>Code Completion</h2>
+        <p>Code Completion is a common name for a set of features that facilitate 
+            and speed up the process of coding. </p>
+        <p>The following types of code completion are provided:  </p>
+        <ul>
+            <li><a href="#snippets">Snippets</a></li>
+            <li><a href="#contextSensitiveProposals">Context-sensitive proposals</a></li>
+            <li><a href="#abbreviations">Abbreviations</a></li>
+            <li><a href="#cc-constructors">Code Completion in Constructors</a></li>
+            <li><a href="#cc-sql">SQL Code Completion</a></li>
+            <li><a href="#cc-namespaces">PHP 5.3 Namespaces</a></li>
+            <li><a href="#cc-overridden-methods">Overridden and Implemented Methods</a></li>
+        </ul>
+        <h3><a name="snippets"></a>Snippets </h3>
+        <p>Snippets enable the user to generate code for various elements automatically.</p>
+        <ol>
+            <li>Choose Tools &gt; Palette &gt; HTML/JSP Code Clips. A palette containing various user interface elements appears in the right-hand panel.</li>
+            <li>Drag the required icon on the palette to the relevant position in the code. A dialog box for specifying the parameters of the corresponding elements appears. Fill in the data.</li>
+            <li>The code that displays the chosen element is generated and inserted in the chosen location.</li>
+        </ol>
+        <h3><a name="contextSensitiveProposals"></a>Context-Sensitive Proposals </h3>
+        <p>The editor provides context-sensitive proposals for completing any number of starting symbols of: </p>
+        <ul>
+            <li>A PHP keyword (for example, if, else, elseif, while, switch, function, and so on) </li>
+            <li>A PHP built-in function ( for example, substr, count, and so on)</li>
+            <li>A pre-defined or user-defined variable</li>
+        </ul>
+        <p>The editor not only suggests expansions  but also provides <a href="#ParameterHints">parameter hints</a>. To apply Code Completion: </p>
+        <ol>
+            <li>Type the starting symbols of the required character string. </li>
+            <li>Press CTRL + Space. A dropdown list shows the context-sensitive proposals. Each proposal is supplied with a description and parameter hints. The contents of the list change as you continue typing. </li>
+            <li>To obtain a list of the PHP key words that are available in the current context, press CTRL + Space without any previous typing.
+            </li>  
+            <li>To obtain a hint on a variable, just type the dollar symbol &quot;$&quot;. A list of all the currently available local and global variables appears. 
+        </ol>
+        <h3><a name="abbreviations"></a>Code Templates and Abbreviations</h3>
+        <p>In the current context, the term &quot;&quot;abbreviations&quot; refers to a set 
+            of predefined character strings that correspond to the key words used in a programming language. 
+            Each abbreviation is associated with an expanded text which contains the full key word and a 
+            code template for the key word with parameter hints. To apply this functionality, type an 
+            abbreviation and press Tab. The abbreviation is replaced with the corresponding key word and the code template for the key word is provided.<br/>
+            To view the list of defined abbreviation with code templates:</p>
+        <ol>
+            <li>Choose <tt>Tools > Options > Editor > Code Templates</tt>. </li>
+            <li>From the Language drop down list, select PHP. The list of PHP abbreviations and code template defined for them is displayed.</li> 
+            <li>To add or remove a definition from the list, use the New or Remove buttons respectively.</li>
+            <li>To edit a definition, select the relevant row and edit the text in the edit field below the list. </li>
+        </ol>
+        <p>For more information, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.com/kb/docs/php/code-templates.html">
+                <param name="text" value="<html><u>Code Templates in NetBeans IDE for PHP</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>.</p>
+        <h3><a name="cc-constructors"></a>Code Completion for Constructors</h3>
+        <p>After the <tt>new</tt> keyword, the code completion window is displayed with constructors and parameters for all available classes in the project.</p>
+        <h3><a name="cc-sql"></a>SQL Code Completion</h3>
+        <p>SQL code completion displays when a string begins with the SQL keyword &quot;select.&quot; The first step is to select the database connection.</p>
+        <p>All database connections registered with the IDE are displayed.</p>
+        <p>After you select the connection,  SQL code completion offers all tables from that database connection. </p>
+        <p>If the table has columns, those are displayed as well.</p>
+        <p>SQL code completion also works with table aliases.</p>
+        <h3><a name="cc-namespaces"></a>PHP 5.3 Namespaces</h3>
+        <p>Code completion supports fully qualified, partially qualified, and unqualified namespace 
+            names from PHP 5.3. For more information, please see the <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.com/kb/docs/php/namespace-code-completion-screencast.html">
+                <param name="text" value="<html><u>Namespace Code Completion screencast</u>.</html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>
+        </p>
+        <h3><a name="cc-overridden-methods"></a>Overridden and Implemented Methods</h3>
+        <p>Code completion between class members offers to override or implement methods.</p>
+
+
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+
+            <dd><a href="../process.html">Working with PHP</a></dd>
+            <dd><a href="../php_quickref.html">Project Tasks: Quick Reference</a>
+            </dd></dl>
+
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
+</html>

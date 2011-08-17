@@ -55,6 +55,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,6 +72,7 @@ import org.netbeans.api.lexer.TokenSequence;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 
+import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.modules.java.source.query.CommentHandler;
 
@@ -110,12 +112,14 @@ public final class TreeMaker {
     
     private TreeFactory delegate;
     private CommentHandler handler;
+    private final ASTService model;
     private WorkingCopy copy;
     
     TreeMaker(WorkingCopy copy, TreeFactory delegate) {
         this.delegate = delegate;
         this.copy = copy;
         this.handler = CommentHandlerService.instance(copy.impl.getJavacTask().getContext());
+        this.model = ASTService.instance(copy.impl.getJavacTask().getContext());
     }
     
     /** 
@@ -2589,9 +2593,143 @@ public final class TreeMaker {
      *         <tt>node</tt> does not contain any name or <tt>String</tt>.
      * @return  duplicated <tt>node</tt> with a new name
      */
-    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel) {
-        return delegate.setLabel(node, aLabel);
+    public <N extends Tree> N setLabel(final N node, final CharSequence aLabel)
+            throws IllegalArgumentException {
+        N result = setLabelImpl(node, aLabel);
+
+        GeneratorUtilities gu = GeneratorUtilities.get(copy);
+
+        gu.copyComments(node, result, true);
+        gu.copyComments(node, result, false);
+
+        return result;
     }
+
+    private <N extends Tree> N setLabelImpl(final N node, final CharSequence aLabel)
+            throws IllegalArgumentException
+    {
+        // todo (#pf): Shouldn't here be check that names are not the same?
+        // i.e. node label == aLabel? -- every case branch has to check itself
+        // This will improve performance, no change was done by API user.
+        Tree.Kind kind = node.getKind();
+
+        switch (kind) {
+            case BREAK: {
+                BreakTree t = (BreakTree) node;
+                N clone = (N) Break(
+                        aLabel
+                        );
+                return clone;
+            }
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE: {
+                ClassTree t = (ClassTree) node;
+                // copy all the members, for constructor change their name
+                // too!
+                List<? extends Tree> members = t.getMembers();
+                List<Tree> membersCopy = new ArrayList<Tree>();
+                for (Tree member : members) {
+                    if (member.getKind() == Kind.METHOD) {
+                        MethodTree m = (MethodTree) member;
+                        // there should be some better mechanism to detect
+                        // that it is constructor, there are tree.sym.isConstr()
+                        // at level of javac node.
+                        if ("<init>".contentEquals(m.getName())) { // NOI18N
+                            // ensure we will not do anything with syntetic
+                            // constructor -- todo (#pf): one of strange
+                            // hacks.
+                            if (model.getPos(t) != model.getPos(m)) {
+                                MethodTree a = setLabel(m, aLabel);
+                                model.setPos(a, model.getPos(m));
+                                membersCopy.add(a);
+                            } else {
+                                membersCopy.add(member);
+                            }
+                            continue;
+                        }
+                    }
+                    membersCopy.add(member);
+                }
+                // and continue the same way as other cases
+                N clone = (N) Class(
+                        t.getModifiers(),
+                        aLabel,
+                        t.getTypeParameters(),
+                        t.getExtendsClause(),
+                        (List<ExpressionTree>) t.getImplementsClause(),
+                        membersCopy);
+                return clone;
+            }
+            case CONTINUE: {
+                ContinueTree t = (ContinueTree) node;
+                N clone = (N) Continue(aLabel);
+                return clone;
+            }
+            case IDENTIFIER: {
+                IdentifierTree t = (IdentifierTree) node;
+                N clone = (N) Identifier(
+                        aLabel
+                        );
+                return clone;
+            }
+            case LABELED_STATEMENT: {
+                LabeledStatementTree t = (LabeledStatementTree) node;
+                N clone = (N) LabeledStatement(
+                        aLabel,
+                        t.getStatement()
+                        );
+                return clone;
+            }
+            case MEMBER_SELECT: {
+                MemberSelectTree t = (MemberSelectTree) node;
+                N clone = (N) MemberSelect(
+                        (ExpressionTree) t.getExpression(),
+                        aLabel
+                        );
+                return clone;
+            }
+            case METHOD: {
+                MethodTree t = (MethodTree) node;
+                N clone = (N) Method(
+                        t.getModifiers(),
+                        aLabel,
+                        t.getReturnType(),
+                        t.getTypeParameters(),
+                        (List) t.getParameters(),
+                        t.getThrows(),
+                        t.getBody(),
+                        (ExpressionTree) t.getDefaultValue()
+                );
+                return clone;
+            }
+            case TYPE_PARAMETER: {
+                TypeParameterTree t = (TypeParameterTree) node;
+                N clone = (N) TypeParameter(
+                        aLabel,
+                        (List<ExpressionTree>) t.getBounds()
+                        );
+                return clone;
+            }
+            case VARIABLE: {
+                VariableTree t = (VariableTree) node;
+                N clone = (N) Variable(
+                        (ModifiersTree) t.getModifiers(),
+                        aLabel,
+                        (Tree) t.getType(),
+                        (ExpressionTree) t.getInitializer()
+                        );
+                model.setPos(clone, model.getPos(t));
+                return clone;
+            }
+        }
+        // provided incorrect node's kind, no case branch was used
+        throw new IllegalArgumentException("Invalid node's kind. Supported" +
+                " kinds are BREAK, CLASS, CONTINUE, IDENTIFIER, LABELED_STATEMENT," +
+                " MEMBER_SELECT, METHOD, TYPE_PARAMETER, VARIABLE");
+    }
+
 
     /**
      * Replaces extends clause in class declaration. Consider you want to make 

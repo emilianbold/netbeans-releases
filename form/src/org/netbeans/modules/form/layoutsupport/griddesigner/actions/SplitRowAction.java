@@ -54,6 +54,7 @@ import org.openide.util.NbBundle;
  * Splits the focused row into two rows.
  *
  * @author Jan Stola
+ * @author Petr Somol
  */
 public class SplitRowAction extends AbstractGridAction {
     private String name;
@@ -75,33 +76,50 @@ public class SplitRowAction extends AbstractGridAction {
     @Override
     public GridBoundsChange performAction(GridManager gridManager, DesignerContext context) {
         GridInfoProvider gridInfo = gridManager.getGridInfo();
+        boolean gapSupport = gridInfo.hasGaps();
         int[] originalColumnBounds = gridInfo.getColumnBounds();
         int[] originalRowBounds = gridInfo.getRowBounds();
         int row = context.getFocusedRow();
 
         GridUtils.removePaddingComponents(gridManager);
-        gridManager.insertRow(row+1);
+        gridManager.insertRow(row + (gapSupport ? 2 : 1));
 
         for (Component component : gridManager.getContainer().getComponents()) {
             int y = gridInfo.getGridY(component);
             int height = gridInfo.getGridHeight(component);
-            if (y+height-1 == row) {
+            if (y + height - 1 == row) {
                 int x = gridInfo.getGridX(component);
                 int width = gridInfo.getGridWidth(component);
-                gridManager.setGridPosition(component, x, y, width, ++height);
+                gridManager.setGridPosition(component, x, y, width, height + (gapSupport ? 2 : 1));
             }
         }
 
-        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length-1, originalRowBounds.length);
+        GridUtils.revalidateGrid(gridManager);
+        gridManager.updateGaps(false);
+        GridUtils.addPaddingComponents(gridManager, originalColumnBounds.length - 1, originalRowBounds.length - 1 + (gapSupport ? 2 : 1));
         GridUtils.revalidateGrid(gridManager);
 
-        row++;
+        row += (gapSupport ? 2 : 1);
         int[] newColumnBounds = gridInfo.getColumnBounds();
         int[] newRowBounds = gridInfo.getRowBounds();
-        int[] oldRowBounds = new int[originalRowBounds.length+1];
-        System.arraycopy(originalRowBounds, 0, oldRowBounds, 0, row+1);
-        oldRowBounds[row+1]=oldRowBounds[row];
-        System.arraycopy(originalRowBounds, row+1, oldRowBounds, row+2, originalRowBounds.length-row-1);
+        int[] oldRowBounds = new int[originalRowBounds.length + (gapSupport ? 2 : 1)];
+        if(gapSupport) {
+            if(originalRowBounds.length == row) {
+                // inserting after bottommost row
+                System.arraycopy(originalRowBounds, 0, oldRowBounds, 0, row);
+                oldRowBounds[row] = oldRowBounds[row - 1];
+                oldRowBounds[row + 1] = oldRowBounds[row - 1];
+            } else {
+                System.arraycopy(originalRowBounds, 0, oldRowBounds, 0, row + 1);
+                oldRowBounds[row + 1] = oldRowBounds[row];
+                oldRowBounds[row + 2] = oldRowBounds[row];
+                System.arraycopy(originalRowBounds, row + 1, oldRowBounds, row + 3, originalRowBounds.length - row - 1);
+            }
+        } else {
+            System.arraycopy(originalRowBounds, 0, oldRowBounds, 0, row + 1);
+            oldRowBounds[row + 1] = oldRowBounds[row];
+            System.arraycopy(originalRowBounds, row + 1, oldRowBounds, row + 2, originalRowBounds.length - row - 1);
+        }
         return new GridBoundsChange(originalColumnBounds, oldRowBounds, newColumnBounds, newRowBounds);
     }
 

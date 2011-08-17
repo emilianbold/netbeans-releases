@@ -45,6 +45,7 @@ public interface VariableNode extends ModelNode {
      * F.e. for $var : "var", for $arr['key'] : "key".
      * @return short name of variable or memeber.
      */
+    @Override
     String getName();
 
     Line findDeclarationLine();

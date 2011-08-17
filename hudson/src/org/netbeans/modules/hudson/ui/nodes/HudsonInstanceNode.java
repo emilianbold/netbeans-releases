@@ -57,13 +57,14 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
-import org.netbeans.modules.hudson.util.Utilities;
+import static org.netbeans.modules.hudson.ui.nodes.Bundle.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -81,6 +82,7 @@ public class HudsonInstanceNode extends AbstractNode {
     private boolean warn = false;
     private boolean run = false;
     private boolean alive = false;
+    private boolean forbidden;
     private boolean version = false;
     
     public HudsonInstanceNode(final HudsonInstanceImpl instance) {
@@ -115,19 +117,25 @@ public class HudsonInstanceNode extends AbstractNode {
         refreshContent();
     }
     
-    @Override
-    public String getHtmlDisplayName() {
+    
+    @Messages({
+        "MSG_WrongVersion=[Older version than {0}]",
+        "MSG_Disconnected=[Disconnected]",
+        "MSG_forbidden=[Unauthorized]",
+        "HudsonInstanceNode.from_open_project=(from open project)"
+    })
+    @Override public String getHtmlDisplayName() {
         boolean pers = instance.isPersisted();
         String selectedView = instance.prefs().get(SELECTED_VIEW, null);
         return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") + // NOI18N
                 instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") + // NOI18N
                 (selectedView != null ? " <font color='!controlShadow'>[" + selectedView + "]</font>" : "") + // NOI18N
                 (alive ? (version ? "" : " <font color=\"#A40000\">" + // NOI18N
-                    NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION) + "</font>") :
+                    MSG_WrongVersion(HudsonVersion.SUPPORTED_VERSION) + "</font>") :
                     " <font color=\"#A40000\">" + // NOI18N
-                NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
+                (forbidden ? MSG_forbidden() : MSG_Disconnected()) + "</font>") +
                 (!pers ? " <font color='!controlShadow'>" + // NOI18N
-                    NbBundle.getMessage(HudsonInstanceNode.class, "HudsonInstanceNode.from_open_project") + "</font>" : "");
+                    HudsonInstanceNode_from_open_project() + "</font>" : "");
     }
     
     public @Override Action[] getActions(boolean context) {
@@ -151,6 +159,7 @@ public class HudsonInstanceNode extends AbstractNode {
         String oldHtmlName = "";
         
         alive = instance.isConnected();
+        forbidden = instance.isForbidden();
         version = Utilities.isSupportedVersion(instance.getVersion());
         
         // Refresh children

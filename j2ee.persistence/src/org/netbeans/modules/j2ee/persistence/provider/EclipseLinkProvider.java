@@ -45,7 +45,9 @@
 package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.persistence.config.PersistenceUnitProperties;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
 
@@ -101,17 +103,17 @@ class EclipseLinkProvider extends Provider {
     
     @Override
     public String getTableGenerationPropertyName() {
-        return "eclipselink.ddl-generation";
+        return PersistenceUnitProperties.DDL_GENERATION;
     }
 
     @Override
     public String getTableGenerationDropCreateValue() {
-        return "drop-and-create-tables";
+        return PersistenceUnitProperties.DROP_AND_CREATE;
     }
 
     @Override
     public String getTableGenerationCreateValue() {
-        return "create-tables";
+        return PersistenceUnitProperties.CREATE_ONLY;
     }
 
     @Override
@@ -123,4 +125,6 @@ class EclipseLinkProvider extends Provider {
     public Map getDefaultVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
+    
+    private final HashMap<String,String[]> properties = new HashMap<String,String[]>();
 }

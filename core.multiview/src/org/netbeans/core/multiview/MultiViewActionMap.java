@@ -113,17 +113,22 @@ final class MultiViewActionMap extends ActionMap {
         
         java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         Action found = null;
-        while (owner != null && owner != component) {
-            if (found == null && (owner instanceof JComponent)) {
-                m = ((JComponent)owner).getActionMap ();
-                if (m != null) {
-                    if( m instanceof MultiViewActionMap && ((MultiViewActionMap)m).preventRecursive ) {
-                        break;
+        try {
+            preventRecursive = true;
+            while (owner != null && owner != component) {
+                if (found == null && (owner instanceof JComponent)) {
+                    m = ((JComponent)owner).getActionMap ();
+                    if (m != null) {
+                        if( m instanceof MultiViewActionMap && ((MultiViewActionMap)m).preventRecursive ) {
+                            break;
+                        }
+                        found = m.get (key);
                     }
-                    found = m.get (key);
                 }
+                owner = owner.getParent ();
             }
-            owner = owner.getParent ();
+        } finally {
+            preventRecursive = false;
         }
         
         return owner == component ? found : null;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -58,6 +58,8 @@ import org.openide.ErrorManager;
  * @author pfiala
  */
 public abstract class DDMultiViewElement extends ToolBarMultiViewElement {
+    
+    private static final long serialVersionUID = 20110810L;
 
     private SectionView view;
     protected ToolBarDesignEditor comp;
@@ -70,11 +72,13 @@ public abstract class DDMultiViewElement extends ToolBarMultiViewElement {
         setVisualEditor(comp);
     }
 
+    @Override
     public void componentShowing() {
         if (view == null) {
             view = createView();
             if (view instanceof SectionNodeView) {
                 dataObject.getDDRoot().addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         ((SectionNodeView) view).dataModelPropertyChange(evt.getSource(), evt.getPropertyName(),
                                 evt.getOldValue(), evt.getNewValue());
@@ -111,6 +115,7 @@ public abstract class DDMultiViewElement extends ToolBarMultiViewElement {
 
     protected abstract SectionView createView();
     
+    @Override
     public SectionView getSectionView() {
         return view;
     }

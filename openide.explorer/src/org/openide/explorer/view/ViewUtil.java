@@ -44,9 +44,13 @@ package org.openide.explorer.view;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -101,4 +105,36 @@ class ViewUtil {
         }
         return false;
     }
+
+    static void nodeRename(final Node n, final String newStr) {
+        // bugfix #21589 don't update name if there is not any change
+        if (n.getName().equals(newStr)) {
+            return;
+        }
+        if (EventQueue.isDispatchThread() && Boolean.TRUE.equals(n.getValue("slowRename"))) { // NOI18N
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    nodeRename(n, newStr);
+                }
+            });
+            return;
+        }
+        try {
+            n.setName(newStr);
+        } catch (IllegalArgumentException exc) {
+            boolean needToAnnotate = Exceptions.findLocalizedMessage(exc) == null;
+
+            // annotate new localized message only if there is no localized message yet
+            if (needToAnnotate) {
+                String msg = NbBundle.getMessage(
+                        TreeViewCellEditor.class, "RenameFailed", n.getName(), newStr
+                    );
+                Exceptions.attachLocalizedMessage(exc, msg);
+            }
+
+            Exceptions.printStackTrace(exc);
+        }
+    }
+
 }

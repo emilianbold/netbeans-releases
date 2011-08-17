@@ -59,41 +59,19 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCErroneous;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -166,65 +144,6 @@ public class Hacks {
             return r1 != null ? r1 : r2;
         }
 
-    }
-
-    private static final String SOURCE_LEVEL = "1.5"; //TODO: could be possibly inferred from the current Java platform
-
-    public static Map<String, byte[]> compile(ClassPath boot, ClassPath compile, final String code) throws IOException {
-        StandardJavaFileManager sjfm = ToolProvider.getSystemJavaCompiler().getStandardFileManager(null, null, null);
-
-        sjfm.setLocation(StandardLocation.PLATFORM_CLASS_PATH, toFiles(boot));
-        sjfm.setLocation(StandardLocation.CLASS_PATH, toFiles(compile));
-
-        final Map<String, ByteArrayOutputStream> class2BAOS = new HashMap<String, ByteArrayOutputStream>();
-
-        JavaFileManager jfm = new ForwardingJavaFileManager<JavaFileManager>(sjfm) {
-            @Override
-            public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
-                final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                
-                class2BAOS.put(className, buffer);
-                return new SimpleJavaFileObject(sibling.toUri(), kind) {
-                    @Override
-                    public OutputStream openOutputStream() throws IOException {
-                        return buffer;
-                    }
-                };
-            }
-        };
-
-        JavaFileObject file = new SimpleJavaFileObject(URI.create("mem://mem"), Kind.SOURCE) {
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                return code;
-            }
-        };
-        ToolProvider.getSystemJavaCompiler().getTask(null, jfm, null, /*XXX:*/Arrays.asList("-source", SOURCE_LEVEL, "-target", SOURCE_LEVEL), null, Arrays.asList(file)).call();
-
-        Map<String, byte[]> result = new HashMap<String, byte[]>();
-
-        for (Map.Entry<String, ByteArrayOutputStream> e : class2BAOS.entrySet()) {
-            result.put(e.getKey(), e.getValue().toByteArray());
-        }
-
-        return result;
-    }
-
-    private static Iterable<? extends File> toFiles(ClassPath cp) {
-        List<File> result = new LinkedList<File>();
-
-        for (Entry e : cp.entries()) {
-            File f = FileUtil.archiveOrDirForURL(e.getURL());
-
-            if (f == null) {
-                Logger.getLogger(Hacks.class.getName()).log(Level.INFO, "file == null, url={0}", e.getURL());
-                continue;
-            }
-
-            result.add(f);
-        }
-
-        return result;
     }
 
 

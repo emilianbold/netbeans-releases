@@ -3041,6 +3041,556 @@ public class FormatingTest extends NbTestCase {
         preferences.putBoolean("absoluteLabelIndent", false);
     }
 
+    public void testJavadoc() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n"
+                + "    public void taragui(CharSequence cs, Object obj) {\n"
+                + "    }\n"
+                + "}\n");
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie)testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+                "package hierbas.del.litoral;\n"
+                + "public class Test{\n"
+                + "/**\n"
+                + "*This is a test JavaDoc  for the taragui method.\n"
+                + "*  Method description is here.\n"
+                + "*<pre>\n"
+                + "* Test t = new Test();\n"
+                + "* try {\n"
+                + "*     t.taragui(\"TEST\", t);\n"
+                + "* } catch (Exception e) {}\n"
+                + "*</pre>\n"
+                + "* @param cs this is the first parameter description.\n"
+                + "* @param obj this is the second parameter description.\n"
+                + "*@return this is the return value description.\n"
+                + "*  @throws MyRuntimeException the first exception description.\n"
+                + "* @throws AnException the second exception description.\n"
+                + "*/\n"
+                + "public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "/*  This is a block comment.*/\n"
+                + "return null;\n"
+                + "}\n"
+                + "}\n";
+
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putInt("text-limit-width", 45);
+        preferences.putBoolean("generateParagraphTagOnBlankLines", true);
+
+        String golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method. Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * <p/>\n"
+                + "     * @param cs this is the first parameter\n"
+                + "     * description.\n"
+                + "     * @param obj this is the second\n"
+                + "     * parameter description.\n"
+                + "     * @return this is the return value\n"
+                + "     * description.\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     * exception description.\n"
+                + "     * @throws AnException the second\n"
+                + "     * exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     *This is a test JavaDoc  for the taragui method.\n"
+                + "     *  Method description is here.\n"
+                + "     *<pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     *</pre>\n"
+                + "     * @param cs this is the first parameter description.\n"
+                + "     * @param obj this is the second parameter description.\n"
+                + "     *@return this is the return value description.\n"
+                + "     *  @throws MyRuntimeException the first exception description.\n"
+                + "     * @throws AnException the second exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*  This is a block comment.*/\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("enableCommentFormatting", false);
+        reformat(doc, content, golden);
+        preferences.remove("enableCommentFormatting");
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui method.\n"
+                + "     * Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * <p/>\n"
+                + "     * @param cs this is the first parameter description.\n"
+                + "     * @param obj this is the second parameter description.\n"
+                + "     * @return this is the return value description.\n"
+                + "     * @throws MyRuntimeException the first exception description.\n"
+                + "     * @throws AnException the second exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("wrapCommentText", false);
+        reformat(doc, content, golden);
+        preferences.remove("wrapCommentText");
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     This is a test JavaDoc for the taragui\n"
+                + "     method. Method description is here.\n"
+                + "     <pre>\n"
+                + "     Test t = new Test();\n"
+                + "     try {\n"
+                + "         t.taragui(\"TEST\", t);\n"
+                + "     } catch (Exception e) {}\n"
+                + "     </pre>\n"
+                + "     <p/>\n"
+                + "     @param cs this is the first parameter\n"
+                + "     description.\n"
+                + "     @param obj this is the second parameter\n"
+                + "     description.\n"
+                + "     @return this is the return value\n"
+                + "     description.\n"
+                + "     @throws MyRuntimeException the first\n"
+                + "     exception description.\n"
+                + "     @throws AnException the second exception\n"
+                + "     description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("addLeadingStarInComment", false);
+        reformat(doc, content, golden);
+
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     This is a test JavaDoc for the taragui\n"
+                + "     method.\n"
+                + "     Method description is here.\n"
+                + "     <pre>\n"
+                + "     Test t = new Test();\n"
+                + "     try {\n"
+                + "         t.taragui(\"TEST\", t);\n"
+                + "     } catch (Exception e) {}\n"
+                + "     </pre>\n"
+                + "     <p/>\n"
+                + "     @param cs this is the first parameter\n"
+                + "     description.\n"
+                + "     @param obj this is the second parameter\n"
+                + "     description.\n"
+                + "     @return this is the return value\n"
+                + "     description.\n"
+                + "     @throws MyRuntimeException the first\n"
+                + "     exception description.\n"
+                + "     @throws AnException the second exception\n"
+                + "     description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("preserveNewLinesInComments", true);
+        reformat(doc, content, golden);
+        preferences.remove("addLeadingStarInComment");
+
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method.\n"
+                + "     * Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * <p/>\n"
+                + "     * @param cs this is the first parameter\n"
+                + "     * description.\n"
+                + "     * @param obj this is the second\n"
+                + "     * parameter description.\n"
+                + "     * @return this is the return value\n"
+                + "     * description.\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     * exception description.\n"
+                + "     * @throws AnException the second\n"
+                + "     * exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+        preferences.remove("preserveNewLinesInComments");
+
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method. Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     *\n"
+                + "     * @param cs this is the first parameter\n"
+                + "     * description.\n"
+                + "     * @param obj this is the second\n"
+                + "     * parameter description.\n"
+                + "     * @return this is the return value\n"
+                + "     * description.\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     * exception description.\n"
+                + "     * @throws AnException the second\n"
+                + "     * exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("generateParagraphTagOnBlankLines", false);
+        reformat(doc, content, golden);
+
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     This is a test JavaDoc for the taragui\n"
+                + "     method. Method description is here.\n"
+                + "     <pre>\n"
+                + "     Test t = new Test();\n"
+                + "     try {\n"
+                + "         t.taragui(\"TEST\", t);\n"
+                + "     } catch (Exception e) {}\n"
+                + "     </pre>\n"
+                + "\n"
+                + "     @param cs this is the first parameter\n"
+                + "     description.\n"
+                + "     @param obj this is the second parameter\n"
+                + "     description.\n"
+                + "     @return this is the return value\n"
+                + "     description.\n"
+                + "     @throws MyRuntimeException the first\n"
+                + "     exception description.\n"
+                + "     @throws AnException the second exception\n"
+                + "     description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("addLeadingStarInComment", false);
+        reformat(doc, content, golden);
+        preferences.remove("addLeadingStarInComment");
+        preferences.putBoolean("generateParagraphTagOnBlankLines", true);
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method. Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * <p/>\n"
+                + "     * @param cs this is the first parameter\n"
+                + "     * description.\n"
+                + "     * @param obj this is the second\n"
+                + "     * parameter description.\n"
+                + "     * @return this is the return value\n"
+                + "     * description.\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     * exception description.\n"
+                + "     * @throws AnException the second\n"
+                + "     * exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /* This is a block comment. */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("wrapOneLineComment", false);
+        reformat(doc, content, golden);
+        preferences.remove("wrapOneLineComment");
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method. Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * @param cs this is the first parameter\n"
+                + "     * description.\n"
+                + "     * @param obj this is the second\n"
+                + "     * parameter description.\n"
+                + "     * @return this is the return value\n"
+                + "     * description.\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     * exception description.\n"
+                + "     * @throws AnException the second\n"
+                + "     * exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("blankLineAfterJavadocDescription", false);
+        reformat(doc, content, golden);
+        preferences.remove("blankLineAfterJavadocDescription");
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method. Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * <p/>\n"
+                + "     * @param cs  this is the first parameter\n"
+                + "     *            description.\n"
+                + "     * @param obj this is the second\n"
+                + "     *            parameter description.\n"
+                + "     * @return this is the return value\n"
+                + "     *         description.\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     *                            exception\n"
+                + "     *                            description.\n"
+                + "     * @throws AnException        the second\n"
+                + "     *                            exception\n"
+                + "     *                            description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("alignJavadocParameterDescriptions", true);
+        preferences.putBoolean("alignJavadocReturnDescription", true);
+        preferences.putBoolean("alignJavadocExceptionDescriptions", true);
+        reformat(doc, content, golden);
+        preferences.remove("alignJavadocExceptionDescriptions");
+        preferences.remove("alignJavadocReturnDescription");
+        preferences.remove("alignJavadocParameterDescriptions");
+        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method. Method description is here.\n"
+                + "     * <pre>\n"
+                + "     * Test t = new Test();\n"
+                + "     * try {\n"
+                + "     *     t.taragui(\"TEST\", t);\n"
+                + "     * } catch (Exception e) {}\n"
+                + "     * </pre>\n"
+                + "     * <p/>\n"
+                + "     * @param cs this is the first parameter\n"
+                + "     * description.\n"
+                + "     * @param obj this is the second\n"
+                + "     * parameter description.\n"
+                + "     * <p/>\n"
+                + "     * @return this is the return value\n"
+                + "     * description.\n"
+                + "     * <p/>\n"
+                + "     * @throws MyRuntimeException the first\n"
+                + "     * exception description.\n"
+                + "     * @throws AnException the second\n"
+                + "     * exception description.\n"
+                + "     */\n"
+                + "    public String taragui(CharSequence cs, Object obj) throws MyRuntimeException, AnExeption {\n"
+                + "        /*\n"
+                + "         * This is a block comment.\n"
+                + "         */\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "}\n";        
+        preferences.putBoolean("blankLineAfterJavadocParameterDescriptions", true);
+        preferences.putBoolean("blankLineAfterJavadocReturnTag", true);
+        reformat(doc, content, golden);
+        preferences.remove("blankLineAfterJavadocReturnTag");
+        preferences.remove("blankLineAfterJavadocParameterDescriptions");
+        
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "         * This is a test JavaDoc for the taragui method.\n"
+                + "         * @see Exception see tag example\n"
+                + "         */\n"
+                + "    public void taragui() {\n"
+                + "    }\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * This is a test JavaDoc for the taragui\n"
+                + "     * method.\n"
+                + "     * <p/>\n"
+                + "     * @see Exception see tag example\n"
+                + "     */\n"
+                + "    public void taragui() {\n"
+                + "    }\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+        preferences.remove("generateParagraphTagOnBlankLines");        
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * @author XYZ\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * @author XYZ\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * The link in javadoc test shows \n"
+                + " * the {@link #read(ByteBuffer,long,TimeUnit,Object,CompletionHandler) read} and\n"
+                + " * {@link #write(ByteBuffer,long,TimeUnit,Object,CompletionHandler) write} methods.\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        golden =
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "/**\n"
+                + " * The link in javadoc test shows the {@link #read(ByteBuffer,long,TimeUnit,Object,CompletionHandler) read}\n"
+                + " * and\n"
+                + " * {@link #write(ByteBuffer,long,TimeUnit,Object,CompletionHandler) write}\n"
+                + " * methods.\n"
+                + " */\n"
+                + "public class Test {\n"
+                + "}\n";        
+        reformat(doc, content, golden);
+
+        preferences.remove("text-limit-width");
+    }
+
     /**
      * Do not put spaces to parenthesis when method declaration has no
      * parameters. The same rule should be applied to method invocation.
@@ -3281,7 +3831,7 @@ public class FormatingTest extends NbTestCase {
                 + "    /**\n"
                 + "     *\n"
                 + "     *\n"
-                + "    }\n";
+                + "     * }\n";
         reformat(doc, content, golden);
     }
 

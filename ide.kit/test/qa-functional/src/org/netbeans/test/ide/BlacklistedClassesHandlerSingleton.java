@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Handler;
@@ -400,6 +401,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 ThreadInfo[] threads = threadBean.dumpAllThreads(false, false);
                                 for (ThreadInfo ti : threads) {
                                     if (ti.getThreadId() == Thread.currentThread().getId()) {
+                                        StackTraceElement fakeEl = new StackTraceElement(className, "<loaded>", null, -1);
+                                        
+                                        ti.getStackTrace()[0] = fakeEl;
                                         samples.writeSample(new ThreadInfo[] {ti}, start*1000000L + violation * 10000000L, -1);
                                         break;
                             }
@@ -766,6 +770,35 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
         newWhitelist.clear();
         whitelistEnabled = false;
         generatingWhitelist = false;
+    }
+    
+    
+    public void filterViolators(String[] list) {
+        if (list!=null) {
+            StringBuilder violat =new StringBuilder();
+            final Set keySet = whitelistViolators.keySet();
+            int count = list.length;
+            Iterator iter = keySet.iterator();
+            while (iter.hasNext()) {
+                String violator = (String) iter.next();
+                boolean filtered = true;
+                for (int i = 0; i < count; i++) {
+                    if (  (violator.toLowerCase().contains(list[i])) ) {
+                        filtered = false;
+                        break;
+                    }
+                }
+                if (filtered) {
+                    violat.append(violator);
+                    violat.append(",");
+                }
+            }
+            StringTokenizer tok = new StringTokenizer(violat.toString(), ",", false);
+            while (tok.hasMoreTokens()) {
+                whitelistViolators.remove(tok.nextToken());
+                violation--;
+            }
+        }
     }
 
     @Override

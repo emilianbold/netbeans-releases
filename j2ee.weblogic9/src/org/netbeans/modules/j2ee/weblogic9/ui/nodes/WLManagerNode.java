@@ -47,8 +47,6 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import java.awt.*;
 
 import javax.enterprise.deploy.spi.*;
-import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 
 import org.openide.util.*;
 import org.openide.nodes.*;
@@ -80,7 +78,6 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     private static final String DOMAIN_ROOT = "domainRoot"; // NOI18N
     private static final String DEBUGGER_PORT = "debuggerPort"; // NOI18N
     private static final String ADMIN_URL = "/console/login/LoginForm.jsp"; //NOI18N
-    private static final String ADMIN_URL_11_WEB = "/console"; //NOI18N
     
     /**
      * Path to the node's icon that should reside in the class path
@@ -109,13 +106,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         builder.append(deploymentManager.getHost());
         builder.append(":"); // NOI18N
         builder.append(deploymentManager.getPort());
-        if (deploymentManager.getDomainVersion() != null
-                && deploymentManager.getDomainVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_11)
-                && deploymentManager.isWebProfile()) { // NOI18N
-            builder.append(ADMIN_URL_11_WEB);
-        } else {
-            builder.append(ADMIN_URL);
-        }
+        builder.append(ADMIN_URL);
         return builder.toString();
     }
     

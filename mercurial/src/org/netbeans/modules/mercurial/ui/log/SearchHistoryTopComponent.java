@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
+import java.awt.event.ActionEvent;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -50,7 +51,12 @@ import org.openide.util.HelpCtx;
 import java.util.*;
 import java.io.File;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.branch.BranchSelector;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * @author Maros Sandor
@@ -65,13 +71,13 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
     
-    public SearchHistoryTopComponent(File[] files) {
-        this(files, null, null, null, null);
+    public SearchHistoryTopComponent(File[] files, String branchName) {
+        this(files, null, null, null, null, branchName);
     }
 
-    public SearchHistoryTopComponent(File[] files, String commitMessage, String username, Date from, Date to) {
+    public SearchHistoryTopComponent(File[] files, String commitMessage, String username, Date from, Date to, String branchName) {
         this();
-        initComponents(files, commitMessage, username, from, to);
+        initComponents(files, commitMessage, username, from, to, branchName);
     }
 
     /**
@@ -81,7 +87,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
      */
     SearchHistoryTopComponent(File file, DiffResultsViewFactory fac) {
         this();
-        initComponents(new File[] {file}, null, null, null, null);
+        initComponents(new File[] {file}, null, null, null, null, ""); //NOI18N
         shp.setDiffResultsViewFactory(fac);
         // showing only one file - so disable the show all changepaths options
         shp.disableFileChangesOption(false);
@@ -102,7 +108,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         scp.setTo("");
     }
 
-    private void initComponents(File[] roots, String commitMessage, String username, Date from, Date to) {
+    private void initComponents(final File[] roots, String commitMessage, String username, Date from, Date to, String branchName) {
         setLayout(new BorderLayout());
         scp = new SearchCriteriaPanel();
         scp.setCommitMessage(commitMessage);
@@ -115,17 +121,24 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         }
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);
+        scp.setBranch(branchName);
+        if (roots.length > 0) {
+            scp.btnSelectBranch.addActionListener(new BranchSelectorOpener(roots, scp));
         }
+    }
 
+    @Override
     public int getPersistenceType(){
        return TopComponent.PERSISTENCE_NEVER;
     }
     
+    @Override
     protected void componentClosed() {
        //((DiffMainPanel) getComponent(0)).componentClosed();
        super.componentClosed();
     }
     
+    @Override
     protected String preferredID(){
         if (shp.isIncomingSearch()) {
             return "Hg.IncomingSearchHistoryTopComponent";    // NOI18N
@@ -135,14 +148,17 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         return "Hg.SearchHistoryTopComponent";    // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     public Collection getSetups() {
         return shp.getSetups();
     }
 
+    @Override
     public String getSetupDisplayName() {
         return getDisplayName();
     }
@@ -153,6 +169,47 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     public static class DiffResultsViewFactory {
         DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
             return new DiffResultsView(panel, results);
+        }
+    }
+    
+    private static class BranchSelectorOpener implements ActionListener {
+        private final SearchCriteriaPanel scp;
+        private final File root;
+
+        public BranchSelectorOpener (File[] roots, SearchCriteriaPanel scp) {
+            this.scp = scp;
+            this.root = roots[0];
+        }
+        
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            scp.btnSelectBranch.setEnabled(false);
+            Utils.postParallel(new Runnable() {
+                @Override
+                public void run () {
+                    final String branchName;
+                    File repoRoot = Mercurial.getInstance().getRepositoryRoot(root);
+                    if (repoRoot == null) {
+                        branchName = null;
+                    } else {
+                        BranchSelector selector = new BranchSelector(repoRoot);
+                        if (selector.showGeneralDialog()) {
+                            branchName = selector.getBranchName();
+                        } else {
+                            branchName = null;
+                        }
+                    }
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            scp.btnSelectBranch.setEnabled(true);
+                            if (branchName != null) {
+                                scp.setBranch(branchName);
+                            }
+                        }
+                    });
+                }
+            }, 0);
         }
     }
 }

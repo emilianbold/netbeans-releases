@@ -101,7 +101,10 @@ public enum DependencyKind {
             case RAW_JAR :
                 return EnumSet.of(DeploymentStrategy.ALREADY_ON_CARD, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
             default :
-                throw new AssertionError();
+                // #189909
+                // unknown deployment strategy: predict we support everything and let user choose
+                return EnumSet.of(DeploymentStrategy.DEPLOY_TO_CARD, DeploymentStrategy.ALREADY_ON_CARD, DeploymentStrategy.INCLUDE_IN_PROJECT_CLASSES);
+//                throw new AssertionError();
         }
     }
 

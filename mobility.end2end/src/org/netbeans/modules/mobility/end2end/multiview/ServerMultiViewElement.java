@@ -50,7 +50,7 @@
  */
 package org.netbeans.modules.mobility.end2end.multiview;
 
-import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.mobility.end2end.E2EDataObject;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.SectionPanel;
@@ -60,106 +60,117 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Michal Skvor
+ * @author Michal Skvor, Anton Chechel
  */
+@Messages("CTL_ServerTabCaption=Server") // NOI18N
 public class ServerMultiViewElement extends ToolBarMultiViewElement {
-    
+    private static final String SERVER_NODE_ICON_BASE = "org/netbeans/modules/mobility/end2end/resources/server.png"; // NOI18N
+
+    protected ServerViewFactory factory;
+
     private SectionView view;
     private ToolBarDesignEditor comp;
     private int index;
-    
-    protected ServerViewFactory factory;
-    
     private boolean needInit = true;
-    
-    /** Creates a new instance of ClientMultiViewElement */
-    public ServerMultiViewElement( E2EDataObject dataObject, int index ) {
-        super( dataObject );
+
+    public ServerMultiViewElement(E2EDataObject dataObject, int index) {
+        super(dataObject);
         this.index = index;
-        
+
         comp = new ToolBarDesignEditor();
-        factory = new ServerViewFactory( comp, dataObject );
-        setVisualEditor( comp );
-        RequestProcessor.getDefault().create( new Runnable() {
-            public void run() {
-                javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                    public void run() {
-                        repaintView();
-                    }
-                });
-            }
-        });
+        factory = new ServerViewFactory(comp, dataObject);
+        setVisualEditor(comp);
     }
-    
+
+    @MultiViewElement.Registration(mimeType = E2EDataObject.MIME_TYPE_CLASS,
+        iconBase = E2EDataObject.ICON_BASE,
+        persistenceType = TopComponent.PERSISTENCE_NEVER,
+        preferredID = "e2e.server", // NOI18N
+        displayName = "#CTL_ServerTabCaption", // NOI18N
+        position = 110
+    )
+    public static MultiViewElement createClassServerViewElement(Lookup lookup) {
+        return new ServerMultiViewElement(lookup.lookup(E2EDataObject.class), 1);
+    }
+
+    @MultiViewElement.Registration(mimeType = E2EDataObject.MIME_TYPE_WSDL,
+        iconBase = E2EDataObject.ICON_BASE,
+        persistenceType = TopComponent.PERSISTENCE_NEVER,
+        preferredID = "e2e.server", // NOI18N
+        displayName = "#CTL_ServerTabCaption", // NOI18N
+        position = 110
+    )
+    public static MultiViewElement createWsdlServerViewElement(Lookup lookup) {
+        return new ServerMultiViewElement(lookup.lookup(E2EDataObject.class), 1);
+    }
+
+    @Override
     public void componentShowing() {
         super.componentShowing();
-        dObj.setLastOpenView( index );
-        if( needInit /* || !dObj.isDocumentParseable() */) {
+        dObj.setLastOpenView(index);
+        if (needInit /* || !dObj.isDocumentParseable() */) {
             repaintView();
             needInit = false;
         }
     }
-    
+
     protected void repaintView() {
         view = new ServerView();
-        comp.setContentView( view );
-        
+        comp.setContentView(view);
+
         final Object lastActive = comp.getLastActive();
-        if( lastActive != null ) {
-            view.openPanel( lastActive );
+        if (lastActive != null) {
+            view.openPanel(lastActive);
         } else {
-            view.openPanel( "server" );  // NOI18N
+            view.openPanel(ServerViewFactory.PROP_PANEL_SERVER);
         }
-        
+
         view.checkValidity();
     }
-    
+
+    @Override
     public SectionView getSectionView() {
         // FIXME: devel hack
         return new ServerView();
     }
-    
-    public CloseOperationState canCloseElement() {
-        // FIXME: save state
-        return CloseOperationState.STATE_OK;
-    }
-    
+
     private class ServerView extends SectionView {
-        
         final private Node serverNode;
-        
+
         public ServerView() {
-            super( factory );
-            
+            super(factory);
+
             serverNode = new ServerNode();
-            addSection( new SectionPanel( this, serverNode, "server" ));    // NOI18N
-            
+            addSection(new SectionPanel(this, serverNode, ServerViewFactory.PROP_PANEL_SERVER));
+
             Children rootChildren = new Children.Array();
-            rootChildren.add( new Node[]{ serverNode });
-            AbstractNode root = new AbstractNode( rootChildren );
-            setRoot( root );
+            rootChildren.add(new Node[]{serverNode});
+            AbstractNode root = new AbstractNode(rootChildren);
+            setRoot(root);
         }
-        
+
         Node getServerNode() {
             return serverNode;
         }
     }
-    
+
     private class ServerNode extends AbstractNode {
         ServerNode() {
-            super( org.openide.nodes.Children.LEAF );
-            setDisplayName( NbBundle.getMessage( ServerMultiViewElement.class, "TTL_Server_Information" ));
-            setIconBaseWithExtension("org/netbeans/modules/mobility/end2end/resources/server.png"); //NOI18N
+            super(org.openide.nodes.Children.LEAF);
+            setDisplayName(NbBundle.getMessage(ServerMultiViewElement.class, "TTL_Server_Information")); // NOI18N
+            setIconBaseWithExtension(SERVER_NODE_ICON_BASE);
         }
-        
+
+        @Override
         public HelpCtx getHelpCtx() {
-            // FIXME: help prefix fix
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("overviewNode"); // NOI18N
         }
     }
 }

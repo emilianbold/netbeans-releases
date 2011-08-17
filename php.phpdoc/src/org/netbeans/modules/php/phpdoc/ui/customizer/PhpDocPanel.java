@@ -63,9 +63,10 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-final class PhpDocPanel extends JPanel {
+final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
     private static final long serialVersionUID = 5643218762231L;
 
     private final Category category;
@@ -94,6 +95,11 @@ final class PhpDocPanel extends JPanel {
         targetTextField.getDocument().addDocumentListener(defaultDocumentListener);
         titleTextField.getDocument().addDocumentListener(defaultDocumentListener);
         validateData();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(PhpDocPanel.class);
     }
 
     private String getPhpDocTarget() {

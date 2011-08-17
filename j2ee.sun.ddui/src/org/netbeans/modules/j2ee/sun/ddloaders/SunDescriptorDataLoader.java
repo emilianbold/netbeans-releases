@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -60,10 +60,10 @@ public class SunDescriptorDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 8616780278674213L;
     
     private static final String [] SUPPORTED_MIME_TYPES = {
-        "text/x-dd-sun-web+xml",            // NOI18N
-        "text/x-dd-sun-ejb-jar+xml",        // NOI18N
-        "text/x-dd-sun-application+xml",    // NOI18N
-        "text/x-dd-sun-app-client+xml"      // NOI18N
+        DDType.WEB_MIME_TYPE,
+        DDType.EJB_MIME_TYPE,
+        DDType.APP_MIME_TYPE,
+        DDType.APP_CLI_MIME_TYPE
     };
     
     public SunDescriptorDataLoader() {
@@ -103,6 +103,7 @@ public class SunDescriptorDataLoader extends UniFileLoader {
         return result;
     }
     
+    @Override
     protected MultiDataObject createMultiObject (FileObject primaryFile)
             throws DataObjectExistsException, IOException {
         return new SunDescriptorDataObject(primaryFile, this);

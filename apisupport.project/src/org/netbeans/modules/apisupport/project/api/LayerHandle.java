@@ -46,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +57,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
-import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils.SavableTreeEditorCookie;
 import org.netbeans.modules.apisupport.project.layers.WritableXMLFileSystem;
@@ -147,7 +145,7 @@ public final class LayerHandle {
                             Util.storeManifest(manifest, m);
                         }
                     }
-                    xml = NbModuleProjectGenerator.createLayer(project.getProjectDirectory(), module.getResourceDirectoryPath(false) + '/' + newLayerPath());
+                    xml = createLayer(project.getProjectDirectory(), module.getResourceDirectoryPath(false) + '/' + newLayerPath());
                 } catch (IOException e) {
                     Util.err.notify(ErrorManager.INFORMATIONAL, e);
                     return fs = FileUtil.createMemoryFileSystem();
@@ -179,16 +177,41 @@ public final class LayerHandle {
         return fs;
     }
 
+    public static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
+        FileObject layerFO = createFileObject(projectDir, layerPath);
+        InputStream is = LayerHandle.class.getResourceAsStream("/org/netbeans/modules/apisupport/project/ui/resources/layer_template.xml"); // NOI18N
+        try {
+            OutputStream os = layerFO.getOutputStream();
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+        return layerFO;
+    }
+    private static FileObject createFileObject(FileObject dir, String relToDir) throws IOException {
+        FileObject createdFO = dir.getFileObject(relToDir);
+        if (createdFO != null) {
+            throw new IllegalArgumentException("File " + createdFO + " already exists."); // NOI18N
+        }
+        createdFO = FileUtil.createData(dir, relToDir);
+        return createdFO;
+    }
+
     private final class DualLayers extends MultiFileSystem implements FileChangeListener {
         private final FileSystem explicit;
         private final File generated;
         DualLayers(FileSystem explicit) {
             this.explicit = explicit;
-            if (project instanceof NbModuleProject) {
-                generated = new File(((NbModuleProject) project).getClassesDirectory(), ManifestManager.GENERATED_LAYER_PATH);
+            NbModuleProvider nbmp = project.getLookup().lookup(NbModuleProvider.class);
+            File clazz = nbmp != null ? nbmp.getClassesDirectory() : null;
+            if (clazz != null) {
+                generated = new File(clazz, ManifestManager.GENERATED_LAYER_PATH);
                 FileUtil.addFileChangeListener(this, generated);
             } else {
-                // XXX currently NbModuleProvider does not define location of target/classes
                 generated = null;
             }
             configure();
@@ -264,7 +287,7 @@ public final class LayerHandle {
 
     /**
      * Set whether to automatically save changes to disk.
-     * @param true to save changes immediately, false to save only upon request
+     * @param autosave true to save changes immediately, false to save only upon request
      */
     public void setAutosave(boolean autosave) {
         this.autosave = autosave;
@@ -287,7 +310,7 @@ public final class LayerHandle {
     /**
      * Resource path in which to make a new XML layer.
      */
-    private String newLayerPath() {
+    public String newLayerPath() {
         NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
         FileObject manifest = module.getManifestFile();
         if (manifest != null) {

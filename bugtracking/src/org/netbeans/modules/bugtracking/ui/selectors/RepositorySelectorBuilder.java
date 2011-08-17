@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.ui.selectors;
 
+import javax.swing.LayoutStyle;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -66,7 +67,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.DialogDescriptor;
@@ -82,8 +82,8 @@ import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.VERTICAL;
 import static javax.swing.SwingConstants.WEST;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 
 /**
  * Allows the user to select an existing connection to a bug-tracking repository
@@ -472,7 +472,7 @@ public final class RepositorySelectorBuilder implements ItemListener,
     }
 
     private static void addInsetsToPanel(JComponent comp) {
-        LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
+        LayoutStyle layoutStyle = LayoutStyle.getInstance();
         comp.setBorder(BorderFactory.createEmptyBorder(
                 layoutStyle.getContainerGap(comp, NORTH, null),
                 layoutStyle.getContainerGap(comp, WEST,  null),
@@ -680,16 +680,16 @@ public final class RepositorySelectorBuilder implements ItemListener,
         return NbBundle.getMessage(RepositorySelectorBuilder.class, msgKey);
     }
 
-    private Component createHorizontalStrut(JComponent parent, JComponent compA, JComponent compB, int related) {
+    private Component createHorizontalStrut(JComponent parent, JComponent compA, JComponent compB, LayoutStyle.ComponentPlacement related) {
         return Box.createHorizontalStrut(getSpace(parent, compA, compB, related, HORIZONTAL));
     }
 
-    private Component createVerticalStrut(JComponent parent, JComponent compA, JComponent compB, int related) {
+    private Component createVerticalStrut(JComponent parent, JComponent compA, JComponent compB, LayoutStyle.ComponentPlacement related) {
         return Box.createVerticalStrut(getSpace(parent, compA, compB, related, VERTICAL));
     }
 
-    private int getSpace(JComponent parent, JComponent compA, JComponent compB, int related, int horizontal) {
-        return LayoutStyle.getSharedInstance()
+    private int getSpace(JComponent parent, JComponent compA, JComponent compB, LayoutStyle.ComponentPlacement related, int horizontal) {
+        return LayoutStyle.getInstance()
                .getPreferredGap(compA,
                                 compB,
                                 related,

@@ -585,7 +585,7 @@
             </file>
             <file name="Editor">
                 <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/cnd/editor/.*"/>
-                <attr name="exclude" stringvalue="config/Editors/text/x-c.*"/>
+                <attr name="exclude" stringvalue="config/Editors/text/x-(c|c\+\+)/Preferences/org-netbeans-modules-editor-settings-CustomPreferences.xml"/>
                 <attr name="position" intvalue="600"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle#CND_Formatting_Style_Display_Name"/>
             </file>

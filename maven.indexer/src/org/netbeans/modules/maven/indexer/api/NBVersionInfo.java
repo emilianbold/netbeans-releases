@@ -42,7 +42,7 @@
 package org.netbeans.modules.maven.indexer.api;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
-import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -173,7 +173,18 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         return groupId + ":" + artifactId + ":" + version + ":" + repoId;
     }
 
-    @SuppressWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS") // for now we do not try to do equals/hashCode; TBD if needed
+    @Override public boolean equals(Object obj) {
+        if (!(obj instanceof NBVersionInfo)) {
+            return false;
+        }
+        NBVersionInfo other = (NBVersionInfo) obj;
+        return toString().equals(other.toString()) && Utilities.compareObjects(type, other.type) && Utilities.compareObjects(classifier, other.classifier);
+    }
+
+    @Override public int hashCode() {
+        return toString().hashCode();
+    }
+
     public @Override int compareTo(NBVersionInfo o) {
         int c = groupId.compareTo(o.groupId);
         if (c != 0) {

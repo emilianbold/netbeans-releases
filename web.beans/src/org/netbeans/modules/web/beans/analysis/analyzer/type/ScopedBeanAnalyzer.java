@@ -55,13 +55,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
 import org.netbeans.modules.web.beans.analysis.analyzer.AbstractScopedAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.analysis.analyzer.ClassModelAnalyzer.ClassAnalyzer;
+import org.netbeans.modules.web.beans.analysis.analyzer.ModelAnalyzer.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -79,10 +77,10 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
      */
     @Override
     public void analyze( TypeElement element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel,
+            Result result )
     {
-        analyzeScope(element, model, descriptions, info , cancel );
+        analyzeScope(element, model, cancel , result );
     }
 
     /* (non-Javadoc)
@@ -90,100 +88,88 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
      */
     @Override
     protected void checkScope( TypeElement scopeElement, Element element,
-            WebBeansModel model, List<ErrorDescription> descriptions ,
-            CompilationInfo info , AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel , Result result )
     {
         if ( cancel.get() ){
             return;
         }
-        checkProxiability(scopeElement, element, model, descriptions, info );
+        checkProxiability(scopeElement, element, model, result );
         if ( cancel.get() ){
             return;
         }
-        checkPublicField(scopeElement , element , model , descriptions, info  );
+        checkPublicField(scopeElement , element , model , result  );
         if ( cancel.get() ){
             return;
         }
-        checkParameterizedBean(scopeElement , element , model , descriptions, info );
+        checkParameterizedBean(scopeElement , element , model , result );
     }
 
     private void checkParameterizedBean( TypeElement scopeElement,
             Element element, WebBeansModel model,
-            List<ErrorDescription> descriptions , CompilationInfo info)
+            Result result )
     {
         if ( AnnotationUtil.DEPENDENT.contentEquals( 
                 scopeElement.getQualifiedName()))
         {
             return;
         }  
+        result.requireCdiEnabled(element, model);
         TypeMirror type = element.asType();
         if ( type instanceof DeclaredType ){
             List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
             if ( typeArguments.size() != 0 ){
-                ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+                result.addError(element, model,  
                     NbBundle.getMessage(ScopedBeanAnalyzer.class,
-                        "ERR_IncorrectScopeForParameterizedBean" ));
-                if ( description != null ){
-                    descriptions.add(description);
-                }
+                        "ERR_IncorrectScopeForParameterizedBean" ));    // NOI18N
             }
         }
     }
 
     private void checkPublicField( TypeElement scopeElement, Element element,
-            WebBeansModel model, List<ErrorDescription> descriptions,
-            CompilationInfo info )
+            WebBeansModel model, Result result )
     {
         if ( AnnotationUtil.DEPENDENT.contentEquals( 
                 scopeElement.getQualifiedName()))
         {
             return;
         }
+        result.requireCdiEnabled(element, model);
         List<VariableElement> fields = ElementFilter.fieldsIn( 
                 element.getEnclosedElements());
         for (VariableElement field : fields) {
             Set<Modifier> modifiers = field.getModifiers();
             if ( modifiers.contains(Modifier.PUBLIC )){
-                ErrorDescription description = CdiEditorAnalysisFactory
-                    .createError(element, model, info ,  
+                result.addError(element, model ,  
                         NbBundle.getMessage(ScopedBeanAnalyzer.class,
                             "ERR_IcorrectScopeWithPublicField", 
                             field.getSimpleName().toString()));
-                if ( description != null ){
-                    descriptions.add(description);
-                }
                 return;
             }
         }
     }
 
     private void checkProxiability( TypeElement scopeElement, Element element,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info  )
+            WebBeansModel model, Result result )
     {
         boolean isNormal = AnnotationUtil.hasAnnotation(scopeElement, 
                 AnnotationUtil.NORMAL_SCOPE_FQN, model.getCompilationController());
         if ( isNormal ){
-            checkFinal( element , model, descriptions, info );
+            result.requireCdiEnabled(element, model);
+            checkFinal( element , model, result );
         }
     }
 
     private void checkFinal( Element element, WebBeansModel model,
-            List<ErrorDescription> descriptions , CompilationInfo info )
+            Result result )
     {
         if ( !( element instanceof TypeElement )){
             return;
         }
         Set<Modifier> modifiers = element.getModifiers();
         if ( modifiers.contains( Modifier.FINAL) ){
-            ErrorDescription description = CdiEditorAnalysisFactory.
-                createError( element, model, info,  
+            result.addError( element, model,  
                     NbBundle.getMessage(ScopedBeanAnalyzer.class, 
                             "ERR_FinalScopedClass"));
-            if ( description != null ){
-                descriptions.add( description );
-            }
             return;
         }
         List<ExecutableElement> methods = ElementFilter.methodsIn(
@@ -191,13 +177,10 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
         for (ExecutableElement method : methods) {
             modifiers = method.getModifiers();
             if (modifiers.contains(Modifier.FINAL)) {
-                ErrorDescription description = CdiEditorAnalysisFactory
-                        .createNotification( Severity.WARNING, method, model,
-                                info, 
+                result.addNotification( Severity.WARNING, method, model, 
                                 NbBundle.getMessage(
                                 ScopedBeanAnalyzer.class,
                                 "WARN_FinalScopedClassMethod"));
-                descriptions.add(description);
             }
         }
     }

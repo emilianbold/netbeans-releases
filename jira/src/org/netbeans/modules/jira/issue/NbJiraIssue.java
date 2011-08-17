@@ -51,6 +51,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Font;
 import java.io.File;
@@ -1436,17 +1437,17 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         public void opened() {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
-                // Hack - reset any previous modifications when the issue window is reopened
-                issuePanel.reloadForm(true);
+                issuePanel.opened();
                 issue.opened();
             }
         }
-
+        
         @Override
         public void closed() {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
                 issue.closed();
+                issuePanel.closed();
             }
         }
 
@@ -1509,6 +1510,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
 
     public final class Attachment {
         private final String filename;
+        private final String email;
         private final String author;
         private final Date date;
         private final String id;
@@ -1525,14 +1527,20 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             filename = taskAttachment.getFileName();
             IRepositoryPerson person = taskAttachment.getAuthor();
             author = person == null ? null : person.getName();
+            User user = person == null ? null : getRepository().getConfiguration().getUser(person.getPersonId());
+            email = user == null ? null : user.getEmail();
             size = JiraUtils.getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
             url = taskAttachment.getUrl();
         }
 
-        public String getAuthor() {
-            return author;
+        public String getEmail() {
+            return email;
         }
 
+        String getAuthor() {
+            return author;
+        }
+        
         public Date getDate() {
             return date;
         }

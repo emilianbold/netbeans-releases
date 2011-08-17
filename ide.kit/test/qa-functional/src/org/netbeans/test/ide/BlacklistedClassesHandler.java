@@ -239,4 +239,10 @@ public interface BlacklistedClassesHandler {
      * @param file File NPSS output file
      */
     public void writeViolationsSnapshot(File file);
+        
+    /**
+     * filters out all violators not containing any of the strings contained in parameter list
+     * @param list list of all filters
+     */
+    public void filterViolators(String[] list);
 }

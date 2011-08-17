@@ -43,10 +43,17 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.test.MockLookup;
 import org.openide.util.test.TestFileUtils;
 
 public class EmbedderFactoryTest extends NbTestCase {
@@ -58,8 +65,6 @@ public class EmbedderFactoryTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         clearWorkDir();
     }
-
-    // XXX find some way to verify that interesting things do not cause Wagon HTTP requests
 
     public void testCreateModelLineage() throws Exception {
         File pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
@@ -133,6 +138,47 @@ public class EmbedderFactoryTest extends NbTestCase {
         } catch (ModelBuildingException x) {
             // right
         }
+    }
+
+    public void testArtifactFixer() throws Exception { // #197669
+        File main = TestFileUtils.writeFile(new File(getWorkDir(), "main/pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+            "<parent><groupId>g</groupId><artifactId>p</artifactId><version>0</version></parent>" +
+            "<artifactId>m</artifactId>" +
+            "<dependencies><dependency><groupId>g</groupId><artifactId>s</artifactId><version>0</version></dependency></dependencies>" +
+            "</project>");
+        final File parent = TestFileUtils.writeFile(new File(getWorkDir(), "parent/pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+            "<groupId>g</groupId><artifactId>p</artifactId><version>0</version>" +
+            "<packaging>pom</packaging>" +
+            "<properties><k>v</k></properties>" +
+            "</project>");
+        final File sibling = TestFileUtils.writeFile(new File(getWorkDir(), "sib/pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
+            "<groupId>g</groupId><artifactId>s</artifactId><version>0</version>" +
+            "<dependencies><dependency><groupId>g</groupId><artifactId>b</artifactId><version>0</version></dependency></dependencies>" +
+            "</project>");
+        final File binary = TestFileUtils.writeZipFile(new File(getWorkDir(), "b.jar"), "g/r:stuff");
+        MockLookup.setInstances(new ArtifactFixer() {
+            @Override public File resolve(org.sonatype.aether.artifact.Artifact artifact) {
+                String id = artifact.getGroupId() + ':' + artifact.getArtifactId() + ':' + artifact.getExtension() + ':' + artifact.getVersion();
+                if (id.equals("g:p:pom:0")) {
+                    return parent;
+                } else if (id.equals("g:s:pom:0")) {
+                    return sibling;
+                } else if (id.equals("g:b:jar:0")) {
+                    return binary;
+                } else {
+                    return null;
+                }
+            }
+        });
+        MavenEmbedder e = EmbedderFactory.getProjectEmbedder();
+        MavenExecutionRequest req = e.createMavenExecutionRequest();
+        req.setPom(main);
+        req.setOffline(true);
+        MavenExecutionResult res = e.readProjectWithDependencies(req);
+        assertEquals(Collections.emptyList(), res.getExceptions());
+        MavenProject prj = res.getProject();
+        assertEquals("v", prj.getProperties().getProperty("k"));
+        assertEquals("[g:b:jar:0:compile, g:s:jar:0:compile]", new TreeSet<Artifact>(prj.getArtifacts()).toString());
     }
 
 }

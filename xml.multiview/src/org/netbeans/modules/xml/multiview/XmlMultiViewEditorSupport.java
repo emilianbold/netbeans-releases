@@ -113,7 +113,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     
     private XmlMultiViewDataObject dObj;
     private DocumentListener docListener;
-    private int xmlMultiViewIndex;
+    private int xmlMultiViewIndex = 0;
     private TopComponent mvtc;
     private int lastOpenView = 0;
     private TopComponentsListener topComponentsListener;
@@ -243,7 +243,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         dObj.getDataCache().getStringData();
         return super.openDocument();
     }
-    
+
+    @Override
+    protected String messageSave() {
+        return super.messageSave();
+    }
+
     public void saveDocument() throws IOException {
         if (loading > 0) {
             return;
@@ -372,7 +377,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         return value;
     }
     
+    @Override
     protected CloneableTopComponent createCloneableTopComponent() {
+        if (dObj.getEditorMimeType() != null) {
+            CloneableTopComponent mvtc = MultiViews.createCloneableMultiView(dObj.getEditorMimeType(), dObj);
+            this.mvtc = mvtc;
+            return mvtc;
+        }
+
         MultiViewDescription[] descs = getMultiViewDescriptions();
         
         CloneableTopComponent mvtc =
@@ -392,15 +404,13 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         if (multiViewDescriptions == null) {
             if (suppressXmlView) {
                 multiViewDescriptions = dObj.getMultiViewDesc();
-                xmlMultiViewIndex = 0;
             } else {
                 MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
                 MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
                 
                 multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
-                System.arraycopy(customDesc, 0, multiViewDescriptions, 0, customDesc.length);
-                multiViewDescriptions[customDesc.length] = xmlDesc;
-                xmlMultiViewIndex = customDesc.length;
+                System.arraycopy(customDesc, 0, multiViewDescriptions, 1, customDesc.length);
+                multiViewDescriptions[0] = xmlDesc;
             }
         }
         return multiViewDescriptions;
@@ -501,6 +511,16 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             });
         }
     }
+
+
+    void onCloseSave() throws IOException {
+        dObj.getEditorSupport().saveDocument();
+    }
+
+    void onCloseDiscard() {
+        dObj.getEditorSupport().reloadDocument().waitFinished();
+        dObj.getEditorSupport().notifyClosed();
+    }
     
     
     /** A description of the binding between the editor support and the object.
@@ -568,7 +588,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             return super.isModified();
         }
     }
-    
+
     private static class XmlViewDesc implements MultiViewDescription, java.io.Serializable {
         
         private static final long serialVersionUID = 8085725367398466167L;
@@ -700,16 +720,17 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
     }
     
-    static class MyCloseHandler implements CloseOperationHandler, java.io.Serializable {
+    public static class MyCloseHandler implements CloseOperationHandler, java.io.Serializable {
+
         static final long serialVersionUID = -6512103928294991474L;
-        private XmlMultiViewDataObject dObj;
-        MyCloseHandler() {
-        }
-        
-        MyCloseHandler(XmlMultiViewDataObject dObj) {
+
+        private final XmlMultiViewDataObject dObj;
+
+        public MyCloseHandler(XmlMultiViewDataObject dObj) {
             this.dObj = dObj;
         }
         
+        @Override
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             for (int i = 0; i < elements.length; i++) {
                 CloseOperationState element = elements[i];
@@ -751,7 +772,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 if (saveOption.equals(ret)) {
                     try {
                         if (dObj.acceptEncoding() && dObj.verifyDocumentBeforeClose() ) {
-                            support.saveDocument();
+                            dObj.getEditorSupport().onCloseSave();
                         } else {
                             return false;
                         }
@@ -760,8 +781,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                         return false;
                     }
                 } else if (discardOption.equals(ret)) {
-                    dObj.getEditorSupport().reloadDocument().waitFinished();
-                    support.notifyClosed();
+                    dObj.getEditorSupport().onCloseDiscard();
                 }
             }
             return true;

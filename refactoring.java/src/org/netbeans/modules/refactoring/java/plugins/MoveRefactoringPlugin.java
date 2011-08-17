@@ -110,6 +110,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem preCheck() {
+        cancelRequest =false;
         Problem preCheckProblem = null;
         for (FileObject file:filesToMove) {
             if (!RetoucheUtils.isElementInOpenProject(file)) {

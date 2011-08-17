@@ -52,7 +52,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -61,10 +61,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="0" max="32767" attributes="0"/>
-          <Component id="dummyCommentPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="separator" alignment="0" pref="852" max="32767" attributes="0"/>
+          <Component id="dummyCommentPanel" alignment="0" pref="852" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="635" max="32767" attributes="0"/>
+              <EmptySpace pref="675" max="32767" attributes="0"/>
               <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -82,17 +82,17 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="timeSpentField" linkSize="4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="timeSpentPanel" max="32767" attributes="0"/>
+                              <Component id="timeSpentPanel" pref="664" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="remainingEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="remainingEstimatePanel" max="32767" attributes="0"/>
+                              <Component id="remainingEstimatePanel" pref="664" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="originalEstimateField" linkSize="4" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="originalEstimatePanel" max="32767" attributes="0"/>
+                              <Component id="originalEstimatePanel" pref="664" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -110,19 +110,19 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="environmentScrollPane" max="32767" attributes="0"/>
-                          <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="addCommentScrollPane" alignment="0" max="32767" attributes="0"/>
+                          <Component id="summaryField" alignment="0" pref="687" max="32767" attributes="0"/>
+                          <Component id="addCommentScrollPane" alignment="0" pref="687" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="submitButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="cancelButton" linkSize="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="dummyAttachmentPanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="dummySubtaskPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="dummyAttachmentPanel" alignment="0" pref="687" max="32767" attributes="0"/>
+                          <Component id="dummySubtaskPanel" alignment="0" pref="687" max="32767" attributes="0"/>
                           <Component id="originalEstimateFieldNew" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="originalEstimateHint" alignment="0" max="32767" attributes="1"/>
-                          <Component id="customFieldPanelRight" alignment="0" max="32767" attributes="0"/>
-                          <Component id="dummyIssueLinksPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="customFieldPanelRight" alignment="0" pref="687" max="32767" attributes="0"/>
+                          <Component id="dummyIssueLinksPanel" alignment="0" pref="687" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" attributes="0">
@@ -186,8 +186,8 @@
                                   <Component id="fixVersionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <Component id="headerLabel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="parentHeaderPanel" max="32767" attributes="0"/>
+                          <Component id="headerLabel" alignment="0" pref="627" max="32767" attributes="0"/>
+                          <Component id="parentHeaderPanel" pref="627" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="actionPanel" min="-2" max="-2" attributes="0"/>

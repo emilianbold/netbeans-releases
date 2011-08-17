@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.problems;
 
-import org.netbeans.modules.maven.api.problem.ProblemReport;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.util.Iterator;
@@ -58,7 +57,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.maven.api.problem.ProblemReport;
+import static org.netbeans.modules.maven.problems.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -218,9 +219,10 @@ public class ProblemsPanel extends javax.swing.JPanel {
     
     private class NoopAction extends AbstractAction {
         
+        @Messages("BTN_Correct=Correct")
         public NoopAction() {
             setEnabled(false);
-            putValue(Action.NAME, NbBundle.getMessage(ProblemsPanel.class, "BTN_Correct"));
+            putValue(Action.NAME, BTN_Correct());
         }
         
         public void actionPerformed(ActionEvent e) {

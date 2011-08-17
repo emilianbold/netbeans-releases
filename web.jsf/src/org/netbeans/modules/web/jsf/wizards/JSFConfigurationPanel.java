@@ -47,6 +47,7 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
@@ -59,8 +60,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
-import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.util.HelpCtx;
 
@@ -77,9 +77,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
     private static final String PREFERRED_LANGUAGE="jsf.language"; //NOI18N
 
     private Preferences preferences;
-
-//    private Library jsfComponentsLibrary;
-    private JsfComponentDescriptor jsfComponentDescriptor;
+    private WebModule webModule;
 
     public enum LibraryType {USED, NEW, SERVER};
     private LibraryType libraryType;
@@ -116,11 +114,12 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         getComponent();
     }
 
-    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer, Preferences preferences) {
+    public JSFConfigurationPanel(JSFFrameworkProvider framework, ExtenderController controller, boolean customizer, Preferences preferences, WebModule webModule) {
         this.framework = framework;
         this.controller = controller;
         this.customizer = customizer;
         this.preferences = preferences;
+        this.webModule = webModule;
         enableFacelets = preferences.get(PREFERRED_LANGUAGE, "JSP").equals(PreferredLanguage.Facelets.getName());
 
         debugFacelets = true;
@@ -184,7 +183,7 @@ public class JSFConfigurationPanel extends WebModuleExtender {
                 preferredLang.equals(PreferredLanguage.Facelets.getName())) {
             preferences.put(PREFERRED_LANGUAGE, component.getPreferredLanguage());
         }
-        return framework.extendImpl(webModule);
+        return framework.extendImpl(webModule, component.getJsfComponentCustomizer());
     }
 
     public ExtenderController getController() {
@@ -339,16 +338,17 @@ public class JSFConfigurationPanel extends WebModuleExtender {
         return serverLibrary;
     }
 
+    public WebModule getWebModule() {
+        return webModule;
+    }
+    
     protected void setServerLibrary(ServerLibrary library){
         this.serverLibrary = library;
         fireChangeEvent();
     }
-    void setJsfComponentDescriptor(JsfComponentDescriptor jsfComponentDescriptor) {
-        this.jsfComponentDescriptor = jsfComponentDescriptor;
-    }
-
-    public JsfComponentDescriptor getJsfComponentDescriptor() {
-        return jsfComponentDescriptor;
+    
+    public List<? extends JsfComponentImplementation> getEnabledJsfDescriptors() {
+        return component.getActivedJsfDescriptors();
     }
 
     protected static class PreferredLanguage {

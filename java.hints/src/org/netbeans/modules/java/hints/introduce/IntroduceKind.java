@@ -35,7 +35,11 @@ package org.netbeans.modules.java.hints.introduce;
  * @author Jan Lahoda
  */
 public enum IntroduceKind {
-    CREATE_VARIABLE("introduce-variable"), CREATE_CONSTANT("introduce-constant"), CREATE_FIELD("introduce-field"), CREATE_METHOD("introduce-method");
+    CREATE_VARIABLE("introduce-variable"), 
+    CREATE_CONSTANT("introduce-constant"), 
+    CREATE_FIELD("introduce-field"), 
+    CREATE_METHOD("introduce-method"), 
+    CREATE_PARAMETER("introduce-parameter");
     private final String key;
     private IntroduceKind(String key) {
         this.key = key;

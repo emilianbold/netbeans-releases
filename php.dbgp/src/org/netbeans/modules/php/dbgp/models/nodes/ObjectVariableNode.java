@@ -62,6 +62,7 @@ class ObjectVariableNode extends
         return OBJECT_ICON;
     }
     
+    @Override
     protected boolean isTypeApplied( Set<FilterType> filters ) {
         return filters.contains( FilterType.OBJECT );
     }

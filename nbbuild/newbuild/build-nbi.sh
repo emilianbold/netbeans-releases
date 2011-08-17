@@ -136,6 +136,35 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     fi
 fi
 
+###################################################################
+#
+# Sign Windows ML installers
+#
+###################################################################
+
+if [ -z $SIGN_CLIENT ]; then
+    echo "ERROR: SIGN_CLIENT not defined - Signing failed"
+    exit 1;
+fi
+
+if [ -z $SIGN_USR ]; then
+    echo "ERROR: SIGN_USR not defined - Signing failed"
+    exit 1;
+fi
+
+if [ -z $SIGN_PASS ]; then
+    echo "ERROR: SIGN_PASS not defined - Signing failed"
+    exit 1;
+fi
+
+find $DIST/ml/bundles -name "netbeans-*-windows.exe" | xargs -t -I [] java -Xmx1024m -jar $SIGN_CLIENT/Client.jar -file_to_sign [] -user $SIGN_USR -pass $SIGN_PASS -signed_location $DIST/bundles -sign_method microsoft
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Signing failed"
+    exit $ERROR_CODE;
+fi
+
 cd $DIST
 bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
 ERROR_CODE=$?

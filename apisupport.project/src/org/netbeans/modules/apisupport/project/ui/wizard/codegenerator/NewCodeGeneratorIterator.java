@@ -48,10 +48,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wiziard for creating ne Code Generators
@@ -164,6 +165,7 @@ public class NewCodeGeneratorIterator extends BasicWizardIterator {
      * layer.xml entrypoint
      * @return instance
      */
+    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1200, displayName = "#Templates/NetBeansModuleDevelopment/newCodeGenerator", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newCodeGenerator.html", category = "nbm-specific")
     public static NewCodeGeneratorIterator createIterator() {
         return new NewCodeGeneratorIterator();
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -216,6 +216,7 @@ public class AutomaticRegistration {
             instanceFO.setAttribute(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot.getAbsolutePath());
             instanceFO.setAttribute(GlassfishModule.JAVA_PLATFORM_ATTR, ""); // NOI18N
             instanceFO.setAttribute(GlassfishModule.HTTPPORT_ATTR, "8080"); // NOI18N
+            instanceFO.setAttribute(GlassfishModule.HTTPHOST_ATTR, "localhost"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE);
             instanceFO.setAttribute(GlassfishModule.SESSION_PRESERVATION_FLAG, true);
             instanceFO.setAttribute(GlassfishModule.START_DERBY_FLAG, true);

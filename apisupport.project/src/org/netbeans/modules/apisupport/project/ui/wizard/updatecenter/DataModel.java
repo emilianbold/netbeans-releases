@@ -44,16 +44,18 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.jar.Manifest;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.Util;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -86,7 +88,12 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             cmf = new CreatedModifiedFiles (getProject ());
         }
 
-        boolean newAPI = LayerUtils.getPlatformForProject(getProject()).getModule(AUTOUPDATE_MODULE_NEW) != null;
+        boolean newAPI = true;
+        try {
+            newAPI = getModuleInfo().getDependencyVersion(AUTOUPDATE_MODULE_NEW) != null;
+        } catch (IOException x) {
+            Logger.getLogger(DataModel.class.getName()).log(Level.INFO, null, x);
+        }
         String extension = (newAPI) ? AUTOUPDATE_INSTANCE_TYPE_EXT : AUTOUPDATE_SETTINGS_TYPE_EXT;
         FileObject template = newAPI ? null : CreatedModifiedFiles.getTemplate("update_center.xml"); // NOI18N
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N

@@ -95,7 +95,7 @@ public class ExLocalFileSystemTest extends NbTestCase {
         ndata.setAttribute("hello", "buk");
         assertEquals("Newer attribute value is there", "buk", ndata.getAttribute("hello"));
         
-        if (delete && !var.delete()) {
+        if (delete && var.exists() && !var.delete()) {
             for (File file : var.listFiles()) {
                 file.delete();
             }

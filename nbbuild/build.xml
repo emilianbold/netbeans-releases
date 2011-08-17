@@ -287,7 +287,7 @@ made subject to such option by the copyright holder.
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build" description="Build the IDE but do not create a final ZIP file."/>
+  <target name="build-nozip" depends="init,download-selected-extbins,clean-cluster-flags,build-clusters,create-license-summary,create-netbeans-import,finish-build,add-junit" description="Build the IDE but do not create a final ZIP file."/>
   <target name="finish-build" depends="init">
     <loadproperties srcFile="${clusters.list.file}" />
         
@@ -321,6 +321,35 @@ Hg ID:    ${hg.id}
 </echo>
     <mkdir dir="${netbeans.dest.dir}/${nb.cluster.nb.dir}"/>
     <copy file="${nb.build.dir}/build_info" tofile="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" failonerror="true"/>
+  </target>
+
+  <target name="add-junit" if="add.junit" description="Add the JUnit plugin to the build (if -Dadd.junit=true).">
+      <ant dir="../libs.junit4" inheritall="false">
+          <property name="cluster" location="${netbeans.dest.dir}/${nb.cluster.platform.dir}"/>
+      </ant>
+      <ant dir="../junitlib" inheritall="false">
+          <property name="cluster" location="${netbeans.dest.dir}/${nb.cluster.java.dir}"/>
+          <property name="nb.cluster.platform" value="libs.junit4"/>
+          <property name="nb.cluster.stableuc" value=""/>
+          <property name="nb.cluster.experimental" value=""/>
+          <property name="do.not.recurse" value="true"/>
+      </ant>
+  </target>
+  <target name="clean-junit">
+      <delete dir="../libs.junit4/build" verbose="true"/>
+      <delete dir="../junitlib/build" verbose="true"/>
+      <delete verbose="true">
+          <fileset dir="${netbeans.dest.dir}">
+              <include name="*/config/Modules/org-netbeans-libs-junit4.xml"/>
+              <include name="*/config/Modules/org-netbeans-modules-junitlib.xml"/>
+              <include name="*/modules/org-netbeans-libs-junit4.jar"/>
+              <include name="*/modules/org-netbeans-modules-junitlib.jar"/>
+              <include name="*/update_tracking/org-netbeans-libs-junit4.xml"/>
+              <include name="*/update_tracking/org-netbeans-modules-junitlib.xml"/>
+              <include name="*/modules/ext/junit*"/>
+              <include name="*/docs/junit*"/>
+          </fileset>
+      </delete>
   </target>
   
   <target name="build" depends="build-nozip"
@@ -913,6 +942,17 @@ PKGINST=${pkg.svr4.pkginst}</echo>
           description="Try running the IDE interactively.
 It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in debug mode" 
    >
+    <script language="js">
+        v = ''
+        i = new java.util.TreeMap(project.properties).entrySet().iterator()
+        while (i.hasNext()) {
+            e = i.next()
+            if (e.key.startsWith('tryme.arg.')) {
+                v += ' ' + e.value
+            }
+        }
+        project.setNewProperty('tryme.args', v)
+    </script>
     <property name="tryme.debug.args" value="" />
     <property environment="env"/>
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">

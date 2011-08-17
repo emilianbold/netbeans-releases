@@ -105,9 +105,8 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
                 getModel().getHelper().getHelper());
         TransitiveAnnotationHandler handler = new IntereptorBindingHandler(
                 interceptorChecker, stereotypeChecker);
-        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
-        Set<Element> foundInterceptorBindings = new HashSet<Element>(); 
-        transitiveVisitAnnotatedElements(element, result, foundInterceptorBindings, 
+        Set<AnnotationMirror> result = new HashSet<AnnotationMirror>();
+        transitiveVisitAnnotatedElements(element, result, 
                 getModel().getHelper().getHelper(), handler);
         
         if ( element.getKind() == ElementKind.METHOD ){
@@ -163,25 +162,29 @@ abstract class DecoratorInterceptorLogic extends EventInjectionPointLogic {
     }
 
     static void transitiveVisitAnnotatedElements( Element element,
-            List<AnnotationMirror> result, Set<Element> foundElements,
-            AnnotationHelper helper, TransitiveAnnotationHandler handler )
+            Set<AnnotationMirror> result,AnnotationHelper helper, 
+            TransitiveAnnotationHandler handler )
     {
         List<? extends AnnotationMirror> annotationMirrors = helper
                 .getCompilationInfo().getElements().getAllAnnotationMirrors(element);
         for (AnnotationMirror annotationMirror : annotationMirrors) {
-            TypeElement annotationElement = (TypeElement) annotationMirror
-                    .getAnnotationType().asElement();
-            if (foundElements.contains(annotationElement)) {
+            if (result.contains(annotationMirror)) {
                 continue;
             }
-            foundElements.add(annotationElement);
-            boolean isTargetAnnotation = handler.isTargetAnotation(annotationElement);
+            Element annotationElement = annotationMirror.getAnnotationType().asElement();
+            if ( !( annotationElement instanceof TypeElement )){
+                continue;
+            }
+            boolean isTargetAnnotation = handler.isTargetAnotation(
+                    (TypeElement)annotationElement);
             if ( isTargetAnnotation ){
                 result.add(annotationMirror);
             }
-            if (handler.proceed(element, annotationElement, isTargetAnnotation)) {
-                transitiveVisitAnnotatedElements(annotationElement, result,
-                        foundElements, helper, handler );
+            if (handler.proceed(element, (TypeElement)annotationElement, 
+                    isTargetAnnotation)) 
+            {
+                transitiveVisitAnnotatedElements((TypeElement)annotationElement, 
+                        result,helper, handler );
             }
         }
     }

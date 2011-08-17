@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
+import org.openide.modules.Places;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -58,7 +59,6 @@ public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
     protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
         String hostId = EnvUtils.toHostID(executionEnvironment);
         String userId = executionEnvironment.getUser();
-        String root = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/remote-files/"; //NOI18N;
-        return (root == null) ? null : root + hostId + '_' + userId + '/';
+        return Places.getCacheSubdirectory("remote-files").getAbsolutePath().replace('\\', '/') + '/' + hostId + '_' + userId + '/'; // NOI18N
     }
 }

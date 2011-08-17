@@ -115,6 +115,7 @@ final class BasicSearchCriteria {
     private boolean wholeWords;
     private boolean caseSensitive;
     private boolean regexp;
+    private boolean preserveCase;
     
     private boolean textPatternSpecified = false;
     private boolean fileNamePatternSpecified = false;
@@ -176,6 +177,7 @@ final class BasicSearchCriteria {
         setCaseSensitive(template.caseSensitive);
         setWholeWords(template.wholeWords);
         setRegexp(template.regexp);
+        setPreserveCase(template.preserveCase);
 
         /* combo-boxes: */
         setTextPattern(template.textPatternExpr);
@@ -356,6 +358,27 @@ final class BasicSearchCriteria {
     
     boolean isRegexp() {
         return regexp;
+    }
+    
+    boolean isPreserveCase() {
+        return preserveCase;
+    }
+    
+    void setPreserveCase(boolean preserveCase) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.log(FINER, "setPreservecase({0}{1}",
+                    new Object[]{preserveCase, ')'});                     //NOI18N
+        }
+        if (preserveCase == this.preserveCase) {
+            LOG.finest(" - no change");                                //NOI18N
+            return;
+        }
+        
+        this.preserveCase = preserveCase;
+        
+        if (!regexp) {
+            textPattern = null;
+        }        
     }
     
     void setRegexp(boolean regexp) {

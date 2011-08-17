@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -474,13 +473,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectWorkingDir"),
                 getString("SelectLabel"),
-                FileChooser.DIRECTORIES_ONLY,
+                JFileChooser.DIRECTORIES_ONLY,
                 null,
                 seed,
                 true
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION) {
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         runDirectoryTextField.setText(fileChooser.getSelectedFile().getPath());
@@ -536,17 +535,20 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     }//GEN-LAST:event_projectComboBoxActionPerformed
     
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
+        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         String seed = getExecutablePath();
-        if (seed.length() == 0 && FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
+        if (seed.length() == 0 && RemoteFileUtil.getCurrentChooserFile(executionEnvironment) != null) {
+            String s = RemoteFileUtil.getCurrentChooserFile(executionEnvironment);
+            if (s != null) {
+                seed = s;
+            }
         }
         if (seed.length() == 0) {
-            seed = System.getProperty("user.home");
-        } // NOI18N
+            seed = System.getProperty("user.home"); // NOI18N
+        }
         
         FileFilter[] filter = null;
         OSFamily oSFamily = null;
-        ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         try {
             oSFamily = HostInfoUtils.getHostInfo(executionEnvironment).getOSFamily();
         } catch (IOException ex) {
@@ -582,13 +584,13 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
                 getString("SelectExecutable"),
                 getString("SelectLabel"),
-                FileChooser.FILES_ONLY,
+                JFileChooser.FILES_ONLY,
                 filter,
                 seed,
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION) {
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         executableTextField.setText(fileChooser.getSelectedFile().getPath());
@@ -1017,23 +1019,11 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
 
     private Project createRemoteProject(FileObject projectCreator) {
         ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
-        String java = null; 
-        try {
-            java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
-            if (java == null || java.isEmpty()) {
-                java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JAVA_HOME"); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         if (TRACE_REMOTE_CREATION) {
-            logger.log(Level.INFO, "#{0} --jdkhome {1} --netbeans-project={2} --project-create binary={3} --sources=used", // NOI18N
-                    new Object[]{projectCreator.getPath(), java, projectFolderField.getText().trim(), getExecutablePath()});
+            logger.log(Level.INFO, "#{0} --netbeans-project={1} --project-create binary={2} --sources=used", // NOI18N
+                    new Object[]{projectCreator.getPath(), projectFolderField.getText().trim(), getExecutablePath()});
         }
         ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
-                                     , "--jdkhome", java // NOI18N
                                      , "--netbeans-project="+projectFolderField.getText().trim() // NOI18N
                                      , "--project-create", "binary="+getExecutablePath() // NOI18N
                                      , "--sources=used" // NOI18N
@@ -1042,6 +1032,29 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
             logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
             logger.log(Level.INFO, execute.error);
             logger.log(Level.INFO, execute.output);
+        }
+        if (!execute.isOK()) {
+            // probably java does not found an
+            // try to find java in environment variables
+            String java = null; 
+            try {
+                java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JDK_HOME"); // NOI18N
+                if (java == null || java.isEmpty()) {
+                    java = HostInfoUtils.getHostInfo(executionEnvironment).getEnvironment().get("JAVA_HOME"); // NOI18N
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (java != null) {
+                execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
+                                     , "--jdkhome", java // NOI18N
+                                     , "--netbeans-project="+projectFolderField.getText().trim() // NOI18N
+                                     , "--project-create", "binary="+getExecutablePath() // NOI18N
+                                     , "--sources=used" // NOI18N
+                                     );
+            }
         }
         String baseDir = projectFolderField.getText().trim();
         FileObject toRefresh = fileSystem.findResource(PathUtilities.getDirName(baseDir));
@@ -1055,6 +1068,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         Project project = null;
         try {
             project = ProjectManager.getDefault().findProject(projectFO);
+            if (project == null) {
+                return null;
+            }
             lastSelectedProject = project;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

@@ -64,7 +64,11 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
+import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
+import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
+import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -83,9 +87,10 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     protected static final Logger log = RemoteUtil.LOGGER;
 
     public static enum Sync {
-        FTP("ftp"),
-        RFS("rfs"),
-        ZIP("scp");
+        FTP(FtpSyncFactory.ID),
+        RFS(RfsSyncFactory.ID),
+        ZIP(ZipSyncFactory.ID),
+        SHARED(SharedSyncFactory.ID);
         public final String ID;
         Sync(String id) {
             this.ID = id;

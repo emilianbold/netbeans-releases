@@ -45,6 +45,8 @@ package org.netbeans.modules.php.project.classpath;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -59,40 +61,60 @@ import org.openide.util.WeakSet;
  */
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class IncludePathClassPathProvider implements ClassPathProvider {
+
+    // @GuardedBy(PROJECT_INCLUDES_LOCK)
     private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
+    private static final ReadWriteLock PROJECT_INCLUDES_LOCK = new ReentrantReadWriteLock();
 
-    /** Default constructor for lookup. */
-    public IncludePathClassPathProvider() {
+
+    public static void addProjectIncludePath(final ClassPath classPath) {
+        runUnderWriteLock(new Runnable() {
+            @Override
+            public void run() {
+                PROJECT_INCLUDES.add(classPath);
+            }
+        });
     }
 
-    public static synchronized void addProjectIncludePath(ClassPath cp) {
-        PROJECT_INCLUDES.add(cp);
-    }
-
-    public static synchronized void removeProjectIncludePath(ClassPath classPath) {
-        PROJECT_INCLUDES.remove(classPath);
+    public static synchronized void removeProjectIncludePath(final ClassPath classPath) {
+        runUnderWriteLock(new Runnable() {
+            @Override
+            public void run() {
+                PROJECT_INCLUDES.remove(classPath);
+            }
+        });
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
     public ClassPath findClassPath(FileObject file, String type) {
-        if (FileUtils.isPhpFile(file)) {
-            FileType fileType = PhpSourcePath.getFileType(file);
-            switch (fileType) {
-                case UNKNOWN:
-                    synchronized (IncludePathClassPathProvider.class) {
-                        for (ClassPath classPath : PROJECT_INCLUDES) {
-                            if (classPath.contains(file)) {
-                                return classPath;
-                            }
-                        }
+        if (!FileUtils.isPhpFile(file)) {
+            return null;
+        }
+        FileType fileType = PhpSourcePath.getFileType(file);
+        if (fileType == FileType.UNKNOWN) {
+            PROJECT_INCLUDES_LOCK.readLock().lock();
+            try {
+                for (ClassPath classPath : PROJECT_INCLUDES) {
+                    if (classPath.contains(file)) {
+                        return classPath;
                     }
-                    // break; // intentionally commented out! if not found, then return CP for include path
-                case INCLUDE:
-                    List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
-                    return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
+                }
+            } finally {
+                PROJECT_INCLUDES_LOCK.readLock().unlock();
             }
         }
-        return null;
+        // not found, then return CP for include path
+        List<FileObject> includePath = PhpSourcePath.getIncludePath(file);
+        return ClassPathSupport.createClassPath(includePath.toArray(new FileObject[includePath.size()]));
     }
+
+    private static void runUnderWriteLock(Runnable runnable) {
+        PROJECT_INCLUDES_LOCK.writeLock().lock();
+        try {
+            runnable.run();
+        } finally {
+            PROJECT_INCLUDES_LOCK.writeLock().unlock();
+        }
+    }
+
 }

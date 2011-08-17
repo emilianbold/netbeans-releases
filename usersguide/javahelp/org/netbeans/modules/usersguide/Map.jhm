@@ -32,6 +32,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="files.runtime" url="files/files_runtime.html" />
 <mapID target="files.about-encoding" url="files/file_encoding.html" />
 <mapID target="find_regexp" url="files/find_regexp.html" />
+<mapID target="files.tasklist" url="files/files_tasklist.html" />
 
 
 
@@ -170,6 +171,8 @@ Other names may be trademarks of their respective owners.
 <!--Task List window -->
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
 
+<!--Java and PHP shared Project Properties: Formatting panel -->
+<mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />
 
 
 <!-- Projects window nodes -->
@@ -203,6 +206,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
+<mapID target="org.netbeans.modules.project.ui.ProjectTemplatePanel" url="project/csh/proj_wiz.html" />
 
 
 <!-- The following project properties topic is located in the j2ee module 
@@ -224,7 +228,10 @@ Other names may be trademarks of their respective owners.
 <mapID target="text.plain" url="editing/editor_quickref.html" />
 
 <!--CSH for css text editor-->
-<mapID target="text.x-css" url="xml/css/css_edit.html" />
+<mapID target="text.x-css" url="xml/css/csh/about_source_editor.html" />
+
+<!-- CSH for HTML text editor -->
+<mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
 
 <!--Add New Class dialog box-->
 <mapID target="org.netbeans.modules.java.ui.nodes.elements.SourceEditSupport$AddNewClass" url="pending.html"/>

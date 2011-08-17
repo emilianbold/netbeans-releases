@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
+import org.openide.util.test.MockLookup;
 
 /**
  * Base class for persistence multiview editor tests.
@@ -92,7 +93,8 @@ public abstract class PersistenceEditorTestBase extends PUDataObjectTestBase {
         FileObject workDirFO = FileUtil.toFileObject(getWorkDir());
         this.ddFile = FileUtil.copyFile(original, workDirFO, "persistence_copy");
         this.dataObject = (PUDataObject) DataObject.find(ddFile);
-        this.mvElement = new PersistenceToolBarMVElement(dataObject);
+        MockLookup.setInstances(dataObject);
+        this.mvElement = new PersistenceToolBarMVElement(MockLookup.getDefault());
         
         Persistence persistence = dataObject.getPersistence();
         assertSame(2, persistence.getPersistenceUnit().length);

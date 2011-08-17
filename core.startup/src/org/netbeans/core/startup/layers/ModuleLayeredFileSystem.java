@@ -92,6 +92,7 @@ implements LookupListener {
     private final FileSystem[] otherLayers;
     /** addLookup */
     private final boolean addLookupBefore;
+    private boolean needToAddClasspathLayers;
 
     /** Create layered filesystem based on a supplied writable layer.
      * @param userDir is this layer for modules from userdir or not?
@@ -120,6 +121,7 @@ implements LookupListener {
         this.otherLayers = otherLayers;
         this.cacheLayer = cacheLayer;
         this.addLookupBefore = addLookup;
+        needToAddClasspathLayers = addLookup;
         
         // Wish to permit e.g. a user-installed module to mask files from a
         // root-installed module, so propagate masks up this high.
@@ -161,7 +163,7 @@ implements LookupListener {
                             if (layer != null) {
                                 layerUrls.add(layer);
                             } else {
-                                err.warning("No such layer: " + layerLoc);
+                                err.log(Level.WARNING, "No such layer: {0}", layerLoc);
                             }
                         }
                     } finally {
@@ -215,10 +217,11 @@ implements LookupListener {
             throw new AssertionError(ex);
         }
         ModuleLayeredFileSystem home = sfs.getInstallationLayer ();
-        if (home != null)
+        if (home != null) {
             return home;
-        else
+        } else {
             return sfs.getUserLayer ();
+        }
     }    
     
     /** Get the user layer.
@@ -239,9 +242,11 @@ implements LookupListener {
      * @param urls the urls describing module layers to use. List<URL>
      */
     public void setURLs (final List<URL> urls) throws Exception {
-        if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
+        if (urls.contains(null)) {
+            throw new NullPointerException("urls=" + urls);
+        } // NOI18N
         if (err.isLoggable(Level.FINE)) {
-            err.fine("setURLs: " + urls);
+            err.log(Level.FINE, "setURLs: {0}", urls);
         }
         if (this.urls != null && urls.equals(this.urls)) {
             err.fine("no-op");
@@ -257,6 +262,7 @@ implements LookupListener {
             }
             cacheLayer = manager.store(cacheLayer, urls);
             err.log(Level.FINEST, "changing delegates");
+            needToAddClasspathLayers = false; // NbInstaller should now be loading all layers, incl. in CP
             setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
             err.log(Level.FINEST, "delegates changed");
         }
@@ -270,30 +276,34 @@ implements LookupListener {
     /** Adds few URLs.
      */
     public void addURLs(Collection<URL> urls) throws Exception {
-        if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
+        if (urls.contains(null)) {
+            throw new NullPointerException("urls=" + urls);
+        }
         // Add to the front: #23609.
         ArrayList<URL> arr = new ArrayList<URL>(urls);
-        if (this.urls != null) arr.addAll(this.urls);
+        if (this.urls != null) {
+            arr.addAll(this.urls);
+        }
         setURLs(arr);
     }
     
     /** Removes few URLs.
      */
     public void removeURLs(Collection<URL> urls) throws Exception {
-        if (urls.contains(null)) throw new NullPointerException("urls=" + urls); // NOI18N
+        if (urls.contains(null)) {
+            throw new NullPointerException("urls=" + urls);
+        }
         ArrayList<URL> arr = new ArrayList<URL>();
-        if (this.urls != null) arr.addAll(this.urls);
+        if (this.urls != null) {
+            arr.addAll(this.urls);
+        }
         arr.removeAll(urls);
         setURLs(arr);
     }
     
     /** Refresh layers */
-    public void resultChanged(LookupEvent ev) {
-        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, false));
-    }
-    
-    private static void setStatusText (String msg) {
-        org.netbeans.core.startup.Main.setStatusText(msg);
+    @Override public void resultChanged(LookupEvent ev) {
+        setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, needToAddClasspathLayers));
     }
 
 }

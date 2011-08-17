@@ -38,6 +38,8 @@
 # holder.
 # 
 
+set -x
+
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 

@@ -138,6 +138,9 @@ public class FSCompletion implements CompletionProvider {
                                     return;
                                 }
                                 int startOffset = s.getStartOffset() + 1;
+                                if (startOffset > caretOffset || startOffset < 0 || caretOffset < 0) {
+                                    return;
+                                }
                                 final String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
                                 List<FileObject> relativeTo = new LinkedList<FileObject>();
                                 relativeTo.addAll(includePath);

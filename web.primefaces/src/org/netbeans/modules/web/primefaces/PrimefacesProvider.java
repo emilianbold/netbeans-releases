@@ -43,41 +43,20 @@ package org.netbeans.modules.web.primefaces;
 
 import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.web.jsf.api.components.JsfComponentDescriptor;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author alexey butenko
+ * @author Martin Fousek <marfous@netbeans.org>
  */
 public class PrimefacesProvider implements JsfComponentProvider {
 
-    private final static String NS_PREFIX = "p";    //NOI18N
-    private final static String NAMESPACE = "http://primefaces.prime.com.tr/ui"; //NOI18N
 
     @Override
-    public Set<JsfComponentDescriptor> getComponents() {
-        JsfComponentDescriptor descriptor = new JsfComponentDescriptor(NbBundle.getMessage(PrimefacesProvider.class, "LBL_Library_Name"),
-                NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces"), JSFVersion.JSF_2_0,
-                NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"), getWelcomeMessageBody(), getNamespace(), getNsPrefix());
+    public Set<JsfComponentImplementation> getJsfComponents() {
+        JsfComponentImplementation descriptor = new Primefaces2Implementation();
         return Collections.singleton(descriptor);
     }
 
-    private static String getWelcomeMessageBody() {
-        String body = "<h:form><" + NS_PREFIX +":commandButton value=\"Hello from PrimeFaces\" onclick=\"dlg1.show();\" type=\"button\" />"
-                + "<" + NS_PREFIX +":dialog header=\"PrimeFaces Dialog\" widgetVar=\"dlg1\" width=\"500\">"
-                + "For more information visit <a href=\"http://primefaces.org\">http://primefaces.org</a>."
-                + "</" + NS_PREFIX +":dialog></h:form>";
-        return body;
-    }
-
-    private static String getNamespace() {
-        return NAMESPACE; //NOI18N
-    }
-
-    private static String getNsPrefix() {
-        return NS_PREFIX;
-    }
 }

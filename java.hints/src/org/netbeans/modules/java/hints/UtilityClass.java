@@ -40,7 +40,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -61,15 +60,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.swing.JComponent;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -84,7 +80,6 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     private boolean clazz;
     private transient volatile boolean stop;
 
-    /** Creates a new instance of AddOverrideAnnotation */
     private UtilityClass(boolean b) {
         super( false, true, b ? AbstractHint.HintSeverity.WARNING : AbstractHint.HintSeverity.CURRENT_LINE_WARNING);
         clazz = b;
@@ -188,11 +183,10 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 return null;
             }
         }
-        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+        List<Fix> fixes = Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(
             clazz,
-            TreePathHandle.create(e, compilationInfo),
-            compilationInfo.getFileObject()
-            ));
+            TreePathHandle.create(e, compilationInfo)
+            )));
 
         int[] span = null;
 
@@ -289,14 +283,11 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         return false;
     }
 
-    private static final class FixImpl implements Fix, Task<WorkingCopy> {
-        private TreePathHandle handle;
-        private FileObject file;
+    private static final class FixImpl extends JavaFix {
         private boolean clazz;
 
-        public FixImpl(boolean clazz, TreePathHandle handle, FileObject file) {
-            this.handle = handle;
-            this.file = file;
+        public FixImpl(boolean clazz, TreePathHandle handle) {
+            super(handle);
             this.clazz = clazz;
         }
 
@@ -304,20 +295,13 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
             return NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"); // NOI18N
         }
 
-        public ChangeInfo implement() throws IOException {
-            ModificationResult result = JavaSource.forFileObject(file).runModificationTask(this);
-            result.commit();
-            return null;
-        }
-
         @Override public String toString() {
             return "FixUtilityClass"; // NOI18N
         }
 
-        public void run(WorkingCopy wc) throws Exception {
-            wc.toPhase(JavaSource.Phase.RESOLVED);
-
-            Element e = handle.resolveElement(wc);
+        @Override
+        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+            Element e = wc.getTrees().getElement(tp);
             if (e == null) {
                 return;
             }

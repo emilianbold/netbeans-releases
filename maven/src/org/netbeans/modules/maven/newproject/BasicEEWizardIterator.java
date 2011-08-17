@@ -81,6 +81,10 @@ public class BasicEEWizardIterator implements WizardDescriptor.ProgressInstantia
         return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.EJB_ARCHS);
     }
     
+    public static BasicEEWizardIterator createAppClientIterator() {
+        return new BasicEEWizardIterator(ArchetypeWizardUtils.EE_LEVELS, ArchetypeWizardUtils.APPCLIENT_ARCHS);
+    }
+    
     private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
             new BasicWizardPanel(vg, eeLevels, archs, true, false)

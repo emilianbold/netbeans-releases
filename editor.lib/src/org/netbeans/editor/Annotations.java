@@ -149,9 +149,13 @@ public class Annotations implements DocumentListener {
                     synchronized (lineAnnotationsArray) {
                         AnnotationDesc anno = (AnnotationDesc)evt.getSource();
                         lineAnnos = (LineAnnotations)lineAnnotationsByMark.get(anno.getMark());
-                        lineAnnos.refreshAnnotations();
+                        if (lineAnnos != null) {
+                            lineAnnos.refreshAnnotations();
+                        }
                     }
-                    refreshLine(lineAnnos.getLine());
+                    if (lineAnnos != null) {
+                        refreshLine(lineAnnos.getLine());
+                    }
                 }
                 if (evt.getPropertyName() == null || AnnotationDesc.PROP_MOVE_TO_FRONT.equals(evt.getPropertyName())) {
                     AnnotationDesc anno = (AnnotationDesc)evt.getSource();

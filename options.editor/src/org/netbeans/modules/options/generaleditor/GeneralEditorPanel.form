@@ -12,7 +12,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -38,54 +38,54 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="424" max="32767" attributes="0"/>
+              <EmptySpace pref="500" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbFoldImports" linkSize="1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="494" max="32767" attributes="0"/>
+              <EmptySpace pref="580" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbFoldInnerClasses" linkSize="1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="494" max="32767" attributes="0"/>
+              <EmptySpace pref="580" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbFoldMethods" linkSize="1" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="cbFoldTags" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="267" max="32767" attributes="0"/>
+              <EmptySpace pref="333" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbUseCodeFolding" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="618" max="32767" attributes="0"/>
+              <EmptySpace pref="720" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbFoldJavadocComments" linkSize="1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="494" max="32767" attributes="0"/>
+              <EmptySpace pref="580" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
               <Component id="cbFoldInitialComments" linkSize="1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="494" max="32767" attributes="0"/>
+              <EmptySpace pref="580" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lWhenSavingFiles" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator4" pref="677" max="32767" attributes="0"/>
+              <Component id="jSeparator4" pref="755" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator3" pref="655" max="32767" attributes="0"/>
+              <Component id="jSeparator3" pref="730" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="706" max="32767" attributes="0"/>
+              <Component id="jSeparator1" pref="792" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

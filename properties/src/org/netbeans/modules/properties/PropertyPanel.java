@@ -46,6 +46,7 @@
 package org.netbeans.modules.properties;
 
 
+import javax.swing.GroupLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,15 +59,14 @@ import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 
 /**
@@ -157,31 +157,31 @@ final class PropertyPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(LEADING)
-                    .add(keyLabel)
-                    .add(valueLabel)
-                    .add(commentLabel))
+                .addGroup(layout.createParallelGroup(LEADING)
+                    .addComponent(keyLabel)
+                    .addComponent(valueLabel)
+                    .addComponent(commentLabel))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(LEADING)
-                    .add(keyText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
-                    .add(valueText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
-                    .add(commentText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(LEADING)
+                    .addComponent(keyText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+                    .addComponent(valueText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE)
+                    .addComponent(commentText, DEFAULT_SIZE, PREFERRED_SIZE, Short.MAX_VALUE))
                 .addContainerGap()
         );
         layout.setVerticalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(keyLabel)
-                    .add(keyText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(keyLabel)
+                    .addComponent(keyText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(valueText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-                    .add(valueLabel))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(valueText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+                    .addComponent(valueLabel))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(commentText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
-                    .add(commentLabel))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(commentText, PREFERRED_SIZE, PREFERRED_SIZE, PREFERRED_SIZE)
+                    .addComponent(commentLabel))
                 .addContainerGap()
         );
     }// </editor-fold>

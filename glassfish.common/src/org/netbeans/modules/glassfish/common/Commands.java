@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -103,11 +103,14 @@ public class Commands {
         private Map<String, List<String>> appMap;
 
         public ListComponentsCommand() {
-            this(null);
+            this(null,null);
         }
 
-        public ListComponentsCommand(final String container) {
+        public ListComponentsCommand(final String container,String target) {
             super("list-components"); // NOI18N
+            if (null != target) {
+                query = "DEFAULT=" + target; // NOI18N
+            }
             this.container = container;
         }
 
@@ -226,10 +229,13 @@ public class Commands {
         private Manifest list;
         private List<ResourceDesc> resList;
 
-        public ListResourcesCommand(String resourceCmdSuffix) {
+        public ListResourcesCommand(String resourceCmdSuffix, String target) {
             super("list-" + resourceCmdSuffix + "s"); // NOI18N
 
             cmdSuffix = resourceCmdSuffix;
+            if (null != target) {
+                query="DEFAULT="+target; // NOI18N
+            }
         }
 
         public List<ResourceDesc> getResourceList() {
@@ -312,7 +318,7 @@ public class Commands {
         private final boolean isDirDeploy;
         private final File path;
 
-        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties, File[] libraries) {
+        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties, File[] libraries, String target) {
             super("deploy"); // NOI18N
 
             this.isDirDeploy = path.isDirectory();
@@ -334,6 +340,9 @@ public class Commands {
             }
             cmd.append(PARAM_SEPARATOR).append("force=true"); // NOI18N
             addProperties(cmd,properties);
+            if (null != target) {
+                cmd.append(PARAM_SEPARATOR).append("target="+target);  // NOI18N
+            }
             query = cmd.toString();
         }
 
@@ -398,7 +407,7 @@ public class Commands {
     public static final class RedeployCommand extends ServerCommand {
 
         public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, 
-                final File[] libraries, final boolean resourcesChanged, String additionalparam) {
+                final File[] libraries, final boolean resourcesChanged, String additionalparam, String target) {
             super("redeploy"); // NOI18N
 
             StringBuilder cmd = new StringBuilder(128);
@@ -415,6 +424,9 @@ public class Commands {
                 cmd.append(PARAM_SEPARATOR).append(additionalparam);
             }
             addProperties(cmd, preserveSessions, resourcesChanged);
+            if (null != target) {
+                cmd.append(PARAM_SEPARATOR).append("target="+target); // NOI18N
+            }
             query = cmd.toString();
         }
     }
@@ -439,9 +451,12 @@ public class Commands {
      */
     public static final class UndeployCommand extends ServerCommand {
 
-        public UndeployCommand(final String name) {
+        public UndeployCommand(final String name, String target) {
             super("undeploy"); // NOI18N
-            query = "name=" + Utils.sanitizeName(name); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
         }
     }
 
@@ -450,9 +465,12 @@ public class Commands {
      */
     public static final class EnableCommand extends ServerCommand {
 
-        public EnableCommand(final String name) {
+        public EnableCommand(final String name, final String target) {
             super("enable"); // NOI18N
             query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
         }
     }
 
@@ -461,9 +479,12 @@ public class Commands {
      */
     public static final class DisableCommand extends ServerCommand {
 
-        public DisableCommand(final String name) {
+        public DisableCommand(final String name, final String target) {
             super("disable"); // NOI18N
             query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
         }
     }
     /**
@@ -472,7 +493,7 @@ public class Commands {
     public static final class UnregisterCommand extends ServerCommand {
 
         public UnregisterCommand(final String name, final String resourceCmdSuffix,
-                final String cmdPropertyName, final boolean cascade) {
+                final String cmdPropertyName, final boolean cascade, final String target) {
             super("delete-" + resourceCmdSuffix); // NOI18N
 
             StringBuilder cmd = new StringBuilder(128);
@@ -484,6 +505,9 @@ public class Commands {
             cmd.append('=');
             cmd.append(name);
             query = cmd.toString();
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
         }
     }
 
@@ -666,6 +690,33 @@ public class Commands {
             }
 
             return true;
+        }
+    }
+
+    public static final class StartCluster extends ServerCommand {
+        public StartCluster(String target) {
+            super("start-cluster"); // NOI18N
+            query = "DEFAULT="+target; // NOI18N
+        }
+    }
+
+    public static final class StartInstance extends ServerCommand {
+        public StartInstance(String target) {
+            super("start-instance");  // NOI18N
+            query = "DEFAULT="+target; // NOI18N
+        }
+    }
+    public static final class StopCluster extends ServerCommand {
+        public StopCluster(String target) {
+            super("stop-cluster"); // NOI18N
+            query = "DEFAULT="+target; // NOI18N
+        }
+    }
+
+    public static final class StopInstance extends ServerCommand {
+        public StopInstance(String target) {
+            super("stop-instance"); // NOI18N
+            query = "DEFAULT="+target; // NOI18N
         }
     }
 }

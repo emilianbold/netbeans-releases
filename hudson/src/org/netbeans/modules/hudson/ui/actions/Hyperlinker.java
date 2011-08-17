@@ -155,6 +155,8 @@ class Hyperlinker {
 
     private static class Hyperlink implements OutputListener {
 
+        private static final RequestProcessor RP = new RequestProcessor(Hyperlink.class);
+
         private final HudsonJob job;
         private final String path;
         private final String message;
@@ -179,7 +181,7 @@ class Hyperlinker {
 
         @Messages({"# {0} - file path in workspace", "Hyperlinker.looking_for=Looking for {0}...", "# {0} - file path in workspace", "Hyperlinker.not_found=No file {0} found in remote workspace."})
         private void acted(final boolean force) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     FileObject f = null;
                     Project p = ProjectHudsonProvider.getDefault().findAssociatedProject(ProjectHudsonProvider.Association.forJob(job));

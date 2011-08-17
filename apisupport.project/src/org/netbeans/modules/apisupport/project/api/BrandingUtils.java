@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.apisupport.project.api;
 
+import java.awt.Dialog;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.branding.BasicBrandingModel;
-import org.netbeans.modules.apisupport.project.ui.branding.BrandingEditor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.apisupport.project.spi.BrandingModel;
+import org.netbeans.modules.apisupport.project.ui.branding.BrandingEditorPanel;
 
 /**
  * Utility class to expose NB platform application branding editor.
@@ -64,19 +67,32 @@ public class BrandingUtils {
      * Opens branding editor for given project. Must be invoked from EDT.
      * @param displayName Editor's display name.
      * @param p Project to be branded.
-     * @param brandingPath Path relative to project's directory where branded are stored in.
+     * @param model a branding model to use
      */
-    public static void openBrandingEditor( String displayName, Project p, String brandingPath ) {
+    public static void openBrandingEditor(String displayName, final Project p, BrandingModel model) {
         if( !SwingUtilities.isEventDispatchThread() ) {
             throw new IllegalStateException("This method must be invoked from EDT."); //NOI18N
         }
-        boolean contextAvailable = true;
-        NbModuleProvider moduleProvider = p.getLookup().lookup(NbModuleProvider.class);
-        if( null != moduleProvider 
-                && !moduleProvider.prepareContext(NbBundle.getMessage(BrandingUtils.class, "Lbl_BrandingEditor")) ) { //NOI18N
-            contextAvailable = false;
+        synchronized( project2dialog ) {
+            Dialog dlg = project2dialog.get(p);
+            if( null == dlg ) {
+                BrandingEditorPanel editor = new BrandingEditorPanel(displayName, model);
+                dlg = editor.open();
+                project2dialog.put(p, dlg);
+                dlg.addWindowListener( new WindowAdapter() {
+                    @Override public void windowClosed(WindowEvent e) {
+                        synchronized( project2dialog ) {
+                            project2dialog.remove(p);
+                        }
+                    }
+                });
+            } else {
+                dlg.setVisible(true);
+                dlg.requestFocusInWindow();
+            }
         }
-        BasicBrandingModel model = new BasicBrandingModel(p, brandingPath);
-        BrandingEditor.open( displayName, p, model, contextAvailable );
     }
+
+    private static final Map<Project,Dialog> project2dialog = new HashMap<Project,Dialog>(10);
+
 }

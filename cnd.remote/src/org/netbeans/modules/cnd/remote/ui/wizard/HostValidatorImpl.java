@@ -50,10 +50,12 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -153,6 +155,11 @@ public class HostValidatorImpl implements HostValidator {
         }
         if (alreadyOnline) {
             writer.write('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
+        } else {
+            RemoteSyncFactoryDefaultProvider rsfdp = Lookup.getDefault().lookup(RemoteSyncFactoryDefaultProvider.class);
+            if (rsfdp != null) {
+                record.setSyncFactory(rsfdp.getDefaultFactory(env));
+            }            
         }
         return result;
     }

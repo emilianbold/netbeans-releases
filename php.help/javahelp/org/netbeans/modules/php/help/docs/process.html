@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 1997, 2011, Oracle and/or its affiliates. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Working with PHP </title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+    <a name="top"></a>
+    <h2>Working with PHP Applications</h2>
+    
+<h3>Before You Start</h3>
+    <p>Before you begin to work with PHP applications in NetBeans, you need to install and configure your
+    PHP environment. The PHP environment includes:</p>
+    <ul>
+        <li>A PHP engine.</li>
+        <li>A web server, such as Apache. </li>
+        <li>Optionally, a database, such as MySQL or Oracle Database.</li>
+        <li>Optionally, a debugger supported by NetBeans IDE.</li>
+    </ul>
+    
+    <dl><dt>For more information, see:</dt>
+        <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/configure-php-environment-windows.html">
+                <param name="text" value="<html><u>Configuring the PHP Environment on Windows</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/configure-php-environment-ubuntu.html">
+                <param name="text" value="<html><u>Configuring the PHP Environment on Linux Ubuntu</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/configure-php-environment-mac-os.html">
+                <param name="text" value="<html><u>Configuring the PHP Environment on OS X</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
+                <param name="text" value="<html><u>How to Configure XDebug NetBeans wiki page</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object></dd>
+    </dl>
+    <h3>PHP Applications</h3>
+    <p>The following table shows how to work with PHP applications. </p>
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+   process step. The right column contains detail information to accomplish that process.">
+  <tr valign="top"> 
+    <td align="center"><img src="images/circle1.gif" alt="Number one"><br>
+      <b>Create and configure a project</b></td>
+    <td> 
+        <p>Launch the New Project Wizard (Ctrl-Shift-N). You can create an empty PHP project, 
+      a project from existing sources, or a project from remote sources. The New PHP Project
+      wizard helps you create a default run configuration for the project. Later you can 
+      change the project's configuration or add additional run configurations by right-clicking
+      the project's node in the Projects window and choosing Properties. For more information,
+      see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/project-setup.html">
+                <param name="text" value="<html><u>Setting Up a PHP Project</u>.</html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+      </object></p>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> 
+      <p><img src="images/circle2.gif" alt="Number two"><br>
+        <b>Run project</b> </p>
+    </td>
+    <td> 
+        <p>Right-click the project's node in the Projects window and select Run.
+        If the project's run configuration is set to use a local web server, a 
+        browser opens and displays the project's index page.</p>
+        <p>Note that if the project is configured to run as a command-line script,
+        you have to run it from the command line.</p>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="images/circle3.gif" alt="Number three"><br>
+      <b>Test project</b> </td>
+    <td> 
+        <p>You can use PHPUnit and Selenium to test a PHP project. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/phpunit.html">
+                <param name="text" value="<html><u>Testing with PHPUnit and Selenium</u>.</html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+      </object></p>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> <img src="images/circle4.gif" alt="Number four" width="21" height="21"><br>
+      <b>Debug project</b> </td>
+    <td> 
+        <p>If you configure Xdebug to work in your PHP environment (see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
+                <param name="text" value="<html><u>How to Configure XDebug NetBeans wiki page</u></html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue">
+            </object>), you can debug a PHP project from inside NetBeans. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                <param name="content" value="http://www.netbeans.org/kb/docs/php/debugging.html">
+                <param name="text" value="<html><u>Debugging PHP Source Code in the NetBeans IDE</u>.</html>">
+                <param name="textFontSize" value="medium">
+                <param name="textColor" value="blue"></object></p>
+    </td>
+  </tr>
+  
+</table>
+
+<hr>
+<small><a href="credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -201,8 +201,8 @@ public class SrcNode extends FilterNode {
 
         @Override
         protected Node copyNode(final Node originalNode) {
-            DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
-            return (dobj instanceof DataFolder)
+            FileObject fo = originalNode.getLookup().lookup(FileObject.class);
+            return (fo.isFolder())
                     ? new PackageNode(project, originalNode, isTest)
                     : new ObjectNode(originalNode, isTest);
         }

@@ -42,16 +42,13 @@
  */
 package org.netbeans.modules.web.beans.analysis.analyzer.annotation;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.web.beans.analysis.CdiEditorAnalysisFactory;
-import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
+import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.openide.util.NbBundle;
 
 
@@ -62,40 +59,36 @@ import org.openide.util.NbBundle;
 public class QualifierAnalyzer implements AnnotationAnalyzer {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, org.netbeans.api.java.source.CompilationInfo, java.util.List, java.util.concurrent.atomic.AtomicBoolean)
+     * @see org.netbeans.modules.web.beans.analysis.analyzer.AnnotationElementAnalyzer.AnnotationAnalyzer#analyze(javax.lang.model.element.TypeElement, java.util.concurrent.atomic.AtomicBoolean, org.netbeans.modules.web.beans.analysis.analyzer.ElementAnalyzer.Result)
      */
     @Override
-    public void analyze( TypeElement element, CompilationInfo compInfo,
-            List<ErrorDescription> descriptions , AtomicBoolean cancel )
+    public void analyze( TypeElement element, AtomicBoolean cancel,
+            CdiAnalysisResult result )
     {
         if ( AnnotationUtil.hasAnnotation(element, AnnotationUtil.QUALIFIER_FQN, 
-                compInfo))
+                result.getInfo()))
         {
+            result.requireCdiEnabled(element);
             QualifierTargetAnalyzer analyzer = new QualifierTargetAnalyzer(element, 
-                    compInfo, descriptions);
+                    result );
             if ( !analyzer.hasRuntimeRetention() ){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
+                result.addError( element, 
                         NbBundle.getMessage(QualifierTargetAnalyzer.class, 
                                 INCORRECT_RUNTIME));
-                descriptions.add( description );
             }
             if ( !analyzer.hasTarget()){
-                ErrorDescription description = CdiEditorAnalysisFactory.
-                    createError( element, compInfo, 
+                result.addError( element, 
                             NbBundle.getMessage(QualifierTargetAnalyzer.class, 
                                     "ERR_IncorrectQualifierTarget"));  // NOI18N
-                descriptions.add( description );
             }
         }
     }
     
     private static class QualifierTargetAnalyzer extends CdiAnnotationAnalyzer{
 
-        QualifierTargetAnalyzer( TypeElement element, CompilationInfo compInfo,
-                List<ErrorDescription> descriptions )
+        QualifierTargetAnalyzer( TypeElement element, CdiAnalysisResult result)
         {
-            super(element, compInfo, descriptions);
+            super(element, result);
         }
 
         /* (non-Javadoc)

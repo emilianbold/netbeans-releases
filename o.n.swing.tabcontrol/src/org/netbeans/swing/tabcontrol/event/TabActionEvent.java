@@ -63,6 +63,7 @@ import java.awt.event.MouseEvent;
 public final class TabActionEvent extends ActionEvent {
     private MouseEvent mouseEvent = null;
     private int tabIndex;
+    private String groupName = null;
 
     /**
      * Creates a new instance of TabActionEvent
@@ -79,11 +80,12 @@ public final class TabActionEvent extends ActionEvent {
         this.mouseEvent = mouseEvent;
         consumed = false;
     }
-
+    
     /**
      * Consume this event - any changes that should be performed as a result
      * will be done by external code by manipulating the models or other means
      */
+    @Override
     public void consume() {
         consumed = true;
     }
@@ -91,6 +93,7 @@ public final class TabActionEvent extends ActionEvent {
     /**
      * Determine if the event has been consumed
      */
+    @Override
     public boolean isConsumed() {
         return super.isConsumed();
     }
@@ -108,12 +111,31 @@ public final class TabActionEvent extends ActionEvent {
     public int getTabIndex() {
         return tabIndex;
     }
+    
+    /**
+     * @return Name of window group this command applies to or null.
+     * @since 1.27
+     */
+    public String getGroupName() {
+        return groupName;
+    }
+    
+    /**
+     * Set the name of window group this command applies to.
+     * @param groupName 
+     * @since 1.27
+     */
+    public void setGroupName( String groupName ) {
+        this.groupName = groupName;
+    }
 
+    @Override
     public void setSource(Object source) {
         //Skip some native peer silliness in AWTEvent
         this.source = source;
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer("TabActionEvent:"); //NOI18N
         sb.append ("Tab " + tabIndex + " " + getActionCommand()); //NOI18N

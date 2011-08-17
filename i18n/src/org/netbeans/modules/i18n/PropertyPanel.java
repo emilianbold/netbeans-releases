@@ -55,6 +55,7 @@ import java.awt.event.FocusEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -66,7 +67,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import javax.swing.text.BadLocationException;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -74,10 +74,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.TRAILING;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
-import static org.jdesktop.layout.LayoutStyle.UNRELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
@@ -441,61 +441,61 @@ public class PropertyPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup()
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup()
-                            .add(bundleNameLabel)
-                            .add(valueLabel)
-                            .add(commentLabel)
-                            .add(keyLabel)
-                            .add(replaceFormatLabel))
+                .addGroup(layout.createParallelGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup()
+                            .addComponent(bundleNameLabel)
+                            .addComponent(valueLabel)
+                            .addComponent(commentLabel)
+                            .addComponent(keyLabel)
+                            .addComponent(replaceFormatLabel))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup()
-                            .add(layout.createSequentialGroup()
-                                .add(resourceText)
+                        .addGroup(layout.createParallelGroup()
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(resourceText)
                                 .addPreferredGap(RELATED)
-                                .add(browseButton))
-                            .add(warningLabel)
-                            .add(keyBundleCombo,0,GroupLayout.PREFERRED_SIZE,Short.MAX_VALUE)
-                            .add(valueScroll)
-                            .add(commentScroll)
-                            .add(replaceFormatTextField)))
-                    .add(TRAILING, layout.createSequentialGroup()
-                        .add(argumentsButton)
+                                .addComponent(browseButton))
+                            .addComponent(warningLabel)
+                            .addComponent(keyBundleCombo,0,GroupLayout.PREFERRED_SIZE,Short.MAX_VALUE)
+                            .addComponent(valueScroll)
+                            .addComponent(commentScroll)
+                            .addComponent(replaceFormatTextField)))
+                    .addGroup(TRAILING, layout.createSequentialGroup()
+                        .addComponent(argumentsButton)
                         .addPreferredGap(RELATED)
-                        .add(replaceFormatButton)))
+                        .addComponent(replaceFormatButton)))
                 .addContainerGap()
         );
         layout.setVerticalGroup(
             layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(bundleNameLabel)
-                    .add(resourceText)
-                    .add(browseButton))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(bundleNameLabel)
+                    .addComponent(resourceText)
+                    .addComponent(browseButton))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup()
-                    .add(warningLabel))
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(warningLabel))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(keyLabel)
-                    .add(keyBundleCombo))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(keyLabel)
+                    .addComponent(keyBundleCombo))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup()
-                    .add(valueLabel)
-                    .add(valueScroll))
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(valueLabel)
+                    .addComponent(valueScroll))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup()
-                    .add(commentLabel)
-                    .add(commentScroll))
+                .addGroup(layout.createParallelGroup()
+                    .addComponent(commentLabel)
+                    .addComponent(commentScroll))
                 .addPreferredGap(UNRELATED)
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(replaceFormatTextField)
-                    .add(replaceFormatLabel))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(replaceFormatTextField)
+                    .addComponent(replaceFormatLabel))
                 .addPreferredGap(RELATED)
-                .add(layout.createParallelGroup(BASELINE)
-                    .add(replaceFormatButton)
-                    .add(argumentsButton))
+                .addGroup(layout.createParallelGroup(BASELINE)
+                    .addComponent(replaceFormatButton)
+                    .addComponent(argumentsButton))
                 .addContainerGap()
         );
     }// </editor-fold>

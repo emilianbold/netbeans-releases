@@ -67,6 +67,16 @@ public abstract class KenaiSupport {
      * @return
      */
     public abstract Repository createRepository(KenaiProject project);
+    
+    /**
+     * Creates a {@link Repository} for the given {@link KenaiProject}
+     *
+     * @param project
+     * @return
+     */
+    public Repository findNBRepository() {
+        return null;
+    }
 
     /**
      * // XXX what is this!

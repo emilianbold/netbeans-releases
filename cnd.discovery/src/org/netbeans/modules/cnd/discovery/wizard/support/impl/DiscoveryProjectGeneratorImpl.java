@@ -50,14 +50,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.buildsupport.CompileSupport;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -69,8 +72,10 @@ import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -99,6 +104,47 @@ public class DiscoveryProjectGeneratorImpl {
         }
     }
 
+    private void storeCompileLines(List<ProjectConfiguration> projectConfigurations) {
+        Project project = wizard.getProject();
+        if (project != null) {
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp != null) {
+                MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+                if (makeConfigurationDescriptor != null) {
+                    MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        List<FileConfiguration> confs = new ArrayList<FileConfiguration>();
+                        for (ProjectConfiguration config: projectConfigurations){
+                            confs.addAll(config.getFiles());
+                        }
+                        final Iterator<FileConfiguration> iterator = confs.iterator();
+                        CompileSupport support = new CompileSupport();
+                        Iterator<String> it = new Iterator<String>() {
+
+                            @Override
+                            public boolean hasNext() {
+                                return iterator.hasNext();
+                            }
+
+                            @Override
+                            public String next() {
+                                FileConfiguration next = iterator.next();
+                                return next.getFilePath()+"="+next.getCompilePath()+"#"+next.getCompileLine(); // NOI18N
+                            }
+
+                            @Override
+                            public void remove() {
+                                throw new UnsupportedOperationException();
+                            }
+                        };
+                        support.putOptions(activeConfiguration, it);
+                    }
+                }
+            }
+        }
+
+    }
+    
     public void process(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
@@ -122,6 +168,7 @@ public class DiscoveryProjectGeneratorImpl {
             downConfiguration(sourceRoot, ItemProperties.LanguageKind.C);
         }
         projectBridge.printStaticstic(sourceRoot, ImportProject.logger);
+        storeCompileLines(projectConfigurations);
         projectBridge.save();
         projectBridge.dispose();
     }
@@ -386,7 +433,7 @@ public class DiscoveryProjectGeneratorImpl {
 
     private boolean upConfiguration(Folder folder, ItemProperties.LanguageKind lang) {
         Set<String> commonFoldersIncludes = new HashSet<String>();
-        Set<String> commonFoldersMacros = new HashSet<String>();
+        MacroMap commonFolderMacroMap = new MacroMap();
         boolean haveSubFolders = false;
         for (Folder subFolder : folder.getFolders()) {
             if (!upConfiguration(subFolder, lang)){
@@ -396,7 +443,7 @@ public class DiscoveryProjectGeneratorImpl {
                 CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
                 if (cccc != null) {
                     commonFoldersIncludes.addAll(cccc.getIncludeDirectories().getValue());
-                    commonFoldersMacros.addAll(cccc.getPreprocessorConfiguration().getValue());
+                    commonFolderMacroMap.addAll(cccc.getPreprocessorConfiguration().getValue());
                     haveSubFolders = true;
                 }
             } else {
@@ -406,20 +453,20 @@ public class DiscoveryProjectGeneratorImpl {
                         commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
                     }
                 }
-                if (commonFoldersMacros.size() > 0) {
+                if (commonFolderMacroMap.size() > 0) {
                     CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
                     if (cccc != null) {
-                        commonFoldersMacros.retainAll(cccc.getPreprocessorConfiguration().getValue());
+                        commonFolderMacroMap.retainAll(cccc.getPreprocessorConfiguration().getValue());
                     }
                 }
             }
         }
         Set<String> commonFilesIncludes = new HashSet<String>();
-        Set<String> commonFilesMacros = new HashSet<String>();
+        MacroMap commonFilesMacroMap  = new MacroMap();
         boolean first = true;
         if (haveSubFolders) {
             commonFilesIncludes = new HashSet<String>(commonFoldersIncludes);
-            commonFilesMacros = new HashSet<String>(commonFoldersMacros);
+            commonFilesMacroMap = new MacroMap(commonFolderMacroMap);
             first = false;
         }
         for (Item item : folder.getItemsAsArray()) {
@@ -440,18 +487,18 @@ public class DiscoveryProjectGeneratorImpl {
             }
             if (first) {
                 commonFilesIncludes.addAll(cccc.getIncludeDirectories().getValue());
-                commonFilesMacros.addAll(cccc.getPreprocessorConfiguration().getValue());
+                commonFilesMacroMap.addAll(cccc.getPreprocessorConfiguration().getValue());
                 first = false;
             } else {
                 if (commonFilesIncludes.size() > 0) {
                     commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
                 }
-                if (commonFilesMacros.size() > 0) {
-                    commonFilesMacros.retainAll(cccc.getPreprocessorConfiguration().getValue());
+                if (commonFilesMacroMap.size() > 0) {
+                    commonFilesMacroMap.retainAll(cccc.getPreprocessorConfiguration().getValue());
                 }
             }
         }
-        if (commonFilesIncludes.size() > 0 || commonFilesMacros.size() > 0) {
+        if (commonFilesIncludes.size() > 0 || commonFilesMacroMap.size() > 0) {
             for (Item item : folder.getItemsAsArray()) {
                 CCCCompilerConfiguration cccc = projectBridge.getItemConfiguration(item);
                 if (lang == ItemProperties.LanguageKind.CPP) {
@@ -470,9 +517,9 @@ public class DiscoveryProjectGeneratorImpl {
                     list.removeAll(commonFilesIncludes);
                     cccc.getIncludeDirectories().setValue(list);
                 }
-                if (commonFilesMacros.size() > 0) {
+                if (commonFilesMacroMap.size() > 0) {
                     List<String> list = new ArrayList<String>(cccc.getPreprocessorConfiguration().getValue());
-                    list.removeAll(commonFilesMacros);
+                    list = commonFilesMacroMap.removeCommon(list);
                     cccc.getPreprocessorConfiguration().setValue(list);
                 }
             }
@@ -483,16 +530,15 @@ public class DiscoveryProjectGeneratorImpl {
                 cccc.getIncludeDirectories().setValue(new ArrayList<String>(commonFilesIncludes));
             }
         }
-        if (commonFilesMacros.size() > 0) {
+        if (commonFilesMacroMap.size() > 0) {
             CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, folder);
             if (cccc != null) {
-                cccc.getPreprocessorConfiguration().setValue(new ArrayList<String>(commonFilesMacros));
+                cccc.getPreprocessorConfiguration().setValue(commonFilesMacroMap.convertToList());
             }
         }
         return !first;
     }
-
-
+    
     public Set<Project> makeProject(){
         if (projectBridge.isValid()) {
             process();

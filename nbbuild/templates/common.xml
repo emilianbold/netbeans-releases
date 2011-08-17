@@ -398,7 +398,9 @@ made subject to such option by the copyright holder.
 
 
     <target name="-nbm-prompt-for-storepass" if="keystore" unless="storepass">
-        <input addproperty="storepass" message="Enter password for ${keystore}:"/>
+        <input addproperty="storepass" message="Enter password for ${keystore}:">
+            <handler type="secure"/>
+        </input>
     </target>
 
     <target name="-init-executables">
@@ -488,6 +490,10 @@ made subject to such option by the copyright holder.
                     <propertyset>
                         <propertyref name="build.test.@{test.type}.work.dir"/>
                         <mapper type="glob" from="build.test.@{test.type}.work.dir" to="nbjunit.workdir"/>
+                    </propertyset>
+                    <propertyset>
+                        <propertyref name="test.timeout"/>
+                        <mapper type="glob" from="test.timeout" to="nbjunit.hard.timeout"/>
                     </propertyset>
                 </propertyset>
                 <condition property="exists.test.@{test.type}.src.dir">

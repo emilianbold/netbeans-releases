@@ -111,7 +111,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -154,7 +153,6 @@ public class IDEValidation extends JellyTestCase {
         conf = conf.addTest("testNewProject");
         conf = conf.addTest("testShortcuts"); // sample project must exist before testShortcuts
         conf = conf.addTest("testNewFile");
-        conf = conf.addTest("testCVSLite");
         conf = conf.addTest("testProjectsView");
         conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
@@ -225,7 +223,7 @@ public class IDEValidation extends JellyTestCase {
         String standardLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
         npwo.selectCategory(standardLabel);
         // "Java Application"
-        String javaApplicationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
+        String javaApplicationLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "template_app");
         npwo.selectProject(javaApplicationLabel);
         npwo.next();
         NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
@@ -235,7 +233,7 @@ public class IDEValidation extends JellyTestCase {
         npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
         npnlso.waitClosed();
         // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
+        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "CAP_Opening_Projects");
         try {
             // wait at most 120 second until progress dialog dismiss
             NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
@@ -286,7 +284,7 @@ public class IDEValidation extends JellyTestCase {
         // "Java Classes"
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // "Java Package"
-        String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Package");
+        String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "packageWizard");
         NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
         // wait package node is created
         Node sample1Node = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), SAMPLE1_PACKAGE_NAME);
@@ -294,7 +292,7 @@ public class IDEValidation extends JellyTestCase {
         // create a new classes
 
         // "Java Main Class"
-        String mainClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Main.java"); // NOI18N
+        String mainClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Main.java"); // NOI18N
         NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
         NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE1_CLASS_NAME);
@@ -1106,31 +1104,6 @@ public class IDEValidation extends JellyTestCase {
         optionsOper.ok();
     }
 
-    /** Test CVS Lite
-     * - from main menu invoke "Team|CVS|Checkout"
-     * - wait for Checkout dialog and close it
-     * TODO - when better support for local repository implemented, we can add more tests
-     */
-    public void testCVSLite() {
-        // "Team"
-        String versioningItem = Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle", "Menu/Versioning");
-        // "CVS"
-        String cvsItem = Bundle.getStringTrimmed(
-                "org.netbeans.modules.versioning.system.cvss.ui.actions.Bundle",
-                "CTL_MenuItem_CVSCommands_Label");
-        // "Checkout..."
-        String checkoutItem = Bundle.getStringTrimmed(
-                "org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.Bundle",
-                "CTL_MenuItem_Checkout_Label");
-        //new ActionNoBlock(versioningItem+"|"+cvsItem+"|"+checkoutItem, null).perform();
-        new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock(versioningItem + "|" + cvsItem + "|" + checkoutItem);
-        String checkoutTitle = Bundle.getString(
-                "org.netbeans.modules.versioning.system.cvss.ui.wizards.Bundle",
-                "BK0007");
-        NbDialogOperator checkoutOper = new NbDialogOperator(checkoutTitle);
-        checkoutOper.close();
-    }
-
     /** Test XML
      * - open "Tools|DTDs and XML Schemas"
      * - select "NetBeans Catalog|-//DTD XMLCatalog//EN"
@@ -1182,7 +1155,7 @@ public class IDEValidation extends JellyTestCase {
         // "Java Classes"
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
         // "Java Package"
-        String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Package");
+        String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "packageWizard");
         NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, "xml"); // NOI18N
         Node xmlNode = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), "xml"); //NOI18N
         // "XML"

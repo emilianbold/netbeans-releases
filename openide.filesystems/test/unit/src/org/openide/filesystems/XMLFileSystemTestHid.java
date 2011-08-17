@@ -1013,6 +1013,10 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertNotNull("Attribute found", v);
         assertEquals("Right type", Value.class, v.getClass());
         
+        Object v2 = fo.getAttribute("v");
+        if (v == v2) {
+            fail("Don't cache values of newvalue: " + v + " == " + v2);
+        }
     }
 
     public void testVariousXMLAttributes() throws Exception {

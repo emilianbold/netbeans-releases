@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="app_framework.xml" url="app_framework.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.swingapplib.Bundle#swing-app-framework"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

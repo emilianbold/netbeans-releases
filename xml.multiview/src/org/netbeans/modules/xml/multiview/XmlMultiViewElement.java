@@ -45,7 +45,6 @@
 package org.netbeans.modules.xml.multiview;
 
 import java.awt.Toolkit;
-import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.actions.SaveAction;
 import org.openide.util.actions.SystemAction;

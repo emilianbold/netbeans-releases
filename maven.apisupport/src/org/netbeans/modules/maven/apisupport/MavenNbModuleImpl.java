@@ -63,12 +63,10 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
-import java.awt.BorderLayout;
+import java.beans.PropertyVetoException;
+import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.xml.namespace.QName;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -76,7 +74,10 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -90,16 +91,13 @@ import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.NbPreferences;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -256,7 +254,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         if (nbrepo != null) {
             File platformFile = lookForModuleInPlatform(artifactId);
             if (platformFile != null) {
-                List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(platformFile, nbrepo);
+                List<NBVersionInfo> lst = RepositoryQueries.findBySHA1(platformFile, Collections.singletonList(nbrepo));
                 for (NBVersionInfo elem : lst) {
                     dep = new Dependency();
                     dep.setArtifactId(elem.getArtifactId());
@@ -289,7 +287,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         if (dep.getVersion() == null) {
             if (nbrepo != null) {
-                List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.netbeans.cluster", "platform", nbrepo); // NOI18N
+                List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.netbeans.cluster", "platform", Collections.singletonList(nbrepo)); // NOI18N
                 if (!versions.isEmpty()) {
                     dep.setVersion(versions.get(0).getVersion());
                 }
@@ -331,41 +329,6 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
         return false;
     }
-
-    @Override
-    public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
-        File platformDir = findPlatformFolder();
-        if( null == platformDir ) {
-            return false;
-        }
-        if( null != platformDir && (!platformDir.exists() || platformDir.list().length == 0) ) {
-            //platform needs to be built
-            notifyBuildNeeded( featureDisplayName );
-            return false;
-        }
-        return true;
-    }
-
-    @Messages({
-        "Lbl_BuildNeeded=This feature needs a build of your application.",
-        "Lbl_ShowNextTime=Show this message next time",
-        "Lbl_Close=Close"
-    })
-    private void notifyBuildNeeded(String featureDisplayName) {
-        if( !NbPreferences.forModule(MavenNbModuleImpl.class).getBoolean("showNextTime_BuildNeeded", true) ) //NOI18N
-            return;
-        JPanel panel = new JPanel(new BorderLayout(5, 5));
-        panel.add( new JLabel(Lbl_BuildNeeded()), BorderLayout.CENTER ); //NOI18N
-        JCheckBox checkShowNextTime = new JCheckBox(Lbl_ShowNextTime()); //NOI18N
-        checkShowNextTime.setSelected(true);
-        panel.add(checkShowNextTime, BorderLayout.SOUTH);
-        JButton btnClose= new JButton(Lbl_Close()); //NOI18N
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor(panel, featureDisplayName,
-                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[]{btnClose}, btnClose));
-        NbPreferences.forModule(MavenNbModuleImpl.class).putBoolean("showNextTime_BuildNeeded", checkShowNextTime.isSelected()); //NOI18N
-    }
-
 
     public @Override String getReleaseDirectoryPath() {
         return "src/main/release";
@@ -411,6 +374,10 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return FileUtil.createFolder(project.getProjectDirectory(), getReleaseDirectoryPath());
     }
     
+    public @Override File getClassesDirectory() {
+        return new File(project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getOutputDirectory());
+    }
+    
     private class DependencyAdder implements Runnable {
         List<Dependency> toAdd = new ArrayList<Dependency>();
         
@@ -421,10 +388,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         @Override
         public void run() {
             FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+            final DependencyAdder monitor = this;
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                 @Override
                 public void performOperation(POMModel model) {
-                    synchronized (MavenNbModuleImpl.DependencyAdder.this) {
+                    synchronized (monitor) {
                         for (Dependency dep : toAdd) {
                             org.netbeans.modules.maven.model.pom.Dependency mdlDep =
                                     ModelUtils.checkModelDependency(model, dep.getGroupId(), dep.getArtifactId(), true);
@@ -441,13 +409,6 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         }
     }
             
-
-    @Override
-    public NbModuleType getModuleType() {
-        return NbModuleProvider.STANDALONE;
-    }
-
-
     @Override
     public String getProjectFilePath() {
         return "pom.xml"; //NOI18N
@@ -533,8 +494,11 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         return null;
     }
 
-    @Override
-    public File getActivePlatformLocation() {
+    /**
+     * get the NetBeans platform for the module
+     * @return location of the root directory of NetBeans platform installation
+     */
+    private File getActivePlatformLocation() {
         File platformDir = findPlatformFolder();
         if( null != platformDir && platformDir.exists() && platformDir.isDirectory() )
             return platformDir;
@@ -614,4 +578,27 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                     GROUPID_MOJO, NBM_PLUGIN, "brandingToken", "cluster-app"); //NOI18N
              return FileUtilities.resolveFilePath(FileUtil.toFile(appProject.getProjectDirectory()), outputDir + File.separator + brandingToken);
     }
+
+    @Override public FileSystem getEffectiveSystemFilesystem() throws IOException {
+        FileSystem projectLayer = LayerHandle.forProject(project).layer(false);
+        Collection<FileSystem> platformLayers = new ArrayList<FileSystem>();
+        PlatformJarProvider pjp = project.getLookup().lookup(PlatformJarProvider.class);
+        if (pjp != null) {
+            List<URL> urls = new ArrayList<URL>();
+            for (File jar : pjp.getPlatformJars()) {
+                // XXX use LayerHandle.forProject on this and sister modules instead
+                urls.addAll(LayerUtil.layersOf(jar));
+            }
+            XMLFileSystem xmlfs = new XMLFileSystem();
+            try {
+                xmlfs.setXmlUrls(urls.toArray(new URL[urls.size()]));
+            } catch (PropertyVetoException x) {
+                throw new IOException(x);
+            }
+            platformLayers.add(xmlfs);
+        }
+        // XXX would using PlatformLayersCacheManager be beneficial? (would need to modify in several ways)
+        return LayerUtil.mergeFilesystems(projectLayer, platformLayers);
+    }
+
 }

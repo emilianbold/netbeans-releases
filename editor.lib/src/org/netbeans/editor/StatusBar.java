@@ -63,6 +63,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -105,6 +107,12 @@ import org.openide.util.WeakListeners;
 
 public class StatusBar implements PropertyChangeListener, DocumentListener {
 
+    /**
+     * Besides line|column display also caret offset in status bar.
+     */
+    // -J-Dorg.netbeans.editor.caret.offset.level=FINE
+    private static final Logger CARET_OFFSET_LOG = Logger.getLogger("org.netbeans.editor.caret.offset");
+    
     public static final String CELL_MAIN = "main"; // NOI18N
 
     public static final String CELL_POSITION = "position"; // NOI18N
@@ -116,6 +124,8 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
     public static final String OVERWRITE_LOCALE = "status-bar-overwrite"; // NOI18N
 
     private static final String[] POS_MAX_STRINGS = new String[] { "99999 | 999" }; // NOI18N
+
+    private static final String[] POS_MAX_STRINGS_OFFSET = new String[] { "99999 | 999 <99999999>" }; // NOI18N
 
     private static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
 
@@ -288,7 +298,8 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
     }
 
     protected void initPanel() {
-        JLabel cell = addCell(CELL_POSITION, POS_MAX_STRINGS);
+        JLabel cell = addCell(CELL_POSITION,
+                CARET_OFFSET_LOG.isLoggable(Level.FINE) ? POS_MAX_STRINGS_OFFSET : POS_MAX_STRINGS);
         cell.setHorizontalAlignment(SwingConstants.CENTER);
         cell.addMouseListener(new MouseAdapter() {
             public @Override void mouseClicked(MouseEvent e) {
@@ -634,6 +645,9 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                     if (doc != null && doc.getDefaultRootElement().getElementCount()>0) {
                         int pos = c.getDot();
                         String s = Utilities.debugPosition(doc, pos, " | ");
+                        if (CARET_OFFSET_LOG.isLoggable(Level.FINE)) { // Possibly add caret offset info
+                            s += " <" + pos + ">"; // NOI18N
+                        }
                         setText(CELL_POSITION, s);
                     }
                 }

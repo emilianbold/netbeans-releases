@@ -1,8 +1,8 @@
 Usages of <b>Test</b> [3 occurrences]
     RefactoringTest
         SubClass.java
-            <b>super</b><font color=#000000>(</font><font color=#000000>)</font>
+            <b>super</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
         Test.java
-            <b>this</b><font color=#000000>(</font><font color=#000000>)</font>
+            <b>this</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
         User.java
-            <font color=#0000e6>new</font>&nbsp;<b>Test</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>.</font><font color=#000000>method</font><font color=#000000>(</font><font color=#000000>)</font>
+            <font color=#0000e6>new</font>&nbsp;<b>Test</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>.</font><font color=#000000>method</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>

@@ -312,7 +312,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         throws BadLocationException {
         isAfter = false;
         
-        Caret caret = target.getCaret();
+        final Caret caret = target.getCaret();
         final BaseDocument doc = (BaseDocument)document;
 
         boolean insertMatching = isInsertMatchingEnabled(doc);
@@ -652,6 +652,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     if (System.currentTimeMillis() - currentTimeMillis < 1500) {
                                         GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
+                                        caret.setDot((Integer) ret[0] - 1);
                                     }
                                 }
                             });

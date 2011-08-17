@@ -69,6 +69,7 @@ abstract class Sampler implements Runnable, ActionListener {
     private static final double MAX_AVERAGE = SAMPLER_RATE * 3;
     private static final double MAX_STDDEVIATION = SAMPLER_RATE * 4;
     private static final int MAX_SAMPLING_TIME = 5*60;  // 5 minutes
+    private static final int MIN_SAMPLES = 50;
     private static final int MAX_SAMPLES = MAX_SAMPLING_TIME * (1000/SAMPLER_RATE);
     
     private final String name;
@@ -180,7 +181,7 @@ abstract class Sampler implements Runnable, ActionListener {
             if (writeCommand) {
                 Object[] params = new Object[]{startTime, "Samples", samples, "Average", average, "Minimum", min, "Maximum", max, "Std. deviation", std_deviation};
                 Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Snapshot statistics", params); // NOI18N
-                if (average > MAX_AVERAGE || std_deviation > MAX_STDDEVIATION) {
+                if (average > MAX_AVERAGE || std_deviation > MAX_STDDEVIATION || samples < MIN_SAMPLES) {
                     // do not take snapshot if the sampling was not regular enough
                     return;
                 }

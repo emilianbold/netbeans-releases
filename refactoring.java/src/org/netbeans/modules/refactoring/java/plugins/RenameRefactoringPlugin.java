@@ -164,6 +164,12 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                 String msg = new MessageFormat(getString("ERR_IsOverridden")).format(
                         new Object[] {info.getElementUtilities().enclosingTypeElement(el).getSimpleName().toString()});
                 preCheckProblem = createProblem(preCheckProblem, false, msg);
+                for (ExecutableElement method : overriddenByMethods) {
+                    if(RetoucheUtils.getOverridenMethods(method, info).size() > 1) {
+                        preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_IsOverriddenOverrides", method));
+                        break;
+                    }
+                }
             }
             for (ExecutableElement e : overriddenByMethods) {
                 if (e.getModifiers().contains(Modifier.NATIVE)) {

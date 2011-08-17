@@ -96,6 +96,7 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         new FindUsagesAction().perform(editor);
         new EventTool().waitNoEvent(1000);
         FindUsagesClassOperator findUsagesClassOperator = new FindUsagesClassOperator();
+        findUsagesClassOperator.getOpenInNewTab().setSelected(true);
         if ((modifiers & SEARCH_IN_COMMENTS) != 0)
             findUsagesClassOperator.getSearchInComments().setSelected(true);
         if ((modifiers & NOT_SEARCH_IN_COMMENTS) != 0)
@@ -124,13 +125,11 @@ public class FindUsagesTestCase extends RefactoringTestCase {
         findUsagesClassOperator.getFind().pushNoBlock();
         new EventTool().waitNoEvent(2000);
         if (browseChild) {
-            RefactoringResultOperator test = new RefactoringResultOperator();
+            RefactoringResultOperator test = RefactoringResultOperator.getFindUsagesResult();
             JTree tree = test.getPreviewTree();
             TreeModel model = tree.getModel();
             Object root = model.getRoot();
             browseChildren(model, root, 0);
-            
-           
         }
     }
     

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.40.1
+#Version 1.42
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -1010,6 +1010,8 @@ meth public org.netbeans.api.project.ant.AntArtifact getForeignFileReferenceAsAr
 meth public org.netbeans.api.project.libraries.Library copyLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
 meth public org.netbeans.api.project.libraries.Library findLibrary(java.lang.String)
 meth public org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler getLibraryChooserImportHandler()
+meth public org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler getLibraryChooserImportHandler(java.net.URL)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.LibraryManager getProjectLibraryManager()
 meth public org.netbeans.spi.project.SubprojectProvider createSubprojectProvider()
 meth public org.netbeans.spi.project.support.ant.ReferenceHelper$RawReference getRawReference(java.lang.String,java.lang.String)

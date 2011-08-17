@@ -65,6 +65,11 @@ public class DiffAction extends GitAction {
         diff(context);
     }
 
+    @Override
+    protected String iconResource () {
+        return "org/netbeans/modules/git/resources/icons/diff.png"; // NOI18N
+    }
+
     public void diff (VCSContext context) {
         String contextName = Utils.getContextDisplayName(context);
         MultiDiffPanelController controller = new MultiDiffPanelController(context);

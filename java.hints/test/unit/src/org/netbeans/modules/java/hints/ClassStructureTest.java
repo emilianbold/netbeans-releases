@@ -410,6 +410,15 @@ public class ClassStructureTest extends TestBase {
                        );
     }
 
+    @Test
+    public void testMultipleTopLevelClassesInFileExtraSemiColon200476() throws Exception {
+        performAnalysisExcludesTest("test/Test.java",
+                       "package test;\n;\n" +
+                       "public class Test {\n" +
+                       "}\n",
+                       "Multiple top-level classes in file");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

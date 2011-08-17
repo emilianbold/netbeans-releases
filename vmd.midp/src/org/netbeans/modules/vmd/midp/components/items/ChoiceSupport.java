@@ -52,15 +52,10 @@ import java.util.TreeMap;
 
 /**
  *
- * @author Karol Harezlak
+ * @author Karol Harezlak, Anton Chechel
  */
-
 public final class ChoiceSupport {
 
-    private static Map<String, PropertyValue> listTypes;
-    private static Map<String, PropertyValue> fitPolicyValues;
-    private static Map<String, PropertyValue> choiceGroupTypes;
-    
     public static final int VALUE_EXCLUSIVE = 1;
     public static final int VALUE_MULTIPLE = 2;
     public static final int VALUE_IMPLICIT = 3;
@@ -70,33 +65,45 @@ public final class ChoiceSupport {
     public static final int VALUE_TEXT_WRAP_ON = 1;
     public static final int VALUE_TEXT_WRAP_OFF = 2;
     
+    private static final String KEY_EXCLUSIVE = "EXCLUSIVE"; // NOI18N
+    private static final String KEY_MULTIPLE = "MULTIPLE"; // NOI18N
+    private static final String KEY_IMPLICIT = "IMPLICIT"; // NOI18N
+    private static final String KEY_POPUP = "POPUP"; // NOI18N
+    
+    private static final String KEY_TEXT_WRAP_DEFAULT = "TEXT_WRAP_DEFAULT"; // NOI18N
+    private static final String KEY_TEXT_WRAP_OFF = "TEXT_WRAP_OFF"; // NOI18N
+    private static final String KEY_TEXT_WRAP_ON = "TEXT_WRAP_ON"; // NOI18N
+    
+    private static final Map<String, PropertyValue> listTypes = new TreeMap<String, PropertyValue>();
+    private static final Map<String, PropertyValue> fitPolicyValues = new TreeMap<String, PropertyValue>();
+    private static final Map<String, PropertyValue> choiceGroupTypes = new TreeMap<String, PropertyValue>();
+
+    static {
+        listTypes.put(KEY_EXCLUSIVE, MidpTypes.createIntegerValue(VALUE_EXCLUSIVE));
+        listTypes.put(KEY_IMPLICIT, MidpTypes.createIntegerValue(VALUE_IMPLICIT));
+        listTypes.put(KEY_MULTIPLE, MidpTypes.createIntegerValue(VALUE_MULTIPLE));
+
+        choiceGroupTypes.put(KEY_EXCLUSIVE, MidpTypes.createIntegerValue(VALUE_EXCLUSIVE));
+        choiceGroupTypes.put(KEY_POPUP, MidpTypes.createIntegerValue(VALUE_POPUP));
+        choiceGroupTypes.put(KEY_MULTIPLE, MidpTypes.createIntegerValue(VALUE_MULTIPLE));
+
+        fitPolicyValues.put(KEY_TEXT_WRAP_DEFAULT, MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_DEFAULT));
+        fitPolicyValues.put(KEY_TEXT_WRAP_ON, MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_ON));
+        fitPolicyValues.put(KEY_TEXT_WRAP_OFF, MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_OFF));
+    }
+
+    private ChoiceSupport() {
+    }
+
     public static Map<String, PropertyValue> getListTypes() {
-        if (listTypes == null || listTypes.isEmpty()) {
-            listTypes = new TreeMap<String, PropertyValue>();
-            listTypes.put("EXCLUSIVE", MidpTypes.createIntegerValue(VALUE_EXCLUSIVE)); // NOI18N
-            listTypes.put("IMPLICIT", MidpTypes.createIntegerValue(VALUE_IMPLICIT));   // NOI18N
-            listTypes.put("MULTIPLE", MidpTypes.createIntegerValue(VALUE_MULTIPLE));   // NOI18N
-        }        
         return listTypes;
     }
-    
-    public static Map<String, PropertyValue>  getChoiceGroupTypes() {
-        if (choiceGroupTypes == null || choiceGroupTypes.isEmpty()) {
-            choiceGroupTypes = new TreeMap<String, PropertyValue>();
-            choiceGroupTypes.put("EXCLUSIVE", MidpTypes.createIntegerValue(VALUE_EXCLUSIVE));  // NOI18N
-            choiceGroupTypes.put("POPUP", MidpTypes.createIntegerValue(VALUE_POPUP));          // NOI18N
-            choiceGroupTypes.put("MULTIPLE", MidpTypes.createIntegerValue(VALUE_MULTIPLE));    // NOI18N
-        }        
+
+    public static Map<String, PropertyValue> getChoiceGroupTypes() {
         return choiceGroupTypes;
     }
-    
+
     public static Map<String, PropertyValue> getFitPolicyValues() {
-        if (fitPolicyValues == null || fitPolicyValues.isEmpty()) {
-            fitPolicyValues = new TreeMap<String, PropertyValue>();
-            fitPolicyValues.put("TEXT_WRAP_DEFAULT", MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_DEFAULT)); // NOI18N
-            fitPolicyValues.put("TEXT_WRAP_ON", MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_ON));           // NOI18N
-            fitPolicyValues.put("TEXT_WRAP_OFF", MidpTypes.createIntegerValue(VALUE_TEXT_WRAP_OFF));         // NOI18N
-        }
         return fitPolicyValues;
     }
     

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.properties;
 
+import javax.swing.GroupLayout;
 import java.util.Set;
 import java.awt.Color;
 import java.awt.Component;
@@ -74,17 +75,15 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.jdesktop.layout.GroupLayout;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
-import static org.jdesktop.layout.GroupLayout.HORIZONTAL;
-import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
-import static org.jdesktop.layout.LayoutStyle.RELATED;
+import static javax.swing.GroupLayout.Alignment.BASELINE;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
@@ -313,61 +312,61 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
         layout.setHorizontalGroup(
                 layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup()
-                                                .add(lblPropertyName)
-                                                .add(lblPropertyValue))
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup()
+                                                .addComponent(lblPropertyName)
+                                                .addComponent(lblPropertyValue))
                                         .addPreferredGap(RELATED)
-                                        .add(layout.createParallelGroup()
-                                                .add(comboName, 0, DEFAULT_SIZE, DEFAULT_SIZE)
-                                                .add(jScrollPane1)))
-                                .add(layout.createSequentialGroup()
-                                        .add(lblErrMessage, 0, DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(layout.createParallelGroup()
+                                                .addComponent(comboName, 0, DEFAULT_SIZE, DEFAULT_SIZE)
+                                                .addComponent(jScrollPane1)))
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(lblErrMessage, 0, DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addPreferredGap(RELATED)
-                                        .add(btnBrowse))
-                                .add(jSeparator1)
-                                .add(layout.createSequentialGroup()
-                                        .add(btnAdd, PREFERRED_SIZE, DEFAULT_SIZE, DEFAULT_SIZE)
+                                        .addComponent(btnBrowse))
+                                .addComponent(jSeparator1)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btnAdd, PREFERRED_SIZE, DEFAULT_SIZE, DEFAULT_SIZE)
                                         .addPreferredGap(RELATED)
-                                        .add(cbxRecursively)
-                                        .addPreferredGap(cbxRecursively, btnRemove, RELATED, true)
-                                        .add(btnRemove)
+                                        .addComponent(cbxRecursively)
+                                        .addPreferredGap(cbxRecursively, btnRemove, RELATED)
+                                        .addComponent(btnRemove)
                                         .addPreferredGap(RELATED)
-                                        .add(btnRefresh))
-                                .add(labelForTable)
-                                .add(propsPanel))
+                                        .addComponent(btnRefresh))
+                                .addComponent(labelForTable)
+                                .addComponent(propsPanel))
                         .addContainerGap()
         );
-        layout.linkSize(new Component[] {btnBrowse, btnRefresh, btnRemove}, HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, btnBrowse, btnRefresh, btnRemove);
         layout.setHonorsVisibility(false);
 
         layout.setVerticalGroup(
                 layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(lblPropertyName)
-                                .add(comboName))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(lblPropertyName)
+                                .addComponent(comboName))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(LEADING)
-                                .add(lblPropertyValue)
-                                .add(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(LEADING)
+                                .addComponent(lblPropertyValue)
+                                .addComponent(jScrollPane1, PREFERRED_SIZE, DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(lblErrMessage)
-                                .add(btnBrowse))
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(lblErrMessage)
+                                .addComponent(btnBrowse))
                         .addPreferredGap(RELATED)
-                        .add(jSeparator1, PREFERRED_SIZE, 10, PREFERRED_SIZE)
+                        .addComponent(jSeparator1, PREFERRED_SIZE, 10, PREFERRED_SIZE)
                         .addPreferredGap(RELATED)
-                        .add(layout.createParallelGroup(BASELINE)
-                                .add(btnAdd)
-                                .add(cbxRecursively)
-                                .add(btnRemove)
-                                .add(btnRefresh))
-                        .add(18)
-                        .add(labelForTable)
+                        .addGroup(layout.createParallelGroup(BASELINE)
+                                .addComponent(btnAdd)
+                                .addComponent(cbxRecursively)
+                                .addComponent(btnRemove)
+                                .addComponent(btnRefresh))
+                        .addGap(18)
+                        .addComponent(labelForTable)
                         .addPreferredGap(RELATED)
-                        .add(propsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(propsPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap()
         );
 

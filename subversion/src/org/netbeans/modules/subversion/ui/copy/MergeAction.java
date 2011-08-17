@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -183,6 +184,16 @@ public class MergeAction extends ContextAction {
             SVNRevision startRevision;
             if(startUrl != null) {                
                 startRevision = merge.getMergeStartRevision();
+                if (merge.isStartRevisionIncluded()) {
+                    if (startRevision.getKind() == SVNRevision.Kind.number) {
+                        startRevision = new SVNRevision.Number(((SVNRevision.Number) startRevision).getNumber() - 1);
+                    } else {
+                        ISVNInfo info = client.getInfo(startUrl, startRevision, startRevision);
+                        if (info != null) {
+                            startRevision = new SVNRevision.Number(info.getRevision().getNumber() - 1);
+                        }
+                    }
+                }
             } else {
                 // XXX is this the only way we can do it?
                 startUrl = endUrl;
@@ -192,7 +203,6 @@ public class MergeAction extends ContextAction {
             if(support.isCanceled()) {
                 return;
             }
-            
             client.merge(startUrl,
                          startRevision,
                          endUrl,

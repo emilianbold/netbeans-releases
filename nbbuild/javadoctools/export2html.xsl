@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -108,6 +108,7 @@ made subject to such option by the copyright holder.
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/7.0.1/javadoc/" target="_top">7.0.1</a> - Javadoc as released for NetBeans IDE 7.0.1</li>
             <li><a href="http://bits.netbeans.org/7.0/javadoc/" target="_top">7.0</a> - Javadoc as released for NetBeans IDE 7.0</li>
             <li><a href="http://bits.netbeans.org/6.9.1/javadoc/" target="_top">6.9.1</a> - Javadoc as released for NetBeans IDE 6.9.1</li>
             <li><a href="http://bits.netbeans.org/6.9/javadoc/" target="_top">6.9</a> - Javadoc as released for NetBeans IDE 6.9</li>

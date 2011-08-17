@@ -109,6 +109,7 @@ public final class NimbusViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return new NimbusViewTabDisplayerUI((TabDisplayer) c);
     }
 
+    @Override
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
@@ -155,6 +156,7 @@ public final class NimbusViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         return super.getTxtFont();
     }     
 
+    @Override
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
         // substract lower border
@@ -167,8 +169,13 @@ public final class NimbusViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             Component buttons = getControlButtons();
             if( null != buttons ) {
                 Dimension buttonsSize = buttons.getPreferredSize();
-                txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                buttons.setLocation(x + txtWidth + 2 * TXT_X_PAD, y + (height - buttonsSize.height)/2 + (TXT_Y_PAD / 2));
+                if( width < buttonsSize.width+2*ICON_X_PAD ) {
+                    buttons.setVisible( false );
+                } else {
+                    buttons.setVisible( true );
+                    txtWidth = width - (buttonsSize.width + 2*ICON_X_PAD + TXT_X_PAD);
+                    buttons.setLocation(x + txtWidth +  TXT_X_PAD+ICON_X_PAD, y + (height - buttonsSize.height)/2 + (TXT_Y_PAD / 2));
+                }
             }
         } else {
             txtWidth = width - 2 * TXT_X_PAD;
@@ -186,6 +193,7 @@ public final class NimbusViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             HtmlRenderer.STYLE_TRUNCATE, true);
     }
 
+    @Override
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
 
@@ -208,6 +216,7 @@ key:TabbedPane:TabbedPaneTab[MouseOver+Selected].backgroundPainter
 key:TabbedPane:TabbedPaneTab[Pressed+Selected].backgroundPainter
 key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
 */
+    @Override
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
         boolean isLast = index == getDataModel().size()-1;
@@ -256,6 +265,40 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
 
         if (isPreviousTabSelected) {
             g.setClip(clip);
+        }
+    }
+
+    @Override
+    protected void paintDisplayerBackground( Graphics g, JComponent c ) {
+
+        int x = 0;
+        int y = 0;
+        int width = c.getWidth();
+        int height = c.getHeight();
+        
+        Object o = null;
+        o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
+
+        if( NimbusEditorTabCellRenderer.IS_JDK_17 ) {
+            if ((o != null) && (o instanceof javax.swing.Painter)) {
+                javax.swing.Painter painter = (javax.swing.Painter) o;
+                BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2d = bufIm.createGraphics();
+                g2d.setBackground(UIManager.getColor("Panel.background"));
+                g2d.clearRect(0, 0, width, height);
+                painter.paint(g2d, null, width, height);
+                g.drawImage(bufIm, x, y, null);
+            }
+        } else {
+            if ((o != null) && (o instanceof com.sun.java.swing.Painter)) {
+                com.sun.java.swing.Painter painter = (com.sun.java.swing.Painter) o;
+                BufferedImage bufIm = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                Graphics2D g2d = bufIm.createGraphics();
+                g2d.setBackground(UIManager.getColor("Panel.background"));
+                g2d.clearRect(0, 0, width, height);
+                painter.paint(g2d, null, width, height);
+                g.drawImage(bufIm, x, y, null);
+            }
         }
     }
 
@@ -308,9 +351,24 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
             iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/gtk_pin_rollover.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+            
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/vista_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
         }
     }
 
+    @Override
     public Icon getButtonIcon(int buttonId, int buttonState) {
         Icon res = null;
         initIcons();

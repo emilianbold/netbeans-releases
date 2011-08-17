@@ -45,24 +45,21 @@
 package org.netbeans.modules.groovy.gsp.loaders;
 
 import java.io.IOException;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.text.DataEditorSupport;
+import org.openide.windows.TopComponent;
 
 public class GspDataObject extends MultiDataObject
         implements Lookup.Provider {
     
     public GspDataObject(FileObject pf, GspDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        //CookieSet set = getCookieSet();
-        //set.add(HtmlEditorSupport.class, this);
-        //set.add(ViewSupport.class, this);
+        registerEditor("text/x-gsp", true);
     }
     
     @Override
@@ -71,7 +68,19 @@ public class GspDataObject extends MultiDataObject
     }
     
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
+    }
+
+    @MultiViewElement.Registration(
+        displayName = "#CTL_SourceTabCaption",
+        iconBase = "org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png",
+        mimeType = "text/x-gsp",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID = "groovy.gsp",
+        position = 1
+    )
+    public static MultiViewEditorElement createEditor(Lookup lkp) {
+        return new MultiViewEditorElement(lkp);
     }
 }

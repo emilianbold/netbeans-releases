@@ -63,7 +63,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { class B { } class F { B b; } }"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A.B b; A outer; F(A outer) { this.outer = outer; } } "),
+                      new File("t/F.java", "package t; class F { A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { class B { } }"));
     }
 
@@ -81,7 +81,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -100,7 +100,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
         performInnerToOuterTest(true);
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
     }
 
@@ -109,7 +109,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                  new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
         performInnerToOuterTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
         verifyContent(src,
-                      new File("t/F.java", "package t; class F { A outer; F(A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "package t; class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
     }
 
@@ -240,7 +240,179 @@ public class InnerToOutterTest extends RefactoringTestBase {
                       new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
                       new File("t/A.java", "package t; public class A { int i; }"));
     }
+    
+    public void test198186() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "/*\n"
+                + " * To change this template, choose Tools | Templates\n"
+                + " * and open the template in the editor.\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Ernie Rael <err at raelity.com>\n"
+                + " */\n"
+                + "public class A {\n"
+                + "    ChangeNotify changeNotify;\n"
+                + "\n"
+                + "    public A(ChangeNotify changeNotify)\n"
+                + "    {\n"
+                + "        this.changeNotify = changeNotify;\n"
+                + "    }\n"
+                + "\n"
+                + "    void foo() {\n"
+                + "        StartAsNested n = new StartAsNested();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static interface ChangeNotify {\n"
+                + "        public void change();\n"
+                + "    }\n"
+                + "    public static interface ForDebug {\n"
+                + "        public void iFunc();\n"
+                + "    }\n"
+                + "\n"
+                + "    class StartAsNested {\n"
+                + "\n"
+                + "        public StartAsNested()\n"
+                + "        {\n"
+                + "            ForDebug pcl;\n"
+                + "            pcl = new ForDebug() {\n"
+                + "                @Override\n"
+                + "                public void iFunc() {\n"
+                + "                    changeNotify.change();\n"
+                + "                }\n"
+                + "            };\n"
+                + "        }\n"
+                + "\n"
+                + "        void func1()\n"
+                + "        {\n"
+                + "            C1 c = new MyC1(1);\n"
+                + "        }\n"
+                + "\n"
+                + "        class MyC1 extends C1\n"
+                + "        {\n"
+                + "            public MyC1(int i)\n"
+                + "            {\n"
+                + "                super(i);\n"
+                + "            }\n"
+                + "        }\n"
+                + "\n"
+                + "        class C1\n"
+                + "        {\n"
+                + "            int i;\n"
+                + "\n"
+                + "            public C1()\n"
+                + "            {\n"
+                + "            }\n"
+                + "\n"
+                + "            public C1(int i)\n"
+                + "            {\n"
+                + "                this();\n"
+                + "                this.i = i;\n"
+                + "            }\n"
+                + "\n"
+                + "            @Override\n"
+                + "            protected Object clone() throws CloneNotSupportedException\n"
+                + "            {\n"
+                + "                C1 c1 = new C1(i);\n"
+                + "                return c1;\n"
+                + "            }\n"
+                + "        }\n"
+                + "\n"
+                + "    }\n"
+                + "}\n"));
+        performInnerToOuterTest(true);
+        verifyContent(src,
+                new File("t/StartAsNested.java", "package t;\n"
+                + "\n"
+                + "class StartAsNested {\n"
+                + "\n"
+                + "    private final A outer;\n"
+                + "\n"
+                + "    public StartAsNested(final A outer) {\n"
+                + "        this.outer = outer;\n"
+                + "        A.ForDebug pcl;\n"
+                + "        pcl = new A.ForDebug() {\n"
+                + "\n"
+                + "            @Override\n"
+                + "            public void iFunc() {\n"
+                + "                outer.changeNotify.change();\n"
+                + "            }\n"
+                + "        };\n"
+                + "    }\n"
+                + "\n"
+                + "    void func1() {\n"
+                + "        C1 c = new MyC1(1);\n"
+                + "    }\n"
+                + "\n"
+                + "    class MyC1 extends C1 {\n"
+                + "\n"
+                + "        public MyC1(int i) {\n"
+//                + "            super(i);\n" // Should be fixed in #197097
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    class C1 {\n"
+                + "\n"
+                + "        int i;\n"
+                + "\n"
+                + "        public C1() {\n"
+                + "        }\n"
+                + "\n"
+                + "        public C1(int i) {\n"
+                + "            this();\n"
+                + "            this.i = i;\n"
+                + "        }\n"
+                + "\n"
+                + "        @Override\n"
+                + "        protected Object clone() throws CloneNotSupportedException {\n"
+                + "            C1 c1 = new C1(i);\n"
+                + "            return c1;\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+                + "\n"),
+                new File("t/A.java", "/*\n"
+                + " * To change this template, choose Tools | Templates\n"
+                + " * and open the template in the editor.\n"
+                + " */\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author Ernie Rael <err at raelity.com>\n"
+                + " */\n"
+                + "public class A {\n"
+                + "    ChangeNotify changeNotify;\n"
+                + "\n"
+                + "    public A(ChangeNotify changeNotify)\n"
+                + "    {\n"
+                + "        this.changeNotify = changeNotify;\n"
+                + "    }\n"
+                + "\n"
+                + "    void foo() {\n"
+                + "        StartAsNested n = new StartAsNested(this);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static interface ChangeNotify {\n"
+                + "        public void change();\n"
+                + "    }\n"
+                + "    public static interface ForDebug {\n"
+                + "        public void iFunc();\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
+    public void test177996() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = t.new Inner(); } class Inner { }}"));
+        performInnerToOuterTest(true);
+        verifyContent(src,
+                      new File("t/Inner.java", "package t; class Inner { private final A outer; Inner(final A outer) { this.outer = outer; } } "),
+                      new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = new Inner(t); }}"));
+    }
+    
     private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
         

@@ -199,7 +199,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         int i = 0;
         for(String obj : set){
             i++;
-            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null);
+            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null, false);
             if (applicable.isApplicable()) {
                 return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null, null);
             }
@@ -241,7 +241,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                 progress.start(set.size());
                             }
                             if (set.size() > 0) {
-                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null, new CompileLineStorage());
                             } else {
                                 myFileProperties = new ArrayList<SourceFileProperties>();
                             }

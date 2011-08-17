@@ -112,8 +112,9 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.websvc.customization</friend>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.websvc.metro.model</friend>
+                <friend>org.netbeans.modules.websvc.owsm</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.jaxws.light.api</package>
                 <package>org.netbeans.modules.websvc.jaxws.light.spi</package>
             </friend-packages>

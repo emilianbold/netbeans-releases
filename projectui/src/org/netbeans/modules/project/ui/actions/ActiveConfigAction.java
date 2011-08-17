@@ -64,12 +64,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -83,12 +83,17 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Action permitting selection of a configuration for the main project.
  * @author Greg Crawley, Adam Sotona, Jesse Glick
  */
+@ActionID(id="org.netbeans.modules.project.ui.actions.ActiveConfigAction", category="Project")
+@ActionRegistration(displayName="#ActiveConfigAction.label")
+@ActionReferences({
+    @ActionReference(path="Menu/BuildProject", position=300),
+    @ActionReference(path="Toolbars/Build", position=80)
+})
 public class ActiveConfigAction extends CallableSystemAction implements LookupListener, PropertyChangeListener, ContextAwareAction {
 
     private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
@@ -103,6 +108,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     private JComboBox configListCombo;
     private boolean listeningToCombo = true;
 
+    // all three guarded by this
     private Project currentProject;
     private ProjectConfigurationProvider<?> pcp;
     @SuppressWarnings("rawtypes")
@@ -136,7 +142,11 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         configListCombo.setRenderer(new ConfigCellRenderer());
         configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
         configListCombo.setFocusable(false);
-        configurationsListChanged(pcp == null ? null : getConfigurations(pcp));
+        ProjectConfigurationProvider<?> _pcp;
+        synchronized (this) {
+            _pcp = pcp;
+        }
+        configurationsListChanged(_pcp == null ? null : getConfigurations(_pcp));
         configListCombo.addActionListener(new ActionListener() {
             public @Override void actionPerformed(ActionEvent e) {
                 if (!listeningToCombo) {
@@ -144,8 +154,12 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 }
                 Object o = configListCombo.getSelectedItem();
                 if (o == CUSTOMIZE_ENTRY) {
-                    activeConfigurationChanged(pcp != null ? getActiveConfiguration(pcp) : null);
-                    pcp.customize();
+                    ProjectConfigurationProvider<?> _pcp;
+                    synchronized (ActiveConfigAction.this) {
+                        _pcp = pcp;
+                    }
+                    activeConfigurationChanged(_pcp != null ? getActiveConfiguration(_pcp) : null);
+                    _pcp.customize();
                 } else if (o != null) {
                     activeConfigurationSelected((ProjectConfiguration) o, null);
                 }
@@ -164,10 +178,14 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         });
         lst = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
+                ProjectConfigurationProvider<?> _pcp;
+                synchronized (ActiveConfigAction.this) {
+                    _pcp = pcp;
+                }
                 if (ProjectConfigurationProvider.PROP_CONFIGURATIONS.equals(evt.getPropertyName())) {
-                    configurationsListChanged(getConfigurations(pcp));
+                    configurationsListChanged(getConfigurations(_pcp));
                 } else if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
-                    activeConfigurationChanged(getActiveConfiguration(pcp));
+                    activeConfigurationChanged(getActiveConfiguration(_pcp));
                 }
             }
         };
@@ -184,13 +202,15 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         Lookup.Result<DataObject> resultDO = lookup.lookupResult(DataObject.class);
         resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
         resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
-
-        DynLayer.INSTANCE.setEnabled(true);
         refreshView(lookup);
     }
 
-    private synchronized void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
+    private void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
+        ProjectConfigurationProvider<?> _pcp;
+        synchronized (this) {
+            _pcp = pcp;
+        }
         if (configs == null) {
             EventQueue.invokeLater(new Runnable() {
                 public @Override void run() {
@@ -200,7 +220,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             });
         } else {
             final DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
-            if (pcp != null && pcp.hasCustomizer()) {
+            if (_pcp != null && _pcp.hasCustomizer()) {
                 model.addElement(CUSTOMIZE_ENTRY);
             }
             EventQueue.invokeLater(new Runnable() {
@@ -210,12 +230,12 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 }
             });
         }
-        if (pcp != null) {
-            activeConfigurationChanged(getActiveConfiguration(pcp));
+        if (_pcp != null) {
+            activeConfigurationChanged(getActiveConfiguration(_pcp));
         }
     }
 
-    private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
+    private void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
         EventQueue.invokeLater(new Runnable() {
             public @Override void run() {
@@ -281,48 +301,12 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         return toolbarPanel;
     }
 
-    /**
-     * Dynamically inserts or removes the action from the toolbar.
-     */
-    @ServiceProvider(service=FileSystem.class)
-    public static final class DynLayer extends MultiFileSystem {
-
-        static DynLayer INSTANCE;
-
-        private final FileSystem fragment;
-
-        /**
-         * Default constructor for lookup.
-         */
-        @SuppressWarnings("LeakingThisInConstructor")
-        public DynLayer() {
-            INSTANCE = this;
-            fragment = FileUtil.createMemoryFileSystem();
-            try {
-                FileObject f = FileUtil.createData(fragment.getRoot(), "Toolbars/Build/org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow"); // NOI18N
-                f.setAttribute("originalFile", "Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"); // NOI18N
-                f.setAttribute("position", 80); // NOI18N
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
-        }
-
-        void setEnabled(boolean enabled) {
-            if (enabled) {
-                setDelegates(fragment);
-            } else {
-                setDelegates();
-            }
-        }
-
-    }
-
     class ConfigMenu extends JMenu implements DynamicMenuContent, ActionListener {
 
         private final Lookup context;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        public ConfigMenu(Lookup context) {
+        ConfigMenu(Lookup context) {
             this.context = context;
             if (context != null) {
                 Mnemonics.setLocalizedText(this, NbBundle.getMessage(ActiveConfigAction.class, "ActiveConfigAction.context.label"));
@@ -341,7 +325,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                     return null;
                 }
             } else {
-                return ActiveConfigAction.this.pcp; // global menu item; take from main project
+                synchronized (ActiveConfigAction.this) {
+                    return pcp; // global menu item; take from main project
+                }
             }
         }
         
@@ -405,7 +391,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         
         private Border defaultBorder = getBorder();
         
-        public ConfigCellRenderer () {
+        ConfigCellRenderer() {
             setOpaque(true);
         }
 
@@ -453,13 +439,17 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         
     }
 
-    private synchronized void activeProjectChanged(Project p) {
-        LOGGER.log(Level.FINER, "activeProjectChanged: {0} -> {1}", new Object[] {currentProject, p});
-        if (currentResult != null) {
-            currentResult.removeLookupListener(looklst);
-        }
-        currentResult = null;
-        if (currentProject != p) {
+    private void activeProjectChanged(Project p) {
+        ProjectConfigurationProvider<?> _pcp;
+        synchronized (this) {
+            LOGGER.log(Level.FINER, "activeProjectChanged: {0} -> {1}", new Object[] {currentProject, p});
+            if (currentResult != null) {
+                currentResult.removeLookupListener(looklst);
+            }
+            currentResult = null;
+            if (currentProject == p) {
+                return;
+            }
             if (pcp != null) {
                 pcp.removePropertyChangeListener(lst);
             }
@@ -477,13 +467,17 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
                 LOGGER.finest("currentProject is null");
                 pcp = null;
             }
-            configurationsListChanged(pcp == null ? null : getConfigurations(pcp));
-
+            _pcp = pcp;
         }
+        configurationsListChanged(_pcp == null ? null : getConfigurations(_pcp));
     }
     
-    private synchronized void activeProjectProviderChanged() {
-        if (currentResult != null) {
+    private void activeProjectProviderChanged() {
+        ProjectConfigurationProvider<?> _pcp;
+        synchronized (this) {
+            if (currentResult == null) {
+                return;
+            }
             if (pcp != null) {
                 pcp.removePropertyChangeListener(lst);
             }
@@ -495,8 +489,9 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             } else {
                 LOGGER.finest("currentResult is empty");
             }
-            configurationsListChanged(pcp == null ? null : getConfigurations(pcp));
+            _pcp = pcp;
         }
+        configurationsListChanged(_pcp == null ? null : getConfigurations(_pcp));
     }
     
 

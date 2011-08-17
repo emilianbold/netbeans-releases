@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
@@ -55,11 +56,23 @@ import org.netbeans.modules.xml.multiview.Error;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  * @author mkuchtiak
  */
+@MultiViewElement.Registration(
+    displayName="#TTL_" + DDDataObject.MULTIVIEW_FILTERS,
+    iconBase="org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif",
+    persistenceType=TopComponent.PERSISTENCE_NEVER,
+    preferredID=DDDataObject.DD_MULTIVIEW_PREFIX + DDDataObject.MULTIVIEW_FILTERS,
+    mimeType={DDDataLoader.REQUIRED_MIME_1, DDWeb25DataLoader.REQUIRED_MIME, DDWeb30DataLoader.REQUIRED_MIME, DDWebFragment30DataLoader.REQUIRED_MIME},
+    position=700
+)
 public class FiltersMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
+
+    public static final int FILTERS_ELEMENT_INDEX = 3;
 
     private static final Logger LOG = Logger.getLogger(FiltersMultiViewElement.class.getName());
     
@@ -76,10 +89,10 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
     private static final String HELP_ID_PREFIX=DDDataObject.HELP_ID_PREFIX_FILTERS;
     
     /** Creates a new instance of DDMultiViewElement */
-    public FiltersMultiViewElement(final DDDataObject dObj, int index) {
-        super(dObj);
-        this.dObj=dObj;
-        this.index=index;
+    public FiltersMultiViewElement(Lookup context) {
+        super(context.lookup(DDDataObject.class));
+        this.dObj=context.lookup(DDDataObject.class);
+        this.index=FILTERS_ELEMENT_INDEX;
         comp = new ToolBarDesignEditor();
         factory = new FilterPanelFactory(comp, dObj);
         addAction = new AddAction(dObj, NbBundle.getMessage(FiltersMultiViewElement.class,"LBL_addFilter"));

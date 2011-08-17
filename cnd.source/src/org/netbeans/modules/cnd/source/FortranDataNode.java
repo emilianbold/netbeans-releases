@@ -50,7 +50,7 @@ package org.netbeans.modules.cnd.source;
 public class FortranDataNode extends SourceDataNode {
 
     /** The base name of the Fortran source icon */
-    private static final String FortranSrcIcon =
+    static final String FortranSrcIcon =
             "org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"; // NOI18N
 
     public FortranDataNode(SourceDataObject obj) {

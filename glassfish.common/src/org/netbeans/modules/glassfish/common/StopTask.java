@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -99,6 +101,15 @@ public class StopTask extends BasicTask<OperationState> {
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); // NOI18N
         }
 
+        String target = Util.computeTarget(ip);
+
+        if (null != target) {
+            // stop an instance/cluster
+            return stopClusterOrInstance(target);
+        }
+
+        // stop a domain
+
         // !PW Can we have a single manager instance per instance, available on
         // demand through lookup?
         // !PW FIXME this uses doubly nested runnables.  Can we fix?
@@ -144,5 +155,49 @@ public class StopTask extends BasicTask<OperationState> {
         return fireOperationStateChanged(OperationState.FAILED, "MSG_STOP_SERVER_FAILED", instanceName); // NOI18N
     }
     
+    private OperationState  stopClusterOrInstance(String target) {
+                CommandRunner inner = new CommandRunner(true,
+                        support.getCommandFactory(), ip, new OperationStateListener() {
+                    @Override
+                    public void operationStateChanged(OperationState newState, String message) {
+
+                    }
+                }
+                );
+                Future<OperationState> result = inner.execute(new Commands.StopCluster(target));
+                OperationState state = null;
+                try {
+                    state = result.get();
+                } catch (InterruptedException ie) {
+                    Logger.getLogger("glassfish").log(Level.INFO, "stop-cluster",ie);  // NOI18N
+                } catch (ExecutionException ie) {
+                    Logger.getLogger("glassfish").log(Level.INFO, "stop-cluster",ie);  // NOI18N
+                }
+                if (state == OperationState.FAILED) {
+                    // if start-cluster not successful, try start-instance
+                    inner =  new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
+                        @Override
+                        public void operationStateChanged(OperationState newState, String message) {
+
+                        }
+                    });
+                    result = inner.execute(new Commands.StopInstance(target));
+                    try {
+                        state = result.get();
+                    } catch (InterruptedException ie) {
+                        Logger.getLogger("glassfish").log(Level.INFO, "stop-instance",ie);  // NOI18N
+                    } catch (ExecutionException ie) {
+                        Logger.getLogger("glassfish").log(Level.INFO, "stop-instance",ie);  // NOI18N
+                    }
+                    if (state == OperationState.FAILED) {
+                        // if start instance not suscessful fail
+                        return fireOperationStateChanged(OperationState.FAILED,
+                                "MSG_STOP_TARGET_FAILED", instanceName,target); // NOI18N
+                    }
+                }
     
+                return fireOperationStateChanged(OperationState.COMPLETED,
+                        "MSG_SERVER_STOPPED", instanceName); // NOI18N
+
+    }
 }

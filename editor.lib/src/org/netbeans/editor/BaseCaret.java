@@ -52,7 +52,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Component;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -114,6 +113,7 @@ import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -259,8 +259,6 @@ AtomicLockListener, FoldHierarchyListener {
     
     static final long serialVersionUID =-9113841520331402768L;
 
-    private MouseEvent dndArmedEvent = null;
-    
     /**
      * Set to true once the folds have changed. The caret should retain
      * its relative visual position on the screen.
@@ -293,6 +291,17 @@ AtomicLockListener, FoldHierarchyListener {
     private PreferenceChangeListener weakPrefsListener = null;
     
     private boolean caretUpdatePending;
+    
+    private MouseState mouseState = MouseState.DEFAULT;
+    
+    /**
+     * Minimum selection start for word and line selections.
+     * This helps to ensure that when extending word (or line) selections
+     * the selection will always include at least the initially selected word (or line).
+     */
+    private int minSelectionStartOffset;
+    
+    private int minSelectionEndOffset;
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
@@ -544,7 +553,6 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void paint(Graphics g) {
         JTextComponent c = component;
         if (c == null) return;
-        EditorUI editorUI = Utilities.getEditorUI(c);
 
         // #70915 Check whether the caret was moved but the component was not
         // validated yet and therefore the caret bounds are still null
@@ -1214,7 +1222,6 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void insertUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
-            BaseDocument doc = (BaseDocument)component.getDocument();
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             boolean typingModification;
             if ((bevt.isInUndo() || bevt.isInRedo())
@@ -1243,7 +1250,6 @@ AtomicLockListener, FoldHierarchyListener {
     public @Override void removeUpdate(DocumentEvent evt) {
         JTextComponent c = component;
         if (c != null) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
             // make selection invisible if removal shrinked block to zero size
             BaseDocumentEvent bevt = (BaseDocumentEvent)evt;
             boolean typingModification;
@@ -1312,40 +1318,62 @@ AtomicLockListener, FoldHierarchyListener {
     }
 
     // MouseListener methods
-    public @Override void mouseClicked(MouseEvent evt) {
+    @Override
+    public void mousePressed(MouseEvent evt) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("mouseClicked: " + logMouseEvent(evt));
+            LOG.fine("mousePressed: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
         }
-        
+
         JTextComponent c = component;
-        if (c != null) {
-            if (SwingUtilities.isLeftMouseButton(evt)) {
-                if (evt.getClickCount() == 2) {
-                    BaseTextUI ui = (BaseTextUI)c.getUI();
-                    // Expand fold if offset is in collapsed fold
-                    int offset = ui.viewToModel(c,
-                                    evt.getX(), evt.getY());
+        if (isLeftMouseButtonExt(evt)) {
+            // Expand fold if offset is in collapsed fold
+            int offset = mouse2Offset(evt);
+            switch (evt.getClickCount()) {
+                case 1: // Single press
+                    c.setDragEnabled(true);
+                    if (evt.isShiftDown()) { // Select till offset
+                        moveDot(offset);
+                        mouseState = MouseState.CHAR_SELECTION;
+                    } else { // Regular press
+                        // check whether selection drag is possible
+                        if (isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
+                            mouseState = MouseState.DRAG_SELECTION_POSSIBLE;
+                        } else { // Drag not possible
+                            mouseState = MouseState.CHAR_SELECTION;
+                            setDot(offset);
+                        }
+                    }
+                    break;
+
+                case 2: // double-click => word selection
+                    mouseState = MouseState.WORD_SELECTION;
+                    // Disable drag which would otherwise occur when mouse would be over text
+                    c.setDragEnabled(false);
+                    // Check possible fold expansion
                     FoldHierarchy hierarchy = FoldHierarchy.get(c);
                     Document doc = c.getDocument();
                     if (doc instanceof AbstractDocument) {
-                        AbstractDocument adoc = (AbstractDocument)doc;
+                        AbstractDocument adoc = (AbstractDocument) doc;
                         adoc.readLock();
                         try {
                             hierarchy.lock();
                             try {
                                 Fold collapsed = FoldUtilities.findCollapsedFold(
-                                    hierarchy, offset, offset);
-                                if (collapsed != null && collapsed.getStartOffset() <= offset &&
-                                    collapsed.getEndOffset() >= offset) {
+                                        hierarchy, offset, offset);
+                                if (collapsed != null && collapsed.getStartOffset() <= offset
+                                        && collapsed.getEndOffset() >= offset) {
                                     hierarchy.expand(collapsed);
                                 } else {
                                     if (selectWordAction == null) {
-                                        selectWordAction = ((BaseKit)ui.getEditorKit(
-                                                                c)).getActionByName(BaseKit.selectWordAction);
+                                        selectWordAction = ((BaseKit) c.getUI().getEditorKit(
+                                                c)).getActionByName(BaseKit.selectWordAction);
                                     }
                                     if (selectWordAction != null) {
                                         selectWordAction.actionPerformed(null);
                                     }
+                                    // Select word action selects forward i.e. dot > mark
+                                    minSelectionStartOffset = getMark();
+                                    minSelectionEndOffset = getDot();
                                 }
                             } finally {
                                 hierarchy.unlock();
@@ -1354,20 +1382,78 @@ AtomicLockListener, FoldHierarchyListener {
                             adoc.readUnlock();
                         }
                     }
-                } else if (evt.getClickCount() == 3) {
+                    break;
+                    
+                case 3: // triple-click => line selection
+                    mouseState = MouseState.LINE_SELECTION;
+                    // Disable drag which would otherwise occur when mouse would be over text
+                    c.setDragEnabled(false);
                     if (selectLineAction == null) {
-                        BaseTextUI ui = (BaseTextUI)c.getUI();
-                        selectLineAction = ((BaseKit)ui.getEditorKit(
-                                                c)).getActionByName(BaseKit.selectLineAction);
+                        selectLineAction = ((BaseKit) c.getUI().getEditorKit(
+                                c)).getActionByName(BaseKit.selectLineAction);
                     }
                     if (selectLineAction != null) {
                         selectLineAction.actionPerformed(null);
+                        // Select word action selects forward i.e. dot > mark
+                        minSelectionStartOffset = getMark();
+                        minSelectionEndOffset = getDot();
                     }
-                }
-            } else if (SwingUtilities.isMiddleMouseButton(evt)){
+                    break;
+
+                default: // multi-click
+            }
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mouseReleased: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
+        }
+        
+        int offset = mouse2Offset(evt);
+        switch (mouseState) {
+            case DRAG_SELECTION_POSSIBLE:
+                setDot(offset);
+                break;
+
+            case CHAR_SELECTION:
+                moveDot(offset); // Will do setDot() if no selection
+                break;
+        }
+        // Set DEFAULT state; after next mouse press the state may change
+        // to another state according to particular click count
+        mouseState = MouseState.DEFAULT;
+        component.setDragEnabled(true);
+    }
+    
+    private int mouse2Offset(MouseEvent evt) {
+        JTextComponent c = component;
+        int offset = 0;
+        if (c != null) {
+            int y = evt.getY();
+            if (y < 0) {
+                offset = 0;
+            } else if (y > c.getSize().getHeight()) {
+                offset = c.getDocument().getLength();
+            } else {
+                offset = c.viewToModel(new Point(evt.getX(), evt.getY()));
+            }
+        }
+        return offset;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mouseClicked: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); // NOI18N
+        }
+        
+        JTextComponent c = component;
+        if (c != null) {
+            if (SwingUtilities.isMiddleMouseButton(evt)) {
 		if (evt.getClickCount() == 1) {
 		    if (c == null) return;
-                    Toolkit tk = c.getToolkit();
                     Clipboard buffer = getSystemSelection();
                     
                     if (buffer == null) return;
@@ -1401,75 +1487,112 @@ AtomicLockListener, FoldHierarchyListener {
         }
     }
 
-    private void mousePressedImpl(MouseEvent evt){
-        JTextComponent c = component;
-        if (c != null) {
-            // Position the cursor at the appropriate place in the document
-            if ((SwingUtilities.isLeftMouseButton(evt) && 
-                !(evt.isPopupTrigger()) &&
-                 (evt.getModifiers() & (InputEvent.META_MASK|InputEvent.ALT_MASK)) == 0) ||
-               !(isSelectionVisible() && getMark() != getDot())
-            ) {
-                int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
-                          evt.getX(), evt.getY());
-                if (offset >= 0) {
-                    if ((evt.getModifiers() & InputEvent.SHIFT_MASK) != 0) {
+    @Override
+    public void mouseEntered(MouseEvent evt) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent evt) {
+    }
+
+    // MouseMotionListener methods
+    @Override
+    public void mouseMoved(MouseEvent evt) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent evt) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("mouseDragged: " + logMouseEvent(evt) + ", state=" + mouseState + '\n'); //NOI18N
+        }
+        
+        if (isLeftMouseButtonExt(evt)) {
+            JTextComponent c = component;
+            int offset = mouse2Offset(evt);
+            int dot = getDot();
+            int mark = getMark();
+            try {
+                switch (mouseState) {
+                    case DEFAULT:
+                    case DRAG_SELECTION:
+                        break;
+
+                    case DRAG_SELECTION_POSSIBLE:
+                        mouseState = MouseState.DRAG_SELECTION;
+                        break;
+                    
+                    case CHAR_SELECTION:
                         moveDot(offset);
-                    } else {
-                        setDot(offset);
-                    }
-                    setMagicCaretPosition(null);
+                        break; // Use the offset under mouse pointer
+
+                    
+                    case WORD_SELECTION:
+                        // Increase selection if at least in the middle of a word.
+                        // It depends whether selection direction is from lower offsets upward or back.
+                        if (offset >= mark) { // Selection extends forward.
+                            offset = Utilities.getWordEnd(c, offset);
+                        } else { // Selection extends backward.
+                            offset = Utilities.getWordStart(c, offset);
+                        }
+                        selectEnsureMinSelection(mark, dot, offset);
+                        break;
+
+                    case LINE_SELECTION:
+                        if (offset >= mark) { // Selection extends forward
+                            offset = Math.min(Utilities.getRowEnd(c, offset) + 1, c.getDocument().getLength());
+                        } else { // Selection extends backward
+                            offset = Utilities.getRowStart(c, offset);
+                        }
+                        selectEnsureMinSelection(mark, dot, offset);
+                        break;
+
+                    default:
+                        throw new AssertionError("Invalid state " + mouseState); // NOI18N
                 }
-                if (c.isEnabled()) {
-                    c.requestFocus();
-                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
     
-    public @Override void mousePressed(MouseEvent evt) {
+    private void selectEnsureMinSelection(int mark, int dot, int newDot) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("mousePressed: " + logMouseEvent(evt));
+            LOG.fine("selectEnsureMinSelection: mark=" + mark + ", dot=" + dot + ", newDot=" + newDot); // NOI18N
         }
+        if (dot >= mark) { // Existing forward selection
+            if (newDot >= mark) {
+                moveDot(Math.max(newDot, minSelectionEndOffset));
+            } else { // newDot < mark => swap mark and dot
+                setDot(minSelectionEndOffset);
+                moveDot(Math.min(newDot, minSelectionStartOffset));
+            }
 
-        dndArmedEvent = null;
-
-	if (isDragPossible(evt) && mapDragOperationFromModifiers(evt) != TransferHandler.NONE) {
-            dndArmedEvent = evt;
-	    evt.consume();
-            return;
-	}
-        
-        mousePressedImpl(evt);
-    }
-
-    public @Override void mouseReleased(MouseEvent evt) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("mouseReleased: " + logMouseEvent(evt));
+        } else { // Existing backward selection 
+            if (newDot <= mark) {
+                moveDot(Math.min(newDot, minSelectionStartOffset));
+            } else { // newDot > mark => swap mark and dot
+                setDot(minSelectionStartOffset);
+                moveDot(Math.max(newDot, minSelectionEndOffset));
+            }
         }
-
-        if (dndArmedEvent != null){
-            mousePressedImpl(evt);
-        }
-        dndArmedEvent = null;
     }
-
-    public @Override void mouseEntered(MouseEvent evt) {
-    }
-
-    public @Override void mouseExited(MouseEvent evt) {
-    }
-
     
+    private boolean isLeftMouseButtonExt(MouseEvent evt) {
+        return (SwingUtilities.isLeftMouseButton(evt)
+                && !(evt.isPopupTrigger())
+                && (evt.getModifiers() & (InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0);
+    }
+
     protected int mapDragOperationFromModifiers(MouseEvent e) {
         int mods = e.getModifiersEx();
         
-        if ((mods & InputEvent.BUTTON1_DOWN_MASK) != InputEvent.BUTTON1_DOWN_MASK) {
+        if ((mods & InputEvent.BUTTON1_DOWN_MASK) == 0) {
             return TransferHandler.NONE;
         }
         
         return TransferHandler.COPY_OR_MOVE;
-    }    
+    }
+
     /**
      * Determines if the following are true:
      * <ul>
@@ -1514,38 +1637,8 @@ AtomicLockListener, FoldHierarchyListener {
 	return null;
     }
     
-    // MouseMotionListener methods
-    public @Override void mouseDragged(MouseEvent evt) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("mouseDragged: " + logMouseEvent(evt)); //NOI18N
-        }
-        
-        if (dndArmedEvent != null){
-            evt.consume();
-            return;
-        }
-        
-        JTextComponent c = component;
-        
-        if (SwingUtilities.isLeftMouseButton(evt)) {
-            if (c != null) {
-                int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
-                          evt.getX(), evt.getY());
-                // fix for #15204
-                if (offset == -1)
-                    offset = 0;
-                // fix of #22846
-                if (offset >= 0 && (evt.getModifiers() & InputEvent.SHIFT_MASK) == 0)
-                    moveDot(offset);
-            }
-        }
-    }
-
-    public @Override void mouseMoved(MouseEvent evt) {
-    }
-
     private static String logMouseEvent(MouseEvent evt) {
-        return "x=" + evt.getX() + ", y=" + evt.getY() //NOI18N
+        return "x=" + evt.getX() + ", y=" + evt.getY() + ", clicks=" + evt.getClickCount() //NOI18N
             + ", component=" + s2s(evt.getComponent()) //NOI18N
             + ", source=" + s2s(evt.getSource()); //NOI18N
     }
@@ -1795,4 +1888,16 @@ AtomicLockListener, FoldHierarchyListener {
             }
         });
     }
+    
+    private static enum MouseState {
+
+        DEFAULT, // Mouse released; not extending any selection
+        CHAR_SELECTION, // Extending character selection after single mouse press 
+        WORD_SELECTION, // Extending word selection after double-click when mouse button still pressed
+        LINE_SELECTION, // Extending line selection after triple-click when mouse button still pressed
+        DRAG_SELECTION_POSSIBLE,  // There was a selected text when mouse press arrived so drag is possible
+        DRAG_SELECTION  // Drag is being done (text selection existed at the mouse press)
+        
+    }
+    
 }

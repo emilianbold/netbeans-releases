@@ -247,7 +247,7 @@ public class PushDownTransformer extends RefactoringVisitor {
 
             private void check() throws IllegalArgumentException {
                 Element thisElement = workingCopy.getTrees().getElement(getCurrentPath());
-                if (workingCopy.getElementUtilities().enclosingTypeElement(thisElement) == el.getEnclosingElement()) {
+                if (thisElement.getKind()!=ElementKind.PACKAGE && workingCopy.getElementUtilities().enclosingTypeElement(thisElement) == el.getEnclosingElement()) {
                     Tree tree = workingCopy.getTrees().getTree(thisElement);
                     if (thisElement.getKind().isField() && tree!=null) {
                         makeProtectedIfPrivate(((VariableTree) tree).getModifiers());

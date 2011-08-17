@@ -44,6 +44,8 @@
 
 package org.netbeans.spi.project.ui;
 
+import org.netbeans.api.templates.TemplateRegistration;
+
 /**
  * List of templates which should be in the initial "privileged" list
  * when making a new file.
@@ -65,6 +67,9 @@ public interface PrivilegedTemplates {
     /**
      * Lists privileged templates.
      * @return full paths to privileged templates, e.g. <samp>Templates/Other/XmlFile.xml</samp>
+     * @see TemplateRegistration#folder
+     * @see TemplateRegistration#content
+     * @see TemplateRegistration#id
      */
     public String[] getPrivilegedTemplates();
     

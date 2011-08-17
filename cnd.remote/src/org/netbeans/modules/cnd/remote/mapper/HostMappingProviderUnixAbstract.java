@@ -45,11 +45,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,24 +114,12 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
     }
 
     private String getIP() {
-        String host = null;
         try {
-            Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (networkInterfaces.hasMoreElements()) {
-                NetworkInterface nextElement = networkInterfaces.nextElement();
-                if (!nextElement.isLoopback()) {
-                    for (InterfaceAddress addr : nextElement.getInterfaceAddresses()) {
-                        String s = addr.getAddress().getHostAddress();
-                        if (s.indexOf('.') > 0 && s.indexOf('.') < 5) {
-                            host = s;
-                        }
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            Exceptions.printStackTrace(ex);
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, "Exception when getting local host IP", ex); //NOI18N
+            return null;
         }
-        return host;
     }
 
     private static final String NET = "/net/"; // NOI18N

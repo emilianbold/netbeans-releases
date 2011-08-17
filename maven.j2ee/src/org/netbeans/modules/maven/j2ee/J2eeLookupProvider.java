@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
+import org.netbeans.modules.maven.j2ee.appclient.AppClientModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbEntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
 import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
@@ -231,9 +232,29 @@ public class J2eeLookupProvider implements LookupProvider {
                     ex.printStackTrace();
                 }
                 content.add(copyOnSave);
+            } else if (NbMavenProject.TYPE_APPCLIENT.equals(packaging) && !lastType.equals(packaging)) {
+                removeInstances();
+                
+                AppClientModuleProviderImpl prov = new AppClientModuleProviderImpl(project);
+                lastInstance = prov;
+                content.add(lastInstance);
+                
+                content.add(jpa);
+                //content.add(ejbEnt);
+                //content.add(resolver);
+                content.add(supplier);
+                
+                copyOnSave = prov.getCopyOnSaveSupport();
+                try {
+                    copyOnSave.initialize();
+                } catch (FileStateInvalidException ex) {
+                    ex.printStackTrace();
+                }
+                content.add(copyOnSave);
             } else if (lastInstance != null && !(
                     isWebSupported(packaging) || 
                     NbMavenProject.TYPE_EJB.equals(packaging) || 
+                    NbMavenProject.TYPE_APPCLIENT.equals(packaging) || 
                     NbMavenProject.TYPE_EAR.equals(packaging)))
             {
                 removeInstances();

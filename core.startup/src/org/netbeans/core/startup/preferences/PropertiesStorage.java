@@ -136,7 +136,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     
     /** Creates a new instance */
     private PropertiesStorage(final String absolutePath, boolean userRoot) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String prefix = (userRoot) ? USERROOT_PREFIX : SYSTEMROOT_PREFIX;
         sb.append(prefix).append(absolutePath);
         folderPath = sb.toString();

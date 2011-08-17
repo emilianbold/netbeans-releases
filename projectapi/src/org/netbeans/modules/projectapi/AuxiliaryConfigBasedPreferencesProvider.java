@@ -67,8 +67,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.Modules;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex.Action;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
@@ -319,19 +319,14 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         modified = true;
     }
     
-    public static String findCNBForClass(Class cls) {
-        String absolutePath = null;
-        ClassLoader cl = cls.getClassLoader();
-        for (ModuleInfo module : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (module.isEnabled() && module.getClassLoader() == cl) {
-                absolutePath = module.getCodeNameBase();
-                break;
-            }
-        }
-        if (absolutePath == null) {
+    public static String findCNBForClass(Class<?> cls) {
+        String absolutePath;
+        ModuleInfo owner = Modules.getDefault().ownerOf(cls);
+        if (owner != null) {
+            absolutePath = owner.getCodeNameBase();
+        } else {
             absolutePath = cls.getName().replaceFirst("(^|\\.)[^.]+$", "");//NOI18N
         }
-        assert absolutePath != null;
         return absolutePath.replace('.', '-');
     }
     

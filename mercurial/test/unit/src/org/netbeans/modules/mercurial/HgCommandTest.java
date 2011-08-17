@@ -58,11 +58,11 @@ import org.openide.filesystems.FileUtil;
  *
  * @author ondra
  */
-public class HgCommandTest extends AbstractHgTest {
+public class HgCommandTest extends AbstractHgTestCase {
 
     public HgCommandTest(String arg0) throws IOException {
         super(arg0);
-        System.setProperty("netbeans.user", getTempDir().getAbsolutePath());
+        System.setProperty("netbeans.user", new File(getWorkDir().getParentFile(), "userdir").getAbsolutePath());
     }
 
     public void testDisabledIndexing () throws Exception {

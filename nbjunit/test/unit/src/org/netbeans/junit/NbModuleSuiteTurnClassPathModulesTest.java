@@ -66,9 +66,9 @@ public class NbModuleSuiteTurnClassPathModulesTest extends NbTestCase {
 
     public void testTurnClassPathModules() throws Exception {
         File randomJar = new File(getWorkDir(), "random.jar");
-        TestFileUtils.writeZipFile(randomJar, "META-INF/MANIFEST.MF:Manifest-Version:1.0\n\n");
+        TestFileUtils.writeZipFile(randomJar, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
         File plainModule = new File(getWorkDir(), "plainModule.jar");
-        TestFileUtils.writeZipFile(plainModule, "META-INF/MANIFEST.MF:OpenIDE-Module: plain.module/2\n\n");
+        TestFileUtils.writeZipFile(plainModule, "META-INF/MANIFEST.MF:OpenIDE-Module: plain.modul\n e/2\n\n");
         File pseudoModule = new File(getWorkDir(), "pseudoModule.jar");
         TestFileUtils.writeZipFile(pseudoModule, "META-INF/MANIFEST.MF:OpenIDE-Module: org.netbeans.core.startup/1\n\n");
         File mavenLibWrapper = new File(getWorkDir(), "mavenLibWrapper.jar");
@@ -77,7 +77,7 @@ public class NbModuleSuiteTurnClassPathModulesTest extends NbTestCase {
         if (!mavenLib.getParentFile().mkdirs()) {
             throw new IOException();
         }
-        TestFileUtils.writeZipFile(mavenLib, "META-INF/MANIFEST.MF:Manifest-Version:1.0\n\n");
+        TestFileUtils.writeZipFile(mavenLib, "META-INF/MANIFEST.MF:Manifest-Version: 1.0\n\n");
         File ud = new File(getWorkDir(), "ud");
         File[] jars = {randomJar, plainModule, pseudoModule, mavenLibWrapper, mavenLib};
         StringBuilder jcp = new StringBuilder();

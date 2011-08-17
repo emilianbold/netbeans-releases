@@ -68,6 +68,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 
 /**
@@ -164,19 +165,14 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     final File file(String cache, int[] len) {
-        String ud = getUserDir();
-        if (ud == null) {
-            LOG.log(Level.FINE, "No userdir when asking for {0}", cache); // NOI18N
-            return null;
-        }
         synchronized (this) {
             if (worker.isProcessing(cache)) {
                 LOG.log(Level.FINE, "Worker processing when asking for {0}", cache); // NOI18N
                 return null;
             }
         }
-        
-        File cacheFile = new File(new File(new File(ud, "var"), "cache"), cache.replace('/', File.separatorChar)); // NOI18N
+
+        File cacheFile = Places.getCacheSubfile(cache);
         long last = cacheFile.lastModified();
         if (last <= 0) {
             LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
@@ -265,7 +261,7 @@ public final class Stamps {
     }
     
     private static void discardCachesImpl(AtomicLong al) {
-        String user = getUserDir();
+        File user = Places.getUserDirectory();
         long now = System.currentTimeMillis();
         if (user != null) {
             File f = new File(user, ".lastModified");
@@ -316,11 +312,6 @@ public final class Stamps {
     // This will be called externally from a launcher.
     //
 
-    private static String getUserDir() {
-        String ud = System.getProperty("netbeans.user"); // NOI18N
-        return "memory".equals(ud) ? null : ud;
-    }
-
     private static AtomicLong stamp(boolean checkStampFile) {
         AtomicLong result = new AtomicLong();
         AtomicReference<File> newestFile = new AtomicReference<File>();
@@ -348,15 +339,14 @@ public final class Stamps {
                 }
             }
         }
-        String user = getUserDir();
+        File user = Places.getUserDirectory();
         if (user != null) {
             AtomicInteger crc = new AtomicInteger();
-            stampForCluster (new File (user), result, newestFile, new HashSet<File> (), false, false, crc);
+            stampForCluster(user, result, newestFile, new HashSet<File>(), false, false, crc);
             sb.append(user).append('=').append(result.longValue()).append('\n');
             sb.append("crc=").append(crc.intValue()).append('\n');
             
-            File userDir = new File(user);
-            File checkSum = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), "all-checksum.txt");
+            File checkSum = new File(Places.getCacheDirectory(), "lastModified/all-checksum.txt");
             if (!compareAndUpdateFile(checkSum, sb.toString(), result)) {
                 discardCachesImpl(result);
             }
@@ -376,10 +366,8 @@ public final class Stamps {
             }
             return time;
         }
-        String user = getUserDir();
-        if (user != null) {
-            File userDir = new File(user);
-            stamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), clusterLocalStamp(cluster));
+        if (Places.getUserDirectory() != null) {
+            stamp = new File(new File(Places.getCacheDirectory(), "lastModified"), clusterLocalStamp(cluster));
             if (checkStampFile && (time = stamp.lastModified()) > 0) {
                 if (time > result.longValue()) {
                     newestFile.set(stamp);
@@ -568,12 +556,12 @@ public final class Stamps {
         public boolean store(AtomicInteger delay) {
             assert os == null;
             
-            String ud = getUserDir();
-            if (ud == null) {
-                LOG.warning("No 'netbeans.user' property to store: " + cache); // NOI18N
+            File cacheDir = Places.getCacheDirectory();
+            if (!cacheDir.isDirectory()) {
+                LOG.log(Level.WARNING, "Nonexistent cache directory: {0}", cacheDir); // NOI18N
                 return false;
             }
-            File cacheFile = new File(new File(new File(ud, "var"), "cache"), cache); // NOI18N
+            File cacheFile = new File(cacheDir, cache); // NOI18N
             boolean delete = false;
             try {
                 LOG.log(Level.FINE, "Cleaning cache {0}", cacheFile);

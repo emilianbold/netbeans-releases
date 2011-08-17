@@ -62,17 +62,19 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistration;
 
 /**
  * Wizard for creating new project templates.
@@ -93,8 +95,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         "org.openide.awt", // NOI18N
     };
     
-    private NewProjectIterator() { /* Use factory method. */ };
-    
+    @TemplateRegistration(folder = "NetBeansModuleDevelopment", position = 1000, displayName = "#Templates/NetBeansModuleDevelopment/newProject", iconBase = "org/netbeans/modules/apisupport/project/ui/resources/newProject.png", description = "/org/netbeans/modules/apisupport/project/ui/resources/newProject.html", category = "nbm-specific")
     public static NewProjectIterator createIterator() {
         return new NewProjectIterator();
     }

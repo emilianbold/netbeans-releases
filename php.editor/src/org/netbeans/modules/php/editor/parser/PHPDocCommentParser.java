@@ -42,10 +42,12 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -172,28 +174,8 @@ public class PHPDocCommentParser {
 
     private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {
         List<PHPDocTypeNode> docTypes = new ArrayList<PHPDocTypeNode>();
-        if (PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
-            for (String stype : getTypes(description)) {
-                stype = removeHTMLTags(stype);
-                int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, start);
-                int index = stype.indexOf("::");    //NOI18N
-                boolean isArray = (stype.indexOf('[') > 0 && stype.indexOf(']') > 0);
-                if (isArray) {
-                    stype = stype.substring(0, stype.indexOf('[')).trim();
-                }
-                PHPDocTypeNode docType;
-                if (index == -1) {
-                    docType = new PHPDocTypeNode(startDocNode, startDocNode + stype.length(), stype, isArray);
-                }
-                else {
-                    String className = stype.substring(0, index);
-                    String constantName = stype.substring(index+2,stype.length());
-                    PHPDocNode classNameNode = new PHPDocNode(startDocNode, startDocNode + className.length(), className);
-                    PHPDocNode constantNode = new PHPDocNode(startDocNode + className.length()+2, startDocNode + stype.length(), constantName);
-                    docType = new PHPDocStaticAccessType(startDocNode, startDocNode + stype.length(), stype, classNameNode, constantNode);
-                }
-                docTypes.add(docType);
-            }
+        if (type == PHPDocTag.Type.METHOD || PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
+            docTypes = findTypes(description, start, originalComment, originalCommentStart);
             if (PHPDocVarTypeTags.contains(type)) {
                 String variable = getVaribleName(description);
                 if (variable != null) {
@@ -202,12 +184,47 @@ public class PHPDocCommentParser {
                     return new PHPDocVarTypeTag(start, end, type, description, docTypes, varibaleNode);
                 }
                 return null;
+            } else if (type == PHPDocTag.Type.METHOD) {
+                String name = getMethodName(description);
+                if (name != null) {                    
+                    int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, name, start);
+                    PHPDocNode methodNode = new PHPDocNode(startOfVariable, startOfVariable + name.length(), name);
+                    List<PHPDocVarTypeTag> params = findMethodParams(description, findStartOfDocNode(originalComment, originalCommentStart, description, start));
+                    return new PHPDocMethodTag(start, end, type, docTypes, methodNode, params, description);
+                }
+                return null;
             }
             return new PHPDocTypeTag(start, end, type, description, docTypes);
-        }
+        } 
         return new PHPDocTag(start, end, type, description);
     }
 
+    private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart) {
+        List<PHPDocTypeNode> result = new ArrayList<PHPDocTypeNode>();
+
+        for (String stype : getTypes(description)) {
+            stype = removeHTMLTags(stype);
+            int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, startDescription);
+            int index = stype.indexOf("::");    //NOI18N
+            boolean isArray = (stype.indexOf('[') > 0 && stype.indexOf(']') > 0);
+            if (isArray) {
+                stype = stype.substring(0, stype.indexOf('[')).trim();
+            }
+            PHPDocTypeNode docType;
+            if (index == -1) {
+                docType = new PHPDocTypeNode(startDocNode, startDocNode + stype.length(), stype, isArray);
+            } else {
+                String className = stype.substring(0, index);
+                String constantName = stype.substring(index + 2, stype.length());
+                PHPDocNode classNameNode = new PHPDocNode(startDocNode, startDocNode + className.length(), className);
+                PHPDocNode constantNode = new PHPDocNode(startDocNode + className.length() + 2, startDocNode + stype.length(), constantName);
+                docType = new PHPDocStaticAccessType(startDocNode, startDocNode + stype.length(), stype, classNameNode, constantNode);
+            }
+            result.add(docType);
+        }
+        return result;
+    }
+    
     private List<String> getTypes(String description) {
         String[] tokens = description.trim().split("[ ]+"); //NOI18N
         ArrayList<String> types = new ArrayList<String>();
@@ -236,7 +253,63 @@ public class PHPDocCommentParser {
         }
         return variable;
     }
+    
+    private String getMethodName(String description) {
+        String name = null;
+        int index = description.indexOf('(');
+        if (index > 0 ) {
+            name = description.substring(0, index);
+            index = name.lastIndexOf(' ');
+            if (index > 0) {
+                name = name.substring(index + 1);
+            }
+        } else {
+            // probably defined without () after the name
+            // then we expect that the name is after the first space
+            String[] tokens = description.trim().split("[ \n\t]+"); //NOI18N
+            if (tokens.length > 1){
+                name = tokens[1];
+            }
+        }
+        return name;
+    }
 
+    private List<PHPDocVarTypeTag> findMethodParams(String description, int startOfDescription) {
+        List<PHPDocVarTypeTag> result = new ArrayList();
+        int index;
+        int position = startOfDescription;
+        String parameters = "";
+        String[] tokens = description.split("[)]+"); //NOI18N
+        if (tokens.length > 1) {
+            for(String token : tokens) {
+                index = token.indexOf('(');
+                if (index > -1 && token.indexOf('$') > -1) {
+                    parameters = token.substring(index + 1);
+                    position += index + 1;
+                    break;
+                }
+                position += token.length() + 1;
+            }
+        }
+        if (parameters.length() > 0) {
+            tokens = parameters.split("[,]+"); //NOI18N
+            String paramName;
+            for(String token : tokens) {
+                paramName = getVaribleName(token.trim());
+                if (paramName != null) {
+                    int startOfParamName = findStartOfDocNode(description, startOfDescription, paramName, position);
+                    PHPDocNode paramNameNode = new PHPDocNode(startOfParamName, startOfParamName + paramName.length(), paramName);
+                    List<PHPDocTypeNode> types = token.trim().indexOf(' ') > -1 
+                            ? findTypes(token, position, description, startOfDescription)
+                            : Collections.EMPTY_LIST;
+                    result.add(new PHPDocVarTypeTag(position, startOfParamName + paramName.length(), PHPDocTag.Type.PARAM, token, types, paramNameNode));
+                }
+                position = position + token.length() + 1;
+            }
+        }
+        return result;
+    }
+    
     private String removeHTMLTags(String text) {
         String value = text;
         int index = value.indexOf('>');

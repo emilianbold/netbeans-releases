@@ -78,10 +78,11 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private NbMavenProjectImpl project;
+    private final M2Configuration DEFAULT;
+    // next four guarded by this
     private SortedSet<M2Configuration> profiles = null;
     private SortedSet<M2Configuration> shared = null;
     private SortedSet<M2Configuration> nonshared = null;
-    private final M2Configuration DEFAULT;
     private M2Configuration active;
     private String initialActive;
     private AuxiliaryConfiguration aux;
@@ -136,9 +137,14 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     }
 
     private void checkActiveAgainstAll(Collection<M2Configuration> confs, boolean async) {
+        assert !Thread.holdsLock(this);
         boolean found = false;
+        String id;
+        synchronized (this) {
+            id = active.getId();
+        }
         for (M2Configuration conf : confs) {
-            if (conf.getId().equals(active.getId())) {
+            if (conf.getId().equals(id)) {
                 found = true;
                 break;
             }
@@ -146,8 +152,12 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         if (!found) {
             Runnable dothis = new Runnable() {
                     public @Override void run() {
+                        M2Configuration _active;
+                        synchronized (this) {
+                            _active = active;
+                        }
                         try {
-                            doSetActiveConfiguration(DEFAULT, active);
+                            doSetActiveConfiguration(DEFAULT, _active);
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }
@@ -233,72 +243,85 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     }
 
 
-    public @Override synchronized M2Configuration getActiveConfiguration() {
-        Collection<M2Configuration> confs = getConfigurations(false);
-        if (initialActive != null) {
-            for (M2Configuration conf : confs) {
-                if (initialActive.equals(conf.getId())) {
-                    active = conf;
+    public @Override M2Configuration getActiveConfiguration() {
+        M2Configuration _active;
+        Collection<M2Configuration> confs;
+        synchronized (this) {
+            confs = getConfigurations(false);
+            if (initialActive != null) {
+                for (M2Configuration conf : confs) {
+                    if (initialActive.equals(conf.getId())) {
+                        active = conf;
+                        initialActive = null;
+                        break;
+                    }
+                }
+                if (initialActive != null) {
+                    RP.post(new Runnable() {
+                        public @Override void run() {
+                            try {
+                                doSetActiveConfiguration(DEFAULT, null);
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                     initialActive = null;
-                    break;
                 }
             }
-            if (initialActive != null) {
-                RP.post(new Runnable() {
-                    public @Override void run() {
-                        try {
-                            doSetActiveConfiguration(DEFAULT, null);
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-                initialActive = null;
-            }
+            _active = active;
         }
         checkActiveAgainstAll(confs, true);
-        return active;
+        return _active;
     }
-
-
-
     
-    public synchronized void setConfigurations(List<M2Configuration> shared, List<M2Configuration> nonshared, boolean includeProfiles) {
+    public void setConfigurations(List<M2Configuration> shared, List<M2Configuration> nonshared, boolean includeProfiles) {
         writeAuxiliaryData(aux, true, shared);
         writeAuxiliaryData(aux, false, nonshared);
-        this.shared = new TreeSet<M2Configuration>(shared);
-        this.nonshared = new TreeSet<M2Configuration>(nonshared);
-        //#174637
-        if (active != null) {
-            if (shared.contains(active)) {
-                M2Configuration newActive = shared.get(shared.indexOf(active));
-                //can have different content
-                active = newActive;
+        synchronized (this) {
+            this.shared = new TreeSet<M2Configuration>(shared);
+            this.nonshared = new TreeSet<M2Configuration>(nonshared);
+            //#174637
+            if (active != null) {
+                if (shared.contains(active)) {
+                    M2Configuration newActive = shared.get(shared.indexOf(active));
+                    //can have different content
+                    active = newActive;
+                }
+                if (nonshared.contains(active)) {
+                    M2Configuration newActive = nonshared.get(nonshared.indexOf(active));
+                    //can have different content
+                    active = newActive;
+                }
             }
-            if (nonshared.contains(active)) {
-                M2Configuration newActive = nonshared.get(nonshared.indexOf(active));
-                //can have different content
-                active = newActive;
-            }
+            this.profiles = null;
         }
-        this.profiles = null;
         firePropertyChange();
     }
 
-    public @Override synchronized void setActiveConfiguration(M2Configuration configuration) throws IllegalArgumentException, IOException {
-        if (active == configuration || (active != null && active.equals(configuration))) {
-            return;
+    public @Override void setActiveConfiguration(M2Configuration configuration) throws IllegalArgumentException, IOException {
+        M2Configuration _active;
+        synchronized (this) {
+            if (active == configuration || (active != null && active.equals(configuration))) {
+                return;
+            }
+            _active = active;
         }
-        doSetActiveConfiguration(configuration, active);
+        doSetActiveConfiguration(configuration, _active);
         NbMavenProject.fireMavenProjectReload(project);
     }
 
-    private synchronized void doSetActiveConfiguration(M2Configuration newone, M2Configuration old) throws IllegalArgumentException, IOException {
-        active = newone;
-        writeAuxiliaryData(
-                aux,
-                ACTIVATED, active.getId());
-        support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, active);
+    private void doSetActiveConfiguration(M2Configuration newone, M2Configuration old) throws IllegalArgumentException, IOException {
+        M2Configuration _active;
+        synchronized (this) {
+            active = newone;
+            writeAuxiliaryData(
+                    aux,
+                    ACTIVATED, active.getId());
+            _active = active;
+        }
+        assert !Thread.holdsLock(this);
+        support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, _active);
     }
 
     private SortedSet<M2Configuration> createProfilesList() {

@@ -128,6 +128,13 @@ public class ResizeGestureRecognizer implements AWTEventListener {
                 } 
             }
         }
+        if (Constants.TOP.equals(side)) {
+            if (evtPoint.x > leftTop.x && evtPoint.x < (leftTop.x + comp.getBounds().width)) {
+                if ( Math.abs(evtPoint.y - (leftTop.y + comp.getBounds().height)) < RESIZE_BUFFER) {
+                    return true;
+                } 
+            }
+        }
         if (Constants.LEFT.equals(side)) {
             if (evtPoint.y > leftTop.y && evtPoint.y < (leftTop.y + comp.getBounds().height)) {
                 int right = comp.getBounds().width + leftTop.x;
@@ -154,7 +161,7 @@ public class ResizeGestureRecognizer implements AWTEventListener {
                               new Point(0,0), SwingUtilities.getRoot(comp));
         Point evtPoint = SwingUtilities.convertPoint(event.getComponent(), 
                               event.getPoint(), SwingUtilities.getRoot(event.getComponent()));
-        if (Constants.BOTTOM.equals(side)) {
+        if (Constants.BOTTOM.equals(side) || Constants.TOP.equals(side) ) {
             if (evtPoint.x > leftTop.x && evtPoint.x < (leftTop.x + comp.getBounds().width)) {
                 return evtPoint.y - dragPoint.y;
             }
@@ -191,7 +198,7 @@ public class ResizeGestureRecognizer implements AWTEventListener {
                     JRootPane pane = SwingUtilities.getRootPane(comp);
                     oldGlass = pane.getGlassPane();
                     glass.setCursor(side);
-                    comp.setCursor(Constants.BOTTOM.equals(side) ?
+                    comp.setCursor(Constants.BOTTOM.equals(side) || Constants.TOP.equals(side) ?
                       Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR) :
                       Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
 
@@ -266,7 +273,7 @@ public class ResizeGestureRecognizer implements AWTEventListener {
         }
         
         public void setCursor(String side) {
-            setCursor(Constants.BOTTOM.equals(side) ? 
+            setCursor(Constants.BOTTOM.equals(side) || Constants.TOP.equals(side) ? 
                       Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR) :
                       Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
         }

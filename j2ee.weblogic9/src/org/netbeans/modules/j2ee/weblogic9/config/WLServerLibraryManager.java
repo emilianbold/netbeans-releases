@@ -117,24 +117,6 @@ public class WLServerLibraryManager implements ServerLibraryManager {
     // this handles only archives
     @Override
     public Set<ServerLibrary> getDeployableLibraries() {
-        if (manager.isWebProfile()) {
-            // we are handling jsf in DWP here - it should not be offered via this
-            // API method, but for legacy apps the missing/deploy machinery has to
-            // be available
-            Map<ServerLibrary, File> deployable = support.getDeployableFiles();
-            for (Iterator<Map.Entry<ServerLibrary, File>> it = deployable.entrySet().iterator(); it.hasNext();) {
-                Map.Entry<ServerLibrary, File> entry = it.next();
-                ServerLibrary lib = entry.getKey();
-                if (DWP_JSF_SPEC_TITLE.equals(lib.getSpecificationTitle())
-                        && DWP_JSF_SPEC_VERSION.equals(lib.getSpecificationVersion())
-                        // defensive check on size
-                        && entry.getValue().length() < 10240) {
-                    it.remove();
-                    break;
-                }
-            }
-            return deployable.keySet();
-        }
         return support.getDeployableFiles().keySet();
     }
 

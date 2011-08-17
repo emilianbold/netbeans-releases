@@ -1,14 +1,7 @@
-<#-- FreeMarker template (see http://freemarker.org/) -->
 <#assign licenseFirst = "/*">
 <#assign licensePrefix = " * ">
 <#assign licenseLast = " */">
 <#include "../Licenses/license-${project.license}.txt">
-
-/*
- * ${name}.java
- *
- * Created on ${date}, ${time}
- */
 
 <#if package?? && package != "">
 package ${package};

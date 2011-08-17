@@ -49,14 +49,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.web.beans.analysis.analyzer.type.DeclaredIBindingsAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.InterceptedBeanAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.ManagedBeansAnalizer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.NamedModelAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.ScopedBeanAnalyzer;
 import org.netbeans.modules.web.beans.analysis.analyzer.type.SessionBeanAnalyzer;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 
 
 /**
@@ -70,22 +69,22 @@ public class ClassModelAnalyzer implements ModelAnalyzer {
      */
     @Override
     public void analyze( Element element, TypeElement parent,
-            WebBeansModel model, List<ErrorDescription> descriptions, 
-            CompilationInfo info,  AtomicBoolean cancel )
+            WebBeansModel model, AtomicBoolean cancel, 
+            Result result )
     {
         TypeElement subject = (TypeElement) element;
         for( ClassAnalyzer analyzer : ANALYZERS ){
             if ( cancel.get() ){
                 return;
             }
-            analyzer.analyze( subject, parent, model, descriptions, info , cancel);
+            analyzer.analyze( subject, parent, model, cancel, result);
         }
     }
     
     public interface ClassAnalyzer {
         void analyze( TypeElement element , TypeElement parent, 
-                WebBeansModel model,List<ErrorDescription> descriptions, 
-                CompilationInfo info , AtomicBoolean cancel );
+                WebBeansModel model,AtomicBoolean cancel, 
+                Result result );
     }
 
     private static final List<ClassAnalyzer> ANALYZERS= new LinkedList<ClassAnalyzer>(); 
@@ -96,6 +95,7 @@ public class ClassModelAnalyzer implements ModelAnalyzer {
         ANALYZERS.add( new SessionBeanAnalyzer());
         ANALYZERS.add( new InterceptedBeanAnalyzer() );
         ANALYZERS.add( new NamedModelAnalyzer() );
+        ANALYZERS.add( new DeclaredIBindingsAnalyzer());
     }
 
 }

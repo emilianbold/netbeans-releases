@@ -71,7 +71,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  */
 class CompletionContextFinder {
     private static final String NAMESPACE_FALSE_TOKEN = "NAMESPACE_FALSE_TOKEN"; //NOI18N
-    
+
     private static final String COMBINED_USE_STATEMENT_TOKENS = "COMBINED_USE_STATEMENT_TOKENS"; //NOI18N
 
     private static final List<Object[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
@@ -306,6 +306,8 @@ class CompletionContextFinder {
                     }
                 }
                 return CompletionContext.NONE;
+            case PHP_CLOSETAG:
+                return CompletionContext.NONE;
             default:
         }
         if (isEachOfTokens(getLeftPreceedingTokens(tokenSequence),
@@ -465,7 +467,7 @@ class CompletionContextFinder {
 
         return hadNSSeparator;
     }
-    
+
     private static boolean consumeClassesInCombinedUse(TokenSequence tokenSequence) {
         boolean hasCommaDelimiter = false;
         if (tokenSequence.token().id() != PHPTokenId.PHP_TOKEN
@@ -473,20 +475,20 @@ class CompletionContextFinder {
                 && !consumeNameSpace(tokenSequence)) {
             return false;
         }
-        
+
         do {
             if (!tokenSequence.movePrevious()) {
                 return false;
             }
-            
+
             if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN) {
                 hasCommaDelimiter = true;
             }
-            
+
         } while (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
                 || tokenSequence.token().id() == PHPTokenId.WHITESPACE
                 || consumeNameSpace(tokenSequence));
-        
+
         return hasCommaDelimiter;
     }
 
@@ -577,7 +579,7 @@ class CompletionContextFinder {
                     return CompletionContext.CLASS_NAME;
                 } else if (isIface) {
                     return CompletionContext.INTERFACE_NAME;
-                } 
+                }
                 return !isString ? isClass ? CompletionContext.CLASS_NAME : CompletionContext.INTERFACE_NAME : isClass ? CompletionContext.IMPLEMENTS : CompletionContext.INTERFACE_NAME;
             } else if (isIface) {
                 return !isString ? CompletionContext.NONE : CompletionContext.EXTENDS;
@@ -603,9 +605,9 @@ class CompletionContextFinder {
                 } else if (id != PHPTokenId.WHITESPACE) {
                     break;
                 }
-                
+
             }
-        } 
+        }
         return null;
     }
 

@@ -50,6 +50,8 @@ import java.io.IOException;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.SaveCookie;
@@ -57,13 +59,18 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
 
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
-    public AntProjectDataObject(FileObject pf, AntProjectDataLoader loader) throws DataObjectExistsException, IOException {
+    public static final String MIME_TYPE = "text/x-ant+xml"; // NOI18N
+
+    public AntProjectDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add (new AntProjectDataEditor (this));
@@ -77,14 +84,26 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         addPropertyChangeListener (this);
     }
     
-    @Override
-    protected Node createNodeDelegate () {
-        return new AntProjectNode (this);
+    @Override protected int associateLookup() {
+        return 1;
+    }
+
+    @MultiViewElement.Registration(
+        displayName="#CTL_SourceTabCaption",
+        iconBase="org/apache/tools/ant/module/resources/AntIcon.gif",
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID="ant",
+        mimeType=MIME_TYPE,
+        position=1
+    )
+    @Messages("CTL_SourceTabCaption=&Source")
+    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
+        return new MultiViewEditorElement(context);
     }
 
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected Node createNodeDelegate () {
+        return new AntProjectNode (this);
     }
 
     void addSaveCookie (final SaveCookie save) {

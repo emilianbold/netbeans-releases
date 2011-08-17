@@ -64,7 +64,7 @@ public class MeasureJ2SEStartupTest {
         .addTest(OutOfTheBoxStartup.class)
         .addTest(ComplexJavaProjectStartup.class)
         .addTest(ComplexNBProjectStartup.class)
-        .enableModules(".*").clusters(".*")));
+        .enableModules(".*").clusters(".*").gui(false)));
 
         return suite;
     }

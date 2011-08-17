@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Enumeration;
 import javax.swing.text.Document;
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.OpenCookie;
@@ -66,6 +67,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableTopComponent;
 
 /**
@@ -87,6 +89,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     public void setUp() throws Exception {
         FileObject folder = FileUtil.getConfigRoot().createFolder("folder");
         fileObject = folder.createData("SQL Command", "sql");
@@ -99,12 +102,21 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
         support = (MySQLEditorSupport)dataObject.getCookie(OpenCookie.class);
     }
     
+    @Override
     public void tearDown() throws Exception {
         fileObject.getParent().delete();
     }
     
+    @Override
     public boolean runInEQ() {
         return true;
+    }
+    
+    public void testMultiViewElement() {
+        MySQLEditorSupport es = dataObject.getLookup().lookup(MySQLEditorSupport.class);
+        assertNotNull("SQLEditorSupport found in lookup of " + dataObject, es);
+        CloneableEditor ce = es.createCloneableEditor();
+        assertTrue("SQLEditorSupport.createCloneableEditor() instanceof MultiViewElement", ce instanceof MultiViewElement);
     }
     
     public void testEditorNameIsDataObjectName() throws Exception {
@@ -139,8 +151,10 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
         Document doc = support.openDocument();
         doc.insertString(0, "test", null);
 
-        MySQLEditorSupport.MySQLCloneableEditor editor = (MySQLEditorSupport.MySQLCloneableEditor)support.getAllEditors().getComponents().nextElement();
-        editor.callComponentDeactivated();
+        CloneableTopComponent ctc = (CloneableTopComponent) support.getAllEditors().getComponents().nextElement();
+        SQLCloneableEditor editor = ctc.getLookup().lookup(SQLCloneableEditor.class);
+        
+        editor.componentDeactivated();
         assertTrue(support.saveDocumentCalled);
 
         support.saveDocumentCalled = false;
@@ -157,6 +171,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
      */
     public static final class Pool extends DataLoaderPool {
         
+        @Override
         public Enumeration loaders() {
             return Enumerations.singleton(new MySQLDataLoader());
         }
@@ -172,10 +187,12 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
             super("org.netbeans.modules.db.sql.loader.SQLEditorSupportConsoleTest$MySQLDataObject");
         }
     
+        @Override
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new MySQLDataObject(primaryFile, this);
         }
 
+        @Override
         protected void initialize() {
             super.initialize();
             ExtensionList extensions = new ExtensionList();
@@ -188,7 +205,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
      * SQLDataObject which has MySQLEditorSupport in its cookie set instead
      * of the cookie added by SQLDataObject.
      */
-    private static final class MySQLDataObject extends SQLDataObject {
+    public static final class MySQLDataObject extends SQLDataObject {
         
         public MySQLDataObject(FileObject primaryFile, UniFileLoader loader) throws DataObjectExistsException {
             super(primaryFile, loader);
@@ -197,8 +214,9 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
             cookies.add(new MySQLEditorSupport(this));
         }
 
+        @Override
         protected Node createNodeDelegate() {
-            return new SQLNode(this);
+            return new SQLNode(this, getLookup());
         }
     }
 
@@ -214,6 +232,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
             super(obj);
         }
         
+        @Override
         public void saveDocument() throws IOException {
             super.saveDocument();
             saveDocumentCalled = true;
@@ -223,6 +242,7 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
             return allEditors;
         }
         
+        @Override
         public CloneableEditor createCloneableEditor() {
             return new MySQLCloneableEditor(this);
         }
@@ -230,12 +250,8 @@ public class SQLEditorSupportConsoleTest extends NbTestCase {
         private static final class MySQLCloneableEditor extends SQLCloneableEditor {
             
             public MySQLCloneableEditor(MySQLEditorSupport support) {
-                super(support);
+                super(Lookups.singleton(support));
             }
-            
-            public void callComponentDeactivated() {
-                componentDeactivated();
             }
         }
     }
-}

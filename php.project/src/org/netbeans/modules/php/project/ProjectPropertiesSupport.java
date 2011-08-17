@@ -434,6 +434,14 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.PHP_UNIT_RUN_TEST_FILES, false);
     }
 
+    public static boolean askForTestGroups(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.PHP_UNIT_ASK_FOR_TEST_GROUPS, false);
+    }
+
+    public static String getPhpUnitLastUsedTestGroups(PhpProject project) {
+        return getString(project, PhpProjectProperties.PHP_UNIT_LAST_USED_TEST_GROUPS, null);
+    }
+
     /**
      * @return instance of Pair<String, String> or null
      */

@@ -168,10 +168,14 @@ public class BaseTest extends ExtJellyTestCase {
 
         palette = new ComponentPaletteOperator();
         inspector = new ComponentInspectorOperator();
-
+        formnode.select();
+        formnode.performPopupAction("Open");
+        FormDesignerOperator designer=new FormDesignerOperator(FILE_NAME);
+        designer.source();
+        designer.design();
         //init property sheet and select the proper "tab"
         PropertySheetOperator pso = cio.properties();
-
+ 
         // selectPropertiesTab(pso);
         new Action(null, "Add From Palette|Swing Containers|Panel").performPopup(new Node(inspector.treeComponents(), "[JFrame]"));
 
@@ -206,6 +210,12 @@ public class BaseTest extends ExtJellyTestCase {
         new Property(pso, "text").setValue("<html><font color='red' size='+3'>QA</font> test");
 
         // change order
+        formnode.select();
+        formnode.performPopupAction("Open");
+        designer=new FormDesignerOperator(FILE_NAME);
+        designer.source();
+        designer.design();
+        inspector=new ComponentInspectorOperator();
         new ActionNoBlock(null, "Change Order...").performPopup(new Node(inspector.treeComponents(), "[JFrame]|JPanel2 [JPanel]"));
         NbDialogOperator changeOrder = new NbDialogOperator("Change Order");
         new JListOperator(changeOrder).selectItem(1);

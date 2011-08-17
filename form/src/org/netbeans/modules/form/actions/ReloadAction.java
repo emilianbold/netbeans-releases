@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.form.actions;
 
+import org.netbeans.modules.form.EditorSupport;
+import org.netbeans.modules.form.FormDataObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.windows.WindowManager;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.form.FormEditorSupport;
 
 /**
  * Action that invokes reloading of the currently active form. Presented only
@@ -67,9 +69,10 @@ public class ReloadAction extends CallableSystemAction {
 
     @Override
     public String getName() {
-        if (name == null)
+        if (name == null) {
             name = org.openide.util.NbBundle.getBundle(ReloadAction.class)
                      .getString("ACT_ReloadForm"); // NOI18N
+        }
         return name;
     }
 
@@ -91,8 +94,11 @@ public class ReloadAction extends CallableSystemAction {
             return;
         }
         
-        FormEditorSupport fes = FormEditorSupport.getFormEditor(activeTC);
-        if (fes != null)
+        Object dobj = activeTC.getLookup().lookup(DataObject.class);
+        if (dobj instanceof FormDataObject) {
+            FormDataObject formDataObject = (FormDataObject)dobj;
+            EditorSupport fes = formDataObject.getFormEditorSupport();
             fes.reloadForm();
+        }   
     }
 }

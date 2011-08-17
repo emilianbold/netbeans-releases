@@ -44,14 +44,11 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
@@ -66,35 +63,35 @@ import javax.swing.text.View;
 public final class NewlineView extends EditorView {
 
     /** Offset of start offset of this view. */
-    private int rawOffset; // 24-super + 4 = 28 bytes
+    private int rawEndOffset; // 24-super + 4 = 28 bytes
 
     private final AttributeSet attributes;
 
     public NewlineView(int offset, AttributeSet attributes) {
         super(null);
-        this.rawOffset = offset;
+        this.rawEndOffset = offset + 1;
         this.attributes = attributes;
     }
 
     @Override
-    public int getRawOffset() {
-        return rawOffset;
+    public int getRawEndOffset() {
+        return rawEndOffset;
     }
 
     @Override
-    public void setRawOffset(int rawOffset) {
-        this.rawOffset = rawOffset;
+    public void setRawEndOffset(int rawOffset) {
+        this.rawEndOffset = rawOffset;
     }
 
     @Override
     public int getStartOffset() {
-        EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
+        return getEndOffset() - getLength();
     }
 
     @Override
     public int getEndOffset() {
-        return getStartOffset() + getLength();
+        EditorView.Parent parent = (EditorView.Parent) getParent();
+        return (parent != null) ? parent.getViewEndOffset(rawEndOffset) : rawEndOffset;
     }
 
     @Override
@@ -115,7 +112,7 @@ public final class NewlineView extends EditorView {
         DocumentView documentView = getDocumentView();
         if (axis == View.X_AXIS) {
             return (documentView != null)
-                    ? (documentView.isShowNonprintingCharacters()
+                    ? (documentView.isShowNonPrintingCharacters()
                         ? documentView.getDefaultLineHeight()
                         : documentView.getDefaultCharWidth())
                     : 1; // Only return one if not connected to view hierarchy
@@ -147,54 +144,45 @@ public final class NewlineView extends EditorView {
 
     @Override
     public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
-        return -1; // Always skip in all directions
+        int retOffset;
+        biasRet[0] = Bias.Forward; // BaseCaret ignores bias
+        int viewStartOffset = getStartOffset();
+        switch (direction) {
+            case View.EAST:
+                if (offset == -1) {
+                    retOffset = viewStartOffset;
+                } else {
+                    retOffset = -1;
+                }
+                break;
+
+            case View.WEST:
+                if (offset == -1) {
+                    retOffset = viewStartOffset;
+                } else if (offset == viewStartOffset) { // Regular offset
+                    retOffset = -1;
+                } else {
+                    retOffset = viewStartOffset;
+                }
+                break;
+
+            case View.NORTH:
+            case View.SOUTH:
+                retOffset = -1;
+                break;
+            default:
+                throw new IllegalArgumentException("Bad direction: " + direction);
+        }
+        return retOffset;
     }
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
+        int viewStartOffset = getStartOffset();
         DocumentView docView = getDocumentView();
-        if (docView != null) {
-            // Extend the bounds so that the view renders its attributes till docView's end
-            Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
-            mutableBounds.width = docView.getWidth() - mutableBounds.x;
-            if (mutableBounds.intersects(clipBounds)) {
-                PaintState paintState = PaintState.save(g);
-                try {
-                    // Paint background
-                    JTextComponent textComponent = docView.getTextComponent();
-                    Color componentBackground = textComponent.getBackground();
-                    ViewUtils.applyBackgroundAttributes(attributes, componentBackground, g);
-                    if (!componentBackground.equals(g.getColor())) {
-                        ViewUtils.fillRect(g, mutableBounds);
-                    }
-                    
-                    // Paint the textLimit line
-                    int xInt = (int) mutableBounds.getX();
-                    int yInt = (int) mutableBounds.getY();
-                    int endXInt = (int) (mutableBounds.getX() + mutableBounds.getWidth() - 1);
-                    int endYInt = (int) (mutableBounds.getY() + mutableBounds.getHeight() - 1);
-                    Color textLimitLineColor = docView.getTextLimitLineColor();
-                    boolean drawTextLimitLine = docView.isTextLimitLineDrawn();
-                    int textLimitWidth = docView.getTextLimitWidth();
-                    float defaultCharWidth = docView.getDefaultCharWidth();
-                    if (drawTextLimitLine && textLimitWidth > 0) {
-                        int lineX = (int)(textLimitWidth * defaultCharWidth);
-                        if (lineX >= xInt && lineX <= endXInt){
-                            g.setColor(textLimitLineColor);
-                            g.drawLine(lineX, yInt, lineX, endYInt);
-                        }
-                    }
-
-                    // Possibly paint pilcrow sign
-                    TextLayout textLayout;
-                    if (docView.isShowNonprintingCharacters() && (textLayout = docView.getNewlineCharTextLayout()) != null) {
-                        HighlightsViewUtils.paintForeground(g, mutableBounds, textLayout, getAttributes(), docView);
-                    }
-                } finally {
-                    paintState.restore();
-                }
-            }
-        }
+        HighlightsViewUtils.paintHiglighted(g, alloc, clipBounds,
+                docView, this, viewStartOffset,
+                true, null, viewStartOffset, 0, 1);
     }
 
     @Override

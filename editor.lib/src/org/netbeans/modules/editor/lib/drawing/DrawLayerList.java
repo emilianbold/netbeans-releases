@@ -46,10 +46,6 @@ package org.netbeans.modules.editor.lib.drawing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.EditorDebug;
 
@@ -71,8 +67,6 @@ public final class DrawLayerList {
 
     private DrawLayer[] layers = EMPTY;
 
-    private static final Set<String> ISSUED_WARNINGS = Collections.synchronizedSet(new HashSet<String>());
-    
     private final ArrayList visibilityList = new ArrayList();
 
     public DrawLayerList() {
@@ -91,16 +85,6 @@ public final class DrawLayerList {
             return false;
         }
 
-        if (!(layer instanceof HighlightingDrawLayer)) {
-            String layerId = layer.getClass().getName() + layer.getName();
-            if (!ISSUED_WARNINGS.contains(layerId)) {
-                ISSUED_WARNINGS.add(layerId);
-                LOG.log(Level.FINE, "Using deprecated DrawLayer: " + layer.getName() + //NOI18N
-                    " z-order: " + visibility + //NOI18N
-                    " class: " + layer.getClass().getName() + " " + layer); //NOI18N
-            }
-        }
-        
         int indAdd = layers.length;
         for (int i = 0; i < layers.length; i++) {
             if (((Integer)visibilityList.get(i)).intValue() > visibility) {

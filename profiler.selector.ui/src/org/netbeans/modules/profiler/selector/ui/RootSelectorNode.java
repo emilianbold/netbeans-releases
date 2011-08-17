@@ -44,7 +44,7 @@
 package org.netbeans.modules.profiler.selector.ui;
 
 import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**

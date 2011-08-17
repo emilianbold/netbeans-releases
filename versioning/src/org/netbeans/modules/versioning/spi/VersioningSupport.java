@@ -48,9 +48,8 @@ import org.netbeans.modules.versioning.FlatFolder;
 import org.openide.util.NbPreferences;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.Utils;
 
 /**
  * Collection of utility methods for Versioning systems implementors. 
@@ -118,5 +117,33 @@ public final class VersioningSupport {
      */
     public static void versionedRootsChanged() {
         VersioningManager.getInstance().versionedRootsChanged();
+    }
+
+    /**
+     * Tests whether the given folder is excluded (unversioned) from version control.
+     * <ul>
+     * <li>Folders set in <code>versioning.unversionedFolders</code> system property are excluded. 
+     * Misconfigured automount daemons may try to look for versioning metadata causing hangs and full load.</li>
+     * <li>Netbeans userdir is excluded by default. To include the userdir set <code>versioning.netbeans.user.versioned</code> system property to <code>true</code></li>
+     * </ul>
+     * <p>Versioning systems <strong>must NOT</strong> scan a folder if this method returns true and should consider it as unversioned.</p>
+     *
+     * @param folder a folder to query
+     * @link http://www.netbeans.org/bugzilla/show_bug.cgi?id=105161
+     * @link http://www.netbeans.org/bugzilla/show_bug.cgi?id=195284
+     * @since 1.25
+     * @return true if the given folder is excluded from version control, false otherwise
+     */
+    public static boolean isExcluded (File folder) {
+        // forbid scanning for UNC paths \\ or \\computerName
+        if (folder.getPath().startsWith("\\\\")) { //NOI18N
+            return folder.getParent() == null || folder.getParent().equals("\\\\"); //NOI18N
+        }
+        for (File unversionedFolder : Utils.getUnversionedFolders()) {
+            if (Utils.isAncestorOrEqual(unversionedFolder, folder)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

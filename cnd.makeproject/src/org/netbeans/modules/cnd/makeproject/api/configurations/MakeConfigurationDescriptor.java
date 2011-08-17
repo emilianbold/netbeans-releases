@@ -96,6 +96,8 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -455,7 +457,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     @Override
     public Configuration defaultConf(String name, int type) {
-        MakeConfiguration c = new MakeConfiguration(FSPath.toFSPath(baseDirFO), name, type, CppUtils.getDefaultDevelopmentHost());
+        String defaultHost = CppUtils.getDefaultDevelopmentHost();
+        Project proj = getProject();
+        if (proj != null) {
+            ExecutionEnvironment sourceHost = MakeProjectUtils.getSourceFileSystemHost(project);
+            if (sourceHost.isRemote()) {
+                defaultHost= ExecutionEnvironmentFactory.toUniqueID(sourceHost);
+            }
+        }
+        
+        MakeConfiguration c = new MakeConfiguration(FSPath.toFSPath(baseDirFO), name, type, defaultHost);
         Item[] items = getProjectItems();
         for (int i = 0; i < items.length; i++) {
             c.addAuxObject(new ItemConfiguration(c, items[i]));

@@ -43,109 +43,25 @@
 
 package org.netbeans.modules.profiler.j2ee.selector.nodes.web.servlet;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
-import org.netbeans.modules.profiler.j2ee.ui.Utils;
-import org.netbeans.modules.profiler.utils.ProjectUtilities;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.profiler.selector.spi.nodes.ContainerNode;
-import org.netbeans.modules.profiler.selector.spi.nodes.GreedySelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
-import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
+import org.netbeans.modules.j2ee.dd.api.web.model.ServletInfo;
+import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
+import org.netbeans.modules.profiler.api.java.SourceClassInfo;
+import org.netbeans.modules.profiler.j2ee.selector.nodes.web.AbstractWebContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.ContainerNode;
+import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-public class ServletsNode extends ContainerNode {
-    //~ Inner Classes ------------------------------------------------------------------------------------------------------------
-
-    private static class Children extends GreedySelectorChildren<ServletsNode> {
-        //~ Instance fields ------------------------------------------------------------------------------------------------------
-
-        private final Set<ClassIndex.SearchScope> scope = new HashSet<ClassIndex.SearchScope>();
-
-        //~ Constructors ---------------------------------------------------------------------------------------------------------
-
-        public Children() {
-            scope.add(ClassIndex.SearchScope.SOURCE);
-            scope.add(ClassIndex.SearchScope.DEPENDENCIES);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------------------------------------
-
-        protected List<SelectorNode> prepareChildren(final ServletsNode parent) {
-            final Set<SelectorNode> servlets = new HashSet<SelectorNode>();
-
-            try {
-                Project project = parent.getLookup().lookup(Project.class);
-                final ClasspathInfo cpInfo = ProjectUtilities.getClasspathInfo(project);
-
-                Collection<FileObject> dds = WebProjectUtils.getDeploymentDescriptorFileObjects(project, true);
-
-                for (FileObject dd : dds) {
-                    enumerateServlets(cpInfo, parent, dd, servlets);
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-
-            return new ArrayList<SelectorNode>(servlets);
-        }
-
-        private void enumerateServlets(final ClasspathInfo cpInfo, final ServletsNode parent, FileObject dd,
-                                       final Collection<SelectorNode> servlets)
-                                throws IllegalArgumentException, IOException {
-            final WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-
-            final Map<String, String> servlet2class = new HashMap<String, String>();
-
-            for (Servlet servlet : webApp.getServlet()) {
-                servlet2class.put(servlet.getServletName(), servlet.getServletClass());
-            }
-
-            JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                             throws Exception {
-                        for (ServletMapping mapping : webApp.getServletMapping()) {
-                            String clazz = servlet2class.get(mapping.getServletName());
-
-                            TypeElement type = clazz != null ? controller.getElements().getTypeElement(clazz) : null;
-
-                            if (type != null) {
-                                servlets.add(new ServletNode(cpInfo, type, mapping.getServletName(), mapping.getUrlPattern(),
-                                                             parent));
-                            }
-                        }
-                    }
-                }, true);
-        }
-    }
-
+public class ServletsNode extends AbstractWebContainerNode {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // -----
@@ -157,12 +73,21 @@ public class ServletsNode extends ContainerNode {
 
     /** Creates a new instance of ServletsNode */
     public ServletsNode(ContainerNode parent) {
-        super(SERVLETS_STRING, Utils.PACKAGE_ICON, parent);
+        super(SERVLETS_STRING, parent);
     }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
-    protected SelectorChildren getChildren() {
-        return new Children();
+    @Override
+    protected Collection<SelectorNode> collectChildren(final Project prj, WebAppMetadata md) {
+        Collection<SelectorNode> sNodes = new ArrayList<SelectorNode>();
+        for(ServletInfo si : md.getServlets()) {
+            SourceClassInfo sType = ProfilerTypeUtils.resolveClass(si.getServletClass(), prj);
+            List<String> patterns = si.getUrlPatterns();
+            if (patterns != null && !patterns.isEmpty()) {
+                sNodes.add(new ServletNode(sType, si.getName(), patterns.get(0) , this));
+            }
+        }
+        return sNodes;
     }
 }

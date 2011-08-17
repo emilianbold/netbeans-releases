@@ -54,10 +54,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -65,6 +69,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
@@ -80,24 +85,37 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.openide.modules.InstalledFileLocator;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ImageUtilities;
@@ -116,11 +134,11 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
+    static final String OPENJPA_JPA_PROVIDER = "org.apache.openjpa.persistence.PersistenceProviderImpl"; // NOI18N
+
+    static final String ECLIPSELINK_JPA_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider"; // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(WLJ2eePlatformFactory.class.getName());
-
-    private static final String OPENJPA_JPA_PROVIDER = "org.apache.openjpa.persistence.PersistenceProviderImpl"; // NOI18N
-
-    private static final String ECLIPSELINK_JPA_PROVIDER = "org.eclipse.persistence.jpa.PersistenceProvider"; // NOI18N
 
     // always prefer JPA 1.0 see #189205
     private static final Pattern JAVAX_PERSISTENCE_PATTERN = Pattern.compile(
@@ -132,12 +150,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
     
-    private static final FilenameFilter DWP_LIBRARY_FILTER = new PrefixesFilter(
-            "javax.", "glassfish.jsf", "glassfish.jstl", "org.eclipse.persistence"); // NOI18N
-    
     private static final FilenameFilter PATCH_DIR_FILTER = new PrefixesFilter("patch_wls"); // NOI18N    
 
     private static final Version JDK6_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("10.3"); // NOI18N
+
+    private static final Version JPA2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -375,11 +392,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             this.dm = dm;
 
             moduleTypes.add(Type.WAR);
-
-            if (!dm.isWebProfile()) {
-                moduleTypes.add(Type.EJB);
-                moduleTypes.add(Type.EAR);
-            }
+            moduleTypes.add(Type.EJB);
+            moduleTypes.add(Type.EAR);
 
             // Allow J2EE 1.4 Projects
             profiles.add(Profile.J2EE_14);
@@ -392,9 +406,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     profiles.add(Profile.JAVA_EE_5);
                 }
                 if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_11)) {
-                    if (!dm.isWebProfile()) {
-                        profiles.add(Profile.JAVA_EE_6_FULL);
-                    }
+                    profiles.add(Profile.JAVA_EE_6_FULL);
                     profiles.add(Profile.JAVA_EE_6_WEB);
                 }
             }
@@ -473,6 +485,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return moduleTypes;
         }
 
+        @Override
         public Set/*<String>*/ getSupportedJavaPlatformVersions() {
             Set versions = new HashSet();
             versions.add("1.4"); // NOI18N
@@ -483,7 +496,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
             return versions;
         }
-        
+
+        @Override
         public JavaPlatform getJavaPlatform() {
             return null;
         }
@@ -527,12 +541,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             if (libraries != null) {
                 return libraries;
             }
-            // FIXME DWP
-            if (dm.isWebProfile()) {
-                initLibrariesForDWP();
-            } else {
-                initLibrariesForWLS();
-            }
+
+            initLibrariesForWLS();
             return libraries;
         }
 
@@ -630,53 +640,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 libraries[0] = library;
             }
         }
-
-        // TODO if this will became same or quite similar to
-        // initLibrariesForWLS merge it
-        private void initLibrariesForDWP() {
-            LibraryImplementation library = new J2eeLibraryTypeProvider().
-                    createLibrary();
-
-            // set its name
-            library.setName(NbBundle.getMessage(WLJ2eePlatformFactory.class,
-                    "LIBRARY_NAME"));
-
-            // add the required jars to the library
-            try {
-                List<URL> list = new ArrayList<URL>();
-                File middleware = getMiddlewareHome();
-
-                if (middleware != null) {
-                    File modules = getMiddlewareModules(middleware);
-                    if (modules.exists() && modules.isDirectory()) {
-                        File[] apis = modules.listFiles(DWP_LIBRARY_FILTER);
-                        if (apis != null) {
-                            for (File file : apis) {
-                                list.add(fileToUrl(file));
-                            }
-                        }
-                    }
-                }
-
-                addPersistenceLibrary(list, middleware, this);
-
-                library.setContent(J2eeLibraryTypeProvider.
-                        VOLUME_TYPE_CLASSPATH, list);
-                File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-                if (j2eeDoc != null) {
-                    list = new ArrayList();
-                    list.add(fileToUrl(j2eeDoc));
-                    library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
-                }
-            } catch (MalformedURLException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
-
-            synchronized (this) {
-                libraries = new LibraryImplementation[1];
-                libraries[0] = library;
-            }
-        }
         
         public synchronized boolean isJpa2Available() {
             if (libraries != null) {
@@ -688,7 +651,11 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return jpa2Available;
         }
 
-        private String getDefaultJpaProvider() {
+        WLDeploymentManager getDeploymentManager() {
+            return dm;
+        }
+
+        String getDefaultJpaProvider() {
             synchronized (this) {
                 if (defaultJpaProvider != null) {
                     return defaultJpaProvider;
@@ -719,7 +686,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
             }
             if (newDefaultJpaProvider == null) {
-                if (dm.isWebProfile()) {
+                if (JPA2_SUPPORTED_SERVER_VERSION.isBelowOrEqual(dm.getServerVersion())) {
                     newDefaultJpaProvider = ECLIPSELINK_JPA_PROVIDER;
                 } else {
                     newDefaultJpaProvider = OPENJPA_JPA_PROVIDER;
@@ -761,7 +728,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), new JpaSupportImpl(this));
+            Lookup baseLookup = Lookups.fixed(new File(getPlatformRoot()), 
+                    new JpaSupportImpl(this), new JsxWsPoliciesSupportImpl(this),
+                    new JaxRsStackSupportImpl(this));
             return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }
@@ -813,35 +782,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             return !newLibraries.isEmpty();
-        }
-    }
-
-    private static class JpaSupportImpl implements JpaSupportImplementation {
-
-        private final J2eePlatformImplImpl platformImpl;
-
-        public JpaSupportImpl(J2eePlatformImplImpl platformImpl) {
-            this.platformImpl = platformImpl;
-        }
-
-        @Override
-        public JpaProvider getDefaultProvider() {
-            String defaultProvider = platformImpl.getDefaultJpaProvider();
-            boolean jpa2 = platformImpl.isJpa2Available();
-            
-            return JpaProviderFactory.createJpaProvider(defaultProvider, true, true, jpa2);
-        }
-
-        @Override
-        public Set<JpaProvider> getProviders() {
-            String defaultProvider = platformImpl.getDefaultJpaProvider();
-            boolean jpa2 = platformImpl.isJpa2Available();
-            Set<JpaProvider> providers = new HashSet<JpaProvider>();
-            providers.add(JpaProviderFactory.createJpaProvider(OPENJPA_JPA_PROVIDER,
-                    OPENJPA_JPA_PROVIDER.equals(defaultProvider), true, false));
-            providers.add(JpaProviderFactory.createJpaProvider(ECLIPSELINK_JPA_PROVIDER,
-                    ECLIPSELINK_JPA_PROVIDER.equals(defaultProvider), true, jpa2));
-            return providers;
         }
     }
     

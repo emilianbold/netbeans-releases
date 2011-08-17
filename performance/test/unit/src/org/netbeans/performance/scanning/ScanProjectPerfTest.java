@@ -110,10 +110,10 @@ public class ScanProjectPerfTest extends NbTestCase {
                 );
     }
     
-    public void testLimeWire() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://spbweb.russia.sun.com/~ok153203/lime6.zip",
-                    "lime6.zip",
-                    "lime6");
+    public void testTomcat() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
+                    "tomcat6.zip",
+                    "tomcat6");
     }
 
     public void testOpenJdk7() throws IOException, ExecutionException, InterruptedException {

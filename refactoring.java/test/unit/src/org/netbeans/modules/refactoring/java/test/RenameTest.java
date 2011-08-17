@@ -86,8 +86,9 @@ public class RenameTest extends RefactoringTestBase {
                 + "        return a.getProperty();\n"
                 + "    }\n"
                 + "}"));
-
-        performRename(src.getFileObject("t/A.java"), 1);
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameGettersSetters(true);
+        performRename(src.getFileObject("t/A.java"), 1, "renamed", props);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -106,25 +107,70 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
 
     }
+    
+    public void test200224() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"));
+        writeFilesAndWaitForScan(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameTestClass(true);
+        performRename(src.getFileObject("t/A.java"), -1, "B", props);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
+                + "public class B {\n"
+                + "}"));
+        verifyContent(test,
+                new File("t/BTest", "package t;\n" // XXX: Why is there no extension?
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class BTest extends TestCase {\n"
+                + "}"));
+    }
+    
+    public void test111953() throws Exception {
+        writeFilesAndWaitForScan(src, new File("t/B.java", "class B { public void m(){};}"),
+                new File("t/A.java", "class A extends B implements I{ public void m(){};}"),
+                new File("t/I.java", "interface I { void m();}"),
+                new File("t/J.java", "interface J { void m();}"),
+                new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
+                new File("t/D.java", "class D { public void m(){};}"));
+        performRename(src.getFileObject("t/B.java"), 1, "k", null, new Problem(false, "ERR_IsOverridden"), new Problem(false, "ERR_IsOverriddenOverrides"));
+        verifyContent(src, new File("t/B.java", "class B { public void k(){};}"),
+                new File("t/A.java", "class A extends B implements I{ public void k(){};}"),
+                new File("t/I.java", "interface I { void m();}"),
+                new File("t/J.java", "interface J { void m();}"),
+                new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
+                new File("t/D.java", "class D { public void m(){};}"));
+    }
 
-    private void performRename(FileObject source, final int position, Problem... expectedProblems) throws Exception {
+    private void performRename(FileObject source, final int position, final String newname, final JavaRenameProperties props, Problem... expectedProblems) throws Exception {
         final RenameRefactoring[] r = new RenameRefactoring[1];
 
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
             @Override
-            public void run(CompilationController parameter) throws Exception {
-                parameter.toPhase(JavaSource.Phase.RESOLVED);
-                CompilationUnitTree cut = parameter.getCompilationUnit();
+            public void run(CompilationController javac) throws Exception {
+                javac.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = javac.getCompilationUnit();
 
-                Tree method = ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(position);
+                Tree method = cut.getTypeDecls().get(0);
+                if (position >= 0) {
+                    method = ((ClassTree) method).getMembers().get(position);
+                }
 
                 TreePath tp = TreePath.getPath(cut, method);
-                r[0] = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, parameter)));
-                r[0].setNewName("renamed");
-                JavaRenameProperties props = new JavaRenameProperties();
-                props.setIsRenameGettersSetters(true);
-                r[0].getContext().add(props);
+                r[0] = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, javac)));
+                r[0].setNewName(newname);
+                if(props != null) {
+                    r[0].getContext().add(props);
+                }
             }
         }, true);
 

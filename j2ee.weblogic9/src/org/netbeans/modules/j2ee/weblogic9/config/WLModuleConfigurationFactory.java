@@ -84,11 +84,11 @@ public class WLModuleConfigurationFactory implements ModuleConfigurationFactory2
             WLDeploymentManager dm = (WLDeploymentManager) WLDeploymentFactory.getInstance().getDeploymentManager(instanceUrl, null, null);
             Version version = dm.getServerVersion();
             if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
-                return new WarDeploymentConfiguration(j2eeModule, version, dm.isWebProfile());
+                return new WarDeploymentConfiguration(j2eeModule, version);
             } else if (J2eeModule.Type.EJB.equals(j2eeModule.getType())) {
-                return new EjbDeploymentConfiguration(j2eeModule, version, dm.isWebProfile());
+                return new EjbDeploymentConfiguration(j2eeModule, version);
             } else if (J2eeModule.Type.EAR.equals(j2eeModule.getType())) {
-                return new EarDeploymentConfiguration(j2eeModule, version, dm.isWebProfile());
+                return new EarDeploymentConfiguration(j2eeModule, version);
             }            
         } catch (DeploymentManagerCreationException ex) {
             return create(j2eeModule);

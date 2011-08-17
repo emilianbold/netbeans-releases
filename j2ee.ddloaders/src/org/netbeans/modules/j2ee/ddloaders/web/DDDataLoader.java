@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 public class DDDataLoader extends UniFileLoader {
 
     private static final long serialVersionUID = 8616780278674213886L;
-    private static final String REQUIRED_MIME_1 = "text/x-dd-servlet2.4"; // NOI18N
+    public static final String REQUIRED_MIME_1 = "text/x-dd-servlet2.4"; // NOI18N
     //private static final String REQUIRED_MIME_2 = "text/x-dd-servlet2.3"; // NOI18N
     //private static final String REQUIRED_MIME_3 = "text/x-dd-servlet2.2"; // NOI18N
 
@@ -96,10 +96,16 @@ public class DDDataLoader extends UniFileLoader {
         return new String[]{REQUIRED_MIME_1/*, REQUIRED_MIME_2, REQUIRED_MIME_3*/};
     }
 
+    @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile)
+            throws DataObjectExistsException, IOException {
+        return createMultiObject(primaryFile, REQUIRED_MIME_1);
+    }
+
+    protected final MultiDataObject createMultiObject(FileObject primaryFile, String editorMimeType)
         throws DataObjectExistsException, IOException {
             
-        return new DDDataObject (primaryFile, this);
+        return new DDDataObject (primaryFile, this, editorMimeType);
     }
 
 }

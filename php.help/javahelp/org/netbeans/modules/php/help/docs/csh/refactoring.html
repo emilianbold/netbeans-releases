@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--       
+ *     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href=
+              "nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type=
+              "text/css">
+        <meta content="Helen" name="generator">
+        <style type="text/css">
+            <!--
+            .comment {
+                color: blue;
+            }
+            .change-bar {
+                border-color: black;
+                border-left-style: solid;
+                border-left: thin;
+                padding-left: 6px;
+            }
+            .deleted {
+                text-decoration: line-through;
+            }
+            -->
+        </style>
+        <title>Rename Refactoring</title>
+    </head>
+    <body>
+        <h2>
+            Rename Refactoring
+        </h2>
+        <p>Rename Refactoring allows you to safely rename a PHP element across all files in an application.
+            For safety, rename refactoring requires you to preview and approve your changes.</p>
+        <p>Rename Refactoring involves two user interfaces:</p>
+        <ul>
+            <li><b>Rename dialog</b>. You opened this Help topic from the Help button in this dialog.</li>
+            <li><b>Refactoring window.</b> After you complete the Rename dialog, you preview your changes
+            in the Refactoring window.</li>
+        </ul>
+        <h3>Rename dialog</h3>
+        <ul>
+            <li><b>New name:</b> Type the new name in this field.</li>
+            <li><b>Preview.</b> You must click Preview to rename the element. Clicking Preview opens
+                the Refactoring window.</li>
+        </ul>
+        <h3>Refactoring Window</h3>
+        <p>The Refactoring window opens below the Editor window. The Refactoring window shows every place in your
+            application that could be affected by refactoring, and lets you exclude files or individual instances
+            from refactoring. The Refactoring window contains the following sections:</p>
+        <ul>
+            <li><a name="buttons"></a><b>Navigation buttons.</b> On the left side of the Refactoring window are a series of buttons for navigating through the 
+                <a href="#tree">tree of instances</a>. Hover your cursor over a button to see a tooltip describing its function.
+                <table>
+                    <tr>
+                        <td><img src="../images/refactoring/nav-buttons.png" alt="Navigation buttons on left side of Refactoring window"></td>
+                        <td>
+                            <ul>
+                                <li>Refresh</li>
+                                <li>Collapse/expand all nodes in tree</li>
+                                <li>Show logical view (organized by syntax)</li>
+                                <li>Show physical view (organized by location)</li>
+                                <li>Previous occurance</li>
+                                <li>Next occurance</li>
+                            </ul></td>
+                    </tr>
+                </table></li>
+            <li><a name="tree"></a><b>Tree of instances.</b> A tree view of all instances of the element 
+                that you want to rename. Using the <a href="#buttons">navigation buttons</a> you can view either a logical tree,
+                organized by syntax, or a physical view, organized by location. By default, all instances are ticked.
+                Untick an instance if you do not want to rename that instance. Select an instance to preview the
+                current/refactored form in the preview.<br>
+                <img alt="Tree of instances in Refactoring window" src="../images/refactoring/tree.png" >
+            </li>
+            <li><b>Preview.</b> In the preview, compare the original and refactored versions of the code line
+                you selected in the tree of instances.<br>
+                <img alt="Preview panel in the Refactoring window" src="../images/refactoring/preview.png">
+            </li>
+            <li><b>Do refactoring/Cancel.</b> After you have previewed the refactoring and excluded any
+            instances that you do not want to rename, click <b>Do refactoring</b>. If you do not want to rename
+            any instances, click <b>Cancel</b>.</li>
+        </ul>
+        <p>For a demonstration of rename refactoring, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/php/screencast-rename-refactoring.html">
+                    <param name="text" value="<html><u>Rename Refactoring and Other Editor Improvements in NetBeans IDE for PHP 7.0</u>.</html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue"></object></p>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+
+        <table border="0" cellpadding="150">
+            <tr>
+                <td>&nbsp;
+
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;
+
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;
+
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

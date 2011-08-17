@@ -95,6 +95,11 @@ public final class FindDialogMemory {
     private boolean caseSensitive;
 
     /**
+     * Storage of last used Preserve Case option.
+     */
+    private boolean preserveCase;
+    
+    /**
      * Storage of last used Regular Expression option.
      */
     private boolean regularExpression;
@@ -115,6 +120,7 @@ public final class FindDialogMemory {
     private static final String PREFS_NODE = "FindDialogMemory";  //NOI18N
     private static final String PROP_WHOLE_WORDS = "whole_words";  //NOI18N
     private static final String PROP_CASE_SENSITIVE = "case_sensitive";  //NOI18N
+    private static final String PROP_PRESERVE_CASE = "preserve_case";  //NOI18N
     private static final String PROP_REGULAR_EXPRESSION = "regular_expression";  //NOI18N
     private static final String PROP_FILENAME_PATTERN_SPECIFIED = "filename_specified";  //NOI18N
     private static final String PROP_FILENAME_PATTERN_PREFIX = "filename_pattern_";  //NOI18N
@@ -141,6 +147,7 @@ public final class FindDialogMemory {
         wholeWords = prefs.getBoolean(PROP_WHOLE_WORDS, false);
         caseSensitive = prefs.getBoolean(PROP_CASE_SENSITIVE, false);
         regularExpression = prefs.getBoolean(PROP_REGULAR_EXPRESSION, false);
+        preserveCase = prefs.getBoolean(PROP_PRESERVE_CASE, false);
         fileNamePatternSpecified = prefs.getBoolean(PROP_FILENAME_PATTERN_SPECIFIED, false);
 
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
@@ -255,12 +262,21 @@ public final class FindDialogMemory {
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
+    
+    public boolean isPreserveCase() {
+        return preserveCase;
+    }
 
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
         prefs.putBoolean(PROP_CASE_SENSITIVE, caseSensitive);
     }
 
+    public void setPreserveCase(boolean preserveCase) {
+        this.preserveCase = preserveCase;
+        prefs.putBoolean(PROP_PRESERVE_CASE, preserveCase);
+    }
+    
     public boolean isRegularExpression() {
         return regularExpression;
     }

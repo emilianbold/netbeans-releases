@@ -166,9 +166,7 @@ public class FormSettings {
             layoutCodeTarget = lctSetting.intValue();
         }
         else { // no setting
-            layoutCodeTarget = FormEditor.getFormEditor(formModel).needPostCreationUpdate() ?
-                JavaCodeGenerator.LAYOUT_CODE_AUTO : // newly created form - detect
-                JavaCodeGenerator.LAYOUT_CODE_LIBRARY; // old form - use library
+            layoutCodeTarget = JavaCodeGenerator.LAYOUT_CODE_AUTO;
         }
         if (layoutCodeTarget == JavaCodeGenerator.LAYOUT_CODE_AUTO) {
             int globalLCT = FormLoaderSettings.getInstance().getLayoutCodeTarget();

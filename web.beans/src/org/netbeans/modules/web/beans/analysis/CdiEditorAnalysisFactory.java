@@ -101,30 +101,30 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
         return createNotification(Severity.ERROR, subject, info, description);
     }
     
-    public static ErrorDescription createError( Element subject , 
-            WebBeansModel model, CompilationInfo info ,String description)
-    {
-        return createNotification(Severity.ERROR, subject, model, info, description);
-    }
-    
-    public static ErrorDescription createError( VariableElement element, 
-            ExecutableElement method, WebBeansModel model, CompilationInfo info ,
-            String description)
-    {
-        return createNotification(Severity.ERROR, element, method, model, 
-                info, description);
-    }
-    
     public static ErrorDescription createNotification( Severity severity, 
             Element subject , CompilationInfo info ,String description)
     {
+        return createNotification(severity, subject, info, description, null);
+    }
+    
+    public static ErrorDescription createNotification( Severity severity, 
+            Element subject , CompilationInfo info ,String description, Fix fix )
+    {
         Tree elementTree = info.getTrees().getTree(subject);
-        return createNotification(severity, elementTree, info, description);
+        return createNotification(severity, elementTree, info, description, fix );
     }
     
     public static ErrorDescription createNotification( Severity severity, 
             Element subject , WebBeansModel model, CompilationInfo info ,
             String description)
+    {
+        return createNotification(severity, subject, model , info, description, 
+                null);
+    }
+    
+    public static ErrorDescription createNotification( Severity severity, 
+            Element subject , WebBeansModel model, CompilationInfo info ,
+            String description, Fix fix )
     {
         ElementHandle<Element> handle = ElementHandle.create( subject );
         Element element = handle.resolve(info);
@@ -132,12 +132,31 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
             return null;
         }
         Tree elementTree = info.getTrees().getTree(element);
-        return createNotification(severity, elementTree, info, description);
+        return createNotification(severity, elementTree, info, description, fix );
+    }
+    
+    public static ErrorDescription createNotification( Severity severity, 
+            VariableElement element, ExecutableElement parent , 
+            WebBeansModel model, CompilationInfo info ,String description, Fix fix)
+    {
+        VariableElement var = resolveParameter(element, parent, info);
+        if ( var == null ){
+            return null;
+        }
+        Tree elementTree = info.getTrees().getTree(var);
+        return createNotification(severity, elementTree, info, description, fix );
     }
     
     public static ErrorDescription createNotification( Severity severity, 
             VariableElement element, ExecutableElement parent , 
             WebBeansModel model, CompilationInfo info ,String description)
+    {
+        return createNotification( severity, element, parent, model , info , 
+                description, null );
+    }
+
+    public static VariableElement resolveParameter( VariableElement element, 
+            ExecutableElement parent,CompilationInfo info )
     {
         List<? extends VariableElement> parameters = parent.getParameters();
         int i=0;
@@ -164,22 +183,25 @@ public class CdiEditorAnalysisFactory extends EditorAwareJavaSourceTaskFactory {
             }
             j++;
         }
-        if ( var == null ){
-            return null;
-        }
-        Tree elementTree = info.getTrees().getTree(var);
-        return createNotification(severity, elementTree, info, description);
+        return var;
     }
 
     private static ErrorDescription createNotification( Severity severity,
-            Tree tree, CompilationInfo info, String description )
+            Tree tree, CompilationInfo info, String description, Fix fix )
     {
         
+        List<Fix> fixes;
+        if ( fix != null ){
+            fixes = Collections.singletonList( fix );
+        }
+        else {
+            fixes = Collections.<Fix>emptyList();
+        }
         if (tree != null){
             List<Integer> position = getElementPosition(info, tree);
 
             return ErrorDescriptionFactory.createErrorDescription(
-                    severity, description, Collections.<Fix>emptyList(), 
+                    severity, description, fixes, 
                     info.getFileObject(), position.get(0), position.get(1));
         }
         return null;

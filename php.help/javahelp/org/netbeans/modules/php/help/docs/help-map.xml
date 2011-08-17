@@ -1,43 +1,60 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
                      "http://java.sun.com/products/javahelp/map_2_0.dtd">
-<!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 2009 Sun
-Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
 -->
 <map version="1.0">
+    
+    <!-- TOC help -->
+    <mapID target="php_quickref" url="php_quickref.html"/>
+    <mapID target="php_process" url="process.html"/>
     <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
-    <mapID target="org.netbeans.modules.php.help.project" url="phpprojectnode.html"/>
-    <mapID target="nav-window" url="nav_window.html" />
-    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" url="new-project-configure_no_sources.html"/>
-    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" url="new-project-configure_existing_sources.html"/>
-    <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel" url="new-project-run-configuration.html"/>
-    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="customize-project-sources.html"/>
-    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="customize-project-run-configuration.html"/>
-    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" url="customize-project-include-path.html"/>
-    <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="findUsages-CSH.html"/>
-    <mapID target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel" url="new-project-frameworks.html"/>
-        <!--CSH for PHP source editor-->
-    <mapID target="text.x-php5" url="help-about.html" />
+    <mapID target="php_projects" url="php-projects.html"/>
+    <!-- TOC Editor help -->
+    <mapID target="php_editor" url="editor/editor-about.html"/>
+    <mapID target="php_syntax_highlighting" url="editor/syntax-highlighting.html"/>
+    <mapID target="php_code_completion" url="editor/code-completion.html"/>
+    <mapID target="php_brackets" url="editor/brackets.html"/>
+    <mapID target="php_paramhints" url="editor/parameter-hints.html"/>
+    <mapID target="php_goto_decl" url="editor/goto.html"/>
+    <mapID target="php_renaming" url="editor/renaming.html"/>
+    <mapID target="php_codegen" url="editor/code-generators.html"/>
+    <mapID target="def_var_in_comment" url="editor/def-var-in-comment.html"/>
+
+    <!-- CSH -->
+    <!-- Projects window F1 help-->
+    <mapID target="org.netbeans.modules.php.help.project" url="csh/phpprojectnode.html"/>
+    <!-- New Projects wizard panel help -->
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" url="csh/new-project-configure_no_sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.REMOTE" url="csh/new-project-configure_no_sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" url="csh/new-project-configure_existing_sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.NEW" url="csh/new-project-run-configuration.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.EXISTING" url="csh/new-project-run-configuration.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.REMOTE" url="csh/new-project-remote-configuration.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel" url="csh/new-project-frameworks.html"/>
+    <mapID target="org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel" url="csh/manage-connections.html"/>
+    <!-- Project Properties help -->
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="csh/customize-project-sources.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="csh/customize-project-run-configuration.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" url="csh/customize-project-include-path.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerIgnorePath" url="csh/customize-project-include-path.html"/>
+    <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit" url="csh/customize-project-phpunit.html"/>
+    <mapID target="org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel" url="csh/customize-project-phpdoc.html"/>
+
+    
+    <!-- CSH for the Find Usages dialog -->
+    <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="csh/findUsages-CSH.html"/>
+    
+    <!-- CSH for the Rename dialog, includes help for Rename Refactoring window -->
+    <mapID target="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" url="csh/refactoring.html"/>
+    
+    <!-- CSH for the Delete dialog, includes help for Usages window -->
+    <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="csh/safe-delete.html"/>
+
+ <!--CSH for PHP source editor-->
+    <mapID target="text.x-php5" url="csh/about_source_editor.html" />
         <!-- CSH for PHP Options -->
     <mapID target="org.netbeans.modules.php.project.ui.options.PhpOptions" url="options-csh/general.html" />
     <mapID target="org.netbeans.modules.php.project.phpunit.PhpUnit" url="options-csh/unit-testing.html" />
