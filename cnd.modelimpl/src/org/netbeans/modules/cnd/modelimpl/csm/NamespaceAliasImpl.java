@@ -73,7 +73,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
     private CsmUID<CsmScope> scopeUID = null;
     
     private NamespaceAliasImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         _setScope(scope);
         rawName = createRawName(ast);
         alias = NameCache.getManager().getString(AstUtil.getText(ast));

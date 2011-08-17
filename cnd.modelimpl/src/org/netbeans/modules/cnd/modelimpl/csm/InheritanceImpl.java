@@ -78,7 +78,7 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
     private final CsmUID<CsmScope> scope;
     
     private InheritanceImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         this.scope = UIDCsmConverter.scopeToUID(scope);
         visibility = ((CsmDeclaration)scope).getKind() == CsmDeclaration.Kind.STRUCT?
                 CsmVisibility.PUBLIC: CsmVisibility.PRIVATE;

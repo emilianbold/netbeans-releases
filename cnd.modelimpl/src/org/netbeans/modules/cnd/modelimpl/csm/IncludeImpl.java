@@ -70,8 +70,8 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
     
     private CsmUID<CsmFile> includeFileUID;
     
-    private IncludeImpl(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
-        super(containingFile, inclPos);
+    private IncludeImpl(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, int startOffset, int endOffset) {
+        super(containingFile, startOffset, endOffset);
         this.name = FileNameCache.getManager().getString(name);
         this.system = system;
         this.recursive = recursive;
@@ -79,8 +79,8 @@ public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> im
         assert (includeFileUID != null || includeFile == null) : "got " + includeFileUID + " for " + includeFile;
     }
 
-    public static IncludeImpl create(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
-        return new IncludeImpl(name, system, recursive, includeFile, containingFile, inclPos);
+    public static IncludeImpl create(String name, boolean system, boolean recursive, CsmFile includeFile, CsmFile containingFile, int startOffset, int endOffset) {
+        return new IncludeImpl(name, system, recursive, includeFile, containingFile, startOffset, endOffset);
     }
     
     @Override

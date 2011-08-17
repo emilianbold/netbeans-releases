@@ -47,6 +47,12 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
@@ -54,14 +60,58 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class DestructorImpl extends MethodImpl<CsmMethod> {
 
-    private DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, cls, visibility, nameHolder, global);
+    protected DestructorImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static DestructorImpl createDestructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+    public static DestructorImpl createDestructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+        CsmScope scope = cls;
+        CsmFile file = cls.getContainingFile();
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createDestructorName(ast);
-        DestructorImpl destructorImpl = new DestructorImpl(ast, cls, visibility, nameHolder, register);
-        postObjectCreateRegistration(register, destructorImpl);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+        boolean _virtual = false;
+        boolean _explicit = false;
+        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.LITERAL_static:
+                    _static = true;
+                    break;
+                case CPPTokenTypes.LITERAL_virtual:
+                    _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_explicit:
+                    _explicit = true;
+                    break;
+            }
+        }
+        
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
+
+        DestructorImpl destructorImpl = new DestructorImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        temporaryRepositoryRegistration(global, destructorImpl);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, destructorImpl, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        destructorImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        destructorImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, destructorImpl, file));
+        destructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorImpl, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));
+        
+        postObjectCreateRegistration(global, destructorImpl);
         nameHolder.addReference(cls.getContainingFile(), destructorImpl);
         return destructorImpl;
     }

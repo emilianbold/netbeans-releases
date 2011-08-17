@@ -221,7 +221,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
         }
 
-        SimpleOffsetableImpl pos = getOffsetable(define.getToken());
+        int startOffset = define.getToken().getOffset();
         List<APTToken> bodyTokens = define.getBody();
         APTToken last;
         String body = "";
@@ -236,19 +236,18 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             // so we temporarily switch this off
             body = ""; //file.getText( start.getOffset(), last.getEndOffset());
         }
-        setEndPosition(pos, last);
-
-        return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), pos, CsmMacro.Kind.DEFINED);
+        int endOffset = (last != null && !APTUtils.isEOF(last)) ? last.getEndOffset() : startOffset;
+        return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), startOffset, endOffset, CsmMacro.Kind.DEFINED);
     }
 
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included, boolean recursive) {
-        SimpleOffsetableImpl inclPos = getOffsetable(apt.getToken());
+        int startOffset = apt.getToken().getOffset();
         APTToken lastToken = getLastToken(apt.getInclude());
         if(lastToken == null || APTUtils.isEOF(lastToken)) {
             lastToken = apt.getToken();
         }
-        setEndPosition(inclPos, lastToken);
-        IncludeImpl incImpl = IncludeImpl.create(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), recursive, included, getFile(), inclPos);
+        int endOffset = (lastToken != null && !APTUtils.isEOF(lastToken)) ? lastToken.getEndOffset() : startOffset;
+        IncludeImpl incImpl = IncludeImpl.create(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), recursive, included, getFile(), startOffset, endOffset);
         return incImpl;
     }
 

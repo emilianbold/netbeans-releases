@@ -51,9 +51,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -64,15 +69,55 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
 
     private List<CsmExpression> initializers;
     
-    private ConstructorDefinitionImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file, scope, nameHolder, global);
+    protected ConstructorDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-
-    public static ConstructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException {
+    
+    public static ConstructorDefinitionImpl create(AST ast, CsmFile file, boolean global) throws AstRendererException {
+        CsmScope scope = null;
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        ConstructorDefinitionImpl res =  new ConstructorDefinitionImpl(ast, file, null, nameHolder, register);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
+
+        ConstructorDefinitionImpl res = new ConstructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        
+        temporaryRepositoryRegistration(global, res);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, res, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        res.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        res.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, res, file));
+        res.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, res, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));        
+        
+        CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            res.initClassOrNspNames(ast);
+        res.setClassOrNspNames(classOrNspNames);        
+
+        CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, res);
+        if (body == null) {
+            throw new AstRendererException((FileImpl)file, startOffset,
+                    "Null body in method definition."); // NOI18N
+        }        
+        res.setCompoundStatement(body);
         res.initializers = AstRenderer.renderConstructorInitializersList(ast, res, res.getContainingFile());
-        postObjectCreateRegistration(register, res);
+        postObjectCreateRegistration(global, res);
         nameHolder.addReference(file, res);
         return res;
     }

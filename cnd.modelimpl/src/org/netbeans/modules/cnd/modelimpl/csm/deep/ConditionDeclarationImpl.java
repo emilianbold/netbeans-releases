@@ -62,7 +62,7 @@ public final class ConditionDeclarationImpl extends OffsetableBase implements Cs
     private VariableImpl<?> declaration;
     
     private ConditionDeclarationImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         initDeclaration(ast, scope);
     }
 

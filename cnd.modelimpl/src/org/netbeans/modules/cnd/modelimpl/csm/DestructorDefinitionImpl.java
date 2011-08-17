@@ -47,6 +47,12 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 
 /**
@@ -54,14 +60,55 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> {
 
-    private DestructorDefinitionImpl(AST ast, CsmFile file, NameHolder nameHolder, boolean global) throws AstRendererException {
-        super(ast, file, null, nameHolder, global);
+    protected DestructorDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-    
-    public static DestructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException{
+
+    public static DestructorDefinitionImpl create(AST ast, CsmFile file, boolean global) throws AstRendererException{
+        CsmScope scope = null;
+        
+        int startOffset = getStartOffset(ast);
+        int endOffset = getEndOffset(ast);
+        
         NameHolder nameHolder = NameHolder.createDestructorDefinitionName(ast);
-        DestructorDefinitionImpl res = new DestructorDefinitionImpl(ast, file, nameHolder, register);
-        postObjectCreateRegistration(register, res);
+        CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0) {
+            DiagnosticExceptoins.register(new AstRendererException((FileImpl) file, startOffset, "Empty function name.")); // NOI18N
+            return null;
+        }
+        CharSequence rawName = initRawName(ast);
+        
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
+
+        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
+
+        DestructorDefinitionImpl res = new DestructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        
+        temporaryRepositoryRegistration(global, res);
+        
+        StringBuilder clsTemplateSuffix = new StringBuilder();
+        TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, res, clsTemplateSuffix, global);
+        CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
+        
+        res.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+        res.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, res, file));
+        res.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, res, file, global), 
+                AstRenderer.FunctionRenderer.isVoidParameter(ast));        
+        
+        CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
+            getClassOrNspNames(ast) :
+            res.initClassOrNspNames(ast);
+        res.setClassOrNspNames(classOrNspNames);        
+
+        CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, res);
+        if (body == null) {
+            throw new AstRendererException((FileImpl)file, startOffset,
+                    "Null body in method definition."); // NOI18N
+        }        
+        res.setCompoundStatement(body);
+        
+        postObjectCreateRegistration(global, res);
         nameHolder.addReference(file, res);
         return res;
     }
