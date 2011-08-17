@@ -244,7 +244,11 @@ public class DirectoryNode extends DefaultMutableTreeNode {
         }
         
         fo = FileUtil.toFileObject(FileUtil.normalizeFile(testFile));
-        return fo;
+        if (fo.isValid() && fo.isFolder()) {
+            return fo;
+        } else {
+            return null;
+        }
     }
 
     private class DirectoryFilter implements FileFilter {
