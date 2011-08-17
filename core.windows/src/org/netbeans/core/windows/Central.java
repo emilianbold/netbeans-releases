@@ -2424,6 +2424,15 @@ final class Central implements ControllerHandler {
         for( TopComponent tc : opened ) {
             slide( tc, mode, side );
         }
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        int index = 0;
+        for( TopComponent tc : opened ) {
+            ModeImpl newMode = ( ModeImpl ) wm.findMode( tc );
+            if( null == newMode )
+                continue;
+            String tcId = wm.findTopComponentID( tc );
+            model.setModeTopComponentPreviousMode(newMode, tcId, mode, index++);
+        }
         setModeMinimized( mode, true );
     }
 
