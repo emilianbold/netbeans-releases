@@ -64,6 +64,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -201,10 +203,15 @@ public class MakeProjectGeneratorImpl {
                 mk.setRemoteMode(RemoteProject.Mode.REMOTE_SOURCES);
             }
         }
+        if (prjParams.getCustomizerId() != null) {
+            dirFO.createData("cndcustomizerid." + prjParams.getCustomizerId()); // NOI18N
+        }
         final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
         final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
         final Iterator<String> importantItems = prjParams.getImportantFiles();
+        final Iterator<LogicalFolderItemsInfo> logicalFolderItems = prjParams.getLogicalFolderItems();
+        final Iterator<LogicalFoldersInfo> logicalFolders = prjParams.getLogicalFolders();
         String mainFile = prjParams.getMainFile();
         MakeProjectHelper h = MakeProjectGenerator.createProject(dirFO, MakeProjectTypeImpl.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -212,7 +219,7 @@ public class MakeProjectGeneratorImpl {
         Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-
+        
         FileObject sourceBaseFO;
         if (prjParams.getFullRemote()) {
             // mode
@@ -268,7 +275,9 @@ public class MakeProjectGeneratorImpl {
 
             @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, logicalFolders, logicalFolderItems, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                
+                
                 projectDescriptor.save();
                 projectDescriptor.closed();
                 projectDescriptor.clean();
