@@ -186,6 +186,10 @@ public class MakeConfiguration extends Configuration {
     public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID) {
         this(fsPath, name, configurationTypeValue, customizerId, hostUID, null, true);
     }
+    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+        this(fsPath, name, configurationTypeValue, null, hostUID,  hostCS, defaultToolCollection);
+    }
+        
 
     public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
