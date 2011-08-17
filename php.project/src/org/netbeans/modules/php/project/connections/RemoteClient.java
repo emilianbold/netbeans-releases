@@ -88,7 +88,7 @@ import org.openide.windows.InputOutput;
  * This class is thread-safe.
  * @author Tomas Mysik
  */
-public final class RemoteClient implements Cancellable {
+public final class RemoteClient implements Cancellable, RemoteClientImplementation {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
 
     public static final AtomicAction DOWNLOAD_ATOMIC_ACTION = new DownloadAtomicAction(null);
@@ -101,16 +101,16 @@ public final class RemoteClient implements Cancellable {
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
 
-    public static enum Operation { UPLOAD, DOWNLOAD, DELETE };
+    public static enum Operation { UPLOAD, DOWNLOAD, DELETE, LIST };
 
     private final RemoteConfiguration configuration;
     private final AdvancedProperties properties;
-    private final OperationMonitor operationMonitor;
     private final String baseRemoteDirectory;
     // @GuardedBy(this) to avoid over-complicated code, can be improved
     private final org.netbeans.modules.php.project.connections.spi.RemoteClient remoteClient;
 
     private volatile boolean cancelled = false;
+    private volatile OperationMonitor operationMonitor;
 
     /**
      * @see RemoteClient#RemoteClient(org.netbeans.modules.php.project.connections.spi.RemoteConfiguration, org.openide.windows.InputOutput, java.lang.String, boolean)
@@ -131,12 +131,7 @@ public final class RemoteClient implements Cancellable {
         this.configuration = configuration;
         this.properties = properties;
 
-        OperationMonitor monitor = properties.getOperationMonitor();
-        if (monitor != null) {
-            operationMonitor = monitor;
-        } else {
-            operationMonitor = DEV_NULL_OPERATION_MONITOR;
-        }
+        setOperationMonitor(properties.getOperationMonitor());
 
         // base remote directory
         StringBuilder baseDirBuffer = new StringBuilder(configuration.getInitialDirectory());
@@ -174,6 +169,21 @@ public final class RemoteClient implements Cancellable {
         }
         assert client != null : "no suitable remote client for configuration: " + configuration;
         this.remoteClient = client;
+    }
+
+    public String getBaseRemoteDirectory() {
+        return baseRemoteDirectory;
+    }
+
+    public OperationMonitor getOperationMonitor() {
+        if (operationMonitor == null) {
+            return DEV_NULL_OPERATION_MONITOR;
+        }
+        return operationMonitor;
+    }
+
+    public void setOperationMonitor(OperationMonitor operationMonitor) {
+        this.operationMonitor = operationMonitor;
     }
 
     public synchronized void connect() throws RemoteException {
@@ -225,6 +235,40 @@ public final class RemoteClient implements Cancellable {
         boolean success = remoteClient.rename(from.getRemotePath(), to.getRemotePath());
         LOGGER.fine(String.format("Success: %b", success));
         return success;
+    }
+
+    public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
+        ensureConnected();
+
+        LOGGER.log(Level.FINE, "Getting children for {0}", file);
+        try {
+            getOperationMonitor().operationStart(Operation.LIST, Collections.singleton(file));
+            List<RemoteFile> remoteFiles = Collections.emptyList();
+            synchronized (this) {
+                if (cdBaseRemoteDirectory(file.getRemotePath(), false)) {
+                    remoteFiles = remoteClient.listFiles();
+                }
+            }
+            if (remoteFiles.isEmpty()) {
+                LOGGER.log(Level.FINE, "No children found for {0}", file);
+                return Collections.emptyList();
+            }
+            List<TransferFile> transferFiles = new ArrayList<TransferFile>(remoteFiles.size());
+            for (RemoteFile remoteFile : remoteFiles) {
+                if (isVisible(remoteFile.getName())) {
+                    LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
+                    TransferFile transferFile = TransferFile.fromRemoteFile(file, remoteFile, this);
+                    getOperationMonitor().operationProcess(Operation.LIST, transferFile);
+                    transferFiles.add(transferFile);
+                } else {
+                    LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", remoteFile);
+                }
+            }
+            LOGGER.log(Level.FINE, "{0} children found for {1}", new Object[] {transferFiles.size(), file});
+            return transferFiles;
+        } finally {
+            getOperationMonitor().operationFinish(Operation.LIST, Collections.singleton(file));
+        }
     }
 
     public Set<TransferFile> prepareUpload(FileObject baseLocalDirectory, FileObject... filesToUpload) throws RemoteException {
@@ -304,14 +348,14 @@ public final class RemoteClient implements Cancellable {
 
         // XXX order filesToUpload?
         try {
-            operationMonitor.operationStart(Operation.UPLOAD, filesToUpload);
+            getOperationMonitor().operationStart(Operation.UPLOAD, filesToUpload);
             for (TransferFile file : filesToUpload) {
                 if (cancelled) {
                     LOGGER.fine("Upload cancelled");
                     break;
                 }
 
-                operationMonitor.operationProcess(Operation.UPLOAD, file);
+                getOperationMonitor().operationProcess(Operation.UPLOAD, file);
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
@@ -323,7 +367,7 @@ public final class RemoteClient implements Cancellable {
                 }
             }
         } finally {
-            operationMonitor.operationFinish(Operation.UPLOAD, filesToUpload);
+            getOperationMonitor().operationFinish(Operation.UPLOAD, filesToUpload);
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -517,7 +561,7 @@ public final class RemoteClient implements Cancellable {
         ensureConnected();
 
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
-        Queue<TransferFile> queue = new LinkedList<TransferFile>();
+        List<TransferFile> baseFiles = new LinkedList<TransferFile>();
         for (File f : filesToDownload) {
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
@@ -528,20 +572,18 @@ public final class RemoteClient implements Cancellable {
                     // assume folder for non-existing file => recursive fetch
                     tf = TransferFile.fromDirectory(null, f, baseLocalAbsolutePath);
                 }
-                queue.offer(tf);
+                baseFiles.add(tf);
             } else {
                 LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", f);
             }
         }
 
         Set<TransferFile> files = new HashSet<TransferFile>();
-        while(!queue.isEmpty()) {
+        for (TransferFile file : baseFiles) {
             if (cancelled) {
                 LOGGER.fine("Prepare download cancelled");
                 break;
             }
-
-            TransferFile file = queue.poll();
 
             if (!files.add(file)) {
                 LOGGER.log(Level.FINE, "File {0} already in queue", file);
@@ -565,7 +607,7 @@ public final class RemoteClient implements Cancellable {
                     for (RemoteFile child : remoteFiles) {
                         if (isVisible(getLocalFile(baseLocalDir, file, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            queue.offer(TransferFile.fromRemoteFile(file, child, baseRemoteDirectory));
+                            files.add(TransferFile.fromRemoteFile(file, child, this));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
@@ -597,33 +639,12 @@ public final class RemoteClient implements Cancellable {
 
         // XXX order filesToDownload?
         try {
-            operationMonitor.operationStart(Operation.DOWNLOAD, filesToDownload);
+            getOperationMonitor().operationStart(Operation.DOWNLOAD, filesToDownload);
             for (final TransferFile file : filesToDownload) {
-                if (cancelled) {
-                    LOGGER.fine("Download cancelled");
-                    break;
-                }
-
-                operationMonitor.operationProcess(Operation.DOWNLOAD, file);
-                try {
-                    FileUtil.runAtomicAction(new DownloadAtomicAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                downloadFile(transferInfo, baseLocalDir, file);
-                            } catch (IOException exc) {
-                                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                            } catch (RemoteException exc) {
-                                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                            }
-                        }
-                    }));
-                } catch (IOException ex) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", ex.getMessage().trim()));
-                }
+                downloadFile(transferInfo, baseLocalDir, file);
             }
         } finally {
-            operationMonitor.operationFinish(Operation.DOWNLOAD, filesToDownload);
+            getOperationMonitor().operationFinish(Operation.DOWNLOAD, filesToDownload);
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -632,7 +653,32 @@ public final class RemoteClient implements Cancellable {
         return transferInfo;
     }
 
-    private void downloadFile(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
+    private void downloadFile(final TransferInfo transferInfo, final File baseLocalDir, final TransferFile file) {
+        if (cancelled) {
+            LOGGER.fine("Download cancelled");
+            return;
+        }
+
+        getOperationMonitor().operationProcess(Operation.DOWNLOAD, file);
+        try {
+            FileUtil.runAtomicAction(new DownloadAtomicAction(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        downloadFileInternal(transferInfo, baseLocalDir, file);
+                    } catch (IOException exc) {
+                        transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                    } catch (RemoteException exc) {
+                        transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+                    }
+                }
+            }));
+        } catch (IOException ex) {
+            transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", ex.getMessage().trim()));
+        }
+    }
+
+    private void downloadFileInternal(TransferInfo transferInfo, File baseLocalDir, TransferFile file) throws IOException, RemoteException {
         File localFile = getLocalFile(baseLocalDir, file);
         if (file.isLink()) {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
@@ -657,6 +703,12 @@ public final class RemoteClient implements Cancellable {
                 return;
             }
             transferSucceeded(transferInfo, file);
+            if (!file.hasChildrenFetched()) {
+                // download all children as well
+                for (TransferFile child : file.getChildren()) {
+                    downloadFile(transferInfo, baseLocalDir, child);
+                }
+            }
         } else if (file.isFile()) {
             // file => simply download it
 
@@ -852,6 +904,7 @@ public final class RemoteClient implements Cancellable {
         TransferInfo transferInfo = new TransferInfo();
 
         try {
+            getOperationMonitor().operationStart(Operation.DELETE, filesToDelete);
             // first, remove all the files
             //  then remove _empty_ directories (motivation is to prevent data loss; somebody else could upload some file there)
             Set<TransferFile> files = getFiles(filesToDelete);
@@ -868,6 +921,7 @@ public final class RemoteClient implements Cancellable {
 
             assert filesToDelete.size() == files.size() + dirs.size() : String.format("%s does not match files and dirs: %s %s", filesToDelete, files, dirs);
         } finally {
+            getOperationMonitor().operationFinish(Operation.DELETE, filesToDelete);
             transferInfo.setRuntime(System.currentTimeMillis() - start);
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(transferInfo.toString());
@@ -884,6 +938,7 @@ public final class RemoteClient implements Cancellable {
             }
 
             try {
+                getOperationMonitor().operationProcess(Operation.DELETE, file);
                 deleteFile(transferInfo, file);
             } catch (IOException exc) {
                 transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
@@ -1085,9 +1140,15 @@ public final class RemoteClient implements Cancellable {
         return sb.toString();
     }
 
+    private boolean isVisible(String name) {
+        assert name != null;
+        // XXX
+        return !IGNORED_DIRS.contains(name);
+    }
+
     private boolean isVisible(File file) {
         assert file != null;
-        if (IGNORED_DIRS.contains(file.getName())) {
+        if (!isVisible(file.getName())) {
             return false;
         }
         return properties.getPhpVisibilityQuery().isVisible(file);
