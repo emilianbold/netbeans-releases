@@ -130,6 +130,10 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         return id.hashCode();
     }
 
+    @Override public String toString() {
+        return id;
+    }
+
     public @Override int compareTo(M2Configuration o) {
         return id.compareTo(o.id);
     }
