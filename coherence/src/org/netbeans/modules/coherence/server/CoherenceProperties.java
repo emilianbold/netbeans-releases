@@ -68,14 +68,10 @@ public class CoherenceProperties {
     public static final String PROP_DISPLAY_NAME = "base.displayName"; // NOI18N
 
     /**
-     * Key for Coherence instance base classpath in {@link InstanceProperties}.
+     * Key for Coherence instance classpath in {@link InstanceProperties}. It includes
+     * Coherence base JAR as well as additional Coherence or another JARs.
      */
     public static final String PROP_COHERENCE_CLASSPATH = "base.coherence.classpath"; //NOI18N
-
-    /**
-     * Key for Coherence instance additional classpath in {@link InstanceProperties}.
-     */
-    public static final String PROP_ADDITIONAL_CLASSPATH = "base.additional.classpath"; //NOI18N
 
     /**
      * Key for Coherence instance java flags in {@link InstanceProperties}.
@@ -96,6 +92,11 @@ public class CoherenceProperties {
      * Delimiter for serializing additional libraries from array to string and opposite.
      */
     public static final String CLASSPATH_SEPARATOR = "#@#"; //NOI18N
+
+    /**
+     * File name of base Coherence JAR file.
+     */
+    public static final String COHERENCE_JAR_NAME = "coherence.jar"; //NOI18N
 
     /**
      * Contains all Coherence server command line properties.

@@ -170,6 +170,15 @@ public class LexerUtils {
             return true;
         }
     }
+    
+    /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only*/
+    public static boolean startsWith(CharSequence text1, CharSequence prefix, boolean ignoreCase, boolean optimized) {
+        if (text1.length() < prefix.length()) {
+            return false;
+        } else {
+            return equals(text1.subSequence(0, prefix.length()), prefix, ignoreCase, optimized);
+        }
+    }
 
 
 }

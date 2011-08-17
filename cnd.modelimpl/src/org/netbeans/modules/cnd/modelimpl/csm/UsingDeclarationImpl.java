@@ -57,6 +57,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -239,10 +240,10 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                     lastParseCount = newParseCount;
                     _setReferencedDeclaration(referencedDeclaration);
                     if (referencedDeclaration != null) {
-                        if (UIDProviderIml.isPersistable(UIDs.get(this))) {
-                            if (UIDProviderIml.isPersistable(UIDs.get(referencedDeclaration))) {
-                                RepositoryUtils.put(this);
-                            }
+                        if (UIDProviderIml.isPersistable(UIDs.get(this)) &&
+                            UIDProviderIml.isPersistable(UIDs.get(referencedDeclaration)) &&
+                            CsmBaseUtilities.isValid(this)) {
+                            RepositoryUtils.put(this);
                         }
                     }
                 }

@@ -48,8 +48,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustomizerNode;
@@ -76,7 +78,7 @@ public class ProjectNodeFactory {
             includeMakefileDescription &= makeConfiguration.isMakefileConfiguration();
             //includeRunDebugDescriptions &= !makeConfiguration.isLibraryConfiguration();
         }
-
+        
         List<CustomizerNode> uncheckedCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(lookup);
         List<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
         CustomizerNode node = createGeneralDescription(lookup);
@@ -111,10 +113,12 @@ public class ProjectNodeFactory {
         }
         uncheckedCustomizers.removeAll(debugCustomizers);
 
-        CustomizerNode advanced = getAdvancedCustomizerNode(uncheckedCustomizers, lookup);
-        if (advanced != null) {
-            descriptions.add(advanced);
-        }
+        // Add remainder nodes direcrtly under root and not under Advanced. Don't need Advanced node anymore, right?
+        descriptions.addAll(uncheckedCustomizers);
+//        CustomizerNode advanced = getAdvancedCustomizerNode(uncheckedCustomizers, lookup);
+//        if (advanced != null) {
+//            descriptions.add(advanced);
+//        }
 
         descriptions.add(createRequiredProjectsDescription(lookup));
         if (includeMakefileDescription) {
@@ -124,6 +128,13 @@ public class ProjectNodeFactory {
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
 
+        
+        MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)context.getConfigurationDescriptor();
+        if (makeConfigurationDescriptor.hasProjectCustomizer()) {
+            MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getProjectCustomizer();
+            rootDescription = makeprojectCustomizer.getRootPropertyNode(rootDescription);
+        }
+        
         return new PropertyNode(rootDescription);
     }
 

@@ -42,12 +42,11 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -60,6 +59,7 @@ import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -67,7 +67,7 @@ import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.model.Namespace;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -78,14 +78,18 @@ import org.openide.util.lookup.ServiceProvider;
 public class NamespacesModule extends CssModule {
 
     private static final String NAMESPACE_KEYWORD = "@namespace";//NOI18N
-    
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL
 
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        
-        switch (context.getActiveNode().type()) {
+        Node activeNode = context.getActiveNode();
+        boolean isError = activeNode.type() == NodeType.error;
+        if (isError) {
+            activeNode = activeNode.parent();
+        }
+
+        switch (activeNode.type()) {
             case namespace_prefix:
             case elementName:
                 //already in the prefix
@@ -93,19 +97,17 @@ public class NamespacesModule extends CssModule {
                 //todo: rewrite to use index later
                 Stylesheet model = context.getParserResult().getModel();
                 for (Namespace ns : model.getNamespaces()) {
-                    if (ns.getPrefix() != null && ns.getPrefix().toString().toLowerCase(Locale.ENGLISH).startsWith(context.getPrefix().toLowerCase(Locale.ENGLISH))) {
-                        proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-                    }
+                    proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
                 }
                 break;
 
             case root:
             case styleSheet:
             case bodylist:
-                CompletionProposal nsKeywordProposal = 
-                        CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                CompletionProposal nsKeywordProposal =
+                        CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                 proposals.add(nsKeywordProposal);
-                
+
             case bodyset:
             case media:
             case combinator:
@@ -123,15 +125,38 @@ public class NamespacesModule extends CssModule {
 
             case namespace:
                 CssTokenId tokenId = context.getTokenSequence().token().id();
-                if(tokenId == CssTokenId.NAMESPACE_SYM) {
-                    nsKeywordProposal = 
-                        CssCompletionItem.createCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, null, context.getAnchorOffset(), false);
+                if (tokenId == CssTokenId.NAMESPACE_SYM) {
+                    nsKeywordProposal =
+                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                     proposals.add(nsKeywordProposal);
                 }
-                
+
+            case simpleSelectorSequence:
+                if (isError) {
+                    Token<CssTokenId> token = context.getTokenSequence().token();
+                    switch (token.id()) {
+                        case IDENT:
+                            if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
+                                proposals.addAll(getNamespaceCompletionProposals(context));
+                            }
+                            break;
+                        case LBRACKET:
+                        case WS:
+                            proposals.addAll(getNamespaceCompletionProposals(context));
+                            break;
+
+                    }
+                }
+                break;
+
+            case attrib:
+            case attrib_name:
+            case namespace_wqname_prefix:
+                proposals.addAll(getNamespaceCompletionProposals(context));
+                break;
         }
 
-        return proposals;
+        return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
     private static List<CompletionProposal> getNamespaceCompletionProposals(CompletionContext context) {
@@ -161,42 +186,7 @@ public class NamespacesModule extends CssModule {
 
     @Override
     public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
-
-        final Snapshot snapshot = context.getSnapshot();
-
-        int astCaretOffset = snapshot.getEmbeddedOffset(context.getCaretOffset());
-        if (astCaretOffset == -1) {
-            return null;
-        }
-
-
-        Node current = NodeUtil.findNonTokenNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
-        if (current == null) {
-            //this may happen if the offset falls to the area outside the selectors rule node.
-            //(for example when the stylesheet starts or ends with whitespaces or comment and
-            //and the offset falls there).
-            //In such case root node (with null parent) is returned from NodeUtil.findNodeAtOffset() 
-            return null;
-        }
-
-        if (current.type() != NodeType.namespace_prefix) {
-            return null;
-        }
-
-        final CharSequence selectedNamespacePrefixImage = current.image();
-
-        return new NodeVisitor<T>(result) {
-
-            @Override
-            public boolean visit(Node node) {
-                if (node.type() == NodeType.namespace_prefix
-                        && CharSequenceUtilities.textEquals(selectedNamespacePrefixImage, node.image())) {
-                    OffsetRange documentNodeRange = Css3Utils.getDocumentOffsetRange(node, snapshot);
-                    getResult().add(Css3Utils.getValidOrNONEOffsetRange(documentNodeRange));
-                }
-                return false;
-            }
-        };
+        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.namespace_prefix);
     }
 
     @Override

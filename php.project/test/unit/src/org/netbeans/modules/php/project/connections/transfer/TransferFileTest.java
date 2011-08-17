@@ -42,8 +42,12 @@
 package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
+import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 
 /**
@@ -56,7 +60,7 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testLocalTransferFilePaths() {
-        TransferFile parent1 = TransferFile.fromFile(null, new File("/a/b"), "/a");
+        TransferFile parent1 = TransferFile.fromDirectory(null, new File("/a/b"), "/a");
         TransferFile file1 = TransferFile.fromFile(parent1, new File("/a/b/c"), "/a");
         assertEquals("c", file1.getName());
         assertEquals("b/c", file1.getRemotePath());
@@ -86,12 +90,13 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testRemoteTransferFilePaths() {
+        RemoteClientImplementation remoteClient = new RemoteClient("/pub/myproject");
         TransferFile parent = TransferFile.fromRemoteFile(null,
-                new RemoteFileImpl("info", "/pub/myproject/tests", true),
-                "/pub/myproject");
+                new RemoteFileImpl("info", "/pub/myproject/tests", false),
+                remoteClient);
         TransferFile file = TransferFile.fromRemoteFile(parent,
                 new RemoteFileImpl("readme.txt", "/pub/myproject/tests/info", true),
-                "/pub/myproject");
+                remoteClient);
         assertEquals("readme.txt", file.getName());
         assertEquals("tests/info/readme.txt", file.getRemotePath());
         assertEquals("tests/info", file.getParent().getRemotePath());
@@ -99,10 +104,10 @@ public class TransferFileTest extends NbTestCase {
     }
 
     public void testTransferFileRelations() {
-        TransferFile projectRoot = TransferFile.fromFile(null, new File("/a"), "/a");
+        TransferFile projectRoot = TransferFile.fromDirectory(null, new File("/a"), "/a");
         assertTrue(projectRoot.isRoot());
         assertTrue(projectRoot.isProjectRoot());
-        assertFalse(projectRoot.getChildren().toString(), projectRoot.hasChildren());
+        assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().isEmpty());
 
         TransferFile child1 = TransferFile.fromFile(projectRoot, new File("/a/1"), "/a");
         TransferFile child2 = TransferFile.fromFile(projectRoot, new File("/a/2"), "/a");
@@ -112,15 +117,15 @@ public class TransferFileTest extends NbTestCase {
             assertFalse(child.isProjectRoot());
             assertSame(child.getParent().toString(), projectRoot, child.getParent());
         }
-        assertTrue(projectRoot.getChildren().toString(), projectRoot.hasChildren());
+        assertFalse(projectRoot.getChildren().toString(), projectRoot.getChildren().isEmpty());
         assertSame(projectRoot.getChildren().toString(), 2, projectRoot.getChildren().size());
         assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child1));
         assertTrue(projectRoot.getChildren().toString(), projectRoot.getChildren().contains(child2));
     }
 
     public void testParentRemotePath() {
-        TransferFile projectRoot = TransferFile.fromFile(null, new File("/a"), "/a");
-        TransferFile childWithParent = TransferFile.fromFile(projectRoot, new File("/a/b"), "/a");
+        TransferFile projectRoot = TransferFile.fromDirectory(null, new File("/a"), "/a");
+        TransferFile childWithParent = TransferFile.fromDirectory(projectRoot, new File("/a/b"), "/a");
         TransferFile childWithoutParent = TransferFile.fromFile(null, new File("/a/b"), "/a");
 
         assertEquals(projectRoot.getRemotePath(), childWithParent.getParentRemotePath());
@@ -180,6 +185,27 @@ public class TransferFileTest extends NbTestCase {
         @Override
         public long getTimestamp() {
             return new Date().getTime();
+        }
+
+    }
+
+    private static final class RemoteClient implements RemoteClientImplementation {
+
+        private final String baseRemoteDirectory;
+
+
+        public RemoteClient(String baseRemoteDirectory) {
+            this.baseRemoteDirectory = baseRemoteDirectory;
+        }
+
+        @Override
+        public String getBaseRemoteDirectory() {
+            return baseRemoteDirectory;
+        }
+
+        @Override
+        public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
+            return Collections.emptyList();
         }
 
     }

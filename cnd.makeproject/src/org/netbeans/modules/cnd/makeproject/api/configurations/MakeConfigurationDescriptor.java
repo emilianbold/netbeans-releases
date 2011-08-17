@@ -86,6 +86,9 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
+import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
@@ -120,6 +123,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
+    public static final String ROOT_FOLDER = "root"; // NOI18N
     public static final String SOURCE_FILES_FOLDER = "SourceFiles"; // NOI18N
     public static final String HEADER_FILES_FOLDER = "HeaderFiles"; // NOI18N
     public static final String RESOURCE_FILES_FOLDER = "ResourceFiles"; // NOI18N
@@ -143,6 +147,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     
     private boolean modified = false;
     private Folder externalFileItems = null;
+    private Folder sourceFileItems = null;
+    private Folder headerFileItems = null;
+    private Folder resourceFileItems = null;
     private Folder testItems = null;
     private Folder rootFolder = null;
     private Map<String, Item> projectItems = null;
@@ -291,11 +298,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
-            Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
+            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
-            rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
-            rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
-            rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            resourceFileItems = rootFolder.addNewFolder(RESOURCE_FILES_FOLDER, getString("ResourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             testItems = rootFolder.addNewFolder(TEST_FILES_FOLDER, getString("TestsFilesTxt"), false, Folder.Kind.TEST_LOGICAL_FOLDER);
         }
         externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
@@ -304,6 +311,30 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (!addGeneratedMakefileToLogicalView) {
             if (!getProjectMakefileName().isEmpty()) {
                 externalFileItems.addItem(Item.createInFileSystem(baseDirFS, getProjectMakefileName())); // NOI18N
+            }
+        }
+        if (logicalFolderItems != null) {
+            while (logicalFolderItems.hasNext()) {
+                LogicalFolderItemsInfo logicalFolderInfo = logicalFolderItems.next();
+                Folder f = rootFolder.findFolderByName(logicalFolderInfo.getLogicalFolderName());
+                if (f != null) {
+                    f.addItem(Item.createInFileSystem(baseDirFS, logicalFolderInfo.getItemPath()));
+                }
+            }
+        }
+        if (logicalFolders != null) {
+            while (logicalFolders.hasNext()) {
+                LogicalFoldersInfo logicalFoldersInfo = logicalFolders.next();
+                Folder f;
+                if (logicalFoldersInfo.getLogicalFolderName().equals("root")) { // NOI18N
+                    f = rootFolder;
+                } else {
+                    f = rootFolder.findFolderByName(logicalFoldersInfo.getLogicalFolderName());
+                }
+                if (f != null) {
+                    Folder newFolder = new Folder(this, f.getParent(), logicalFoldersInfo.getFolderName(), logicalFoldersInfo.getFolderName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                    f.addFolder(newFolder, false);
+                }
             }
         }
         if (importantItems != null) {
@@ -947,9 +978,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             n1 = doc.createElement(MakeProjectTypeImpl.CONFIGURATION_NAME_ELEMENT);
             n1.appendChild(doc.createTextNode(conf.getName()));
             element2.appendChild(n1);
+            
             n1 = doc.createElement(MakeProjectTypeImpl.CONFIGURATION_TYPE_ELEMENT);
             n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getConfigurationType().getValue()));
             element2.appendChild(n1);
+            
+            if (((MakeConfiguration) conf).isCustomConfiguration()) {
+                n1 = doc.createElement(MakeProjectTypeImpl.CUSTOMIZERID_ELEMENT);
+                n1.appendChild(doc.createTextNode("" + ((MakeConfiguration) conf).getCustomizerId()));
+                element2.appendChild(n1);
+            }
+            
             element.appendChild(element2);
         }
         data.appendChild(element);
@@ -1003,6 +1042,22 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             elem.appendChild(doc.createTextNode("" + getConfs().getActiveAsIndex()));
             data.appendChild(elem);
         }
+
+        if (((MakeConfiguration) getConfs().getActive()).isCustomConfiguration()) {
+            // Create custumizerid type node
+            nodeList = data.getElementsByTagName(MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                // Node already there
+                Node node = nodeList.item(0);
+                node.setTextContent(((MakeConfiguration) getConfs().getActive()).getCustomizerId());
+            } else {
+                // Create node
+                Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID); // NOI18N
+                elem.appendChild(doc.createTextNode(((MakeConfiguration) getConfs().getActive()).getCustomizerId()));
+                data.appendChild(elem);
+            }
+        }
+
 
         helper.putPrimaryConfigurationData(data, false);
     }
@@ -1536,6 +1591,19 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             setVersion(currentVersion);
         }
         return true;
+    }
+    
+    public boolean hasProjectCustomizer() {
+        boolean ret = getActiveConfiguration().isCustomConfiguration();
+        return ret;
+    }
+    
+    public MakeProjectCustomizer getProjectCustomizer() {
+        MakeProjectCustomizer makeprojectCustomizer = null;
+        if (hasProjectCustomizer()) {
+            makeprojectCustomizer = getActiveConfiguration().getProjectCustomizer();
+        }
+        return makeprojectCustomizer;
     }
 
     /** Look up i18n strings here */

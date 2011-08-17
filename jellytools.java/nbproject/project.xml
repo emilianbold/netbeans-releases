@@ -67,8 +67,6 @@
             <public-packages>
                 <package>org.netbeans.jellytools</package>
                 <package>org.netbeans.jellytools.actions</package>
-                <package>org.netbeans.jellytools.modules.db.derby</package>
-                <package>org.netbeans.jellytools.modules.db.derby.actions</package>
                 <package>org.netbeans.jellytools.modules.debugger</package>
                 <package>org.netbeans.jellytools.modules.debugger.actions</package>
                 <package>org.netbeans.jellytools.modules.form</package>

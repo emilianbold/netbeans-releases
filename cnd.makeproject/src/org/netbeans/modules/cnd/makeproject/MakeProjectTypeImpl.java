@@ -73,8 +73,10 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
     public final static String CONFIGURATION_NAME_ELEMENT = "name"; // NOI18N
     public final static String CONFIGURATION_TYPE_ELEMENT = "type"; // NOI18N
+    public final static String CUSTOMIZERID_ELEMENT = "customizerid"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N
+    public final static String ACTIVE_CONFIGURATION_CUSTOMIZERID = "activeConfCustomizerid"; // NOI18N
 
     /**
      * Do nothing, just a service.

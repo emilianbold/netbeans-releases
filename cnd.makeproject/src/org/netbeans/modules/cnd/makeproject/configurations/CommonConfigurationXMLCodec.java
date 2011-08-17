@@ -82,6 +82,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V80 - NB 7.1
+ *    Custom configurations
  * V79 - NB 7.0
  *    Configuration type (CONFIGURATION_TYPE_ELEMENT) in project.xml
  * V78 - NB 7.0
@@ -226,7 +228,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 79;
+    public final static int CURRENT_VERSION = 80;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -354,6 +356,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
     public final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
+    protected final static String CUSTOMIZERID_ATTR = "customizerid"; // NOI18N
     protected final static String KIND_ATTR = "kind"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
     protected final static String ROOT_ATTR = "root"; // NOI18N
@@ -426,11 +429,21 @@ public abstract class CommonConfigurationXMLCodec
             MakeConfiguration makeConfiguration =
                     (MakeConfiguration) confs.getConf(i);
 
-            xes.elementOpen(CONF_ELEMENT,
-                    new AttrValuePair[]{
-                        new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
-                        new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
-                    });
+            if (makeConfiguration.isCustomConfiguration()) {
+                xes.elementOpen(CONF_ELEMENT,
+                        new AttrValuePair[]{
+                            new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
+                            new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
+                            new AttrValuePair(CUSTOMIZERID_ATTR, "" + makeConfiguration.getCustomizerId()), // NOI18N
+                        });
+            } else {
+                xes.elementOpen(CONF_ELEMENT,
+                        new AttrValuePair[]{
+                            new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
+                            new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
+                        });
+
+            }
 
             writeToolsSetBlock(xes, makeConfiguration);
             if (publicLocation) {
@@ -481,6 +494,7 @@ public abstract class CommonConfigurationXMLCodec
             case MakeConfiguration.TYPE_DYNAMIC_LIB:
             case MakeConfiguration.TYPE_QT_APPLICATION:
             case MakeConfiguration.TYPE_QT_DYNAMIC_LIB:
+            case MakeConfiguration.TYPE_CUSTOM: // <=== FIXUP
                 writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
                 break;
             case MakeConfiguration.TYPE_STATIC_LIB:

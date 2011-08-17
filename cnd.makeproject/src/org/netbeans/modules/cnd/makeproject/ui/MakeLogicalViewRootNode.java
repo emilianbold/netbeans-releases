@@ -72,8 +72,8 @@ import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
-import org.netbeans.modules.cnd.makeproject.actions.AddExistingItemAction;
-import org.netbeans.modules.cnd.makeproject.actions.NewFolderAction;
+import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
+import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -154,7 +154,11 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
         if (gotMakeConfigurationDescriptor()) {
             MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+            if (confProvider != null){
+                confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+            }
+            
+            
         }
 
     }
@@ -200,7 +204,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
         MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-        confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        if (confProvider != null) {
+            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        }
         stateChanged(null);
     }
 
@@ -416,7 +422,8 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
             if (descriptor == null || active == null || active.isMakefileConfiguration()) { // FIXUP: need better check
                 standardActions = getAdditionalDiskFolderActions();
-            } else {
+            }
+            else {
                 standardActions = getAdditionalLogicalFolderActions();
             }
             actions.addAll(Arrays.asList(standardActions));
@@ -441,7 +448,13 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             //actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
         }
-        return actions.toArray(new Action[actions.size()]);
+        MakeConfiguration active = (getMakeConfigurationDescriptor() == null) ? null : getMakeConfigurationDescriptor().getActiveConfiguration();
+        if (active != null && active.isCustomConfiguration() && active.getProjectCustomizer().getActions(provider.getProject(), actions) != null) {
+                return active.getProjectCustomizer().getActions(provider.getProject(), actions);
+        }
+        else {
+            return actions.toArray(new Action[actions.size()]);
+        }
     }
 
     @Override
