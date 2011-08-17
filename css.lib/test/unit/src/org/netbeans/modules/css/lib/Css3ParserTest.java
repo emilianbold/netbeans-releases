@@ -547,6 +547,50 @@ public class Css3ParserTest extends CslTestBase {
         
     }
     
+    public void testPseudoClasses() throws ParseException, BadLocationException {
+        String content = "div:enabled { }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        Node pseudo = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
+        assertNotNull(pseudo);
+        assertEquals(":enabled", pseudo.image().toString());
+        
+        assertResultOK(result);
+        
+        content = "div:nth-child(even) { }";
+            
+        result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        pseudo = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
+        assertNotNull(pseudo);
+        assertEquals(":nth-child(even)", pseudo.image().toString());
+        assertResultOK(result);
+        
+    }
+    
+    public void testPseudoElements() throws ParseException, BadLocationException {
+        String content = "div::before { }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+        TestUtil.dumpTokens(result);
+        TestUtil.dumpResult(result);
+        Node pseudo = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
+        assertNotNull(pseudo);
+        assertEquals("::before", pseudo.image().toString());
+        
+        assertResultOK(result);
+        
+    }
+    
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
 //        TestUtil.dumpResult(result);

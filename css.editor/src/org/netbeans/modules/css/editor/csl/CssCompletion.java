@@ -140,6 +140,8 @@ public class CssCompletion implements CodeCompletionHandler {
         //continue with AST completion
         int offset = caretOffset - prefix.length();
         int astOffset = snapshot.getEmbeddedOffset(offset);
+        int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+        
         boolean unmappableClassOrId = false;
         if (astOffset == -1) {
             if((prefix.length() == 1 && prefix.charAt(0) == '.') || (prefix.length() > 0 && prefix.charAt(0) == '#')) {
@@ -153,7 +155,7 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         }
 
-        int diff = ts.move(astOffset);
+        int diff = ts.move(astCaretOffset);
         boolean tokenFound = diff == 0 ? ts.movePrevious() : ts.moveNext();
 
         Node root = info.getParseTree();
@@ -161,8 +163,6 @@ public class CssCompletion implements CodeCompletionHandler {
             //broken source
             return CodeCompletionResult.NONE;
         }
-
-        int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
 
         char charAfterCaret = snapshot.getText().length() > (astCaretOffset + 1) ?
             snapshot.getText().subSequence(astCaretOffset, astCaretOffset + 1).charAt(0) :
@@ -832,6 +832,7 @@ public class CssCompletion implements CodeCompletionHandler {
         int skipPrefixChars = 0;
         switch(t.id()) {
             case COLON:
+            case DCOLON:
             case COMMA:
             case LBRACKET:
                 return EMPTY_STRING;

@@ -306,7 +306,7 @@ namespace_wildcard_prefix
   	;
         
 esPred
-    : HASH | DOT | LBRACKET | COLON
+    : HASH | DOT | LBRACKET | COLON | DCOLON
     ;
     
 elementSubsequent
@@ -377,7 +377,7 @@ attrib_value
         ;
 
 pseudo
-    : COLON 
+    : ( COLON | DCOLON )
             ( IDENT | GEN )
                 ( // Function
                     WS* LPAREN WS* (( IDENT | GEN ) WS*)? RPAREN
@@ -800,6 +800,7 @@ RBRACKET        : ']'       ;
 OPEQ            : '='       ;
 SEMI            : ';'       ;
 COLON           : ':'       ;
+DCOLON          : '::'       ;
 SOLIDUS         : '/'       ;
 MINUS           : '-'       ;
 PLUS            : '+'       ;

@@ -44,11 +44,9 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -61,6 +59,7 @@ import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.module.spi.CssModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -68,7 +67,6 @@ import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.model.Namespace;
 import org.netbeans.modules.css.lib.api.model.Stylesheet;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -188,42 +186,7 @@ public class NamespacesModule extends CssModule {
 
     @Override
     public <T extends Set<OffsetRange>> NodeVisitor<T> getMarkOccurrencesNodeVisitor(EditorFeatureContext context, T result) {
-
-        final Snapshot snapshot = context.getSnapshot();
-
-        int astCaretOffset = snapshot.getEmbeddedOffset(context.getCaretOffset());
-        if (astCaretOffset == -1) {
-            return null;
-        }
-
-
-        Node current = NodeUtil.findNonTokenNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
-        if (current == null) {
-            //this may happen if the offset falls to the area outside the selectors rule node.
-            //(for example when the stylesheet starts or ends with whitespaces or comment and
-            //and the offset falls there).
-            //In such case root node (with null parent) is returned from NodeUtil.findNodeAtOffset() 
-            return null;
-        }
-
-        if (current.type() != NodeType.namespace_prefix) {
-            return null;
-        }
-
-        final CharSequence selectedNamespacePrefixImage = current.image();
-
-        return new NodeVisitor<T>(result) {
-
-            @Override
-            public boolean visit(Node node) {
-                if (node.type() == NodeType.namespace_prefix
-                        && CharSequenceUtilities.textEquals(selectedNamespacePrefixImage, node.image())) {
-                    OffsetRange documentNodeRange = Css3Utils.getDocumentOffsetRange(node, snapshot);
-                    getResult().add(Css3Utils.getValidOrNONEOffsetRange(documentNodeRange));
-                }
-                return false;
-            }
-        };
+        return Utilities.createMarkOccurrencesNodeVisitor(context, result, NodeType.namespace_prefix);
     }
 
     @Override
