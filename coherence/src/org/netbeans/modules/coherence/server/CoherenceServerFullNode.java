@@ -46,7 +46,6 @@ import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.coherence.server.actions.CloneAction;
 import org.netbeans.modules.coherence.server.actions.PropertiesAction;
-import org.netbeans.modules.coherence.server.actions.ResetAction;
 import org.netbeans.modules.coherence.server.actions.StartServerAction;
 import org.netbeans.modules.coherence.server.actions.StopServerAction;
 import org.openide.actions.DeleteAction;
@@ -72,7 +71,6 @@ public class CoherenceServerFullNode extends CoherenceServerBaseNode implements 
                     SystemAction.get(CloneAction.class),
                     SystemAction.get(DeleteAction.class),
                     null,
-                    SystemAction.get(ResetAction.class),
                     SystemAction.get(PropertiesAction.class)
                 };
     }
