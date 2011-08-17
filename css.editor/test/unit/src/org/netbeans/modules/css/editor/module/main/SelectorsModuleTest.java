@@ -39,45 +39,33 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib;
+package org.netbeans.modules.css.editor.module.main;
 
-import org.antlr.runtime.RecognitionException;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.ProblemDescription;
+import org.netbeans.modules.css.editor.test.CssCompletionTestBase;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class ErrorNode extends RuleNode {
+public class SelectorsModuleTest extends CssCompletionTestBase {
     
-    private ProblemDescription problemDescription;
-    int from, to;
-
-    public ErrorNode(int from, int to, ProblemDescription pd, CharSequence source) {
-        super(NodeType.error, source);
-        this.from = from;
-        this.to = to;
-        this.problemDescription = pd;
+    public SelectorsModuleTest(String name) {
+        super(name);
     }
 
-    @Override
-    public NodeType type() {
-        return NodeType.error;
+    public void testPseudoClassesCompletion() throws ParseException  {
+        checkCC("div:| ", arr("enabled"), Match.CONTAINS);
+        checkCC("div:ena|", arr("enabled"), Match.CONTAINS);
+        checkCC("div:ena| h1 { }", arr("enabled"), Match.CONTAINS);
+        checkCC("div:enabled| h1 { }", arr("enabled"), Match.CONTAINS);
     }
     
-    @Override
-    public int from() {
-        return from;
+    public void testPseudoElementsCompletion() throws ParseException  {
+        checkCC("div::| ", arr("after"), Match.CONTAINS);
+        checkCC("div::af|", arr("after"), Match.CONTAINS);
+        checkCC("div::af| h1 { }", arr("after"), Match.CONTAINS);
+        checkCC("div::after| h1 { }", arr("after"), Match.CONTAINS);
     }
-
-    @Override
-    public int to() {
-        return to;
-    }
-
-    public ProblemDescription getProblemDescription() {
-        return problemDescription;
-    }
-
+    
 }

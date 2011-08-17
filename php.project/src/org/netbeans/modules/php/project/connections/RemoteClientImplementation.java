@@ -39,45 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib;
+package org.netbeans.modules.php.project.connections;
 
-import org.antlr.runtime.RecognitionException;
-import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.ProblemDescription;
+import java.util.List;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
 /**
- *
- * @author marekfukala
+ * Remote client implementation, exists only for unit tests.
  */
-public class ErrorNode extends RuleNode {
-    
-    private ProblemDescription problemDescription;
-    int from, to;
+public interface RemoteClientImplementation {
 
-    public ErrorNode(int from, int to, ProblemDescription pd, CharSequence source) {
-        super(NodeType.error, source);
-        this.from = from;
-        this.to = to;
-        this.problemDescription = pd;
-    }
+    String getBaseRemoteDirectory();
 
-    @Override
-    public NodeType type() {
-        return NodeType.error;
-    }
-    
-    @Override
-    public int from() {
-        return from;
-    }
-
-    @Override
-    public int to() {
-        return to;
-    }
-
-    public ProblemDescription getProblemDescription() {
-        return problemDescription;
-    }
+    List<TransferFile> listFiles(TransferFile file) throws RemoteException;
 
 }

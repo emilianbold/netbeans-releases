@@ -95,6 +95,7 @@ public enum CssTokenId implements TokenId {
     IDENT(Css3Lexer.IDENT, "identifier"),
     PAGE_SYM(Css3Lexer.PAGE_SYM, "keyword"),
     COLON(Css3Lexer.COLON, "separator"),
+    DCOLON(Css3Lexer.DCOLON, "separator"),
     SOLIDUS(Css3Lexer.SOLIDUS, "others"),
     PLUS(Css3Lexer.PLUS, "operator"),
     GREATER(Css3Lexer.GREATER, "operator"),

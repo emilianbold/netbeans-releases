@@ -177,6 +177,18 @@ public class NbCss3LexerTest extends NbTestCase {
         assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
     }
     
+   public void testLexingOfPseudoElement() throws Exception {
+        String source = "div::before";
+        
+        //now do the same with the netbeans lexer
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+
+        assertANTLRToken("div", Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken("::", Css3Lexer.DCOLON, lexer.nextToken());
+        assertANTLRToken("before", Css3Lexer.IDENT, lexer.nextToken());
+    }
+    
     
    /**
     * @param expectedImage - use null if you do not want to check the image

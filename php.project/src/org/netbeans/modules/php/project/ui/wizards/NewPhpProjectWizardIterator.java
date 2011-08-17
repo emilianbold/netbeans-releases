@@ -70,7 +70,6 @@ import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
-import org.netbeans.modules.php.project.ui.actions.RemoteCommand.DefaultOperationMonitor;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
@@ -512,14 +511,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject sources = FileUtil.toFileObject(projectProperties.getSourcesDirectory());
         RemoteConfiguration remoteConfiguration = projectProperties.getRemoteConfiguration();
         InputOutput remoteLog = RemoteCommand.getRemoteLog(remoteConfiguration.getDisplayName());
-        DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor("LBL_Downloading"); // NOI18N
         RemoteClient remoteClient = new RemoteClient(remoteConfiguration, new RemoteClient.AdvancedProperties()
                     .setInputOutput(remoteLog)
-                    .setOperationMonitor(downloadOperationMonitor)
                     .setAdditionalInitialSubdirectory(projectProperties.getRemoteDirectory())
                     .setPreservePermissions(false)
                     .setPhpVisibilityQuery(PhpVisibilityQuery.forProject(project)));
-        DownloadCommand.download(remoteClient, remoteLog, downloadOperationMonitor, projectProperties.getName(), sources, forDownload);
+        DownloadCommand.download(remoteClient, remoteLog, projectProperties.getName(), sources, forDownload);
 
         remoteMonitor.finishingDownload();
     }

@@ -79,14 +79,21 @@ public class NamespacesModuleTest extends CssCompletionTestBase {
     
     public void testNamespacePrefixesInAttributeCompletion() throws ParseException  {
         String nsdecl = "@namespace foo \"http://foo.org\";\n ";
-//        checkCC(nsdecl + "h1[f|", arr("foo"), Match.CONTAINS, true);
+        checkCC(nsdecl + "h1[|", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "h1[ |", arr("foo"), Match.CONTAINS);
         
-//        checkCC(nsdecl + "h1[f|]", arr("foo"), Match.CONTAINS);
-//        checkCC(nsdecl + "h1[foo|]", arr("foo"), Match.CONTAINS);
-//        
-//        checkCC(nsdecl + "h1[||attr=val]", arr("foo"), Match.CONTAINS);
-//        checkCC(nsdecl + "h1[f||attr=val]", arr("foo"), Match.CONTAINS);
-//        checkCC(nsdecl + "h1[foo||attr=val]", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "h1[|]", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "h1[ |]", arr("foo"), Match.CONTAINS);
+        
+        checkCC(nsdecl + "h1[f|", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "h1[foo|]", arr("foo"), Match.CONTAINS);
+        
+        checkCC(nsdecl + "h1[ f|", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "h1[ foo|]", arr("foo"), Match.CONTAINS);
+        
+        checkCC(nsdecl + "h1[*|attr=val]", arr("foo"), Match.CONTAINS, '*');
+        checkCC(nsdecl + "h1[f*|attr=val]", arr("foo"), Match.CONTAINS, '*');
+        checkCC(nsdecl + "h1[foo*|attr=val]", arr("foo"), Match.CONTAINS, '*');
         
     }
    
