@@ -118,7 +118,14 @@ public class SelectorsModule extends CssModule {
                 break;
 
             case pseudo:
-                if (context.getTokenSequence().token().id() == CssTokenId.IDENT) {
+                switch (context.getTokenSequence().token().id()) {
+                    case COLON:
+                        proposals.addAll(getPseudoClasses(context));
+                        break;
+                    case DCOLON:
+                        proposals.addAll(getPseudoElements(context));
+                        break;
+                    case IDENT:
                     if (context.getTokenSequence().movePrevious()) {
                         switch (context.getTokenSequence().token().id()) {
                             case COLON:

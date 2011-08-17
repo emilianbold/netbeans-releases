@@ -579,8 +579,8 @@ public class Css3ParserTest extends CslTestBase {
         String content = "div::before { }";
             
         CssParserResult result = TestUtil.parse(content);        
-        TestUtil.dumpTokens(result);
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
         Node pseudo = NodeUtil.query(result.getParseTree(), 
                 TestUtil.bodysetPath 
                 + "ruleSet/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/pseudo");
@@ -588,6 +588,21 @@ public class Css3ParserTest extends CslTestBase {
         assertEquals("::before", pseudo.image().toString());
         
         assertResultOK(result);
+        
+    }
+    
+    public void testErrorCase10() throws ParseException, BadLocationException {
+        String content = "p { color: hsl(10, }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+        Node error = NodeUtil.query(result.getParseTree(), 
+                TestUtil.bodysetPath 
+                + "ruleSet/declarations/declaration/expr/term/function/expr/error");
+        assertNotNull(error);
+        
+        assertResult(result, 2);
         
     }
     

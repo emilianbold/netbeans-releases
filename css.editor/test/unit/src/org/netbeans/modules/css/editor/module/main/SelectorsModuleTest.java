@@ -56,6 +56,7 @@ public class SelectorsModuleTest extends CssCompletionTestBase {
 
     public void testPseudoClassesCompletion() throws ParseException  {
         checkCC("div:| ", arr("enabled"), Match.CONTAINS);
+        checkCC("div:| \n h1 { } ", arr("enabled"), Match.CONTAINS);
         checkCC("div:ena|", arr("enabled"), Match.CONTAINS);
         checkCC("div:ena| h1 { }", arr("enabled"), Match.CONTAINS);
         checkCC("div:enabled| h1 { }", arr("enabled"), Match.CONTAINS);
@@ -63,6 +64,7 @@ public class SelectorsModuleTest extends CssCompletionTestBase {
     
     public void testPseudoElementsCompletion() throws ParseException  {
         checkCC("div::| ", arr("after"), Match.CONTAINS);
+        checkCC("div::|  h1 { } ", arr("after"), Match.CONTAINS);
         checkCC("div::af|", arr("after"), Match.CONTAINS);
         checkCC("div::af| h1 { }", arr("after"), Match.CONTAINS);
         checkCC("div::after| h1 { }", arr("after"), Match.CONTAINS);
