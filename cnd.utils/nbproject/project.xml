@@ -110,6 +110,7 @@
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>com.sun.tools.tuxedo.suites</friend>
+                <friend>com.sun.tools.tuxedo.testrunner</friend>
                 <friend>com.sun.tools.tuxedo.ubb</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
