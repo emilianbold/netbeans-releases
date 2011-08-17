@@ -35,24 +35,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form;
+package org.netbeans.modules.java.j2seproject.api;
 
-import javax.swing.JEditorPane;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.form.project.ClassSource;
-import org.netbeans.spi.palette.PaletteActions;
-import org.openide.filesystems.FileObject;
 
 /**
- * Various IDE-specific methods (for which there is no better place)
- * needed by GUI Builder. Implementation of this interface can be obtained
- * from lookup.
- *
- * @author Jan Stola
+ * Property saver to be implemented by J2SE Project extension modules
+ * that introduce new project properties. Registered savers are
+ * used to save extended propertes in addition to standard J2SE Project properties
+ * if modified by user in Project Properties dialog.
+ * Implementation of the interface should be registered using {@link org.netbeans.spi.project.ProjectServiceProvider}.
+ * 
+ * @author Petr Somol
+ * @since 1.46
  */
-public interface FormServices {
-    void setupEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition);
-    PaletteActions createPaletteActions();
-    String findJavaBeanName(FileObject fob);
-    ClassSource getProjectClassSource(Project project, String className);
+public interface J2SECustomPropertySaver {
+
+    /**
+     * Method is called when OK is pressed in JSE Project Properties dialog
+     * and properties supplied by JSE Project extension module 
+     * (thus not handled by JSE Project itself)
+     * need to be stored in project.properties and private.properties.
+     * 
+     * @param p project whose extension properties are to be saved
+     */
+    void save(Project p);
+
 }

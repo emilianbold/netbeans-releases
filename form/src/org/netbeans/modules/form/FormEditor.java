@@ -53,8 +53,6 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
@@ -1187,12 +1185,8 @@ public class FormEditor {
                 && formModel.getSettings().getLayoutCodeTarget() != JavaCodeGenerator.LAYOUT_CODE_JDK6
                 && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.layout.GroupLayout.class.getName())) {
             try {
-                Library lib = LibraryManager.getDefault().getLibrary("swing-layout"); // NOI18N
-                if (lib == null) {
-                    return false;
-                }
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                                                 new ClassSource.LibraryEntry(lib));
+                        ClassSource.unpickle("library", "swing-layout")); // NOI18N // Hack
                 return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
             }
             catch (IOException ex) {

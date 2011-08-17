@@ -52,6 +52,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.*;
 
 import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 
 /**
  * A wizard allowing the user to add components to palette from a JAR file,
@@ -94,11 +95,11 @@ class AddToPaletteWizard extends WizardDescriptor {
     public boolean show(Class<? extends ClassSource.Entry> sourceType) {
         String firstStep_key;
         this.sourceType = sourceType;
-        if (sourceType == ClassSource.JarEntry.class)
+        if (sourceType == ClassSourceResolver.JarEntry.class)
             firstStep_key = "CTL_SelectJAR_Step"; // NOI18N
-        else if (sourceType == ClassSource.LibraryEntry.class)
+        else if (sourceType == ClassSourceResolver.LibraryEntry.class)
             firstStep_key = "CTL_SelectLibrary_Step"; // NOI18N
-        else if (sourceType == ClassSource.ProjectEntry.class)
+        else if (sourceType == ClassSourceResolver.ProjectEntry.class)
             firstStep_key = "CTL_SelectProject_Step"; // NOI18N
         else
             throw new IllegalArgumentException();
@@ -169,11 +170,11 @@ class AddToPaletteWizard extends WizardDescriptor {
 
         void setSourceType(Class<? extends ClassSource.Entry> sourceType) {
             panels.clear();
-            if (sourceType == ClassSource.JarEntry.class)
+            if (sourceType == ClassSourceResolver.JarEntry.class)
                 panels.add(new ChooseJARWizardPanel());
-            else if (sourceType == ClassSource.LibraryEntry.class)
+            else if (sourceType == ClassSourceResolver.LibraryEntry.class)
                 panels.add(new ChooseLibraryWizardPanel());
-            else if (sourceType == ClassSource.ProjectEntry.class)
+            else if (sourceType == ClassSourceResolver.ProjectEntry.class)
                 panels.add(new ChooseProjectWizardPanel());
             else
                 throw new IllegalArgumentException();

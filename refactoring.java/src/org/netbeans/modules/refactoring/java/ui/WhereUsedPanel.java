@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.netbeans.modules.refactoring.api.Scope;
 import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;

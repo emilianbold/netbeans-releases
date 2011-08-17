@@ -48,7 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import org.netbeans.modules.form.palette.PaletteUtils;
-import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.netbeans.spi.palette.PaletteActions;
 
 /**
@@ -69,7 +69,7 @@ public class FormPaletteActions extends PaletteActions {
         res[0] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
                     @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
-                        BeanInstaller.installBeans(ClassSource.JarEntry.class);
+                        BeanInstaller.installBeans(ClassSourceResolver.JarEntry.class);
                     }
                  };
         res[0].putValue( Action.LONG_DESCRIPTION, 
@@ -78,7 +78,7 @@ public class FormPaletteActions extends PaletteActions {
         res[1] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
                     @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
-                        BeanInstaller.installBeans(ClassSource.LibraryEntry.class);
+                        BeanInstaller.installBeans(ClassSourceResolver.LibraryEntry.class);
                     }
                 };
         res[1].putValue( Action.LONG_DESCRIPTION, 
@@ -87,7 +87,7 @@ public class FormPaletteActions extends PaletteActions {
         res[2] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
                     @Override
                     public void actionPerformed(java.awt.event.ActionEvent e) {
-                        BeanInstaller.installBeans(ClassSource.ProjectEntry.class);
+                        BeanInstaller.installBeans(ClassSourceResolver.ProjectEntry.class);
                     }
                 };
         res[2].putValue( Action.LONG_DESCRIPTION, 

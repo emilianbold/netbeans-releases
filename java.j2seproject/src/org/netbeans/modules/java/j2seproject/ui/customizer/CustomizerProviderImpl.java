@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
@@ -124,7 +125,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
             });
 
             OptionListener listener = new OptionListener( project, uiProperties );
-            StoreListener storeListener = new StoreListener(uiProperties);
+            StoreListener storeListener = new StoreListener( project, uiProperties );
             dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
             dialog.addWindowListener( listener );
             dialog.setTitle( MessageFormat.format(                 
@@ -155,16 +156,20 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
 
     private class StoreListener implements ActionListener {
     
+        private Project project;
         private J2SEProjectProperties uiProperties;
         
-        StoreListener(J2SEProjectProperties uiProperties ) {
+        StoreListener(Project project, J2SEProjectProperties uiProperties ) {
+            this.project = project;
             this.uiProperties = uiProperties;
         }
         
         public void actionPerformed(ActionEvent e) {
             uiProperties.save();
+            for (J2SECustomPropertySaver saver : project.getLookup().lookupAll(J2SECustomPropertySaver.class)) {
+                saver.save(project);
+            }
         }
-        
     }
     
     /** Listens to the actions on the Customizer's option buttons */

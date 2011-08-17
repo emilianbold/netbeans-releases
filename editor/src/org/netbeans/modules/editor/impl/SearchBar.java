@@ -66,6 +66,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import java.util.LinkedList;
@@ -113,6 +114,8 @@ import org.openide.filesystems.FileUtil;
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class SearchBar extends JPanel {
+
+    private static SearchBar searchbarInstance = null;
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
     private static final boolean CLOSE_ON_ENTER = Boolean.getBoolean("org.netbeans.modules.editor.search.closeOnEnter"); // NOI18N
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
@@ -125,9 +128,9 @@ public final class SearchBar extends JPanel {
     private static final int maxIncremantalSearchComboWidth = 350;
     public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
     public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
-    
-    private static SearchBar searchbarInstance = null;
-    private JTextComponent component;
+    private WeakReference<JTextComponent> actualTextComponent;
+    private FocusAdapter focusAdapterForComponent;
+    private PropertyChangeListener propertyChangeListenerForComponent;
     private final JButton expandButton;
     private final JPopupMenu expandPopup;
     private final JComboBox incrementalSearchComboBox;
@@ -159,13 +162,28 @@ public final class SearchBar extends JPanel {
     private final List<Component> barOrder = new ArrayList<Component>();
     private boolean isPopupGoingToShow = false;
     private boolean isPopupShown = false;
-    private FocusAdapter focusAdapterForComponent;
-    private PropertyChangeListener propertyChangeListenerForComponent;
+
+    public static SearchBar getInstance() {
+        if (searchbarInstance == null) {
+            searchbarInstance = new SearchBar();
+        }
+        return searchbarInstance;
+    }
+
+    /* 
+     * default getInstance 
+     */
+    public static SearchBar getInstance(JTextComponent component) {
+        SearchBar searchbarIns = getInstance();
+        if (searchbarIns.getActualTextComponent() != component) {
+            searchbarIns.setActualTextComponent(component);
+        }
+        return searchbarIns;
+    }
 
     @SuppressWarnings("unchecked")
-    private SearchBar(final JTextComponent component) {
-        setTargetComponent(component);
-        escapeKeystrokeFocusBack();
+    private SearchBar() {
+        addEscapeKeystrokeFocusBack();
 
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
@@ -174,7 +192,7 @@ public final class SearchBar extends JPanel {
                 Math.max(0, bgColor.getGreen() - 20),
                 Math.max(0, bgColor.getBlue() - 20)));
         setForeground(UIManager.getColor("textText")); //NOI18N
-        
+
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
 
         incrementalSearchComboBox = createIncSearchComboBox();
@@ -262,7 +280,7 @@ public final class SearchBar extends JPanel {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)
-                        && getComponent() != EditorRegistry.lastFocusedComponent() && isVisible()) {
+                        && getActualTextComponent() != EditorRegistry.lastFocusedComponent() && isVisible()) {
                     EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(EditorRegistry.lastFocusedComponent());
                     if (eui != null) {
                         //need to find if it has extended editor first, otherwise getExtComponent() will create all sidebars
@@ -282,7 +300,7 @@ public final class SearchBar extends JPanel {
         });
     }
 
-    public FocusAdapter createFocusAdapterForComponent() {
+    private FocusAdapter createFocusAdapterForComponent() {
         return new FocusAdapter() {
 
             @Override
@@ -297,7 +315,7 @@ public final class SearchBar extends JPanel {
         };
     }
 
-    public PropertyChangeListener createPropertyChangeListenerForComponent(final JTextComponent component) {
+    private PropertyChangeListener createPropertyChangeListenerForComponent() {
         PropertyChangeListener pcl = new PropertyChangeListener() {
 
             @Override
@@ -305,13 +323,16 @@ public final class SearchBar extends JPanel {
                 if (evt == null || !"keymap".equals(evt.getPropertyName())) { // NOI18N
                     return;
                 }
-
-                Keymap keymap = component.getKeymap();
+                JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+                if (lastFocusedComponent == null) {
+                    return;
+                }
+                Keymap keymap = lastFocusedComponent.getKeymap();
 
                 if (keymap instanceof MultiKeymap) {
                     MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
-                    Action[] actions = component.getActions();
+                    Action[] actions = lastFocusedComponent.getActions();
                     for (Action action : actions) { // Discover the keyStrokes for incremental-search-forward
                         String actionName = (String) action.getValue(Action.NAME);
                         if (actionName == null) {
@@ -355,20 +376,6 @@ public final class SearchBar extends JPanel {
         return pcl;
     }
 
-    public static SearchBar getInstance(JTextComponent component) {
-        if (searchbarInstance == null) {
-            searchbarInstance = new SearchBar(component);
-        }
-        if (searchbarInstance.getComponent() != component) {
-            searchbarInstance.setTargetComponent(component);
-        }
-        return searchbarInstance;
-    }
-
-    private JTextComponent getComponent() {
-        return component;
-    }
-
     private void addShiftEnterKeystrokeFindPreviousTo(JTextField incSearchTextField) {
         incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
                 KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK, true),
@@ -402,6 +409,24 @@ public final class SearchBar extends JPanel {
                 if (CLOSE_ON_ENTER) {
                     looseFocus();
                 }
+            }
+        });
+    }
+
+    private void addEscapeKeystrokeFocusBack() {
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
+                "loose-focus"); // NOI18N
+        getActionMap().put("loose-focus", // NOI18N
+                new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!CLOSE_ON_ENTER) {
+                    if (!searched) {
+                        findNext();
+                    }
+                }
+                looseFocus();
             }
         });
     }
@@ -466,24 +491,6 @@ public final class SearchBar extends JPanel {
                 searchDelayTimer.restart();
             }
         };
-    }
-
-    private void escapeKeystrokeFocusBack() {
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
-                "loose-focus"); // NOI18N
-        getActionMap().put("loose-focus", // NOI18N
-                new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!CLOSE_ON_ENTER) {
-                    if (!searched) {
-                        findNext();
-                    }
-                }
-                looseFocus();
-            }
-        });
     }
 
     private JButton createCloseButton() throws MissingResourceException {
@@ -595,20 +602,9 @@ public final class SearchBar extends JPanel {
         return expButton;
     }
 
-    private JTextComponent createComponent(final JTextComponent component, FocusAdapter focusAdapter, PropertyChangeListener pcl) {
-        JTextComponent confComponent = component;
-        confComponent.addFocusListener(focusAdapter);
-
-
-        confComponent.addPropertyChangeListener(pcl);
-
-        return confComponent;
-    }
-
     private JComboBox createIncSearchComboBox() {
         JComboBox incSearchComboBox = new JComboBox() {
 
-           
             public @Override
             Dimension getMinimumSize() {
                 return getPreferredSize();
@@ -652,9 +648,11 @@ public final class SearchBar extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 looseFocus();
-                ActionEvent ev = new ActionEvent(component, e.getID(), e.getActionCommand(), e.getModifiers());
-                Action action = component.getActionMap().get(actionName);
-                action.actionPerformed(ev);
+                if (getActualTextComponent() != null) {
+                    ActionEvent ev = new ActionEvent(getActualTextComponent(), e.getID(), e.getActionCommand(), e.getModifiers());
+                    Action action = getActualTextComponent().getActionMap().get(actionName);
+                    action.actionPerformed(ev);
+                }
             }
         }
         String actionName = "caret-begin-line"; // NOI18N
@@ -829,14 +827,19 @@ public final class SearchBar extends JPanel {
             return;
         }
 
-        org.netbeans.editor.Utilities.setStatusText(component, "");
         EditorFindSupport.getInstance().setBlockSearchHighlight(0, 0);
         EditorFindSupport.getInstance().incSearchReset();
+        if (getActualTextComponent() != null) {
+            org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "");
+            getActualTextComponent().requestFocusInWindow();
+        }
         setVisible(false);
-        component.requestFocusInWindow();
     }
 
     private void incrementalSearch() {
+        if (getActualTextComponent() == null) {
+            return;
+        }
         String incrementalSearchText = incrementalSearchTextField.getText();
         boolean empty = incrementalSearchText.length() <= 0;
 
@@ -859,7 +862,7 @@ public final class SearchBar extends JPanel {
         findSupport.putFindProperties(findProps);
 
         // search starting at current caret position
-        int caretPosition = component.getCaretPosition();
+        int caretPosition = getActualTextComponent().getCaretPosition();
 
         if (regexpCheckBox.isSelected()) {
             Pattern pattern;
@@ -873,23 +876,23 @@ public final class SearchBar extends JPanel {
             if (pattern != null) {
                 // valid regexp
                 incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
-                org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
+                org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
                 // invalid regexp
                 incrementalSearchTextField.setForeground(INVALID_REGEXP);
-                org.netbeans.editor.Utilities.setStatusBoldText(component, NbBundle.getMessage(
+                org.netbeans.editor.Utilities.setStatusBoldText(getActualTextComponent(), NbBundle.getMessage(
                         SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
             }
         } else {
             if (findSupport.incSearch(findProps, caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
                 incrementalSearchTextField.setForeground(UIManager.getColor("textText")); //NOI18N
-                org.netbeans.editor.Utilities.setStatusText(component, "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
+                org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
                 incrementalSearchTextField.setForeground(NOT_FOUND);
-                org.netbeans.editor.Utilities.setStatusText(component, NbBundle.getMessage(
+                org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), NbBundle.getMessage(
                         SearchBar.class, "incremental-search-not-found", incrementalSearchText),
                         StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
                 Toolkit.getDefaultToolkit().beep();
@@ -1011,18 +1014,6 @@ public final class SearchBar extends JPanel {
         }
     }
 
-    private void setTargetComponent(JTextComponent component) {
-        if (this.component != null) {
-            this.component.removeFocusListener(focusAdapterForComponent);
-            this.component.removePropertyChangeListener(propertyChangeListenerForComponent);
-        }
-        if (focusAdapterForComponent == null) {
-            focusAdapterForComponent = createFocusAdapterForComponent();
-        }
-        propertyChangeListenerForComponent = createPropertyChangeListenerForComponent(component);
-        this.component = createComponent(component, focusAdapterForComponent, propertyChangeListenerForComponent);
-    }
-
     /**
      * Factory for creating the incremental search sidebar
      */
@@ -1112,5 +1103,25 @@ public final class SearchBar extends JPanel {
 
     private boolean getRegExp() {
         return getFindSupportValue(EditorFindSupport.FIND_REG_EXP);
+    }
+
+    void setActualTextComponent(JTextComponent component) {
+        if (getActualTextComponent() != null) {
+            getActualTextComponent().removeFocusListener(focusAdapterForComponent);
+            getActualTextComponent().removePropertyChangeListener(propertyChangeListenerForComponent);
+        }
+        if (focusAdapterForComponent == null) {
+            focusAdapterForComponent = createFocusAdapterForComponent();
+        }
+        if (propertyChangeListenerForComponent == null) {
+            propertyChangeListenerForComponent = createPropertyChangeListenerForComponent();
+        }
+        component.addFocusListener(focusAdapterForComponent);
+        component.addPropertyChangeListener(propertyChangeListenerForComponent);
+        actualTextComponent = new WeakReference<JTextComponent>(component);
+    }
+
+    JTextComponent getActualTextComponent() {
+        return actualTextComponent != null ? actualTextComponent.get() : null;
     }
 }

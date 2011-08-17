@@ -302,10 +302,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <!-- TODO remove impl. dep when JavaScopeBuilder is public
-                        <specification-version>1.10</specification-version> 
-                        -->
-                        <implementation-version/>
+                        <specification-version>1.27</specification-version> 
                     </run-dependency>
                 </dependency>
                 <dependency>
