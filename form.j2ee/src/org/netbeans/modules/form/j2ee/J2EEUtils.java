@@ -110,6 +110,7 @@ import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.Fetc
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -291,7 +292,7 @@ public class J2EEUtils {
             }
             if (fob == null) {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                        new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))); // NOI18N
+                        new ClassSourceResolver.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))); // NOI18N
                 return ClassPathUtils.updateProject(fileInProject, cs);
             }
         } catch (IOException ex) {
@@ -312,7 +313,7 @@ public class J2EEUtils {
             FileObject fob = classPath.findResource("org/eclipse/persistence/jpa/PersistenceProvider.class"); // NOI18N
             if (fob == null) {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                        new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("eclipselink"))); // NOI18N
+                        new ClassSourceResolver.LibraryEntry(LibraryManager.getDefault().getLibrary("eclipselink"))); // NOI18N
                 return ClassPathUtils.updateProject(fileInProject, cs);
             }
         } catch (IOException ex) {
@@ -343,7 +344,7 @@ public class J2EEUtils {
                 for (URL url : urls) {
                     FileObject jar = URLMapper.findFileObject(url);
                     if (jar != null) {
-                        cpEntries.add(new ClassSource.JarEntry(FileUtil.toFile(jar)));
+                        cpEntries.add(new ClassSourceResolver.JarEntry(FileUtil.toFile(jar)));
                     }
                 }
                 return ClassPathUtils.updateProject(fileInProject, new ClassSource("", cpEntries)); // NOI18N

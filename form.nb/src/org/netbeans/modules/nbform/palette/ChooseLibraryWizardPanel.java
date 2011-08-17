@@ -54,7 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.form.palette.PaletteUtils;
-import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 
@@ -120,9 +120,9 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
     @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (librarySelector != null) { // create the UI component for the wizard step
-            List<ClassSource.LibraryEntry> entries = new ArrayList<ClassSource.LibraryEntry>();
+            List<ClassSourceResolver.LibraryEntry> entries = new ArrayList<ClassSourceResolver.LibraryEntry>();
             for (Library lib : librarySelector.getSelectedLibraries()) {
-                entries.add(new ClassSource.LibraryEntry(lib));
+                entries.add(new ClassSourceResolver.LibraryEntry(lib));
             }
             settings.setJARFiles(entries);
         }

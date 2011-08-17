@@ -53,8 +53,8 @@ import java.beans.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.form.palette.PaletteUtils;
-import org.netbeans.modules.form.project.ClassSource;
 
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 
@@ -155,9 +155,9 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard>
     @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (fileChooser != null) {
-            List<ClassSource.JarEntry> entries = new ArrayList<ClassSource.JarEntry>();
+            List<ClassSourceResolver.JarEntry> entries = new ArrayList<ClassSourceResolver.JarEntry>();
             for (File jar : fileChooser.getSelectedFiles()) {
-                entries.add(new ClassSource.JarEntry(jar));
+                entries.add(new ClassSourceResolver.JarEntry(jar));
             }
             settings.setJARFiles(entries);
         }

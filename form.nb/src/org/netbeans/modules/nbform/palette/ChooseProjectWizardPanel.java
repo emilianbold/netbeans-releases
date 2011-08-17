@@ -56,7 +56,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.form.palette.PaletteUtils;
-import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.ChangeSupport;
 
@@ -164,8 +164,8 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         if (project == null)
             return;
 
-        List<ClassSource.ProjectEntry> entries = new ArrayList<ClassSource.ProjectEntry>();
-        entries.add(new ClassSource.ProjectEntry(project));
+        List<ClassSourceResolver.ProjectEntry> entries = new ArrayList<ClassSourceResolver.ProjectEntry>();
+        entries.add(new ClassSourceResolver.ProjectEntry(project));
         settings.setJARFiles(entries);
     }
 

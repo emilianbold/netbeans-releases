@@ -38,6 +38,8 @@
 package org.netbeans.modules.form;
 
 import javax.swing.JEditorPane;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
 
@@ -52,4 +54,5 @@ public interface FormServices {
     void setupEditorPane(JEditorPane editor, FileObject srcFile, int ccPosition);
     PaletteActions createPaletteActions();
     String findJavaBeanName(FileObject fob);
+    ClassSource getProjectClassSource(Project project, String className);
 }
