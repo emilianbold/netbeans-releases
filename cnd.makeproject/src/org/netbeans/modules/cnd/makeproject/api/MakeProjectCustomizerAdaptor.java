@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,15 +34,85 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.source;
+package org.netbeans.modules.cnd.makeproject.api;
 
-/** A node to represent a header file */
-public class HDataNode extends SourceDataNode {
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Sheet;
 
-    /*package*/ static final String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
+/**
+ *
+ * @author thp
+ */
+public abstract class MakeProjectCustomizerAdaptor implements MakeProjectCustomizer {
 
-    public HDataNode(HDataObject obj) {
-        super(obj, obj.getLookup(), HDataIcon);
+    @Override
+    public abstract String getCustomizerId();
+
+    @Override
+    public abstract String getIconPath();
+
+    @Override
+    public String getMakefileWriter() {
+        return null;
+    }
+
+    @Override
+    public Action[] getActions(Project project, List<Action> actions) {
+        return null;
+    }
+    
+    @Override
+    public Object[] getLookup(FileObject getProjectDirectory, Object[] base) {
+        return base;
+    }
+
+    @Override
+    public Sheet getPropertySheet(Sheet sheet) {
+        return sheet;
+    }
+
+    @Override
+    public CustomizerNode getRootPropertyNode(CustomizerNode rootPopertyNode) {
+        return rootPopertyNode;
+    }
+
+    @Override
+    public boolean isArchiverConfiguration() {
+        return false;
+    }
+
+    @Override
+    public boolean isCompileConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isDynamicLibraryConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isLibraryConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isLinkerConfiguration() {
+        return true;
+    }
+
+    @Override
+    public boolean isStandardManagedConfiguration() {
+        return false;
     }
 }

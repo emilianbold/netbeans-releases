@@ -206,6 +206,18 @@ public class DefaultMakefileWriter implements MakefileWriter {
     public void writeSubProjectBuildTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
         ConfigurationMakefileWriter.writeSubProjectBuildTargets(confDescriptor, conf, writer);
     }
+    
+    /**
+     * Writes clean target for sub projects
+     *
+     * @param confDescriptor  project configuration descriptor
+     * @param conf  current project configuration
+     * @param writer  output stream to generated makefile
+     */
+    @Override
+    public void writeSubProjectCleanTargets(MakeConfigurationDescriptor confDescriptor, MakeConfiguration conf, Writer writer) throws IOException {
+        ConfigurationMakefileWriter.writeSubProjectCleanTargets(confDescriptor, conf, writer);
+    }
 
     /**
      * Writes dependency checking target
