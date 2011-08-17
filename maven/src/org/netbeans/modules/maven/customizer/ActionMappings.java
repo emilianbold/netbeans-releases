@@ -564,7 +564,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         DefaultListModel model = new DefaultListModel();
 
         if (handle != null) {
-            boolean isWar = NbMavenProject.TYPE_WAR.equalsIgnoreCase(handle.getProject().getPackaging());
+            boolean isWar = NbMavenProject.TYPE_WAR.equalsIgnoreCase(project.getProjectWatcher().getPackagingType());
             addSingleAction(ActionProvider.COMMAND_BUILD, model);
             addSingleAction(ActionProvider.COMMAND_CLEAN, model);
             addSingleAction(ActionProvider.COMMAND_REBUILD, model);

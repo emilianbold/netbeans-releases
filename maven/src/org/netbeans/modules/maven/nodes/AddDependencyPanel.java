@@ -226,7 +226,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             tabPane.setEnabledAt(2, false);
         }
         chkNbOnly.setVisible(false);
-        String packaging = mavenProject.getPackaging();
+        String packaging = prj.getLookup().lookup(NbMavenProject.class).getPackagingType();
         if (NbMavenProject.TYPE_NBM.equals(packaging) || NbMavenProject.TYPE_NBM_APPLICATION.equals(packaging)) {
             chkNbOnly.setVisible(true);
             chkNbOnly.setSelected(true);

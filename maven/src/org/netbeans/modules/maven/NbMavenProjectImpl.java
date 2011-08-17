@@ -984,8 +984,7 @@ public final class NbMavenProjectImpl implements Project {
 
         @Override
         public Icon getIcon() {
-            MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
-            String iconPath = getIconPath(pr.getPackaging());
+            String iconPath = getIconPath(watcher.getPackagingType());
             if (iconPath == null) {
                 iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
             }
