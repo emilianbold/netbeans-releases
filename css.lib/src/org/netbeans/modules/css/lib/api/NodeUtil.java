@@ -266,6 +266,7 @@ public final class NodeUtil {
                 }
 
             } else {
+                System.err.println(String.format("NodeUtil.query: Could find child '%s' in the node '%s'!", nodeName, found.name()));
                 return null; //no found
             }
         }
