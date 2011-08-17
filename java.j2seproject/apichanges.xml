@@ -109,6 +109,24 @@ is the proper place.
 
         <change>
             <api name="jseprojects"/>
+            <summary>Enable correct handling of properties in Project Property dialog of an extension of JSE Project</summary>
+            <version major="1" minor="46"/>
+            <date day="17" month="8" year="2011"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added interface <code>J2SECustomPropertySaver</code> with method <code>save()</code>
+                to enable correct saving of properties added by JSE Project extending modules.
+                If a JSE Project extending module adds/modifies panels in Project Property
+                panels, then a mechanism is needed to ensure that all user-modified properties
+                are correctly stored in project.properties and private.properties when OK pressed.
+            </description>
+            <class package="org.netbeans.modules.java.j2seproject.api" name="J2SECustomPropertySaver"/>
+            <issue number="200691"/>
+        </change>
+
+        <change>
+            <api name="jseprojects"/>
             <summary>Added class for accessing PropertyEvaluator for given JSE Project</summary>
             <version major="1" minor="10"/>
             <date day="4" month="1" year="2007"/>
