@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.project.connections.transfer;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.modules.php.api.util.FileUtils;
 
@@ -88,6 +90,12 @@ final class LocalTransferFile extends TransferFile {
             return remotePath;
         }
         return remotePath.replace(File.separator, REMOTE_PATH_SEPARATOR);
+    }
+
+    @Override
+    protected Collection<TransferFile> fetchChildren() {
+        // not supported for local files, these are always fetched (can be improved)
+        return Collections.emptyList();
     }
 
     @Override

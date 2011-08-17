@@ -46,10 +46,11 @@
 
 package org.netbeans.swing.dirchooser;
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.api.project.ProjectManager;
@@ -133,7 +134,7 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             
             ArrayList files = getFiles(chooser);
             
-            if(files.size() == 0) {
+            if(files.isEmpty()) {
                 return false;
             }
             
@@ -148,7 +149,7 @@ public class DirectoryNode extends DefaultMutableTreeNode {
                         }
                         add(node);
                     } catch (NullPointerException t) {
-                        t.printStackTrace();
+                        Logger.getLogger(DirectoryNode.class.getName()).log(Level.INFO, null, t);
                     }
                 }
             }
@@ -250,20 +251,11 @@ public class DirectoryNode extends DefaultMutableTreeNode {
             return null;
         }
     }
-
-    private class DirectoryFilter implements FileFilter {
-        public boolean accept(File f) {
-            return f.isDirectory();
-        }
-        
-        public String getDescription() {
-            return "Directory";
-        }
-    }
     
     /** Compares files ignoring case sensitivity */
     private static class FileNameComparator implements Comparator<File> {
 
+        @Override
         public int compare(File f1, File f2) {
             return String.CASE_INSENSITIVE_ORDER.compare(f1.getName(), f2.getName());
         }

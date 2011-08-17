@@ -78,6 +78,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -173,12 +174,8 @@ public final class SearchBar extends JPanel {
                 Math.max(0, bgColor.getGreen() - 20),
                 Math.max(0, bgColor.getBlue() - 20)));
         setForeground(UIManager.getColor("textText")); //NOI18N
-
-        // padding at the end of the toolbar
-        JPanel spacer = new JPanel();
-        spacer.setSize(4, 4);
-        spacer.setMaximumSize(new Dimension(4, 4));
-        add(spacer);
+        
+        add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
 
         incrementalSearchComboBox = createIncSearchComboBox();
         incrementalSearchTextField = createIncSearchTextField(incrementalSearchComboBox);

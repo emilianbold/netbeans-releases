@@ -151,6 +151,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.cnd.accessor</friend>
+                <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.project</friend>
                 <friend>org.netbeans.modules.cnd.editor</friend>

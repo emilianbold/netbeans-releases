@@ -52,7 +52,7 @@ import org.netbeans.modules.css.lib.api.ProblemDescription;
 public class ErrorNode extends RuleNode {
     
     private ProblemDescription problemDescription;
-    private int from, to;
+    int from, to;
 
     public ErrorNode(int from, int to, ProblemDescription pd, CharSequence source) {
         super(NodeType.error, source);

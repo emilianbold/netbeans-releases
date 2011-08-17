@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.awt.Color;
@@ -84,6 +85,7 @@ import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.editor.properties.parser.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.CssIndex;
 import org.netbeans.modules.css.lib.api.CssTokenId;
@@ -107,6 +109,8 @@ public class CssCompletion implements CodeCompletionHandler {
     private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
     private static char firstPrefixChar; //read getPrefix() comment!
 
+    private static final String EMPTY_STRING = ""; //NOI18N
+    
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         
@@ -138,6 +142,8 @@ public class CssCompletion implements CodeCompletionHandler {
         //continue with AST completion
         int offset = caretOffset - prefix.length();
         int astOffset = snapshot.getEmbeddedOffset(offset);
+        int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+        
         boolean unmappableClassOrId = false;
         if (astOffset == -1) {
             if((prefix.length() == 1 && prefix.charAt(0) == '.') || (prefix.length() > 0 && prefix.charAt(0) == '#')) {
@@ -151,16 +157,14 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         }
 
-        ts.move(astOffset);
-        boolean hasNext = ts.moveNext();
+        int diff = ts.move(astCaretOffset);
+        boolean tokenFound = diff == 0 ? ts.movePrevious() : ts.moveNext();
 
         Node root = info.getParseTree();
         if (root == null) {
             //broken source
             return CodeCompletionResult.NONE;
         }
-
-        int astCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
 
         char charAfterCaret = snapshot.getText().length() > (astCaretOffset + 1) ?
             snapshot.getText().subSequence(astCaretOffset, astCaretOffset + 1).charAt(0) :
@@ -172,12 +176,12 @@ public class CssCompletion implements CodeCompletionHandler {
         
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
         NodeType originalNodeKind = node.type();
-        if (node.type() == NodeType.error) {
-            node = node.parent();
-            if (node == null) {
-                return CodeCompletionResult.NONE;
-            }
-        }
+//        if (node.type() == NodeType.error) {
+//            node = node.parent();
+//            if (node == null) {
+//                return CodeCompletionResult.NONE;
+//            }
+//        }
         
         //xxx: handleLexicalBasedCompletion breaks the contract - in the case it is used the css modules are
         //     not asked for the completion results. The main reason is that the CompletionProposal doesn't 
@@ -246,7 +250,6 @@ public class CssCompletion implements CodeCompletionHandler {
                     for(String clazz : allclasses) {
                        proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(clazz),
                             clazz,
-                            CssCompletionItem.Kind.VALUE,
                             offset,
                             refclasses.contains(clazz)));
                     }
@@ -292,20 +295,19 @@ public class CssCompletion implements CodeCompletionHandler {
                     for (String id : allids) {
                         proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(id),
                                 id,
-                                CssCompletionItem.Kind.VALUE,
                                 offset,
                                 refids.contains(id)));
                     }
                     completionProposals.addAll(proposals);
                 }
             }
-        } else if (
-                node.type() == NodeType.bodylist /* somewhere between rules */
-                || node.type() == NodeType.root /* in an empty or very broken file */
-                || node.type() == NodeType.styleSheet) {
+        } else if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.bodylist)
+                || 
+                node.type() == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.bodylist)) {
+            /* somewhere between rules, in an empty or very broken file, between rules */
             List<CompletionProposal> all = new ArrayList<CompletionProposal>();
             //complete at keywords without prefix
-            all.addAll(CssCompletionItem.wrapRAWValues(AT_RULES, CssCompletionItem.Kind.VALUE, offset));
+            all.addAll(Utilities.createRAWCompletionProposals(AT_RULES, ElementKind.FIELD, offset));
             //complete html selector names
             all.addAll(completeHtmlSelectors(prefix, offset));
             completionProposals.addAll(all);
@@ -315,21 +317,21 @@ public class CssCompletion implements CodeCompletionHandler {
 
         } else if (node.type() == NodeType.imports || node.type() == NodeType.media || node.type() == NodeType.page || node.type() == NodeType.charSet/* || node.type() == NodeType.JJTFONTFACERULE*/) {
             //complete at keywords with prefix - parse tree OK
-            if (hasNext) {
+            if (tokenFound) {
                 TokenId id = ts.token().id();
                 if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM /*|| id == CssTokenId.FONT_FACE_SYM*/
                         || id == CssTokenId.ERROR) {
                     //we are on the right place in the node
 
                     Collection<String> possibleValues = filterStrings(AT_RULES, prefix);
-                    completionProposals.addAll(CssCompletionItem.wrapRAWValues(possibleValues, CssCompletionItem.Kind.VALUE, snapshot.getOriginalOffset(node.from())));
+                    completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, snapshot.getOriginalOffset(node.from())));
                 }
             }
 
         } else if (node.type() == NodeType.property && (prefix.length() > 0 || astCaretOffset == node.from())) {
             //css property name completion with prefix
             Collection<PropertyDescriptor> possibleProps = filterProperties(CssModuleSupport.getPropertyDescriptors().values(), prefix);
-            completionProposals.addAll(wrapProperties(possibleProps, CssCompletionItem.Kind.PROPERTY, snapshot.getOriginalOffset(node.from())));
+            completionProposals.addAll(wrapProperties(possibleProps, snapshot.getOriginalOffset(node.from())));
 
         } else if (node.type() == NodeType.ruleSet || node.type() == NodeType.declarations) {
             //1. in empty rule (NodeType.ruleSet)
@@ -339,7 +341,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //h1 { color:red; | font: bold }
             //
             //should be no prefix 
-            completionProposals.addAll(wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), CssCompletionItem.Kind.PROPERTY, caretOffset));
+            completionProposals.addAll(wrapProperties(CssModuleSupport.getPropertyDescriptors().values(), caretOffset));
         } else if (node.type() == NodeType.declaration) {
             //value cc without prefix
             //find property node
@@ -420,7 +422,6 @@ public class CssCompletion implements CodeCompletionHandler {
                         prefix,
                         prop.getPropertyDescriptor(),
                         filteredByPrefix,
-                        CssCompletionItem.Kind.VALUE,
                         completionItemInsertPosition,
                         false,
                         addSpaceBeforeItem,
@@ -531,7 +532,6 @@ public class CssCompletion implements CodeCompletionHandler {
                     prefix,
                     propertyDescriptor,
                     filteredByPrefix,
-                    CssCompletionItem.Kind.VALUE,
                     completionItemInsertPosition,
                     false,
                     addSpaceBeforeItem,
@@ -572,7 +572,6 @@ public class CssCompletion implements CodeCompletionHandler {
             if (tagName.startsWith(prefix.toLowerCase(Locale.ENGLISH))) {
                 proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(tagName),
                         tagName,
-                        CssCompletionItem.Kind.VALUE,
                         offset,
                         true));
             }
@@ -585,7 +584,6 @@ public class CssCompletion implements CodeCompletionHandler {
             String prefix,
             PropertyDescriptor propertyDescriptor,
             Collection<GrammarElement> props,
-            CssCompletionItem.Kind kind,
             int anchor,
             boolean addSemicolon,
             boolean addSpaceBeforeItem,
@@ -605,15 +603,15 @@ public class CssCompletion implements CodeCompletionHandler {
                     //add color chooser item
                     proposals.add(CssCompletionItem.createColorChooserCompletionItem(anchor, origin, addSemicolon));
                     //add used colors items
-                    proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.addAll(getUsedColorsItems(context, prefix, handle, origin, anchor, addSemicolon, addSpaceBeforeItem));
                     colorChooserAdded = true;
                 }
                 if(!extendedItemsOnly) {
-                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createColorValueCompletionItem(handle, e, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             } else {
                 if(!extendedItemsOnly) {
-                    proposals.add(CssCompletionItem.createValueCompletionItem(handle, e, kind, anchor, addSemicolon, addSpaceBeforeItem));
+                    proposals.add(CssCompletionItem.createValueCompletionItem(handle, e, anchor, addSemicolon, addSpaceBeforeItem));
                 }
             }
         }
@@ -621,7 +619,7 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private Collection<CompletionProposal> getUsedColorsItems(CodeCompletionContext context, String prefix,
-            CssElement element, String origin, CssCompletionItem.Kind kind, int anchor, boolean addSemicolon,
+            CssElement element, String origin, int anchor, boolean addSemicolon,
             boolean addSpaceBeforeItem) {
         FileObject current = context.getParserResult().getSnapshot().getSource().getFileObject();
         if(current == null) {
@@ -649,7 +647,7 @@ public class CssCompletion implements CodeCompletionHandler {
             for(String color : colors) {
                 if(color.startsWith(prefix)) {
                     proposals.add(CssCompletionItem.createHashColorCompletionItem(element, color, origin,
-                            kind, anchor, addSemicolon, addSpaceBeforeItem, usedInCurrentFile));
+                            anchor, addSemicolon, addSpaceBeforeItem, usedInCurrentFile));
                 }
             }
         }
@@ -678,13 +676,13 @@ public class CssCompletion implements CodeCompletionHandler {
         return filtered;
     }
 
-    private List<CompletionProposal> wrapProperties(Collection<PropertyDescriptor> props, CssCompletionItem.Kind kind, int anchor) {
+    private List<CompletionProposal> wrapProperties(Collection<PropertyDescriptor> props, int anchor) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (PropertyDescriptor p : props) {
             //filter out non-public properties
             if (!p.getName().startsWith("-")) { //NOI18N
                 CssElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), kind, anchor, false);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), anchor, false);
                 proposals.add(proposal);
             }
         }
@@ -826,14 +824,18 @@ public class CssCompletion implements CodeCompletionHandler {
                 return null;
             }
         }
-        Token t = ts.token();
+        Token<CssTokenId> t = ts.token();
         int skipPrefixChars = 0;
-        if (t.id() == CssTokenId.COLON) {
-            return ""; //NOI18N
-        } else if (t.id() == CssTokenId.COMMA) {
-            return ""; //NOI18N
-        } else if (t.id() == CssTokenId.STRING) {
-            skipPrefixChars = 1; //skip the leading quotation char
+        switch(t.id()) {
+            case COLON:
+            case DCOLON:
+            case COMMA:
+            case LBRACKET:
+                return EMPTY_STRING;
+        
+            case STRING:
+                skipPrefixChars = 1; //skip the leading quotation char
+                break;
         }
 
         return t.text().subSequence(skipPrefixChars, diff == 0 ? t.text().length() : diff).toString().trim();

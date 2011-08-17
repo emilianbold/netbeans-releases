@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -341,6 +342,23 @@ public class ConfigurationMakefileWriter {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         if (compilerSet != null) {
             String makefileWriterClassName = compilerSet.getCompilerFlavor().getToolchainDescriptor().getMakefileWriter();
+            if (makefileWriterClassName != null) {
+                Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
+                for (MakefileWriter instance : mwc) {
+                    if (makefileWriterClassName.equals(instance.getClass().getName())) {
+                        makefileWriter = instance;
+                        break;
+                    }
+                }
+                if (makefileWriter == null) {
+                    System.err.println("ERROR: class" + makefileWriterClassName + " is not found or is not instance of MakefileWriter"); // NOI18N
+                }
+            }
+        }
+        
+        if (conf.isCustomConfiguration() && conf.getProjectCustomizer().getMakefileWriter() != null) {
+            MakeProjectCustomizer makeProjectCustomizer = conf.getProjectCustomizer();
+            String makefileWriterClassName = makeProjectCustomizer.getMakefileWriter();
             if (makefileWriterClassName != null) {
                 Collection<? extends MakefileWriter> mwc = Lookup.getDefault().lookupAll(MakefileWriter.class);
                 for (MakefileWriter instance : mwc) {
@@ -848,7 +866,7 @@ public class ConfigurationMakefileWriter {
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
-                        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                        if (conf.isDynamicLibraryConfiguration()) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
                                 fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
                             }
@@ -1107,7 +1125,7 @@ public class ConfigurationMakefileWriter {
 
                     if (compiler != null && compiler.getDescriptor() != null) {
                         String fromLinker = ""; // NOI18N
-                        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+                        if (conf.isDynamicLibraryConfiguration()) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
                                 fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
                             }
@@ -1245,7 +1263,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
     }
 
-    private static void writeSubProjectCleanTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
+    public static void writeSubProjectCleanTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         bw.write("\n"); // NOI18N
         bw.write("# Subprojects\n"); // NOI18N
         bw.write(".clean-subprojects:" + "\n"); // NOI18N

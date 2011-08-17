@@ -621,7 +621,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     protected void putTypeOwner() {
         if (owner != null) {
-            if (UIDProviderIml.isPersistable(UIDs.get(owner))) {
+            if (UIDProviderIml.isPersistable(UIDs.get(owner)) &&
+                CsmBaseUtilities.isValid(owner)) {
                 RepositoryUtils.put(owner);
             }
         }

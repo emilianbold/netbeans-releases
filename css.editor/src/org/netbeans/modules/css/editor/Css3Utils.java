@@ -43,7 +43,9 @@ package org.netbeans.modules.css.editor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
@@ -51,6 +53,7 @@ import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -118,4 +121,15 @@ public final class Css3Utils {
     public static boolean isVendorSpecificProperty(CharSequence propertyName) {
         return CharSequenceUtilities.startsWith(propertyName, "_") || CharSequenceUtilities.startsWith(propertyName, "-"); //NOI18N
     }
+    
+    public static List<CompletionProposal> filterCompletionProposals(List<CompletionProposal> proposals, CharSequence prefix, boolean ignoreCase) {
+        List<CompletionProposal> filtered = new ArrayList<CompletionProposal>();
+        for(CompletionProposal proposal : proposals) {
+            if(LexerUtils.startsWith(proposal.getInsertPrefix(), prefix, ignoreCase, false)) {
+                filtered.add(proposal);
+            }
+        }
+        return filtered;
+    }
+    
 }
