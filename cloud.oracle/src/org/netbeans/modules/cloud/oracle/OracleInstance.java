@@ -267,28 +267,28 @@ public class OracleInstance {
         OutputWriter owe = null;
         try {
             assert f.exists() : "archive does not exist: "+f;
-            if (po != null) {
-                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_WHITELIST_APP"));
-            }
+//            if (po != null) {
+//                po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_WHITELIST_APP"));
+//            }
             String name = "";
             Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
             if (p != null) {
                 name = ProjectUtils.getInformation(p).getDisplayName();
             }
             String tabName = NbBundle.getMessage(OracleInstance.class, "MSG_DeploymentOutput", cloudInstanceName, name);
-            File weblogic = findWeblogicJar(onPremiseServiceInstanceId);
-            if (weblogic != null) {
-                if (!WhiteListTool.execute(f, tabName, weblogic)) {
-    //                return DeploymentStatus.FAILED;
-                }
-            }
+//            File weblogic = findWeblogicJar(onPremiseServiceInstanceId);
+//            if (weblogic != null) {
+//                if (!WhiteListTool.execute(f, tabName, weblogic)) {
+//    //                return DeploymentStatus.FAILED;
+//                }
+//            }
             
             InputOutput io = IOProvider.getDefault().getIO(tabName, false);
             ow = io.getOut();
             owe = io.getErr();
-            if (weblogic == null) {
-                owe.println(NbBundle.getMessage(OracleInstance.class, "MSG_NO_WEBLOGIC"));
-            }
+//            if (weblogic == null) {
+//                owe.println(NbBundle.getMessage(OracleInstance.class, "MSG_NO_WEBLOGIC"));
+//            }
             if (po != null) {
                 po.updateDepoymentStage(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
                 ow.println(NbBundle.getMessage(OracleInstance.class, "MSG_UPLOADING_APP"));
