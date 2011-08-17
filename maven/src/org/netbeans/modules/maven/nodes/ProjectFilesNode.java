@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -53,13 +52,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.M2AuxilaryConfigImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -68,14 +71,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
-import static org.netbeans.modules.maven.nodes.Bundle.*;
 
 /**
  * maven project related aggregator node..
@@ -84,10 +85,10 @@ import static org.netbeans.modules.maven.nodes.Bundle.*;
 public class ProjectFilesNode extends AnnotatedAbstractNode {
     
     private NbMavenProjectImpl project;
-    /** Creates a new instance of ProjectFilesNode */
+
     @Messages("LBL_Project_Files=Project Files")
     public ProjectFilesNode(NbMavenProjectImpl project) {
-        super(new ProjectFilesChildren(project), Lookups.fixed(project.getProjectDirectory(), new OthersRootNode.ChildDelegateFind()));
+        super(Children.create(new ProjectFilesChildren(project), true), Lookups.fixed(project.getProjectDirectory(), new OthersRootNode.ChildDelegateFind()));
         setName("projectfiles"); //NOI18N
         setDisplayName(LBL_Project_Files());
         this.project = project;
@@ -130,93 +131,61 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         setFiles(fobs);
     }
     
-    private static class ProjectFilesChildren extends Children.Keys<File> implements PropertyChangeListener {
-        private NbMavenProjectImpl project;
-        private FileChangeAdapter fileChangeListener;
+    private static class ProjectFilesChildren extends ChildFactory.Detachable<FileObject> implements PropertyChangeListener {
+
+        private final NbMavenProjectImpl project;
+        private final FileChangeAdapter fileChangeListener;
         
-        public ProjectFilesChildren(NbMavenProjectImpl proj) {
-            super();
+        ProjectFilesChildren(NbMavenProjectImpl proj) {
             project = proj;
             fileChangeListener = new FileChangeAdapter() {
-                @Override
-                public void fileDataCreated(FileEvent fe) {
-                    regenerateKeys(true);
+                @Override public void fileDataCreated(FileEvent fe) {
+                    refresh(false);
                 }
-                @Override
-                public void fileDeleted(FileEvent fe) {
-                    regenerateKeys(true);
+                @Override public void fileDeleted(FileEvent fe) {
+                    refresh(false);
                 }
             };
         }
-        
-        protected @Override Node[] createNodes(File fil) {
-            FileObject fo = FileUtil.toFileObject(fil);
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    FilterNode node = new FilterNode(dobj.getNodeDelegate().cloneNode());
-                    return new Node[] { node };
-                } catch (DataObjectNotFoundException e) {
-                    //NOPMD
-                }
-                
+
+        @Override protected Node createNodeForKey(FileObject key) {
+            try {
+                return DataObject.find(key).getNodeDelegate().cloneNode();
+            } catch (DataObjectNotFoundException e) {
+                return null;
             }
-            return new Node[0];
         }
         
         public @Override void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                regenerateKeys(true);
+                refresh(false);
             }
         }
         
-//        public void refreshChildren() {
-//            Node[] nods = getNodes();
-//            for (int i = 0; i < nods.length; i++) {
-//                if (nods[i] instanceof DependencyNode) {
-//                    ((DependencyNode)nods[i]).refreshNode();
-//                }
-//            }
-//        }
-        
-        @Override
-        protected void addNotify() {
-            super.addNotify();
+        @Override protected void addNotify() {
             NbMavenProject.addPropertyChangeListener(project, this);
             project.getProjectDirectory().addFileChangeListener(fileChangeListener);
-            regenerateKeys(false);
         }
         
-        @Override
-        protected void removeNotify() {
-            setKeys(Collections.<File>emptySet());
+        @Override protected void removeNotify() {
             NbMavenProject.removePropertyChangeListener(project, this);
             project.getProjectDirectory().removeFileChangeListener(fileChangeListener);
-            super.removeNotify();
         }
-        
-        private void regenerateKeys(final boolean refresh) {
-            //#149566 prevent setting keys under project mutex.
-            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public @Override void run() {
-                        regenerateKeys(refresh);
-                    }
-                });
-                return;
-            }
-            Collection<File> keys = new ArrayList<File>();
-            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "pom.xml")); //NOI18N
-            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "nbactions.xml")); //NOI18N
-            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "nb-configuration.xml")); //NOI18N
-            keys.add(new File(MavenSettingsSingleton.getInstance().getM2UserDir(), "settings.xml")); //NOI18N
-            setKeys(keys);
-            ((ProjectFilesNode)getNode()).setMyFiles();
-            if (refresh) {
-                for (File key : keys) {
-                    refreshKey(key);
+
+        @Override protected boolean createKeys(List<FileObject> keys) {
+            FileObject d = project.getProjectDirectory();
+            keys.add(d.getFileObject("pom.xml")); // NOI18N
+            keys.add(d.getFileObject(M2Configuration.FILENAME));
+            for (FileObject kid : d.getChildren()) {
+                String n = kid.getNameExt();
+                if (n.startsWith(M2Configuration.FILENAME_PREFIX) && n.endsWith(M2Configuration.FILENAME_SUFFIX)) {
+                    keys.add(kid);
                 }
             }
+            keys.add(d.getFileObject(M2AuxilaryConfigImpl.CONFIG_FILE_NAME));
+            keys.add(FileUtil.toFileObject(new File(MavenSettingsSingleton.getInstance().getM2UserDir(), "settings.xml"))); //NOI18N
+            keys.removeAll(Collections.singleton(null));
+            return true;
         }
     }
 

@@ -50,6 +50,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -112,22 +113,17 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
     }
     
     private void setComboValue(T value, T projectValue, JComboBox field) {
-        if (value != null) {
-            field.setSelectedItem(value);
+        if (!Utilities.compareObjects(value, projectValue)) {
+            field.setSelectedItem(value != null ? value : field.getModel().getElementAt(0));
             component.setToolTipText(null);
             inherited = false;
             label.setFont(label.getFont().deriveFont(Font.BOLD));
-        } else if (projectValue != null) {
-            field.setSelectedItem(projectValue);
+        } else {
+            field.setSelectedItem(projectValue != null ? projectValue : field.getModel().getElementAt(0));
 //            field.setBackground(INHERITED);
             label.setFont(label.getFont().deriveFont(Font.PLAIN));
             component.setToolTipText(org.openide.util.NbBundle.getMessage(ComboBoxUpdater.class, "HINT_inherited"));
             inherited = true;
-        } else {
-            field.setSelectedItem(field.getModel().getElementAt(0));
-            component.setToolTipText(null);
-            inherited = false;
-            label.setFont(label.getFont().deriveFont(Font.BOLD));
       }
     }
 

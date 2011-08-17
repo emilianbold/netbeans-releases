@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.api.customizer;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,6 +51,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
@@ -56,7 +60,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.util.NbBundle;
 
 /**
@@ -212,11 +218,57 @@ public final class ModelHandle {
         //if not found, add to the end.
         lst.add(action);
     }
-    
-    public static NetbeansActionMapping getActiveMapping(String action, Project project) {
-        return ActionToGoalUtils.getActiveMapping(action, project, null);
+
+    /**
+     * @since 2.19
+     */
+    public static @CheckForNull NetbeansActionMapping getDefaultMapping(String action, Project project) {
+        return ActionToGoalUtils.getDefaultMapping(action, project);
     }
-    
+
+    /**
+     * Load a particular action mapping.
+     * @param action an action name
+     * @param project a Maven project
+     * @param config a configuration of that project
+     * @return an action mapping model, or null
+     * @since 2.19
+     */
+    public static @CheckForNull NetbeansActionMapping getMapping(String action, Project project, ProjectConfiguration config) {
+        return ActionToGoalUtils.getActiveMapping(action, project, (M2Configuration) config);
+    }
+
+    /**
+     * Store a particular action mapping.
+     * @param mapp an action mapping model
+     * @param project a Maven project
+     * @param config a configuration of that project
+     * @throws IOException in case of trouble
+     * @since 2.19
+     */
+    public static void putMapping(NetbeansActionMapping mapp, Project project, ProjectConfiguration config) throws IOException {
+        M2Configuration cfg = (M2Configuration) config;
+        ActionToGoalMapping mapping;
+        try {
+            mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(cfg.getRawMappingsAsString()));
+        } catch (XmlPullParserException x) {
+            throw new IOException(x);
+        }
+        NetbeansActionMapping existing = null;
+        for (NetbeansActionMapping m : mapping.getActions()) {
+            if (m.getActionName().equals(mapp.getActionName())) {
+                existing = m;
+                break;
+            }
+        }
+        if (existing != null) {
+            mapping.getActions().set(mapping.getActions().indexOf(existing), mapp);
+        } else {
+            mapping.addAction(mapp);
+        }
+        CustomizerProviderImpl.writeNbActionsModel(project, mapping, M2Configuration.getFileNameExt(cfg.getId()));
+    }
+
     public List<Configuration> getConfigurations() {
         return configurations;
     }

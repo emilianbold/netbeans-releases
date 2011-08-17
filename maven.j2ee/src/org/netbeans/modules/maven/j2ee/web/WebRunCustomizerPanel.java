@@ -191,9 +191,9 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private void initValues() {
         listener = Wrapper.createComboBoxUpdater(handle, comServer, lblServer);
         
-        run = ModelHandle.getActiveMapping(ActionProvider.COMMAND_RUN, project);
-        debug = ModelHandle.getActiveMapping(ActionProvider.COMMAND_DEBUG, project);
-        profile = ModelHandle.getActiveMapping("profile", project); // NOI18N
+        run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+        debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
+        profile = ModelHandle.getDefaultMapping("profile", project); // NOI18N
 
         isRunCompatible = checkMapping(run);
         isDebugCompatible = checkMapping(debug);

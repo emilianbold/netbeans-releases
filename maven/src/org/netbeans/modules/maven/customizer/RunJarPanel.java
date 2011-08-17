@@ -208,13 +208,13 @@ public class RunJarPanel extends javax.swing.JPanel {
             }
         }
         if (run == null) {
-            run = ModelHandle.getActiveMapping(ActionProvider.COMMAND_RUN, project);
+            run = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
         }
         if (debug == null) {
-            debug = ModelHandle.getActiveMapping(ActionProvider.COMMAND_DEBUG, project);
+            debug = ModelHandle.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
         }
         if (profile == null) {
-            profile = ModelHandle.getActiveMapping(PROFILE_CMD, project);
+            profile = ModelHandle.getDefaultMapping(PROFILE_CMD, project);
         }
         isCurrentRun = checkNewMapping(run);
         isCurrentDebug = checkNewMapping(debug);

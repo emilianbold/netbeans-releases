@@ -83,7 +83,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     public static final String BROKEN_NBCONFIG = "BROKENNBCONFIG"; //NOI18N
 
     private static final String AUX_CONFIG = "AuxilaryConfiguration"; //NOI18N
-    private static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
+    public static final String CONFIG_FILE_NAME = "nb-configuration.xml"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(M2AuxilaryConfigImpl.class.getName());
     private static final int SAVING_DELAY = 100;

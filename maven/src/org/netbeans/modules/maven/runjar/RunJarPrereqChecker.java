@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.runjar;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,17 +57,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
-import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.maven.execute.ActionToGoalUtils;
-import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import static org.netbeans.modules.maven.runjar.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -195,17 +190,9 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
     static void writeMapping(String actionName, Project project, String clazz) {
         try {
             M2ConfigProvider usr = project.getLookup().lookup(M2ConfigProvider.class);
-            ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getDefaultConfig().getRawMappingsAsString()));
-            NetbeansActionMapping mapp = null;
-            for (NetbeansActionMapping check : mapping.getActions()) {
-                if (check.getActionName().equals(actionName)) {
-                    mapp = check;
-                    break;
-                }
-            }
+            NetbeansActionMapping mapp = ModelHandle.getMapping(actionName, project, usr.getDefaultConfig());
             if (mapp == null) {
-                mapp = ActionToGoalUtils.getDefaultMapping(actionName, project);
-                mapping.addAction(mapp);
+                mapp = ModelHandle.getDefaultMapping(actionName, project);
             }
             // XXX should this rather run on _all_ actions that reference ${packageClassName}?
             Set<Map.Entry<Object, Object>> entries = mapp.getProperties().entrySet();
@@ -218,7 +205,7 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 }
             }
             //TODO we should definitely write to the mappings of active configuration here..
-            CustomizerProviderImpl.writeNbActionsModel(project, mapping, M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
+            ModelHandle.putMapping(mapp, project, usr.getDefaultConfig());
         } catch (Exception e) {
             Exceptions.attachMessage(e, "Cannot persist action configuration.");
             Exceptions.printStackTrace(e);
