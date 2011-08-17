@@ -47,19 +47,19 @@
  */
 package org.netbeans.modules.coherence.server.ui;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
-import org.netbeans.modules.coherence.server.wizard.ServerLocationVisual;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -72,6 +72,8 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
     private DefaultListModel listModel;
     private InstanceProperties instanceProperties;
+    private JFileChooser fileChooser = new JFileChooser();
+
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
@@ -180,6 +182,50 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
 
     private void setEnabledRemoveButton(boolean setEnabled) {
         removeClasspathButton.setEnabled(setEnabled);
+    }
+
+    private void addElementToClasspathList(String element) {
+        listModel.addElement(element);
+    }
+
+    /**
+     * Shows the fileChooser.
+     */
+    private void showFileChooser() {
+        if (fileChooser == null) {
+            fileChooser = new JFileChooser();
+        }
+
+        // set the chooser's properties
+        fileChooser.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File f) {
+                String fileName = f.getName();
+                String fileExt = fileName.substring(
+                        fileName.lastIndexOf(".") + 1, //NOI18N
+                        fileName.length());
+                if (f.isDirectory()) {
+                    return true;
+                } else if (f.isFile() && "jar".equalsIgnoreCase(fileExt)) { //NOI18N
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return NbBundle.getMessage(CustomizerCommon.class, "DESC_AddJarToClasspath"); //NOI18N
+            }
+        });
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        // wait for the user to choose the file and if he clicked OK button add
+        // the selected JAR into the classpath list
+        if (fileChooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
+            addElementToClasspathList(fileChooser.getSelectedFile().getPath());
+        }
     }
 
     /** This method is called from within the constructor to
@@ -302,15 +348,7 @@ public class CustomizerCommon extends javax.swing.JPanel implements ChangeListen
     }// </editor-fold>//GEN-END:initComponents
 
     private void addClasspathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addClasspathButtonActionPerformed
-        DialogDescriptor.InputLine inputLine = new InputLine(
-                NbBundle.getMessage(CustomizerCommon.class, "LBL_AdditionalClasspathEntry"), //NOI18N
-                NbBundle.getMessage(CustomizerCommon.class, "TITLE_AddAdditionalClasspathDialog")); //NOI18N
-        DialogDisplayer.getDefault().notify(inputLine);
-        if (inputLine.getValue() == DialogDescriptor.OK_OPTION) {
-            if (!inputLine.getInputText().isEmpty()) {
-                listModel.addElement(inputLine.getInputText());
-            }
-        }
+        showFileChooser();
         changeSupport.fireChange();
     }//GEN-LAST:event_addClasspathButtonActionPerformed
 
