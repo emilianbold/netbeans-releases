@@ -240,7 +240,9 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
             if (el!=null) {
                 if (isMethodMatch(el)) {
-                    checkNewModifier(getCurrentPath(), p);
+                    if(newModifiers != null) {
+                        checkNewModifier(getCurrentPath(), p);
+                    }
                     List<ExpressionTree> arguments = getNewArguments(tree.getArguments());
                     
                     MethodInvocationTree nju = make.MethodInvocation(
