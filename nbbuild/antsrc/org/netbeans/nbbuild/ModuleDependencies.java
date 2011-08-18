@@ -53,7 +53,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -183,10 +182,10 @@ public class ModuleDependencies extends Task {
                     // process only manifest files
                     continue;
                 }
-                
-                String module = manifest.getMainAttributes ().getValue ("OpenIDE-Module");
-                
-                
+
+                final boolean[] osgi = new boolean[1];
+                String module = JarWithModuleAttributes.extractCodeName(manifest.getMainAttributes(), osgi);
+
                 if (module == null) {
                     // skip this one
                     continue;
@@ -228,6 +227,8 @@ public class ModuleDependencies extends Task {
                     m.displayName = props.getProperty("OpenIDE-Module-Name");
                     m.displayCategory = props.getProperty("OpenIDE-Module-Display-Category");
                 }
+
+                // XXX if osgi[0], instead load Export-Package, Require-Bundle, Bundle-Version... ought to be some utility class to interconvert NB & OSGi manifests!
 
                 m.publicPackages = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Public-Packages");
 
