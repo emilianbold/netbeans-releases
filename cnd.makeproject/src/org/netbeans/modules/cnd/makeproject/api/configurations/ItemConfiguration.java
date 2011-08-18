@@ -230,9 +230,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
-                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration(), null);
+                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCompilerConfiguration(), (MakeConfiguration) configuration);
                 } else {
-                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null, null);
+                    lastConfiguration = new CCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null, (MakeConfiguration) configuration);
                 }
             }
             assert lastConfiguration instanceof CCompilerConfiguration;
@@ -251,9 +251,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
-                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration(), null);
+                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), folderConfiguration.getCCCompilerConfiguration(), (MakeConfiguration) configuration);
                 } else {
-                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null, null);
+                    lastConfiguration = new CCCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), null, (MakeConfiguration) configuration);
                 }
             }
             assert lastConfiguration instanceof CCCompilerConfiguration;

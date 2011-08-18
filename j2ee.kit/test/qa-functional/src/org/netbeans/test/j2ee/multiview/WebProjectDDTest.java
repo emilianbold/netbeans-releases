@@ -146,7 +146,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         webapp = DDProvider.getDefault().getDDRoot(ddFo);
         ddObj = (DDDataObject) DataObject.find(ddFo);
         assertNotNull("Multiview is null", ddObj);
-        ddObj.openView(0);
+        ddObj.openView(1);
         utils = new DDTestUtils(ddObj, this);
         Utils.waitForAWTDispatchThread();
     }
@@ -437,7 +437,7 @@ public class WebProjectDDTest extends J2eeTestCase {
     }
 
     public void testExistingServlets() throws Exception {
-        ddObj.openView(1);
+        ddObj.openView(2);
         Utils.waitForAWTDispatchThread();
         Servlet[] servlets = webapp.getServlet();
         assertEquals("Wrong count of servlets", 1, servlets.length);
@@ -649,7 +649,7 @@ public class WebProjectDDTest extends J2eeTestCase {
     }
 
     public void testExistingFilters() throws Exception {
-        ddObj.openView(2);
+        ddObj.openView(3);
         Utils.waitForAWTDispatchThread();
         Filter[] filters = webapp.getFilter();
         assertEquals("Unexpected filter count", 1, filters.length);
@@ -899,7 +899,7 @@ public class WebProjectDDTest extends J2eeTestCase {
         final String servletName = "changedS";
         Servlet[] servlets = webapp.getServlet();
         Servlet servlet = servlets[0];
-        ddObj.openView(1);
+        ddObj.openView(2);
         Utils.waitForAWTDispatchThread();
         ddObj.showElement(servlet);
         JPanel panel = utils.getInnerSectionPanel(servlet);
@@ -914,7 +914,7 @@ public class WebProjectDDTest extends J2eeTestCase {
                 return utils.contains(".*<servlet>.*<servlet-name>" + servletName + "</servlet-name>.*</servlet>.*");
             }
         };
-        ddObj.openView(2);
+        ddObj.openView(3);
         Utils.waitForAWTDispatchThread();
         panel = utils.getInnerSectionPanel("filter_mappings");
         panel.requestFocus();

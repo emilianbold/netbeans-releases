@@ -112,7 +112,7 @@ public class SecurityDDTest extends J2eeTestCase {
         webapp = DDProvider.getDefault().getDDRoot(ddFo);
         ddObj = (DDDataObject) DataObject.find(ddFo);
         assertNotNull("Multiview is null", ddObj);
-        ddObj.openView(5);//lets open security view
+        ddObj.openView(6);//lets open security view
         utils = new DDTestUtils(ddObj, this);
         Utils.waitForAWTDispatchThread();
     }

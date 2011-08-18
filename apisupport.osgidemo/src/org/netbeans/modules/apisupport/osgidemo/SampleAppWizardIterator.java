@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -102,18 +101,12 @@ public class SampleAppWizardIterator implements WizardDescriptor.AsynchronousIns
     private WizardDescriptor.Panel[] createPanels() {
         List<WizardDescriptor.Panel<?>> arr = new ArrayList<WizardDescriptor.Panel<?>>();
         arr.add(new SampleAppWizardPanel());
-        if (netbinox) {
-            arr.add(new SampleAppWarningPanel());
-        }
         return arr.toArray(new WizardDescriptor.Panel[0]);
     }
     
     private String[] createSteps() {
         List<String> arr = new ArrayList<String>();
         arr.add(NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_CreateProjectStep"));
-        if (netbinox) {
-            arr.add(NbBundle.getMessage(SampleAppWizardIterator.class, "LBL_DownloadStep"));
-        }
         return arr.toArray(new String[0]);
     }
     
@@ -142,16 +135,6 @@ public class SampleAppWizardIterator implements WizardDescriptor.AsynchronousIns
             }
         }
 
-        Project p = ProjectManager.getDefault().findProject(dir);
-        if (netbinox && p != null) {
-            OpenProjects.getDefault().open(new Project[] { p }, true);
-            ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-            ExecutorTask[] arr = new ExecutorTask[1];
-            ActionEvent ev = new ActionEvent(arr, 0, "waitFinished"); // NOI18N
-            ProxyLookup lkp = new ProxyLookup(p.getLookup(), Lookups.singleton(ev));
-            ap.invokeAction(ActionProvider.COMMAND_CLEAN, lkp);
-        }
-        
         File parent = dirF.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
@@ -164,6 +147,11 @@ public class SampleAppWizardIterator implements WizardDescriptor.AsynchronousIns
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
+        if (netbinox) {
+            wiz.putProperty("name", NbBundle.getMessage(SampleAppWizardIterator.class, "CTL_NetbinoxProjectName"));
+        } else {
+            wiz.putProperty("name", NbBundle.getMessage(SampleAppWizardIterator.class, "CTL_FelixProjectName"));
+        }
         panels = createPanels();
         // Make sure list of steps is accurate.
         String[] steps = createSteps();

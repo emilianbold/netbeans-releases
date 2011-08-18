@@ -202,32 +202,32 @@ public class RegexpMakerTest extends NbTestCase {
         assertEquals("a\\>b", RegexpMaker.makeRegexp("a>b"));
         assertEquals("a\\@b", RegexpMaker.makeRegexp("a@b"));
         assertEquals("a\\[b", RegexpMaker.makeRegexp("a[b"));
-        assertEquals("aa", RegexpMaker.makeRegexp("a\\a"));
-        assertEquals("ab", RegexpMaker.makeRegexp("a\\b"));
-        assertEquals("ac", RegexpMaker.makeRegexp("a\\c"));
-        assertEquals("ad", RegexpMaker.makeRegexp("a\\d"));
-        assertEquals("ae", RegexpMaker.makeRegexp("a\\e"));
-        assertEquals("af", RegexpMaker.makeRegexp("a\\f"));
-        assertEquals("ag", RegexpMaker.makeRegexp("a\\g"));
-        assertEquals("ah", RegexpMaker.makeRegexp("a\\h"));
-        assertEquals("ai", RegexpMaker.makeRegexp("a\\i"));
-        assertEquals("aj", RegexpMaker.makeRegexp("a\\j"));
-        assertEquals("ak", RegexpMaker.makeRegexp("a\\k"));
-        assertEquals("al", RegexpMaker.makeRegexp("a\\l"));
-        assertEquals("am", RegexpMaker.makeRegexp("a\\m"));
-        assertEquals("a\\n", RegexpMaker.makeRegexp("a\\n"));
-        assertEquals("ao", RegexpMaker.makeRegexp("a\\o"));
-        assertEquals("ap", RegexpMaker.makeRegexp("a\\p"));
-        assertEquals("aq", RegexpMaker.makeRegexp("a\\q"));
-        assertEquals("ar", RegexpMaker.makeRegexp("a\\r"));
-        assertEquals("as", RegexpMaker.makeRegexp("a\\s"));
-        assertEquals("at", RegexpMaker.makeRegexp("a\\t"));
-        assertEquals("au", RegexpMaker.makeRegexp("a\\u"));
-        assertEquals("av", RegexpMaker.makeRegexp("a\\v"));
-        assertEquals("aw", RegexpMaker.makeRegexp("a\\w"));
-        assertEquals("ax", RegexpMaker.makeRegexp("a\\x"));
-        assertEquals("ay", RegexpMaker.makeRegexp("a\\y"));
-        assertEquals("az", RegexpMaker.makeRegexp("a\\z"));
+        assertEquals("a\\\\a", RegexpMaker.makeRegexp("a\\a"));
+        assertEquals("a\\\\b", RegexpMaker.makeRegexp("a\\b"));
+        assertEquals("a\\\\c", RegexpMaker.makeRegexp("a\\c"));
+        assertEquals("a\\\\d", RegexpMaker.makeRegexp("a\\d"));
+        assertEquals("a\\\\e", RegexpMaker.makeRegexp("a\\e"));
+        assertEquals("a\\\\f", RegexpMaker.makeRegexp("a\\f"));
+        assertEquals("a\\\\g", RegexpMaker.makeRegexp("a\\g"));
+        assertEquals("a\\\\h", RegexpMaker.makeRegexp("a\\h"));
+        assertEquals("a\\\\i", RegexpMaker.makeRegexp("a\\i"));
+        assertEquals("a\\\\j", RegexpMaker.makeRegexp("a\\j"));
+        assertEquals("a\\\\k", RegexpMaker.makeRegexp("a\\k"));
+        assertEquals("a\\\\l", RegexpMaker.makeRegexp("a\\l"));
+        assertEquals("a\\\\m", RegexpMaker.makeRegexp("a\\m"));
+        assertEquals("a\\\\n", RegexpMaker.makeRegexp("a\\n"));
+        assertEquals("a\\\\o", RegexpMaker.makeRegexp("a\\o"));
+        assertEquals("a\\\\p", RegexpMaker.makeRegexp("a\\p"));
+        assertEquals("a\\\\q", RegexpMaker.makeRegexp("a\\q"));
+        assertEquals("a\\\\r", RegexpMaker.makeRegexp("a\\r"));
+        assertEquals("a\\\\s", RegexpMaker.makeRegexp("a\\s"));
+        assertEquals("a\\\\t", RegexpMaker.makeRegexp("a\\t"));
+        assertEquals("a\\\\u", RegexpMaker.makeRegexp("a\\u"));
+        assertEquals("a\\\\v", RegexpMaker.makeRegexp("a\\v"));
+        assertEquals("a\\\\w", RegexpMaker.makeRegexp("a\\w"));
+        assertEquals("a\\\\x", RegexpMaker.makeRegexp("a\\x"));
+        assertEquals("a\\\\y", RegexpMaker.makeRegexp("a\\y"));
+        assertEquals("a\\\\z", RegexpMaker.makeRegexp("a\\z"));
         assertEquals("a\\]b", RegexpMaker.makeRegexp("a]b"));
         assertEquals("a\\^b", RegexpMaker.makeRegexp("a^b"));
         assertEquals("a\\_b", RegexpMaker.makeRegexp("a_b"));
@@ -242,6 +242,11 @@ public class RegexpMakerTest extends NbTestCase {
         assertEquals("a\u00c1b", RegexpMaker.makeRegexp("a\u00c1b"));
         
         assertEquals("abc\\\\", RegexpMaker.makeRegexp("abc\\"));
+        assertEquals("\\\\\\\"", RegexpMaker.makeRegexp("\\\""));
+        assertEquals("\\\\", RegexpMaker.makeRegexp("\\"));
+        assertEquals("\\<h3 style\\=\\\\\\\"color\\: green\\;\\\\\\\"\\>\\<\\/h3\\>", 
+                RegexpMaker.makeRegexp("<h3 style=\\\"color: green;\\\"></h3>"));
+        
     }
 
     public void testRegexpMatches() {
@@ -250,6 +255,9 @@ public class RegexpMakerTest extends NbTestCase {
         checkMatch("public", "*li", "li");
         checkMatch("public", "li*", "li");
         checkMatch("public", "*li*", "li");
+        checkMatch("<body><h3 style=\\\"color: green;\\\"></h3></body>", 
+                "<h3 style=\\\"color: green;\\\"></h3>", 
+                "<h3 style=\\\"color: green;\\\"></h3>");
 
         checkMatchWW("public", "x", null);
         checkMatchWW("public", "li", null);

@@ -76,6 +76,8 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Result;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -104,18 +106,20 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
     
     private ProvidedExtensionsImpl lookupImpl(boolean providesCanWrite) {
-        Lookup.Result result = Lookup.getDefault().
-                lookup(new Lookup.Template(AnnotationProvider.class));
-        Collection all = result.allInstances();
-        for (Iterator it = all.iterator(); it.hasNext();) {
-            AnnotationProvider ap = (AnnotationProvider) it.next();
+        Result<AnnotationProvider> result = Lookup.getDefault().
+                       lookup(new Lookup.Template(AnnotationProvider.class));
+        for (Item<AnnotationProvider> item : result.allItems()) {
+            if (!item.getId().contains(ProvidedExtensionsTest.class.getSimpleName())) {
+                continue;
+            }
+            AnnotationProvider ap = item.getInstance();
             InterceptionListener iil = ap.getInterceptionListener();
             if (iil instanceof ProvidedExtensionsImpl) {
-                ProvidedExtensionsImpl extension = (ProvidedExtensionsImpl)iil;
-                if(ProvidedExtensionsAccessor.IMPL.providesCanWrite(extension) == providesCanWrite) {
-                return (ProvidedExtensionsImpl)iil;
+                ProvidedExtensionsImpl extension = (ProvidedExtensionsImpl) iil;
+                if (ProvidedExtensionsAccessor.IMPL.providesCanWrite(extension) == providesCanWrite) {
+                    return (ProvidedExtensionsImpl) iil;
+                }
             }
-        }
         }
         return null;
     }

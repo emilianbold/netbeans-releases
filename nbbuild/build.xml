@@ -590,6 +590,7 @@ Hg ID:    ${hg.id}
       <makeupdatedesc desc="nbms/catalog.xml" distbase="." uselicenseurl="${use.license.url.in.catalog}">
           <fileset dir="nbms">
               <include name="*.nbm"/>
+              <include name="*.jar"/>
           </fileset>
       </makeupdatedesc>
   </target>
@@ -1668,6 +1669,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <makeupdatedesc desc="${catalog.file}" distbase="${catalog.base.url}" automaticgrouping="true" uselicenseurl="${use.license.url.in.catalog}" notificationmessage="${catalog.notification.message}" notificationurl="${catalog.notification.url}">
           <fileset dir="${nbms.location}">
               <include name="**/*.nbm"/>
+              <include name="**/*.jar"/>
           </fileset>
           <updaterjar>
               <fileset dir="netbeans" includes="platform*/modules/ext/updater.jar"/>
