@@ -1364,7 +1364,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                         TypeElement elem = (TypeElement)((DeclaredType)upperBound).asElement();
                                                         if (startsWith(env, elem.getSimpleName().toString(), prefix) && withinBounds(env, upperBound, bounds)
                                                                 && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)upperBound, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, (DeclaredType)upperBound, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
                                                         env.addToExcludes(elem);
                                                         upperBound = elem.getSuperclass();
                                                     }
@@ -1372,7 +1372,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                     for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
                                                         TypeElement elem = (TypeElement)subtype.asElement();
                                                         if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                                            results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
                                                         env.addToExcludes(elem);
                                                     }
                                                 }
@@ -1386,7 +1386,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 for (DeclaredType subtype : getSubtypesOf(env, (DeclaredType)lowerBound)) {
                                     TypeElement elem = (TypeElement)subtype.asElement();
                                     if (withinBounds(env, subtype, bounds) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem)))
-                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false));
+                                        results.add(JavaCompletionItem.createTypeItem(env.getController(), elem, subtype, anchorOffset, true, elements.isDeprecated(elem), false, true, false, true, false, env.getWhiteList()));
                                     env.addToExcludes(elem);
                                 }
                             }
