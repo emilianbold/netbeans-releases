@@ -822,6 +822,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         File repository = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         try {
             Map<File, FileInformation> statuses = HgCommand.getStatus(repository, Arrays.asList(roots), revisionLeft.getRevisionNumber(), revisionRight.getRevisionNumber());
+            statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
             List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
             for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
                 FileInformation fi = e.getValue();
