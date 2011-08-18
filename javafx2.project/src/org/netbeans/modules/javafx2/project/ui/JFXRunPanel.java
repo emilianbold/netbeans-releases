@@ -43,15 +43,47 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
+import java.awt.Component;
+import java.awt.Font;
+import java.io.File;
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author psomol
  */
-public class JFXRunPanel extends javax.swing.JPanel {
+public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
+    private Project project;
+    private JTextField[] data;
+    private JLabel[] dataLabels;
+    private String[] keys;
+    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     private JFXProjectProperties jfxProps;
+    private File lastHtmlFolder = null;
 
     /**
      * Creates new form JFXRunPanel
@@ -59,6 +91,92 @@ public class JFXRunPanel extends javax.swing.JPanel {
     public JFXRunPanel(JFXProjectProperties props) {
         this.jfxProps = props;
         initComponents();
+
+        project = jfxProps.getProject();
+        configs = jfxProps.getRunConfigs();
+        
+        data = new JTextField[] {
+            textFieldAppClass,
+            textFieldParams,
+            textFieldPreloaderClass,
+            textFieldVMOptions,
+            textFieldWebPage,
+            textFieldHeight,
+            textFieldWidth,
+            textFieldWorkDir,
+        };
+        dataLabels = new JLabel[] {
+            labelAppClass,
+            labelParams,
+            labelPreloaderClass,
+            labelVMOptions,
+            labelWebPage,
+            labelHeight,
+            labelWidth,
+            labelWorkDir,
+        };
+        keys = new String[] {
+            JFXProjectProperties.MAIN_CLASS,
+            JFXProjectProperties.APPLICATION_ARGS,
+            JFXProjectProperties.PRELOADER_CLASS,
+            JFXProjectProperties.RUN_JVM_ARGS,
+            JFXProjectProperties.RUN_IN_HTMLPAGE,
+            JFXProjectProperties.RUN_APP_HEIGHT,
+            JFXProjectProperties.RUN_APP_WIDTH,
+            JFXProjectProperties.RUN_WORK_DIR,
+        };
+        assert data.length == keys.length;
+        
+        configChanged(jfxProps.getActiveConfig());
+        
+        comboConfig.setRenderer(new ConfigListCellRenderer());
+        
+        for (int i = 0; i < data.length; i++) {
+            final JTextField field = data[i];
+            final String prop = keys[i];
+            final JLabel label = dataLabels[i];
+            field.getDocument().addDocumentListener(new DocumentListener() {
+                Font basefont = label.getFont();
+                Font emphfont = basefont.deriveFont(Font.ITALIC);
+                {
+                    updateFont();
+                }
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    changed();
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    changed();
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {}
+                void changed() {
+                    String config = (String) comboConfig.getSelectedItem();
+                    if (config.length() == 0) {
+                        config = null;
+                    }
+                    String v = field.getText();
+                    if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
+                        // default value, do not store as such
+                        v = null;
+                    }
+                    configs.get(config).put(prop, v);
+                    updateFont();
+                }
+                void updateFont() {
+                    String v = field.getText();
+                    String config = (String) comboConfig.getSelectedItem();
+                    if (config.length() == 0) {
+                        config = null;
+                    }
+                    String def = configs.get(null).get(prop);
+                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? emphfont : basefont);
+                }
+            });
+        }
+        
+        //jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
     }
 
     /** This method is called from within the constructor to
@@ -87,7 +205,6 @@ public class JFXRunPanel extends javax.swing.JPanel {
         buttonParams = new javax.swing.JButton();
         labelVMOptions = new javax.swing.JLabel();
         textFieldVMOptions = new javax.swing.JTextField();
-        buttonVMOptions = new javax.swing.JButton();
         labelVMOptionsRemark = new javax.swing.JLabel();
         checkBoxPreloader = new javax.swing.JCheckBox();
         textFieldPreloader = new javax.swing.JTextField();
@@ -99,8 +216,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         labelRunAs = new javax.swing.JLabel();
         panelRunAsChoices = new javax.swing.JPanel();
         radioButtonSA = new javax.swing.JRadioButton();
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(99, 0), new java.awt.Dimension(99, 0), new java.awt.Dimension(99, 32767));
         radioButtonWS = new javax.swing.JRadioButton();
+        filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(109, 0), new java.awt.Dimension(109, 0), new java.awt.Dimension(109, 32767));
         radioButtonBE = new javax.swing.JRadioButton();
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(95, 0), new java.awt.Dimension(95, 0), new java.awt.Dimension(95, 32767));
         labelSAProps = new javax.swing.JLabel();
         labelWorkDir = new javax.swing.JLabel();
         textFieldWorkDir = new javax.swing.JTextField();
@@ -132,6 +252,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         configPanel.add(labelConfig, gridBagConstraints);
 
         comboConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default config>" }));
+        comboConfig.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboConfigActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -142,6 +267,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         configPanel.add(comboConfig, gridBagConstraints);
 
         buttonNew.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.text")); // NOI18N
+        buttonNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonNewActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -150,6 +280,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         configPanel.add(buttonNew, gridBagConstraints);
 
         buttonDelete.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.text")); // NOI18N
+        buttonDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonDeleteActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -197,9 +332,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         mainPanel.add(textFieldAppClass, gridBagConstraints);
 
         buttonAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
+        buttonAppClass.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
         mainPanel.add(buttonAppClass, gridBagConstraints);
@@ -211,6 +348,8 @@ public class JFXRunPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelParams, gridBagConstraints);
+
+        textFieldParams.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -222,6 +361,7 @@ public class JFXRunPanel extends javax.swing.JPanel {
         mainPanel.add(textFieldParams, gridBagConstraints);
 
         buttonParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.text")); // NOI18N
+        buttonParams.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
@@ -246,15 +386,6 @@ public class JFXRunPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(textFieldVMOptions, gridBagConstraints);
 
-        buttonVMOptions.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonVMOptions.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        mainPanel.add(buttonVMOptions, gridBagConstraints);
-
         labelVMOptionsRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptionsRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -265,6 +396,7 @@ public class JFXRunPanel extends javax.swing.JPanel {
         mainPanel.add(labelVMOptionsRemark, gridBagConstraints);
 
         checkBoxPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
+        checkBoxPreloader.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -344,35 +476,64 @@ public class JFXRunPanel extends javax.swing.JPanel {
         radioButtonSA.setFont(radioButtonSA.getFont().deriveFont(radioButtonSA.getFont().getStyle() | java.awt.Font.BOLD));
         radioButtonSA.setSelected(true);
         radioButtonSA.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.text")); // NOI18N
+        radioButtonSA.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioButtonSAActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panelRunAsChoices.add(radioButtonSA, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        panelRunAsChoices.add(filler2, gridBagConstraints);
 
         buttonGroupRunAs.add(radioButtonWS);
         radioButtonWS.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.text")); // NOI18N
+        radioButtonWS.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioButtonWSActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panelRunAsChoices.add(radioButtonWS, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        panelRunAsChoices.add(filler3, gridBagConstraints);
 
         buttonGroupRunAs.add(radioButtonBE);
         radioButtonBE.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.text")); // NOI18N
+        radioButtonBE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioButtonBEActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelRunAsChoices.add(radioButtonBE, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        panelRunAsChoices.add(filler4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
@@ -405,6 +566,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         mainPanel.add(textFieldWorkDir, gridBagConstraints);
 
         buttonWorkDir.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.text")); // NOI18N
+        buttonWorkDir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonWorkDirActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 9;
@@ -452,7 +618,7 @@ public class JFXRunPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldHeight, gridBagConstraints);
@@ -475,6 +641,11 @@ public class JFXRunPanel extends javax.swing.JPanel {
         mainPanel.add(textFieldWebPage, gridBagConstraints);
 
         buttonWebPage.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.text")); // NOI18N
+        buttonWebPage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonWebPageActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 12;
@@ -487,18 +658,21 @@ public class JFXRunPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 13;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
         mainPanel.add(labelWebPageRemark, gridBagConstraints);
 
         labelWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
+        labelWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
+
+        comboBoxWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 14;
@@ -510,6 +684,7 @@ public class JFXRunPanel extends javax.swing.JPanel {
         mainPanel.add(comboBoxWebBrowser, gridBagConstraints);
 
         buttonWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
+        buttonWebBrowser.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 14;
@@ -538,6 +713,198 @@ private void textFieldAppClassActionPerformed(java.awt.event.ActionEvent evt) {/
 // TODO add your handling code here:
 }//GEN-LAST:event_textFieldAppClassActionPerformed
 
+private void buttonDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDeleteActionPerformed
+        String config = (String) comboConfig.getSelectedItem();
+        assert config != null;
+        configs.put(config, null);
+        configChanged(null);
+        jfxProps.setActiveConfig(null);
+}//GEN-LAST:event_buttonDeleteActionPerformed
+
+private void comboConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboConfigActionPerformed
+        String config = (String) comboConfig.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        configChanged(config);
+        jfxProps.setActiveConfig(config);
+}//GEN-LAST:event_comboConfigActionPerformed
+
+private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonNewActionPerformed
+        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
+                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.prompt"),
+                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.title"));
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = d.getInputText();
+        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.empty", config),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+            
+        }
+        if (configs.get(config) != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.duplicate", config),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+        Map<String,String> m = new HashMap<String,String>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.put(config, m);
+        configChanged(config);
+        jfxProps.setActiveConfig(config);
+}//GEN-LAST:event_buttonNewActionPerformed
+
+private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWorkDirActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        
+        String workDir = textFieldWorkDir.getText();
+        if (workDir.equals("")) {
+            workDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
+        }
+        chooser.setSelectedFile(new File(workDir));
+        chooser.setDialogTitle(NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider_Run_Working_Directory_Browse_Title")); // NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+            File file = FileUtil.normalizeFile(chooser.getSelectedFile());
+            textFieldWorkDir.setText(file.getAbsolutePath());
+        }
+}//GEN-LAST:event_buttonWorkDirActionPerformed
+
+    private void radioButtonWSActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonWSActionPerformed
+        runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+    }//GEN-LAST:event_radioButtonWSActionPerformed
+
+    private void radioButtonSAActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonSAActionPerformed
+        runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+    }//GEN-LAST:event_radioButtonSAActionPerformed
+
+    private void radioButtonBEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonBEActionPerformed
+        runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+    }//GEN-LAST:event_radioButtonBEActionPerformed
+    
+    void runTypeChanged(JFXProjectProperties.RunAsType runType) {
+        String config = (String) comboConfig.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        switch(runType) {
+            case STANDALONE : ;
+        }
+        String v = runType.getString();
+        if (v != null && config != null && v.equals(configs.get(null).get(JFXProjectProperties.RUN_AS))) {
+            // default value, do not store as such
+            v = null;
+        }
+        configs.get(config).put(JFXProjectProperties.RUN_AS, v);
+        
+        Font basefont = radioButtonWS.getFont();
+        Font plainfont = basefont.deriveFont(Font.PLAIN);
+        Font boldfont = basefont.deriveFont(Font.BOLD);
+        if(runType == JFXProjectProperties.RunAsType.STANDALONE) {
+            radioButtonSA.setFont(boldfont);
+            radioButtonSA.setSelected(true);
+        } else {
+            radioButtonSA.setFont(plainfont);
+        }
+        if(runType == JFXProjectProperties.RunAsType.ASWEBSTART) {
+            radioButtonWS.setFont(boldfont);
+            radioButtonWS.setSelected(true);
+        } else {
+            radioButtonWS.setFont(plainfont);
+        }
+        if(runType == JFXProjectProperties.RunAsType.INBROWSER) {
+            radioButtonBE.setFont(boldfont);
+            radioButtonBE.setSelected(true);
+        } else {
+            radioButtonBE.setFont(plainfont);
+        }
+    }
+
+private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebPageActionPerformed
+    JFileChooser chooser = new JFileChooser();
+    chooser.setCurrentDirectory(null);
+    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    chooser.setMultiSelectionEnabled(false);
+    chooser.setFileFilter(new HtmlFileFilter());
+    if (lastHtmlFolder != null) {
+        chooser.setSelectedFile(lastHtmlFolder);
+    } else { // ???
+        // workDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
+        // chooser.setSelectedFile(new File(workDir));
+    }
+    chooser.setDialogTitle(NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_Select_HTML_File")); // NOI18N
+    if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+        File file = FileUtil.normalizeFile(chooser.getSelectedFile());
+        textFieldWebPage.setText(file.getAbsolutePath());
+        lastHtmlFolder = file.getParentFile();
+    }
+}//GEN-LAST:event_buttonWebPageActionPerformed
+
+    private void configChanged(String activeConfig) {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        model.addElement("");
+        SortedSet<String> alphaConfigs = new TreeSet<String>(new Comparator<String>() {
+            Collator coll = Collator.getInstance();
+            @Override
+            public int compare(String s1, String s2) {
+                return coll.compare(label(s1), label(s2));
+            }
+            private String label(String c) {
+                Map<String,String> m = configs.get(c);
+                String label = m.get("$label"); // NOI18N
+                return label != null ? label : c;
+            }
+        });
+        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config != null && entry.getValue() != null) {
+                alphaConfigs.add(config);
+            }
+        }
+        for (String c : alphaConfigs) {
+            model.addElement(c);
+        }
+        comboConfig.setModel(model);
+        comboConfig.setSelectedItem(activeConfig != null ? activeConfig : "");
+        Map<String,String> m = configs.get(activeConfig);
+        Map<String,String> def = configs.get(null);
+        if (m != null) {
+            for (int i = 0; i < data.length; i++) {
+                String v = m.get(keys[i]);
+                if (v == null) {
+                    // display default value
+                    v = def.get(keys[i]);
+                }
+                data[i].setText(v);
+            }
+            String runType = m.get(JFXProjectProperties.RUN_AS);
+            if(runType == null) {
+                runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+            } else {
+                if(runType.equals(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
+                    runTypeChanged(JFXProjectProperties.RunAsType.ASWEBSTART);
+                } else {
+                    if(runType.equals(JFXProjectProperties.RunAsType.INBROWSER.getString())) {
+                        runTypeChanged(JFXProjectProperties.RunAsType.INBROWSER);
+                    } else {
+                        runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+                    }                
+                }
+            }
+        } // else ??
+        buttonDelete.setEnabled(activeConfig != null);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonAppClass;
     private javax.swing.JButton buttonDelete;
@@ -546,7 +913,6 @@ private void textFieldAppClassActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JButton buttonParams;
     private javax.swing.JButton buttonPreloader;
     private javax.swing.JButton buttonPreloaderClass;
-    private javax.swing.JButton buttonVMOptions;
     private javax.swing.JButton buttonWebBrowser;
     private javax.swing.JButton buttonWebPage;
     private javax.swing.JButton buttonWorkDir;
@@ -555,6 +921,9 @@ private void textFieldAppClassActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JComboBox comboConfig;
     private javax.swing.JPanel configPanel;
     private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
+    private javax.swing.Box.Filler filler3;
+    private javax.swing.Box.Filler filler4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel labelAppClass;
@@ -587,4 +956,83 @@ private void textFieldAppClassActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JTextField textFieldWidth;
     private javax.swing.JTextField textFieldWorkDir;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx( JFXRunPanel.class );
+    }
+
+    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
+        
+        public ConfigListCellRenderer () {
+            setOpaque(true);
+        }
+        
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            String config = (String) value;
+            String label;
+            if (config == null) {
+                // uninitialized?
+                label = null;
+            } else if (config.length() > 0) {
+                Map<String,String> m = configs.get(config);
+                label = m != null ? m.get("$label") : /* temporary? */ null;
+                if (label == null) {
+                    label = config;
+                }
+            } else {
+                label = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.default.label"); // NOI18N
+            }
+            setText(label);
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
+        
+        // #93658: GTK needs name to render cell renderer "natively"
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+        
+    }
+
+    private static class HtmlFileFilter extends FileFilter {
+
+        @Override
+        public boolean accept(File f) {
+            if (f.isDirectory()) {
+                return true;
+            }
+            String name = f.getName();
+            int index = name.lastIndexOf('.');
+            if (index > 0 && index < name.length() - 1) {
+                String ext = name.substring(index+1).toLowerCase();
+                if ("htm".equals(ext) || "html".equals(ext)) { // NOI18N
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(JFXRunPanel.class, "MSG_HtmlFileFilter_Description");
+        }
+
+    }
+
 }
