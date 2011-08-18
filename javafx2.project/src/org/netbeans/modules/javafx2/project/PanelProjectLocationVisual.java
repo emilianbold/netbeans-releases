@@ -186,9 +186,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
         String command = evt.getActionCommand();
-        if ("BROWSE".equals(command)) {
+        if ("BROWSE".equals(command)) { // NOI18N
             JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_SelectProjectLocation")); // NOI18N
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
@@ -206,25 +205,28 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }//GEN-LAST:event_browseLocationAction
 
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
 
+    @Override
     boolean valid(WizardDescriptor wizardDescriptor) {
-
         if (isIllegalName(projectNameTextField.getText())) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
         }
+
         File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile(f) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             return false;
         }
+        
         // not allow to create project on unix root folder, see #82339
         File cfl = getCanonicalFile(new File(createdFolderTextField.getText()));
         if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
@@ -273,6 +275,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         } catch (IllegalArgumentException ex) {
             // we have passed non-folder - should be already handled
         }
+        
         if (prj != null || foundButBroken) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectMightAlreadyExists")); // NOI18N
@@ -282,6 +285,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return true;
     }
 
+    @Override
     void store(WizardDescriptor d) {
 
         String name = projectNameTextField.getText().trim();
@@ -292,6 +296,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         d.putProperty( /*XXX Define somewhere */"name", name); // NOI18N
     }
 
+    @Override
     void read(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty("projdir");  //NOI18N
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
@@ -325,9 +330,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         this.projectNameTextField.selectAll();
     }
 
+    @Override
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
@@ -339,15 +346,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     // End of variables declaration//GEN-END:variables
 
     // Private methods ---------------------------------------------------------
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setName("Select Project Directory"); // XXX // NOI18N
-        return chooser;
-    }
-
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
         String name = MessageFormat.format(formater, new Object[]{new Integer(index)});
         File file = new File(parentFolder, name);
@@ -355,6 +353,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     // Implementation of DocumentListener --------------------------------------
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -365,6 +364,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -375,6 +375,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {

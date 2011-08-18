@@ -65,6 +65,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         this.type = type;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new PanelConfigureProjectVisual(this, type);
@@ -72,20 +73,24 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(PanelConfigureProject.class.getName() + '_' + type); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -94,6 +99,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         changeSupport.fireChange();
     }
 
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
@@ -106,16 +112,19 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
         }
     }
 
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
         d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);

@@ -62,30 +62,37 @@ class PanelIncludesExcludes implements WizardDescriptor.FinishablePanel {
         viz = new IncludeExcludeVisualizer();
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public Component getComponent() {
         return viz.getVisualizerPanel();
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public void storeSettings(Object wiz) {
         WizardDescriptor w = (WizardDescriptor) wiz;
         w.putProperty(ProjectProperties.INCLUDES, viz.getIncludePattern());
         w.putProperty(ProjectProperties.EXCLUDES, viz.getExcludePattern());
     }
 
+    @Override
     public void readSettings(Object wiz) {
         WizardDescriptor w = (WizardDescriptor) wiz;
         String includes = (String) w.getProperty(ProjectProperties.INCLUDES);
@@ -106,6 +113,7 @@ class PanelIncludesExcludes implements WizardDescriptor.FinishablePanel {
         viz.setRoots(roots);
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(PanelIncludesExcludes.class);
     }

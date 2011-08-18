@@ -33,7 +33,7 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="sourcesTextField" pref="296" max="32767" attributes="0"/>
+                                  <Component id="srcTextField" pref="296" max="32767" attributes="0"/>
                                   <Component id="javadocTextField" pref="296" max="32767" attributes="0"/>
                                   <Component id="runtimeTextField" pref="296" max="32767" attributes="0"/>
                                   <Component id="sdkTextField" alignment="0" pref="296" max="32767" attributes="0"/>
@@ -80,7 +80,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="srcLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseSourcesButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="sourcesTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="srcTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="messageLabel" min="-2" max="-2" attributes="0"/>
@@ -131,7 +131,7 @@
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="sourcesTextField">
+    <Component class="javax.swing.JTextField" name="srcTextField">
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
