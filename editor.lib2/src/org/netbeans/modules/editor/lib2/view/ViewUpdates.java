@@ -242,7 +242,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try { // No return prior this "try" to properly unset incomingModification
-                if (!docView.isUpdatable() || docView.getViewCount() == 0) {
+                if (!docView.op.isUpdatable() || docView.getViewCount() == 0) {
                     // For viewCount zero - it would later fail on paragraphViewIndex == -1
                     // Even for empty doc there should be a single paragraph view for extra ending '\n'
                     // so this should only happen when no views were created yet.
@@ -272,7 +272,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                 }
                 
             } finally {
-                docView.setIncomingModification(false);
+                docView.op.clearIncomingModification();
                 docView.unlock();
             }
         }
@@ -284,7 +284,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try { // No return prior this "try" to properly unset incomingModification
-                if (!docView.isUpdatable() || docView.getViewCount() == 0) {
+                if (!docView.op.isUpdatable() || docView.getViewCount() == 0) {
                     // For viewCount zero - it would later fail on paragraphViewIndex == -1
                     // Even for empty doc there should be a single paragraph view for extra ending '\n'
                     // so this should only happen when no views were created yet.
@@ -313,7 +313,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
                     }
                 }
             } finally {
-                docView.setIncomingModification(false);
+                docView.op.clearIncomingModification();
                 docView.unlock();
             }
         }
@@ -325,7 +325,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         if (docView.lock()) {
             docView.checkDocumentLockedIfLogging();
             try {
-                if (!docView.isUpdatable()) {
+                if (!docView.op.isUpdatable()) {
                     return;
                 }
                 // TODO finish
@@ -367,7 +367,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     }
 
     void syncedViewsRebuild() {
-        if (docView.isActive()) {
+        if (docView.op.isActive()) {
             OffsetRegion region = fetchRebuildRegion();
             if (region != null) {
                 docView.checkDocumentLockedIfLogging();
@@ -399,7 +399,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     /*private*/ void incomingEvent(DocumentEvent evt) {
         if (incomingEvent != null) {
             // Rebuild the view hierarchy: temporary solution until the real cause is found.
-            docView.releaseChildrenUnlocked();
+            docView.op.releaseChildrenUnlocked();
             LOG.log(Level.INFO, "View hierarchy rebuild due to pending document event", // NOI18N
                     new Exception("Pending incoming event: " + incomingEvent)); // NOI18N
         }
@@ -423,13 +423,13 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         @Override
         public void insertUpdate(DocumentEvent e) {
             incomingEvent(e);
-            docView.setIncomingModification(true);
+            docView.op.markIncomingModification();
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
             incomingEvent(e);
-            docView.setIncomingModification(true);
+            docView.op.markIncomingModification();
         }
 
         @Override
@@ -442,7 +442,7 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
     private final class RebuildViews implements Runnable {
         
         public @Override void run() {
-            docView.syncViewsRebuild();
+            docView.op.syncViewsRebuild();
         }
 
     }

@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,63 +42,41 @@
  * made subject to such option by the copyright holder.
  */
 
+package org.netbeans.modules.editor.lib2.view;
 
-package org.netbeans.modules.form;
+import org.openide.util.Exceptions;
 
-import javax.swing.Action;
-import org.netbeans.api.java.loaders.JavaDataSupport;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-
-import org.openide.util.actions.SystemAction;
-
-/** The DataNode for Forms.
+/**
+ * Accessor for the package-private functionality in org.netbeans.api.editor.view.
  *
- * @author Ian Formanek
+ * @author Miloslav Metelka
+ * @version 1.00
  */
-public class FormDataNode extends FilterNode {
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = 1795549004166402392L;
 
-    /** Icon base for form data objects. */
-    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/form.gif"; // NOI18N
-
-    /** Constructs a new FormDataObject for specified primary file
-     * 
-     * @param fdo form data object
-     */
-    public FormDataNode(FormDataObject fdo) {
-        this(JavaDataSupport.createJavaNode(fdo.getPrimaryFile()));
-    }
+public abstract class ViewApiPackageAccessor {
     
-    private FormDataNode(Node orig) {
-        super(orig);
-        ((AbstractNode) orig).setIconBaseWithExtension(FORM_ICON_BASE);
-    }
+    private static ViewApiPackageAccessor INSTANCE;
     
-    @Override
-    public Action getPreferredAction() {
-        // issue 56351
-        return new javax.swing.AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                EditorSupport supp = getCookie(EditorSupport.class);
-                supp.openFormEditor(false);
+    public static ViewApiPackageAccessor get() {
+        if (INSTANCE == null) {
+            // Cause api accessor impl to get initialized
+            try {
+                Class.forName(ViewHierarchy.class.getName(), true, ViewApiPackageAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
             }
-        };
+        }
+        return INSTANCE;
+    }
+
+    public static void register(ViewApiPackageAccessor accessor) {
+        INSTANCE = accessor;
     }
     
-    @Override
-    public Action[] getActions(boolean context) {
-        Action[] javaActions = super.getActions(context);
-        Action[] formActions = new Action[javaActions.length+2];
-        formActions[0] = SystemAction.get(org.openide.actions.OpenAction.class);
-        formActions[1] = SystemAction.get(org.openide.actions.EditAction.class);
-        formActions[2] = null;
-        // Skipping the first (e.g. Open) action
-        System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);
-        return formActions;
-    }
+    public abstract ViewHierarchy createViewHierarchy(ViewHierarchyImpl impl);
+    
+    public abstract LockedViewHierarchy createLockedViewHierarchy(ViewHierarchyImpl impl);    
+
+    public abstract ViewHierarchyEvent createEvent(ViewHierarchy viewHierarchy, ViewHierarchyChange change);
 
 }

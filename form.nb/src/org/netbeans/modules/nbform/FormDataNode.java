@@ -42,48 +42,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.lib2.view;
 
-import java.util.logging.Logger;
-import javax.swing.text.TabExpander;
-import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+package org.netbeans.modules.nbform;
 
-/**
- * Tab expander of the editor.
- * <br/>
- * It aligns visually (not by number of characters) since it's a desired behavior
- * for asian languages characters that visually occupy two regular characters and they should
- * be treated in that way in terms of tab aligning.
+import javax.swing.Action;
+import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.netbeans.modules.form.EditorSupport;
+import org.netbeans.modules.form.FormDataObject;
+import org.openide.actions.EditAction;
+import org.openide.actions.OpenAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+
+import org.openide.util.actions.SystemAction;
+
+/** The DataNode for Forms.
  *
- * @author Miloslav Metelka
+ * @author Ian Formanek
  */
+public class FormDataNode extends FilterNode {
+    /** generated Serialized Version UID */
+    //  static final long serialVersionUID = 1795549004166402392L;
 
-public final class EditorTabExpander implements TabExpander {
+    /** Icon base for form data objects. */
+    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/form.gif"; // NOI18N
 
-    // -J-Dorg.netbeans.modules.editor.lib2.view.EditorTabExpander.level=FINE
-    private static final Logger LOG = Logger.getLogger(EditorTabExpander.class.getName());
-
-    private final DocumentView documentView;
-
-    private int tabSize;
-
-    public EditorTabExpander(DocumentView documentView) {
-        this.documentView = documentView;
-        updateTabSize();
+    /** Constructs a new FormDataObject for specified primary file
+     * 
+     * @param fdo form data object
+     */
+    public FormDataNode(FormDataObject fdo) {
+        this(JavaDataSupport.createJavaNode(fdo.getPrimaryFile()));
     }
-
-    /* package */ void updateTabSize() {
-        Integer tabSizeInteger = (Integer) documentView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
-        tabSize = (tabSizeInteger != null) ? tabSizeInteger : EditorPreferencesDefaults.defaultTabSize;
+    
+    private FormDataNode(Node orig) {
+        super(orig);
+        ((AbstractNode) orig).setIconBaseWithExtension(FORM_ICON_BASE);
     }
-
+    
     @Override
-    public float nextTabStop(float x, int tabOffset) {
-        float defaultCharWidth = documentView.op.getDefaultCharWidth();
-        int charIndex = (int) (x / defaultCharWidth);
-        charIndex = (charIndex + tabSize) / tabSize * tabSize;
-        return charIndex * defaultCharWidth;
+    public Action getPreferredAction() {
+        // issue 56351
+        return new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                EditorSupport supp = getCookie(EditorSupport.class);
+                supp.openFormEditor(false);
+            }
+        };
+    }
+    
+    @Override
+    public Action[] getActions(boolean context) {
+        Action[] javaActions = super.getActions(context);
+        Action[] formActions = new Action[javaActions.length+2];
+        formActions[0] = SystemAction.get(OpenAction.class);
+        formActions[1] = SystemAction.get(EditAction.class);
+        formActions[2] = null;
+        // Skipping the first (e.g. Open) action
+        System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);
+        return formActions;
     }
 
 }

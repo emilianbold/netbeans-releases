@@ -104,7 +104,7 @@ public final class TabView extends EditorView implements TabableView {
         DocumentView docView = getDocumentView();
         return (axis == View.X_AXIS)
             ? width // Return last width computed by getTabbedSpan()
-            : ((docView != null) ? docView.getDefaultLineHeight() : 0f);
+            : ((docView != null) ? docView.op.getDefaultRowHeight() : 0f);
     }
 
     @Override

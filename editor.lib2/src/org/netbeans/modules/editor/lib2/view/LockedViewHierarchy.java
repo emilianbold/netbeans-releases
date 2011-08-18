@@ -37,46 +37,35 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
+import java.util.concurrent.Callable;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.editor.lib2.view.ViewApiPackageAccessor;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyChange;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyImpl;
 
 /**
- * View hierarchy associated with a particular text component (for its whole lifetime).
+ * Locked view hierarchy as result of {@link ViewHierarchy#lock() }.
  * <br/>
- * View hierarchy needs to be locked before doing most operations - see {@link #lock() }.
+ * Underlying document of the view hierarchy's text component must be
+ * read-locked to guarantee stability of offsets passed to methods of this class.
  * <br/>
- * If editor view hierarchy is currently not installed into particular text component
+ * If editor view hierarchy is not installed into text component
  * (text component's root view is not an instance of DocumentView)
- * the methods (in LockedViewHierarchy) return default values as described in their documentation.
+ * the methods return default values as described in their documentation.
  * 
  * @author Miloslav Metelka
  */
-public final class ViewHierarchy {
-    
-    static {
-        ViewApiPackageAccessor.register(new PackageAccessor());
-    }
-    
-    /**
-     * Get view hierarchy for an existing text component.
-     *
-     * @param component non-null text component.
-     * @return non-null view hierarchy instance. The method will always return the same result
-     *  for the given text component.
-     */
-    public static @NonNull ViewHierarchy get(@NonNull JTextComponent component) {
-        return ViewHierarchyImpl.get(component).viewHierarchy();
-    }
+public final class LockedViewHierarchy {
     
     private final ViewHierarchyImpl impl;
     
-    ViewHierarchy(ViewHierarchyImpl impl) {
+    LockedViewHierarchy(ViewHierarchyImpl impl) {
         this.impl = impl;
     }
-    
+
+    public void unlock() {
+        impl.unlock(this);
+    }
+
     /**
      * Get text component that this view hierarchy is associated with.
      * <br/>
@@ -88,64 +77,47 @@ public final class ViewHierarchy {
     }
     
     /**
-     * Lock view hierarchy in order to perform operations described in {@link LockedViewHierarchy }.
+     * Get y coordinate of a visual row that corresponds to given offset.
      * <br/>
-     * Underlying document of the view hierarchy's text component must be read-locked
-     * to guarantee stability of offsets passed to methods of LockedViewHierarchy.
+     * This method can only be run within transaction {@link #runTransaction(java.util.concurrent.Callable)}.
      * <br/>
-     * Code example:<code>
-     * // Possible textComponent.getDocument() read-locking
-     * LockedViewHierarchy lvh = ViewHierarchy.get(textComponent).lock();
-     * try {
-     *     ...
-     * } finally {
-     *     lvh.unlock();
-     * }
-     * </code>
+     * Underlying document of the view hierarchy's text component should be read-locked
+     * to guarantee stability of passed offset.
+     * <br/>
+     * If editor view hierarchy is not installed into text component this method
+     * delegates to {@link JTextComponent#modelToView(int) }.
      *
-     * @return locked view hierarchy.
-     * @throws Exception 
+     * @param offset
+     * @return y
      */
-    public LockedViewHierarchy lock() {
-        return impl.lock();
+    public double modelToY(int offset) {
+        return impl.modelToY(this, offset);
     }
     
     /**
-     * Add listener for view hierarchy changes.
-     * <br/>
-     * Listener will be notified on a locked view hierarchy.
+     * Multi-offset variant of {@link #modelToY(int)} with improved efficiency for sorted offsets.
      *
-     * @param l non-null listener.
+     * @param offsets array of offsets to be translated to y coordinates. More efficiency
+     *  is achieved if the offsets are sorted from lowest to highest (at least partially).
+     * @return array of y-coordinates (with the same cardinality as offsets array).
      */
-    public void addViewHierarchyListener(@NonNull ViewHierarchyListener l) {
-        impl.addViewHierarchyListener(l);
+    public double[] modelToY(int[] offsets) {
+        return impl.modelToY(this, offsets);
     }
-
+    
     /**
-     * Remove listener for view hierarchy changes.
-     *
-     * @param l non-null listener.
+     * Get height of a visual row of text.
+     * <br/>
+     * For wrapped lines (containing multiple visual rows) this is height of a single visual row.
+     * <br/>
+     * Current editor view hierarchy implementation uses uniform row height for all the rows.
+     * <br/>
+     * This method can only be run within transaction {@link #runTransaction(java.util.concurrent.Callable)}.
+     * 
+     * @return height of a visual row.
      */
-    public void removeViewHierarchyListener(@NonNull ViewHierarchyListener l) {
-        impl.removeViewHierarchyListener(l);
+    public float getDefaultRowHeight() {
+        return impl.getDefaultRowHeight(this);
     }
 
-    private static final class PackageAccessor extends ViewApiPackageAccessor {
-
-        @Override
-        public ViewHierarchy createViewHierarchy(ViewHierarchyImpl impl) {
-            return new ViewHierarchy(impl);
-        }
-
-        @Override
-        public LockedViewHierarchy createLockedViewHierarchy(ViewHierarchyImpl impl) {
-            return new LockedViewHierarchy(impl);
-        }
-        
-        @Override
-        public ViewHierarchyEvent createEvent(ViewHierarchy viewHierarchy, ViewHierarchyChange change) {
-            return new ViewHierarchyEvent(viewHierarchy, change);
-        }
-
-    }
 }

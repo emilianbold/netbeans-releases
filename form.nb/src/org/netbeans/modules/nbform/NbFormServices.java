@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.DialogBinding;
+import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormServices;
@@ -53,6 +54,9 @@ import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.nodes.Node;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -102,6 +106,17 @@ public class NbFormServices implements FormServices {
     public ClassSource getProjectClassSource(Project project, String className) {
         ClassSource.Entry entry = new ClassSourceResolver.ProjectEntry(project);
         return new ClassSource(className, entry);
+    }
+
+    @Override
+    public Node createFormDataNode(FormDataObject formDataObject) {
+        FormDataNode node = new FormDataNode(formDataObject);
+        return node;
+    }
+
+    @Override
+    public Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+        return JavaDataSupport.createJavaFileEntry(obj, primaryFile);
     }
     
 }

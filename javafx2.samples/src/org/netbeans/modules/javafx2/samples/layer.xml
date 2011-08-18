@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Templates">
+<!--    <!folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
                 <folder name="JavaFX2">
@@ -39,7 +39,7 @@
                         <attr name="prjType" stringvalue="j2se"/>
                         <attr name="position" intvalue="400"/>
                     </file>
-<!--                    
+                    
                     <file name="Ensemble.zip" url="resources/Ensemble.zip">
                         <attr name="template" boolvalue="true"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javafx2.samples.Bundle"/>
@@ -48,7 +48,7 @@
                         <attr name="prjType" stringvalue="j2se"/>
                         <attr name="position" intvalue="500"/>
                     </file>
--->                    
+                    
                     <file name="KeystrokeMotion.zip" url="resources/KeystrokeMotion.zip">
                         <attr name="template" boolvalue="true"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javafx2.samples.Bundle"/>
@@ -76,5 +76,5 @@
                 </folder>
             </folder>
         </folder>
-    </folder>
+    </folder>-->
 </filesystem>
