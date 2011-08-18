@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,39 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.jsf;
 
-package org.netbeans.modules.web.jsf.api.editor;
-
-
-import org.openide.awt.UndoRedo;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.openide.util.Lookup;
 
 /**
+ * Custom {@code MultiViewEditorElement} for preventing default 'editor' message.
+ * See {@link MultiViewEditorElement} for more informations.
  *
- * @author Petr Pisl
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface JSFConfigEditorContext {
+public class JSFConfigMultiViewEditorElement extends MultiViewEditorElement {
 
-    /**
-     * The method provides the faces configuration file, for which the editor is opened.
-     * @return faces configuration file
-     */
-    public FileObject getFacesConfigFile();
+    public JSFConfigMultiViewEditorElement(Lookup lookup) {
+        super(lookup);
+    }
 
-    /**
-     * Provide UndoRedo manager for the editor.
-     * @return
-     */
-    public UndoRedo getUndoRedo();
+    @Override
+    public CloseOperationState canCloseElement() {
+        return CloseOperationState.STATE_OK;
+    }
 
-    /**
-     * This method should be called by from the implementation of
-     * MultiViewElement.setMultiViewCallback. The editor needs to know, which TopComponent
-     * is now displayed.
-     * @param topComponent which is displayed
-     */
-    public void setMultiViewTopComponent(TopComponent topComponent);
 }
