@@ -113,8 +113,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
     // -----
     // I18N String constants
-    private static final String ALL_PROJECTS_STRING = NbBundle.getMessage(ProfilingPointsWindowUI.class,
-                                                                          "ProfilingPointsWindowUI_AllProjectsString"); // NOI18N
+    private static final String ALL_PROJECTS_STRING = ProfilingPointsUIHelper.get().getAllProjectsString();
     private static final String PROJECT_LABEL_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
                                                                          "ProfilingPointsWindowUI_ProjectLabelText"); // NOI18N
     private static final String INCL_SUBPROJ_CHECKBOX_TEXT = NbBundle.getMessage(ProfilingPointsWindowUI.class,
@@ -689,16 +688,18 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         toolbar.add(projectLabel);
         toolbar.add(projectsCombo);
 
-        dependenciesCheckbox = new JCheckBox();
-        org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, INCL_SUBPROJ_CHECKBOX_TEXT);
-        dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
-        toolbar.add(dependenciesCheckbox);
-        dependenciesCheckbox.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    ProfilerIDESettings.getInstance().setIncludeProfilingPointsDependencies(dependenciesCheckbox.isSelected());
-                    refreshProfilingPoints();
-                }
-            });
+        if (ProfilingPointsUIHelper.get().displaySubprojectsOption()) {
+            dependenciesCheckbox = new JCheckBox();
+            org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, INCL_SUBPROJ_CHECKBOX_TEXT);
+            dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
+            toolbar.add(dependenciesCheckbox);
+            dependenciesCheckbox.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        ProfilerIDESettings.getInstance().setIncludeProfilingPointsDependencies(dependenciesCheckbox.isSelected());
+                        refreshProfilingPoints();
+                    }
+                });
+        }
 
         toolbar.add(new JToolBar.Separator());
 
