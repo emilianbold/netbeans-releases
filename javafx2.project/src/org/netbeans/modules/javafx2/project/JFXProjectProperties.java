@@ -56,10 +56,7 @@ import javax.swing.JToggleButton;
 import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.project.ui.JFXDeploymentCategoryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -67,7 +64,6 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -76,6 +72,8 @@ import org.openide.util.Utilities;
 public final class JFXProjectProperties {
 
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
+    
+    public static final String JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String JAVADOC_PRIVATE = "javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE = "javadoc.notree"; // NOI18N

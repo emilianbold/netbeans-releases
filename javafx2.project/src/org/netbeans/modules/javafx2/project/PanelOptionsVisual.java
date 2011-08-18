@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -232,6 +233,12 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         return pkg.length() == 0 ? main.toString() : String.format("%s.%s", pkg.toString(), main.toString()); // NOI18N
     }
 
+    private JavaPlatform getSelectedPlatform() {
+        Object selectedItem = this.platformComboBox.getSelectedItem();
+        JavaPlatform platform = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
+        return platform;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -288,6 +295,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         platformComboBox.setModel(platformsModel);
         platformComboBox.setRenderer(platformsCellRenderer);
+        platformComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                platformComboBoxItemStateChanged(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(btnManagePlatforms, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Manage_Button")); // NOI18N
         btnManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
@@ -378,7 +390,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .addComponent(mainClassTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(setAsMainCheckBox)
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
 
         cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N
@@ -421,21 +433,27 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 }//GEN-LAST:event_btnLibFolderActionPerformed
 
 private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
-        Object selectedItem = this.platformComboBox.getSelectedItem();
-        JavaPlatform jp = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
-        PlatformsCustomizer.showCustomizer(jp);        
+        PlatformsCustomizer.showCustomizer(getSelectedPlatform());        
 }//GEN-LAST:event_btnManagePlatformsActionPerformed
+
+private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformComboBoxItemStateChanged
+        this.panel.fireChangeEvent();
+}//GEN-LAST:event_platformComboBoxItemStateChanged
 
     @Override
     boolean valid(WizardDescriptor settings) {
-
+        if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
+            return false;
+        }
+        
         if (cbSharable.isSelected()) {
             String location = txtLibFolder.getText();
             if (projectLocation != null) {
                 if (new File(location).isAbsolute()) {
                     settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                             NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.absolutePath")); // NOI18N
-
                 } else {
                     File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
                     File libLoc = PropertyUtils.resolveFile(projectLoc, location);
@@ -471,9 +489,13 @@ private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {
     void store(WizardDescriptor d) {
         Templates.setDefinesMainProject(d, setAsMainCheckBox.isSelected());
         WizardSettings.setSetAsMain(type, setAsMainCheckBox.isSelected());
-        d.putProperty( /*XXX Define somewhere */"mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null); // NOI18N
-        d.putProperty(SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null); // NOI18N
+        d.putProperty("mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null); // NOI18N
+        d.putProperty(SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
+        
+        String platformName = getSelectedPlatform().getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+        d.putProperty(JFXProjectProperties.JAVA_PLATFORM_NAME, platformName);
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLibFolder;
     private javax.swing.JButton btnManagePlatforms;

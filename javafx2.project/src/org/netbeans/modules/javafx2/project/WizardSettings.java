@@ -48,7 +48,7 @@ import org.netbeans.modules.javafx2.project.NewJFXProjectWizardIterator.WizardTy
 import org.openide.util.NbPreferences;
 
 /**
- * Storage of information application to the new J2SEProject wizard.
+ * Storage of information application to the new Java FX Wizard.
  */
 public class WizardSettings {
 

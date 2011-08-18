@@ -139,8 +139,10 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
         }
         dirF = FileUtil.normalizeFile(dirF);
+        
         String name = (String) wiz.getProperty("name"); // NOI18N
         String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
+        
         String librariesDefinition = (String) wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
@@ -148,13 +150,17 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             }
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
+        
+        String platformName = (String) wiz.getProperty(JFXProjectProperties.JAVA_PLATFORM_NAME);
+        
         handle.progress(NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
         switch (type) {
             case EXT:
                 File[] sourceFolders = (File[]) wiz.getProperty("sourceRoot"); // NOI18N
                 File[] testFolders = (File[]) wiz.getProperty("testRoot"); // NOI18N
                 String buildScriptName = (String) wiz.getProperty("buildScriptName"); // NOI18N
-                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
+                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName, platformName);
+                
                 EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
                 if (includes == null) {
@@ -167,6 +173,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 }
                 ep.setProperty(ProjectProperties.EXCLUDES, excludes);
                 h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                
                 handle.progress(2);
                 for (File f : sourceFolders) {
                     FileObject srcFo = FileUtil.toFileObject(f);
@@ -176,7 +183,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 }
                 break;
             default:
-                h = JFXProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition);
+                h = JFXProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition, platformName);
                 handle.progress(2);
                 if (mainClass != null && mainClass.length() > 0) {
                     try {

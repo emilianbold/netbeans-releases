@@ -110,7 +110,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="80" max="32767" attributes="0"/>
+              <EmptySpace pref="66" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -242,6 +242,9 @@
           <Connection code="platformsCellRenderer" type="code"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="platformComboBoxItemStateChanged"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnManagePlatforms">
       <Properties>
