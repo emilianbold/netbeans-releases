@@ -847,7 +847,7 @@ public final class DocumentView extends EditorView
                 if (ViewHierarchy.REPAINT_LOG.isLoggable(Level.FINE)) {
                     ViewHierarchy.REPAINT_LOG.fine("OFFSET-REPAINT: <" + startOffset + "," + endOffset + ">\n");
                 }
-                if (isActive() && startOffset < endOffset) {
+                if (isActive() && startOffset < endOffset && getViewCount() > 0) {
                     Rectangle2D repaintRect;
                     Rectangle2D.Double docViewRect = getAllocation();
                     int pViewIndex = getViewIndex(startOffset);
