@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.libs.cloud9</code-name-base>
+            <code-name-base>org.netbeans.modules.libs.oracle.cloud</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
                 <package>oracle.nuviaq.api</package>
                 <package>oracle.nuviaq.exception</package>
                 <package>oracle.nuviaq.model.xml</package>
-                <package>org.netbeans.modules.libs.cloud9.api</package>
+                <package>org.netbeans.modules.libs.oracle.cloud.api</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/nuviaq-api.jar</runtime-relative-path>

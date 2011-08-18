@@ -39,56 +39,55 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.cloud9;
+package org.netbeans.modules.libs.oracle.cloud;
+
 
 import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
 
-/**
- *
- */
-class WhiteListPackagesHandler extends DefaultHandler2 {
+public class WhiteListPackageImportHandler extends DefaultHandler2 {
 
-    private StringBuilder pkg;
-    private boolean exclude;
+    private String startElement = null;
+    private String fileName;
+    private String pkg;
+    private List<String> otherFiles;
 
-    public WhiteListPackagesHandler() {
+    public WhiteListPackageImportHandler(List<String> otherFiles) {
+        this.otherFiles = otherFiles;
+    }
+    
+    public void endDocument() throws SAXException {
     }
 
-    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        startElement = qName;
+        if ("Import".equals(qName)) {
+            fileName = "";
+        }
         if ("Package".equals(qName)) {
-            pkg = new StringBuilder();
-            exclude = "true".equals(attributes.getValue("exclude"));
+            pkg = "";
         }
     }
 
-    @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if (pkg != null) {
-            pkg.append(ch, start, length);
+        String value = new String(ch, start, length);
+        if ("Import".equals(startElement)) {
+            fileName += value;
+        }
+        if ("Package".equals(startElement)) {
+            pkg += value;
         }
     }
 
-    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
+        startElement = null;
+        if ("Import".equals(qName)) {
+            otherFiles.add(fileName);
+        }
         if ("Package".equals(qName)) {
-            boolean recursive = false;
-            if (pkg.toString().endsWith(".**")) {
-                pkg.setLength(pkg.length()-3);
-                recursive = true;
-            }
-            if (exclude) {
-                WhiteListConfigReader.getBuilder().addDisallowedPackage(pkg.toString(), recursive);
-            } else {
-                WhiteListConfigReader.getBuilder().addAllowedPackage(pkg.toString(), recursive);
-            }
-            pkg = null;
+            WhiteListConfigReader.getBuilder().addCheckedPackage(pkg.toString().replace('\\', '.'));
         }
     }
-
-
-
 }

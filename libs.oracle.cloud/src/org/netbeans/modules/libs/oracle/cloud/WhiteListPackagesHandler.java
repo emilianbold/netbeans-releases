@@ -39,89 +39,56 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.cloud9;
+package org.netbeans.modules.libs.oracle.cloud;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.DefaultHandler2;
-import org.xml.sax.helpers.DefaultHandler;
 
-class WhiteListConfigHandler extends DefaultHandler2 {
+/**
+ *
+ */
+class WhiteListPackagesHandler extends DefaultHandler2 {
 
-    private String configStartElement = null;
-    private DefaultHandler handler = null;
-    private static HashMap<String, DefaultHandler> handlers = new HashMap<String, DefaultHandler>();
-    private List<String> otherFiles;
+    private StringBuilder pkg;
+    private boolean exclude;
 
-    public WhiteListConfigHandler(List<String> otherFiles) {
-        this.otherFiles = otherFiles;
+    public WhiteListPackagesHandler() {
     }
 
-    public void startDocument()
-            throws SAXException {
-        registedHandlers();
-    }
-
-    public void endDocument()
-            throws SAXException {
-        Collection<DefaultHandler> hlds = handlers.values();
-        for (DefaultHandler hld : hlds) {
-            hld.endDocument();
-        }
-        handlers.clear();
-    }
-
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (configStartElement == null) {
-            handler = getHandler(qName);
-            if (handler != null) {
-                configStartElement = qName;
-            }
-        }
-        if (handler != null) {
-            handler.startElement(uri, localName, qName, attributes);
+        if ("Package".equals(qName)) {
+            pkg = new StringBuilder();
+            exclude = "true".equals(attributes.getValue("exclude"));
         }
     }
 
+    @Override
     public void characters(char[] ch, int start, int length) throws SAXException {
-        if (handler != null) {
-            handler.characters(ch, start, length);
+        if (pkg != null) {
+            pkg.append(ch, start, length);
         }
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (handler != null) {
-            handler.endElement(uri, localName, qName);
-        }
-        if (qName.equals(configStartElement)) {
-            configStartElement = null;
-            handler = null;
+        if ("Package".equals(qName)) {
+            boolean recursive = false;
+            if (pkg.toString().endsWith(".**")) {
+                pkg.setLength(pkg.length()-3);
+                recursive = true;
+            }
+            if (exclude) {
+                WhiteListConfigReader.getBuilder().addDisallowedPackage(pkg.toString(), recursive);
+            } else {
+                WhiteListConfigReader.getBuilder().addAllowedPackage(pkg.toString(), recursive);
+            }
+            pkg = null;
         }
     }
 
-    private DefaultHandler getHandler(String element) {
-        return handlers.get(element);
-    }
 
-    private void registedHandlers() {
-        handlers.put("WhitelistClassMethod", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Class,
-                "WhitelistClassMethod","ClassName", "Method", "MethodName", "Parameters"));
-        handlers.put("WhitelistExtendableClass", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Extendable,
-                "WhitelistExtendableClass","ExtendableClassName", "Method", "OverrideMethodName", "Parameters"));
-        handlers.put("WhitelistInstantiateableClass", 
-            new WhiteListClassHandler(WhiteListClassHandler.Type.Instantiable,
-                "WhitelistInstantiateableClass", "InstantiateableClassName", "Constructor", null, "Parameters"));
-        handlers.put("ListOfPackageImport", 
-            new WhiteListPackageImportHandler(otherFiles));
-//        handlers.put("ListOfSystemPackage",
-//            new WhiteListSystemPackageHandler());
-        handlers.put("WhitelistPackages",
-            new WhiteListPackagesHandler());
-    }
+
 }

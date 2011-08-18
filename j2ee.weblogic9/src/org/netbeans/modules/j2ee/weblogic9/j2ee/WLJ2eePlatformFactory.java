@@ -114,7 +114,7 @@ import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementa
 import org.netbeans.modules.javaee.specs.support.spi.JaxWsPoliciesSupportImplementation;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
-import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
+import org.netbeans.modules.libs.oracle.cloud.api.WhiteListQuerySupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;

@@ -39,9 +39,9 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.libs.cloud9;
+package org.netbeans.modules.libs.oracle.cloud;
 
-import org.netbeans.modules.libs.cloud9.api.WhiteListQuerySupport;
+import org.netbeans.modules.libs.oracle.cloud.api.WhiteListQuerySupport;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.filesystems.FileObject;
