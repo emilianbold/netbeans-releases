@@ -446,6 +446,7 @@ public class ProjectsRootNode extends AbstractNode {
     }
 
     static final class BadgingNode extends FilterNode implements ChangeListener, PropertyChangeListener, Runnable, FileStatusListener {
+        private static final String MAGIC = "BadgingNode.μαγικ"; // #199591
         private final Object privateLock = new Object();
         private Set<FileObject> files;
         private Map<FileSystem,FileStatusListener> fileSystemListeners;
@@ -763,32 +764,28 @@ public class ProjectsRootNode extends AbstractNode {
 
         public @Override String getHtmlDisplayName() {
             String htmlName = getOriginal().getHtmlDisplayName();
-            String dispName = null;
-            if (isMain() && htmlName == null) {
-                dispName = super.getDisplayName();
+            if (htmlName == null) {
                 try {
-                    dispName = XMLUtil.toElementContent(dispName);
+                    htmlName = XMLUtil.toElementContent(getOriginal().getDisplayName());
                 } catch (CharConversionException ex) {
                     // ignore
                 }
+            }
+            if (htmlName == null) {
+                return null;
             }
             if (files != null && files.iterator().hasNext()) {
                 try {
                     FileSystem.Status stat = files.iterator().next().getFileSystem().getStatus();
                     if (stat instanceof FileSystem.HtmlStatus) {
                         FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-
-                        String result = hstat.annotateNameHtml(super.getDisplayName(), files);
-                        //Make sure the super string was really modified
-                        if (result != null && !super.getDisplayName().equals(result)) {
-                           return isMain() ? "<b>" + (result) + "</b>" : result; //NOI18N
-                        }
+                        htmlName = hstat.annotateNameHtml(MAGIC, files).replace(MAGIC, htmlName);
                     }
                 } catch (FileStateInvalidException e) {
                     LOG.log(Level.INFO, null, e);
                 }
             }      
-            return isMain() ? "<b>" + (htmlName == null ? dispName : htmlName) + "</b>" : htmlName; //NOI18N
+            return isMain() ? "<b>" + htmlName + "</b>" : htmlName;
         }
 
         public @Override Image getIcon(int type) {
