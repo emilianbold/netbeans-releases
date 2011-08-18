@@ -682,6 +682,8 @@ public class JarClassLoader extends ProxyClassLoader {
                     return fjar.get();
                 } catch (InterruptedException ex) {
                     // ignore and retry
+                } catch (ThreadDeath td) {
+                    throw td; // #201098
                 } catch (ExecutionException ex) {
                     Throwable cause = ex.getCause();
                     if (cause instanceof IOException) {
@@ -689,7 +691,7 @@ public class JarClassLoader extends ProxyClassLoader {
                         // down the stack.
                         throw (IOException)cause;
                     } else {
-                        throw (IOException)new IOException().initCause(cause);
+                        throw new IOException(cause);
                     }
                 }
             }
