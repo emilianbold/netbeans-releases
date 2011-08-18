@@ -55,7 +55,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
-import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
@@ -114,14 +113,8 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
     public CppEditorSupport(SourceDataObject obj) {
-        super(obj, null, new Environment(obj));
+        super(obj, new Environment(obj));
         this.ic = obj.getInstanceContent();
-        this.ic.add(obj.getNodeDelegate());
-    }
-
-    @Override
-    protected Pane createPane() {
-         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
 
     /** 
@@ -231,33 +224,33 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 //        return super.createPane();
 //    }
     
-//    @Override
-//    protected Pane createPane() {
-//        DataObject dataObject = getDataObject();
-//        if (dataObject != null && dataObject.isValid()) {
-//           Collection<? extends CndMultiViewProvider> providers = Lookup.getDefault().lookupAll(CndMultiViewProvider.class);
-//             if (!providers.isEmpty()) {
-//                MultiViewDescription defaultOne = null;
-//               List<MultiViewDescription> descriptions = new ArrayList<MultiViewDescription>();
-//               descriptions.add(new StandardDescriptor());
-//               for (CndMultiViewProvider provider : providers) {
-//                    MultiViewDescription d = provider.addMultiViewDescriptions(dataObject, descriptions);
-//                    if (d != null) {
-//                        defaultOne = d;
-//                    }
-//                }
-//                if (descriptions.size() > 1) {
-//                    if (defaultOne == null && descriptions.size() > 0) {
-//                        defaultOne = descriptions.get(0);
-//                    }
-//                    CloneableEditorSupport.Pane pane= (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(
-//                            descriptions.toArray(new MultiViewDescription[descriptions.size()]), defaultOne);
-//                    return pane;
-//                }
-//            }
-//        }
-//        return super.createPane();
-//    }
+    @Override
+    protected Pane createPane() {
+        DataObject dataObject = getDataObject();
+        if (dataObject != null && dataObject.isValid()) {
+            Collection<? extends CndMultiViewProvider> providers = Lookup.getDefault().lookupAll(CndMultiViewProvider.class);
+            if (!providers.isEmpty()) {
+                MultiViewDescription defaultOne = null;
+                List<MultiViewDescription> descriptions = new ArrayList<MultiViewDescription>();
+                descriptions.add(new StandardDescriptor());
+                for (CndMultiViewProvider provider : providers) {
+                    MultiViewDescription d = provider.addMultiViewDescriptions(dataObject, descriptions);
+                    if (d != null) {
+                        defaultOne = d;
+                    }
+                }
+                if (descriptions.size() > 1) {
+                    if (defaultOne == null && descriptions.size() > 0) {
+                        defaultOne = descriptions.get(0);
+                    }
+                    CloneableEditorSupport.Pane pane= (CloneableEditorSupport.Pane) MultiViewFactory.createCloneableMultiView(
+                            descriptions.toArray(new MultiViewDescription[descriptions.size()]), defaultOne);
+                    return pane;
+                }
+            }
+        }
+        return super.createPane();
+    }
     
     
     private class StandardDescriptor implements MultiViewDescription {
