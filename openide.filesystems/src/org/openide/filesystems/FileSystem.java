@@ -902,6 +902,15 @@ public abstract class FileSystem implements Serializable {
          * this interface to supply HTML annotations) should return null if
          * the filesystem they proxy does not provide an implementation of
          * {@link FileSystem.HtmlStatus}.
+         * <p>Note that since the {@code name} argument must be free of HTML,
+         * it is tricky to use this decorator on a {@code Node} arising from
+         * foreign code, to chain decorators, or otherwise when you wish to add
+         * decorations to an HTML label whose creation you do not control.
+         * As a workaround, pass in an arbitrary but HTML-free string as an argument
+         * (something unlikely to occur elsewhere) and replace that string in the
+         * result with the original HTML label - under the assumption that the
+         * decorator does not inspect its argument but merely adds some prefix
+         * and/or suffix.
          *
          * @param name the name suggested by default. It cannot contain HTML
          * markup tags but must escape HTML metacharacters. For example
