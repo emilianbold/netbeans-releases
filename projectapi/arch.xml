@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <api group="java" name="ProjectAPI" type="export" category="official">
-   The Project API defines abstract projects, i.e. groupings of files built and
+   The Project API defines abstract projects. These are groupings of files built and
    manipulated as units. It is used for Ant-based projects but could support
    other scenarios such as makefiles. Modules can plug in project types which can
    recognize certain folders as being projects, and define their behaviors.
