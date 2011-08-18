@@ -162,8 +162,8 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
             return ""; // NOI18N
         }
 
-        StringBuffer buf = new StringBuffer("new "); // NOI18N
-        buf.append(indexedProperty.getElementType().getName());
+        StringBuilder buf = new StringBuilder("new "); // NOI18N
+        buf.append(indexedProperty.getElementType().getCanonicalName());
 
         // empty array
         if (array.length == 0) {
@@ -174,11 +174,12 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
             buf.append("[] {\n\t"); // NOI18N
 
             for (int i = 0; i < array.length; i++) {
-                try {
-                    indexedProperty.getIndexedPropertyEditor().setValue(array[i]);
-                    buf.append(indexedProperty.getIndexedPropertyEditor().getJavaInitializationString());
-                } catch (NullPointerException e) {
-                    buf.append("null"); // NOI18N
+                PropertyEditor ed = indexedProperty.getIndexedPropertyEditor();
+                if (ed != null) {
+                    ed.setValue(array[i]);
+                    buf.append(ed.getJavaInitializationString());
+                } else {
+                    buf.append("???"); // NOI18N
                 }
 
                 if (i != (array.length - 1)) {
