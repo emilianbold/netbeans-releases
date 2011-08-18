@@ -45,33 +45,18 @@ package org.netbeans.jellytools;
 
 import java.io.IOException;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTest;
-import org.netbeans.junit.NbTestSuite;
 
 /** Test of FindInFilesOperator.
  * @author  ai97726
  */
 public class FindInFilesOperatorTest extends JellyTestCase {
 
-   /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-
     /** Method used for explicit testsuite definition
      * @return  created suite
      */
     public static Test suite() {
-        /*
-        TestSuite suite = new NbTestSuite();
-        suite.addTest(new FindInFilesOperatorTest("testOverall"));
-        return suite;
-         */
         return (NbTest) NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(FindInFilesOperatorTest.class).
                 addTest("testOverall").enableModules(".*").clusters(".*"));
@@ -84,13 +69,10 @@ public class FindInFilesOperatorTest extends JellyTestCase {
     }
     
     /** Setup before every test case. */
+    @Override
     protected void setUp() throws IOException {
         System.out.println("### "+getName()+" ###");
         openDataProjects("SampleProject");
-    }
-    
-    /** Clean up after each test case. */
-    protected void tearDown() {
     }
     
     public void testOverall() {
