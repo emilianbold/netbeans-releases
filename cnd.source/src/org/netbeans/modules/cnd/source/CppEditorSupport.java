@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
@@ -249,7 +250,8 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
                 }
             }
         }
-        return super.createPane();
+//        return super.createPane();
+         return (CloneableEditorSupport.Pane) MultiViews.createCloneableMultiView(getDataObject().getPrimaryFile().getMIMEType(), getDataObject());
     }
     
     
