@@ -55,6 +55,7 @@ maven.hints,\
 maven.indexer,\
 maven.junit,\
 maven.model,\
+maven.osgi,\
 nbjunit,\
 o.apache.tools.ant.module,\
 o.n.bootstrap,\

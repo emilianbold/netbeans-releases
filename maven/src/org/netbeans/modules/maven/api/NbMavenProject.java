@@ -60,7 +60,6 @@ import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -70,6 +69,7 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenSettings.DownloadStrategy;
+import org.netbeans.modules.maven.spi.PackagingProvider;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -77,6 +77,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -308,15 +309,13 @@ public final class NbMavenProject {
      * @return 
      */
     public String getPackagingType() {
-        MavenProjectPropsImpl props = project.getAuxProps();
-        String custom = props.get(Constants.HINT_PACKAGING, true);
-        MavenProject orig = project.getOriginalMavenProject();
-// ignore the old solution. getRawMappings() is expensive in this context..
-//        if (custom == null) {
-//            // fallback to previous old solution. 
-//            custom = project.getLookup().lookup(UserActionGoalProvider.class).getRawMappings().getPackaging();
-//        }
-        return custom != null ? custom : orig.getPackaging();
+        for (PackagingProvider pp : Lookup.getDefault().lookupAll(PackagingProvider.class)) {
+            String p = pp.packaging(project);
+            if (p != null) {
+                return p;
+            }
+        }
+        return getMavenProject().getPackaging();
     }
     
     

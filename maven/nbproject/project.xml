@@ -447,6 +447,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.execute.model</package>
                 <package>org.netbeans.modules.maven.execute.model.io.jdom</package>
                 <package>org.netbeans.modules.maven.execute.model.io.xpp3</package>
+                <package>org.netbeans.modules.maven.spi</package>
                 <package>org.netbeans.modules.maven.spi.actions</package>
                 <package>org.netbeans.modules.maven.spi.cos</package>
                 <package>org.netbeans.modules.maven.spi.customizer</package>

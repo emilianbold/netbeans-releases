@@ -36,60 +36,28 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.spi;
 
-import java.util.prefs.Preferences;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.test.TestFileUtils;
-import org.openide.modules.ModuleInfo;
-import org.openide.modules.Modules;
-import org.openide.util.test.MockLookup;
+import org.openide.util.lookup.ServiceProvider;
 
-public class MavenProjectPropsImplTest extends NbTestCase {
+/**
+ * Provides a means of detecting a project's packaging for purposes of IDE internals.
+ * @see NbMavenProject#getPackagingType
+ * @see ServiceProvider
+ * @since 2.20
+ */
+public interface PackagingProvider {
 
-    public MavenProjectPropsImplTest(String name) {
-        super(name);
-    }
-
-    private FileObject d;
-    private Project prj;
-    private Preferences p;
-
-    protected @Override void setUp() throws Exception {
-        System.setProperty("org.netbeans.core.startup.ModuleSystem.CULPRIT", "true");
-        MockLookup.setInstances(new Modules() {
-            @Override public ModuleInfo ownerOf(Class<?> clazz) {
-                return null;
-            }
-        });
-        clearWorkDir();
-        d = FileUtil.toFileObject(getWorkDir());
-        TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>0</version></project>");
-        prj = ProjectManager.getDefault().findProject(d);
-        p = ProjectUtils.getPreferences(prj, MavenProjectPropsImplTest.class, true);
-    }
-
-    public void testBasicUsage() throws Exception {
-        p.put("k", "v");
-        assertEquals("v", p.get("k", null));
-    }
-
-    public void testInvalidNames() throws Exception { // #200901
-        p.putBoolean("a<b", true);
-        p.flush();
-    }
-
-    public void testHintPackaging() throws Exception {
-        NbMavenProject nbmp = prj.getLookup().lookup(NbMavenProject.class);
-        assertEquals("jar", nbmp.getPackagingType());
-        TestFileUtils.writeFile(d, "nb-configuration.xml", "<project-shared-configuration><properties xmlns='http://www.netbeans.org/ns/maven-properties-data/1'><netbeans.hint.packaging>war</netbeans.hint.packaging></properties></project-shared-configuration>");
-        assertEquals("war", nbmp.getPackagingType());
-    }
+    /**
+     * Optionally supplies a packaging for a given project.
+     * @param project a Maven project
+     * @return a packaging other than {@link MavenProject#getPackaging}, or null for no special behavior
+     */
+    @CheckForNull String packaging(@NonNull Project project);
 
 }
