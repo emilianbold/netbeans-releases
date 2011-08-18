@@ -91,6 +91,7 @@ import org.netbeans.modules.form.MetaBinding;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -1477,7 +1478,7 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                     return false;
                 }
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                                                 new ClassSource.LibraryEntry(lib));
+                                                 new ClassSourceResolver.LibraryEntry(lib));
                 return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
             }
             catch (IOException ex) {

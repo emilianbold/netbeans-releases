@@ -50,31 +50,44 @@ import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 
 /**
- * Provider of component that will be added to Run customizer panel that will
- * be used for additional customization of set of properties affected by given
- * run configuration. Implementation of the interface should be registered using {@link org.openide.util.lookup.ServiceProvider}.
- * This interface is deprecated, use {@link org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider} instead.
+ * Provider of component that will be added to customizer panel of category specified
+ * by getCategory() return value. Component will be used for additional customization 
+ * of a set of additional properties not customized by standard J2SE Project controls.
+ * Implementation of the interface should be registered using {@link org.netbeans.spi.project.ProjectServiceProvider}.
  * 
- * @deprecated 
+ * @author Petr Somol
  * @author Milan Kubec
- * @since 1.10
+ * @since 1.46
  */
-@Deprecated
-public interface J2SERunConfigProvider {
+public interface J2SECategoryExtensionProvider {
     
     /**
-     * Provides component that is added to Run Customizer panel of j2seproject
+     * Enumeration of categories for which extension is currently allowed
+     */
+    enum ExtensibleCategory { PACKAGING, RUN }
+            
+    /**
+     * Provides identifier of category whose panel should be extended by this component provider
+     * 
+     * @returns identifier of the category to be extended
+     */
+    ExtensibleCategory getCategory();
+    
+    /**
+     * Provides component that is added to the customizer panel of j2seproject
+     * selected by getCategory() return value
      * 
      * @param proj project to create the customizer component for
      * @param listener listener to be notified when properties should be updated
+     * @returns extension panel to be added to the specified category
      */
     JComponent createComponent(Project proj, ConfigChangeListener listener);
     
     /**
-     * Method is called when the config is changed (or created), 
-     * component is updated according to properties of the config
+     * Method is called when properties exposed by the provided component
+     * get changed externally and the component needs to be updated accordingly
      * 
-     * @param props all properties (shared + private) of the new config;
+     * @param props all properties (shared + private);
      *        properites are not evaluated
      */
     void configUpdated(Map<String,String> props);

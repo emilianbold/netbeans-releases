@@ -50,28 +50,37 @@ import javax.swing.JComponent;
 
 import org.netbeans.api.project.Project;
 
-import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
+import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 
 import org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel;
 
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  *
  * @author Milan Kubec
+ * @author Petr Somol
+ * @since 1.14
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider.class)
-public class J2SERunConfigProviderImpl implements J2SERunConfigProvider {
+@ProjectServiceProvider(service=J2SECategoryExtensionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
+public class J2SERunConfigProviderImpl implements J2SECategoryExtensionProvider {
     
     public J2SERunConfigProviderImpl() {}
     
-    public JComponent createComponent(Project p, J2SERunConfigProvider.ConfigChangeListener listener) {
+    @Override
+    public ExtensibleCategory getCategory() {
+        return ExtensibleCategory.RUN;
+    }
+    
+    @Override
+    public JComponent createComponent(Project p, J2SECategoryExtensionProvider.ConfigChangeListener listener) {
         J2SEPropertyEvaluator j2sePropEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
         PropertyEvaluator evaluator = j2sePropEval.evaluator();
         String enabled = evaluator.getProperty("jnlp.enabled"); // NOI18N
         JWSCustomizerPanel.runComponent.addListener(listener);
-        if ("true".equals(enabled)) {
+        if ("true".equals(enabled)) { // NOI18N
             JWSCustomizerPanel.runComponent.setCheckboxEnabled(true);
             JWSCustomizerPanel.runComponent.setHintVisible(false);
         } else {
@@ -81,6 +90,7 @@ public class J2SERunConfigProviderImpl implements J2SERunConfigProvider {
         return JWSCustomizerPanel.runComponent;
     }
     
+    @Override
     public void configUpdated(Map<String,String> m) {
         if ((m.get("$target.run") != null) && (m.get("$target.debug") != null)) { // NOI18N
             JWSCustomizerPanel.runComponent.setCheckboxSelected(true);

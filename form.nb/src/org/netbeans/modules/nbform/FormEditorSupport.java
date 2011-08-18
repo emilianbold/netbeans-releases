@@ -114,6 +114,7 @@ import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.PersistenceException;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
@@ -860,7 +861,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                     Library lib = LibraryManager.getDefault().getLibrary((String)libName);
                     ClassPathUtils.updateProject(fob, new ClassSource(
                             (className == null) ? null : className.toString(),
-                            new ClassSource.LibraryEntry(lib))
+                            new ClassSourceResolver.LibraryEntry(lib))
                     );
                 } catch (IOException ioex) {
                     Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);

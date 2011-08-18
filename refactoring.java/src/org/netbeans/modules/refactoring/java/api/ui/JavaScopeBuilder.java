@@ -39,11 +39,13 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.java.ui;
+package org.netbeans.modules.refactoring.java.api.ui;
 
 import org.netbeans.modules.refactoring.api.Scope;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.refactoring.java.ui.CustomScopePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -53,6 +55,7 @@ import org.openide.util.HelpCtx;
  * different parts of open projects to include in the new scope.
  * 
  * @author Ralph Ruijs
+ * @since 1.27.0
  */
 public final class JavaScopeBuilder {
 
@@ -65,7 +68,7 @@ public final class JavaScopeBuilder {
      */
     public static Scope open(String title, final Scope scope) {
         final CustomScopePanel panel = new CustomScopePanel();
-        final Successful successful = new Successful();
+        final AtomicBoolean successful = new AtomicBoolean();
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 panel,
@@ -80,7 +83,7 @@ public final class JavaScopeBuilder {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == DialogDescriptor.OK_OPTION) {
-                    successful.setSuccess(true);
+                    successful.set(true);
                 }
             }
         });
@@ -97,25 +100,9 @@ public final class JavaScopeBuilder {
         
         DialogDisplayer.getDefault().createDialog(dialogDescriptor).setVisible(true);
         
-        if(successful.isSuccess()) {
+        if(successful.get()) {
             return panel.getCustomScope();
         }
         return null;
-    }
-    
-    private static class Successful {
-        private boolean success;
-
-        public Successful() {
-            success = false;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
     }
 }

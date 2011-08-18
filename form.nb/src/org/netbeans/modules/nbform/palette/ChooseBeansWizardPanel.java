@@ -56,6 +56,7 @@ import org.netbeans.modules.form.palette.PaletteUtils;
 import org.openide.WizardDescriptor;
 
 import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.nbform.project.ClassSourceResolver;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbCollections;
 
@@ -88,11 +89,11 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
         if ((markedBeans == null) && ((allBeans == null) || (allBeans.isEmpty()))) {
             // No beans found
             String messageKey;
-            if (sourceType == ClassSource.JarEntry.class)
+            if (sourceType == ClassSourceResolver.JarEntry.class)
                 messageKey = "MSG_NoBeanInJAR"; // NOI18N
-            else if (sourceType == ClassSource.LibraryEntry.class)
+            else if (sourceType == ClassSourceResolver.LibraryEntry.class)
                 messageKey = "MSG_NoBeanInLibrary"; // NOI18N
-            else if (sourceType == ClassSource.ProjectEntry.class)
+            else if (sourceType == ClassSourceResolver.ProjectEntry.class)
                 messageKey = "MSG_NoBeanInProject"; // NOI18N
             else
                 throw new IllegalArgumentException();

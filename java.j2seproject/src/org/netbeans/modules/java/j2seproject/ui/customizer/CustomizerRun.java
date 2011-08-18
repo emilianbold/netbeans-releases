@@ -49,6 +49,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.OptionsDialog;
 import org.openide.DialogDescriptor;
@@ -88,7 +89,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     J2SEProjectProperties uiProperties;
     
-    private J2SERunConfigProvider compProvider;
+    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
+    private J2SERunConfigProvider compProviderDeprecated;
+    private int nextExtensionYPos;
     
     public CustomizerRun( J2SEProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -96,8 +99,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         this.project = uiProperties.getProject();
         
-        compProvider = Lookup.getDefault().lookup(J2SERunConfigProvider.class);
+        nextExtensionYPos = 0;
+        // BEGIN Deprecated
+        compProviderDeprecated = Lookup.getDefault().lookup(J2SERunConfigProvider.class);
         initExtPanel(project);
+        // END Deprecated
+        
+        for (J2SECategoryExtensionProvider compProvider : project.getLookup().lookupAll(J2SECategoryExtensionProvider.class)) {
+            if( compProvider.getCategory() == J2SECategoryExtensionProvider.ExtensibleCategory.RUN ) {
+                if( addExtPanel(project,compProvider,nextExtensionYPos) ) {
+                    compProviders.add(compProvider);
+                    nextExtensionYPos++;
+                }
+            }
+        }
+        addPanelFiller(nextExtensionYPos);
         
         configs = uiProperties.RUN_CONFIGS;
         
@@ -396,9 +412,31 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    @Deprecated
     private void initExtPanel(Project p) {
-        if (compProvider != null) {
+        if (compProviderDeprecated != null) {
             J2SERunConfigProvider.ConfigChangeListener ccl = new J2SERunConfigProvider.ConfigChangeListener() {
+                public void propertiesChanged(Map<String, String> updates) {
+                    // update active configuration
+                    Map<String,String> m = configs.get(uiProperties.activeConfig);
+                    m.putAll(updates);
+                }
+            };
+            JComponent comp = compProviderDeprecated.createComponent(p, ccl);
+            if (comp != null) {
+                java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+                constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+                constraints.gridx = 0;
+                constraints.gridy = nextExtensionYPos++;
+                constraints.weightx = 1.0;
+                extPanel.add(comp, constraints);
+            }
+        }
+    }
+    
+    private boolean addExtPanel(Project p, J2SECategoryExtensionProvider compProvider, int gridY) {
+        if (compProvider != null) {
+            J2SECategoryExtensionProvider.ConfigChangeListener ccl = new J2SECategoryExtensionProvider.ConfigChangeListener() {
                 public void propertiesChanged(Map<String, String> updates) {
                     // update active configuration
                     Map<String,String> m = configs.get(uiProperties.activeConfig);
@@ -410,12 +448,27 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
                 constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
                 constraints.gridx = 0;
-                constraints.gridy = 0;
+                constraints.gridy = gridY;
                 constraints.weightx = 1.0;
-                constraints.weighty = 1.0;
                 extPanel.add(comp, constraints);
+                return true;
             }
         }
+        return false;
+    }
+
+    private void addPanelFiller(int gridY) {
+        java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+        constraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        constraints.gridx = 0;
+        constraints.gridy = gridY;
+        constraints.weightx = 1.0;
+        constraints.weighty = 1.0;
+        extPanel.add( new Box.Filler(
+                new Dimension(), 
+                new Dimension(),
+                new Dimension(10000,10000) ),
+                constraints);
     }
     
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
@@ -524,7 +577,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         Map<String,String> m = configs.get(activeConfig);
         Map<String,String> def = configs.get(null);
         if (m != null) {
-            if (compProvider != null) {
+            // BEGIN Deprecated
+            if (compProviderDeprecated != null) {
+                compProviderDeprecated.configUpdated(m);
+            }
+            // END Deprecated
+            for(J2SECategoryExtensionProvider compProvider : compProviders) {
                 compProvider.configUpdated(m);
             }
             for (int i = 0; i < data.length; i++) {

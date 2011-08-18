@@ -428,9 +428,11 @@ public class J2SEProjectProperties {
         APPLICATION_HOMEPAGE_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_HOMEPAGE);
         APPLICATION_SPLASH_DOC = projectGroup.createStringDocument(evaluator, APPLICATION_SPLASH);
         
-        // CustomizerRun
-        RUN_CONFIGS = readRunConfigs();
-        activeConfig = evaluator.getProperty("config");
+        if(!isFXProject()) {
+            // CustomizerRun
+            RUN_CONFIGS = readRunConfigs();
+            activeConfig = evaluator.getProperty("config");
+        }
                 
     }
     
@@ -534,14 +536,16 @@ public class J2SEProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
         
-        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
-        EditableProperties ep = updateHelper.getProperties("nbproject/private/config.properties");
-        if (activeConfig == null) {
-            ep.remove("config");
-        } else {
-            ep.setProperty("config", activeConfig);
+        if(!isFXProject()) {
+            storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
+            EditableProperties ep = updateHelper.getProperties("nbproject/private/config.properties");
+            if (activeConfig == null) {
+                ep.remove("config");
+            } else {
+                ep.setProperty("config", activeConfig);
+            }
+            updateHelper.putProperties("nbproject/private/config.properties", ep);
         }
-        updateHelper.putProperties("nbproject/private/config.properties", ep);
         
         //Hotfix of the issue #70058
         //Should use the StoreGroup when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
@@ -878,6 +882,15 @@ public class J2SEProjectProperties {
                 updateHelper.putProperties(privatePath, privateCfgProps);
             }
         }
+    }
+
+    /**
+     * Checks presence of JavaFX 2.0 project extension.
+     * Used to disable JSE Run config read/save mechanism
+     * to enable its replacement in JFX2 Project implementation.
+     */
+    boolean isFXProject() {
+        return J2SEProjectUtil.isTrue(evaluator.getProperty("javafx.enabled")); // NOI18N
     }
     
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {

@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
     <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
 </apidefs>
 <changes>
+        <change id="JavaScopeBuilder">
+            <api name="refactoring"/>
+            <summary>UI support for creating a new Scope.</summary>
+            <version major="1" minor="27"/>
+            <date day="17" month="8" year="2011"/>
+            <author login="ralphbenjamin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                UI support for creating a new Scope. Opens a dialog to select
+                different parts of open projects to include in the new scope.
+                </p>    
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.api.ui" name="JavaScopeBuilder"/>
+            <issue number="200572"/>
+    </change>
     <change id="ChangeParameters">
         <api name="refactoring"/>
         <summary>Method name and return type added, to allow them to be changed from the refactoring.</summary>

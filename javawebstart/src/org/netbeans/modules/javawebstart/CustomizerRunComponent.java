@@ -50,7 +50,7 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
+import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties;
 
 /**
@@ -62,7 +62,7 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
     private Map<String,String> runSelectedMap = new HashMap<String,String>();
     private Map<String,String> runUnselectedMap = new HashMap<String,String>();
     
-    private J2SERunConfigProvider.ConfigChangeListener listener;
+    private J2SECategoryExtensionProvider.ConfigChangeListener listener;
     
     public CustomizerRunComponent() {
         initComponents();
@@ -107,7 +107,7 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
         add(hintLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
-    public void addListener(J2SERunConfigProvider.ConfigChangeListener l) {
+    public void addListener(J2SECategoryExtensionProvider.ConfigChangeListener l) {
         listener = l;
     }
     
