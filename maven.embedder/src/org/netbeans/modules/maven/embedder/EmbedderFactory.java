@@ -70,7 +70,7 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.BaseLoggerManager;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.openide.ErrorManager;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.sonatype.aether.RepositorySystemSession;
@@ -184,7 +184,7 @@ public final class EmbedderFactory {
         }
     }
 
-    public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
+    public static @NonNull MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
@@ -230,17 +230,14 @@ public final class EmbedderFactory {
 //                desc.getConfiguration().getChild("hostKeyChecking").setValue("no"); //NOI18N
 //                }
 //        });
-        MavenEmbedder embedder = null;
         try {
-            embedder = new MavenEmbedder(configuration);
+            return new MavenEmbedder(configuration);
             //MEVENIDE-634 make all instances non-interactive
 //            WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
 //            wagonManager.setInteractive(false);
         } catch (ComponentLookupException ex) {
-            ErrorManager.getDefault().notify(ex);
+            throw new PlexusContainerException(ex.toString(), ex);
         }
-
-        return embedder;
     }
 
     public static final class OfflineConnector implements RepositoryConnectorFactory {
@@ -256,30 +253,30 @@ public final class EmbedderFactory {
         }
     }
 
-    public synchronized static MavenEmbedder getProjectEmbedder() /*throws MavenEmbedderException*/ {
+    public synchronized static @NonNull MavenEmbedder getProjectEmbedder() {
         if (project == null) {
             try {
                 project = createProjectLikeEmbedder();
             } catch (PlexusContainerException ex) {
-                Exceptions.printStackTrace(ex);
+                throw new IllegalStateException(ex);
             }
         }
         return project;
     }
 
-    public synchronized static MavenEmbedder getOnlineEmbedder() {
+    public synchronized static @NonNull MavenEmbedder getOnlineEmbedder() {
         if (online == null) {
             try {
                 online = createOnlineEmbedder();
             } catch (PlexusContainerException ex) {
-                Exceptions.printStackTrace(ex);
+                throw new IllegalStateException(ex);
             }
         }
         return online;
 
     }
 
-    /*public*/ static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
+    /*public*/ @NonNull static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
@@ -309,14 +306,13 @@ public final class EmbedderFactory {
 //            }
 //        });
 
-        MavenEmbedder embedder = null;
         try {
-            embedder = new MavenEmbedder(req);
+            return new MavenEmbedder(req);
             //MEVENIDE-634 make all instances non-interactive
 //            WagonManager wagonManager = (WagonManager) embedder.getPlexusContainer().lookup(WagonManager.ROLE);
 //            wagonManager.setInteractive(false);
         } catch (ComponentLookupException ex) {
-            ErrorManager.getDefault().notify(ex);
+            throw new PlexusContainerException(ex.toString(), ex);
         }
 //            try {
 //                //MEVENIDE-634 make all instances non-interactive
@@ -326,8 +322,6 @@ public final class EmbedderFactory {
 //            } catch (ComponentLookupException ex) {
 //                ErrorManager.getDefault().notify(ex);
 //            }
-
-        return embedder;
     }
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
