@@ -4,6 +4,4 @@ OpenIDE-Module: org.netbeans.modules.javafx2.project
 OpenIDE-Module-Layer: org/netbeans/modules/javafx2/project/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javafx2/project/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
-OpenIDE-Module-Requires: javafx2.library
 OpenIDE-Module-Provides: javafx2.runtime
-

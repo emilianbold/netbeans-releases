@@ -42,8 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.form.wizard;
+package org.netbeans.modules.nbform.wizard;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -56,14 +59,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.source.queries.api.Function;
-import org.netbeans.modules.java.source.queries.api.QueryException;
-import org.netbeans.modules.java.source.queries.api.Updates;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -135,23 +140,41 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
         }
 
         if (specifySuperclass) {
-            final String className =
-                    ClassPath.getClassPath(template, ClassPath.SOURCE).getResourceName(template, '.', false);
+            final String className = template.getName();
             final String superclassName = 
-                    ((SuperclassWizardPanel) superclassPanel).getSuperclassName();
-            try {
-                Updates.update(template.getURL(), new Function<Updates, Boolean>() {
-                    @Override
-                    public Boolean apply(Updates updates) throws QueryException {
-                        updates.setSuperClass(className, superclassName);
-                        return true;
+                    ((SuperclassWizardPanel) superclassPanel).getSuperclassName();           
+            JavaSource js = JavaSource.forFileObject(template);
+            js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
+                public void cancel() {
+                }
+                @Override
+                public void run(WorkingCopy wcopy) throws Exception {
+                    wcopy.toPhase(JavaSource.Phase.RESOLVED);
+   
+                    for (Tree t: wcopy.getCompilationUnit().getTypeDecls()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) && className.equals(((ClassTree) t).getSimpleName().toString())) {
+                            ClassTree orig = (ClassTree) t;
+                            TreeMaker maker = wcopy.getTreeMaker();
+                            TypeElement superclassElm = wcopy.getElements().getTypeElement(superclassName);
+                            ExpressionTree extendsTree = superclassElm != null
+                                ? maker.QualIdent(superclassElm)
+                                : maker.Identifier(superclassName);
+                            ClassTree copy = maker.Class(
+                                orig.getModifiers(),
+                                orig.getSimpleName(),
+                                orig.getTypeParameters(),
+                                extendsTree,
+                                orig.getImplementsClause(),
+                                orig.getMembers());
+                            wcopy.rewrite(orig, copy);
+                            break;
+                        }
                     }
-                });
-            } catch (QueryException ex) {
-                throw new IOException(ex);
-            }
+                }
+            }).commit();
         }
-        
+
         template.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
         
         return set;
