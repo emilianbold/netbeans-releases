@@ -100,6 +100,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     // Constructors
     protected CCCCompilerConfiguration(String baseDir, CCCCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master);
+        assert owner != null;
         this.owner = owner;
         libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, getLibraryLevelOptions());
         standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
