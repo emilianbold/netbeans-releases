@@ -1862,6 +1862,7 @@ abstract class EntrySupport {
             public LazySnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i) {
                 incrementCount();
                 this.entries = entries;
+                assert entries != null;
                 this.entryToInfo = e2i != null ? e2i : Collections.<Entry, EntryInfo>emptyMap();
             }
 
