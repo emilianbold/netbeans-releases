@@ -69,6 +69,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -111,23 +112,23 @@ public class JFXProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static AntProjectHelper createProject(final File dir, final String name, final String mainClass,
-            final String manifestFile, final String librariesDefinition) throws IOException {
+            final String manifestFile, final String librariesDefinition, final String platformName) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
+            @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null, librariesDefinition); //NOI18N
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null, librariesDefinition, platformName); //NOI18N
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-
+                        @Override
                         public Void run() throws Exception {
                             copyRequiredLibraries(h[0], refHelper);
                             return null;
@@ -158,7 +159,7 @@ public class JFXProjectGenerator {
     public static AntProjectHelper createProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders,
             final String manifestFile, final String librariesDefinition,
-            final String buildXmlName) throws IOException {
+            final String buildXmlName, final String platformName) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI8N
         Parameters.notNull("sourceFolders", sourceFolders); //NOI18N
@@ -167,14 +168,14 @@ public class JFXProjectGenerator {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
+            @Override
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false, librariesDefinition);
+                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false, librariesDefinition, platformName);
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-
+                        @Override
                         public Void run() throws Exception {
                             Element data = h[0].getPrimaryConfigurationData(true);
                             Document doc = data.getOwnerDocument();
@@ -273,7 +274,7 @@ public class JFXProjectGenerator {
 
     private static AntProjectHelper createProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, String mainClass, String manifestFile,
-            boolean isLibrary, String librariesDefinition) throws IOException {
+            boolean isLibrary, String librariesDefinition, String platformName) throws IOException {
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -310,9 +311,14 @@ public class JFXProjectGenerator {
         ep.setProperty("javac.classpath", ""); // NOI18N
         ep.setProperty("application.vendor", System.getProperty("user.name", "User Name")); //NOI18N
         ep.setProperty("application.title", name);
-        ep.setProperty("endorsed.classpath", new String[]{ // NOI18N
-                    "${libs.JavaFX2Runtime.classpath}", // NOI18N
-                });
+        
+        // FX-specific CLASSPATH stuff
+//        ep.setProperty("endorsed.classpath", new String[]{ // NOI18N
+//                    "${libs.JavaFX2Runtime.classpath}", // NOI18N
+//                });
+        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePath(platformName));
+        ep.setProperty("endorsed.classpath", JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
+        
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[]{"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[]{"${javac.test.classpath}"}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
@@ -364,7 +370,7 @@ public class JFXProjectGenerator {
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-        ep.setProperty("platform.active", "default_platform"); // NOI18N
+        ep.setProperty("platform.active", platformName); // NOI18N
 
 //        ep.setProperty(ProjectProperties.RUN_JVM_ARGS, "-Xbootclasspath/p:\"${libs.JavaFX2Runtime.classpath}\""); // NOI18N
 //        ep.setComment(ProjectProperties.RUN_JVM_ARGS, new String[] {
@@ -502,7 +508,7 @@ public class JFXProjectGenerator {
         final LibraryManager man = LibraryManager.forLocation(location);
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Library>() {
-
+                @Override
                 public Library run() throws IOException {
                     String name = lib.getName();
                     if (generateLibraryUniqueName) {

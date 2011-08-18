@@ -77,18 +77,21 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         initComponents();
         this.projectName.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 calculateProjectFolder();
                 dataChanged();
                 firePropertyChange(PanelProjectLocationVisual.PROP_PROJECT_NAME, null, projectName.getText());
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 calculateProjectFolder();
                 dataChanged();
                 firePropertyChange(PanelProjectLocationVisual.PROP_PROJECT_NAME, null, projectName.getText());
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 calculateProjectFolder();
                 dataChanged();
@@ -97,6 +100,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         });
         this.projectLocation.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 setCalculateProjectFolder(false);
                 checkBuildScriptName();
@@ -104,6 +108,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 firePropertyChange(PanelProjectLocationVisual.PROP_PROJECT_LOCATION, null, projectLocation.getText());
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 setCalculateProjectFolder(false);
                 checkBuildScriptName();
@@ -111,6 +116,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 firePropertyChange(PanelProjectLocationVisual.PROP_PROJECT_LOCATION, null, projectLocation.getText());
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 setCalculateProjectFolder(false);
                 checkBuildScriptName();
@@ -120,14 +126,17 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         });
         this.buildScriptName.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 dataChanged();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 dataChanged();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 dataChanged();
             }
@@ -161,6 +170,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         this.firer.fireChangeEvent();
     }
 
+    @Override
     void read(WizardDescriptor settings) {
         this.wizardDescriptor = settings;
         String path = null;
@@ -201,6 +211,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
 
     }
 
+    @Override
     void store(WizardDescriptor settings) {
         settings.putProperty("name", this.projectName.getText()); // NOI18N
         File projectsDir = new File(this.projectLocation.getText());
@@ -212,6 +223,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         settings.putProperty("buildScriptName", buildScriptName); // NOI18N
     }
 
+    @Override
     boolean valid(WizardDescriptor settings) {
         String result = checkValidity(this.projectName.getText(), this.projectLocation.getText(), this.buildScriptName.getText());
         if (result == null) {
@@ -289,6 +301,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         return null;
     }
 
+    @Override
     void validate(WizardDescriptor settings) throws WizardValidationException {
     }
 
@@ -419,7 +432,6 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
     private void browseProjectLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectLocation
         // TODO add your handling code here:
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(NbBundle.getMessage(PanelSourceFolders.class, "LBL_NWP1_SelectProjectLocation")); // NOI18N
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         String path = this.projectLocation.getText();

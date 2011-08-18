@@ -42,13 +42,13 @@
 package org.netbeans.modules.javafx2.platform;
 
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 
 /**
  *
  * @author Anton Chechel
  */
 public final class Utils {
-    private static final String PLATFORM_ANT_NAME = "platform.ant.name"; // NOI18N
     private static final String PLATFORM_PREFIX = "platforms"; // NOI18N
     private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
     private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N
@@ -59,22 +59,26 @@ public final class Utils {
     }
     
     public static String getSDKPropertyKey(JavaPlatform platform) {
-        String platformName = platform.getProperties().get(PLATFORM_ANT_NAME);
+        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
     }
     
     public static String getRuntimePropertyKey(JavaPlatform platform) {
-        String platformName = platform.getProperties().get(PLATFORM_ANT_NAME);
+        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
+    }
+
+    public static String getRuntimePropertyKey(String platformName) {
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
     }
 
     public static String getJavadocPropertyKey(JavaPlatform platform) {
-        String platformName = platform.getProperties().get(PLATFORM_ANT_NAME);
+        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_JAVADOC_PREFIX; // NOI18N
     }
 
     public static String getSourcesPropertyKey(JavaPlatform platform) {
-        String platformName = platform.getProperties().get(PLATFORM_ANT_NAME);
+        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SOURCES_PREFIX; // NOI18N
     }
 }

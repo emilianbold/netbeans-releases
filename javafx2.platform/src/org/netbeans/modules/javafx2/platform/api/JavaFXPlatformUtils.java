@@ -51,16 +51,32 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  * @author Anton Chechel
  */
 public final class JavaFXPlatformUtils {
+    public static final String PLATFORM_ANT_NAME = "platform.ant.name"; // NOI18N
+    public static final String PROPERTY_JAVAFX_RUNTIME = "javafx.runtime"; // NOI18N
     
     private JavaFXPlatformUtils() {
     }
 
-    public static boolean isJavaFXEnabled(JavaPlatform platform) {
+    public static boolean isJavaFXEnabled(final JavaPlatform platform) {
         EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
         String sdkPath = properties.get(Utils.getSDKPropertyKey(platform));
         String runtimePath = properties.get(Utils.getRuntimePropertyKey(platform));
         return sdkPath != null && runtimePath != null;
     }
+
+    public static String getJavaFXRuntimePath(String platformName) {
+        return PlatformPropertiesHandler.getGlobalProperties().get(Utils.getRuntimePropertyKey(platformName));
+    }
     
-    
+    public static String[] getJavaFXClassPath() {
+//    public static String[] getJavaFXClassPath(String platformName) {
+//        EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
+//        String runtimePath = properties.get(Utils.getRuntimePropertyKey(platformName));
+        return new String[] {
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/jfxrt.jar:", // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/deploy.jar:", // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/javaws.jar:", // NOI18N
+                    "${" + PROPERTY_JAVAFX_RUNTIME + "}/plugin.jar" // NOI18N
+        };
+    }
 }
