@@ -43,10 +43,14 @@
  */
 
 
-package org.netbeans.modules.form;
+package org.netbeans.modules.nbform;
 
 import javax.swing.Action;
 import org.netbeans.api.java.loaders.JavaDataSupport;
+import org.netbeans.modules.form.EditorSupport;
+import org.netbeans.modules.form.FormDataObject;
+import org.openide.actions.EditAction;
+import org.openide.actions.OpenAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -93,8 +97,8 @@ public class FormDataNode extends FilterNode {
     public Action[] getActions(boolean context) {
         Action[] javaActions = super.getActions(context);
         Action[] formActions = new Action[javaActions.length+2];
-        formActions[0] = SystemAction.get(org.openide.actions.OpenAction.class);
-        formActions[1] = SystemAction.get(org.openide.actions.EditAction.class);
+        formActions[0] = SystemAction.get(OpenAction.class);
+        formActions[1] = SystemAction.get(EditAction.class);
         formActions[2] = null;
         // Skipping the first (e.g. Open) action
         System.arraycopy(javaActions, 1, formActions, 3, javaActions.length-1);

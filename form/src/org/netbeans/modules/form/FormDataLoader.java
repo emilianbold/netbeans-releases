@@ -45,13 +45,13 @@
 
 package org.netbeans.modules.form;
 
-import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Lookup;
 
 /** Loader for Forms. Recognizes file with extension .form and .java and with extension class if
  * there is their source and form file.
@@ -136,7 +136,9 @@ public class FormDataLoader extends MultiFileLoader {
 
     @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
-        return JavaDataSupport.createJavaFileEntry(obj, primaryFile);
+        FormServices services = Lookup.getDefault().lookup(FormServices.class);
+        MultiDataObject.Entry entry = services.createPrimaryEntry(obj, primaryFile);
+        return entry;
     }
 
     private FileObject findJavaPrimaryFile(FileObject fo) {
