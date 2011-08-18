@@ -99,21 +99,21 @@ final class RegexpMaker {
         boolean bufIsEmpty = true;
         char lastInputChar = '*';       //might be any other non-word character
         for (char c : simplePattern.toCharArray()) {
-            if (quoted) {
+            if (quoted && (c == '?' || c == '*')) {
                 assert !starPresent && (minCount == 0);
-                if (wholeWords && bufIsEmpty && isWordChar(c)) {
+                if (wholeWords && bufIsEmpty) {
                     buf.append(checkNotAfterWordChar);
-                }
-                if ((c == 'n') || isSpecialCharacter(c)) {
-                    buf.append('\\');
-                }
+                }                
+                buf.append('\\');                
                 buf.append(c);
                 lastInputChar = c;
                 bufIsEmpty = false;
                 quoted = false;
             } else if (c == '?') {
+                assert !quoted;
                 minCount++;
             } else if (c == '*') {
+                assert !quoted;
                 starPresent = true;
             } else {
                 if (starPresent || (minCount != 0)) {
@@ -124,7 +124,10 @@ final class RegexpMaker {
                     starPresent = false;
                     minCount = 0;
                 }
-
+                if(quoted) { // backslash was not used for escaping
+                    buf.append("\\\\");
+                    quoted = false;
+                }
                 if (c == '\\') {
                     quoted = true;
                 } else {
@@ -177,7 +180,7 @@ final class RegexpMaker {
             return false;
         }
 
-        assert wordCharsExpr == "[\\p{javaLetterOrDigit}_]"             //NOI18N
+        assert "[\\p{javaLetterOrDigit}_]".equals(wordCharsExpr)        //NOI18N
                : "update implementation of method isWordChar(char)";    //NOI18N
         return (c == '_') || Character.isLetterOrDigit(c);
     }
