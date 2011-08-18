@@ -77,6 +77,9 @@ public class CndUtils {
     }
 
     public static boolean isStandalone() {
+        if ("true".equals(System.getProperty ("cnd.command.line.utility"))) { // NOI18N
+            return true;
+        }
         return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
     
