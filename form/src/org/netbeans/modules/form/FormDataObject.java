@@ -167,8 +167,8 @@ public class FormDataObject extends MultiDataObject {
      */
     @Override
     protected Node createNodeDelegate() {
-        FormDataNode node = new FormDataNode(this);
-        return node;
+        FormServices services = Lookup.getDefault().lookup(FormServices.class);
+        return services.createFormDataNode(this);
     }
 
     //--------------------------------------------------------------------

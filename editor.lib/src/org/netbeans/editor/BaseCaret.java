@@ -106,13 +106,13 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -1876,9 +1876,7 @@ AtomicLockListener, FoldHierarchyListener {
 
         @Override
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-            if (getDot() >= evt.affectedStartOffset()) {
-                scheduleCaretUpdate();
-            }
+            scheduleCaretUpdate();
         }
         
     } // End of ListenerImpl class

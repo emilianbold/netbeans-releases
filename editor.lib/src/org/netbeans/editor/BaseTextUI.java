@@ -321,11 +321,7 @@ public class BaseTextUI extends BasicTextUI implements
                             lockView.unlock();
                         }
                     } else if (view instanceof org.netbeans.modules.editor.lib2.view.DocumentView) {
-                        Rectangle alloc = getVisibleEditorRect();
-                        if (alloc != null) {
-                            rootView.setSize(alloc.width, alloc.height);
-                            return (int) Math.round(((org.netbeans.modules.editor.lib2.view.DocumentView) view).modelToY(pos, alloc));
-                        }
+                        return (int) Math.round(((org.netbeans.modules.editor.lib2.view.DocumentView) view).modelToY(pos));
                     }
                 }
             } finally {

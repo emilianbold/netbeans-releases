@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -540,6 +541,121 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
     }
     
+    public void testTypedMethod() throws IOException{
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import java.util.List; "+
+                "import javax.enterprise.inject.Typed; "+
+                " public class Clazz { "+
+                " @Typed({List.class}) Object method(){ return null; } "+
+                " int operation(){ return 0; } "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.Typed; "+
+                "import java.util.List; "+
+                "import java.util.Collection; "+
+                " public class Clazz1  { "+
+                " @Typed({Collection.class}) List<String> method(){ return null; }; "+
+                " int operation(){ return 0; }  "+
+                "}");
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz", "method");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testMethodAnnotations() throws IOException {
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz.java", "package foo; "
+                        + "import javax.inject.Inject; "
+                        + "import javax.enterprise.event.Observes; "
+                        + "import javax.enterprise.inject.Produces; "
+                        +" import javax.enterprise.inject.Disposes; "
+                        + " public class Clazz { "
+                        + " @Inject int initializer( int arg ) { return 0; } " 
+                        + " @Produces String production(){return null; } ; "
+                        + " void observer( @Observes String event ){} ; "
+                        + " void disposer( @Disposes int arg ){} "
+                        + "}");
+        
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz1.java", 
+                "package foo; "
+                + "import javax.inject.Inject; "
+                + "import javax.enterprise.inject.Produces; "
+                + " public class Clazz1 { "
+                + " @Inject @Produces int badProduction( int arg ){ return 0; } "+
+                " void  method(){}  "
+                + "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz2.java", 
+                "package foo; "
+                + "import javax.enterprise.event.Observes; "
+                + "import javax.enterprise.inject.Produces; "
+                + " public class Clazz2 { "
+                + " @Produces int badProduction( @Observes String event) { return 0; }"+
+                " void  method(){}  "
+                + "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz3.java", 
+                "package foo; "
+                + "import javax.enterprise.event.Observes; "
+                +" import javax.enterprise.inject.Disposes; "
+                + " public class Clazz3 { "
+                + " int badObserver( @Disposes @Observes String event) { return 0; }"+
+                " void  method(){}  "
+                + "}");
+
+        
+        ResultProcessor processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "badProduction");
+            }
+
+        };
+        runAnalysis(errorFile, processor);
+        
+        processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz2", "badProduction");
+            }
+
+        };
+        runAnalysis(errorFile1, processor);
+        
+        processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz3", "badObserver");
+            }
+
+        };
+        runAnalysis(errorFile2, processor);
+
+
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+    }
+    
     private void checkFieldElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
@@ -548,6 +664,26 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
     
     private void checkFieldElement(TestProblems result , String enclosingClass, 
             String expectedName , boolean checkOnlyFields )
+    {
+        checkElement(result, enclosingClass, expectedName, VariableElement.class, 
+                checkOnlyFields);
+    }
+    
+    private void checkMethodElement(TestProblems result , String enclosingClass, 
+            String expectedName , boolean checkOnlyFields)
+    {
+        checkElement(result, enclosingClass, expectedName, ExecutableElement.class, 
+                checkOnlyFields);
+    }
+    
+    private void checkMethodElement(TestProblems result , String enclosingClass, 
+            String expectedName )
+    {
+        checkMethodElement(result, enclosingClass, expectedName, false );
+    }
+    
+    private <T extends Element> void checkElement(TestProblems result , String enclosingClass, 
+            String expectedName , Class<T> elementClass, boolean checkOnlyFields )
     {
         Set<Element> elements = result.getErrors().keySet();
         Set<Element> classElements = new HashSet<Element>();
@@ -568,14 +704,15 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
             }
             if (  forAdd && clazz.getQualifiedName().contentEquals( enclosingClass )){
                 enclosingClazz = clazz;
-                System.out.println( "Found element : "+element);
+                //System.out.println( "Found element : "+element);
                 classElements.add( element );
             }
         }
         assertNotNull("Expected enclosing class doesn't contain errors", enclosingClazz );
         assertEquals(  "Expected exactly one error element", 1 , classElements.size());
         Element element = classElements.iterator().next();
-        assertTrue( element instanceof VariableElement );
+        assertTrue( elementClass.isAssignableFrom( element.getClass() ) );
         assertEquals(expectedName, element.getSimpleName().toString());
     }
+    
 }

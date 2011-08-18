@@ -166,7 +166,7 @@ final class ViewBuilder {
         }
         this.docViewStartOffset = docView.getStartOffset();
         this.docViewEndBoundOffset = docView.getEndBoundOffset();
-        this.createLocalViews = docView.isAccurateSpan();
+        this.createLocalViews = docView.op.isAccurateSpan();
     }
     
     /**
@@ -436,8 +436,8 @@ final class ViewBuilder {
             while (createNextView()) {
                 if (staleCreation && !force) {
                     ViewStats.incrementStaleViewCreations();
-                    if (ViewHierarchy.BUILD_LOG.isLoggable(Level.FINE)) {
-                        ViewHierarchy.BUILD_LOG.fine("STALE-CREATION notified => View Rebuild Terminated\n"); // NOI18N
+                    if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
+                        ViewHierarchyImpl.BUILD_LOG.fine("STALE-CREATION notified => View Rebuild Terminated\n"); // NOI18N
                     }
                     return false;
                 }
@@ -457,11 +457,11 @@ final class ViewBuilder {
             localReplace = null;
         }
 
-        if (ViewHierarchy.BUILD_LOG.isLoggable(Level.FINE)) {
-            if (ViewHierarchy.BUILD_LOG.isLoggable(Level.FINEST)) {
+        if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINE)) {
+            if (ViewHierarchyImpl.BUILD_LOG.isLoggable(Level.FINEST)) {
                 // Log original docView state
                 // Use separate string builder to at least log original state if anything goes wrong.
-                ViewHierarchy.BUILD_LOG.finer("ViewBuilder: DocView-Original-Content:\n" + // NOI18N
+                ViewHierarchyImpl.BUILD_LOG.finer("ViewBuilder: DocView-Original-Content:\n" + // NOI18N
                         docReplace.view.toStringDetailUnlocked() + '\n'); // NOI18N
             }
             StringBuilder sb = new StringBuilder(200);
@@ -481,7 +481,7 @@ final class ViewBuilder {
                 sb.append(allReplaces.get(i));
             }
             sb.append("-------------END-OF-VIEW-REBUILD-------------\n"); // NOI18N
-            ViewUtils.log(ViewHierarchy.BUILD_LOG, sb.toString());
+            ViewUtils.log(ViewHierarchyImpl.BUILD_LOG, sb.toString());
         }
         return true;
     }
@@ -636,14 +636,15 @@ final class ViewBuilder {
         DocumentView docView = docReplace.view;
         final JTextComponent textComponent = docView.getTextComponent();
         assert (textComponent != null) : "Null textComponent"; // NOI18N
-        if (firstReplace != null) {
-            if (firstReplace.isChanged()) {
-                firstReplace.view.replace(firstReplace.index,
-                        firstReplace.removeCount, firstReplace.addedViews(), modLength);
-            }
+        // Check firstReplace (in PV at (docReplace.index - 1))
+        boolean firstReplaceValid = firstReplace != null && firstReplace.isChanged();
+        if (firstReplaceValid) {
+            // This generally does not affect layout (will be computed later and possibly fire a VH change)
+            firstReplace.view.replace(firstReplace.index,
+                    firstReplace.removeCount, firstReplace.addedViews(), modLength);
         }
         // Remove paragraphs from text-layout-cache
-        TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
+        TextLayoutCache textLayoutCache = docView.op.getTextLayoutCache();
         for (int i = 0; i < docReplace.removeCount; i++) {
             ParagraphView pView = docView.getParagraphView(docReplace.index + i);
             if (pView.children != null) {
@@ -674,11 +675,11 @@ final class ViewBuilder {
         } else {
             // Update lines with default spans
             if (docReplace.added != null) {
-                float defaultLineHeight = docView.getDefaultLineHeight();
-                float defaultCharWidth = docView.getDefaultCharWidth();
+                float defaultRowHeight = docView.op.getDefaultRowHeight();
+                float defaultCharWidth = docView.op.getDefaultCharWidth();
                 for (int i = 0; i < addedSize; i++) {
                     ParagraphView addedPView = addedPViews.get(i);
-                    addedPView.setHeight(defaultLineHeight);
+                    addedPView.setHeight(defaultRowHeight);
                     addedPView.setWidth(defaultCharWidth * addedPView.getLength());
                 }
             }
@@ -686,10 +687,21 @@ final class ViewBuilder {
         
         // New paragraph views are currently not measured (they use spans
         // that were retained from old views or they use defaults).
-        double yDelta;
+        double startY;
+        double endY;
+        double deltaY;
         if (docReplace.isChanged()) {
             // Replace views in docView (includes possible call to notifyHeightChange())
-            yDelta = docView.replaceViews(docReplace.index, docReplace.removeCount, docReplace.addedViews());
+            // Fill-in startY, endY and deltaY
+            double[] yStartEndDelta = docView.replaceViews(
+                    docReplace.index, docReplace.removeCount, docReplace.addedViews());
+            endY = yStartEndDelta[1];
+            deltaY = yStartEndDelta[2];
+            if (firstReplaceValid) {
+                startY = docView.getY(docReplace.index - 1);
+            } else {
+                startY = yStartEndDelta[0];
+            }
             // Replace contents of each added paragraph view (if the contents are built too).
             for (int i = 0; i < allReplaces.size(); i++) {
                 ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(i);
@@ -697,16 +709,20 @@ final class ViewBuilder {
                     replace.view.replace(replace.index, replace.removeCount, replace.addedViews());
                 }
             }
-        } else {
-            yDelta = 0d;
+        } else { // docReplace empty
+            assert firstReplaceValid : "Invalid state - no updates done";
+            startY = docView.getY(docReplace.index - 1);
+            endY = docView.getY(docReplace.index);
+            deltaY = 0d;
         }
+        docView.addChange(startY, endY, deltaY);
         
         // For accurate span force computation of text layouts
         Rectangle2D.Double docViewRect = docView.getAllocation();
-        if (docView.isAccurateSpan()) {
+        if (docView.op.isAccurateSpan()) {
             int pIndex = docReplace.index;
             int endIndex = docReplace.addEndIndex();
-            if (firstReplace != null) {
+            if (firstReplaceValid) {
                 pIndex--;
             }
             for (; pIndex < endIndex; pIndex++) {
@@ -721,24 +737,12 @@ final class ViewBuilder {
         
         // Schedule repaints based on current docView allocation.
         // For valid firstReplace the current impl repaints whole line.
-        double endY;
-        if (firstReplace != null) {
-            docViewRect.y = docView.getY(docReplace.index - 1);
-            if (docReplace.isChanged()) {
-                if (yDelta != 0d) {
-                    endY = docViewRect.getMaxY();
-                } else {
-                    endY = docView.getY(docReplace.addEndIndex());
-                }
-            } else {
-                endY = docView.getY(docReplace.index);
-            }
-        } else {
-            docViewRect.y = docView.getY(docReplace.index);
-            endY = docView.getY(docReplace.addEndIndex());
-        }
-        docViewRect.height = endY - docViewRect.y;
-        docView.notifyRepaint(docView.extendToVisibleWidth(docViewRect));
+        docViewRect.y = startY;
+        double endRepaintY = (deltaY != 0d) 
+                ? docViewRect.getMaxY() 
+                : endY;
+        docViewRect.height = endRepaintY - docViewRect.y;
+        docView.op.notifyRepaint(docView.op.extendToVisibleWidth(docViewRect));
     }
     
     void finish() {
@@ -748,12 +752,7 @@ final class ViewBuilder {
                 factoryState.finish();
             }
         }
-        DocumentView docView = docReplace.view;
-        docView.checkIntegrityIfLoggable();
-        // Fire change of views
-        ViewHierarchyEvent evt = new ViewHierarchyEvent(docView.viewHierarchy, startCreationOffset);
-        docView.viewHierarchy.fireViewHierarchyEvent(evt);
-
+        docReplace.view.checkIntegrityIfLoggable();
     }
 
     /**

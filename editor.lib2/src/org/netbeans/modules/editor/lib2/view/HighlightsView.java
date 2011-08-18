@@ -161,7 +161,7 @@ public class HighlightsView extends EditorView {
         CharSequence docText = DocumentUtilities.getText(doc);
         int startOffset = getStartOffset();
         String text = docText.subSequence(startOffset + shift, startOffset + shift + length).toString();
-        return docView.createTextLayout(text, ViewUtils.getFirstAttributes(getAttributes()));
+        return docView.op.createTextLayout(text, ViewUtils.getFirstAttributes(getAttributes()));
     }
 
     ParagraphView getParagraphView() {

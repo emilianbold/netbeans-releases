@@ -80,7 +80,7 @@ public final class EditorTabExpander implements TabExpander {
 
     @Override
     public float nextTabStop(float x, int tabOffset) {
-        float defaultCharWidth = documentView.getDefaultCharWidth();
+        float defaultCharWidth = documentView.op.getDefaultCharWidth();
         int charIndex = (int) (x / defaultCharWidth);
         charIndex = (charIndex + tabSize) / tabSize * tabSize;
         return charIndex * defaultCharWidth;

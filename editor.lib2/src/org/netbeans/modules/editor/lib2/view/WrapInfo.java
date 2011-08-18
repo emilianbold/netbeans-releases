@@ -114,7 +114,7 @@ final class WrapInfo extends GapList<WrapLine> {
             return;
         }
         JTextComponent textComponent = docView.getTextComponent();
-        TextLayout lineContinuationTextLayout = docView.getLineContinuationCharTextLayout();
+        TextLayout lineContinuationTextLayout = docView.op.getLineContinuationCharTextLayout();
         Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
         float wrapLineHeight = wrapLineHeight(children);
         double allocOrigX = allocBounds.x;
@@ -262,7 +262,7 @@ final class WrapInfo extends GapList<WrapLine> {
         sb.append("\n"); // NOI18N
         DocumentView docView;
         if (paragraphView != null && ((docView = paragraphView.getDocumentView()) != null)) {
-            float visibleWidth = docView.getVisibleRect().width;
+            float visibleWidth = docView.op.getVisibleRect().width;
             sb.append(" visibleWidth=").append(visibleWidth); // NOI18N
         }
         int wrapLineCount = size();
