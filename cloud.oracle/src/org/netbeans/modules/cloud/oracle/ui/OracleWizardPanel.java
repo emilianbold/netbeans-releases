@@ -169,11 +169,11 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     public void validate() throws WizardValidationException {
         try {
             servers = new ArrayList<ServerResourceDescriptor>();
-            OracleInstance ai = new OracleInstance("Oracle Cloud 9", component.getUserName(), component.getPassword(), component.getUrl(), component.getTenantId(), component.getServiceName(), null);
+            OracleInstance ai = new OracleInstance("Oracle Cloud", component.getUserName(), component.getPassword(), component.getUrl(), component.getTenantId(), component.getServiceName(), null);
             try {
                 ai.testConnection();
             } catch (ManagerException ex) {
-                LOG.log(Level.WARNING, "cannot connect to cloud 9", ex);
+                LOG.log(Level.WARNING, "cannot connect to oracle cloud", ex);
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection failed", NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials"));
             } catch (Throwable t) {

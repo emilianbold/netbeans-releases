@@ -68,7 +68,7 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
 
     @Override
     public String getServerDisplayName() {
-        return "Oracle Cloud 9";
+        return "Oracle Cloud";
     }
 
     @Override

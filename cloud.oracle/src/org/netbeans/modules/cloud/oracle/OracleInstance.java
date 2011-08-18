@@ -89,7 +89,7 @@ import org.openide.windows.OutputWriter;
  */
 public class OracleInstance {
 
-    private static final RequestProcessor ORACLE_RP = new RequestProcessor("oracle cloud 9", 10); // NOI18N
+    private static final RequestProcessor ORACLE_RP = new RequestProcessor("oracle cloud", 10); // NOI18N
     
     private static final Logger LOG = Logger.getLogger(OracleInstance.class.getSimpleName());
     

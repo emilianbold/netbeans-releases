@@ -83,7 +83,7 @@ public final class WhiteListConfigReader {
     private static WhiteListImplementation reader;
 
     @NbBundle.Messages({
-        "TXT_WhiteListName=Oracle Cloud 9"
+        "TXT_WhiteListName=Oracle Public Cloud"
     })
     public synchronized static WhiteListImplementation getDefault() {
         if (reader == null) {

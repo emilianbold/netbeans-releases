@@ -110,8 +110,8 @@ public class OracleInstanceManager {
         // TODO: check uniqueness etc.
         InstanceProperties props = InstancePropertiesManager.getInstance().createProperties(ORACLE_IP_NAMESPACE);
         
-        Keyring.save(PREFIX+TENANT_USERNAME+"."+ai.getName(), ai.getTenantUserName().toCharArray(), "Oracle Cloud 9 Username"); // NOI18N
-        Keyring.save(PREFIX+TENANT_PASSWORD+"."+ai.getName(), ai.getTenantPassword().toCharArray(), "Oracle Cloud 9 Password"); // NOI18N
+        Keyring.save(PREFIX+TENANT_USERNAME+"."+ai.getName(), ai.getTenantUserName().toCharArray(), "Oracle Cloud Username"); // NOI18N
+        Keyring.save(PREFIX+TENANT_PASSWORD+"."+ai.getName(), ai.getTenantPassword().toCharArray(), "Oracle Cloud Password"); // NOI18N
         
         props.putString(URL_ENDPOINT, ai.getUrlEndpoint());
         props.putString(TENANT_ID, ai.getTenantId());

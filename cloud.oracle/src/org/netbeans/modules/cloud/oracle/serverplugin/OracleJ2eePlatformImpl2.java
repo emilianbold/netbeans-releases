@@ -163,7 +163,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
     
     @Override
     public String getDisplayName() {
-        return "Oracle Cloud 9";
+        return "Oracle Public Cloud";
     }
 
     @Override
@@ -211,7 +211,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 {
         File f = OracleInstance.findWeblogicJar(dm.getOnPremiseServiceInstanceId());
         return LookupProviderSupport.createCompositeLookup(
                 Lookups.fixed(WhiteListQuerySupport.createCloud9WhiteListQueryImpl(), new WeblogicJar(f)), 
-                "J2EE/DeploymentPlugins/Oracle Cloud 9/Lookup"); //NOI18N
+                "J2EE/DeploymentPlugins/Oracle Cloud/Lookup"); //NOI18N
     }
     
     public static final class WeblogicJar {

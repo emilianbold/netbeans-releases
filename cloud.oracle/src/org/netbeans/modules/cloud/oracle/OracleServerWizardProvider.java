@@ -51,7 +51,7 @@ public class OracleServerWizardProvider implements ServerWizardProvider {
 
     @Override
     public String getDisplayName() {
-        return "Oracle Cloud 9";
+        return "Oracle Cloud";
     }
 
     @Override

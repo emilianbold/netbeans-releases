@@ -97,7 +97,7 @@ public class OracleDeploymentFactory implements DeploymentFactory {
 
     @Override
     public String getDisplayName() {
-        return "Oracle Cloud 9";
+        return "Oracle Public Cloud";
     }
 
     @Override
