@@ -225,6 +225,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
      * @param forceFormElement determines whether we should force switch to form element.
      * @see OpenCookie#open
      */
+    @Override
     public void openFormEditor(boolean forceFormElement) {
         boolean alreadyOpened = opened.contains(this);
         boolean switchToForm = forceFormElement || !alreadyOpened;
@@ -607,6 +608,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     // -----------
     // closing/reloading
     
+    @Override
     public void reloadForm() {
         if (canClose())
             reloadDocument();
