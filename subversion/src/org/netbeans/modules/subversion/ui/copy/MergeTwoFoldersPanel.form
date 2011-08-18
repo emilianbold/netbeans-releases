@@ -30,20 +30,9 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="cbIncludeStartRevision" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="mergeEndUrlComboBox" pref="397" max="32767" attributes="2"/>
-                          <Component id="mergeStartUrlComboBox" pref="397" max="32767" attributes="2"/>
-                          <Group type="102" attributes="0">
-                              <Component id="mergeStartRevisionTextField" min="-2" pref="93" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="mergeStartSearchButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="mergeStartBrowseRevisionButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="mergeEndUrlComboBox" pref="451" max="32767" attributes="2"/>
+                          <Component id="mergeStartUrlComboBox" pref="451" max="32767" attributes="2"/>
                           <Group type="102" attributes="0">
                               <Component id="mergeEndRevisionTextField" min="-2" pref="93" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -57,6 +46,16 @@
                           <Component id="mergeEndBrowseButton" min="-2" max="-2" attributes="0"/>
                           <Component id="mergeStartBrowseButton" min="-2" max="-2" attributes="0"/>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="mergeStartRevisionTextField" min="-2" pref="93" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="mergeStartSearchButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="mergeStartBrowseRevisionButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbIncludeStartRevision" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -77,10 +76,9 @@
                   <Component id="mergeStartSearchButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mergeStartBrowseRevisionButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbIncludeStartRevision" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="cbIncludeStartRevision" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="mergeEndRepositoryFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mergeEndUrlComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
