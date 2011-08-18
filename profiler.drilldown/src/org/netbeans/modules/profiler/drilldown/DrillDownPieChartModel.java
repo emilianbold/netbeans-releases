@@ -68,7 +68,7 @@ public abstract class DrillDownPieChartModel extends AbstractPieChartModel imple
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
     protected DrillDown drillDown;
-    private Object itemMapLock = new Object();
+    private final Object itemMapLock = new Object();
     private int[] itemMap = null;
     private int itemCount = 0;
     // @GuardedBy itemMapLock

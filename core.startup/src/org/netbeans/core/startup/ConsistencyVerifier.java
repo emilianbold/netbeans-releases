@@ -54,6 +54,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.Events;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
@@ -122,19 +124,34 @@ public class ConsistencyVerifier {
         Set<Module> mods = new HashSet<Module>();
         Set<Module> regularMods = new HashSet<Module>();
         for (Manifest m : modules) {
+            final Attributes man = m.getMainAttributes();
             try {
-                m.getMainAttributes().putValue("OpenIDE-Module-Public-Packages", "-"); // NOI18N
-                m.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Friends")); // NOI18N
-                m.getMainAttributes().remove(new Attributes.Name("OpenIDE-Module-Localizing-Bundle")); // NOI18N
-                boolean autoload = "true".equals(m.getMainAttributes().getValue("autoload"));
-                boolean eager = "true".equals(m.getMainAttributes().getValue("eager"));
+                man.putValue("OpenIDE-Module-Public-Packages", "-"); // NOI18N
+                man.remove(new Attributes.Name("OpenIDE-Module-Friends")); // NOI18N
+                man.remove(new Attributes.Name("OpenIDE-Module-Localizing-Bundle")); // NOI18N
+                String bsn = man.getValue("Bundle-SymbolicName"); // NOI18N
+                String ver = man.getValue("Bundle-Version"); // NOI18N
+                if (bsn != null && ver != null) {
+                    if (man.getValue("OpenIDE-Module") == null) { // NOI18N
+                        man.putValue("OpenIDE-Module", bsn); // NOI18N
+                    }
+                    if (man.getValue("OpenIDE-Module-Specification-Version") == null) { // NOI18N
+                        Matcher match = Pattern.compile("[0-9]*(\\.[0-9]*)?(\\.[0-9]*)?").matcher(ver);
+                        if (match.find()) {
+                            ver = match.group();
+                        }
+                        man.putValue("OpenIDE-Module-Specification-Version", ver.replace("(.*)", "")); // NOI18N
+                    }
+                }
+                boolean autoload = "true".equals(man.getValue("autoload"));
+                boolean eager = "true".equals(man.getValue("eager"));
                 Module mod = mgr.createFixed(m, null, ClassLoader.getSystemClassLoader(), autoload, eager);
                 mods.add(mod);
                 if (!autoload && !eager) {
                     regularMods.add(mod);
                 }
             } catch (Exception x) {
-                throw new IllegalArgumentException("Error parsing " + m.getMainAttributes().entrySet() + ": " + x, x);
+                throw new IllegalArgumentException("Error parsing " + man.entrySet() + ": " + x, x);
             }
         }
         SortedMap<String,SortedSet<String>> problems = new TreeMap<String,SortedSet<String>>();

@@ -112,9 +112,9 @@ class ProxyItemConfiguration extends ItemConfiguration {
         } else {
             FolderConfiguration folderConfiguration = getItem().getFolder().getFolderConfiguration(getConfiguration());
             if (folderConfiguration != null) {
-                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCompilerConfiguration(), null);
+                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), folderConfiguration.getCCompilerConfiguration(), (MakeConfiguration) getConfiguration());
             } else {
-                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null, null);
+                cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration) getConfiguration()).getBaseDir(), null, (MakeConfiguration) getConfiguration());
             }
             return cCompilerConfiguration;
         }
