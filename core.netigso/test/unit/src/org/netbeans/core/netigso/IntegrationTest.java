@@ -77,7 +77,7 @@ public class IntegrationTest extends NbTestCase {
             NbModuleSuite.emptyConfiguration().addTest(
                 IntegrationTest.class
             ).honorAutoloadEager(true).clusters(
-                ".*"
+                "platform.*"
             ).failOnException(Level.WARNING)/*.failOnMessage(Level.WARNING)*/
             .gui(false)
         .suite();
@@ -101,21 +101,24 @@ public class IntegrationTest extends NbTestCase {
 
     public void testCheckWhichContainerIsRunning() throws Exception {
         ModuleManager mgr = Main.getModuleSystem().getManager();
-        mgr.mutexPrivileged().enterWriteAccess();
         Module m1;
-        String mf = "Bundle-SymbolicName: org.foo\n" +
-            "Bundle-Version: 1.1.0\n" +
-            "Bundle-ManifestVersion: 2\n" +
-            "Export-Package: org.foo";
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            String mf = "Bundle-SymbolicName: org.foo\n" +
+                "Bundle-Version: 1.1.0\n" +
+                "Bundle-ManifestVersion: 2\n" +
+                "Export-Package: org.foo";
 
-        LOG.info("about to enable module org.foo");
-        File jj1 = NetigsoHid.changeManifest(getWorkDir(), j1, mf);
-        m1 = mgr.create(jj1, null, false, false, false);
-        mgr.enable(m1);
-        LOG.info("Enabling is over");
+            LOG.info("about to enable module org.foo");
+            File jj1 = NetigsoHid.changeManifest(getWorkDir(), j1, mf);
+            m1 = mgr.create(jj1, null, false, false, false);
+            mgr.enable(m1);
+            LOG.info("Enabling is over");
 
-        assertTrue("OSGi module is now enabled", m1.isEnabled());
-        mgr.mutexPrivileged().exitWriteAccess();
+            assertTrue("OSGi module is now enabled", m1.isEnabled());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
 
         Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
         LOG.log(Level.INFO, "NetigsoFramework: {0}", obj);

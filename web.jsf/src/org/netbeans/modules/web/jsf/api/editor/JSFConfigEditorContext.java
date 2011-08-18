@@ -54,7 +54,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Petr Pisl
  */
-public interface JSFConfigEditorContext extends Node.Cookie {
+public interface JSFConfigEditorContext {
 
     /**
      * The method provides the faces configuration file, for which the editor is opened.
