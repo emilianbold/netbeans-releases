@@ -147,7 +147,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
         displayName="#CTL_SourceTabCaption",
         position=2000
     )
-    @Messages("CTL_SourceTabCaption=Source")
+    @Messages("CTL_SourceTabCaption=XML")
     public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
         return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
     }
