@@ -37,48 +37,34 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
-import java.util.EventObject;
-
 /**
- * View hierarchy event describing view rebuilding or view re-measurement change in view hierarchy.
- * <br/>
- * The change affects certain y-range of document between &lt;{@link #startOffset()},{@link #endOffset()}&gt;.
- * The changed area visually corresponds to &lt;{@link #startY()},{@link #endY()}&gt;.
- * The change may cause rest of the document to move down/up which is reflected in {@link #deltaY()}
- * giving amount of pixels the area starting at {@link #endY()} moves down (negative value means moving up).
- * <br/>
- * Note that when this event is notified the listeners must make no queries to view hierarchy
- * (they should only mark what has changed and ask later).
- * 
- * @author Miloslav Metelka
+ * Enumeration for line wrap type.
+ *
+ * @author mmetelka
  */
-
-public final class ViewHierarchyEvent extends EventObject {
+public enum LineWrapType {
     
-    private final ViewHierarchyChange change;
-
-    ViewHierarchyEvent(ViewHierarchy source, ViewHierarchyChange change) {
-        super(source);
-        this.change = change;
-    }
-
-    /**
-     * View hierarchy in which the change occurred.
-     */
-    public ViewHierarchy viewHierarchy() {
-        return (ViewHierarchy) getSource();
-    }
-
-    public double startY() {
-        return change.startY();
-    }
+    NONE("none"), //NOI18N
     
-    public double endY() {
-        return change.endY();
+    CHARACTER_BOUND("chars"), //NOI18N
+    
+    WORD_BOUND("words"); //NOI18N
+    
+    private final String settingValue;
+
+    private LineWrapType(String settingValue) {
+        this.settingValue = settingValue;
     }
 
-    public double deltaY() {
-        return change.deltaY();
+    public static LineWrapType fromSettingValue(String settingValue) {
+        if (settingValue != null) {
+            for (LineWrapType lwt : LineWrapType.values()) {
+                if (lwt.settingValue.equals(settingValue)) {
+                    return lwt;
+                }
+            }
+        }
+        return null;
     }
 
 }

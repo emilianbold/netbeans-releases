@@ -112,12 +112,12 @@ public final class NewlineView extends EditorView {
         DocumentView documentView = getDocumentView();
         if (axis == View.X_AXIS) {
             return (documentView != null)
-                    ? (documentView.isShowNonPrintingCharacters()
-                        ? documentView.getDefaultLineHeight()
-                        : documentView.getDefaultCharWidth())
+                    ? (documentView.op.isNonPrintableCharactersVisible()
+                        ? documentView.op.getDefaultRowHeight()
+                        : documentView.op.getDefaultCharWidth())
                     : 1; // Only return one if not connected to view hierarchy
         } else {
-            return (documentView != null) ? documentView.getDefaultLineHeight() : 1;
+            return (documentView != null) ? documentView.op.getDefaultRowHeight() : 1;
         }
     }
 

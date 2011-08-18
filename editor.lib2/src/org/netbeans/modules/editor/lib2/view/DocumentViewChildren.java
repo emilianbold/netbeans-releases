@@ -114,9 +114,9 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
      * @param index
      * @param removeCount
      * @param addedViews
-     * @return visual delta of y coordinate.
+     * @return array of three members consisting of startY, origEndY, deltaY corresponding to the change.
      */
-    double replace(DocumentView docView, int index, int removeCount, View[] addedViews) {
+    double[] replace(DocumentView docView, int index, int removeCount, View[] addedViews) {
         if (index + removeCount > size()) {
             throw new IllegalArgumentException("index=" + index + ", removeCount=" + // NOI18N
                     removeCount + ", viewCount=" + size()); // NOI18N
@@ -131,7 +131,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         // Assign visual offset BEFORE possible removal/addition of views is made
         // since the added views would NOT have the visual offset filled in yet.
         if (removeCount != 0) { // Removing at least one item => index < size
-            TextLayoutCache tlCache = docView.getTextLayoutCache();
+            TextLayoutCache tlCache = docView.op.getTextLayoutCache();
             for (int i = removeCount - 1; i >= 0; i--) {
                 // Do not clear text layouts since the paragraph view will be GCed anyway
                 tlCache.remove(get(index + i), false);
@@ -150,13 +150,13 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 view.setRawEndVisualOffset(endY);
             }
         }
-        double yDelta = endY - origEndY;
+        double deltaY = endY - origEndY;
         // Always call heightChangeUpdate() to fix gapStorage.visualGapStart
-        heightChangeUpdate(endAddedIndex, endY, yDelta);
-        if (yDelta != 0d) {
-            docView.notifyHeightChange();
+        heightChangeUpdate(endAddedIndex, endY, deltaY);
+        if (deltaY != 0d) {
+            docView.op.notifyHeightChange();
         }
-        return yDelta;
+        return new double[] { startY, origEndY, deltaY };
     }
     
     private void heightChangeUpdate(int endIndex, double endY, double deltaY) {
@@ -190,17 +190,17 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
      * @param docViewAlloc 
      */
     void checkChildrenSpanChange(DocumentView docView, int index) {
-        if (docView.isChildWidthChange()) {
-            docView.resetChildWidthChange();
+        if (docView.op.isChildWidthChange()) {
+            docView.op.resetChildWidthChange();
             ParagraphView pView = get(index);
             float newWidth = pView.getPreferredSpan(View.X_AXIS);
             if (newWidth > childrenWidth) {
                 childrenWidth = newWidth;
-                docView.notifyWidthChange();
+                docView.op.notifyWidthChange();
             }
         }
-        if (docView.isChildHeightChange()) {
-            docView.resetChildHeightChange();
+        if (docView.op.isChildHeightChange()) {
+            docView.op.resetChildHeightChange();
             ParagraphView pView = get(index);
             double startY = startVisualOffset(index);
             double endY = endVisualOffset(index);
@@ -212,7 +212,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 endY += deltaY;
                 pView.setRawEndVisualOffset(endY);
                 heightChangeUpdate(index, endY, deltaY);
-                docView.notifyHeightChange();
+                docView.op.notifyHeightChange();
             }
         }
     }
@@ -235,14 +235,14 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
      * are maintained as positions.
      * 
      * @param offset absolute offset to search for.
+     * @param low minimum index from which to start searching.
      * @return view index or -1.
      */
-    int viewIndexFirstByStartOffset(int offset) {
+    int viewIndexFirstByStartOffset(int offset, int low) {
         int high = size() - 1;
         if (high == -1) { // No child views
             return -1;
         }
-        int low = 0;
         while (low <= high) {
             int mid = (low + high) >>> 1;
             int midStartOffset = get(mid).getStartOffset();
@@ -285,7 +285,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             // Init the children; Do not init children before the index since it could in theory remove
             // the pView at index completely so the caller would have to do a lot of checks again.
             // Possibly init next 5 pViews after index since invoking ViewBuilder's has some overhead.
-            docView.ensureChildrenValid(index, index + 1, 0, 5);
+            docView.op.ensureChildrenValid(index, index + 1, 0, 5);
             // Reget the view since the rebuild could replace its instance
             pView = get(index);
             assert (pView.children != null);
@@ -294,15 +294,12 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     }
     
     public Shape modelToViewChecked(DocumentView docView, int offset, Shape docViewAlloc, Position.Bias bias) {
-        int pIndex = viewIndexFirstByStartOffset(offset); // Ignore bias since these are paragraph views
-        if (pIndex >= size()) {
-            pIndex = viewIndexFirstByStartOffset(offset);
-        }
+        int pIndex = viewIndexFirstByStartOffset(offset, 0); // Ignore bias since these are paragraph views
         Shape ret = docViewAlloc;
         if (pIndex >= 0) { // When at least one child the index will fit one of them
             // First find valid child (can lead to change of child allocation bounds)
             ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.getTextLayoutCache().activate(pView);
+            docView.op.getTextLayoutCache().activate(pView);
             Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             // Update the bounds with child.modelToView()
             ret = pView.modelToViewChecked(offset, childAlloc, bias);
@@ -317,7 +314,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         if (pIndex >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
             ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.getTextLayoutCache().activate(pView);
+            docView.op.getTextLayoutCache().activate(pView);
             Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             // forward to the child view
             offset = pView.viewToModelChecked(x, y, childAlloc, biasReturn);
@@ -377,7 +374,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         if (pIndex >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
             ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.getTextLayoutCache().activate(pView);
+            docView.op.getTextLayoutCache().activate(pView);
             Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             // forward to the child view
             toolTipText = pView.getToolTipTextChecked(x, y, childAlloc);
@@ -392,7 +389,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         if (pIndex >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
             ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.getTextLayoutCache().activate(pView);
+            docView.op.getTextLayoutCache().activate(pView);
             Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             // forward to the child view
             toolTip = pView.getToolTip(x, y, childAlloc);
@@ -407,25 +404,25 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             double endY = clipBounds.getMaxY();
             int startIndex;
             int endIndex;
-            if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
-                ViewHierarchy.PAINT_LOG.fine("\nDocumentViewChildren.paint(): START clipBounds: " + clipBounds + "\n"); // NOI18N
+            if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINE)) {
+                ViewHierarchyImpl.PAINT_LOG.fine("\nDocumentViewChildren.paint(): START clipBounds: " + clipBounds + "\n"); // NOI18N
             }
             do {
                 startIndex = viewIndexAtY(startY, docViewAlloc);
                 endIndex = viewIndexAtY(endY, docViewAlloc) + 1;
-                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE)) {
-                    ViewHierarchy.PAINT_LOG.fine("  paint:docView:[" + startIndex + "," + endIndex + // NOI18N
+                if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINE)) {
+                    ViewHierarchyImpl.PAINT_LOG.fine("  paint:docView:[" + startIndex + "," + endIndex + // NOI18N
                             "] for y:<" + startY + "," + endY + ">\n"); // NOI18N
                 }
                 // Ensure valid children
                 // Possibly build extra 5 lines in each direction to speed up possible scrolling
                 // If there was any update then recompute indices since rebuilding might change vertical spans
-            } while (docView.ensureChildrenValid(startIndex, endIndex, 10, 10));
+            } while (docView.op.ensureChildrenValid(startIndex, endIndex, 10, 10));
 
             // Ensure that the (inited) children are all measured
             // Text layout cache must be able to contain TLs for all painted views.
             // Otherwise firstly processed views would start to forget their TLs because of tlCache.activate()
-            TextLayoutCache tlCache = docView.getTextLayoutCache();
+            TextLayoutCache tlCache = docView.op.getTextLayoutCache();
             tlCache.ensureCapacity(endIndex - startIndex);
             endIndex = size(); // will likely be lowered inside the loop
             for (int i = startIndex; i < endIndex; i++) {
@@ -433,7 +430,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 if (pView.children == null) { // Views shrinked their vertical span during ensureIndexMeasured()
                     // Init next batch of pViews
                     int extraEndIndex = Math.min(i + 20, size());
-                    docView.ensureChildrenValid(i, extraEndIndex, 0, 0);
+                    docView.op.ensureChildrenValid(i, extraEndIndex, 0, 0);
                     tlCache.ensureCapacity(extraEndIndex - startIndex);
                     endIndex = size(); // total number of pViews may change by ensureChildrenValid()
                     pView = get(i);
@@ -451,7 +448,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             }
 
             // Paint children in <startIndex,endIndex>
-            boolean logPaintTime = ViewHierarchy.PAINT_LOG.isLoggable(Level.FINE);
+            boolean logPaintTime = ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINE);
             long nanoTime = 0L;
             if (logPaintTime) {
                 nanoTime = System.nanoTime();
@@ -497,8 +494,8 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             for (int i = startIndex; i < endIndex; i++) {
                 ParagraphView pView = get(i);
                 Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
-                if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINER)) {
-                    ViewHierarchy.PAINT_LOG.finer("    pView[" + i + "]: pAlloc=" + // NOI18N
+                if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
+                    ViewHierarchyImpl.PAINT_LOG.finer("    pView[" + i + "]: pAlloc=" + // NOI18N
                             ViewUtils.toString(childAlloc) + "\n"); // NOI18N
                 }
                 pView.paint(g, childAlloc, clipBounds);
@@ -506,7 +503,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             viewPaintHighlights = null;
             if (logPaintTime) {
                 nanoTime = System.nanoTime() - nanoTime;
-                ViewHierarchy.PAINT_LOG.fine("Painted " + (endIndex-startIndex) + // NOI18N
+                ViewHierarchyImpl.PAINT_LOG.fine("Painted " + (endIndex-startIndex) + // NOI18N
                         " lines <" + startIndex + "," + endIndex + // NOI18N
                         "> in " + (nanoTime/1000000d) + " ms\n"); // NOI18N
             }

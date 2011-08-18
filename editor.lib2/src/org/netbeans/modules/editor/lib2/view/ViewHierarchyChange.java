@@ -37,48 +37,38 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
-import java.util.EventObject;
-
 /**
- * View hierarchy event describing view rebuilding or view re-measurement change in view hierarchy.
- * <br/>
- * The change affects certain y-range of document between &lt;{@link #startOffset()},{@link #endOffset()}&gt;.
- * The changed area visually corresponds to &lt;{@link #startY()},{@link #endY()}&gt;.
- * The change may cause rest of the document to move down/up which is reflected in {@link #deltaY()}
- * giving amount of pixels the area starting at {@link #endY()} moves down (negative value means moving up).
- * <br/>
- * Note that when this event is notified the listeners must make no queries to view hierarchy
- * (they should only mark what has changed and ask later).
- * 
+ * Info about change in view hierarchy as basis for ViewHierarchyEvent.
+ *
  * @author Miloslav Metelka
  */
-
-public final class ViewHierarchyEvent extends EventObject {
+public final class ViewHierarchyChange {
     
-    private final ViewHierarchyChange change;
-
-    ViewHierarchyEvent(ViewHierarchy source, ViewHierarchyChange change) {
-        super(source);
-        this.change = change;
-    }
-
     /**
-     * View hierarchy in which the change occurred.
+     * Starting Y where the offset-to-view assignment might have changed.
      */
-    public ViewHierarchy viewHierarchy() {
-        return (ViewHierarchy) getSource();
-    }
-
+    double startY;
+    
+    /**
+     * Ending Y where the offset-to-view assignment might have changed.
+     */
+    double endY;
+    
+    /**
+     * How much the the area below changeEndY moved down/up.
+     */
+    double deltaY;
+    
     public double startY() {
-        return change.startY();
+        return startY;
     }
     
     public double endY() {
-        return change.endY();
+        return endY;
     }
 
     public double deltaY() {
-        return change.deltaY();
+        return deltaY;
     }
 
 }

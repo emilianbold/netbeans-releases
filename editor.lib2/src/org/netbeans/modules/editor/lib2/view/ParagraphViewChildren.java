@@ -304,7 +304,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                         docText = DocumentUtilities.getText(docView.getDocument());
                     }
                     String text = docText.subSequence(mEndOffset, mEndOffset + view.getLength()).toString();
-                    TextLayout textLayout = docView.createTextLayout(text, hView.getAttributes());
+                    TextLayout textLayout = docView.op.createTextLayout(text, hView.getAttributes());
                     hView.setTextLayout(textLayout);
                  }
             }
@@ -359,13 +359,15 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
             pView.notifyChildWidthChange();
         }
         boolean repaintHeightChange = false;
-        if ((fullyMeasured && newHeight != origHeight) || (!fullyMeasured && newHeight > origHeight)) {
+        double deltaY = newHeight - origHeight;
+        if ((fullyMeasured && deltaY != 0d) || (!fullyMeasured && deltaY > 0d)) {
             repaintHeightChange = true;
             pView.setHeight(newHeight);
             pView.notifyChildHeightChange();
+            docView.addChange(pViewRect.getY(), pViewRect.getMaxY(), deltaY);
         }
         // Repaint full pView [TODO] can be improved
-        Rectangle visibleRect = docView.getVisibleRect();
+        Rectangle visibleRect = docView.op.getVisibleRect();
         pView.notifyRepaint(pViewRect.getX(), pViewRect.getY(), visibleRect.getMaxX(),
                 repaintHeightChange ? visibleRect.getMaxY() : pViewRect.getMaxY());
     }
@@ -373,7 +375,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     private void checkCreateWrapInfo(DocumentView docView, double childrenWidth) {
         // For existing wrapInfo tend to create wrap info too since it could just be truncated
         // but it contains up-to-date wrap line height.
-        if (wrapInfo != null || childrenWidth > docView.getAvailableWidth()) {
+        if (wrapInfo != null || childrenWidth > docView.op.getAvailableWidth()) {
             wrapInfo = new WrapInfo();
         }
     }
@@ -453,7 +455,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                 // Extend till end of screen (docView's width)
                 Rectangle2D.Double childRect = ViewUtils.shape2Bounds(childAlloc);
                 DocumentView docView = pView.getDocumentView();
-                childRect.width = docView.getVisibleRect().getMaxX() - childRect.getX();
+                childRect.width = docView.op.getVisibleRect().getMaxX() - childRect.getX();
                 childAlloc = childRect;
             }
             view.paint(g, childAlloc, clipBounds);

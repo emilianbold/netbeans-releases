@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,46 +44,39 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.util.logging.Logger;
-import javax.swing.text.TabExpander;
-import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.openide.util.Exceptions;
 
 /**
- * Tab expander of the editor.
- * <br/>
- * It aligns visually (not by number of characters) since it's a desired behavior
- * for asian languages characters that visually occupy two regular characters and they should
- * be treated in that way in terms of tab aligning.
+ * Accessor for the package-private functionality in org.netbeans.api.editor.view.
  *
  * @author Miloslav Metelka
+ * @version 1.00
  */
 
-public final class EditorTabExpander implements TabExpander {
-
-    // -J-Dorg.netbeans.modules.editor.lib2.view.EditorTabExpander.level=FINE
-    private static final Logger LOG = Logger.getLogger(EditorTabExpander.class.getName());
-
-    private final DocumentView documentView;
-
-    private int tabSize;
-
-    public EditorTabExpander(DocumentView documentView) {
-        this.documentView = documentView;
-        updateTabSize();
+public abstract class ViewApiPackageAccessor {
+    
+    private static ViewApiPackageAccessor INSTANCE;
+    
+    public static ViewApiPackageAccessor get() {
+        if (INSTANCE == null) {
+            // Cause api accessor impl to get initialized
+            try {
+                Class.forName(ViewHierarchy.class.getName(), true, ViewApiPackageAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        return INSTANCE;
     }
 
-    /* package */ void updateTabSize() {
-        Integer tabSizeInteger = (Integer) documentView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
-        tabSize = (tabSizeInteger != null) ? tabSizeInteger : EditorPreferencesDefaults.defaultTabSize;
+    public static void register(ViewApiPackageAccessor accessor) {
+        INSTANCE = accessor;
     }
+    
+    public abstract ViewHierarchy createViewHierarchy(ViewHierarchyImpl impl);
+    
+    public abstract LockedViewHierarchy createLockedViewHierarchy(ViewHierarchyImpl impl);    
 
-    @Override
-    public float nextTabStop(float x, int tabOffset) {
-        float defaultCharWidth = documentView.op.getDefaultCharWidth();
-        int charIndex = (int) (x / defaultCharWidth);
-        charIndex = (charIndex + tabSize) / tabSize * tabSize;
-        return charIndex * defaultCharWidth;
-    }
+    public abstract ViewHierarchyEvent createEvent(ViewHierarchy viewHierarchy, ViewHierarchyChange change);
 
 }
