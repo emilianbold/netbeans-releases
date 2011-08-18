@@ -49,11 +49,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.spi.PackagingProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
@@ -339,6 +343,13 @@ public class MavenProjectPropsImpl {
             return toRet;
         }
 
+    }
+
+    @ServiceProvider(service=PackagingProvider.class, position=1000)
+    public static class PackagingProviderImpl implements PackagingProvider {
+        @Override public String packaging(Project project) {
+            return project.getLookup().lookup(MavenProjectPropsImpl.class).get(Constants.HINT_PACKAGING, true);
+        }
     }
 
 }
