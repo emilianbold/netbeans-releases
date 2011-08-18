@@ -126,7 +126,7 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
         webapp = DDProvider.getDefault().getDDRoot(ddFo);
         ddObj = (DDDataObject) DataObject.find(ddFo);
         assertNotNull("Multiview is null", ddObj);
-        ddObj.openView(3);
+        ddObj.openView(4);
         utils = new DDTestUtils(ddObj, this);
         Utils.waitForAWTDispatchThread();
     }
@@ -441,7 +441,7 @@ public class PagesAndReferencesDDTest extends J2eeTestCase {
     }
 
     public void testExistingEnvEntries() throws Exception {
-        ddObj.openView(4);
+        ddObj.openView(5);
         DDTestUtils.waitForDispatchThread();
         DDBeanTableModel model = utils.getModelByBean("env_entries");
         utils.testTable(model, new String[][]{{"EnvName", "java.lang.Character", "EnvValue", "EnvDesc"}});

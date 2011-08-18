@@ -68,7 +68,7 @@ public class ErprintSession {
     private final SunStudioFiltersProvider dataFiltersProvider;
     private String filterString;
     private volatile boolean ready;
-    private volatile boolean error;
+    private volatile Exception warmUpException;
     private volatile boolean stopped;
 
     private ErprintSession(ExecutionEnvironment execEnv, String sproHome, String experimentDirectory, SunStudioFiltersProvider dataFiltersProvider) {
@@ -97,7 +97,7 @@ public class ErprintSession {
     public static ErprintSession createNew(final ExecutionEnvironment execEnv, final String sproHome, final String experimentDirectory, final SunStudioFiltersProvider dataFiltersProvider) {
         final ErprintSession session = new ErprintSession(execEnv, sproHome, experimentDirectory, dataFiltersProvider);
         session.ready = false;
-        session.error = false;
+        session.warmUpException = null;
         session.stopped = false;
 
         Runnable r = new Runnable() {
@@ -119,11 +119,11 @@ public class ErprintSession {
                         Thread.currentThread().interrupt();
                     } catch (ConnectException ex) {
                         //Exceptions.printStackTrace(ex);
-                        session.error = true;
+                        session.warmUpException = ex;
                         return;
                     } catch (IOException ex) {
                         //Exceptions.printStackTrace(ex);
-                        session.error = true;
+                        session.warmUpException = ex;
                         return;
                     }
                 }
@@ -167,8 +167,8 @@ public class ErprintSession {
             if (Thread.interrupted()) {
                 throw new IOException("Interrupted during warmup"); // NOI18N
             }
-            if (error) {
-                throw new IOException("Error during warmup"); // NOI18N
+            if (warmUpException != null) {
+                throw new IOException("Error during warmup", warmUpException); // NOI18N
             }
 
             try {

@@ -59,6 +59,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.*;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.*;
@@ -99,7 +100,7 @@ public class JSFConfigDataObject extends MultiDataObject
         cookies.add(JSFConfigEditorSupport.class, this);
 
         //Lookup JSFConfigEditorContext for Page Flow Editor multiview
-        cookies.add(new JSFConfigEditorContextImpl((JSFConfigDataObject)this));
+        cookies.assign(JSFConfigEditorContext.class, new JSFConfigEditorContextImpl((JSFConfigDataObject)this));
 
         // Creates Check XML and Validate XML context actions
         InputSource in = DataObjectAdapters.inputSource(this);
@@ -118,7 +119,7 @@ public class JSFConfigDataObject extends MultiDataObject
     )
     @Messages("CTL_SourceTabCaption=Source")
     public static MultiViewEditorElement createXmlMultiViewElement(Lookup context) {
-        return new MultiViewEditorElement(context);
+        return new JSFConfigMultiViewEditorElement(context);
     }
 
     /**
