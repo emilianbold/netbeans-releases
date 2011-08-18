@@ -42,20 +42,21 @@
 package org.netbeans.modules.mercurial.ui.queues;
 
 import java.io.File;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.HgProgressSupport;
-import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.queues.CreateRefreshAction.Cmd.CreateRefreshPatchCmd;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,11 +65,12 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction", category = "Mercurial Queues")
 @ActionRegistration(displayName = "#CTL_MenuItem_QRefreshPatch")
-public class QRefreshPatchAction extends ContextAction {
+public class QRefreshPatchAction extends CreateRefreshAction {
 
-    @Override
-    protected boolean enable (Node[] nodes) {
-        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
+    static final String KEY_CANCELED_MESSAGE = "qrefresh."; //NOI18N
+
+    public QRefreshPatchAction () {
+        super("refresh"); //NOI18N
     }
 
     @Override
@@ -77,36 +79,56 @@ public class QRefreshPatchAction extends ContextAction {
     }
 
     @Override
-    protected void performContextAction (Node[] nodes) {
-        VCSContext ctx = HgUtils.getCurrentContext(nodes);
-        final File roots[] = HgUtils.getActionRoots(ctx);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        throw new UnsupportedOperationException();
-    }
-
-    public void refreshPatch (final File root, final String patchName) {
-        new HgProgressSupport() {
-            @Override
-            protected void perform () {
-                OutputLogger logger = getLogger();
-                try {
-                    logger.outputInRed(NbBundle.getMessage(QRefreshPatchAction.class, "MSG_REFRESH_TITLE")); //NOI18N
-                    logger.outputInRed(NbBundle.getMessage(QRefreshPatchAction.class, "MSG_REFRESH_TITLE_SEP")); //NOI18N
-                    logger.output(NbBundle.getMessage(QRefreshPatchAction.class, "MSG_REFRESH_INFO_SEP", patchName, root.getAbsolutePath())); //NOI18N
-                    HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
-                    logger.output(""); //NOI18N
-                    HgUtils.logHgLog(parent, logger);
-                    logger.outputInRed(NbBundle.getMessage(QRefreshPatchAction.class, "MSG_REFRESH_DONE")); // NOI18N
-                    logger.output(""); // NOI18N
-                } catch (HgException.HgCommandCanceledException ex) {
-                    // canceled by user, do nothing
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
+    QCommitPanel createPanel (final File root, final File[] roots) {
+        QPatch currentPatch = null;
+        try {
+            for (QPatch p : HgCommand.qListSeries(root)) {
+                if (p.isApplied()) {
+                    currentPatch = p;
+                } else {
+                    break;
                 }
             }
-        }.start(Mercurial.getInstance().getRequestProcessor(root), root, NbBundle.getMessage(QRefreshPatchAction.class, "LBL_QRefreshPatchAction.progress")); //NOI18N
+            if (currentPatch == null) {
+                NotifyDescriptor.Message e = new NotifyDescriptor.Message(NbBundle.getMessage(QRefreshPatchAction.class, "MSG_QRefreshPatchAction.err.noPatchApplied")); //NOI18N
+                DialogDisplayer.getDefault().notifyLater(e);
+            } else {
+                final HgLogMessage.HgRevision parent = HgCommand.getParent(root, null, currentPatch.getId());
+                String commitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + currentPatch.getId());
+                if (commitMessage.isEmpty()) {
+                    commitMessage = currentPatch.getMessage();
+                }
+                final String message = commitMessage;
+                final QPatch patch = currentPatch;
+                return Mutex.EVENT.readAccess(new Action<QCommitPanel>() {
+                    @Override
+                    public QCommitPanel run () {
+                        return QCommitPanel.createRefreshPanel(roots, root, message, patch, parent);
+                    }
+                });
+            }
+        } catch (HgException.HgCommandCanceledException ex) {
+            // canceled by user, do nothing
+        } catch (HgException ex) {
+            NotifyDescriptor.Message e = new NotifyDescriptor.Message(ex.getMessage());
+            DialogDisplayer.getDefault().notifyLater(e);
+        }
+        return null;
+    }
+
+    @Override
+    CreateRefreshPatchCmd createHgCommand (File root, List<File> candidates, OutputLogger logger, String message, String patchName, String bundleKeyPostfix, List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh) {
+        return new CreateRefreshPatchCmd(root, candidates, logger, message, patchName, bundleKeyPostfix, roots, excludedFiles, filesToRefresh) {
+            @Override
+            protected void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles, String patchId, String msg, OutputLogger logger) throws HgException {
+                HgCommand.qRefreshPatch(repository, candidates, excludedFiles, msg, logger);
+            }
+        };
+    }
+
+    @Override
+    void persistCanceledCommitMessage (QCreatePatchParameters params, String canceledCommitMessage) {
+        HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + params.getPatch().getId(), canceledCommitMessage);
     }
     
 }

@@ -57,15 +57,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
+import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
@@ -93,27 +97,43 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
     private final Collection<HgQueueHook> hooks;
     private final File[] roots;
     private final File repository;
+    private final NodesProvider nodesProvider;
 
     private QCommitPanel(QCommitTable table, final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<HgQueueHook> hooks, 
-            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
+            VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider, NodesProvider nodesProvider) {
         super(table, parameters, preferences, hooks, hooksContext, Collections.<VCSCommitFilter>emptyList(), diffProvider);
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;
+        this.nodesProvider = nodesProvider;
     }
 
-    public static QCommitPanel create (final File[] roots, final File repository, String patchName) {
+    public static QCommitPanel createNewPanel (final File[] roots, final File repository, String commitMessage) {
         Preferences preferences = HgModuleConfig.getDefault().getPreferences();
-        String lastCanceledCommitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage();
         
-        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, lastCanceledCommitMessage, patchName);
+        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null, "create"); //NOI18N
         
         Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
-        HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, patchName);
+        HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, null);
         
         DiffProvider diffProvider = new DiffProvider();
         
-        return new QCommitPanel(new QCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+        return new QCommitPanel(new QCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider());
+    }
+
+    public static QCommitPanel createRefreshPanel (final File[] roots, final File repository, String commitMessage, QPatch patch, HgRevision parentRevision) {
+        Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+        
+        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch, "refresh"); //NOI18N
+        
+        Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
+        HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, patch.getId());
+        
+        // own diff provider, displays qdiff instead of regular diff
+        DiffProvider diffProvider = new QDiffProvider(parentRevision);
+        
+        // own node computer, displays files not modified in cache but files returned by qdiff
+        return new QCommitPanel(new QCommitTable(), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QDiffNodesProvider(parentRevision));
     }
     
     @Override
@@ -187,57 +207,15 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                             getCommitTable().setNodes(new QFileNode[0]);
                         }
                     });
-                    // Ensure that cache is uptodate
-                    FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                    cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, new HashSet<File>(Arrays.asList(roots))));
-                    // the realy time consuming part is over;
-                    // no need to show the progress component,
-                    // which only makes the dialog flicker
-                    refreshFinished[0] = true;
-                    File[][] split = Utils.splitFlatOthers(roots);
-                    List<File> fileList = new ArrayList<File>();
-                    for (int c = 0; c < split.length; c++) {
-                        File[] splitRoots = split[c];
-                        boolean recursive = c == 1;
-                        if (recursive) {
-                            File[] files = cache.listFiles(splitRoots, FileInformation.STATUS_LOCAL_CHANGE);
-                            for (int i = 0; i < files.length; i++) {
-                                for(int r = 0; r < splitRoots.length; r++) {
-                                    if(Utils.isAncestorOrEqual(splitRoots[r], files[i]))
-                                    {
-                                        if(!fileList.contains(files[i])) {
-                                            fileList.add(files[i]);
-                                        }
-                                    }
-                                }
+                    final QFileNode[] nodes = nodesProvider.getNodes(repository, roots, refreshFinished);
+                    if (nodes != null) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                getCommitTable().setNodes(nodes);
                             }
-                        } else {
-                            File[] files = HgUtils.flatten(splitRoots, FileInformation.STATUS_LOCAL_CHANGE);
-                            for (int i= 0; i<files.length; i++) {
-                                if(!fileList.contains(files[i])) {
-                                    fileList.add(files[i]);
-                                }
-                            }
-                        }
+                        });
                     }
-                    if(fileList.isEmpty()) {
-                        return;
-                    }
-
-                    ArrayList<QFileNode> nodesList = new ArrayList<QFileNode>(fileList.size());
-
-                    for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
-                        File file = it.next();
-                        QFileNode node = new QFileNode(repository, file);
-                        nodesList.add(node);
-                    }
-                    final QFileNode[] nodes = nodesList.toArray(new QFileNode[fileList.size()]);
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            getCommitTable().setNodes(nodes);
-                        }
-                    });
                 } finally {
                     refreshFinished[0] = true;
                     EventQueue.invokeLater(new Runnable() {
@@ -253,7 +231,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     private static class DiffProvider extends VCSCommitDiffProvider {
 
-        private final Map<File, MultiDiffPanel> panels = new HashMap<File, MultiDiffPanel>();
+        final Map<File, MultiDiffPanel> panels = new HashMap<File, MultiDiffPanel>();
 
         @Override
         public Set<File> getModifiedFiles () {
@@ -277,7 +255,6 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
             panels.put(file, panel);
             return panel;
         }
-        
 
         /**
          * Returns save cookies available for files in the commit table
@@ -303,5 +280,113 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
             }
             return allCookies.toArray(new EditorCookie[allCookies.size()]);
         }        
-    }    
+    }
+    
+    private static class QDiffProvider extends DiffProvider {
+        private final HgRevision parent;
+        
+        QDiffProvider (HgRevision parent) {
+            this.parent = parent;
+        }
+        
+        @Override
+        public JComponent createDiffComponent (File file) {
+            MultiDiffPanel panel = new MultiDiffPanel(file, parent, HgRevision.CURRENT, false);
+            panels.put(file, panel);
+            return panel;
+        }
+    }
+    
+    private static interface NodesProvider {
+        QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished);
+    }
+    
+    private static final class ModifiedNodesProvider implements NodesProvider {
+
+        @Override
+        public QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished) {
+            // Ensure that cache is uptodate
+            FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+            cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repository, new HashSet<File>(Arrays.asList(roots))));
+            // the realy time consuming part is over;
+            // no need to show the progress component,
+            // which only makes the dialog flicker
+            refreshFinished[0] = true;
+            File[][] split = Utils.splitFlatOthers(roots);
+            List<File> fileList = new ArrayList<File>();
+            for (int c = 0; c < split.length; c++) {
+                File[] splitRoots = split[c];
+                boolean recursive = c == 1;
+                if (recursive) {
+                    File[] files = cache.listFiles(splitRoots, FileInformation.STATUS_LOCAL_CHANGE);
+                    for (int i = 0; i < files.length; i++) {
+                        for(int r = 0; r < splitRoots.length; r++) {
+                            if(Utils.isAncestorOrEqual(splitRoots[r], files[i]))
+                            {
+                                if(!fileList.contains(files[i])) {
+                                    fileList.add(files[i]);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    File[] files = HgUtils.flatten(splitRoots, FileInformation.STATUS_LOCAL_CHANGE);
+                    for (int i= 0; i<files.length; i++) {
+                        if(!fileList.contains(files[i])) {
+                            fileList.add(files[i]);
+                        }
+                    }
+                }
+            }
+            if(fileList.isEmpty()) {
+                return null;
+            }
+
+            ArrayList<QFileNode> nodesList = new ArrayList<QFileNode>(fileList.size());
+
+            for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
+                File file = it.next();
+                QFileNode node = new QFileNode(repository, file);
+                nodesList.add(node);
+            }
+            return nodesList.toArray(new QFileNode[fileList.size()]);
+        }
+        
+    }
+
+    private static final class QDiffNodesProvider implements NodesProvider {
+        private final HgRevision parent;
+
+        private QDiffNodesProvider (HgRevision parentRevision) {
+            this.parent = parentRevision;
+        }
+
+        @Override
+        public QFileNode[] getNodes (File repository, File[] roots, boolean[] refreshFinished) {
+            try {
+                if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
+                    Map<File, FileInformation> statuses = HgCommand.getStatus(repository, Arrays.asList(roots), parent.getRevisionNumber(), HgRevision.CURRENT.getRevisionNumber());
+                    statuses.keySet().retainAll(HgUtils.flattenFiles(roots, statuses.keySet()));
+                    refreshFinished[0] = true;
+
+                    if(statuses.isEmpty()) {
+                        return null;
+                    }
+
+                    ArrayList<QFileNode> nodesList = new ArrayList<QFileNode>(statuses.size());
+                    for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+                        QFileNode node = new QFileNode(repository, e.getKey(), e.getValue());
+                        nodesList.add(node);
+                    }
+                    return nodesList.toArray(new QFileNode[statuses.size()]);
+                }
+            } catch (HgException.HgCommandCanceledException ex) {
+                //
+            } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
+            }
+            return null;
+        }
+        
+    }
 }

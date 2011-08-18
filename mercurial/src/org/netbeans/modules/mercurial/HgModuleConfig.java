@@ -114,7 +114,7 @@ public class HgModuleConfig {
     }
     
     private Set<String> exclusions;
-    private String lastCanceledCommitMessage;
+    private final Map<String, String> lastCanceledCommitMessages = new HashMap<String, String>(5);
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -615,12 +615,17 @@ public class HgModuleConfig {
          getPreferences().putInt(colorName, value.getRGB());
     }
 
-    public String getLastCanceledCommitMessage() {
+    public String getLastCanceledCommitMessage (String key) {
+        String lastCanceledCommitMessage = lastCanceledCommitMessages.get(key);
         return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
     }
 
-    public void setLastCanceledCommitMessage(String message) {
-        lastCanceledCommitMessage = message;
+    public void setLastCanceledCommitMessage (String key, String message) {
+        if (message == null || message.isEmpty()) {
+            lastCanceledCommitMessages.remove(key);
+        } else {
+            lastCanceledCommitMessages.put(key, message);
+        }
     }
     
     synchronized Set<String> getCommitExclusions() {

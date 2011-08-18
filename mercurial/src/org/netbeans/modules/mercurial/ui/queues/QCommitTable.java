@@ -68,7 +68,7 @@ public class QCommitTable extends VCSCommitTable<QFileNode> {
     @Override
     public boolean containsCommitable() {
         List<QFileNode> list = getCommitFiles();
-        boolean ret = false;        
+        boolean ret = true;        
         errroMessage = null;
         for(QFileNode fileNode : list) {                        
             VCSCommitOptions co = fileNode.getCommitOptions();
@@ -80,7 +80,6 @@ public class QCommitTable extends VCSCommitTable<QFileNode> {
                 errroMessage = NbBundle.getMessage(QCommitTable.class, "MSG_CommitForm_ErrorConflicts"); // NOI18N
                 return false;
             }            
-            ret = true;
             errroMessage = null;            
         }
         return ret;

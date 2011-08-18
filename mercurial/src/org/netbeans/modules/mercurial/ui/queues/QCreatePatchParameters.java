@@ -61,13 +61,15 @@ import org.openide.util.NbBundle;
 public class QCreatePatchParameters extends DefaultCommitParameters implements ItemListener, DocumentListener {
     private CommitPanel panel;
     private String commitMessage;
-    private String patchName;
+    private QPatch patch;
     private String errorMessage;
+    private final String bundleKey;
 
-    public QCreatePatchParameters (Preferences preferences, String commitMessage, String patchName) {
+    public QCreatePatchParameters (Preferences preferences, String commitMessage, QPatch patch, String bundleKeyPostfix) {
         super(preferences);
         this.commitMessage = commitMessage;
-        this.patchName = patchName;
+        this.patch = patch;
+        this.bundleKey = bundleKeyPostfix;
     }
 
     @Override
@@ -96,7 +98,7 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
 
     @Override
     public String getLastCanceledCommitMessage () {
-        return HgModuleConfig.getDefault().getLastCanceledCommitMessage();
+        return HgModuleConfig.getDefault().getLastCanceledCommitMessage(QCreatePatchAction.KEY_CANCELED_MESSAGE);
     }
 
     List<String> getCommitMessages () {
@@ -105,7 +107,7 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
     
     @Override
     protected CommitPanel createPanel () {
-        return new CommitPanel(this, commitMessage, patchName);
+        return new CommitPanel(this, commitMessage, patch == null ? null : patch.getId());
     }
 
     @Override
@@ -115,6 +117,10 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
     
     public String getPatchName () {
         return getPanel().txtPatchName.getText().trim();
+    }
+    
+    QPatch getPatch () {
+        return patch;
     }
 
     @Override
@@ -154,22 +160,22 @@ public class QCreatePatchParameters extends DefaultCommitParameters implements I
 
     @Override
     protected String getCommitButtonText () {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "CTL_Commit_Action_CreatePatch"); //NOI18N
+        return NbBundle.getMessage(QCreatePatchParameters.class, "CTL_Commit_Action_CreatePatch." + bundleKey); //NOI18N
     }
 
     @Override
     protected String getCommitButtonAccessibleName () {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "ACSN_Commit_Action_CreatePatch"); //NOI18N
+        return NbBundle.getMessage(QCreatePatchParameters.class, "ACSN_Commit_Action_CreatePatch." + bundleKey); //NOI18N
     }
 
     @Override
     protected String getCommitButtonAccessibleDescription () {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "ACSD_Commit_Action_CreatePatch"); //NOI18N
+        return NbBundle.getMessage(QCreatePatchParameters.class, "ACSD_Commit_Action_CreatePatch." + bundleKey); //NOI18N
     }
 
     @Override
     protected String getCommitPanelTitle (String contentTitle) {
-        return NbBundle.getMessage(QCreatePatchParameters.class, "CTL_CommitDialog_CreatePatch_Title", contentTitle); //NOI18N
+        return NbBundle.getMessage(QCreatePatchParameters.class, "CTL_CommitDialog_CreatePatch_Title." + bundleKey, contentTitle); //NOI18N
     }
 
 }

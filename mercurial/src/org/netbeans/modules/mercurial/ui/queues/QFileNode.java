@@ -54,14 +54,20 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
  * @author Tomas Stupka
  */
 public class QFileNode extends VCSFileNode<FileInformation> {
+    private final FileInformation fi;
 
     public QFileNode(File root, File file) {
-        super(root, file);
+        this(root, file, null);
+    }
+
+    QFileNode (File repository, File file, FileInformation fi) {
+        super(repository, file);
+        this.fi = fi;
     }
 
     @Override
     public FileInformation getInformation() {
-        return Mercurial.getInstance().getFileStatusCache().getStatus(getFile());
+        return fi == null ? Mercurial.getInstance().getFileStatusCache().getStatus(getFile()) : fi;
     }
 
     @Override

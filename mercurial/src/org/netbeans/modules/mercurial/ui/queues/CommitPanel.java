@@ -56,13 +56,17 @@ import org.openide.util.NbBundle;
  */
 public class CommitPanel extends javax.swing.JPanel {
     private final QCreatePatchParameters parameters;
-    private UndoRedoSupport um; 
+    private UndoRedoSupport um;
 
     /** Creates new form CommitPanel */
-    public CommitPanel(QCreatePatchParameters parameters, String commitMessage, String user) {
+    public CommitPanel(QCreatePatchParameters parameters, String commitMessage, String patchName) {
         this.parameters = parameters;
         
         initComponents();
+        if (patchName != null && !patchName.isEmpty()) {
+            txtPatchName.setText(patchName);
+            txtPatchName.setEditable(false);
+        }
         
         messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
@@ -80,9 +84,10 @@ public class CommitPanel extends javax.swing.JPanel {
     
     private void initCommitMessage (String commitMessage) {
         TemplateSelector ts = new TemplateSelector(parameters.getPreferences());
-        if(commitMessage != null) {
-            messageTextArea.setText(commitMessage);
+        if (commitMessage == null) {
+            commitMessage = ""; //NOI18N
         }
+        messageTextArea.setText(commitMessage);
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
@@ -93,7 +98,7 @@ public class CommitPanel extends javax.swing.JPanel {
                     lastCommitMessage = messages.get(0);
                 }
             }
-            if (!lastCommitMessage.isEmpty()) {
+            if (commitMessage.isEmpty() && !lastCommitMessage.isEmpty()) {
                 messageTextArea.setText(lastCommitMessage);
             }
         }
@@ -167,7 +172,7 @@ public class CommitPanel extends javax.swing.JPanel {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(messageLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 370, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 382, Short.MAX_VALUE)
                         .addComponent(recentLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(templatesLabel)))
