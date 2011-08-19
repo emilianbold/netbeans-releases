@@ -104,6 +104,7 @@ public class AsynchronousTest extends NbTestCase {
         DoesOverrideAndReturnsTrue action = (DoesOverrideAndReturnsTrue)DoesOverrideAndReturnsTrue.get(DoesOverrideAndReturnsTrue.class);
         
         synchronized (action) {
+            action.finished = false;
             action.actionPerformed(new ActionEvent(this, 0, ""));
             Thread.sleep(500);
             assertFalse("Not yet finished", action.finished);
