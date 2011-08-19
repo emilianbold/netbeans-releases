@@ -145,7 +145,6 @@ public class Css3LexerTest extends NbTestCase {
         */
         String source = "padding: .5em; ";
      
-        //first try to lex the source using the original ANTLR's input source
         CharStream charstream = new ANTLRStringStream(source);
         ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
         
@@ -154,6 +153,24 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken(".5em", Css3Lexer.EMS, lexer.nextToken());
         
+        
+    }
+    
+    public void testMediaQueriesTokens() throws Exception {
+        String source = "AND NOT ONLY 100dpi 50dpcm ";
+     
+        CharStream charstream = new ANTLRStringStream(source);
+        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        
+        assertANTLRToken(null ,Css3Lexer.AND, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.NOT, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.ONLY, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
         
     }
     
