@@ -63,6 +63,7 @@ import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -78,8 +79,10 @@ import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * Represents the Hibernate Configuration file
@@ -90,9 +93,10 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
     private static final int TYPE_TOOLBAR = 0;
     public static final int UPDATE_DELAY = 200;
-    private static final String DESIGN_VIEW_ID = "hibernate_configuration_multiview_design"; // NOI18N
+    public static final String DESIGN_VIEW_ID = "hibernate_configuration_multiview_design"; // NOI18N
     private HibernateConfiguration configuration;
     private ModelSynchronizer modelSynchronizer;
+    public static final String ICON = "org/netbeans/modules/hibernate/resources/hibernate-configuration.png"; //NOI18N
     /**
      * The property name for the event fired when a security tag is added or removed
      */
@@ -155,6 +159,24 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         }
         return true;
     }
+
+    @Override
+    protected String getEditorMimeType() {
+        return HibernateCfgDataLoader.REQUIRED_MIME;
+    }
+    
+    @MultiViewElement.Registration(
+        mimeType=HibernateCfgDataLoader.REQUIRED_MIME,
+        iconBase=ICON,
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID=DESIGN_VIEW_ID+TYPE_TOOLBAR,
+        displayName="#CTL_SourceTabCaption",
+        position=2550
+    )
+    @NbBundle.Messages("CTL_SourceTabCaption=XML")
+    public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
+        return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
+    }    
     
     /**
      * Checks whether the preferred view can be displayed and switches to the
@@ -298,39 +320,39 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         return (ToolBarMultiViewElement) super.getActiveMultiViewElement();
     }
 
-    protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[]{new DesignView(this, TYPE_TOOLBAR)};
-    }
+//    protected DesignMultiViewDesc[] getMultiViewDesc() {
+//        return new DesignMultiViewDesc[]{new DesignView(this, TYPE_TOOLBAR)};
+//    }
 
-    private static class DesignView extends DesignMultiViewDesc {
-
-        private static final long serialVersionUID = 1L;
-        private int type;
-
-        DesignView(HibernateCfgDataObject dObj, int type) {
-            super(dObj, NbBundle.getMessage(HibernateCfgDataObject.class, "LBL_Design"));
-            this.type = type;
-        }
-
-        public MultiViewElement createElement() {
-            HibernateCfgDataObject dObj = (HibernateCfgDataObject) getDataObject();
-            return new HibernateCfgToolBarMVElement(dObj);
-        }
-
-        public Image getIcon() {
-            return ImageUtilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
-        }
-
-        public String preferredID() {
-            return DESIGN_VIEW_ID + String.valueOf(type);
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            //return new HelpCtx(HELP_ID_DESIGN_HIBERNATE_CONFIGURATION); //NOI18N
-            return null;
-        }
-    }
+//    private static class DesignView extends DesignMultiViewDesc {
+//
+//        private static final long serialVersionUID = 1L;
+//        private int type;
+//
+//        DesignView(HibernateCfgDataObject dObj, int type) {
+//            super(dObj, NbBundle.getMessage(HibernateCfgDataObject.class, "LBL_Design"));
+//            this.type = type;
+//        }
+//
+//        public MultiViewElement createElement() {
+//            HibernateCfgDataObject dObj = (HibernateCfgDataObject) getDataObject();
+//            return new HibernateCfgToolBarMVElement(dObj);
+//        }
+//
+//        public Image getIcon() {
+//            return ImageUtilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
+//        }
+//
+//        public String preferredID() {
+//            return DESIGN_VIEW_ID + String.valueOf(type);
+//        }
+//
+//        @Override
+//        public HelpCtx getHelpCtx() {
+//            //return new HelpCtx(HELP_ID_DESIGN_HIBERNATE_CONFIGURATION); //NOI18N
+//            return null;
+//        }
+//    }
 
     private class ModelSynchronizer extends XmlMultiViewDataSynchronizer {
 
