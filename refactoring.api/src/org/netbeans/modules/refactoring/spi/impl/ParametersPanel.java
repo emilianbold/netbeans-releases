@@ -122,6 +122,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
 
     private boolean cancelRequest = false;
     private boolean canceledDialog;
+    private boolean forcePreview = false;
     
     /** Enables/disables Preview button of dialog. Can be used by refactoring-specific
      * parameters panel to disable accepting the parameters when needed (e.g. if
@@ -163,7 +164,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             Preferences prefs = NbPreferences.forModule(RefactoringPanel.class);
             openInNewTab.setSelected(prefs.getBoolean(PREF_OPEN_NEW_TAB, false));
         }
+        
+        //TODO: Ugly Hack
+        forcePreview = "org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI".equals(rui.getClass().getName());
         //cancel.setEnabled(false);
+        next.setVisible(!forcePreview);
+        validate();
     }
     
     
@@ -222,7 +228,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         controlsPanel.setLayout(new java.awt.BorderLayout());
 
         buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 4, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(back, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Back")); // NOI18N
         back.addActionListener(new java.awt.event.ActionListener() {
@@ -230,8 +235,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 backActionPerformed(evt);
             }
         });
-        buttonsPanel.add(back);
-        back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(previewButton, org.openide.util.NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll")); // NOI18N
         previewButton.addActionListener(new java.awt.event.ActionListener() {
@@ -239,8 +242,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 preview(evt);
             }
         });
-        buttonsPanel.add(previewButton);
-        previewButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.previewButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Finish")); // NOI18N
         next.addActionListener(new java.awt.event.ActionListener() {
@@ -248,8 +249,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 refactor(evt);
             }
         });
-        buttonsPanel.add(next);
-        next.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_finish")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cancel, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Cancel")); // NOI18N
         cancel.addActionListener(new java.awt.event.ActionListener() {
@@ -257,8 +256,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 cancelActionPerformed(evt);
             }
         });
-        buttonsPanel.add(cancel);
-        cancel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_cancel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(help, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Help")); // NOI18N
         help.addActionListener(new java.awt.event.ActionListener() {
@@ -266,7 +263,35 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 helpActionPerformed(evt);
             }
         });
-        buttonsPanel.add(help);
+
+        javax.swing.GroupLayout buttonsPanelLayout = new javax.swing.GroupLayout(buttonsPanel);
+        buttonsPanel.setLayout(buttonsPanelLayout);
+        buttonsPanelLayout.setHorizontalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonsPanelLayout.createSequentialGroup()
+                .addComponent(back, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(4, 4, 4)
+                .addComponent(previewButton, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(4, 4, 4)
+                .addComponent(next)
+                .addGap(4, 4, 4)
+                .addComponent(cancel, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(4, 4, 4)
+                .addComponent(help, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        buttonsPanelLayout.setVerticalGroup(
+            buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(back)
+            .addComponent(previewButton)
+            .addComponent(next)
+            .addComponent(cancel)
+            .addComponent(help)
+        );
+
+        back.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Back")); // NOI18N
+        previewButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.previewButton.AccessibleContext.accessibleDescription")); // NOI18N
+        next.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_finish")); // NOI18N
+        cancel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_cancel")); // NOI18N
         help.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_help")); // NOI18N
 
         controlsPanel.add(buttonsPanel, java.awt.BorderLayout.EAST);
@@ -679,6 +704,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (currentState == PRE_CHECK ) {
             //calculatePrefferedSize();
             Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class,"CTL_Next"));
+            next.setVisible(true);
             back.setVisible(false);
             if(!rui.hasParameters()) {
                 next.setVisible(false);
@@ -719,6 +745,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         containerPanel.removeAll();
         containerPanel.add(customPanel, BorderLayout.CENTER);
         back.setVisible(false);
+        next.setVisible(!forcePreview);
         previewButton.setVisible(!rui.isQuery());
         Boolean b = rui.getRefactoring().getContext().lookup(Boolean.class);
         next.setEnabled(!isPreviewRequired());
@@ -731,6 +758,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (customPanel.isEnabled()) 
             customPanel.requestFocus();
         setOKorRefactor();
+        validate();
         repaint();  
     }
     
