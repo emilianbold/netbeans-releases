@@ -48,6 +48,8 @@ import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.api.CssParserFactory;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -128,6 +130,21 @@ public class TestUtil {
         TokenSequence<CssTokenId> ts = result.getSnapshot().getTokenHierarchy().tokenSequence(CssTokenId.language());
         while (ts.moveNext()) {
             System.out.println(ts.offset() + "-" + (ts.token().length() + ts.offset()) + ": " + ts.token().text() + "(" + ts.token().id() + ")");
+        }
+        System.out.println("-------------");
+    }
+    
+    public static void dumpTokens(Css3Lexer lexer) {
+        System.out.println("Tokens:");
+        CommonToken t;
+        while ((t = (CommonToken)lexer.nextToken()) != null) {
+            System.out.println(
+                    t.getStartIndex() + "-" + t.getStopIndex() 
+                    + ": " + t.getText() + "(" + (t.getType() == -1 ? "" : Css3Parser.tokenNames[t.getType()]) + ")");
+            
+            if(t.getType() == Css3Lexer.EOF) {
+                break;
+            }
         }
         System.out.println("-------------");
     }
