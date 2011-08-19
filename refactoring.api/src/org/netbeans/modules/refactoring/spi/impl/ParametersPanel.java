@@ -740,7 +740,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             return;
         if (customPanel == null) return;
         Mnemonics.setLocalizedText(next, NbBundle.getMessage(ParametersPanel.class, rui.isQuery()?"CTL_Find": "CTL_Finish"));
-        Mnemonics.setLocalizedText(previewButton, NbBundle.getMessage(ParametersPanel.class, "CTL_PreviewAll"));
+        Mnemonics.setLocalizedText(previewButton, NbBundle.getMessage(ParametersPanel.class, forcePreview?"CTL_Inspect":"CTL_PreviewAll"));
         customPanel.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
         containerPanel.removeAll();
         containerPanel.add(customPanel, BorderLayout.CENTER);
