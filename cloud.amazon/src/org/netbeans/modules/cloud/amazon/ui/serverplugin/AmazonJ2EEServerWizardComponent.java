@@ -43,7 +43,9 @@
 package org.netbeans.modules.cloud.amazon.ui.serverplugin;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
@@ -66,6 +68,7 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
 
     private AmazonJ2EEServerWizardPanel wizardPanel;
     private String suggestedName;
+    private Map<String, List<String>> templates;
     
     private static final String SUFFIX = "-dev-env";
     
@@ -116,6 +119,17 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
         return ((JTextField)(appNameComboBox.getEditor().getEditorComponent())).getText();
     }
     
+    public String getTemplateName() {
+        if (!templateComboBox.isEnabled()) {
+            return null;
+        }
+        String templ = (String)templateComboBox.getModel().getSelectedItem();
+        if (templ != null && templ.length() > 0) {
+            return templ;
+        }
+        return null;
+    }
+    
     public String getEnvironmentName() {
         return (String)envNameTextField.getText();
     }
@@ -155,6 +169,8 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
         envFullURLLabel = new javax.swing.JLabel();
         containerLabel = new javax.swing.JLabel();
         containerComboBox = new javax.swing.JComboBox();
+        templateLabel = new javax.swing.JLabel();
+        templateComboBox = new javax.swing.JComboBox();
 
         accountLavel.setText(org.openide.util.NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.accountLavel.text")); // NOI18N
 
@@ -173,32 +189,37 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
 
         containerLabel.setText(org.openide.util.NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.containerLabel.text")); // NOI18N
 
+        templateLabel.setText(org.openide.util.NbBundle.getMessage(AmazonJ2EEServerWizardComponent.class, "AmazonJ2EEServerWizardComponent.templateLabel.text")); // NOI18N
+        templateLabel.setEnabled(false);
+
+        templateComboBox.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(accountLavel)
                     .addComponent(appNameLabel)
+                    .addComponent(templateLabel)
                     .addComponent(endNameLabel)
                     .addComponent(envURLLabel)
                     .addComponent(containerLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(containerComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 288, Short.MAX_VALUE)
-                    .addComponent(envURLTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                    .addComponent(envNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                    .addComponent(accountComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 288, Short.MAX_VALUE)
-                    .addComponent(appNameComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 288, Short.MAX_VALUE)
-                    .addComponent(envFullURLLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0))
+                    .addComponent(envFullURLLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .addComponent(containerComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 251, Short.MAX_VALUE)
+                    .addComponent(envURLTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .addComponent(envNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .addComponent(templateComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 251, Short.MAX_VALUE)
+                    .addComponent(accountComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 251, Short.MAX_VALUE)
+                    .addComponent(appNameComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 251, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(accountLavel)
                     .addComponent(accountComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -208,19 +229,22 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
                     .addComponent(appNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(templateLabel)
+                    .addComponent(templateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(endNameLabel)
                     .addComponent(envNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(envURLLabel)
                     .addComponent(envURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(envFullURLLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(containerLabel)
-                    .addComponent(containerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(105, Short.MAX_VALUE))
+                    .addComponent(containerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -246,6 +270,8 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     private javax.swing.JTextField envNameTextField;
     private javax.swing.JLabel envURLLabel;
     private javax.swing.JTextField envURLTextField;
+    private javax.swing.JComboBox templateComboBox;
+    private javax.swing.JLabel templateLabel;
     // End of variables declaration//GEN-END:variables
 
     private void initAccounts() {
@@ -298,6 +324,43 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
                 }
             }
         });
+        
+        ((JTextField)(appNameComboBox.getEditor().getEditorComponent())).getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                reloadTemplates();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                reloadTemplates();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                reloadTemplates();
+            }
+        });
+    }
+    
+    private void reloadTemplates() {
+        String appName = getApplicationName();
+        if (appName != null) {
+            List<String> templateNames = templates.get(appName);
+            if (templateNames != null && templateNames.size() > 0) {
+                templateNames = new ArrayList(templateNames);
+                templateNames.add(0, "");
+                templateComboBox.setModel(new DefaultComboBoxModel(templateNames.toArray(new String[templateNames.size()])));
+                templateComboBox.setSelectedIndex(0);
+                templateComboBox.setEnabled(true);
+                templateLabel.setEnabled(true);
+                return;
+            }
+        }
+        templateComboBox.setModel(new DefaultComboBoxModel());
+        templateComboBox.setEnabled(false);
+        templateLabel.setEnabled(false);
     }
     
     private void reloadApplications() {
@@ -308,7 +371,8 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
         AmazonInstance.runAsynchronously(new Callable<Void>() {
             @Override
             public Void call() {
-                final List<String> apps = ai.readApplicationNames();
+                templates = ai.readApplicationTemplates();
+                final List<String> apps = new ArrayList<String>(templates.keySet());
                 apps.add(0, suggestedName == null ? "" : suggestedName);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

@@ -195,6 +195,7 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
         String envName = getComponentImpl().getEnvironmentName();
         String url = getComponentImpl().getURL();
         String containerType = getComponentImpl().getContainerType();
+        String template = getComponentImpl().getTemplateName();
         AmazonInstance ai = getComponentImpl().getAmazonInstance();
         
         boolean newApp = isNewApp(ai, appName);
@@ -202,7 +203,7 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
             ai.createApplication(appName);
             ai.createInitialEmptyApplication(appName);
         }
-        return ai.createEnvironment(appName, envName, url, containerType);
+        return ai.createEnvironment(appName, envName, url, containerType, template);
     }
     
     private InstanceProperties findServer(String envID) {

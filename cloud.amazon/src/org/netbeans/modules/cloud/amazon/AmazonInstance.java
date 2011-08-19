@@ -73,6 +73,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -185,6 +187,27 @@ public class AmazonInstance {
         return res;
     }
 
+    /**
+     * @return Map<application name, List<template name>>
+     */
+    public Map<String, List<String>> readApplicationTemplates() {
+        assert !SwingUtilities.isEventDispatchThread();
+        Map<String, List<String>> res = new HashMap<String, List<String>>();
+
+        try {
+            LOG.log(Level.INFO, "read AWS application templates"); // NOI18N
+            AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+            for (ApplicationDescription ad : client.describeApplications().getApplications()) {
+                res.put(ad.getApplicationName(), ad.getConfigurationTemplates());
+            }
+            LOG.log(Level.INFO, "applications templates available: "+res); // NOI18N
+        } catch (AmazonClientException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return res;
+    }
+    
     public List<String> readContainerTypes() {
         assert !SwingUtilities.isEventDispatchThread();
         List<String> res = new ArrayList<String>();
@@ -250,12 +273,15 @@ public class AmazonInstance {
         client.createApplicationVersion(req);
     }
 
-    public String createEnvironment(String appName, String envName, String url, String containerType) {
+    public String createEnvironment(String appName, String envName, String url, String containerType, String template) {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
         CreateEnvironmentRequest req = new CreateEnvironmentRequest(appName, envName).
                 withCNAMEPrefix(url).
                 withSolutionStackName(containerType);
+        if (template != null) {
+            req = req.withTemplateName(template);
+        }
         return client.createEnvironment(req).getEnvironmentId();
     }
 
