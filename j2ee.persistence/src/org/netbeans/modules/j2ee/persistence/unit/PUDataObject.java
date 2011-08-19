@@ -136,7 +136,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected String getEditorMimeType() {
-        return "text/x-persistence1.0";//NOI18N
+        return PUDataLoader.REQUIRED_MIME;
     }
     
     @MultiViewElement.Registration(
