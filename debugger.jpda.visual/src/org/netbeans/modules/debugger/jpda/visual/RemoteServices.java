@@ -72,11 +72,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -93,13 +96,13 @@ import org.openide.util.WeakSet;
  * @author Martin Entlicher
  */
 public class RemoteServices {
+    public static enum ServiceType {
+        AWT, FX
+    }
     
     private static final Logger logger = Logger.getLogger(RemoteServices.class.getName());
     
     private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/visual/resources/debugger-remote.zip";
-    private static final String[] BASIC_REMOTE_CLASSES = new String[] { "RemoteService", "RemoteService$AWTAccessLoop" };
-    private static final String BASIC_REMOTE_CLASS = "RemoteService"; // NOI18N
-    private static final String REMOTE_PACKAGE = "org.netbeans.modules.debugger.jpda.visual.remote"; // NOI18N
     
     private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
     
@@ -125,74 +128,57 @@ public class RemoteServices {
             l.propertyChange(pche);
         }
     }
-
-    /*
-    public static void uploadClass(JPDAThreadImpl t, String className) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException {
-        ThreadReference tawt = t.getThreadReference();
-        VirtualMachine vm = tawt.virtualMachine();
-        ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
-        Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-        ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        byte[] bytes = getRemoteClassCode(className);
-        ArrayReference byteArray = createTargetBytes(vm, bytes);
-        Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-        ClassObjectReference theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(vm.mirrorOf("javauidbg.TestContainerListener"), byteArray, vm.mirrorOf(0), vm.mirrorOf(bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-        
-        // l = c.newInstance();
-        ClassType theClass = getClass(vm, Class.class.getName());
-        // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-        Method newInstance = theClass.concreteMethodByName("newInstance", "()Ljava/lang/Object;");
-        ObjectReference theListener = (ObjectReference) theUploadedClass.invokeMethod(tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-
-    }
-     */
     
-    public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException {
+    public static ClassObjectReference uploadBasicClasses(JPDAThreadImpl t, ServiceType sType) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException, PropertyVetoException {
         ThreadReference tawt = t.getThreadReference();
         VirtualMachine vm = tawt.virtualMachine();
         ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
         Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+        List<JPDAClassType> l = t.getDebugger().getClassesByName("org/netbeans/modules/debugger/jpda/visual/remote/RemoteFXService");
         t.notifyMethodInvoking();
         try {
             ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-            List<RemoteClass> remoteClasses = getRemoteClasses(BASIC_REMOTE_CLASS, true);
+            List<RemoteClass> remoteClasses = getRemoteClasses();
             ClassObjectReference basicClass = null;
             for (RemoteClass rc : remoteClasses) {
-                ClassObjectReference theUploadedClass = null;
-                ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
-                StringReference nameMirror = null;
-                try {
-                    Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
-                    boolean uploaded = false;
-                    while (!uploaded) {
-                        nameMirror = vm.mirrorOf(rc.name);
-                        try {
-                            nameMirror.disableCollection();
-                            uploaded = true;
-                        } catch (ObjectCollectedException ocex) {
-                            // Just collected, try again...
-                        }
-                    }
-                    uploaded = false;
-                    while (!uploaded) {
-                        theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
-                        if (basicClass == null && rc.name.indexOf('$') < 0 && rc.name.endsWith(BASIC_REMOTE_CLASS)) {
+                if ((sType == ServiceType.AWT && rc.name.contains("AWT")) ||
+                    (sType == ServiceType.FX && rc.name.contains("FX"))) {
+                    ClassObjectReference theUploadedClass = null;
+                    ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
+                    StringReference nameMirror = null;
+                    try {
+                        Method defineClass = classLoaderClass.concreteMethodByName("defineClass", "(Ljava/lang/String;[BII)Ljava/lang/Class;");
+                        boolean uploaded = false;
+                        while (!uploaded) {
+                            nameMirror = vm.mirrorOf(rc.name);
                             try {
-                                // Disable collection only of the basic class
-                                theUploadedClass.disableCollection();
-                                basicClass = theUploadedClass;
+                                nameMirror.disableCollection();
                                 uploaded = true;
                             } catch (ObjectCollectedException ocex) {
                                 // Just collected, try again...
                             }
-                        } else {
-                            uploaded = true;
                         }
-                    }
-                } finally {
-                    byteArray.enableCollection(); // We can dispose it now
-                    if (nameMirror != null) {
-                        nameMirror.enableCollection();
+                        uploaded = false;
+                        while (!uploaded) {
+                            theUploadedClass = (ClassObjectReference) systemClassLoader.invokeMethod(tawt, defineClass, Arrays.asList(nameMirror, byteArray, vm.mirrorOf(0), vm.mirrorOf(rc.bytes.length)), ObjectReference.INVOKE_SINGLE_THREADED);
+                            if (basicClass == null && rc.name.indexOf('$') < 0) {
+                                try {
+                                    // Disable collection only of the basic class
+                                    theUploadedClass.disableCollection();
+                                    basicClass = theUploadedClass;
+                                    uploaded = true;
+                                } catch (ObjectCollectedException ocex) {
+                                    // Just collected, try again...
+                                }
+                            } else {
+                                uploaded = true;
+                            }
+                        }
+                    } finally {
+                        byteArray.enableCollection(); // We can dispose it now
+                        if (nameMirror != null) {
+                            nameMirror.enableCollection();
+                        }
                     }
                 }
                 //Method resolveClass = classLoaderClass.concreteMethodByName("resolveClass", "(Ljava/lang/Class;)V");
@@ -213,13 +199,6 @@ public class RemoteServices {
         } finally {
             t.notifyMethodInvokeDone();
         }
-        /*
-        // l = c.newInstance();
-        ClassType theClass = getClass(vm, Class.class.getName());
-        // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-        Method newInstance = theClass.concreteMethodByName("newInstance", "()Ljava/lang/Object;");
-        ObjectReference theListener = (ObjectReference) theUploadedClass.invokeMethod(tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        */
     }
     
     public static void uploadAllClasses(JPDAThreadImpl t) throws InvalidTypeException, ClassNotLoadedException, IncompatibleThreadStateException, InvocationException, IOException {
@@ -228,9 +207,7 @@ public class RemoteServices {
         ClassType classLoaderClass = getClass(vm, ClassLoader.class.getName());
         Method getSystemClassLoader = classLoaderClass.concreteMethodByName("getSystemClassLoader", "()Ljava/lang/ClassLoader;");
         ObjectReference systemClassLoader = (ObjectReference) classLoaderClass.invokeMethod(tawt, getSystemClassLoader, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-        boolean isBasicLoaded = getClass(vm, REMOTE_PACKAGE+'.'+BASIC_REMOTE_CLASS) != null;
-        String basicRemoteClass = isBasicLoaded ? null : BASIC_REMOTE_CLASS;
-        List<RemoteClass> remoteClasses = getRemoteClasses(basicRemoteClass, false);
+        List<RemoteClass> remoteClasses = getRemoteClasses();
         for (RemoteClass rc : remoteClasses) {
             ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
             try {
@@ -242,43 +219,34 @@ public class RemoteServices {
         }
     }
     
-    public static JPDAThread makeAWTThreadStopOnEvent(JPDAThread awtThread) {
-        final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteService", "calledInAWT");
+    private static void runOnBreakpoint(final JPDAThread awtThread, String bpClass, String bpMethod, final Runnable runnable, final CountDownLatch latch) {
+        final MethodBreakpoint mb = MethodBreakpoint.create(bpClass, bpMethod);
+        final JPDADebugger dbg = ((JPDAThreadImpl)awtThread).getDebugger();
+        
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
         mb.setHidden(true);
-        final Object bpLock = new Object();
         mb.addJPDABreakpointListener(new JPDABreakpointListener() {
             @Override
             public void breakpointReached(JPDABreakpointEvent event) {
-                synchronized (bpLock) {
-                    DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
-                    bpLock.notifyAll();
+                try {
+                    if (dbg.equals(event.getDebugger())) {
+                        DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+                        try {
+                            ((JPDAThreadImpl)awtThread).notifyMethodInvoking();
+                            runnable.run();
+                        } catch (PropertyVetoException e) {
+                        } finally {
+                            ((JPDAThreadImpl)awtThread).notifyMethodInvokeDone();
+                        }
+                    }
+                } finally {
+                    event.resume();
+                    latch.countDown();
                 }
             }
         });
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-        VirtualMachine vm = ((JPDAThreadImpl) awtThread).getThreadReference().virtualMachine();
-        ClassObjectReference serviceClassObject;
-        synchronized (remoteServiceClasses) {
-            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) awtThread).getDebugger());
-        }
-        ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
-        Field awtAccess = serviceClass.fieldByName("awtAccess");
-        try {
-            serviceClass.setValue(awtAccess, vm.mirrorOf(true));
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
-            return awtThread;
-        }
-        synchronized (bpLock) {
-            try {
-                bpLock.wait();
-            } catch (InterruptedException ex) {
-            }
-        }
-        return awtThread;
     }
     
     private static final Map<JPDAThread, RequestProcessor.Task> tasksByThreads = new WeakHashMap<JPDAThread, RequestProcessor.Task> ();
@@ -293,11 +261,11 @@ public class RemoteServices {
      * @param run The Runnable that is executed when the thread is assured to be stopped on an event.
      * @throws PropertyVetoException when can not invoke methods.
      */
-    public static void runOnStoppedThread(JPDAThread thread, Runnable run) throws PropertyVetoException {
-        JPDAThreadImpl t = (JPDAThreadImpl) thread;
+    public static void runOnStoppedThread(JPDAThread thread, final Runnable run, ServiceType sType) throws PropertyVetoException {
+        final JPDAThreadImpl t = (JPDAThreadImpl) thread;
         boolean wasSuspended = true;
-        Lock threadLock = t.accessLock.writeLock();
-        threadLock.lock();
+        
+        t.accessLock.writeLock().lock();
         try {
             ThreadReference threadReference = t.getThreadReference();
             wasSuspended = t.isSuspended();
@@ -306,13 +274,50 @@ public class RemoteServices {
                 
             }
             if (!t.isSuspended()) {
-                threadLock.unlock();
-                threadLock = null;
-                RemoteServices.makeAWTThreadStopOnEvent(thread);
-                threadLock = t.accessLock.writeLock();
-                threadLock.lock();
-            }
-            if (thread.isSuspended()) {
+                final CountDownLatch latch = new CountDownLatch(1);
+                t.accessLock.writeLock().unlock();
+                switch(sType) {
+                    case AWT: {
+                        runOnBreakpoint(
+                            thread, 
+                            "org.netbeans.modules.debugger.jpda.visual.remote.RemoteAWTService", // NOI18N
+                            "calledInAWT", // NOI18N
+                            run,
+                            latch
+                        );
+                        VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
+                        ClassObjectReference serviceClassObject;
+                        synchronized (remoteServiceClasses) {
+                            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
+                        }
+                        ClassType serviceClass = (ClassType) serviceClassObject.reflectedType();//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+                        Field awtAccess = serviceClass.fieldByName("awtAccess"); // NOI18N
+                        try {
+                            serviceClass.setValue(awtAccess, vm.mirrorOf(true));
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        break;
+                    }
+                    case FX: {
+                        runOnBreakpoint(
+                            thread,
+                            "org.netbeans.modules.debugger.jpda.visual.remote.RemoteFXService", // NOI18N
+                            "access", // NOI18N
+                            run,
+                            latch
+                        );
+                        break;
+                    }
+                }
+                try {
+                    // wait for the async operation to finish
+                    latch.await();
+                    t.accessLock.writeLock().lock();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            } else {
                 RequestProcessor.Task autoresumeTask;
                 if (!wasSuspended) {
                     AutoresumeTask resumeTask = new AutoresumeTask(t);
@@ -339,22 +344,20 @@ public class RemoteServices {
                 }
             }
         } finally {
-            if (threadLock != null) {
-                threadLock.unlock();
-            }
+            t.accessLock.writeLock().unlock();
         }
     }
     
     public static List<RemoteListener> getAttachedListeners(RemoteAWTScreenshot.AWTComponentInfo ci) throws PropertyVetoException {
         final List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
-        final JPDAThreadImpl thread = ci.getAWTThread();
+        final JPDAThreadImpl thread = ci.getThread();
         final ObjectReference component = ci.getComponent();
         runOnStoppedThread(thread, new Runnable() {
             @Override
             public void run() {
                 retrieveAttachedListeners(thread, component, rlisteners);
             }
-        });
+        }, ServiceType.AWT);
         return rlisteners;
     }
         
@@ -443,14 +446,14 @@ public class RemoteServices {
     public static ObjectReference attachLoggingListener(final RemoteAWTScreenshot.AWTComponentInfo ci,
                                                         final ClassObjectReference listenerClass,
                                                         final LoggingListenerCallBack listener) throws PropertyVetoException {
-        final JPDAThreadImpl thread = ci.getAWTThread();
+        final JPDAThreadImpl thread = ci.getThread();
         final ObjectReference[] listenerPtr = new ObjectReference[] { null };
         runOnStoppedThread(thread, new Runnable() {
             @Override
             public void run() {
                 ThreadReference t = thread.getThreadReference();
                 ObjectReference component = ci.getComponent();
-                final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteService", "calledWithEventsData");
+                final MethodBreakpoint mb = MethodBreakpoint.create("org.netbeans.modules.debugger.jpda.visual.remote.RemoteAWTService", "calledWithEventsData");
                 mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
                 mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
                 mb.setHidden(true);
@@ -522,7 +525,7 @@ public class RemoteServices {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        });
+        }, ServiceType.AWT);
         return listenerPtr[0];
     }
     
@@ -557,7 +560,7 @@ public class RemoteServices {
         return (ArrayType) clazz;
     }
     
-    private static List<RemoteClass> getRemoteClasses(String classBaseName, boolean include) throws IOException {
+    private static List<RemoteClass> getRemoteClasses() throws IOException {
         InputStream in = RemoteServices.class.getResourceAsStream(REMOTE_CLASSES_ZIPFILE);
         try {
             ZipInputStream zin = new ZipInputStream(in);
@@ -573,9 +576,6 @@ public class RemoteServices {
                 int baseEnd = name.indexOf('$', baseStart);
                 if (baseEnd < 0) {
                     baseEnd = name.length();
-                }
-                if (classBaseName != null && include != classBaseName.equals(name.substring(baseStart, baseEnd))) {
-    //                continue;
                 }
                 RemoteClass rc = new RemoteClass();
                 rc.name = name.replace('/', '.');

@@ -47,7 +47,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.JavaComponentInfo;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -66,7 +66,7 @@ public class GoToSourceAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node n : activatedNodes) {
-            AWTComponentInfo ci = n.getLookup().lookup(AWTComponentInfo.class);
+            JavaComponentInfo ci = n.getLookup().lookup(JavaComponentInfo.class);
             if (ci != null) {
                 final String type = ci.getType();
                 rp.post(new Runnable() {
