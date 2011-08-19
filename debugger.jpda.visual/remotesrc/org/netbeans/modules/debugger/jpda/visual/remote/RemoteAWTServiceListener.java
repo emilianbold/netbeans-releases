@@ -50,11 +50,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class RemoteServiceListener implements InvocationHandler {
+public class RemoteAWTServiceListener implements InvocationHandler {
     
     private final Component c;
     
-    public RemoteServiceListener(Component c) {
+    public RemoteAWTServiceListener(Component c) {
         this.c = c;
     }
 
@@ -77,7 +77,7 @@ public class RemoteServiceListener implements InvocationHandler {
         } catch (SecurityException ex) {
             return null;
         }
-        RemoteServiceListener rl = new RemoteServiceListener(c);
+        RemoteAWTServiceListener rl = new RemoteAWTServiceListener(c);
         Object listener = rl.createLoggingListener(listenerClass);
         try {
             addListenerMethod.invoke(c, new Object[] { listener });
@@ -134,7 +134,7 @@ public class RemoteServiceListener implements InvocationHandler {
             data[i++] = name;
             data[i++] = value;
         }
-        RemoteService.pushEventData(c, data);
+        RemoteAWTService.pushEventData(c, data);
     }
     
 }

@@ -110,6 +110,14 @@ public interface ComponentInfo {
     ComponentInfo[] getSubComponents();
 
     /**
+     * Retrieves a component occupying the given position
+     * @param x Horizontal position
+     * @param y Vertical position
+     * @return Returns a subcomponent residing at the given position or this component itself
+     */
+    ComponentInfo findAt(int x, int y);
+    
+    /**
      * Add a property change listener to listen on changes in component properties.
      * 
      * @param propertyChangeListener The property change listener
