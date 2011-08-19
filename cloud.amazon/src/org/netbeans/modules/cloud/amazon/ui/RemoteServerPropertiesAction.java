@@ -39,58 +39,47 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cloud.amazon.serverplugin;
+package org.netbeans.modules.cloud.amazon.ui;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import org.netbeans.modules.cloud.amazon.ui.AmazonJ2EEInstanceNode;
-import org.netbeans.spi.server.ServerInstanceImplementation;
+import org.netbeans.api.server.CommonServerUIs;
+import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  */
-public class AmazonJ2EEServerInstanceImplementation implements ServerInstanceImplementation {
+public class RemoteServerPropertiesAction extends NodeAction {
 
-    private AmazonJ2EEInstance aij;
-
-    public AmazonJ2EEServerInstanceImplementation(AmazonJ2EEInstance aij) {
-        this.aij = aij;
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        AmazonJ2EEInstance ai = activatedNodes[0].getLookup().lookup(AmazonJ2EEInstance.class);
+        CommonServerUIs.showCustomizer(ai.getInstance());
     }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup().lookup(AmazonJ2EEInstance.class) != null;
+    }
+
+    @Override
+    public String getName() {
+        return "Properties";
+    }
+
     
     @Override
-    public String getDisplayName() {
-        return getBasicNode().getDisplayName(); //aij.getApplicationName() + " - " + aij.getEnvironmentName();
-    }
-
-    @Override
-    public String getServerDisplayName() {
-        return "Tomcat";
-    }
-
-    @Override
-    public Node getFullNode() {
-        return getBasicNode();
-    }
-
-    @Override
-    public Node getBasicNode() {
-        return new AmazonJ2EEInstanceNode(aij);
-    }
-
-    @Override
-    public JComponent getCustomizer() {
-        return null;
-    }
-
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isRemovable() {
+    protected boolean asynchronous() {
         return false;
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+    
 }

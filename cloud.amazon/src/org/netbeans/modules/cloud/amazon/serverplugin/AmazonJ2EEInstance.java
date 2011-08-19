@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.amazon.serverplugin;
 
 import com.amazonaws.services.elasticbeanstalk.model.EnvironmentStatus;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
 import org.netbeans.modules.cloud.common.spi.support.serverplugin.InstanceState;
 
@@ -56,6 +57,7 @@ public class AmazonJ2EEInstance {
     private String environmentId;
     private InstanceState state;
     private String containerType;
+    private ServerInstance instance;
 
     public AmazonJ2EEInstance(AmazonInstance amazonInstance, String applicationName, 
             String environmentName, String environmentId, String containerType) {
@@ -91,6 +93,14 @@ public class AmazonJ2EEInstance {
         }
     }
     
+    public ServerInstance getInstance() {
+        return instance;
+    }
+
+    void setInstance(ServerInstance instance) {
+        this.instance = instance;
+    }
+
     public InstanceState getState() {
         return state;
     }

@@ -42,10 +42,13 @@
 package org.netbeans.modules.cloud.amazon.ui;
 
 import java.awt.Image;
+import javax.swing.Action;
 import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -59,7 +62,7 @@ public class AmazonJ2EEInstanceNode extends AbstractNode {
     private AmazonJ2EEInstance aij;
     
     public AmazonJ2EEInstanceNode(AmazonJ2EEInstance aij) {
-        super(Children.LEAF);
+        super(Children.LEAF, Lookups.fixed(aij));
         this.aij = aij;
         setName(""); // NOI18N
         setDisplayName(aij.getDisplayName());
@@ -106,4 +109,11 @@ public class AmazonJ2EEInstanceNode extends AbstractNode {
         return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
     }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(RemoteServerPropertiesAction.class)
+        };
+    }
+    
 }

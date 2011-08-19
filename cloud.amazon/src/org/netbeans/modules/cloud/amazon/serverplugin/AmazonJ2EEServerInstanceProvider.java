@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -54,7 +55,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
 import org.netbeans.modules.cloud.amazon.AmazonInstanceManager;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.spi.server.ServerInstanceFactory;
@@ -107,21 +107,23 @@ public final class AmazonJ2EEServerInstanceProvider implements ServerInstancePro
         for (AmazonInstance ai : AmazonInstanceManager.getDefault().getInstances()) {
             for (AmazonJ2EEInstance inst : ai.readJ2EEServerInstances()) {
                 ServerInstance si = ServerInstanceFactory.createServerInstance(new AmazonJ2EEServerInstanceImplementation(inst));
-                // TODO: there must be a better way to check whether server already is registered or not:
-                if (Deployment.getDefault().getJ2eePlatform(inst.getId()) == null) {
+                InstanceProperties ip = InstanceProperties.getInstanceProperties(inst.getId());
+                if (ip == null) {
+                    Map<String, String> props = new HashMap<String, String>();
+                    props.put(AmazonDeploymentFactory.IP_ENVIRONMENT_ID, inst.getEnvironmentId());
+                    props.put(AmazonDeploymentFactory.IP_APPLICATION_NAME, inst.getApplicationName());
+                    props.put(AmazonDeploymentFactory.IP_KEY_ID, ai.getKeyId());
+                    props.put(AmazonDeploymentFactory.IP_KEY, ai.getKey());
+                    props.put(AmazonDeploymentFactory.IP_CONTAINER_TYPE, inst.getContainerType());
+                    props.put(InstanceProperties.URL_ATTR, inst.getId());
                     try {
-                        InstanceProperties ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
-                                ai.getKeyId(), ai.getKey(), inst.getDisplayName(), new HashMap<String, String>());
-                        ip.setProperty(AmazonDeploymentFactory.IP_ENVIRONMENT_ID, inst.getEnvironmentId());
-                        ip.setProperty(AmazonDeploymentFactory.IP_APPLICATION_NAME, inst.getApplicationName());
-                        ip.setProperty(AmazonDeploymentFactory.IP_KEY_ID, ai.getKeyId());
-                        ip.setProperty(AmazonDeploymentFactory.IP_KEY, ai.getKey());
-                        ip.setProperty(AmazonDeploymentFactory.IP_CONTAINER_TYPE, inst.getContainerType());
-                        ip.setProperty(InstanceProperties.URL_ATTR, inst.getId());
+                        ip = InstanceProperties.createInstancePropertiesNonPersistent(inst.getId(), 
+                                ai.getKeyId(), ai.getKey(), inst.getDisplayName(), props);
                     } catch (InstanceCreationException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                inst.setInstance(si);
                 servers.add(si);
             }
         }
