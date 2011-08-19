@@ -605,6 +605,21 @@ public class Css3ParserTest extends CslTestBase {
         assertResult(result, 2);
         
     }
+ 
+    public void testParseURL() throws ParseException, BadLocationException {
+        String content = "p { background-image: url(flower.png); }";
+            
+        CssParserResult result = TestUtil.parse(content);        
+        TestUtil.dumpTokens(result);
+        TestUtil.dumpResult(result);
+//        Node error = NodeUtil.query(result.getParseTree(), 
+//                TestUtil.bodysetPath 
+//                + "ruleSet/declarations/declaration/expr/term/function/expr/error");
+//        assertNotNull(error);
+//        
+        assertResultOK(result);
+        
+    }
     
     public void testNetbeans_Css() throws ParseException, BadLocationException, IOException {
         CssParserResult result = TestUtil.parse(getTestFile("testfiles/netbeans.css"));
