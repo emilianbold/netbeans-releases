@@ -158,13 +158,15 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         DataObject dob = context.lookup(DataObject.class);
         Icon prj = null;
         ProjectInformation pi=null;
-        if (dob!=null) {
+        if (dob != null) {
             FileObject file = context.lookup(FileObject.class);
-            Project owner = FileOwnerQuery.getOwner(file);
-            if (owner!=null) {
-                fileObject = file;
-                pi = ProjectUtils.getInformation(owner);
-                prj = pi.getIcon();
+            if (file != null) {
+                Project owner = FileOwnerQuery.getOwner(file);
+                if (owner != null) {
+                    fileObject = file;
+                    pi = ProjectUtils.getInformation(owner);
+                    prj = pi.getIcon();
+                }
             }
         }
         
