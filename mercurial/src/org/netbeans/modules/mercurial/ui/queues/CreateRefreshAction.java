@@ -54,6 +54,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -135,7 +136,7 @@ abstract class CreateRefreshAction extends ContextAction {
                     List<File> addCandidates = new LinkedList<File>();
                     List<File> deleteCandidates = new LinkedList<File>();
                     List<File> commitCandidates = new LinkedList<File>();
-                    Collection<HgQueueHook> hooks = Collections.emptyList();
+                    Collection<HgQueueHook> hooks = panel.getHooks();
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                     for (QFileNode node : commitFiles) {
                         if (isCanceled()) {
@@ -172,6 +173,7 @@ abstract class CreateRefreshAction extends ContextAction {
                         if (hooks.size() > 0) {
                             hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
                         }
+                        HgModuleConfig.getDefault().setLastUsedQPatchMessage(patchName, message);
                         HgQueueHookContext context = new HgQueueHookContext(hookFiles, message, patchName);
                         for (HgQueueHook hook : hooks) {
                             try {

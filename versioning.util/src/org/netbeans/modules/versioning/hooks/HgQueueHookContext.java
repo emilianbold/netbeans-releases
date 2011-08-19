@@ -52,8 +52,8 @@ public final class HgQueueHookContext extends HgHookContext {
 
     private final String patchId;
 
-    public HgQueueHookContext (File[] files, String msg, String patchId) {
-        super(files, msg);
+    public HgQueueHookContext (File[] files, String msg, String patchId, LogEntry... entries) {
+        super(files, msg, entries);
         this.patchId = patchId;
     }
 

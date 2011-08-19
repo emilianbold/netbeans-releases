@@ -93,6 +93,7 @@ public class HgModuleConfig {
     private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
     private static final String KEY_INTERNAL_MERGE_TOOL_ENABLED = "hgmerge.internalTool.enabled"; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
+    private static final String KEY_QPATCH_MESSAGE = "qpatch.message."; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -625,6 +626,18 @@ public class HgModuleConfig {
             lastCanceledCommitMessages.remove(key);
         } else {
             lastCanceledCommitMessages.put(key, message);
+        }
+    }
+    
+    public String getLastUsedQPatchMessage (String patchName) {
+        return getPreferences().get(KEY_QPATCH_MESSAGE + patchName, ""); //NOI18N
+    }
+    
+    public void setLastUsedQPatchMessage (String patchName, String message) {
+        if (message == null) {
+            getPreferences().remove(KEY_QPATCH_MESSAGE + patchName);
+        } else {
+            getPreferences().put(KEY_QPATCH_MESSAGE + patchName, message);
         }
     }
     

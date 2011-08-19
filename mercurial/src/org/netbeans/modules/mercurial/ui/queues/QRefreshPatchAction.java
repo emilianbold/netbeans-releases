@@ -96,7 +96,13 @@ public class QRefreshPatchAction extends CreateRefreshAction {
                 final HgLogMessage.HgRevision parent = HgCommand.getParent(root, null, currentPatch.getId());
                 String commitMessage = HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE + currentPatch.getId());
                 if (commitMessage.isEmpty()) {
-                    commitMessage = currentPatch.getMessage();
+                    commitMessage = HgModuleConfig.getDefault().getLastUsedQPatchMessage(currentPatch.getId());
+                    if (commitMessage.isEmpty()) {
+                        List<HgLogMessage> msgs = HgCommand.getParents(root, null, null);
+                        if (!msgs.isEmpty()) {
+                            commitMessage = msgs.get(0).getMessage();
+                        }
+                    }
                 }
                 final String message = commitMessage;
                 final QPatch patch = currentPatch;

@@ -58,7 +58,7 @@ public abstract class HgQueueHook extends VCSHook<HgQueueHookContext>{
 
     }
 
-    public HgHookContext beforePatchFinish (HgQueueHookContext context) throws IOException {
+    public HgQueueHookContext beforePatchFinish (HgQueueHookContext context) throws IOException {
         return null;
     }
 
