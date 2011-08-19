@@ -90,7 +90,7 @@ import org.openide.windows.TopComponent;
     iconBase=PUDataObject.ICON,
     persistenceType=TopComponent.PERSISTENCE_NEVER,
     preferredID=PUDataObject.PREFERRED_ID_DESIGN,
-    mimeType=PUDataObject.MIMETYPE,
+    mimeType=PUDataLoader.REQUIRED_MIME,
     position=1300
 )
 public class PersistenceToolBarMVElement extends ToolBarMultiViewElement implements PropertyChangeListener {
