@@ -95,7 +95,11 @@ public enum NodeType {
         invalidRule, 
         hexColor, 
         media, 
-        mediaList,
+        media_expression,
+        media_feature,
+        media_query_list,
+        media_query,
+        media_type,
         medium, 
         
         /**
