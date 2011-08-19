@@ -1,0 +1,4 @@
+Code completion result for source line:
+$this->myIntFnc|($myInt);
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+METHOD     myIntFnc($myInt)                [PRIVATE]  SmartCompletion

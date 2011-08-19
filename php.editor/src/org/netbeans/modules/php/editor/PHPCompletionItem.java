@@ -62,11 +62,9 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement;
@@ -87,11 +85,14 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -105,7 +106,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -398,6 +398,76 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    private static class ExistingVariableResolver {
+        private final CompletionRequest request;
+        private final int caretOffset;
+        private final List<VariableName> usedVariables = new LinkedList<VariableName>();
+
+        public ExistingVariableResolver(CompletionRequest request) {
+            this.request = request;
+            caretOffset = request.anchor;
+        }
+
+        public ParameterElement resolveVariable(ParameterElement param) {
+            Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+            VariableName variableToUse = null;
+            if (declaredVariables != null) {
+                int oldOffset = 0;
+                for (VariableName variable : declaredVariables) {
+                    if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                        if (isPreviousVariable(variable)) {
+                            if (hasCorrectType(variable, param.getTypes())) {
+                                if (variable.getName().equals(param.getName())) {
+                                    variableToUse = variable;
+                                    break;
+                                }
+                                int newOffset = variable.getNameRange().getStart();
+                                if (newOffset > oldOffset) {
+                                    oldOffset = newOffset;
+                                    variableToUse = variable;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (variableToUse != null) {
+                usedVariables.add(variableToUse);
+                return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+            }
+            return param;
+        }
+
+        private Collection<? extends VariableName> getDeclaredVariables() {
+            VariableScope variableScope = request.result.getModel().getVariableScope(caretOffset);
+            if (variableScope != null) {
+                return variableScope.getDeclaredVariables();
+            }
+            return null;
+        }
+
+        private boolean isPreviousVariable(VariableName variable) {
+            int offsetDiff = caretOffset - variable.getNameRange().getStart();
+            if (offsetDiff > 0) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean hasCorrectType(VariableName variable, Set<TypeResolver> possibleTypes) {
+            Collection<? extends String> typeNames = variable.getTypeNames(caretOffset);
+            if (!typeNames.isEmpty()) {
+                for (TypeResolver type : possibleTypes) {
+                    if (typeNames.contains(type.getRawTypeName()) || type.getRawTypeName().equals("mixed") ||
+                            (typeNames.contains("real") && type.getRawTypeName().equals("float"))) { // NOI18N
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+    }
 
     static class FunctionElementItem extends PHPCompletionItem {
         private List<ParameterElement> parameters;
@@ -408,16 +478,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
             final List<FunctionElementItem> retval = new ArrayList<FunctionElementItem>();
             final List<ParameterElement> parameters = new ArrayList<ParameterElement>();
+            final ExistingVariableResolver existingVariableResolver = new ExistingVariableResolver(request);
             for (ParameterElement param : function.getParameters()) {
                 if (!param.isMandatory()) {
                     if (retval.isEmpty()) {
                         retval.add(new FunctionElementItem(function, request, parameters));
                     }
-                    parameters.add(param);
+                    parameters.add(existingVariableResolver.resolveVariable(param));
                     retval.add(new FunctionElementItem(function, request, parameters));
                 } else {
                     //assert retval.isEmpty():param.asString();
-                    parameters.add(param);
+                    parameters.add(existingVariableResolver.resolveVariable(param));
                 }
             }
             if (retval.isEmpty()) {
