@@ -79,7 +79,7 @@ public class AmazonJ2EEServerWizardPanel implements WizardDescriptor.Asynchronou
         
     AmazonJ2EEServerWizardComponent getComponentImpl() {
         if (component == null) {
-            component = new AmazonJ2EEServerWizardComponent(this, (String)wd.getProperty("suggested-name"));
+            component = new AmazonJ2EEServerWizardComponent(this, (String)wd.getProperty("suggested-name"), null);
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getPanelContentData());            
             component.init();
         }

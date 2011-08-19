@@ -44,6 +44,7 @@ package org.netbeans.modules.cloud.amazon.ui;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.cloud.amazon.AmazonInstance;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,10 +55,16 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
     private AmazonWizardPanel panel;
     
     /** Creates new form AmazonWizardComponent */
-    public AmazonWizardComponent(AmazonWizardPanel panel) {
+    public AmazonWizardComponent(AmazonWizardPanel panel, AmazonInstance ai) {
         this.panel = panel;
         initComponents();
         setName(NbBundle.getBundle(AmazonWizardComponent.class).getString("LBL_Name")); // NOI18N
+        if (ai != null) {
+            accessKey.setText(ai.getKeyId());
+            secret.setText(ai.getKey());
+            accessKey.setEditable(false);
+            secret.setEditable(false);
+        }
         accessKey.getDocument().addDocumentListener(this);
         secret.getDocument().addDocumentListener(this);
     }
@@ -74,7 +81,7 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
         jLabel1 = new javax.swing.JLabel();
         accessKey = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        secret = new javax.swing.JTextField();
+        secret = new javax.swing.JPasswordField();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(AmazonWizardComponent.class, "AmazonWizardComponent.jLabel1.text")); // NOI18N
 
@@ -114,7 +121,7 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
     private javax.swing.JTextField accessKey;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JTextField secret;
+    private javax.swing.JPasswordField secret;
     // End of variables declaration//GEN-END:variables
 
     public String getKeyId() {
@@ -127,16 +134,22 @@ public class AmazonWizardComponent extends javax.swing.JPanel implements Documen
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        panel.fireChange();
+        if (panel != null) {
+            panel.fireChange();
+        }
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        panel.fireChange();
+        if (panel != null) {
+            panel.fireChange();
+        }
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        panel.fireChange();
+        if (panel != null) {
+            panel.fireChange();
+        }
     }
 }

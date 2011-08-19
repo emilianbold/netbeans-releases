@@ -42,9 +42,10 @@
 package org.netbeans.modules.cloud.amazon;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cloud.amazon.ui.AmazonInstanceNode;
-import org.netbeans.modules.cloud.amazon.ui.RootNode;
+import org.netbeans.modules.cloud.amazon.ui.AmazonWizardComponent;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 
@@ -81,8 +82,8 @@ public class AmazonServerInstanceImplementation implements ServerInstanceImpleme
 
     @Override
     public JComponent getCustomizer() {
-        // TODO: show customizer of AWS credentials, region, etc.
-        return new JLabel("TO BE IMPLEMENTED");
+        AmazonWizardComponent panel = new AmazonWizardComponent(null, ai);
+        return panel;
     }
 
     @Override

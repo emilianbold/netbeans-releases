@@ -53,12 +53,14 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.cloud.amazon.AmazonInstance;
 import org.netbeans.modules.cloud.amazon.AmazonInstanceManager;
+import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEInstance;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,7 +75,7 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     private static final String SUFFIX = "-dev-env";
     
     /** Creates new form AmazonJ2EEServerWizardComponent */
-    public AmazonJ2EEServerWizardComponent(AmazonJ2EEServerWizardPanel wizardPanel, String suggestedName) {
+    public AmazonJ2EEServerWizardComponent(AmazonJ2EEServerWizardPanel wizardPanel, String suggestedName, AmazonJ2EEInstance aji) {
         this.wizardPanel = wizardPanel;
         this.suggestedName = suggestedName;
         initComponents();
@@ -86,6 +88,21 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
             }
             envURLTextField.setText(suggestedName+SUFFIX);
             envFullURLLabel.setText("<html>"+envURLTextField.getText()+".elasticbeanstalk.com"); // NOI18N
+        }
+        if (aji != null) {
+            accountComboBox.setEditable(false);
+            accountComboBox.getModel().setSelectedItem(aji.getAmazonInstance().getName());
+            ((JTextField)(appNameComboBox.getEditor().getEditorComponent())).setText(aji.getApplicationName());
+            appNameComboBox.setEditable(false);
+            envNameTextField.setText(aji.getEnvironmentName());
+            envNameTextField.setEditable(false);
+            templateComboBox.setVisible(false);
+            templateLabel.setVisible(false);
+            envURLTextField.setVisible(false);
+            envURLLabel.setVisible(false);
+            envFullURLLabel.setVisible(false);
+            containerComboBox.getModel().setSelectedItem(aji.getContainerType());
+            containerComboBox.setEditable(false);
         }
     }
     
@@ -426,13 +443,17 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     
     private void suggestNewURL() {
         envURLTextField.setText(envNameTextField.getText());
-        wizardPanel.fireChange();
+        if (wizardPanel != null) {
+            wizardPanel.fireChange();
+        }
     }
 
     private void updateFullURL() {
         envFullURLLabel.setText(envURLTextField.getText().length() > 0 ? 
                 "<html>"+envURLTextField.getText()+".elasticbeanstalk.com" : " "); // NOI18N
-        wizardPanel.fireChange();
+        if (wizardPanel != null) {
+            wizardPanel.fireChange();
+        }
     }
 
     private void initContainersModel() {
@@ -470,6 +491,12 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
     }
 
     private void updateState() {
-        wizardPanel.fireChange();
+        if (wizardPanel != null) {
+            wizardPanel.fireChange();
+        }
+    }
+
+    public void attachSingleListener(ChangeListener changeListener) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

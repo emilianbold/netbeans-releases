@@ -44,6 +44,7 @@ package org.netbeans.modules.cloud.amazon.serverplugin;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.netbeans.modules.cloud.amazon.ui.AmazonJ2EEInstanceNode;
+import org.netbeans.modules.cloud.amazon.ui.serverplugin.AmazonJ2EEServerWizardComponent;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 
@@ -80,7 +81,8 @@ public class AmazonJ2EEServerInstanceImplementation implements ServerInstanceImp
 
     @Override
     public JComponent getCustomizer() {
-        return null;
+        AmazonJ2EEServerWizardComponent panel = new AmazonJ2EEServerWizardComponent(null, null, aij);
+        return panel;
     }
 
     @Override
