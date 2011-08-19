@@ -101,7 +101,7 @@ public class HibernateMappingDataObject extends MultiDataObject {
         displayName="#CTL_SourceTabCaption",
         position=1
     )
-    @NbBundle.Messages("CTL_SourceTabCaption=XML")
+    @NbBundle.Messages("CTL_SourceTabCaption=Source")
     public static MultiViewEditorElement createXmlMultiViewElement(Lookup lookup) {
         return new MultiViewEditorElement(lookup);
     }  

@@ -173,7 +173,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         displayName="#CTL_SourceTabCaption",
         position=2550
     )
-    @NbBundle.Messages("CTL_SourceTabCaption=XML")
+    @NbBundle.Messages("CTL_SourceTabCaption=Source")
     public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
         return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
     }    
