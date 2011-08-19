@@ -656,6 +656,151 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
     }
     
+  public void testAbstractMethod() throws IOException {
+      /*
+       * Create a good one class file
+       */
+      FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO,
+          "foo/Clazz.java", "package foo; "
+                  + "import javax.inject.Inject; "
+                  + "import javax.enterprise.inject.Produces; "
+                  +" import javax.enterprise.inject.Disposes; "
+                  + " public class Clazz { "
+                  + " @Produces String production(){return null; } ; "
+                  + " void disposer( @Disposes int arg ){} "
+                  + "}");
+  
+      
+      FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO,
+              "foo/Clazz1.java", 
+              "package foo; "
+              + "import javax.inject.Inject; "
+              + "import javax.enterprise.inject.Produces; "
+              + " public class Clazz1 { "
+              + " @Produces  abstract int badProduction( int arg ); "+
+              " void  method(){}  "
+              + "}");
+      
+      FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO,
+              "foo/Clazz2.java", 
+              "package foo; "
+              +" import javax.enterprise.inject.Disposes; "
+              + " public class Clazz2 { "
+              + " abstract int badDisposer( @Disposes String arg);"+
+              " void  method(){}  "
+              + "}");
+    
+      
+      ResultProcessor processor = new ResultProcessor() {
+    
+          @Override
+          public void process( TestProblems result ) {
+              checkMethodElement(result, "foo.Clazz1", "badProduction");
+          }
+    
+      };
+      runAnalysis(errorFile, processor);
+      
+      processor = new ResultProcessor() {
+
+          @Override
+          public void process( TestProblems result ) {
+              checkMethodElement(result, "foo.Clazz2", "badDisposer");
+          }
+
+      };
+      runAnalysis(errorFile1, processor);
+  
+      runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+  }
+    
+    public void testBusinessAnnotations() throws IOException {
+        /*
+         * Create a good one class file
+         */
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO,
+            "foo/Clazz.java", "package foo; "
+                    + "import javax.inject.Inject; "
+                    + "import javax.enterprise.inject.Produces; "
+                    +" import javax.enterprise.inject.Disposes; "
+                    + "import javax.enterprise.event.Observes; "
+                    + "import javax.ejb.Stateful; "
+                    + " @Stateful "
+                    + " public class Clazz { "
+                    + " public @Produces String production(){return null; } ; "
+                    + " public void disposer( @Disposes int arg ){} "
+                    + " public void observer( @Observes String event  ){} "
+                    + "}");
+    
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz1.java", 
+                "package foo; "
+                + "import javax.ejb.Stateful; "
+                + "import javax.enterprise.inject.Produces; "
+                + " @Stateful "
+                + " public class Clazz1 { "
+                + " @Produces  int notBusiness( int arg ){ return 0;}  "+
+                " void  method(){}  "
+                + "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz2.java", 
+                "package foo; "
+                + "import javax.ejb.Stateful; "
+                +" import javax.enterprise.inject.Disposes; "
+                + " @Stateful "
+                + " public class Clazz2 { "
+                + " public final void notBusiness( @Disposes String arg){ } "+
+                " void  method(){}  "
+                + "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO,
+                "foo/Clazz3.java", 
+                "package foo; "
+                + "import javax.ejb.Stateful; "
+                + "import javax.enterprise.event.Observes; "
+                + "import javax.ejb.PostActivate; "
+                + " @Stateful "
+                + " public class Clazz3 { "
+                + " @PostActivate public void lifecycle( @Observes String event){ } "+
+                " void  method(){}  "
+                + "}");
+      
+        
+        ResultProcessor processor = new ResultProcessor() {
+      
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "notBusiness");
+            }
+      
+        };
+        runAnalysis(errorFile, processor);
+        
+        processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz2", "notBusiness");
+            }
+
+        };
+        runAnalysis(errorFile1, processor);
+        
+        processor = new ResultProcessor() {
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz3", "lifecycle");
+            }
+
+        };
+        runAnalysis(errorFile2, processor);
+    
+        runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
+    }
+    
     private void checkFieldElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
