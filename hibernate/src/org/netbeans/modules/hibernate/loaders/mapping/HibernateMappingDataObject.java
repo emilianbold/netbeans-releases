@@ -47,8 +47,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewElement;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -63,6 +67,8 @@ import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  * Represents the Hibernate mapping file
@@ -72,19 +78,34 @@ import org.openide.util.Lookup;
 public class HibernateMappingDataObject extends MultiDataObject {
 
     private HibernateMapping mapping;
+    public static final String VIEW_ID = "hibernate_mapping_multiview_id"; // NOI18N
+    public static final String ICON = "org/netbeans/modules/hibernate/resources/hibernate-mapping.png"; //NOI18N
 
     public HibernateMappingDataObject(FileObject pf, HibernateMappingDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
 
         CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         cookies.add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         cookies.add(validateCookie);
+        registerEditor(HibernateMappingDataLoader.REQUIRED_MIME, true);
     }
 
+    @MultiViewElement.Registration(
+        mimeType=HibernateMappingDataLoader.REQUIRED_MIME,
+        iconBase=ICON,
+        persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
+        preferredID=VIEW_ID,
+        displayName="#CTL_SourceTabCaption",
+        position=1
+    )
+    @NbBundle.Messages("CTL_SourceTabCaption=XML")
+    public static MultiViewEditorElement createXmlMultiViewElement(Lookup lookup) {
+        return new MultiViewEditorElement(lookup);
+    }  
+    
     /**
      * Adds MyClass object to Mapping 
      * 
@@ -146,9 +167,11 @@ public class HibernateMappingDataObject extends MultiDataObject {
     protected Node createNodeDelegate() {
         return new HibernateMappingDataNode(this);
     }
-    
+
     @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    protected int associateLookup() {
+        return 1;
     }
+    
+    
 }
