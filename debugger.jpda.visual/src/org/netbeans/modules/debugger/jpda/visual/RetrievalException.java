@@ -39,64 +39,18 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.debugger.visual;
-
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.util.logging.Logger;
-import org.netbeans.api.debugger.DebuggerEngine;
+package org.netbeans.modules.debugger.jpda.visual;
 
 /**
- * Represents screenshot of a remote application.
- * 
- * @author Martin Entlicher
+ *
+ * @author jbachorik
  */
-public final class RemoteScreenshot {
-    
-    //private static final Logger logger = Logger.getLogger(RemoteScreenshot.class.getName());
-    
-    //private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
+public class RetrievalException extends Exception {
 
-    private DebuggerEngine engine;
-    private String title;
-    private Image image;
-    private ComponentInfo componentInfo;
-    private ScreenshotUIManager uiManager;
-    
-    public RemoteScreenshot(DebuggerEngine engine, String title, int width, int height,
-                            Image image, ComponentInfo componentInfo) {
-        this.engine = engine;
-        this.title = title;
-        this.image = image;
-        this.componentInfo = componentInfo;
+    public RetrievalException(String message) {
     }
-    
-    public DebuggerEngine getDebuggerEngine() {
-        return engine;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-    
-    public Image getImage() {
-        return image;
-    }
-    
-    public ComponentInfo getComponentInfo() {
-        return componentInfo;
-    }
-    
-    /** The component info or <code>null</code> */
-    public ComponentInfo findAt(int x, int y) {
-        return componentInfo.findAt(x, y);
-    }
-    
-    public ScreenshotUIManager getScreenshotUIManager() {
-        if (uiManager == null) {
-            uiManager = new ScreenshotUIManager(this);
-        }
-        return uiManager;
+
+    public RetrievalException(String message, Throwable cause) {
     }
     
 }

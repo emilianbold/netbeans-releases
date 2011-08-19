@@ -54,7 +54,7 @@ import javax.swing.SwingUtilities;
  * 
  * @author Martin Entlicher
  */
-public class RemoteService {
+public class RemoteAWTService {
     
     private static final String AWTAccessThreadName = "org.netbeans.modules.debugger.jpda.visual AWT Access Loop";   // NOI18N
     private static volatile boolean awtAccess = false;
@@ -62,10 +62,10 @@ public class RemoteService {
     
     private static final Map eventData = new HashMap();
     
-    public RemoteService() {
+    public RemoteAWTService() {
     }
     
-    static void startAWTAccessLoop() {
+    static void startAccessLoop() {
         if (!awtAccessLoop) {
             awtAccessLoop = true;
             Thread loop = new Thread(new AWTAccessLoop(), AWTAccessThreadName);
@@ -75,7 +75,7 @@ public class RemoteService {
         }
     }
     
-    static void stopAWTAccessLoop() {
+    static void stopAccessLoop() {
         awtAccessLoop = false;
     }
     
@@ -86,11 +86,11 @@ public class RemoteService {
     }
     
     static Object addLoggingListener(Component c, Class listener) {
-        return RemoteServiceListener.add(c, listener);
+        return RemoteAWTServiceListener.add(c, listener);
     }
     
     static void removeLoggingListener(Component c, Object listener) {
-        RemoteServiceListener.remove(c, listener);
+        RemoteAWTServiceListener.remove(c, listener);
     }
     
     static void pushEventData(Component c, String[] data) {

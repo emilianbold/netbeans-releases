@@ -343,7 +343,7 @@ public class EventsModel implements TreeModel, NodeModel, NodeActionsProvider {
                 System.err.println("No class "+listenerClass);
                 return ;
             }
-            ci.getAWTThread().getDebugger().getRequestProcessor().post(new Runnable() {
+            ci.getThread().getDebugger().getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
                     ObjectReference l;

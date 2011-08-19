@@ -47,7 +47,8 @@ import java.util.Set;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot;
-import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.RetrievalException;
+import org.netbeans.modules.debugger.jpda.visual.RemoteFXScreenshot;
+import org.netbeans.modules.debugger.jpda.visual.RetrievalException;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -83,7 +84,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
     public void doAction(Object action) {
         String msg = null;
         try {
-            final RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
+            RemoteScreenshot[] screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
             for (int i = 0; i < screenshots.length; i++) {
                 final RemoteScreenshot screenshot = screenshots[i];
                 screenshot.getScreenshotUIManager().open();
@@ -97,9 +98,27 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
                     }
                 });*/
             }
-            if (screenshots.length == 0) {
-                msg = NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_NoScreenshots");
+            if (screenshots.length != 0) {
+                return;
             }
+            screenshots = RemoteFXScreenshot.takeCurrent(debugger);
+            for (int i = 0; i < screenshots.length; i++) {
+                final RemoteScreenshot screenshot = screenshots[i];
+                screenshot.getScreenshotUIManager().open();
+                /*
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ScreenshotComponent sc = new ScreenshotComponent(screenshot);
+                        sc.open();
+                        sc.requestActive();
+                    }
+                });*/
+            }
+            if (screenshots.length != 0) {
+                return;
+            }
+            msg = NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_NoScreenshots");
         } catch (RetrievalException ex) {
             msg = ex.getLocalizedMessage();
             if (ex.getCause() != null) {
