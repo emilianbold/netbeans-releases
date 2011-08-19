@@ -39,64 +39,20 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.debugger.visual;
+package org.netbeans.modules.debugger.jpda.visual.ui;
 
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.util.logging.Logger;
-import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.spi.navigator.NavigatorLookupHint;
 
 /**
- * Represents screenshot of a remote application.
+ * A content type for Navigator.
  * 
  * @author Martin Entlicher
  */
-public final class RemoteScreenshot {
-    
-    //private static final Logger logger = Logger.getLogger(RemoteScreenshot.class.getName());
-    
-    //private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
+public class ComponentHierarchyNavigatorHint implements NavigatorLookupHint {
 
-    private DebuggerEngine engine;
-    private String title;
-    private Image image;
-    private ComponentInfo componentInfo;
-    private ScreenshotUIManager uiManager;
-    
-    public RemoteScreenshot(DebuggerEngine engine, String title, int width, int height,
-                            Image image, ComponentInfo componentInfo) {
-        this.engine = engine;
-        this.title = title;
-        this.image = image;
-        this.componentInfo = componentInfo;
-    }
-    
-    public DebuggerEngine getDebuggerEngine() {
-        return engine;
-    }
-    
-    public String getTitle() {
-        return title;
-    }
-    
-    public Image getImage() {
-        return image;
-    }
-    
-    public ComponentInfo getComponentInfo() {
-        return componentInfo;
-    }
-    
-    /** The component info or <code>null</code> */
-    public ComponentInfo findAt(int x, int y) {
-        return componentInfo.findAt(x, y);
-    }
-    
-    public ScreenshotUIManager getScreenshotUIManager() {
-        if (uiManager == null) {
-            uiManager = new ScreenshotUIManager(this);
-        }
-        return uiManager;
+    @Override
+    public String getContentType() {
+        return "text/x-debugger-visual-component";
     }
     
 }

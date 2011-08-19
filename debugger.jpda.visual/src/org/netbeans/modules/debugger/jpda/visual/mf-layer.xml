@@ -46,6 +46,41 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-debugger-visual-component">
+                    <file name="org-netbeans-modules-debugger-jpda-visual-ui-ComponentHierarchy.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.jpda.visual.ui.ComponentHierarchy"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.jpda.visual.ui.ComponentHierarchy.getInstance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="Actions">
+        <folder name="Debug">
+            <file name="org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>
+                <attr name="instanceOf" stringvalue="javax.swing.Action"/>;
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createAction"/>
+                <attr name="action" stringvalue="takeScreenshot"/>
+                <attr name="name" bundlevalue="org.netbeans.modules.debugger.jpda.visual.Bundle#CTL_TakeScreenshotAction"/>
+                <!--attr name="iconBase" stringvalue="org/netbeans/modules/debugger/visual/resources/TakeScreenshotAction.png"/-->
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="Menu">
+        <folder name="RunProject">
+            <file name="org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.instance"/>
+                <attr intvalue="1950" name="position"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Windows2">
         <folder name="Components">
             <file name="eventsView.settings" url="resources/events.settings"/>
