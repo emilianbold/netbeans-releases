@@ -76,7 +76,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     public static final String INITIAL_SOURCE_ROOT = "EXISTING_SOURCES_CURRENT_DIRECTORY"; // NOI18N
 
     /** Creates new form PanelSourceFolders */
-    public PanelSourceFolders(Panel panel) {
+    private PanelSourceFolders(Panel panel) {
         this.firer = panel;
         initComponents();
         this.setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "LAB_ConfigureSourceRoots")); // NOI18N
@@ -89,6 +89,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         ((FolderList) this.testsPanel).setRelatedFolderList((FolderList) this.sourcePanel);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
             this.dataChanged();
@@ -105,6 +106,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.firer.fireChangeEvent();
     }
 
+    @Override
     void read(WizardDescriptor settings) {
         this.wizardDescriptor = settings;
         File projectLocation = (File) settings.getProperty("projdir"); // NOI18N
@@ -129,6 +131,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
+    @Override
     void store(WizardDescriptor settings) {
         File[] sourceRoots = ((FolderList) this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList) this.testsPanel).getFiles();
@@ -136,6 +139,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         settings.putProperty("testRoot", testRoots); // NOI18N
     }
 
+    @Override
     boolean valid(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty("projdir"); // NOI18N
         File[] sourceRoots = ((FolderList) this.sourcePanel).getFiles();
@@ -175,6 +179,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         return null;
     }
 
+    @Override
     void validate(WizardDescriptor d) throws WizardValidationException {
         // sources root
         searchClassFiles(((FolderList) this.sourcePanel).getFiles());
@@ -298,14 +303,17 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         private PanelSourceFolders component;
         private WizardDescriptor settings;
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
 
+        @Override
         public void readSettings(Object settings) {
             this.settings = (WizardDescriptor) settings;
             this.component.read(this.settings);
@@ -317,18 +325,22 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             }
         }
 
+        @Override
         public void storeSettings(Object settings) {
             this.component.store(this.settings);
         }
 
+        @Override
         public void validate() throws WizardValidationException {
             this.component.validate(this.settings);
         }
 
+        @Override
         public boolean isValid() {
             return this.component.valid(this.settings);
         }
 
+        @Override
         public synchronized java.awt.Component getComponent() {
             if (this.component == null) {
                 this.component = new PanelSourceFolders(this);
@@ -336,6 +348,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             return this.component;
         }
 
+        @Override
         public HelpCtx getHelp() {
             return new HelpCtx(PanelSourceFolders.class);
         }
@@ -344,6 +357,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             changeSupport.fireChange();
         }
 
+        @Override
         public boolean isFinishPanel() {
             return true;
         }

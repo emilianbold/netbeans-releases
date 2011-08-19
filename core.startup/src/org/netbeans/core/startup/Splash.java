@@ -48,7 +48,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -321,6 +320,7 @@ public final class Splash implements Stamps.Updater {
         private FontMetrics fm;
         private Graphics graphics;
         private final JComponent comp;
+        private final boolean about;
 
         /**
          * Creates a new splash screen component.
@@ -329,7 +329,14 @@ public final class Splash implements Stamps.Updater {
         public SplashPainter(Graphics graphics, JComponent comp, boolean about) {
             this.graphics = graphics;
             this.comp = comp;
+            this.about = about;
+        }
 
+        final void init() throws MissingResourceException, NumberFormatException {
+            assert SwingUtilities.isEventDispatchThread();
+            if (maxSteps > 0) {
+                return;
+            }
             // 100 is allocated for module system that will adjust this when number
             // of existing modules is known
             maxSteps = 140;
@@ -419,8 +426,10 @@ public final class Splash implements Stamps.Updater {
 
             // run in AWT, there were problems with accessing font metrics
             // from now AWT thread
-            EventQueue.invokeLater(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
+                    init();
                     if (text == null) {
                         repaint(dirty);
                         return;
@@ -507,9 +516,13 @@ public final class Splash implements Stamps.Updater {
                 if (bl > 1 || barStart % 2 == 0) {
                     barLength = bl;
                     bar_inc = new Rectangle(bar.x + barStart, bar.y, barLength + 1, bar.height);
-//System.out.println(this);
-                    repaint(bar_inc);
-//System.out.println("(painting " + bar_inc + ")");
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            init();
+                            repaint(bar_inc);
+                        }
+                    });
                 }
             }
         }

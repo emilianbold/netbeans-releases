@@ -88,83 +88,83 @@ public class RenameTest extends ModifyingRefactoring {
         performRename("RenameCtor","renameClass","RenamedCtor",5,34);
     }
 
-    public void testRenameUndo() {
-        String className = "RenameUndo";
-        openSourceFile("renameUndo", className);
-        EditorOperator editor = new EditorOperator(className);
-        editor.setCaretPosition(1, 17);
-        new RenamePopupAction().perform(editor);
-        RenameOperator ro = new RenameOperator();
-        ro.getNewName().typeText("renamedPackage");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-
-        editor.setCaretPosition(3, 16);
-        new RenamePopupAction().perform(editor);
-        ro = new RenameOperator();
-        ro.getNewName().typeText("renamedClass");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-
-        new UndoAction().perform(null); //undo rename class
-        new EventTool().waitNoEvent(1000);
-
-        editor.setCaretPosition(3, 26);
-        new RenamePopupAction().perform(editor);
-        ro = new RenameOperator();
-        ro.getNewName().typeText("Z");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-        
-        new UndoAction().perform(null); //undo rename generics
-        new EventTool().waitNoEvent(1000);
-
-        editor.setCaretPosition(5, 15);
-        new RenamePopupAction().perform(editor);
-        ro = new RenameOperator();
-        ro.getNewName().typeText("RenamedInner");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-
-        new UndoAction().perform(null); //undo rename inner class
-        new EventTool().waitNoEvent(1000);
-
-        editor.setCaretPosition(8, 20);
-        new RenamePopupAction().perform(editor);
-        ro = new RenameOperator();
-        ro.getNewName().typeText("renamedMethod");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-
-        new UndoAction().perform(null); //undo rename method
-        new EventTool().waitNoEvent(1000);
-
-        editor.setCaretPosition(11, 27);
-        new RenamePopupAction().perform(editor);
-        ro = new RenameOperator();
-        ro.getNewName().typeText("renamedParam");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-
-        new UndoAction().perform(null); //undo rename param
-        new EventTool().waitNoEvent(1000);
-
-        editor.setCaretPosition(17, 19);
-        new RenamePopupAction().perform(editor);
-        ro = new RenameOperator();
-        ro.getNewName().typeText("renamedLocal");
-        ro.getRefactor().push();
-        new EventTool().waitNoEvent(1000);
-
-        new UndoAction().perform(null); //undo rename variable
-        new EventTool().waitNoEvent(1000);
-
-        new UndoAction().perform(null); //undo rename pacakge
-        new EventTool().waitNoEvent(1000);
-
-        ref(new File(getDataDir(),"projects/RefactoringTest/src/renameUndo/RenameUndo.java".replace('/', File.separatorChar)));
-
-    }
+//    public void testRenameUndo() {
+//        String className = "RenameUndo";
+//        openSourceFile("renameUndo", className);
+//        EditorOperator editor = new EditorOperator(className);
+//        editor.setCaretPosition(1, 17);
+//        new RenamePopupAction().perform(editor);
+//        RenameOperator ro = new RenameOperator();
+//        ro.getNewName().typeText("renamedPackage");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//
+//        editor.setCaretPosition(3, 16);
+//        new RenamePopupAction().perform(editor);
+//        ro = new RenameOperator();
+//        ro.getNewName().typeText("renamedClass");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//
+//        new UndoAction().perform(null); //undo rename class
+//        new EventTool().waitNoEvent(1000);
+//
+//        editor.setCaretPosition(3, 26);
+//        new RenamePopupAction().perform(editor);
+//        ro = new RenameOperator();
+//        ro.getNewName().typeText("Z");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//        
+//        new UndoAction().perform(null); //undo rename generics
+//        new EventTool().waitNoEvent(1000);
+//
+//        editor.setCaretPosition(5, 15);
+//        new RenamePopupAction().perform(editor);
+//        ro = new RenameOperator();
+//        ro.getNewName().typeText("RenamedInner");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//
+//        new UndoAction().perform(null); //undo rename inner class
+//        new EventTool().waitNoEvent(1000);
+//
+//        editor.setCaretPosition(8, 20);
+//        new RenamePopupAction().perform(editor);
+//        ro = new RenameOperator();
+//        ro.getNewName().typeText("renamedMethod");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//
+//        new UndoAction().perform(null); //undo rename method
+//        new EventTool().waitNoEvent(1000);
+//
+//        editor.setCaretPosition(11, 27);
+//        new RenamePopupAction().perform(editor);
+//        ro = new RenameOperator();
+//        ro.getNewName().typeText("renamedParam");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//
+//        new UndoAction().perform(null); //undo rename param
+//        new EventTool().waitNoEvent(1000);
+//
+//        editor.setCaretPosition(17, 19);
+//        new RenamePopupAction().perform(editor);
+//        ro = new RenameOperator();
+//        ro.getNewName().typeText("renamedLocal");
+//        ro.getRefactor().push();
+//        new EventTool().waitNoEvent(1000);
+//
+//        new UndoAction().perform(null); //undo rename variable
+//        new EventTool().waitNoEvent(1000);
+//
+//        new UndoAction().perform(null); //undo rename pacakge
+//        new EventTool().waitNoEvent(1000);
+//
+//        ref(new File(getDataDir(),"projects/RefactoringTest/src/renameUndo/RenameUndo.java".replace('/', File.separatorChar)));
+//
+//    }
 
     public static Test suite() {
         return NbModuleSuite.create(

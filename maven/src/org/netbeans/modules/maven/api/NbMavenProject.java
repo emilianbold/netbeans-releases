@@ -304,9 +304,10 @@ public final class NbMavenProject {
     public static final String TYPE_POM = "pom"; //NOI18N
     
     /**
-     * get the user level packaging type for the project, allows to get the same UI support
-     *  of user's custom lifecycles.
-     * @return 
+     * Gets an "effective" packaging for the project.
+     * Normally this is just the Maven model's declared packaging.
+     * But {@link PackagingProvider}s can affect the decision.
+     * The resulting type will be used to control most IDE functions, including packaging-specific lookup.
      */
     public String getPackagingType() {
         for (PackagingProvider pp : Lookup.getDefault().lookupAll(PackagingProvider.class)) {

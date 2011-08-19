@@ -42,6 +42,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.palette.PaletteActions;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.Node;
 
 /**
  * Various IDE-specific methods (for which there is no better place)
@@ -55,4 +57,6 @@ public interface FormServices {
     PaletteActions createPaletteActions();
     String findJavaBeanName(FileObject fob);
     ClassSource getProjectClassSource(Project project, String className);
+    Node createFormDataNode(FormDataObject formDataObject);
+    MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile);
 }

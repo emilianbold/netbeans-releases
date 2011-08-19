@@ -72,7 +72,6 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.util.Exceptions;
 
 public class MonitorsUpdateService {
 
@@ -281,7 +280,7 @@ public class MonitorsUpdateService {
 
                     } catch (Throwable ex) {
                         log.log(Level.FINEST, "Exception while updateIndicators in MonitorUpdateService: {0}", ex.toString()); // NOI18N
-                        Exceptions.printStackTrace(ex);
+                        // Exceptions.printStackTrace(ex);
                     } finally {
                         ssdc.updateIndicators(newData);
                     }

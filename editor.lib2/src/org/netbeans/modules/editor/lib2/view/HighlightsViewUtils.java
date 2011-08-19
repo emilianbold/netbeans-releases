@@ -264,19 +264,19 @@ public class HighlightsViewUtils {
                         TextHitInfo startHit = TextHitInfo.leading(hiStartOffset - textLayoutOffset);
                         TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
                         renderPartAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutRect, startHit, endHit);
-                        if (ViewHierarchy.PAINT_LOG.isLoggable(Level.FINER)) {
-                            ViewHierarchy.PAINT_LOG.finer("Hit<" + startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
+                        if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
+                            ViewHierarchyImpl.PAINT_LOG.finer("Hit<" + startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
                                 ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
                                 hiStartOffset, renderEndOffset) + "', alloc=" + ViewUtils.toString(renderPartAlloc)); // NOI18N
                         }
                     } else { // No text layout => Newline or TAB(s)
                         if (showNonPrintingChars == null) {
-                            showNonPrintingChars = docView.isShowNonPrintingCharacters();
+                            showNonPrintingChars = docView.op.isNonPrintableCharactersVisible();
                         }
                         if (newline) {
                             renderPartAlloc = textLayoutAlloc; // Single '\n' => render whole alloc
                             renderTextLayout = showNonPrintingChars
-                                    ? docView.getNewlineCharTextLayout()
+                                    ? docView.op.getNewlineCharTextLayout()
                                     : null;
                         } else { // It's TAB(s)
                             if (showNonPrintingChars) {
@@ -291,7 +291,7 @@ public class HighlightsViewUtils {
                             r.width = rEnd.getX() - r.x;
                             renderPartAlloc = r;
                             if (showNonPrintingChars) {
-                                renderTextLayout = docView.getTabCharTextLayout(r.width);
+                                renderTextLayout = docView.op.getTabCharTextLayout(r.width);
                             } else {
                                 renderTextLayout = null;
                             }
@@ -319,7 +319,7 @@ public class HighlightsViewUtils {
                         LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
                                 "\", XY[" + ViewUtils.toStringPrec1(textLayoutRect.getX()) + ";"
                                 + ViewUtils.toStringPrec1(textLayoutRect.getY()) + "(B" + // NOI18N
-                                ViewUtils.toStringPrec1(docView.getDefaultAscent()) + // NOI18N
+                                ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + // NOI18N
                                 ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
                     }
                     hiStartOffset = renderEndOffset;
@@ -378,10 +378,10 @@ public class HighlightsViewUtils {
                 if (underlineColor != null) {
                     g.setColor(underlineColor);
                     Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                    float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
+                    float[] underlineAndStrike = docView.op.getUnderlineAndStrike(font);
                     g.fillRect(
                             (int) partAllocBounds.getX(),
-                            (int) (partAllocBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[0]),
+                            (int) (partAllocBounds.getY() + docView.op.getDefaultAscent() + underlineAndStrike[0]),
                             (int) partAllocBounds.getWidth(),
                             (int) Math.max(1, Math.round(underlineAndStrike[1]))
                     );
@@ -392,9 +392,9 @@ public class HighlightsViewUtils {
             Color waveUnderlineColor = (Color) attrs.getAttribute(EditorStyleConstants.WaveUnderlineColor);
             if (waveUnderlineColor != null && bottomBorderLineColor == null) { // draw wave underline
                 g.setColor(waveUnderlineColor);
-                float ascent = docView.getDefaultAscent();
+                float ascent = docView.op.getDefaultAscent();
                 Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
+                float[] underlineAndStrike = docView.op.getUnderlineAndStrike(font);
                 int yU = (int)(partAllocBounds.getY() + underlineAndStrike[0] + ascent + 0.5);
                 int wavePixelCount = (int) partAllocBounds.getWidth() + 1;
                 if (wavePixelCount > 0) {
@@ -433,9 +433,9 @@ public class HighlightsViewUtils {
     }
     
     static void paintTextLimitLine(Graphics2D g, DocumentView docView, int x, int y, int lastX, int lastY) {
-        int textLimitLineX = docView.getTextLimitLineX();
+        int textLimitLineX = docView.op.getTextLimitLineX();
         if (textLimitLineX > 0 && textLimitLineX >= x && textLimitLineX <= lastX) {
-            g.setColor(docView.getTextLimitLineColor());
+            g.setColor(docView.op.getTextLimitLineColor());
             g.drawLine(textLimitLineX, y, textLimitLineX, lastY);
         }
     }
@@ -468,10 +468,10 @@ public class HighlightsViewUtils {
                     try {
                         g.setColor(strikeThroughColor);
                         Font font = ViewUtils.getFont(attrs, docView.getTextComponent().getFont());
-                        float[] underlineAndStrike = docView.getUnderlineAndStrike(font);
+                        float[] underlineAndStrike = docView.op.getUnderlineAndStrike(font);
                         g.fillRect(
                                 (int) textLayoutBounds.getX(),
-                                (int) (textLayoutBounds.getY() + docView.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
+                                (int) (textLayoutBounds.getY() + docView.op.getDefaultAscent() + underlineAndStrike[2]), // strikethrough offset
                                 (int) textLayoutBounds.getWidth(),
                                 (int) Math.max(1, Math.round(underlineAndStrike[3])) // strikethrough thickness
                         );
@@ -487,7 +487,7 @@ public class HighlightsViewUtils {
             TextLayout textLayout, DocumentView docView)
     {
         float x = (float) textLayoutBounds.getX();
-        float ascentedY = (float) (textLayoutBounds.getY() + docView.getDefaultAscent());
+        float ascentedY = (float) (textLayoutBounds.getY() + docView.op.getDefaultAscent());
         // TextLayout is unable to do a partial render
         // Both x and ascentedY should already be floor/ceil-ed
         textLayout.draw(g, x, ascentedY);
@@ -527,7 +527,7 @@ public class HighlightsViewUtils {
                 // is used. Consider BreakIterator etc. if requested.
                 // If break is inside a word then check for word boundary in backward direction.
                 // If none is found then go forward to find a word break if possible.
-                if (docView.getLineWrapType() == DocumentView.LineWrapType.WORD_BOUND) {
+                if (docView.op.getLineWrapType() == LineWrapType.WORD_BOUND) {
                     CharSequence docText = DocumentUtilities.getText(docView.getDocument());
                     if (breakPartEndOffset > breakPartStartOffset) {
                         boolean searchNonLetterForward = false;

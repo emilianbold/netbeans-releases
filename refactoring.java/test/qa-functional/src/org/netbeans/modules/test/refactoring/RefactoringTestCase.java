@@ -141,7 +141,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * Dumps the tree structure into the ref file. The childs are sorted if they
      * are closer to root than {@link #sortLevel} 
      * @param model Model of the dumped tree
-     * @param parent Curren root whose childs are reculsively dumped
+     * @param parent Current root whose childs are recursively dumped
      * @param level Distance current root - tree root
      */
     protected void browseChildren(TreeModel model, Object parent, int level) {
@@ -204,7 +204,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * Gets the file name form the selected path in the preview tree. Supposed is
      * that the name of file in the second element in the path
      * @param tree Preview tree
-     * @return File name relared to selected node
+     * @return File name related to selected node
      */
     public String getFileForSelectedNode(JTree tree) {
         TreePath selectionPath = tree.getSelectionPath();
@@ -215,7 +215,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     /**
      * Gets string label of tree item. Suppose that the object has metho {@code getLabel} which is called by reflection.
      * @param parent The tree item
-     * @return Test lable obtained by method {@code getLabe}
+     * @return Test label obtained by method {@code getLabel}
      */
     protected Object getPreviewItemLabel(Object parent)  {
         try {

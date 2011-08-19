@@ -70,20 +70,18 @@ import org.openide.util.NbBundle;
  * Wizard to create a new J2SE project.
  */
 public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-
     enum WizardType { APP, LIB, EXT }
+    
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
+
     private static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
     private static final long serialVersionUID = 1L;
+    
     private WizardType type;
 
     /** Create a new wizard iterator. */
     public NewJFXProjectWizardIterator() {
         this(WizardType.APP);
-    }
-
-    public NewJFXProjectWizardIterator(WizardType type) {
-        this.type = type;
     }
 
     public static NewJFXProjectWizardIterator library() {
@@ -92,6 +90,10 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public static NewJFXProjectWizardIterator existing() {
         return new NewJFXProjectWizardIterator(WizardType.EXT);
+    }
+
+    private NewJFXProjectWizardIterator(WizardType type) {
+        this.type = type;
     }
 
     private WizardDescriptor.Panel[] createPanels() {
@@ -121,11 +123,13 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
     }
 
+    @Override
     public Set<?> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
 
+    @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start(4);
         //handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_ReadingProperties"));
@@ -135,8 +139,10 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
         }
         dirF = FileUtil.normalizeFile(dirF);
+        
         String name = (String) wiz.getProperty("name"); // NOI18N
         String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
+        
         String librariesDefinition = (String) wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
@@ -144,13 +150,17 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             }
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
+        
+        String platformName = (String) wiz.getProperty(JFXProjectProperties.JAVA_PLATFORM_NAME);
+        
         handle.progress(NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1); // NOI18N
         switch (type) {
             case EXT:
                 File[] sourceFolders = (File[]) wiz.getProperty("sourceRoot"); // NOI18N
                 File[] testFolders = (File[]) wiz.getProperty("testRoot"); // NOI18N
                 String buildScriptName = (String) wiz.getProperty("buildScriptName"); // NOI18N
-                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
+                AntProjectHelper h = JFXProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName, platformName);
+                
                 EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
                 if (includes == null) {
@@ -163,6 +173,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 }
                 ep.setProperty(ProjectProperties.EXCLUDES, excludes);
                 h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                
                 handle.progress(2);
                 for (File f : sourceFolders) {
                     FileObject srcFo = FileUtil.toFileObject(f);
@@ -172,7 +183,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 }
                 break;
             default:
-                h = JFXProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition);
+                h = JFXProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition, platformName);
                 handle.progress(2);
                 if (mainClass != null && mainClass.length() > 0) {
                     try {
@@ -230,6 +241,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -257,6 +269,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         this.wiz.putProperty("testRoot", new File[0]); // NOI18N
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         if (this.wiz != null) {
             this.wiz.putProperty("projdir", null); // NOI18N
@@ -272,18 +285,22 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(NewJFXProjectWizardIterator.class, "LAB_IteratorName", index + 1, panels.length); // NOI18N
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -291,6 +308,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -298,14 +316,17 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         index--;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
     }
 
@@ -320,7 +341,7 @@ public class NewJFXProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     static String getPackageName(String displayName) {
-        StringBuffer builder = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         boolean firstLetter = true;
         for (int i = 0; i < displayName.length(); i++) {
             char c = displayName.charAt(i);

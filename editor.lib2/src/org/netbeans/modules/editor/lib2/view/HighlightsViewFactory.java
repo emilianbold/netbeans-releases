@@ -268,14 +268,14 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             assert (endOffset >= 0) : "startOffset=" + endOffset + " < 0"; // NOI18N
             startOffset = Math.min(startOffset, docTextLength);
             endOffset = Math.min(endOffset, docTextLength);
-            if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+            if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
                 HighlightsChangeEvent layerEvent = (highlightsContainer instanceof DirectMergeContainer)
                         ? ((DirectMergeContainer) highlightsContainer).layerEvent()
                         : null;
                 String layerInfo = (layerEvent != null)
                         ? " " + highlightingManager.findLayer((HighlightsContainer)layerEvent.getSource()) // NOI18N
                         : ""; // NOI18N
-                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
+                ViewUtils.log(ViewHierarchyImpl.CHANGE_LOG, "VIEW-REBUILD-HC:<" + // NOI18N
                         startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             }
 
@@ -285,14 +285,14 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
 
         } else { // Paint highlights change
             assert (evt.getSource() == paintHighlightsContainer);
-            if (ViewHierarchy.CHANGE_LOG.isLoggable(Level.FINE)) {
+            if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
                 HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
                         ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
                         : null;
                 String layerInfo = (layerEvent != null)
                         ? " " + highlightingManager.findLayer((HighlightsContainer) layerEvent.getSource()) // NOI18N
                         : ""; // NOI18N
-                ViewUtils.log(ViewHierarchy.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
+                ViewUtils.log(ViewHierarchyImpl.CHANGE_LOG, "REPAINT-HC:<" + // NOI18N
                         startOffset + "," + endOffset + ">" + layerInfo + "\n"); // NOI18N
             }
 

@@ -124,13 +124,13 @@ final class WrapInfoUpdater {
 
     void initWrapInfo() {
         this.wrapLines = new ArrayList<WrapLine>(2);
-        wrapTypeWords = (docView.getLineWrapType() == DocumentView.LineWrapType.WORD_BOUND);
-        float visibleWidth = docView.getVisibleRect().width;
-        TextLayout lineContinuationTextLayout = docView.getLineContinuationCharTextLayout();
+        wrapTypeWords = (docView.op.getLineWrapType() == LineWrapType.WORD_BOUND);
+        float visibleWidth = docView.op.getVisibleRect().width;
+        TextLayout lineContinuationTextLayout = docView.op.getLineContinuationCharTextLayout();
         // Make reasonable minimum width so that the number of visual lines does not double suddenly
         // when user would minimize the width too much. Also have enough space for line continuation mark
         availableWidth = Math.max(visibleWidth - TextLayoutUtils.getWidth(lineContinuationTextLayout),
-                docView.getDefaultCharWidth() * 4);
+                docView.op.getDefaultCharWidth() * 4);
         logMsgBuilder = LOG.isLoggable(Level.FINE) ? new StringBuilder(100) : null;
         if (logMsgBuilder != null) {
             logMsgBuilder.append("availableWidth:").append(availableWidth); // NOI18N

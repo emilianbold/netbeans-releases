@@ -50,12 +50,17 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.libs.git</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.jsch</code-name-base>
+                    <code-name-base>com.jcraft.jsch</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.jgit</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.16</specification-version>
+                        <specification-version>1.0.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -96,10 +101,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.libs.git.progress</package>
                 <package>org.netbeans.libs.git.utils</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.jgit-1.0.0.201106090707-r.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.jgit-1.0.0.201106090707-r.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>
