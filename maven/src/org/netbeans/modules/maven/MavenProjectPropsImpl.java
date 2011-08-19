@@ -71,15 +71,15 @@ import org.w3c.dom.NodeList;
  */
 public class MavenProjectPropsImpl {
 
-    public static final String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
-    static String ROOT = "properties"; //NOI18N
+    private static final String NAMESPACE = "http://www.netbeans.org/ns/maven-properties-data/1"; //NOI18N
+    private static final String ROOT = "properties"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(MavenProjectPropsImpl.class.getName());
 
     private boolean transaction = false;
     private TreeMap<String, String> transPropsShared;
     private TreeMap<String, String> transPropsPrivate;
-    private AuxiliaryConfiguration aux;
+    private final AuxiliaryConfiguration aux;
     private boolean sharedChanged;
     private final NbMavenProjectImpl nbprji;
 
