@@ -162,7 +162,7 @@ charSet
 // Import.  Location of an external style sheet to include in the ruleset.
 //
 imports
-    :   IMPORT_SYM WS* (resourceIdentifier) WS* mediaList? SEMI
+    :   IMPORT_SYM WS* (resourceIdentifier) WS* media_query_list SEMI
     ;
 
 // ---------
@@ -170,15 +170,35 @@ imports
 //          it belongs to the signified medium.
 //
 media
-    : MEDIA_SYM WS* mediaList
+    : MEDIA_SYM WS* media_query_list
         LBRACE WS*
             ruleSet
         WS* RBRACE
     ;
 
-mediaList
-        : medium (COMMA WS* medium)*
-	;
+//mediaList
+//        : medium (COMMA WS* medium)*
+//	;
+
+media_query_list
+ : ( media_query ( COMMA WS* media_query )* )?
+ ;
+ 
+media_query
+ : ((ONLY | NOT) WS* )?  media_type WS* ( AND WS* media_expression )*
+ | media_expression ( AND WS* media_expression )*
+ ;
+ 
+media_type
+ : IDENT | GEN
+ ;
+ 
+media_expression
+ : '(' WS* media_feature WS* ( ':' WS* expr )? ')' WS*
+ ;
+media_feature
+ : IDENT
+ ;
 
 // ---------    
 // Medium.  The name of a medim that are particulare set of rules applies to.
@@ -434,6 +454,7 @@ term
             | ANGLE
             | TIME
             | FREQ
+            | RESOLUTION
         )
     | STRING
     | IDENT
@@ -832,6 +853,11 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                     )
                 ;
 
+
+ONLY 		: O N L Y;
+NOT		: N O T; 
+AND		: A N D;
+
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values
 //
@@ -868,6 +894,7 @@ fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
 fragment    DIMENSION   :;  // nnn'Somethingnotyetinvented'
 fragment    PERCENTAGE  :;  // '%'
+fragment    RESOLUTION  :;  //dpi,dpcm	
 
 NUMBER
     :   (
@@ -875,7 +902,14 @@ NUMBER
             | '.' '0'..'9'+
         )
         (
-              (E (M|X))=>
+              (D P (I|C))=>
+                D P
+                (
+                     I | C M     
+                )
+                { $type = RESOLUTION; }
+        	
+            | (E (M|X))=>
                 E
                 (
                       M     { $type = EMS;          }

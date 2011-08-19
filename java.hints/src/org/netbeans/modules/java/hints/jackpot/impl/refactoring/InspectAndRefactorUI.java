@@ -58,7 +58,7 @@ import org.openide.util.Union2;
 
 @NbBundle.Messages({
     "CTL_FindPattern=Find Pattern",
-    "CTL_ApplyPattern=Inspect and Refactor"
+    "CTL_ApplyPattern=Inspect and Transform"
 })
 public class InspectAndRefactorUI implements RefactoringUI {
 
