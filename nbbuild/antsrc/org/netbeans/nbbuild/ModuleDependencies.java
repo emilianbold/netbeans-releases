@@ -209,12 +209,6 @@ public class ModuleDependencies extends Task {
                     m.majorVersion = majorVersion;
                 }
 
-                String showInAutoUpdate = file.getManifest().getMainAttributes().getValue("AutoUpdate-Show-In-Client");
-                if (showInAutoUpdate == null) {
-                    m.showInAutoupdate = true;
-                } else {
-                    m.showInAutoupdate = Boolean.parseBoolean(showInAutoUpdate);
-                }
                 String lb = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Localizing-Bundle");
                 if (lb != null) {
                     Properties props = new Properties();
@@ -276,6 +270,12 @@ public class ModuleDependencies extends Task {
                     Boolean.parseBoolean(file.getManifest().getMainAttributes().getValue("AutoUpdate-Essential-Module"));
                 m.isAutoload = determineParameter(f, "autoload");
                 m.isEager = determineParameter(f, "eager");
+                String showInAutoUpdate = file.getManifest().getMainAttributes().getValue("AutoUpdate-Show-In-Client");
+                if (showInAutoUpdate == null) {
+                    m.showInAutoupdate = !m.isAutoload && !m.isEager;
+                } else {
+                    m.showInAutoupdate = Boolean.parseBoolean(showInAutoUpdate);
+                }
                 modules.add (m);
             }
         }
