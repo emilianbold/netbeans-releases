@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.visual.ui;
+package org.netbeans.modules.debugger.jpda.visual.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import org.netbeans.spi.debugger.visual.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
