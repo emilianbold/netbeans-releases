@@ -46,28 +46,32 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
 
 /**
+ * Not threadsafe
  *
- * @author marekfukala
+ * @author mfukala
  */
 public class GrammarParser {
-    
-    private static int group_index;
-    
+
     public static GroupGrammarElement parse(String expresssion) {
         return parse(expresssion, null);
     }
-    
+
     public static GroupGrammarElement parse(String expression, String propertyName) {
-        group_index = 0;
+        int group_index = 0;
+        int openedParenthesis = 0;
         GroupGrammarElement root = new GroupGrammarElement(null, group_index, propertyName);
         ParserInput input = new ParserInput(expression);
-        group_index = 0; //reset
-        parseElements(input, root, false);
+
+        parseElements(input, root, false, group_index, openedParenthesis);
+
+        if (openedParenthesis != 0) {
+            throw new IllegalStateException("Bracket pairing doesn't match: " + openedParenthesis);
+        }
         return root;
     }
-    
 
-    private static void parseElements(ParserInput input, GroupGrammarElement parent, boolean ignoreInherits) {
+    private static void parseElements(ParserInput input, GroupGrammarElement parent, boolean ignoreInherits,
+            int group_index, int openedParenthesis) {
         GrammarElement last = null;
         for (;;) {
             char c = input.read();
@@ -80,9 +84,10 @@ public class GrammarParser {
                     //ws, ignore
                     break;
                 case '[':
+                    openedParenthesis++;
                     //group start
                     last = new GroupGrammarElement(parent, ++group_index);
-                    parseElements(input, (GroupGrammarElement) last, false);
+                    parseElements(input, (GroupGrammarElement) last, false, group_index, openedParenthesis);
                     parent.addElement(last);
                     break;
 
@@ -90,24 +95,28 @@ public class GrammarParser {
                     char next = input.read();
                     if (next == '|') {
                         //the group is a list
-                        parent.setIsList(true);
-                    } // else it means OR, ignore
-                    break;
-
-                case '>':
-                    parent.setIsSequence(true);
+                        parent.setType(GroupGrammarElement.Type.LIST);
+                    } else {
+                        input.backup(1);
+                        parent.setType(GroupGrammarElement.Type.SET);
+                        // else it means OR
+                    }
                     break;
 
                 case ']':
+                    openedParenthesis--;
                     //group end
                     return;
 
-                case '\'':
+                case '\'': //'ref' style
+                case '<': // <ref> style
                     //reference
+                    boolean newStyle = c == '<';
+
                     StringBuilder buf = new StringBuilder();
                     for (;;) {
                         c = input.read();
-                        if (c == '\'') {
+                        if (c == '\'' || newStyle && c == '>') {
                             break;
                         } else {
                             buf.append(c);
@@ -119,7 +128,14 @@ public class GrammarParser {
                     PropertyDescriptor p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
 
                     if (p == null) {
-                        throw new IllegalStateException("no referred element '" + referredElementName + "' found!"); //NOI18N
+                        //try the dash - prefixed name - elements starting with dash can also be
+                        //referenced by the name without the prefix
+                        p = CssModuleSupport.getPropertyDescriptors().get("-" + referredElementName);
+
+                        if (p == null) {
+                            throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
+                                    + " Read input: " + input.readText()); //NOI18N
+                        }
                     }
 
                     last = new GroupGrammarElement(parent, ++group_index, referredElementName);
@@ -128,10 +144,8 @@ public class GrammarParser {
                     ParserInput pinput = new ParserInput(p.getValueGrammar());
 
                     //ignore inherit tokens in the subtree
-                    parseElements(pinput, (GroupGrammarElement) last, true);
+                    parseElements(pinput, (GroupGrammarElement) last, true, group_index, openedParenthesis);
 
-//                    last = new ReferenceElement(parent);
-//                    ((ReferenceElement)last).setReferedElementName(buf.toString());
                     parent.addElement(last);
                     break;
 
@@ -171,10 +185,10 @@ public class GrammarParser {
                     StringTokenizer st = new StringTokenizer(text.toString(), ","); //NOI18N
                     int min = Integer.parseInt(st.nextToken());
                     int max = Integer.parseInt(st.nextToken());
-                    
+
                     last.setMinimumOccurances(min);
                     last.setMaximumOccurances(max);
-                    
+
                     break;
 
                 case '+':
@@ -222,9 +236,7 @@ public class GrammarParser {
                     }
                     break;
 
-
             }
-//            break;
         }
 
     }
@@ -253,6 +265,9 @@ public class GrammarParser {
         public void backup(int chars) {
             pos -= chars;
         }
+        
+        public CharSequence readText() {
+            return text.subSequence(0, pos);
+        }
     }
-    
 }

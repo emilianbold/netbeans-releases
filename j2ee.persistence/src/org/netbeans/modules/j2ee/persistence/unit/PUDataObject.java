@@ -110,7 +110,6 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public static final String ICON = "org/netbeans/modules/j2ee/persistence/unit/PersistenceIcon.gif"; //NOI18N
     public static final String PREFERRED_ID_SOURCE="persistence_multiview_source"; //NOI18N
     public static final String PREFERRED_ID_DESIGN="persistence_multiview_design"; //NOI18N
-    public static final String MIMETYPE="text/x-persistence1.0"; //NOI18N
     /**
      * The property name for the event fired when a persistence unit was added or removed.
      */ 
@@ -137,18 +136,18 @@ public class PUDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected String getEditorMimeType() {
-        return "text/x-persistence1.0";//NOI18N
+        return PUDataLoader.REQUIRED_MIME;
     }
     
     @MultiViewElement.Registration(
-        mimeType=MIMETYPE,
+        mimeType=PUDataLoader.REQUIRED_MIME,
         iconBase=ICON,
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID=PREFERRED_ID_SOURCE,
         displayName="#CTL_SourceTabCaption",
         position=2000
     )
-    @Messages("CTL_SourceTabCaption=Source")
+    @Messages("CTL_SourceTabCaption=XML")
     public static XmlMultiViewElement createXmlMultiViewElement(Lookup lookup) {
         return new XmlMultiViewElement(lookup.lookup(XmlMultiViewDataObject.class));
     }

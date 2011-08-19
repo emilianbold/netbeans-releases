@@ -444,5 +444,31 @@ made subject to such option by the copyright holder.
           </folder>
       </folder>
   </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-java-j2seproject">
+            <folder name="Actions">
+                <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance"/>
+                    <attr name="position" intvalue="2350"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-ant-freeform">
+            <folder name="Actions">
+                <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance"/>
+                    <attr name="position" intvalue="1650"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Actions">
+                <file name="org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-jackpot-impl-refactoring-ApplyPatternAction.instance"/>
+                    <attr name="position" intvalue="2850"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     
 </filesystem>

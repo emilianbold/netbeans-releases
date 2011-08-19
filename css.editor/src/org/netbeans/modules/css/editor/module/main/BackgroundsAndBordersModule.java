@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.module.main;
 
-package org.netbeans.modules.j2ee.persistence.editor.completion;
-
-import java.util.List;
+import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author marek
+ * @author mfukala@netbeans.org
  */
-public interface CompletionContextResolver {
+@ServiceProvider(service = CssModule.class)
+public class BackgroundsAndBordersModule extends CssModule {
+
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/backgrounds_and_borders"; //NOI18N
     
-    /** returns a list of completion items based on the given context */
-    public List<JPACompletionItem> resolve(JPACodeCompletionProvider.Context ctx);
+    private static Collection<PropertyDescriptor> propertyDescriptors;
     
+      @Override
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if(propertyDescriptors == null) {
+            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+        }
+        return propertyDescriptors;
+    }
+   
 }
