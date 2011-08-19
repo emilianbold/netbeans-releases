@@ -1164,7 +1164,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 };
 
 	    breakStartCmd.chain(runCmd, breakMainCmd);
-	    breakMainCmd.chain(runCmd, null);
+	    breakMainCmd.chain(runCmd, runCmd);
 
             // _start does not work on MacOS
             if (getHost().getPlatform() == Platform.MacOSX_x86) {
