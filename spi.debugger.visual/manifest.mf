@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.spi.debugger.visual/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/visual/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/debugger/visual/mf-layer.xml
-OpenIDE-Module-Specification-Version: 1.0
