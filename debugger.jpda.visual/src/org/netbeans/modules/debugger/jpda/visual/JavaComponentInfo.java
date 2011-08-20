@@ -71,7 +71,7 @@ import java.util.concurrent.locks.Lock;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.spi.debugger.visual.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
