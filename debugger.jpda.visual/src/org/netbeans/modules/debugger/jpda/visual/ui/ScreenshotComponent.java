@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.visual.ui;
+package org.netbeans.modules.debugger.jpda.visual.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
@@ -67,9 +67,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.spi.debugger.visual.ComponentInfo;
-import org.netbeans.spi.debugger.visual.RemoteScreenshot;
-import org.netbeans.spi.debugger.visual.ScreenshotUIManager;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
+import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
