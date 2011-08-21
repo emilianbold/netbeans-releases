@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.debugger.visual;
+package org.netbeans.modules.debugger.jpda.visual.spi;
 
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
