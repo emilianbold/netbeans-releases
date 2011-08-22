@@ -61,7 +61,7 @@ public class CssModuleTestBase extends CslTestBase {
     protected void assertPropertyValues(String propertyName, String... values) {
         
         PropertyModel model = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(model);
+        assertNotNull(String.format("Cannot find property %s", propertyName), model);
         
         for(String val : values) {
             PropertyValue value = new PropertyValue(model, val);

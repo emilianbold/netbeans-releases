@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.analysis;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -801,6 +802,171 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         runAnalysis(goodFile, NO_ERRORS_PROCESSOR);
     }
     
+    public void testInitializers() throws IOException{
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz { "+
+                " @Inject public initMethod( int i){} "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz1 { "+
+                " @Inject abstract public void badInit(); "+
+                "}");
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz2 { "+
+                " @Inject static public void badInit() {}  "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                " public class Clazz3 { "+
+                " @Inject public <T> void badInit( Class<T> clazz ) {}  "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz1", "badInit");
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz2", "badInit");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkMethodElement(result, "foo.Clazz3", "badInit");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
+    public void testDelegateMethod() throws IOException{
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                " public interface  Iface { "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Decorated.java",
+                "package foo; " +
+                " public class  Decorated implements Iface { "+
+                "}");
+        
+        FileObject goodFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz.java",
+                "package foo; " +
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                "import javax.inject.Inject; "+
+                " @Decorator "+
+                " public class Clazz implements Iface { "+
+                " @Inject  public void initMethod( @Delegate Iface obj ){} "+
+                "}");
+        
+        FileObject errorFile = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz1.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                "import javax.decorator.Decorator; "+
+                " @Decorator "+
+                " public class Clazz1 implements Iface { "+
+                " public void badDelegate( @Delegate Iface obj ){} "+
+                "}");
+        
+        
+        FileObject errorFile1 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz2.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Delegate; "+
+                " public class Clazz2 implements Iface { "+
+                " @Inject public void badDelegate( @Delegate Iface obj ){} "+
+                "}");
+        
+        FileObject errorFile2 = TestUtilities.copyStringToFileObject(srcFO, "foo/Clazz3.java",
+                "package foo; " +
+                "import javax.inject.Inject; "+
+                "import javax.decorator.Decorator; "+
+                "import javax.decorator.Delegate; "+
+                " @Decorator "+
+                " public class Clazz3 implements Iface { "+
+                " @Inject public void badDelegate( @Delegate Object clazz ) {}  "+
+                "}");
+        
+        ResultProcessor processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                Map<Element, String> errors = result.getErrors();
+                boolean classFound = false;
+                boolean parameterFound = false;
+                assertEquals( "Expected exactly two error elements" , 2, errors.keySet().size());
+                for( Element element : errors.keySet() ){
+                    if ( element instanceof TypeElement ) {
+                        classFound = ((TypeElement)element).getQualifiedName().
+                            contentEquals("foo.Clazz1");
+                    }
+                    else if ( element instanceof VariableElement ){
+                        parameterFound = element.getSimpleName().contentEquals("obj");
+                        if ( parameterFound ){
+                            parameterFound = element.getEnclosingElement().getSimpleName().
+                            contentEquals("badDelegate");
+                        }
+                    }
+                }
+                assertTrue( "Clazz1 is expected as error element context",classFound );
+                assertTrue( "parameter 'obj' of method 'badDelegate'  is expected " +
+                		"as error element context",classFound );
+            }
+            
+        };
+        runAnalysis(errorFile , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result, "foo.Clazz2", "badDelegate", "obj");
+            }
+            
+        };
+        runAnalysis(errorFile1 , processor);
+        
+        processor = new ResultProcessor (){
+
+            @Override
+            public void process( TestProblems result ) {
+                checkParamElement(result, "foo.Clazz3", "badDelegate", "clazz");
+            }
+            
+        };
+        runAnalysis(errorFile2 , processor);
+        
+        runAnalysis( goodFile, NO_ERRORS_PROCESSOR );
+    }
+    
     private void checkFieldElement(TestProblems result , String enclosingClass, 
             String expectedName )
     {
@@ -847,6 +1013,10 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
                 }
                 clazz = (TypeElement)element;
             }
+            else {
+                assertTrue("Found element which parent is not a type definition " +
+                		"and is not a definition itself ", false);
+            }
             if (  forAdd && clazz.getQualifiedName().contentEquals( enclosingClass )){
                 enclosingClazz = clazz;
                 //System.out.println( "Found element : "+element);
@@ -856,8 +1026,51 @@ public class CdiAnalysisTest extends BaseAnalisysTestCase {
         assertNotNull("Expected enclosing class doesn't contain errors", enclosingClazz );
         assertEquals(  "Expected exactly one error element", 1 , classElements.size());
         Element element = classElements.iterator().next();
-        assertTrue( elementClass.isAssignableFrom( element.getClass() ) );
+        assertTrue( "Element has a class "+element.getClass(), 
+                elementClass.isAssignableFrom( element.getClass() ) );
         assertEquals(expectedName, element.getSimpleName().toString());
+    }
+    
+    private void checkParamElement(TestProblems result , String enclosingClass, 
+            String methodName , String paramName )
+    {
+        Set<Element> elements = result.getErrors().keySet();
+        Set<Element> classElements = new HashSet<Element>();
+        TypeElement enclosingClazz = null;
+        ExecutableElement method = null;
+        for( Element element : elements ){
+            Element enclosingElement = element.getEnclosingElement();
+            TypeElement clazz = null;
+            ExecutableElement methodElement = null;
+            boolean forAdd = false ;
+            if ( enclosingElement instanceof TypeElement ){
+                forAdd = true;
+                clazz = (TypeElement) enclosingElement;
+            }
+            else if ( element instanceof TypeElement ){
+                clazz = (TypeElement)element;
+            }
+            else if ( enclosingElement instanceof ExecutableElement ) {
+                forAdd = true;
+                methodElement = (ExecutableElement)enclosingElement;
+            }
+            else {
+                assertTrue("Found element which parent is not a type definition, " +
+                        "not a definition itself and not method", false);
+            }
+            if (  forAdd && methodElement != null && 
+                    methodElement.getSimpleName().contentEquals( methodName ))
+            {
+                method = methodElement;
+                enclosingClazz = (TypeElement)method.getEnclosingElement();
+                classElements.add( element );
+            }
+        }
+        assertNotNull("Expected enclosing class doesn't contain errors", enclosingClazz );
+        assertNotNull("Expected enclosing method doesn't contain errors", method );
+        assertEquals(  "Expected exactly one error element", 1 , classElements.size());
+        Element element = classElements.iterator().next();
+        assertEquals(paramName, element.getSimpleName().toString());
     }
     
 }
