@@ -107,7 +107,7 @@ public class AWTComponentBreakpointActionProvider extends ActionsProviderSupport
                 if (b == null) {
                     JPDADebugger debugger = ci.getThread().getDebugger();
                     b = new AWTComponentBreakpoint(
-                            new AWTComponentBreakpoint.ComponentDescription(debugger, component));
+                            new AWTComponentBreakpoint.ComponentDescription(ci, debugger, component));
                     DebuggerManager.getDebuggerManager().addBreakpoint(b);
                 } else {
                     DebuggerManager.getDebuggerManager().removeBreakpoint(b);

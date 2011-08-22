@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.openide.util.WeakListeners;
 
 /**
@@ -78,7 +79,7 @@ public class AWTComponentBreakpoint extends Breakpoint {
     private DebuggerManagerListener serviceBreakpointListenerWeak;
     private final Map<Session, AWTComponentBreakpointImpl> impls =
             new HashMap<Session, AWTComponentBreakpointImpl>();
-    private String condition;
+    private String condition = "";
     
     public AWTComponentBreakpoint(ComponentDescription component) {
         this.component = component;
@@ -166,13 +167,19 @@ public class AWTComponentBreakpoint extends Breakpoint {
     public static class ComponentDescription {
         
         private Map<JPDADebugger, ObjectReference> components = new WeakHashMap<JPDADebugger, ObjectReference>();
+        private ComponentInfo ci;
         
-        public ComponentDescription(JPDADebugger debugger, ObjectReference component) {
+        public ComponentDescription(ComponentInfo ci, JPDADebugger debugger, ObjectReference component) {
+            this.ci = ci;
             this.components.put(debugger, component);
         }
         
         public ComponentDescription(String definition) {
             // TODO
+        }
+        
+        public ComponentInfo getComponentInfo() {
+            return ci;
         }
         
         public ObjectReference getComponent(JPDADebugger debugger) {

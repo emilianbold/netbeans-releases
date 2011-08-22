@@ -48,9 +48,13 @@
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ActionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ConditionsPanel;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.spi.ScreenshotUIManager;
 import org.netbeans.spi.debugger.ui.Controller;
 
 /**
@@ -64,9 +68,24 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private Controller                  controller = new CBController();
+    private boolean                     createBreakpoint = false;
     
     private static AWTComponentBreakpoint createBreakpoint () {
-        AWTComponentBreakpoint cb = new AWTComponentBreakpoint(new AWTComponentBreakpoint.ComponentDescription(""));
+        AWTComponentBreakpoint.ComponentDescription componentDescription = null;
+        ScreenshotUIManager activeScreenshotManager = ScreenshotUIManager.getActive();
+        if (activeScreenshotManager != null) {
+            ComponentInfo ci = activeScreenshotManager.getSelectedComponent();
+            if (ci instanceof AWTComponentInfo) {
+                componentDescription = new AWTComponentBreakpoint.ComponentDescription(
+                        ci,
+                        ((AWTComponentInfo) ci).getThread().getDebugger(),
+                        ((AWTComponentInfo) ci).getComponent());
+            }
+        }
+        if (componentDescription == null) {
+            componentDescription = new AWTComponentBreakpoint.ComponentDescription("");
+        }
+        AWTComponentBreakpoint cb = new AWTComponentBreakpoint(componentDescription);
         /*cb.setPrintText (
             NbBundle.getBundle (LineBreakpointPanel.class).getString 
                 ("CTL_Line_Breakpoint_Print_Text")
@@ -86,7 +105,13 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
     
     public AWTComponentBreakpointPanel(AWTComponentBreakpoint cb, boolean createBreakpoint) {
         this.breakpoint = cb;
+        this.createBreakpoint = createBreakpoint;
         initComponents();
+        int type = cb.getType();
+        componentTextField.setText(cb.getComponent().getComponentInfo().getDisplayName());
+        addRemoveCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_ADD) != 0 || (type & AWTComponentBreakpoint.TYPE_REMOVE) != 0);
+        showHideCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_SHOW) != 0 || (type & AWTComponentBreakpoint.TYPE_HIDE) != 0);
+        repaintCheckBox.setSelected((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0);
         conditionsPanel = new ConditionsPanel(HELP_ID);
         conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
@@ -96,7 +121,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         cPanel.add(conditionsPanel, "Center");  // NOI18N
         
         // TODO: actionsPanel = new ActionsPanel (cb);
-        aPanel.add (actionsPanel, "Center");  // NOI18N
+        //aPanel.add (actionsPanel, "Center");  // NOI18N
 
         
     }
@@ -117,6 +142,12 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         java.awt.GridBagConstraints gridBagConstraints;
 
         sPanel = new javax.swing.JPanel();
+        componentLabel = new javax.swing.JLabel();
+        componentTextField = new javax.swing.JTextField();
+        componentActionLabel = new javax.swing.JLabel();
+        addRemoveCheckBox = new javax.swing.JCheckBox();
+        showHideCheckBox = new javax.swing.JCheckBox();
+        repaintCheckBox = new javax.swing.JCheckBox();
         cPanel = new javax.swing.JPanel();
         aPanel = new javax.swing.JPanel();
         pushPanel = new javax.swing.JPanel();
@@ -125,18 +156,60 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
 
         sPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "TTL_ComponentBreakpointSettings"))); // NOI18N
 
+        componentLabel.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.componentLabel.text")); // NOI18N
+
+        componentTextField.setEditable(false);
+        componentTextField.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.componentTextField.text")); // NOI18N
+
+        componentActionLabel.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.componentActionLabel.text")); // NOI18N
+
+        addRemoveCheckBox.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.addRemoveCheckBox.text")); // NOI18N
+
+        showHideCheckBox.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.showHideCheckBox.text")); // NOI18N
+
+        repaintCheckBox.setText(org.openide.util.NbBundle.getMessage(AWTComponentBreakpointPanel.class, "AWTComponentBreakpointPanel.repaintCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout sPanelLayout = new javax.swing.GroupLayout(sPanel);
         sPanel.setLayout(sPanelLayout);
         sPanelLayout.setHorizontalGroup(
             sPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 390, Short.MAX_VALUE)
+            .addGroup(sPanelLayout.createSequentialGroup()
+                .addComponent(componentLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(componentTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE))
+            .addGroup(sPanelLayout.createSequentialGroup()
+                .addComponent(componentActionLabel)
+                .addContainerGap())
+            .addGroup(sPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(sPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(showHideCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addRemoveCheckBox, javax.swing.GroupLayout.Alignment.LEADING))
+                .addContainerGap(127, Short.MAX_VALUE))
+            .addGroup(sPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(repaintCheckBox)
+                .addContainerGap(279, Short.MAX_VALUE))
         );
         sPanelLayout.setVerticalGroup(
             sPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(sPanelLayout.createSequentialGroup()
+                .addGroup(sPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(componentLabel)
+                    .addComponent(componentTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(2, 2, 2)
+                .addComponent(componentActionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(addRemoveCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showHideCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(repaintCheckBox))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(sPanel, gridBagConstraints);
@@ -153,6 +226,7 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -179,11 +253,11 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         pushPanel.setLayout(pushPanelLayout);
         pushPanelLayout.setHorizontalGroup(
             pushPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGap(0, 366, Short.MAX_VALUE)
         );
         pushPanelLayout.setVerticalGroup(
             pushPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 275, Short.MAX_VALUE)
+            .addGap(0, 168, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -195,9 +269,15 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel aPanel;
+    private javax.swing.JCheckBox addRemoveCheckBox;
     private javax.swing.JPanel cPanel;
+    private javax.swing.JLabel componentActionLabel;
+    private javax.swing.JLabel componentLabel;
+    private javax.swing.JTextField componentTextField;
     private javax.swing.JPanel pushPanel;
+    private javax.swing.JCheckBox repaintCheckBox;
     private javax.swing.JPanel sPanel;
+    private javax.swing.JCheckBox showHideCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private class CBController implements Controller {
@@ -205,6 +285,8 @@ public class AWTComponentBreakpointPanel extends javax.swing.JPanel implements C
         @Override
         public boolean ok() {
             breakpoint.setCondition (conditionsPanel.getCondition());
+            if (createBreakpoint)
+                DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
             return true;
         }
 

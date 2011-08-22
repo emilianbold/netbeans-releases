@@ -83,7 +83,7 @@ public class AWTComponentBreakpointImpl {
         //mb.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
         
         int type = cb.getType();
-        if (((type | AWTComponentBreakpoint.TYPE_ADD) != 0) || ((type | AWTComponentBreakpoint.TYPE_REMOVE) != 0)) {
+        if (((type & AWTComponentBreakpoint.TYPE_ADD) != 0) || ((type & AWTComponentBreakpoint.TYPE_REMOVE) != 0)) {
             FieldBreakpoint fb = FieldBreakpoint.create("java.awt.Component", "parent", FieldBreakpoint.TYPE_MODIFICATION);
             fb.setHidden(true);
             fb.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
@@ -96,7 +96,7 @@ public class AWTComponentBreakpointImpl {
             DebuggerManager.getDebuggerManager().addBreakpoint(fb);
             serviceBreakpoints.add(fb);
         }
-        if (((type | AWTComponentBreakpoint.TYPE_SHOW) != 0) || ((type | AWTComponentBreakpoint.TYPE_HIDE) != 0)) {
+        if (((type & AWTComponentBreakpoint.TYPE_SHOW) != 0) || ((type & AWTComponentBreakpoint.TYPE_HIDE) != 0)) {
             MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "show");
             mbShow.setMethodSignature("()V");
             addMethodBreakpoint(mbShow, (ObjectVariable) variableComponent);
@@ -104,7 +104,7 @@ public class AWTComponentBreakpointImpl {
             mbHide.setMethodSignature("()V");
             addMethodBreakpoint(mbHide, (ObjectVariable) variableComponent);
         }
-        if (((type | AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
+        if (((type & AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
             MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "repaint");
             // void repaint(long tm, int x, int y, int width, int height)
             mbShow.setMethodSignature("(JIIII)V");
