@@ -250,10 +250,19 @@ public class ScreenshotComponent extends TopComponent {
         }
     }
     
+    public void markBreakpoint(ComponentInfo ci) {
+        canvas.markBreakpoint(ci);
+    }
+    
+    public void unmarkBreakpoint(ComponentInfo ci) {
+        canvas.unmarkBreakpoint(ci);
+    }
+    
     private class ScreenshotCanvas extends JComponent {
         
         private Image image;
         private Rectangle selection;
+        private final Set<Rectangle> breakpoints = new HashSet<Rectangle>();
         private Listener listener;
         private boolean active;
         
@@ -289,6 +298,14 @@ public class ScreenshotComponent extends TopComponent {
         public void paintComponent(Graphics g) {
             g.drawImage(image, 1, 1, null);
             g.drawRect(0, 0, image.getWidth(null) + 2, image.getHeight(null) + 2);
+            synchronized (breakpoints) {
+                Color c = g.getColor();
+                g.setColor(Color.RED);
+                for (Rectangle r : breakpoints) {
+                    g.drawRect(r.x, r.y, r.width + 1, r.height + 1);
+                }
+                g.setColor(c);
+            }
             if (selection != null) {
                 Color c = g.getColor();
                 g.setColor(Color.BLUE);
@@ -314,6 +331,29 @@ public class ScreenshotComponent extends TopComponent {
             active = false;
             removeMouseListener(listener);
             ComponentHierarchy.getInstance().getExplorerManager().removePropertyChangeListener(listener);
+        }
+        
+        private Rectangle getBreakpointRectangle(ComponentInfo ci) {
+            Rectangle r = ci.getWindowBounds();
+            return new Rectangle(r.x - 1, r.y - 1, r.width + 2, r.height + 2);
+        }
+
+        private void markBreakpoint(ComponentInfo ci) {
+            Rectangle r;
+            synchronized (breakpoints) {
+                r = getBreakpointRectangle(ci);
+                breakpoints.add(r);
+            }
+            repaint(r.x, r.y, r.width + 3, r.height + 3);
+        }
+
+        private void unmarkBreakpoint(ComponentInfo ci) {
+            Rectangle r;
+            synchronized (breakpoints) {
+                r = getBreakpointRectangle(ci);
+                breakpoints.remove(r);
+            }
+            repaint(r.x, r.y, r.width + 3, r.height + 3);
         }
         
         private class Listener implements MouseListener, PropertyChangeListener {

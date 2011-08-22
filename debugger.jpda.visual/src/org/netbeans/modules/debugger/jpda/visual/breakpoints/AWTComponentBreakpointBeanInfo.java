@@ -39,84 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.spi;
+package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
+import java.beans.BeanDescriptor;
+import java.beans.SimpleBeanInfo;
 
 /**
- * 
- * @author Martin Entlicher
+ *
+ * @author martin
  */
-public final class ScreenshotUIManager {
+public class AWTComponentBreakpointBeanInfo extends SimpleBeanInfo {
     
-    public static final String ACTION_TAKE_SCREENSHOT = "takeScreenshot";   // NOI18N
+    public AWTComponentBreakpointBeanInfo() {}
     
-    private RemoteScreenshot rs;
-    private ScreenshotComponent sc;
-    
-    ScreenshotUIManager(RemoteScreenshot rs) {
-        this.rs = rs;
+    @Override
+    public BeanDescriptor getBeanDescriptor() {
+        return new BeanDescriptor(
+                AWTComponentBreakpoint.class,
+                AWTComponentBreakpointCustomizer.class);
     }
-    
-    /**
-     * Get an active opened remote screenshot.
-     * @return The active screenshot or <code>null</code>.
-     */
-    public static ScreenshotUIManager getActive() {
-        ScreenshotComponent activeComponent = ScreenshotComponent.getActive();
-        if (activeComponent != null) {
-            return activeComponent.getManager();
-        }
-        return null;
-    }
-    
-    public RemoteScreenshot getScreenshot() {
-        return rs;
-    }
-    
-    public void open() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    open();
-                }
-            });
-            return;
-        }
-        if (sc == null) {
-            sc = new ScreenshotComponent(rs, this);
-        }
-        sc.open();
-        sc.requestActive();
-    }
-    
-    public void requestActive() {
-        sc.requestActive();
-    }
-    
-    public boolean close() {
-        return sc.close();
-    }
-    
-    /**
-     * Get the component selected in the screenshot or <code>null</code>.
-     * @return the component or <code>null</code>
-     */
-    public ComponentInfo getSelectedComponent() {
-        if (sc == null) return null;
-        return sc.getSelectedComponent();
-    }
-    
-    public void markBreakpoint(ComponentInfo ci) {
-        if (sc == null) return ;
-        sc.markBreakpoint(ci);
-    }
-    
-    public void unmarkBreakpoint(ComponentInfo ci) {
-        if (sc == null) return ;
-        sc.unmarkBreakpoint(ci);
-    }
-    
+
 }

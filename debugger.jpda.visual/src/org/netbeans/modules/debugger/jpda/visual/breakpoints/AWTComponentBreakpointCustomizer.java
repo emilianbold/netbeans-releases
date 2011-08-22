@@ -39,84 +39,64 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.spi;
+package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.beans.Customizer;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import org.netbeans.modules.debugger.jpda.ui.breakpoints.ControllerProvider;
+import org.netbeans.spi.debugger.ui.Controller;
 
 /**
- * 
- * @author Martin Entlicher
+ *
+ * @author martin
  */
-public final class ScreenshotUIManager {
+public class AWTComponentBreakpointCustomizer extends JPanel implements Customizer, Controller {
+
+    private AWTComponentBreakpoint b;
+    private JComponent c;
     
-    public static final String ACTION_TAKE_SCREENSHOT = "takeScreenshot";   // NOI18N
-    
-    private RemoteScreenshot rs;
-    private ScreenshotComponent sc;
-    
-    ScreenshotUIManager(RemoteScreenshot rs) {
-        this.rs = rs;
-    }
-    
-    /**
-     * Get an active opened remote screenshot.
-     * @return The active screenshot or <code>null</code>.
-     */
-    public static ScreenshotUIManager getActive() {
-        ScreenshotComponent activeComponent = ScreenshotComponent.getActive();
-        if (activeComponent != null) {
-            return activeComponent.getManager();
+    @Override
+    public void setObject(Object bean) {
+        if (!(bean instanceof AWTComponentBreakpoint)) {
+            throw new IllegalArgumentException(bean.toString());
         }
-        return null;
+        this.b = (AWTComponentBreakpoint) bean;
+        init(b);
     }
     
-    public RemoteScreenshot getScreenshot() {
-        return rs;
+    private void init(AWTComponentBreakpoint b) {
+        c = new AWTComponentBreakpointPanel(b);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        add(c, gbc);
     }
-    
-    public void open() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    open();
-                }
-            });
-            return;
+
+    @Override
+    public boolean ok() {
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
+        } else {
+            cc = (Controller) c;
         }
-        if (sc == null) {
-            sc = new ScreenshotComponent(rs, this);
+        return cc.ok();
+    }
+
+    @Override
+    public boolean cancel() {
+        Controller cc;
+        if (c instanceof ControllerProvider) {
+            cc = ((ControllerProvider) c).getController();
+        } else {
+            cc = (Controller) c;
         }
-        sc.open();
-        sc.requestActive();
+        return cc.cancel();
     }
-    
-    public void requestActive() {
-        sc.requestActive();
-    }
-    
-    public boolean close() {
-        return sc.close();
-    }
-    
-    /**
-     * Get the component selected in the screenshot or <code>null</code>.
-     * @return the component or <code>null</code>
-     */
-    public ComponentInfo getSelectedComponent() {
-        if (sc == null) return null;
-        return sc.getSelectedComponent();
-    }
-    
-    public void markBreakpoint(ComponentInfo ci) {
-        if (sc == null) return ;
-        sc.markBreakpoint(ci);
-    }
-    
-    public void unmarkBreakpoint(ComponentInfo ci) {
-        if (sc == null) return ;
-        sc.unmarkBreakpoint(ci);
-    }
-    
+
 }

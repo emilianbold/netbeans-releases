@@ -91,6 +91,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
+import org.netbeans.modules.debugger.jpda.visual.actions.ToggleComponentBreakpointAction;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.openide.DialogDisplayer;
@@ -554,7 +555,8 @@ public class RemoteAWTScreenshot {
         @Override
         public Action[] getActions(boolean context) {
             return new SystemAction[] { GoToSourceAction.get(GoToSourceAction.class),
-                                        ShowListenersAction.get(ShowListenersAction.class) };
+                                        ShowListenersAction.get(ShowListenersAction.class),
+                                        ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class)};
         }
 
         @Override

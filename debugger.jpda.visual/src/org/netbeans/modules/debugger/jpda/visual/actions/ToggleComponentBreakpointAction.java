@@ -39,84 +39,43 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.visual.spi;
+package org.netbeans.modules.debugger.jpda.visual.actions;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
+import com.sun.jdi.ObjectReference;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * 
+ *
  * @author Martin Entlicher
  */
-public final class ScreenshotUIManager {
-    
-    public static final String ACTION_TAKE_SCREENSHOT = "takeScreenshot";   // NOI18N
-    
-    private RemoteScreenshot rs;
-    private ScreenshotComponent sc;
-    
-    ScreenshotUIManager(RemoteScreenshot rs) {
-        this.rs = rs;
+public class ToggleComponentBreakpointAction extends NodeAction {
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(ToggleComponentBreakpointAction.class, "CTL_ToggleComponentBreakpointAction");
     }
-    
-    /**
-     * Get an active opened remote screenshot.
-     * @return The active screenshot or <code>null</code>.
-     */
-    public static ScreenshotUIManager getActive() {
-        ScreenshotComponent activeComponent = ScreenshotComponent.getActive();
-        if (activeComponent != null) {
-            return activeComponent.getManager();
-        }
-        return null;
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
     }
-    
-    public RemoteScreenshot getScreenshot() {
-        return rs;
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        AWTComponentBreakpointActionProvider.doAction(activatedNodes);
     }
-    
-    public void open() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    open();
-                }
-            });
-            return;
-        }
-        if (sc == null) {
-            sc = new ScreenshotComponent(rs, this);
-        }
-        sc.open();
-        sc.requestActive();
-    }
-    
-    public void requestActive() {
-        sc.requestActive();
-    }
-    
-    public boolean close() {
-        return sc.close();
-    }
-    
-    /**
-     * Get the component selected in the screenshot or <code>null</code>.
-     * @return the component or <code>null</code>
-     */
-    public ComponentInfo getSelectedComponent() {
-        if (sc == null) return null;
-        return sc.getSelectedComponent();
-    }
-    
-    public void markBreakpoint(ComponentInfo ci) {
-        if (sc == null) return ;
-        sc.markBreakpoint(ci);
-    }
-    
-    public void unmarkBreakpoint(ComponentInfo ci) {
-        if (sc == null) return ;
-        sc.unmarkBreakpoint(ci);
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ToggleComponentBreakpointAction.class);
     }
     
 }
