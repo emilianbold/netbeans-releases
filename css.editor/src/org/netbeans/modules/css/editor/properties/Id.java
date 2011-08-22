@@ -1,7 +1,8 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,13 +24,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +35,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.packets;
 
-import org.w3c.dom.Node;
-
-
+package org.netbeans.modules.css.editor.properties;
 
 /**
- * @author ads
  *
+ * @author marekfukala
  */
-public abstract class DbgpResponse extends DbgpMessage {
+public class Id implements CssPropertyValueAcceptor {
 
-    static final String TRANSACTION_ID  = "transaction_id";     // NOI18N
-
-    static final String COMMAND                 = "command";            // NOI18N
-
-    private static final String ERROR           = "error ";             // NOI18N
-
-    DbgpResponse( Node node  ){
-        super( node );
+    public String id() {
+        return "id"; //NOI18N
     }
 
-    public String getTransactionId(){
-        return getAttribute( getNode(),  TRANSACTION_ID );
-    }
-
-    public String getCommandName(){
-        return getAttribute( getNode(),  COMMAND );
-    }
-
-    public Error getError(){
-        Node error = getChild(getNode(), ERROR );
-        if ( error == null ) {
-            return null;
+    //FIXME - the ability to properly accepts only correct identifiers is higly limited
+    public boolean accepts(String token) {
+        if(token.length() < 2) { //at least # and one char
+            return false;
         }
-        return new Error( error );
+        
+        char c1 = token.charAt(0);
+        char c2 = token.charAt(1);
+        
+        return c1 == '#' && Character.isLetter(c2);
+            
     }
+    
 }

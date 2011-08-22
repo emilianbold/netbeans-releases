@@ -300,7 +300,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     
     private Set<String> getObjectFiles(String root){
         HashSet<String> set = new HashSet<String>();
-        gatherSubFolders(new File(root), set);
+        gatherSubFolders(new File(root), set, new HashSet<String>());
         HashSet<String> map = new HashSet<String>();
         for (Iterator<String> it = set.iterator(); it.hasNext();){
             if (isStoped.get()) {
@@ -348,7 +348,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         return false;
     }
     
-    private void gatherSubFolders(File d, HashSet<String> set){
+    private void gatherSubFolders(File d, HashSet<String> set, HashSet<String> antiLoop){
         if (isStoped.get()) {
             return;
         }
@@ -356,26 +356,24 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             if (CndPathUtilitities.isIgnoredFolder(d)){
                 return;
             }
-            String path = d.getAbsolutePath();
-            if (Utilities.isWindows()) {
-                path = path.replace('\\', '/');
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
             }
-            if (!set.contains(path)){
+            if (!antiLoop.contains(canPath)){
+                antiLoop.add(canPath);
+                String path = d.getAbsolutePath();
+                if (Utilities.isWindows()) {
+                    path = path.replace('\\', '/');
+                }
                 set.add(path);
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
-                            try {
-                                String canPath = ff[i].getCanonicalPath();
-                                String absPath = ff[i].getAbsolutePath();
-                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                    continue;
-                                }
-                            } catch (IOException ex) {
-                                //Exceptions.printStackTrace(ex);
-                            }
-                            gatherSubFolders(ff[i], set);
+                            gatherSubFolders(ff[i], set, antiLoop);
                         }
                     }
                 }

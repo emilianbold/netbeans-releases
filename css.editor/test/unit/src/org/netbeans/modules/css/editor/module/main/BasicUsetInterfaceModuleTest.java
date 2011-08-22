@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.packets;
+package org.netbeans.modules.css.editor.module.main;
 
-import org.w3c.dom.Node;
-
-
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
- * @author ads
  *
+ * @author mfukala@netbeans.org
  */
-public abstract class DbgpResponse extends DbgpMessage {
+public class BasicUsetInterfaceModuleTest extends CssModuleTestBase {
 
-    static final String TRANSACTION_ID  = "transaction_id";     // NOI18N
-
-    static final String COMMAND                 = "command";            // NOI18N
-
-    private static final String ERROR           = "error ";             // NOI18N
-
-    DbgpResponse( Node node  ){
-        super( node );
+    public BasicUsetInterfaceModuleTest(String name) {
+        super(name);
     }
 
-    public String getTransactionId(){
-        return getAttribute( getNode(),  TRANSACTION_ID );
+    public void testProperties() throws ParseException {
+        assertPropertyValues("appearance", "window", "signature");
+        
+        assertPropertyValues("icon", "auto", "url('hello.png')", "url('hello1.png'), url(hello2.png)");
+        
+        assertPropertyValues("cursor", "auto", "url(icon.png) 10 10, auto", "url(icon.png), copy");
+        
+        assertPropertyValues("-system-font", "status-bar");
+        assertPropertyValues("font", "status-bar");
+ 
+        assertPropertyValues("nav-right", "auto", "auto root");
+        
     }
-
-    public String getCommandName(){
-        return getAttribute( getNode(),  COMMAND );
-    }
-
-    public Error getError(){
-        Node error = getChild(getNode(), ERROR );
-        if ( error == null ) {
-            return null;
-        }
-        return new Error( error );
-    }
+    
 }

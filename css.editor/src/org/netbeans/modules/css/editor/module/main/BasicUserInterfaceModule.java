@@ -39,25 +39,63 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.packets;
+package org.netbeans.modules.css.editor.module.main;
+
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * The colors module functionality is partially implemented in the DefaultCssModule
+ * from historical reasons. Newly added features are implemented here.
  *
- * @author Ondrej Brejla
+ * @author mfukala@netbeans.org
  */
-public class RequestedUrlEvalCommand extends EvalCommand {
+@ServiceProvider(service = CssModule.class)
+public class BasicUserInterfaceModule extends CssModule {
 
-    private static final String REQUEST_URI = "(isset($_SERVER['SSL']) ? 'https' : 'http').'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']"; // NOI18N
-    static String LAST_USED_TRANSACTION_ID;
+    //NOI18N>>>
+    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
+                "default",
+                "valid",
+                "invalid",
+                "in-range",
+                "out-of-range",
+                "required",
+                "optional",
+                "read-only",
+                "read-write"
+            });
+    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
+                "selection",
+                "value",
+                "choices",
+                "repeat-item",
+                "repeat-index"});
 
-    public RequestedUrlEvalCommand(String transactionId) {
-        super(transactionId);
-        LAST_USED_TRANSACTION_ID = transactionId;
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/basic_user_interface"; //NOI18N
+    
+    private static Collection<PropertyDescriptor> propertyDescriptors;
+    
+    @Override
+    public Collection<String> getPseudoClasses() {
+        return PSEUDO_CLASSES;
     }
 
     @Override
-    protected String getData() {
-        return REQUEST_URI;
+    public Collection<String> getPseudoElements() {
+        return PSEUDO_ELEMENTS;
     }
 
+    
+    @Override
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if(propertyDescriptors == null) {
+            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+        }
+        return propertyDescriptors;
+    }    
+    
 }
