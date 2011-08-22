@@ -41,37 +41,41 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import junit.framework.AssertionFailedError;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
-import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
-import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class CssModuleTestBase extends CslTestBase {
+public class MultiColumnLayoutTest extends CssModuleTestBase {
 
-    public CssModuleTestBase(String name) {
+    public MultiColumnLayoutTest(String name) {
         super(name);
     }
 
-    protected void assertPropertyValues(String propertyName, String... values) {
+    public void testProperties() throws ParseException {
+        assertPropertyValues("break-after", "always");
         
-        PropertyModel model = CssModuleSupport.getProperty(propertyName);
-        assertNotNull(String.format("Cannot find property %s", propertyName), model);
+        assertPropertyValues("column-gap", "10px", "normal");
         
-        for(String val : values) {
-            PropertyValue value = new PropertyValue(model, val);
-            if(!value.success()) {
-                PropertyModelTest.dumpResult(value);
-                throw new AssertionFailedError(String.format("Error parsing property value %s of the property %s", val, propertyName));
-            }
-            
-        }
+        assertPropertyValues("column-rule", "10px", "10px red");
         
+        assertPropertyValues("column-rule-style", "ridge ridge inset outset");
+        
+        
+        //PropertyValue bug:
+        //columns=<column-width> || <column-count> 
+        //column-width=auto | !length
+        //column-count=auto | !integer
+        //
+        //in this case any of the list members can be resolved, at least one I believe
+        //
+        //the problem: for input "auto 12em" the auto is resolved as a member of the column-width so
+        //the next alternative fails. This needs to be changed so the variables resolver tries all combinations
+        //of the alternatives before it says "no alternative".
+        
+        
+//        assertPropertyValues("columns", "auto auto", "auto 12em", "2 auto");
     }
     
 }
