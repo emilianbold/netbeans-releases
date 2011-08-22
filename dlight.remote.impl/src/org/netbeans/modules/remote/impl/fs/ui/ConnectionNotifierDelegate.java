@@ -82,7 +82,8 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
 
 
     private static final Map<ExecutionEnvironment, ConnectionNotifierDelegate> instances = new HashMap<ExecutionEnvironment, ConnectionNotifierDelegate>();
-    private static RequestProcessor RP = new RequestProcessor("Connection notifier"); //NOI18N
+    private static RequestProcessor RP_WORKER = new RequestProcessor("Connection worker", 2); //NOI18N
+    private static RequestProcessor RP_NOTIFIER = new RequestProcessor("Connection notifier", 1); //NOI18N
 
     static public ConnectionNotifierDelegate getInstance(ExecutionEnvironment env) {
         synchronized (instances) {
@@ -124,7 +125,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     public void connected(ExecutionEnvironment env) {
         if (this.env.equals(env)) {
             ConnectionManager.getInstance().removeConnectionListener(this);
-            RequestProcessor.getDefault().post(new ConnectionNotifier.NamedRunnable("Connection notifier for " + env.getDisplayName()) { //NOI18N
+            RP_WORKER.post(new ConnectionNotifier.NamedRunnable("Connection notifier for " + env.getDisplayName()) { //NOI18N
                 @Override
                 protected void runImpl() {
                     onConnect();
@@ -152,7 +153,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
             tasks.clear();
         }
         for (ConnectionNotifier.NamedRunnable task : toLaunch) {
-            RP.post(task);
+            RP_NOTIFIER.post(task);
         }
     }
 
@@ -173,7 +174,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         final ActionListener onClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new ConnectionNotifier.NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
+                RP_WORKER.post(new ConnectionNotifier.NamedRunnable("Requesting connection for " + env.getDisplayName()) { //NOI18N
                     @Override
                     protected void runImpl() {
                         connect();
