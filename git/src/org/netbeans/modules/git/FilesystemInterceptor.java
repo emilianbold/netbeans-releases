@@ -121,7 +121,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             final File root = git.getRepositoryRoot(file);
             if (root == null) return false;
             try {
-                git.getClient(root).reset(new File[] { file }, "HEAD", ProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).reset(new File[] { file }, "HEAD", true, ProgressMonitor.NULL_PROGRESS_MONITOR);
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
             }

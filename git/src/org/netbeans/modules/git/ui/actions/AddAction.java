@@ -43,12 +43,13 @@
 package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -62,24 +63,25 @@ import org.openide.util.NbBundle;
 @ActionRegistration(displayName = "#LBL_AddAction_Name")
 public class AddAction extends SingleRepositoryAction {
 
-    private static final Logger LOG = Logger.getLogger(AddAction.class.getName());
-
     @Override
     protected void performAction (File repository, final File[] roots, VCSContext context) {
         GitProgressSupport supp = new GitProgressSupport () {
             @Override
             protected void perform() {
                 GitClient client;
+                File[] actionRoots = GitUtils.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES);
+                if (actionRoots.length == 0) {
+                    return;
+                }
                 try {
                     client = getClient();
-                    client.addNotificationListener(new DefaultFileListener(roots));
-                    client.add(roots, this);
+                    client.addNotificationListener(new DefaultFileListener(actionRoots));
+                    client.add(actionRoots, this);
                 } catch (GitException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                    return;
+                    GitClientExceptionHandler.notifyException(ex, true);
                 } finally {
                     setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(roots);                    
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(actionRoots);                    
                 }               
             }
             @Override

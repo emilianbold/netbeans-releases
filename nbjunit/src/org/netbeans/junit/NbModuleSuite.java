@@ -840,6 +840,7 @@ public class NbModuleSuite {
                         Class<? extends TestCase> sndClazz =
                             testLoader.loadClass(item.clazz.getName()).asSubclass(TestCase.class);
                         if (item.fileNames == null) {
+                            NbTestCase.orderMethods(sndClazz);
                             toRun.addTest(new NbTestSuiteLogCheck(sndClazz));
                         } else {
                             NbTestSuite t = new NbTestSuiteLogCheck();
