@@ -413,7 +413,7 @@ public class CompileLineService {
 
     private static Set<String> getObjectFiles(String root){
         HashSet<String> set = new HashSet<String>();
-        gatherSubFolders(new File(root), set);
+        gatherSubFolders(new File(root), set, new HashSet<String>());
         HashSet<String> map = new HashSet<String>();
         for (Iterator<String> it = set.iterator(); it.hasNext();){
             File d = new File(it.next());
@@ -443,28 +443,25 @@ public class CompileLineService {
         return name.indexOf('.') < 0;
     }
 
-    private static void gatherSubFolders(File d, HashSet<String> set){
+    private static void gatherSubFolders(File d, HashSet<String> set, HashSet<String> antiLoop){
         if (d.exists() && d.isDirectory() && d.canRead()){
             if (ignoreFolder(d)){
                 return;
             }
-            String path = d.getAbsolutePath();
-            if (!set.contains(path)){
-                set.add(path);
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
+            }
+            if (!antiLoop.contains(canPath)){
+                antiLoop.add(canPath);
+                set.add(d.getAbsolutePath());
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (ff[i].isDirectory()) {
-                            try {
-                                String canPath = ff[i].getCanonicalPath();
-                                String absPath = ff[i].getAbsolutePath();
-                                if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                    continue;
-                                }
-                            } catch (IOException ex) {
-                                //Exceptions.printStackTrace(ex);
-                            }
-                            gatherSubFolders(ff[i], set);
+                            gatherSubFolders(ff[i], set, antiLoop);
                         }
                     }
                 }
