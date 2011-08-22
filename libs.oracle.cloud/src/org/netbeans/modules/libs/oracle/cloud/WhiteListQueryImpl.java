@@ -41,10 +41,20 @@
  */
 package org.netbeans.modules.libs.oracle.cloud;
 
-import org.netbeans.modules.libs.oracle.cloud.api.WhiteListQuerySupport;
+import java.util.Arrays;
+import java.util.List;
+import javax.lang.model.element.ElementKind;
+import oracle.cloud.scanning.api.config.IClassConfiguration;
+import oracle.cloud.scanning.spi.config.factory.ConfigurationFactory;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.whitelist.WhiteListQuery.Operation;
+import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.netbeans.spi.whitelist.support.WhiteListImplementationBuilder;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -54,22 +64,79 @@ import org.openide.util.lookup.ServiceProvider;
     path="org-netbeans-api-java/whitelists/")
 public class WhiteListQueryImpl implements WhiteListQueryImplementation.UserSelectable {
 
-    @Override
-    public WhiteListImplementation getWhiteList(FileObject file) {
-        return WhiteListConfigReader.getDefault();
-    }
+//    @Override
+//    public WhiteListImplementation getWhiteList(FileObject file) {
+//        return WhiteListConfigReader.getDefault();
+//    }
 
+    public WhiteListImplementation getWhiteList(FileObject file) {
+        return new WhiteListImpl();
+    }
+    
     @Override
     public String getDisplayName() {
-        return "Oracle Cloud-9";
+        return NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name");
     }
 
     @Override
     public String getId() {
-        return "cloud-9"; // or should it be rather "cloud-9-version-1.0"
+        return "oracle.cloud";
     }
     
-    
+    private static class WhiteListImpl implements WhiteListImplementation {
+
+        @Override
+        public Result check(ElementHandle<?> element, Operation operation) {
+            IClassConfiguration icc = ConfigurationFactory.getInstance().getDefaultClassConfiguration();
+            assert icc != null;
+            final String[] vmSignatures = SourceUtils.getJVMSignature(element);
+            oracle.cloud.scanning.api.config.Result res;
+            final ElementKind kind = element.getKind();
+            switch (kind) {
+                case CLASS:
+                case PACKAGE:
+                case ENUM:
+                case INTERFACE:
+                case ANNOTATION_TYPE:
+                    res = icc.checkClassAllowed(element.getBinaryName());
+                    if (!res.isAllowed()) {
+                        return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
+                    }
+                    break;
+                case CONSTRUCTOR:
+                case METHOD:
+                    String methodName = vmSignatures[1];
+                    List<String> params = paramsOnly(vmSignatures[2]);
+                    res = icc.checkMethodAllowed(element.getBinaryName(), methodName, params);
+                    if (!res.isAllowed()) {
+                        return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
+                    }
+                    break;
+                case FIELD:
+                case LOCAL_VARIABLE:
+                case ENUM_CONSTANT:
+                    String fieldName = vmSignatures[1];
+                    res = icc.checkFieldAllowed(element.getBinaryName(), fieldName);
+                    if (!res.isAllowed()) {
+                        return new Result(false, NbBundle.getMessage(WhiteListQueryImpl.class, "WhiteListQueryImpl-name"), res.getMessage());
+                    }
+                    break;
+                
+            }
+            return new Result(true, null, null);
+        }
+        
+        @NonNull
+        private List<String> paramsOnly(
+                @NonNull String name) {
+            assert name.charAt(0) == '(';   //NOI18N;
+            int index = name.lastIndexOf(')');  //NOI18N
+            assert index > 0;
+            name = name.substring(1, index);
+            return Arrays.asList(name.split(", "));
+        }
+    }
+
     @ServiceProvider(service=WhiteListQueryImplementation.UserSelectable.class,
         path="org-netbeans-api-java/whitelists/")
     public static class TestingWhitelist implements WhiteListQueryImplementation.UserSelectable {
