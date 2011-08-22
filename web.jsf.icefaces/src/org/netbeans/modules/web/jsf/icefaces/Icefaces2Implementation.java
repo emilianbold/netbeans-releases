@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.icefaces;
 
 import java.util.Set;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
@@ -49,18 +50,32 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class Icefaces2Implementation implements JsfComponentImplementation {
+public class Icefaces2Implementation implements JsfComponentImplementation {
 
+    /**
+     * Name of the node in NetBeans preferences.
+     */
+    public static final String PREFERENCES_NODE = "icefaces2";
+    /**
+     * Framework name used also for statistics.
+     */
     public static final String ICEFACES_NAME = "ICEfaces 2.0"; //NOI18N
+    /**
+     * Base class for which is searched by detecting ICEfaces2 on the classpath of the project.
+     */
     public static final String ICEFACES_CORE_CLASS = "org.icefaces.impl.facelets.tag.icefaces.core.ConfigHandler"; //NOI18N
+    /**
+     * Name of preferred library which was used for last time.
+     */
+    public static final String PREF_LIBRARY_NAME = "preffered-library";
 
-    public Icefaces2Implementation() {
-    }
+    private Icefaces2Customizer customizer;
 
     @Override
     public String getName() {
@@ -93,11 +108,22 @@ class Icefaces2Implementation implements JsfComponentImplementation {
 
     @Override
     public JsfComponentCustomizer createJsfComponentCustomizer(WebModule webModule) {
-        return null;
+        if (customizer == null) {
+            customizer = new Icefaces2Customizer();
+        }
+        return customizer;
     }
 
     @Override
     public void remove(WebModule webModule) {
     }
 
+    /**
+     * Gets {@code NbPreferences} for ICEfaces plugin.
+     *
+     * @return Preferences of the ICEfaces
+     */
+    public static Preferences getIcefacesPreferences() {
+        return NbPreferences.forModule(Icefaces2Customizer.class).node(Icefaces2Implementation.PREFERENCES_NODE);
+    }
 }
