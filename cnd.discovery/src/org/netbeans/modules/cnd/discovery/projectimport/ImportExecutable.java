@@ -656,23 +656,21 @@ public class ImportExecutable implements PropertyChangeListener {
         if (!DLL_FILE_SEARCH) {
             return;
         }
+        if (CndPathUtilitities.isIgnoredFolder(d)){
+            return;
+        }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            String path = d.getAbsolutePath();
-            path = path.replace('\\', '/'); // NOI18N
-            if (!set.contains(path)){
-                set.add(path);
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
+            }
+            if (!set.contains(canPath)){
+                set.add(canPath);
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
-                            }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
-                        }
                         String name = ff[i].getName();
                         if (result.containsKey(name)) {
                            result.put(name, ff[i].getAbsolutePath());

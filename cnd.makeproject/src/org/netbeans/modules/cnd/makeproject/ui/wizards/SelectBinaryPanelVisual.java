@@ -461,29 +461,24 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
     }
 
-    private void gatherSubFolders(File d, HashSet<String> set, Map<String,String> result, AtomicBoolean cancel){
+    private void gatherSubFolders(File d, HashSet<String> antiLoop, Map<String,String> result, AtomicBoolean cancel){
         if (cancel.get()) {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            String path = d.getAbsolutePath();
-            path = path.replace('\\', '/'); // NOI18N
-            if (!set.contains(path)){
-                set.add(path);
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                return;
+            }
+            if (!antiLoop.contains(canPath)){
+                antiLoop.add(canPath);
                 File[] ff = d.listFiles();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (cancel.get()) {
                             return;
-                        }
-                        try {
-                            String canPath = ff[i].getCanonicalPath();
-                            String absPath = ff[i].getAbsolutePath();
-                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                                continue;
-                            }
-                        } catch (IOException ex) {
-                            //Exceptions.printStackTrace(ex);
                         }
                         String name = ff[i].getName();
                         if (result.containsKey(name)) {
@@ -499,7 +494,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                                 return;
                             }
                         }
-                        gatherSubFolders(ff[i], set, result, cancel);
+                        gatherSubFolders(ff[i], antiLoop, result, cancel);
                     }
                 }
             }
