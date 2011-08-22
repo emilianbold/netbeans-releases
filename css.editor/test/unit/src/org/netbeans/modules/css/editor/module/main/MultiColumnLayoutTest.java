@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.editor.module.main;
 
-package org.openide.util.lookup.implspi;
+import org.netbeans.modules.parsing.spi.ParseException;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import org.netbeans.junit.NbTestCase;
+/**
+ *
+ * @author mfukala@netbeans.org
+ */
+public class MultiColumnLayoutTest extends CssModuleTestBase {
 
-public class ServiceLoaderLineTest extends NbTestCase {
-
-    public ServiceLoaderLineTest(String n) {
-        super(n);
+    public MultiColumnLayoutTest(String name) {
+        super(name);
     }
 
-    public void testParseAndRewriteLines() throws Exception {
-        assertEquals("", parseAndRewrite(""));
-        assertEquals("a ", parseAndRewrite("a "));
-        assertEquals("a b ", parseAndRewrite("b a "));
-        assertEquals("a b ", parseAndRewrite("b a b "));
-        assertEquals("a #position=1 c #position=2 b #position=3 ", parseAndRewrite("a #position=1 b #position=3 c #position=2 "));
-        assertEquals("b #position=55 a c ", parseAndRewrite("a b #position=55 c "));
-        assertEquals("a #position=1 b #position=1 ", parseAndRewrite("b #position=1 a #position=1 "));
-        assertEquals("a #-b c d #-e #-f ", parseAndRewrite("d #-e #-f a #-b c "));
+    public void testProperties() throws ParseException {
+        assertPropertyValues("break-after", "always");
+        
+        assertPropertyValues("column-gap", "10px", "normal");
+        
+        assertPropertyValues("column-rule", "10px", "10px red");
+        
+        assertPropertyValues("column-rule-style", "ridge ridge inset outset");
+        
+        
+        //PropertyValue bug:
+        //columns=<column-width> || <column-count> 
+        //column-width=auto | !length
+        //column-count=auto | !integer
+        //
+        //in this case any of the list members can be resolved, at least one I believe
+        //
+        //the problem: for input "auto 12em" the auto is resolved as a member of the column-width so
+        //the next alternative fails. This needs to be changed so the variables resolver tries all combinations
+        //of the alternatives before it says "no alternative".
+        
+        
+//        assertPropertyValues("columns", "auto auto", "auto 12em", "2 auto");
     }
-
-    private static String parseAndRewrite(String input) throws IOException {
-        SortedSet<ServiceLoaderLine> lines = new TreeSet<ServiceLoaderLine>();
-        ServiceLoaderLine.parse(new StringReader(input.replace(' ', '\n')), lines);
-        StringWriter w = new StringWriter();
-        PrintWriter pw = new PrintWriter(w);
-        for (ServiceLoaderLine line : lines) {
-            line.write(pw);
-        }
-        pw.flush();
-        return w.toString().replace('\n', ' ').replace("\r", "");
-    }
-
-    public static void clearLookupsForPath() {
-        NamedServicesProvider.clearCache();
-    }
+    
 }
