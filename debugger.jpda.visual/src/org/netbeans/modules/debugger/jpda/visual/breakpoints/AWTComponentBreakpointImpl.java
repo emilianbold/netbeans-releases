@@ -41,19 +41,24 @@
  */
 package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ObjectReference;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -85,7 +90,7 @@ public class AWTComponentBreakpointImpl {
             fb.addJPDABreakpointListener(new JPDABreakpointListener() {
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
-
+                    navigateToCustomCode(event.getThread());
                 }
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(fb);
@@ -93,16 +98,11 @@ public class AWTComponentBreakpointImpl {
         }
         if (((type | AWTComponentBreakpoint.TYPE_SHOW) != 0) || ((type | AWTComponentBreakpoint.TYPE_HIDE) != 0)) {
             MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "show");
-            mbShow.setHidden(true);
-            mbShow.setInstanceFilters(debugger, new ObjectVariable[] { (ObjectVariable) variableComponent });
-            mbShow.addJPDABreakpointListener(new JPDABreakpointListener() {
-                @Override
-                public void breakpointReached(JPDABreakpointEvent event) {
-                    
-                }
-            });
-            DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
-            serviceBreakpoints.add(mbShow);
+            mbShow.setMethodSignature("()V");
+            addMethodBreakpoint(mbShow, (ObjectVariable) variableComponent);
+            MethodBreakpoint mbHide = MethodBreakpoint.create("java.awt.Component", "hide");
+            mbHide.setMethodSignature("()V");
+            addMethodBreakpoint(mbHide, (ObjectVariable) variableComponent);
         }
         if (((type | AWTComponentBreakpoint.TYPE_REPAINT) != 0)) {
             MethodBreakpoint mbShow = MethodBreakpoint.create("java.awt.Component", "repaint");
@@ -118,6 +118,37 @@ public class AWTComponentBreakpointImpl {
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(mbShow);
             serviceBreakpoints.add(mbShow);
+        }
+    }
+    
+    private void addMethodBreakpoint(MethodBreakpoint mb, ObjectVariable variableComponent) {
+        mb.setHidden(true);
+        mb.setInstanceFilters(debugger, new ObjectVariable[] { variableComponent });
+        mb.addJPDABreakpointListener(new JPDABreakpointListener() {
+            @Override
+            public void breakpointReached(JPDABreakpointEvent event) {
+                navigateToCustomCode(event.getThread());
+            }
+        });
+        DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+        serviceBreakpoints.add(mb);
+    }
+    
+    private void navigateToCustomCode(final JPDAThread thread) {
+        CallStackFrame callStackFrame = null;
+        try {
+            CallStackFrame[] callStack = thread.getCallStack();
+            for (CallStackFrame csf : callStack) {
+                String cn = csf.getClassName();
+                if (!(cn.startsWith("java.awt.") || cn.startsWith("javax.swing."))) {
+                    callStackFrame = csf;
+                    break;
+                }
+            }
+        } catch (AbsentInformationException ex) {
+        }
+        if (callStackFrame != null) {
+            ((JPDAThreadImpl) thread).getDebugger().setPreferredTopFrame(callStackFrame);
         }
     }
 
