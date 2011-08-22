@@ -1012,6 +1012,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 197394 - Resolving member in array of struct fails 
         performTest("bug197394.cpp", 10, 7, "bug197394.cpp", 4, 9);
     }    
+
+    public void testBug200673() throws Exception {
+        // Bug 200673 - incorrect navigation between overloaded methods
+        performTest("bug200673.cpp", 18, 13, "bug200673.cpp", 22, 1);
+        performTest("bug200673.cpp", 22, 27, "bug200673.cpp", 18, 3);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
