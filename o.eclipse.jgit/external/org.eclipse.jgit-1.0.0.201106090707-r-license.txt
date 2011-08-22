@@ -1,9 +1,9 @@
 Name: JGit Library
-Version: 1.0.0-rc3
-Description: Integration library for git client
+Version: 1.0.0.201106090707-r
+Description: Integration library for Git client
 License: EDL-1.0
 OSR: 1234
-Origin: http://www.eclipse.org/jgit/
+Origin: http://www.eclipse.org/jgit/download/
 
 This program and the accompanying materials are made available
 under the terms of the Eclipse Distribution License v1.0 which

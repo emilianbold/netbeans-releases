@@ -795,7 +795,7 @@ public final class NbMavenProjectImpl implements Project {
         }
 
         protected @Override void beforeLookup(Template<?> template) {
-            synchronized (NbMavenProjectImpl.this) {
+            synchronized (this) {
             if (!initialized
                     && (!(ProjectInformation.class.equals(template.getType())
                     || NbMavenProject.class.equals(template.getType())

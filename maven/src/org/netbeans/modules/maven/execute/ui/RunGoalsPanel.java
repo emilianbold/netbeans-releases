@@ -72,6 +72,8 @@ import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
  */
 public class RunGoalsPanel extends javax.swing.JPanel {
 
+    private static final RequestProcessor RP = new RequestProcessor(RunGoalsPanel.class);
+
     private List<NetbeansActionMapping> historyMappings;
     private int historyIndex = 0;
     private TextValueCompleter goalcompleter;
@@ -87,9 +89,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         goalcompleter = new TextValueCompleter(new ArrayList<String>(0), txtGoals, " "); //NOI18N
         goalcompleter.setLoading(true);
         // doing lazy.. 
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
+        RP.post(new Runnable() {
+            @Override public void run() {
                 GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
                 if (provider != null) {
                     final Set<String> strs = provider.getAvailableGoals();
@@ -121,8 +122,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
 
     private void readProfiles(final Project mavenProject) {
         profilecompleter.setLoading(true);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
+        RP.post(new Runnable() {
+            @Override public void run() {
                 ProjectProfileHandler profileHandler = mavenProject.getLookup().lookup(ProjectProfileHandler.class);
                 final List<String> ret = profileHandler.getAllProfiles();
                 

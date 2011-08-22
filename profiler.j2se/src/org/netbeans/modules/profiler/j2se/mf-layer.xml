@@ -91,65 +91,125 @@ made subject to such option by the copyright holder.
                         <folder name="sun.java2d"/>
                     </folder>
                 </folder>
-                <folder name="Listeners">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/Listeners"/>
-                    <folder name=".subtypes">
-                        <folder name="java.awt.LightweightDispatcher">
-                            <attr name="includes" stringvalue="dispatchEvent"/>
-                        </folder>
-                        <folder name="java.awt.event.AWTEventListener"/>
-                        <folder name="java.awt.event.AdjustmentListener"/>
-                        <folder name="java.awt.event.ComponentListener"/>
-                        <folder name="java.awt.event.ContainerListener"/>
-                        <folder name="java.awt.event.FocusListener"/>
-                        <folder name="java.awt.event.HierarchyBoundsListener"/>
-                        <folder name="java.awt.event.HierarchyListener"/>
-                        <folder name="java.awt.event.InputMethodListener"/>
-                        <folder name="java.awt.event.ItemListener"/>
-                        <folder name="java.awt.event.KeyListener"/>
-                        <folder name="java.awt.event.MouseListener"/>
-                        <folder name="java.awt.event.MouseMotionListener"/>
-                        <folder name="java.awt.event.MouseWheelListener"/>
-                        <folder name="java.awt.event.TextListener"/>
-                        <folder name="java.awt.event.WindowFocusListener"/>
-                        <folder name="java.awt.event.WindowListener"/>
-                        <folder name="java.awt.event.WindowStateListener"/>
-                        <folder name="javax.swing.event.AncestorListener"/>
-                        <folder name="javax.swing.event.CaretListener"/>
-                        <folder name="javax.swing.event.CellEditorListener"/>
-                        <folder name="javax.swing.event.ChangeListener"/>
-                        <folder name="javax.swing.event.DocumentListener"/>
-                        <folder name="javax.swing.event.HyperlinkListener"/>
-                        <folder name="javax.swing.event.InternalFrameListener"/>
-                        <folder name="javax.swing.event.ListDataListener"/>
-                        <folder name="javax.swing.event.ListSelectionListener"/>
-                        <folder name="javax.swing.event.MenuDragMouseListener"/>
-                        <folder name="javax.swing.event.MenuKeyListener"/>
-                        <folder name="javax.swing.event.MenuListener"/>
-                        <folder name="javax.swing.event.MouseInputListener"/>
-                        <folder name="javax.swing.event.PopupMenuListener"/>
-                        <folder name="javax.swing.event.TableColumnModelListener"/>
-                        <folder name="javax.swing.event.TableModelListener"/>
-                        <folder name="javax.swing.event.TreeExpansionListener"/>
-                        <folder name="javax.swing.event.TreeModelListener"/>
-                        <folder name="javax.swing.event.TreeSelectionListener"/>
-                        <folder name="javax.swing.event.TreeWillExpandListener"/>
-                        <folder name="javax.swing.event.UndoableEditListener"/>
-                    </folder>
-                </folder>
-                <folder name="Painters">
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/Painters"/>
-                    <folder name=".subtypes">
-                        <folder name="java.awt.Component">
-                            <attr name="includes" stringvalue="repaint,paint,paintAll,print,printAll"/>
-                        </folder>
-                        <folder name="javax.swing.JComponent">
-                            <attr name="includes" stringvalue="repaint,paint,paintBorder,paintChildren,paintComponent,paintImmediately,print,printAll,printBorder,printChildren,printComponent"/>
+                <folder name="AWT_Swing">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/AWT_Swing"/>
+                    <folder name="Listeners">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/AWT_Swing/Listeners"/>
+                        <folder name=".subtypes">
+                            <folder name="java.awt.LightweightDispatcher">
+                                <attr name="includes" stringvalue="dispatchEvent"/>
+                            </folder>
+                            <folder name="java.awt.event.AWTEventListener"/>
+                            <folder name="java.awt.event.AdjustmentListener"/>
+                            <folder name="java.awt.event.ComponentListener"/>
+                            <folder name="java.awt.event.ContainerListener"/>
+                            <folder name="java.awt.event.FocusListener"/>
+                            <folder name="java.awt.event.HierarchyBoundsListener"/>
+                            <folder name="java.awt.event.HierarchyListener"/>
+                            <folder name="java.awt.event.InputMethodListener"/>
+                            <folder name="java.awt.event.ItemListener"/>
+                            <folder name="java.awt.event.KeyListener"/>
+                            <folder name="java.awt.event.MouseListener"/>
+                            <folder name="java.awt.event.MouseMotionListener"/>
+                            <folder name="java.awt.event.MouseWheelListener"/>
+                            <folder name="java.awt.event.TextListener"/>
+                            <folder name="java.awt.event.WindowFocusListener"/>
+                            <folder name="java.awt.event.WindowListener"/>
+                            <folder name="java.awt.event.WindowStateListener"/>
+                            <folder name="javax.swing.event.AncestorListener"/>
+                            <folder name="javax.swing.event.CaretListener"/>
+                            <folder name="javax.swing.event.CellEditorListener"/>
+                            <folder name="javax.swing.event.ChangeListener"/>
+                            <folder name="javax.swing.event.DocumentListener"/>
+                            <folder name="javax.swing.event.HyperlinkListener"/>
+                            <folder name="javax.swing.event.InternalFrameListener"/>
+                            <folder name="javax.swing.event.ListDataListener"/>
+                            <folder name="javax.swing.event.ListSelectionListener"/>
+                            <folder name="javax.swing.event.MenuDragMouseListener"/>
+                            <folder name="javax.swing.event.MenuKeyListener"/>
+                            <folder name="javax.swing.event.MenuListener"/>
+                            <folder name="javax.swing.event.MouseInputListener"/>
+                            <folder name="javax.swing.event.PopupMenuListener"/>
+                            <folder name="javax.swing.event.TableColumnModelListener"/>
+                            <folder name="javax.swing.event.TableModelListener"/>
+                            <folder name="javax.swing.event.TreeExpansionListener"/>
+                            <folder name="javax.swing.event.TreeModelListener"/>
+                            <folder name="javax.swing.event.TreeSelectionListener"/>
+                            <folder name="javax.swing.event.TreeWillExpandListener"/>
+                            <folder name="javax.swing.event.UndoableEditListener"/>
                         </folder>
                     </folder>
+                    <folder name="Painters">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/AWT_Swing/Painters"/>
+                        <folder name=".subtypes">
+                            <folder name="java.awt.Component">
+                                <attr name="includes" stringvalue="repaint,paint,paintAll,print,printAll"/>
+                            </folder>
+                            <folder name="javax.swing.JComponent">
+                                <attr name="includes" stringvalue="repaint,paint,paintBorder,paintChildren,paintComponent,paintImmediately,print,printAll,printBorder,printChildren,printComponent"/>
+                            </folder>
+                        </folder>
+                    </folder>
+                    <folder name=".type">
+                        <folder name="javax.swing.UIManager"/>
+                    </folder>
                 </folder>
-                <folder name=".type">
-                    <folder name="javax.swing.UIManager"/>
+                <folder name="JavaFX">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX"/>
+                    <folder name="EventHandlers">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/EventHandlers"/>
+                        <folder name=".subtypes">
+                            <folder name="javafx.event.EventHandler">
+                                <attr name="includes" stringvalue="handle"/>
+                            </folder>
+                        </folder>
+                    </folder>
+                    <folder name="Pulses">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/Pulses"/>
+                        <attr name="position" intvalue="200"/>
+                        <folder name=".type">
+                            <folder name="com.sun.javafx.tk.quantum.QuantumToolkit">
+                                <attr name="includes" stringvalue="pulse"/>
+                            </folder>
+                        </folder>
+                    </folder>
+                    <folder name="Rendering">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/Rendering"/>
+                        <attr name="position" intvalue="300"/>
+                        <folder name=".type">
+                            <folder name="com.sun.prism.render.RenderJob">
+                                <attr name="includes" stringvalue="run"/>
+                            </folder>
+                        </folder>
+                    </folder>
+                    <folder name="ResourceLoading">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/ResourceLoading"/>
+                        <attr name="position" intvalue="100"/>
+                        <folder name="Images">
+                            <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/ResourceLoading/Images"/>
+                            <folder name=".type">
+                                <folder name="com.sun.javafx.tk.quantum.QuantumToolkit">
+                                    <attr name="includes" stringvalue="loadImage"/>
+                                </folder>
+                            </folder>
+                        </folder>
+                        <folder name="CSS">
+                            <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/ResourceLoading/CSS"/>
+                            <folder name=".type">
+                                <folder name="com.sun.javafx.css.StyleManager">
+                                    <attr name="includes" stringvalue="loadStylesheet"/>
+                                </folder>
+                            </folder>
+                        </folder>
+                    </folder>
+                    <folder name="Synchronization">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.profiler.j2se.Bundle#NBProfiler/Categories/UI/JavaFX/Synchronization"/>
+                        <folder name=".type">
+                            <folder name="javafx.scene.Scene$ScenePulseListener">
+                                <attr name="includes" stringvalue="synchronizePGScene"/>
+                            </folder>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
         </folder>
