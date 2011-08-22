@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createAction"/>
                 <attr name="action" stringvalue="takeScreenshot"/>
                 <attr name="name" bundlevalue="org.netbeans.modules.debugger.jpda.visual.Bundle#CTL_TakeScreenshotAction"/>
-                <!--attr name="iconBase" stringvalue="org/netbeans/modules/debugger/visual/resources/TakeScreenshotAction.png"/-->
+                <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/jpda/visual/resources/debugCamera.png"/>
             </file>
         </folder>
     </folder>
@@ -101,14 +101,14 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <!-- folder name="Toolbars">
+    <folder name="Toolbars">
         <folder name="Debug">
-            <file name="org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-ScreenshotGrabAction.instance"/>
+            <file name="org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-visual-actions-TakeScreenshotAction.instance"/>
                 <attr name="position" intvalue="850"/>
             </file>
         </folder>
-    </folder -->
+    </folder>
     
     <folder name="debugger">
         <folder name="jpda">
