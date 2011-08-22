@@ -81,6 +81,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -108,7 +109,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -308,17 +308,17 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
         // check if the wsimport class is already present - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length > 0) {
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(), ClassPath.COMPILE);
         FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
         if (wsimportFO != null) {
             return;
         }
 
-        ProjectClassPathExtender pce = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
         Library jaxws21_ext = LibraryManager.getDefault().getLibrary("jaxws21"); //NOI18N
-        if (pce != null && jaxws21_ext != null) {
+        if (jaxws21_ext != null) {
             try {
-                pce.addLibrary(jaxws21_ext);
+                ProjectClassPathModifier.addLibraries(new Library[] {jaxws21_ext}, sgs[0].getRootFolder(), ClassPath.COMPILE);
             } catch (IOException e) {
                 throw new Exception("Unable to add JAXWS 21 Library. " + e.getMessage());
             }
@@ -327,7 +327,6 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     "ProjectClassPathExtender or library not found");
         }
 
-        if (sgs.length > 0) {
             try {
                 FileObject srcRoot = sgs[0].getRootFolder();
                 WSUtils.addJaxWsApiEndorsed(project, srcRoot);

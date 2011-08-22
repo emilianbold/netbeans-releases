@@ -87,6 +87,7 @@ import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -99,8 +100,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.classpath.CPExtender;
-import org.netbeans.modules.maven.classpath.CPExtenderLookupMerger;
-import org.netbeans.modules.maven.classpath.CPModifierLookupMerger;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
@@ -128,6 +127,7 @@ import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -909,8 +909,9 @@ public final class NbMavenProjectImpl implements Project {
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     LookupProviderSupport.createSourcesMerger(),
-                    new CPExtenderLookupMerger(extender),
-                    new CPModifierLookupMerger(extender),
+                    ProjectClassPathModifier.extenderForModifier(this),
+                    extender,
+                    LookupMergerSupport.createClassPathModifierMerger(),
                     new BackwardCompatibilityWithMevenideChecker(),
                     new DebuggerChecker(),
                     new CosChecker(this),

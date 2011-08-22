@@ -45,12 +45,15 @@
 package org.netbeans.modules.j2ee.spi.ejbjar.support;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -71,7 +74,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -113,7 +115,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
             return addReference(ref, refType, ejbRefName, true, referencingFile, referencingClass);
         }
         
-        private String addReference(final EjbReference ejbReference, final EjbReference.EjbRefIType refType, final String ejbRefName, final boolean local, FileObject referencingFile,
+        private String addReference(final EjbReference ejbReference, final EjbReference.EjbRefIType refType, final String ejbRefName, final boolean local, final FileObject referencingFile,
                 final String referencingClass) throws IOException {
 
             final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = findEjbModule(referencingFile);
@@ -181,9 +183,7 @@ public final class EjbEnterpriseReferenceContainerSupport {
                     
                     if(!fromSameProject) {
                         try {
-                            ProjectClassPathExtender pcpe = ejbProject.getLookup().lookup(ProjectClassPathExtender.class);
-                            assert pcpe != null;
-                            pcpe.addAntArtifact(moduleJarTarget, moduleJarTarget.getArtifactLocations()[0]);
+                            ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {moduleJarTarget}, new URI[] {moduleJarTarget.getArtifactLocations()[0]}, referencingFile, ClassPath.COMPILE);
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
