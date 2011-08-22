@@ -1494,7 +1494,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
             top.setRoot(rootPath);
         }
-        addFiles(top, dir, null, filesAdded, true, true, fileFilter);
+        addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter);
         if (getNativeProject() != null) { // once not null, it never becomes null
             getNativeProject().fireFilesAdded(filesAdded);
         }
@@ -1511,7 +1511,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
         folder.addFolder(top, setModified);
-        addFiles(top, dir, null, filesAdded, true, setModified, fileFilter);
+        addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, setModified, fileFilter);
         if (getNativeProject() != null) { // once not null, it never becomes null
             getNativeProject().fireFilesAdded(filesAdded);
         }
@@ -1521,9 +1521,21 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         return top;
     }
 
-    private void addFiles(Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded,
+    private void addFiles(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded,
             boolean notify, boolean setModified, final @NullAllowed FileObjectFilter fileFilter) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
+        try {
+            String canPath = RemoteFileUtil.getCanonicalPath(dir);
+            if (antiLoop.contains(canPath)) {
+                // It seems we have recursive link
+                LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canPath, folder.getPath()});
+                return;
+            }
+            antiLoop.add(canPath);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, ex.getMessage(), ex);
+            return;
+        }
         FileObject[] files = dir.getChildren();
         if (files == null) {
             return;
@@ -1546,10 +1558,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (file.isFolder()) {
                 try {
                     String canPath = RemoteFileUtil.getCanonicalPath(file);
-                    String absPath = RemoteFileUtil.getAbsolutePath(file);
-                    if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                    if (antiLoop.contains(canPath)) {
                         // It seems we have recursive link
-                        LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{absPath, folder.getPath()});
+                        LOGGER.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{canPath, folder.getPath()});
                         continue;
                     }
                 } catch (IOException ex) {
@@ -1565,7 +1576,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                         dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
                     }
                 }
-                addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
+                addFiles(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
             } else {
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
                 Item item = Item.createInBaseDir(baseDirFO, path);
