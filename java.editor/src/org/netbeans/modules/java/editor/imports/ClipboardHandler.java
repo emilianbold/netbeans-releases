@@ -37,7 +37,11 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.awt.Dialog;
@@ -51,6 +55,7 @@ import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -65,7 +70,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -78,6 +85,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
@@ -162,8 +170,8 @@ public class ClipboardHandler {
         }
     }
 
-    private static void showImportDialog(final Document doc, final int caret, final Map<String, String> simple2ImportFQN, final List<Position[]> inSpans) {
-        ClipboardImportPanel panel = new ClipboardImportPanel(new HashSet<String>(simple2ImportFQN.values()));
+    private static void showImportDialog(final Document doc, final int caret, final Map<String, String> simple2ImportFQN, Collection<String> toShow, final List<Position[]> inSpans) {
+        ClipboardImportPanel panel = new ClipboardImportPanel(toShow);
         final AtomicBoolean cancel = new AtomicBoolean();
         final JButton okButton = new JButton(NbBundle.getMessage(ClipboardHandler.class, "BTN_ClipboardImportOK"));
         final JButton cancelButton = new JButton(NbBundle.getMessage(ClipboardHandler.class, "BTN_ClipboardImportCancel"));
@@ -197,6 +205,61 @@ public class ClipboardHandler {
 
         d[0] = DialogDisplayer.getDefault().createDialog(dd);
         d[0].setVisible(true);
+    }
+
+    private static Collection<? extends String> needsImports(Document doc, final int caret, final Map<String, String> simple2FQNs) {
+        JavaSource js = JavaSource.forDocument(doc);
+        final List<String> unavailable = new ArrayList<String>();
+
+        try {
+            final Future<Void> wait = js.runWhenScanFinished(new Task<CompilationController>() {
+                @Override
+                public void run(final CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+
+                    final TreePath tp = cc.getTreeUtilities().pathFor(caret);
+                    final Scope context = cc.getTrees().getScope(tp);
+                    
+                    ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                        public boolean accept(Element e, TypeMirror type) {
+                            return (e.getKind().isClass() || e.getKind().isInterface()) && cc.getTrees().isAccessible(context, (TypeElement)e);
+                        }
+                    };
+
+                    SourcePositions[] sps = new SourcePositions[1];
+
+                    OUTER: for (Entry<String, String> e : simple2FQNs.entrySet()) {
+                        TypeElement type = cc.getElements().getTypeElement(e.getValue());
+
+                        if (type != null) {
+                            ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
+
+                            cc.getTreeUtilities().attributeTree(simpleName, context);
+
+                            Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
+
+                            if (type.equals(el)) continue OUTER;
+                        }
+
+                        unavailable.add(e.getValue());
+                    }
+                }
+            }, true);
+
+            wait.get(100, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (TimeoutException ex) {
+            //ok
+            LOG.log(Level.FINE, null, ex);
+            return null;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return unavailable;
     }
 
     private static final class ImportingTransferHandler extends TransferHandler {
@@ -337,9 +400,11 @@ public class ClipboardHandler {
                     if (result = delegate.importData(comp, t)) {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
                         FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
+                        Collection<? extends String> unavailable = needsImports(tc.getDocument(), caret, imports.simple2ImportFQN);
 
-                        //XXX: should actually be "if any imports need to be resolved":
-                        if ((file == null || !file.equals(imports.sourceFO)) && !imports.simple2ImportFQN.isEmpty()) {
+                        if (unavailable == null) unavailable = (file == null || !file.equals(imports.sourceFO)) ? imports.simple2ImportFQN.values() : Collections.<String>emptyList();
+
+                        if (!unavailable.isEmpty()) {
                             final Document doc = tc.getDocument();
                             final List<Position[]> inSpans = new ArrayList<Position[]>();
 
@@ -347,9 +412,12 @@ public class ClipboardHandler {
                                 inSpans.add(new Position[] {doc.createPosition(caret + span[0]), doc.createPosition(caret + span[1])});
                             }
 
+                            final Collection<String> toShow = new HashSet<String>(imports.simple2ImportFQN.values());
+                            toShow.retainAll(unavailable);
+
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override public void run() {
-                                    showImportDialog(doc, caret, imports.simple2ImportFQN, inSpans);
+                                    showImportDialog(doc, caret, imports.simple2ImportFQN, toShow, inSpans);
                                 }
                             });
                         }
