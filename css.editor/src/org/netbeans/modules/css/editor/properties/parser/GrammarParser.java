@@ -125,17 +125,33 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-                    PropertyDescriptor p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
+
+                    //first try to resolve the refered element name with the dash prefix so
+                    //the property appearance may contain link to appearance, which in fact
+                    //will be resolved as the -appearance property:
+                    //
+                    //appearance=<appearance> |normal
+                    //-appearance=...
+                    //
+
+
+                    PropertyDescriptor p = null;
+                    if (referredElementName.charAt(0) == '-') {
+                        //referred with the dash prefix
+                        p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
+                    } else {
+                        //without explicit dash prefix, first try to resolve
+                        //with the prefix, if not found without prefix
+                        p = CssModuleSupport.getPropertyDescriptors().get("-" + referredElementName);
+                        if (p == null) {
+                            p = CssModuleSupport.getPropertyDescriptors().get(referredElementName);
+                        }
+
+                    }
 
                     if (p == null) {
-                        //try the dash - prefixed name - elements starting with dash can also be
-                        //referenced by the name without the prefix
-                        p = CssModuleSupport.getPropertyDescriptors().get("-" + referredElementName);
-
-                        if (p == null) {
-                            throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
-                                    + " Read input: " + input.readText()); //NOI18N
-                        }
+                        throw new IllegalStateException("parsing error - no referred element '" + referredElementName + "' found!"
+                                + " Read input: " + input.readText()); //NOI18N
                     }
 
                     last = new GroupGrammarElement(parent, ++group_index, referredElementName);
@@ -265,7 +281,7 @@ public class GrammarParser {
         public void backup(int chars) {
             pos -= chars;
         }
-        
+
         public CharSequence readText() {
             return text.subSequence(0, pos);
         }
