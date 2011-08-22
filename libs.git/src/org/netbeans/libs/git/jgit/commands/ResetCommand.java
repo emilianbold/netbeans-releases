@@ -67,6 +67,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient.ResetType;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.jgit.index.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
@@ -204,7 +205,7 @@ public class ResetCommand extends GitCommand {
                             RefUpdate u = repository.updateRef(Constants.HEAD);
                             u.setNewObjectId(commit);
                             if (u.forceUpdate() == RefUpdate.Result.LOCK_FAILURE) {
-                                throw new GitException.RefUpdateException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr), RefUpdate.Result.LOCK_FAILURE); //NOI18N
+                                throw new GitException.RefUpdateException(NbBundle.getMessage(ResetCommand.class, "MSG_Exception_CannotUpdateHead", revisionStr), GitRefUpdateResult.valueOf(RefUpdate.Result.LOCK_FAILURE.name())); //NOI18N
                             }
                         }
                     } finally {
