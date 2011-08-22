@@ -2360,8 +2360,10 @@ abstract public class CsmCompletionQuery {
             if (parmCnt > firstChildIdx) { // will try to filter by parameters
                 for (int i = firstChildIdx; i < parmCnt; i++) {
                     CsmCompletionExpression parm = item.getParameter(i);
-                    CsmType typ = resolveType(parm);
-                    typeList.add(typ);
+                    CsmType typ = resolveType(parm);                    
+                    if(!((parmCnt - firstChildIdx) == 1 && typ != null && "void".equals(typ.getCanonicalText().toString()))) { // NOI18N
+                        typeList.add(typ);
+                    }
                 }
             }
             return typeList;
