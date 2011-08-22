@@ -129,7 +129,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import junit.framework.Assert;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
@@ -257,7 +256,7 @@ public class UtilitiesTest extends NbTestCase {
     }
 
     public void testActionsToPopupWithLookup() throws Exception {
-        MockServices.setServices(AwtBridgeImpl.class);
+        MockLookup.setInstances(new AwtBridgeImpl());
         final List<String> commands = new ArrayList<String>();
         class BasicAction extends AbstractAction {
             public BasicAction(String name) {
@@ -575,7 +574,7 @@ public class UtilitiesTest extends NbTestCase {
         }
     }
 
-    public static final class AwtBridgeImpl extends ActionPresenterProvider {
+    private static final class AwtBridgeImpl extends ActionPresenterProvider {
         public JPopupMenu createEmptyPopup() {
             return new JPopupMenu();
         }
