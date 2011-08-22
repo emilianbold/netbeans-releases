@@ -39,31 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.visual;
+package org.netbeans.modules.debugger.jpda.visual.breakpoints;
 
-import java.util.logging.Logger;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.modules.debugger.visual.ui.ScreenshotComponent;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import java.beans.BeanDescriptor;
+import java.beans.SimpleBeanInfo;
 
 /**
  *
- * @author Martin Entlicher
+ * @author martin
  */
-@DebuggerServiceRegistration(path="", types=LazyDebuggerManagerListener.class)
-public class VisualDebuggerListener extends DebuggerManagerAdapter {
+public class AWTComponentBreakpointBeanInfo extends SimpleBeanInfo {
     
-    private static final Logger logger = Logger.getLogger(VisualDebuggerListener.class.getName());
-
+    public AWTComponentBreakpointBeanInfo() {}
+    
     @Override
-    public void engineAdded(DebuggerEngine engine) {
+    public BeanDescriptor getBeanDescriptor() {
+        return new BeanDescriptor(
+                AWTComponentBreakpoint.class,
+                AWTComponentBreakpointCustomizer.class);
     }
 
-    @Override
-    public void engineRemoved(DebuggerEngine engine) {
-        ScreenshotComponent.closeScreenshots(engine);
-    }
-    
 }

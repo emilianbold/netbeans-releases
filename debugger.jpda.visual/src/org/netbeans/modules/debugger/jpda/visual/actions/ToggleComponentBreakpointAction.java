@@ -39,64 +39,43 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.debugger.visual;
+package org.netbeans.modules.debugger.jpda.visual.actions;
 
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.util.logging.Logger;
-import org.netbeans.api.debugger.DebuggerEngine;
+import com.sun.jdi.ObjectReference;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.visual.RemoteAWTScreenshot.AWTComponentInfo;
+import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Represents screenshot of a remote application.
- * 
+ *
  * @author Martin Entlicher
  */
-public final class RemoteScreenshot {
-    
-    //private static final Logger logger = Logger.getLogger(RemoteScreenshot.class.getName());
-    
-    //private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
+public class ToggleComponentBreakpointAction extends NodeAction {
 
-    private DebuggerEngine engine;
-    private String title;
-    private Image image;
-    private ComponentInfo componentInfo;
-    private ScreenshotUIManager uiManager;
-    
-    public RemoteScreenshot(DebuggerEngine engine, String title, int width, int height,
-                            Image image, ComponentInfo componentInfo) {
-        this.engine = engine;
-        this.title = title;
-        this.image = image;
-        this.componentInfo = componentInfo;
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(ToggleComponentBreakpointAction.class, "CTL_ToggleComponentBreakpointAction");
     }
-    
-    public DebuggerEngine getDebuggerEngine() {
-        return engine;
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
     }
-    
-    public String getTitle() {
-        return title;
+
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        AWTComponentBreakpointActionProvider.doAction(activatedNodes);
     }
-    
-    public Image getImage() {
-        return image;
-    }
-    
-    public ComponentInfo getComponentInfo() {
-        return componentInfo;
-    }
-    
-    /** The component info or <code>null</code> */
-    public ComponentInfo findAt(int x, int y) {
-        return componentInfo.findAt(x, y);
-    }
-    
-    public ScreenshotUIManager getScreenshotUIManager() {
-        if (uiManager == null) {
-            uiManager = new ScreenshotUIManager(this);
-        }
-        return uiManager;
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ToggleComponentBreakpointAction.class);
     }
     
 }

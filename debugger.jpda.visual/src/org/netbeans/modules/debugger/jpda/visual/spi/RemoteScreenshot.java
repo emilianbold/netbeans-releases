@@ -39,74 +39,64 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.debugger.visual;
+package org.netbeans.modules.debugger.jpda.visual.spi;
 
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.debugger.visual.ui.ScreenshotComponent;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.util.logging.Logger;
+import org.netbeans.api.debugger.DebuggerEngine;
 
 /**
+ * Represents screenshot of a remote application.
  * 
  * @author Martin Entlicher
  */
-public final class ScreenshotUIManager {
+public final class RemoteScreenshot {
     
-    public static final String ACTION_TAKE_SCREENSHOT = "takeScreenshot";   // NOI18N
+    //private static final Logger logger = Logger.getLogger(RemoteScreenshot.class.getName());
     
-    private RemoteScreenshot rs;
-    private ScreenshotComponent sc;
+    //private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
+
+    private DebuggerEngine engine;
+    private String title;
+    private Image image;
+    private ComponentInfo componentInfo;
+    private ScreenshotUIManager uiManager;
     
-    ScreenshotUIManager(RemoteScreenshot rs) {
-        this.rs = rs;
+    public RemoteScreenshot(DebuggerEngine engine, String title, int width, int height,
+                            Image image, ComponentInfo componentInfo) {
+        this.engine = engine;
+        this.title = title;
+        this.image = image;
+        this.componentInfo = componentInfo;
     }
     
-    /**
-     * Get an active opened remote screenshot.
-     * @return The active screenshot or <code>null</code>.
-     */
-    public static ScreenshotUIManager getActive() {
-        ScreenshotComponent activeComponent = ScreenshotComponent.getActive();
-        if (activeComponent != null) {
-            return activeComponent.getManager();
+    public DebuggerEngine getDebuggerEngine() {
+        return engine;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    public Image getImage() {
+        return image;
+    }
+    
+    public ComponentInfo getComponentInfo() {
+        return componentInfo;
+    }
+    
+    /** The component info or <code>null</code> */
+    public ComponentInfo findAt(int x, int y) {
+        return componentInfo.findAt(x, y);
+    }
+    
+    public ScreenshotUIManager getScreenshotUIManager() {
+        if (uiManager == null) {
+            uiManager = new ScreenshotUIManager(this);
         }
-        return null;
-    }
-    
-    public RemoteScreenshot getScreenshot() {
-        return rs;
-    }
-    
-    public void open() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    open();
-                }
-            });
-            return;
-        }
-        if (sc == null) {
-            sc = new ScreenshotComponent(rs, this);
-        }
-        sc.open();
-        sc.requestActive();
-    }
-    
-    public void requestActive() {
-        sc.requestActive();
-    }
-    
-    public boolean close() {
-        return sc.close();
-    }
-    
-    /**
-     * Get the component selected in the screenshot or <code>null</code>.
-     * @return the component or <code>null</code>
-     */
-    public ComponentInfo getSelectedComponent() {
-        if (sc == null) return null;
-        return sc.getSelectedComponent();
+        return uiManager;
     }
     
 }

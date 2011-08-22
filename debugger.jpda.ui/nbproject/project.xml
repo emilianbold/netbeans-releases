@@ -244,7 +244,9 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.debugger.jpda.visual</friend>
+                <package>org.netbeans.modules.debugger.jpda.ui</package>
                 <package>org.netbeans.modules.debugger.jpda.ui.options</package>
+                <package>org.netbeans.modules.debugger.jpda.ui.breakpoints</package>
             </friend-packages>
         </data>
     </configuration>
