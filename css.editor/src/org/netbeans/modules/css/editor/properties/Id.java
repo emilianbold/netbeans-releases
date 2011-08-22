@@ -1,7 +1,8 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +24,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,64 +35,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.jgit.commands;
 
-import java.io.IOException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RefUpdate.Result;
-import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitObjectType;
-import org.netbeans.libs.git.GitRefUpdateResult;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+package org.netbeans.modules.css.editor.properties;
 
 /**
  *
- * @author ondra
+ * @author marekfukala
  */
-public class DeleteTagCommand extends GitCommand {
-    private final String tagName;
-    private GitRefUpdateResult result;
+public class Id implements CssPropertyValueAcceptor {
 
-    public DeleteTagCommand (Repository repository, String tagName, ProgressMonitor monitor) {
-        super(repository, monitor);
-        this.tagName = tagName;
+    public String id() {
+        return "id"; //NOI18N
     }
 
-    @Override
-    protected void run () throws GitException {
-        Repository repository = getRepository();
-        Ref currentRef = repository.getTags().get(tagName);
-        if (currentRef == null) {
-            throw new GitException.MissingObjectException(tagName, GitObjectType.TAG);
-        }
-        String fullName = currentRef.getName();
-        try {
-            RefUpdate update = repository.updateRef(fullName);
-            update.setRefLogMessage("tag deleted", false);
-            update.setForceUpdate(true);
-            Result deleteResult = update.delete();
-
-            switch (deleteResult) {
-                case IO_FAILURE:
-                case LOCK_FAILURE:
-                case REJECTED:
-                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
-            }
-        } catch (IOException ex) {
-            throw new GitException(ex);
+    //FIXME - the ability to properly accepts only correct identifiers is higly limited
+    public boolean accepts(String token) {
+        if(token.length() < 2) { //at least # and one char
+            return false;
         }
         
+        char c1 = token.charAt(0);
+        char c2 = token.charAt(1);
+        
+        return c1 == '#' && Character.isLetter(c2);
+            
     }
-
-    @Override
-    protected String getCommandDescription () {
-        return "git tag -d " + tagName;
-    }
+    
 }

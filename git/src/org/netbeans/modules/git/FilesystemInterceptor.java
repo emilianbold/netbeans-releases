@@ -50,9 +50,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,6 +134,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     public void afterCreate (final File file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
         // There is no point in refreshing the cache for ignored files.
+        addToCreated(file);
         if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file));
         }
@@ -225,6 +228,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (!cache.getStatus(from).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(from));
         }
+        addToCreated(to);
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(to));
@@ -272,6 +276,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterCopy {0}->{1}", new Object[] { from, to }); //NOI18N
         if (to == null) return;
 
+        addToCreated(to);
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(to));
@@ -331,6 +336,43 @@ class FilesystemInterceptor extends VCSInterceptor {
             });
         } else {
             gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+        }
+    }
+
+    private final Map<File, Long> createdFolders = new LinkedHashMap<File, Long>() {
+
+        @Override
+        public Long put (File key, Long value) {
+            long t = System.currentTimeMillis();
+            for (Iterator<Map.Entry<File, Long>> it = entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<File, Long> e = it.next();
+                if (e.getValue() < t - 600000) { // keep for 10 minutes
+                    it.remove();
+                }
+            }
+            return super.put(key, value);
+        }
+        
+    };
+    private void addToCreated (File createdFile) {
+        if (!GitModuleConfig.getDefault().getAutoIgnoreFiles() || !createdFile.isDirectory()) {
+            // no need to keep files and no need to keep anything if auto-ignore-files is disabled
+            return;
+        }
+        synchronized (createdFolders) {
+            for (File f : createdFolders.keySet()) {
+                if (Utils.isAncestorOrEqual(f, createdFile)) {
+                    // just keep created roots, no children
+                    return;
+                }
+            }
+            createdFolders.put(createdFile, createdFile.lastModified());
+        }
+    }
+
+    Collection<File> getCreatedFolders () {
+        synchronized (createdFolders) {
+            return new HashSet<File>(createdFolders.keySet());
         }
     }
 
