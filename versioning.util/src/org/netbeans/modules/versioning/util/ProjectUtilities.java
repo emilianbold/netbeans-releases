@@ -104,6 +104,16 @@ public final class ProjectUtilities {
         opener.openProjects();
     }
 
+    /**
+     * Guides user through a project opening process.
+     * @param checkedOutProjects list of scanned cloned projects
+     * @param workingFolder implicit folder to create a new project in if user selects <em>Create New Project</em> in the following dialog
+     */
+    public static void openClonedOutProjects(Map<Project, Set<Project>> checkedOutProjects, File workingFolder) {
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CLONE, checkedOutProjects, workingFolder);
+        opener.openProjects();
+    }
+
     public static void selectAndExpandProject( final Project project ) {
 
         // invoke later to select the being opened project if the focus is outside ProjectTab

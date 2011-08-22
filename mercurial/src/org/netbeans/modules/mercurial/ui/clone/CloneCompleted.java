@@ -78,6 +78,6 @@ public class CloneCompleted {
             return;
         }
         // open project selection
-        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+        ProjectUtilities.openClonedOutProjects(checkedOutProjects, workingFolder);
     }
 }

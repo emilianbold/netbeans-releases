@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
@@ -72,6 +73,8 @@ import org.openide.util.Lookup;
  * @author marekfukala
  */
 public class CssModuleSupport {
+    
+    private static final Logger LOGGER = Logger.getLogger(CssModuleSupport.class.getSimpleName());
     
     private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
     
@@ -228,7 +231,10 @@ public class CssModuleSupport {
         Map<String, PropertyDescriptor> all = new HashMap<String, PropertyDescriptor>();
         for(CssModule module : getModules()) {
             for(PropertyDescriptor pd: module.getPropertyDescriptors()) {
-                all.put(pd.getName(), pd);
+                PropertyDescriptor original = all.put(pd.getName(), pd);
+                if(original != null) {
+                    LOGGER.warning(String.format("Duplicate property %s found, offending css module: %s", pd.getName(), module));
+                }
             }
         }
         return all;
@@ -254,5 +260,30 @@ public class CssModuleSupport {
         }
         return all;
     }
+    
+    //TODO: the pseudo elements and classes should be context aware, not simple strings ... later
+    public static Collection<String> getPseudoClasses() {
+        Collection<String> all = new HashSet<String>();
+        for(CssModule module : getModules()) {
+            Collection<String> vals = module.getPseudoClasses();
+            if(vals != null) {
+                all.addAll(vals);
+            }
+        }
+        return all;
+    }
+    
+    public static Collection<String> getPseudoElements() {
+        Collection<String> all = new HashSet<String>();
+        for(CssModule module : getModules()) {
+            Collection<String> vals = module.getPseudoElements();
+            if(vals != null) {
+                all.addAll(vals);
+            }
+        }
+        return all;
+    }
+    
+    
     
 }

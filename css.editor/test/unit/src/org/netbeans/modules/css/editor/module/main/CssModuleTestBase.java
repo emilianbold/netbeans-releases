@@ -39,59 +39,39 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.jgit.commands;
+package org.netbeans.modules.css.editor.module.main;
 
-import java.io.IOException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RefUpdate.Result;
-import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitObjectType;
-import org.netbeans.libs.git.GitRefUpdateResult;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import junit.framework.AssertionFailedError;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
+import org.netbeans.modules.css.editor.properties.parser.PropertyModelTest;
+import org.netbeans.modules.css.editor.properties.parser.PropertyValue;
 
 /**
  *
- * @author ondra
+ * @author mfukala@netbeans.org
  */
-public class DeleteTagCommand extends GitCommand {
-    private final String tagName;
-    private GitRefUpdateResult result;
+public class CssModuleTestBase extends CslTestBase {
 
-    public DeleteTagCommand (Repository repository, String tagName, ProgressMonitor monitor) {
-        super(repository, monitor);
-        this.tagName = tagName;
+    public CssModuleTestBase(String name) {
+        super(name);
     }
 
-    @Override
-    protected void run () throws GitException {
-        Repository repository = getRepository();
-        Ref currentRef = repository.getTags().get(tagName);
-        if (currentRef == null) {
-            throw new GitException.MissingObjectException(tagName, GitObjectType.TAG);
-        }
-        String fullName = currentRef.getName();
-        try {
-            RefUpdate update = repository.updateRef(fullName);
-            update.setRefLogMessage("tag deleted", false);
-            update.setForceUpdate(true);
-            Result deleteResult = update.delete();
-
-            switch (deleteResult) {
-                case IO_FAILURE:
-                case LOCK_FAILURE:
-                case REJECTED:
-                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
+    protected void assertPropertyValues(String propertyName, String... values) {
+        
+        PropertyModel model = CssModuleSupport.getProperty(propertyName);
+        assertNotNull(model);
+        
+        for(String val : values) {
+            PropertyValue value = new PropertyValue(model, val);
+            if(!value.success()) {
+                PropertyModelTest.dumpResult(value);
+                throw new AssertionFailedError(String.format("Error parsing property value %s of the property %s", val, propertyName));
             }
-        } catch (IOException ex) {
-            throw new GitException(ex);
+            
         }
         
     }
-
-    @Override
-    protected String getCommandDescription () {
-        return "git tag -d " + tagName;
-    }
+    
 }

@@ -53,10 +53,10 @@ import org.w3c.dom.Node;
  */
 public abstract class DbgpResponse extends DbgpMessage {
 
-    private static final String TRANSACTION_ID  = "transaction_id";     // NOI18N
-    
+    static final String TRANSACTION_ID  = "transaction_id";     // NOI18N
+
     static final String COMMAND                 = "command";            // NOI18N
-    
+
     private static final String ERROR           = "error ";             // NOI18N
 
     DbgpResponse( Node node  ){
@@ -66,11 +66,11 @@ public abstract class DbgpResponse extends DbgpMessage {
     public String getTransactionId(){
         return getAttribute( getNode(),  TRANSACTION_ID );
     }
-    
+
     public String getCommandName(){
         return getAttribute( getNode(),  COMMAND );
     }
-    
+
     public Error getError(){
         Node error = getChild(getNode(), ERROR );
         if ( error == null ) {

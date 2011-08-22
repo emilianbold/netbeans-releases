@@ -39,59 +39,63 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.git.jgit.commands;
+package org.netbeans.modules.css.editor.module.main;
 
-import java.io.IOException;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.RefUpdate;
-import org.eclipse.jgit.lib.RefUpdate.Result;
-import org.eclipse.jgit.lib.Repository;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitObjectType;
-import org.netbeans.libs.git.GitRefUpdateResult;
-import org.netbeans.libs.git.progress.ProgressMonitor;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.css.editor.module.spi.CssModule;
+import org.netbeans.modules.css.editor.module.spi.PropertyDescriptor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * The colors module functionality is partially implemented in the DefaultCssModule
+ * from historical reasons. Newly added features are implemented here.
  *
- * @author ondra
+ * @author mfukala@netbeans.org
  */
-public class DeleteTagCommand extends GitCommand {
-    private final String tagName;
-    private GitRefUpdateResult result;
+@ServiceProvider(service = CssModule.class)
+public class BasicUserInterfaceModule extends CssModule {
 
-    public DeleteTagCommand (Repository repository, String tagName, ProgressMonitor monitor) {
-        super(repository, monitor);
-        this.tagName = tagName;
+    //NOI18N>>>
+    private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
+                "default",
+                "valid",
+                "invalid",
+                "in-range",
+                "out-of-range",
+                "required",
+                "optional",
+                "read-only",
+                "read-write"
+            });
+    private static final Collection<String> PSEUDO_ELEMENTS = Arrays.asList(new String[]{
+                "selection",
+                "value",
+                "choices",
+                "repeat-item",
+                "repeat-index"});
+
+    private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/basic_user_interface"; //NOI18N
+    
+    private static Collection<PropertyDescriptor> propertyDescriptors;
+    
+    @Override
+    public Collection<String> getPseudoClasses() {
+        return PSEUDO_CLASSES;
     }
 
     @Override
-    protected void run () throws GitException {
-        Repository repository = getRepository();
-        Ref currentRef = repository.getTags().get(tagName);
-        if (currentRef == null) {
-            throw new GitException.MissingObjectException(tagName, GitObjectType.TAG);
-        }
-        String fullName = currentRef.getName();
-        try {
-            RefUpdate update = repository.updateRef(fullName);
-            update.setRefLogMessage("tag deleted", false);
-            update.setForceUpdate(true);
-            Result deleteResult = update.delete();
-
-            switch (deleteResult) {
-                case IO_FAILURE:
-                case LOCK_FAILURE:
-                case REJECTED:
-                    throw new GitException.RefUpdateException("Cannot delete tag " + tagName, GitRefUpdateResult.valueOf(deleteResult.name()));
-            }
-        } catch (IOException ex) {
-            throw new GitException(ex);
-        }
-        
+    public Collection<String> getPseudoElements() {
+        return PSEUDO_ELEMENTS;
     }
 
+    
     @Override
-    protected String getCommandDescription () {
-        return "git tag -d " + tagName;
-    }
+    public synchronized Collection<PropertyDescriptor> getPropertyDescriptors() {
+        if(propertyDescriptors == null) {
+            propertyDescriptors = DefaultProperties.parseSource(PROPERTIES_DEFINITION_PATH);
+        }
+        return propertyDescriptors;
+    }    
+    
 }
