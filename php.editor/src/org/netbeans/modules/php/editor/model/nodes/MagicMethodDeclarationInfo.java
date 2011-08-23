@@ -42,37 +42,44 @@
 
 package org.netbeans.modules.php.editor.model.nodes;
 
-import java.util.Collections;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 
 /**
  * @author Radek Matous
  */
-public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
+public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
     private String returnType;
     private String methodName;
     private int offset;
     private int typeOffset;
-    MagicMethodDeclarationInfo(PHPDocTag node) {
+    private List<ParameterElement> parameters = new LinkedList<ParameterElement>();
+    MagicMethodDeclarationInfo(PHPDocMethodTag node) {
         super(node);
         String parts[] = node.getValue().trim().split("\\s+", 3); //NOI18N
-        if (parts.length == 1 
+        if (parts.length == 1
                 || (parts.length > 0 && parts[0].trim().indexOf("(") > 0 )) {
             // expect that the type is void
             returnType = "void";
             String[] methodNames = parts[0].split("[(, ]", 2);
             if (methodNames.length > 0) {
                 methodName = methodNames[0];
-                offset = getOriginalNode().getStartOffset()+PHPDocTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
+                offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
             }
         } else if (parts.length >= 2) {
             String[] typeNames = parts[0].split("\\|", 2);
@@ -80,21 +87,38 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
             if (typeNames.length > 0 && methodNames.length > 0) {
                 returnType = typeNames[0];
                 methodName = methodNames[0];
-                offset = getOriginalNode().getStartOffset()+PHPDocTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
-                typeOffset = getOriginalNode().getStartOffset()+PHPDocTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(returnType);
+                offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
+                typeOffset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(returnType);
             }
         }
-        
+
+        for (PHPDocVarTypeTag parameter : node.getParameters()) {
+            Collection<QualifiedName> names = new LinkedList<QualifiedName>();
+            for (PHPDocTypeNode type : parameter.getTypes()) {
+                QualifiedName qualifiedName = QualifiedName.create(type.getValue());
+                names.add(qualifiedName);
+            }
+            Set<TypeResolver> types = TypeResolverImpl.forNames(names);
+            String name = parameter.getVariable().getValue();
+            String[] split = parameter.getValue().split("="); // NOI18N
+            String defaultValue = null;
+            if (split.length > 1) {
+                defaultValue = split[1].trim();
+            }
+            boolean isMandatory = defaultValue == null ? true : false;
+            boolean isReference = name.startsWith("&"); // NOI18N
+            parameters.add(new ParameterElementImpl(name, defaultValue, 0, types, isMandatory, true, isReference));
+        }
     }
 
     @CheckForNull
-    public static MagicMethodDeclarationInfo create(PHPDocTag node) {
+    public static MagicMethodDeclarationInfo create(PHPDocMethodTag node) {
         MagicMethodDeclarationInfo retval = new MagicMethodDeclarationInfo(node);
         return (retval.methodName != null && retval.returnType != null) ? retval : null;
     }
 
-    public ASTNodeInfo<PHPDocTag> getClassInfo() {
-        return new ASTNodeInfo<PHPDocTag>(getOriginalNode()) {
+    public ASTNodeInfo<PHPDocMethodTag> getClassInfo() {
+        return new ASTNodeInfo<PHPDocMethodTag>(getOriginalNode()) {
 
             @Override
             public String getName() {
@@ -155,9 +179,9 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocTag> {
     }
 
     public List<? extends ParameterElement> getParameters() {
-        return Collections.emptyList();
+        return parameters;
     }
-    
+
     public PhpModifiers getAccessModifiers() {
         return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
