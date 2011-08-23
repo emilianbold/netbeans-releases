@@ -56,10 +56,14 @@ public class Symfony2PhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFiles
 
     private static final String CACHE_DIRECTORY = "app/cache"; // NOI18N
 
+    private final PhpModule phpModule;
     private final File cache;
+
 
     public Symfony2PhpModuleIgnoredFilesExtender(PhpModule phpModule) {
         assert phpModule != null;
+
+        this.phpModule = phpModule;
 
         FileObject cacheFO = phpModule.getSourceDirectory().getFileObject(CACHE_DIRECTORY);
         if (cacheFO != null && cacheFO.isFolder()) {
@@ -72,8 +76,8 @@ public class Symfony2PhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFiles
 
     @Override
     public Set<File> getIgnoredFiles() {
-        // XXX add & use customizer
-        return Collections.singleton(cache);
+        boolean cacheIgnored = Symfony2PhpModuleCustomizerExtender.isCacheDirectoryIgnored(phpModule);
+        return cacheIgnored ? Collections.singleton(cache) : Collections.<File>emptySet();
     }
 
 }

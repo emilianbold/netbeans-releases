@@ -49,6 +49,7 @@ import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
 import org.openide.filesystems.FileObject;
@@ -66,6 +67,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     private static final String CONFIG_DIRECTORY = "app/config"; // NOI18N
 
     private final BadgeIcon badgeIcon;
+
 
     @NbBundle.Messages({
         "LBL_FrameworkName=Symfony2 PHP Web Framework",
@@ -110,6 +112,11 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
         return null;
+    }
+
+    @Override
+    public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
+        return new Symfony2PhpModuleCustomizerExtender(phpModule);
     }
 
     @Override
