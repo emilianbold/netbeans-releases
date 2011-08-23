@@ -238,6 +238,12 @@ public final class JFXProjectProperties {
         }
         return null;
     }
+
+    public static void cleanup(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        propInstance.remove(projDir);
+    }
     
     /** Creates a new instance of JFXProjectProperties */
     private JFXProjectProperties(Lookup context) {
