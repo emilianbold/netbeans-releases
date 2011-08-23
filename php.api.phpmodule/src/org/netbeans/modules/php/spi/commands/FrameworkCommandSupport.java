@@ -72,12 +72,11 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
- * @author Tomas Mysik
+ * Support for running framework commands.
  */
 public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(COMMANDS_CACHE)
-    //                      php module     fw name            commands
     private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<PhpModule, Map<String, List<FrameworkCommand>>>();
 
     private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
@@ -86,6 +85,7 @@ public abstract class FrameworkCommandSupport {
 
     // @GuardedBy(this)
     private PluginListener pluginListener;
+
 
     protected FrameworkCommandSupport(PhpModule phpModule) {
         assert phpModule != null;
@@ -104,7 +104,6 @@ public abstract class FrameworkCommandSupport {
      * @param commandDescriptor descriptor for the selected framework command
      * @since 1.8
      * @see #runCommand()
-     * @see RunCommand
      * @see CommandDescriptor
      */
     public abstract void runCommand(CommandDescriptor commandDescriptor);
@@ -160,7 +159,7 @@ public abstract class FrameworkCommandSupport {
      * @return {@link PhpModule PHP module} for which this framework command support is created, never <code>null</code>.
      * @since 1.8
      */
-    public PhpModule getPhpModule() {
+    public final PhpModule getPhpModule() {
         return phpModule;
     }
 
@@ -168,7 +167,7 @@ public abstract class FrameworkCommandSupport {
      * Get framework commands, can be empty or <code>null</code> if not known already.
      * @return list of {@link FrameworkCommand framework commands} or <code>null</code> if not known already.
      */
-    public List<FrameworkCommand> getFrameworkCommands() {
+    public final List<FrameworkCommand> getFrameworkCommands() {
         List<FrameworkCommand> frameworkCommands = null;
         synchronized (COMMANDS_CACHE) {
             Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
@@ -337,7 +336,7 @@ public abstract class FrameworkCommandSupport {
      * @since 1.8
      * @see #runCommand(CommandDescriptor)
      */
-    public void runCommand() {
+    public final void runCommand() {
         FrameworkCommandChooser.open(this);
     }
 
@@ -452,18 +451,4 @@ public abstract class FrameworkCommandSupport {
         }
     }
 
-    /**
-     * Command that is run when a command is invoked.
-     * @since 1.8
-     */
-    public static interface RunCommand {
-
-        /**
-         * Called when a command is to be run.
-         * <p>
-         * This method is run in AWT thread.
-         * @param commandDescriptor {@link CommandDescriptor descriptor} of a command to be run.
-         */
-        void runCommand(CommandDescriptor commandDescriptor);
-    }
 }
