@@ -53,6 +53,7 @@ import org.netbeans.api.diff.Diff;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
 import org.netbeans.modules.hudson.api.Utilities;
 import org.openide.awt.StatusDisplayer;
@@ -109,12 +110,14 @@ public interface HudsonSCM {
 
     /**
      * Attempts to parse a build's changelog.
-     * @param job the job
-     * @param changeSet the {@code <changeSet>} element from a build,
-     *        corresponding to some {@code hudson.scm.ChangeLogSet}
+     * Will generally use {@code ?tree=changeSet[...]} from the remote API
+     * corresponding to some {@code hudson.scm.ChangeLogSet} subtype.
+     * (Cannot unconditionally parse this subtree due to HUDSON-8994;
+     * cannot rely on {@code ChangeLogSet.getKind} due to HUDSON-8995.)
+     * @param build the build
      * @return a list of parsed changelog items, or null if the SCM is unrecognized
      */
-    List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJob job, Element changeSet);
+    List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJobBuild build);
 
     /**
      * Convenience methods for SCM implementations.
@@ -161,7 +164,7 @@ public interface HudsonSCM {
         @Messages({"# {0} - file basename", "HudsonSCM.diffing=Diffing {0}"})
         public static void showDiff(final StreamSource before, final StreamSource after, final String path) {
             EventQueue.invokeLater(new Runnable() {
-                public void run() {
+                @Override public void run() {
                     try {
                         DiffView view = Diff.getDefault().createDiff(before, after);
                         // XXX reuse the same TC
